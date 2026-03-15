@@ -29,6 +29,7 @@ for (const dir of [RUNS_DIR, MEMORY_DIR, join(MEMORY_DIR, 'cold')]) {
 // === State ===
 let currentData = null;    // Current synthesized dashboard data
 let lastSweepTime = null;  // Timestamp of last sweep
+let sweepStartedAt = null; // Timestamp when current/last sweep started
 let sweepInProgress = false;
 const startTime = Date.now();
 const sseClients = new Set();
@@ -230,9 +231,13 @@ if (discordAlerter.isConfigured) {
 const app = express();
 app.use(express.static(join(ROOT, 'dashboard/public')));
 
-// Serve jarvis.html as the root page
+// Serve loading page until first sweep completes, then the dashboard
 app.get('/', (req, res) => {
-  res.sendFile(join(ROOT, 'dashboard/public/jarvis.html'));
+  if (!currentData) {
+    res.sendFile(join(ROOT, 'dashboard/public/loading.html'));
+  } else {
+    res.sendFile(join(ROOT, 'dashboard/public/jarvis.html'));
+  }
 });
 
 // API: current data
@@ -251,6 +256,7 @@ app.get('/api/health', (req, res) => {
       ? new Date(new Date(lastSweepTime).getTime() + config.refreshIntervalMinutes * 60000).toISOString()
       : null,
     sweepInProgress,
+    sweepStartedAt,
     sourcesOk: currentData?.meta?.sourcesOk || 0,
     sourcesFailed: currentData?.meta?.sourcesFailed || 0,
     llmEnabled: !!config.llm.provider,
@@ -288,7 +294,8 @@ async function runSweepCycle() {
   }
 
   sweepInProgress = true;
-  broadcast({ type: 'sweep_start', timestamp: new Date().toISOString() });
+  sweepStartedAt = new Date().toISOString();
+  broadcast({ type: 'sweep_start', timestamp: sweepStartedAt });
   console.log(`\n${'='.repeat(60)}`);
   console.log(`[Crucix] Starting sweep at ${new Date().toLocaleTimeString()}`);
   console.log(`${'='.repeat(60)}`);

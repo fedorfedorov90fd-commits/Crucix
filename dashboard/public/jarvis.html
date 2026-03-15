@@ -1188,7 +1188,7 @@ function init(){
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  const isServer = location.protocol !== 'file:' && location.hostname === 'localhost';
+  const isServer = location.protocol !== 'file:';
 
   if (isServer) {
     // Server mode: always fetch live data from API (ignore any stale inline D)

@@ -79,6 +79,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .ldot.maritime{background:#b388ff;box-shadow:0 0 6px rgba(179,136,255,0.4)}
 .ldot.health{background:#69f0ae;box-shadow:0 0 6px rgba(105,240,174,0.4)}
 .ldot.news{background:#81d4fa;box-shadow:0 0 6px rgba(129,212,250,0.4)}
+.ldot.space{background:#e0b0ff;box-shadow:0 0 6px rgba(224,176,255,0.4)}
 .layer-name{font-size:12px;font-weight:500}
 .layer-sub{font-size:10px;color:var(--dim)}
 .layer-count{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--accent)}
@@ -328,7 +329,8 @@ function renderLeftRail(){
     {name:'Conflict Events',count:conflictEvents,dot:'thermal',sub:`${conflictFatal.toLocaleString()} fatalities`},
     {name:'Health Watch',count:D.who.length,dot:'health',sub:'WHO alerts'},
     {name:'World News',count:newsCount,dot:'news',sub:'RSS geolocated'},
-    {name:'OSINT Feed',count:D.tg.posts,dot:'incident',sub:`${D.tg.urgent.length} urgent`}
+    {name:'OSINT Feed',count:D.tg.posts,dot:'incident',sub:`${D.tg.urgent.length} urgent`},
+    {name:'Satellites',count:D.space?.militarySats||0,dot:'space',sub:`${D.space?.totalNewObjects||0} new (30d)`}
   ];
   const allNormal=D.nuke.every(s=>!s.anom);
   const nukeHtml=D.nuke.map(s=>`<div class="site-row"><span>${s.site}</span><span class="site-val">${s.n>0?(s.cpm?.toFixed(1)||'--')+' CPM':'No data'}</span></div>`).join('');
@@ -358,6 +360,18 @@ function renderLeftRail(){
       <div class="econ-row"><span class="elabel">30Y Mortgage</span><span class="eval">${mort?.value||'--'}%</span></div>
       <div class="econ-row"><span class="elabel">M2 Supply</span><span class="eval">$${(m2?.value/1000)?.toFixed(1)||'--'}T</span></div>
       <div class="econ-row"><span class="elabel">Nat. Debt</span><span class="eval">$${(parseFloat(D.treasury.totalDebt)/1e12).toFixed(2)}T</span></div>
+    </div>
+    <div class="g-panel">
+      <div class="sec-head"><h3>Space Watch</h3><span class="badge">CELESTRAK</span></div>
+      ${D.space ? `
+        <div class="econ-row"><span class="elabel">New Objects (30d)</span><span class="eval" style="color:var(--accent2)">${D.space.totalNewObjects||0}</span></div>
+        <div class="econ-row"><span class="elabel">Military Sats</span><span class="eval">${D.space.militarySats||0}</span></div>
+        <div class="econ-row"><span class="elabel">Starlink</span><span class="eval">${D.space.constellations?.starlink||0}</span></div>
+        <div class="econ-row"><span class="elabel">OneWeb</span><span class="eval">${D.space.constellations?.oneweb||0}</span></div>
+        ${D.space.iss ? `<div class="econ-row"><span class="elabel">ISS</span><span class="eval" style="color:var(--accent)">ALT ${((D.space.iss.apogee+D.space.iss.perigee)/2).toFixed(0)} km</span></div>` : ''}
+        ${Object.entries(D.space.militaryByCountry||{}).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([c,n])=>`<div class="econ-row"><span class="elabel" style="padding-left:8px">${c}</span><span class="eval" style="font-size:10px">${n} mil sats</span></div>`).join('')}
+        ${(D.space.signals||[]).length ? `<div style="margin-top:6px;padding:6px 8px;border:1px solid rgba(68,204,255,0.2);background:rgba(68,204,255,0.04);font-family:var(--mono);font-size:9px;color:var(--accent2);line-height:1.5">${D.space.signals.slice(0,2).join('<br>')}</div>` : ''}
+      ` : '<div style="font-family:var(--mono);font-size:10px;color:var(--dim)">NO SPACE DATA</div>'}
     </div>`;
 }
 

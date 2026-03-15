@@ -319,6 +319,22 @@ export async function synthesize(data) {
   }));
   const noaa = { totalAlerts: data.sources.NOAA?.totalSevereAlerts || 0 };
 
+  // Space/CelesTrak satellite data
+  const spaceData = data.sources.Space || {};
+  const space = {
+    totalNewObjects: spaceData.totalNewObjects || 0,
+    militarySats: spaceData.militarySatellites || 0,
+    militaryByCountry: spaceData.militaryByCountry || {},
+    constellations: spaceData.constellations || {},
+    iss: spaceData.iss || null,
+    recentLaunches: (spaceData.recentLaunches || []).slice(0, 10).map(l => ({
+      name: l.name, country: l.country, epoch: l.epoch,
+      apogee: l.apogee, perigee: l.perigee, type: l.objectType
+    })),
+    launchByCountry: spaceData.launchByCountry || {},
+    signals: spaceData.signals || [],
+  };
+
   // ACLED conflict events
   const acledData = data.sources.ACLED || {};
   const acled = acledData.error ? { totalEvents: 0, totalFatalities: 0, byRegion: {}, byType: {}, deadliestEvents: [] } : {
@@ -391,7 +407,7 @@ export async function synthesize(data) {
     meta: data.crucix, air, thermal, tSignals, chokepoints, nuke, nukeSignals,
     sdr: { total: sdrNet.totalReceivers || 0, online: sdrNet.online || 0, zones: sdrZones },
     tg: { posts: tgData.totalPosts || 0, urgent: tgUrgent, topPosts: tgTop },
-    who, fred, energy, bls, treasury, gscpi, defense, noaa, acled, gdelt, health, news,
+    who, fred, energy, bls, treasury, gscpi, defense, noaa, acled, gdelt, space, health, news,
     markets, // Live Yahoo Finance market data
     ideas: [], ideasSource: 'disabled',
     // newsFeed for ticker (merged RSS + GDELT + Telegram)

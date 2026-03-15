@@ -37,7 +37,10 @@ import { briefing as reddit } from './sources/reddit.mjs';
 import { briefing as telegram } from './sources/telegram.mjs';
 import { briefing as kiwisdr } from './sources/kiwisdr.mjs';
 
-// === Tier 4: Live Market Data ===
+// === Tier 4: Space & Satellites ===
+import { briefing as space } from './sources/space.mjs';
+
+// === Tier 5: Live Market Data ===
 import { briefing as yfinance } from './sources/yfinance.mjs';
 
 export async function runSource(name, fn, ...args) {
@@ -51,7 +54,7 @@ export async function runSource(name, fn, ...args) {
 }
 
 export async function fullBriefing() {
-  console.error('[Crucix] Starting intelligence sweep — 26 sources...');
+  console.error('[Crucix] Starting intelligence sweep — 27 sources...');
   const start = Date.now();
 
   const results = await Promise.allSettled([
@@ -86,7 +89,10 @@ export async function fullBriefing() {
     runSource('Telegram', telegram),
     runSource('KiwiSDR', kiwisdr),
 
-    // Tier 4: Live Market Data
+    // Tier 4: Space & Satellites
+    runSource('Space', space),
+
+    // Tier 5: Live Market Data
     runSource('YFinance', yfinance),
   ]);
 

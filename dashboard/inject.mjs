@@ -46,6 +46,37 @@ const geoKeywords = {
   'Peru':[-10,-76],'Ecuador':[-2,-78],'Bolivia':[-17,-65],
   'Singapore':[1.35,103.8],'Malaysia':[4.2,101.9],'Vietnam':[16,108],
   'Algeria':[28,3],'Tunisia':[34,9],'Zimbabwe':[-20,30],'Mozambique':[-18,35],
+  // Americas expansion
+  'Texas':[31,-100],'Florida':[28,-82],'Chicago':[41.9,-87.6],'Los Angeles':[34,-118],
+  'San Francisco':[37.8,-122.4],'Seattle':[47.6,-122.3],'Miami':[25.8,-80.2],
+  'Toronto':[43.7,-79.4],'Ottawa':[45.4,-75.7],'Vancouver':[49.3,-123.1],
+  'São Paulo':[-23.5,-46.6],'Rio':[-22.9,-43.2],'Buenos Aires':[-34.6,-58.4],
+  'Bogotá':[4.7,-74.1],'Lima':[-12,-77],'Santiago':[-33.4,-70.7],
+  'Caracas':[10.5,-66.9],'Havana':[23.1,-82.4],'Panama':[9,-79.5],
+  'Guatemala':[14.6,-90.5],'Honduras':[14.1,-87.2],'El Salvador':[13.7,-89.2],
+  'Costa Rica':[10,-84],'Jamaica':[18.1,-77.3],'Haiti':[19,-72],
+  'Dominican':[18.5,-70],'Puerto Rico':[18.2,-66.5],
+  // More Asia-Pacific
+  'Sri Lanka':[7,80],'Hong Kong':[22.3,114.2],'Taipei':[25,121.5],
+  'Seoul':[37.6,127],'Osaka':[34.7,135.5],'Mumbai':[19.1,72.9],
+  'Delhi':[28.6,77.2],'Shanghai':[31.2,121.5],'Shenzhen':[22.5,114.1],
+  'Auckland':[-36.8,174.8],'Papua New Guinea':[-6.3,147],
+  // More Europe
+  'Berlin':[52.5,13.4],'Paris':[48.9,2.3],'Madrid':[40.4,-3.7],
+  'Rome':[41.9,12.5],'Warsaw':[52.2,21],'Prague':[50.1,14.4],
+  'Vienna':[48.2,16.4],'Budapest':[47.5,19.1],'Bucharest':[44.4,26.1],
+  'Kyiv':[50.4,30.5],'Oslo':[59.9,10.7],'Copenhagen':[55.7,12.6],
+  'Brussels':[50.8,4.4],'Zurich':[47.4,8.5],'Dublin':[53.3,-6.3],
+  'Lisbon':[38.7,-9.1],'Athens':[37.9,23.7],'Minsk':[53.9,27.6],
+  // More Africa
+  'Nairobi':[-1.3,36.8],'Lagos':[6.5,3.4],'Accra':[5.6,-0.2],
+  'Addis Ababa':[9,38.7],'Cape Town':[-33.9,18.4],'Johannesburg':[-26.2,28],
+  'Kinshasa':[-4.3,15.3],'Khartoum':[15.6,32.5],'Mogadishu':[2.1,45.3],
+  'Dakar':[14.7,-17.5],'Abuja':[9.1,7.5],
+  // Tech/Economy keywords with US locations
+  'Fed':[38.9,-77],'Congress':[38.9,-77],'Senate':[38.9,-77],
+  'Silicon Valley':[37.4,-122],'NASA':[28.6,-80.6],'Pentagon':[38.9,-77],
+  'IMF':[38.9,-77],'World Bank':[38.9,-77],'UN':[40.7,-74],
 };
 
 function geoTagText(text) {
@@ -84,6 +115,10 @@ export async function fetchAllNews() {
     ['http://feeds.bbci.co.uk/news/world/rss.xml', 'BBC'],
     ['https://rss.nytimes.com/services/xml/rss/nyt/World.xml', 'NYT'],
     ['https://feeds.aljazeera.com/xml/rss/all.xml', 'Al Jazeera'],
+    ['https://rss.nytimes.com/services/xml/rss/nyt/Americas.xml', 'NYT Americas'],
+    ['https://rss.nytimes.com/services/xml/rss/nyt/AsiaPacific.xml', 'NYT Asia'],
+    ['https://feeds.bbci.co.uk/news/technology/rss.xml', 'BBC Tech'],
+    ['http://feeds.bbci.co.uk/news/science_and_environment/rss.xml', 'BBC Science'],
   ];
 
   const results = await Promise.allSettled(
@@ -115,7 +150,7 @@ export async function fetchAllNews() {
   }
 
   geoNews.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
-  return geoNews.slice(0, 30);
+  return geoNews.slice(0, 50);
 }
 
 // === Leverageable Ideas from Signals ===
@@ -319,6 +354,22 @@ export async function synthesize(data) {
   }));
   const noaa = { totalAlerts: data.sources.NOAA?.totalSevereAlerts || 0 };
 
+  // Space/CelesTrak satellite data
+  const spaceData = data.sources.Space || {};
+  const space = {
+    totalNewObjects: spaceData.totalNewObjects || 0,
+    militarySats: spaceData.militarySatellites || 0,
+    militaryByCountry: spaceData.militaryByCountry || {},
+    constellations: spaceData.constellations || {},
+    iss: spaceData.iss || null,
+    recentLaunches: (spaceData.recentLaunches || []).slice(0, 10).map(l => ({
+      name: l.name, country: l.country, epoch: l.epoch,
+      apogee: l.apogee, perigee: l.perigee, type: l.objectType
+    })),
+    launchByCountry: spaceData.launchByCountry || {},
+    signals: spaceData.signals || [],
+  };
+
   // ACLED conflict events
   const acledData = data.sources.ACLED || {};
   const acled = acledData.error ? { totalEvents: 0, totalFatalities: 0, byRegion: {}, byType: {}, deadliestEvents: [] } : {
@@ -391,7 +442,7 @@ export async function synthesize(data) {
     meta: data.crucix, air, thermal, tSignals, chokepoints, nuke, nukeSignals,
     sdr: { total: sdrNet.totalReceivers || 0, online: sdrNet.online || 0, zones: sdrZones },
     tg: { posts: tgData.totalPosts || 0, urgent: tgUrgent, topPosts: tgTop },
-    who, fred, energy, bls, treasury, gscpi, defense, noaa, acled, gdelt, health, news,
+    who, fred, energy, bls, treasury, gscpi, defense, noaa, acled, gdelt, space, health, news,
     markets, // Live Yahoo Finance market data
     ideas: [], ideasSource: 'disabled',
     // newsFeed for ticker (merged RSS + GDELT + Telegram)

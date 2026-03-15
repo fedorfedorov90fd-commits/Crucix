@@ -9,6 +9,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://d3js.org/d3.v7.min.js"></script>
 <script src="https://d3js.org/topojson.v3.min.js"></script>
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+<script src="https://unpkg.com/globe.gl@2.33.0"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -79,6 +81,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .ldot.maritime{background:#b388ff;box-shadow:0 0 6px rgba(179,136,255,0.4)}
 .ldot.health{background:#69f0ae;box-shadow:0 0 6px rgba(105,240,174,0.4)}
 .ldot.news{background:#81d4fa;box-shadow:0 0 6px rgba(129,212,250,0.4)}
+.ldot.space{background:#e0b0ff;box-shadow:0 0 6px rgba(224,176,255,0.4)}
 .layer-name{font-size:12px;font-weight:500}
 .layer-sub{font-size:10px;color:var(--dim)}
 .layer-count{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--accent)}
@@ -90,17 +93,23 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .econ-row .eval{font-family:var(--mono);font-weight:600}
 
 /* CENTER: MAP */
-.map-container{flex:1;min-height:560px;border:1px solid var(--border);background:linear-gradient(180deg,rgba(8,16,24,0.95),rgba(4,10,16,0.98));position:relative;overflow:hidden}
-#mapSvg{width:100%;height:100%;display:block;cursor:grab}
-#mapSvg:active{cursor:grabbing}
-#mapSvg .land{fill:rgba(180,200,210,0.08);stroke:rgba(200,220,230,0.15);stroke-width:0.5}
-#mapSvg .land:hover{fill:rgba(100,240,200,0.08)}
-#mapSvg .graticule{fill:none;stroke:rgba(100,240,200,0.04);stroke-width:0.4}
-#mapSvg .border{fill:none;stroke:rgba(200,220,230,0.08);stroke-width:0.3}
+.map-container{flex:1;min-height:560px;border:1px solid var(--border);background:radial-gradient(ellipse at center,rgba(4,12,20,1),rgba(2,4,8,1));position:relative;overflow:hidden}
+#globeViz{width:100%;height:100%;cursor:grab}
+#globeViz:active{cursor:grabbing}
+#globeViz canvas{outline:none}
+#flatMapSvg .land{fill:rgba(180,200,210,0.08);stroke:rgba(200,220,230,0.15);stroke-width:0.5}
+#flatMapSvg .land:hover{fill:rgba(100,240,200,0.08)}
+#flatMapSvg .graticule{fill:none;stroke:rgba(100,240,200,0.04);stroke-width:0.4}
+#flatMapSvg .border{fill:none;stroke:rgba(200,220,230,0.08);stroke-width:0.3}
+@keyframes pulse-conflict{0%,100%{opacity:0.5;stroke-width:1.5}50%{opacity:0.9;stroke-width:2.5}}
+.conflict-ring{animation:pulse-conflict 2.5s ease-in-out infinite}
+@keyframes dash-flow{to{stroke-dashoffset:-20}}
+.corridor-flow{animation:dash-flow 2s linear infinite}
 .map-legend{position:absolute;bottom:10px;left:12px;display:flex;gap:14px;font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:0.06em;text-transform:uppercase;z-index:5;flex-wrap:wrap}
 .leg-item{display:flex;align-items:center;gap:5px}
 .leg-dot{width:8px;height:8px;border-radius:50%}
 .map-hint{position:absolute;top:8px;right:12px;font-family:var(--mono);font-size:9px;color:var(--dim);z-index:5;opacity:0.6;letter-spacing:0.05em}
+.map-hint-id{position:absolute;top:8px;right:12px}
 .map-controls{position:absolute;top:8px;left:12px;z-index:6;display:flex;flex-direction:column;gap:4px}
 .map-ctrl-btn{width:28px;height:28px;border:1px solid var(--border);background:rgba(0,0,0,0.6);color:var(--dim);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all 0.2s;font-family:var(--mono)}
 .map-ctrl-btn:hover{color:var(--accent);border-color:var(--border-bright);background:rgba(100,240,200,0.06)}
@@ -233,10 +242,12 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .spark-bad{stroke:var(--danger)}
 .spark-dot{r:2}
 
-/* GLOBE TOGGLE */
-.proj-toggle{position:absolute;top:8px;right:180px;z-index:6;padding:5px 10px;border:1px solid var(--border);background:rgba(255,255,255,0.03);font-family:var(--mono);font-size:9px;cursor:pointer;color:var(--dim);letter-spacing:0.08em;text-transform:uppercase;transition:all 0.2s;backdrop-filter:blur(8px)}
+/* FLAT/GLOBE TOGGLE */
+.proj-toggle{position:absolute;top:8px;left:48px;z-index:6;padding:5px 10px;border:1px solid var(--border);background:rgba(0,0,0,0.6);font-family:var(--mono);font-size:9px;cursor:pointer;color:var(--dim);letter-spacing:0.08em;text-transform:uppercase;transition:all 0.2s;backdrop-filter:blur(8px)}
 .proj-toggle:hover{border-color:var(--accent);color:var(--accent)}
 .proj-toggle.active{color:var(--bg);background:var(--accent);border-color:var(--accent)}
+/* GLOBE.GL overrides */
+#globeViz .scene-tooltip{font-family:var(--mono)!important;font-size:10px!important;background:rgba(6,10,14,0.9)!important;border:1px solid rgba(100,240,200,0.3)!important;color:var(--text)!important;padding:4px 8px!important;letter-spacing:0.05em}
 
 /* IDEA HORIZON BADGE */
 .idea-horizon{font-family:var(--mono);font-size:8px;letter-spacing:0.08em;text-transform:uppercase;padding:1px 5px;border:1px solid rgba(100,240,200,0.15);color:var(--dim);margin-left:6px}
@@ -257,15 +268,16 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
     <div class="col" id="leftRail"></div>
     <div class="col" id="centerCol">
       <div class="map-container" id="mapContainer">
-        <svg id="mapSvg"></svg>
+        <div id="globeViz"></div>
+        <svg id="flatMapSvg" style="display:none;width:100%;height:100%;position:absolute;top:0;left:0;cursor:grab"></svg>
         <div class="map-legend" id="mapLegend"></div>
-        <div class="map-hint">SCROLL TO ZOOM · DRAG TO PAN</div>
+        <div class="map-hint" id="mapHint">SCROLL TO ZOOM · DRAG TO PAN</div>
         <div class="map-controls">
           <button class="map-ctrl-btn" onclick="mapZoom(1.5)" title="Zoom in">+</button>
           <button class="map-ctrl-btn" onclick="mapZoom(0.67)" title="Zoom out">&minus;</button>
           <button class="map-ctrl-btn map-toggle" id="flightToggle" onclick="toggleFlights()" title="Toggle flight routes">&#9992;</button>
         </div>
-        <button class="proj-toggle" id="projToggle" onclick="toggleProjection()">GLOBE MODE</button>
+        <button class="proj-toggle" id="projToggle" onclick="toggleMapMode()">GLOBE MODE</button>
         <div class="map-popup" id="mapPopup"><button class="pp-close" onclick="closePopup()">&times;</button><div class="pp-head"></div><div class="pp-text"></div><div class="pp-meta"></div></div>
       </div>
       <div class="lower" id="lowerGrid"></div>
@@ -277,14 +289,17 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 // === DATA ===
 let D = null;
 // === GLOBALS ===
-let projection, path, svg, allG, zoomBehavior, mapW, mapH;
-const regionBounds = {
-  world: [[-180,-60],[180,80]],
-  americas: [[-170,-56],[-30,72]],
-  europe: [[-12,34],[45,72]],
-  middleEast: [[24,10],[65,45]],
-  asiaPacific: [[60,-12],[180,55]],
-  africa: [[-20,-36],[55,38]]
+let globe = null;
+let flightsVisible = true;
+let isFlat = true;
+let flatSvg, flatProjection, flatPath, flatG, flatZoom, flatW, flatH;
+const regionPOV = {
+  world: { lat: 20, lng: 20, altitude: 2.5 },
+  americas: { lat: 15, lng: -80, altitude: 1.6 },
+  europe: { lat: 50, lng: 15, altitude: 1.2 },
+  middleEast: { lat: 28, lng: 45, altitude: 1.4 },
+  asiaPacific: { lat: 25, lng: 110, altitude: 1.6 },
+  africa: { lat: 5, lng: 20, altitude: 1.5 }
 };
 
 // === TOPBAR ===
@@ -328,7 +343,8 @@ function renderLeftRail(){
     {name:'Conflict Events',count:conflictEvents,dot:'thermal',sub:`${conflictFatal.toLocaleString()} fatalities`},
     {name:'Health Watch',count:D.who.length,dot:'health',sub:'WHO alerts'},
     {name:'World News',count:newsCount,dot:'news',sub:'RSS geolocated'},
-    {name:'OSINT Feed',count:D.tg.posts,dot:'incident',sub:`${D.tg.urgent.length} urgent`}
+    {name:'OSINT Feed',count:D.tg.posts,dot:'incident',sub:`${D.tg.urgent.length} urgent`},
+    {name:'Satellites',count:D.space?.militarySats||0,dot:'space',sub:`${D.space?.totalNewObjects||0} new (30d)`}
   ];
   const allNormal=D.nuke.every(s=>!s.anom);
   const nukeHtml=D.nuke.map(s=>`<div class="site-row"><span>${s.site}</span><span class="site-val">${s.n>0?(s.cpm?.toFixed(1)||'--')+' CPM':'No data'}</span></div>`).join('');
@@ -358,373 +374,495 @@ function renderLeftRail(){
       <div class="econ-row"><span class="elabel">30Y Mortgage</span><span class="eval">${mort?.value||'--'}%</span></div>
       <div class="econ-row"><span class="elabel">M2 Supply</span><span class="eval">$${(m2?.value/1000)?.toFixed(1)||'--'}T</span></div>
       <div class="econ-row"><span class="elabel">Nat. Debt</span><span class="eval">$${(parseFloat(D.treasury.totalDebt)/1e12).toFixed(2)}T</span></div>
+    </div>
+    <div class="g-panel">
+      <div class="sec-head"><h3>Space Watch</h3><span class="badge">CELESTRAK</span></div>
+      ${D.space ? `
+        <div class="econ-row"><span class="elabel">New Objects (30d)</span><span class="eval" style="color:var(--accent2)">${D.space.totalNewObjects||0}</span></div>
+        <div class="econ-row"><span class="elabel">Military Sats</span><span class="eval">${D.space.militarySats||0}</span></div>
+        <div class="econ-row"><span class="elabel">Starlink</span><span class="eval">${D.space.constellations?.starlink||0}</span></div>
+        <div class="econ-row"><span class="elabel">OneWeb</span><span class="eval">${D.space.constellations?.oneweb||0}</span></div>
+        ${D.space.iss ? `<div class="econ-row"><span class="elabel">ISS</span><span class="eval" style="color:var(--accent)">ALT ${((D.space.iss.apogee+D.space.iss.perigee)/2).toFixed(0)} km</span></div>` : ''}
+        ${Object.entries(D.space.militaryByCountry||{}).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([c,n])=>`<div class="econ-row"><span class="elabel" style="padding-left:8px">${c}</span><span class="eval" style="font-size:10px">${n} mil sats</span></div>`).join('')}
+        ${(D.space.signals||[]).length ? `<div style="margin-top:6px;padding:6px 8px;border:1px solid rgba(68,204,255,0.2);background:rgba(68,204,255,0.04);font-family:var(--mono);font-size:9px;color:var(--accent2);line-height:1.5">${D.space.signals.slice(0,2).join('<br>')}</div>` : ''}
+      ` : '<div style="font-family:var(--mono);font-size:10px;color:var(--dim)">NO SPACE DATA</div>'}
     </div>`;
 }
 
 // === MAP ===
 function initMap(){
   const container = document.getElementById('mapContainer');
-  mapW = container.clientWidth; mapH = container.clientHeight || 480;
-  svg = d3.select('#mapSvg').attr('viewBox',`0 0 ${mapW} ${mapH}`).attr('preserveAspectRatio','xMidYMid meet');
-  projection = d3.geoNaturalEarth1().fitSize([mapW-20,mapH-20],{type:'Sphere'}).translate([mapW/2,mapH/2]);
-  path = d3.geoPath(projection);
+  const w = container.clientWidth;
+  const h = container.clientHeight || 560;
 
-  // Master group for zoom
-  allG = svg.append('g');
+  globe = Globe()
+    .width(w)
+    .height(h)
+    .globeImageUrl('//unpkg.com/three-globe@2.33.0/example/img/earth-night.jpg')
+    .bumpImageUrl('//unpkg.com/three-globe@2.33.0/example/img/earth-topology.png')
+    .backgroundImageUrl('')
+    .backgroundColor('rgba(0,0,0,0)')
+    .atmosphereColor('#64f0c8')
+    .atmosphereAltitude(0.18)
+    .showGraticules(true)
+    // Points layer (main markers)
+    .pointAltitude(d => d.alt || 0.01)
+    .pointRadius(d => d.size || 0.3)
+    .pointColor(d => d.color)
+    .pointLabel(d => `<b>${d.popHead||''}</b><br><span style="opacity:0.7">${d.popMeta||''}</span>`)
+    .onPointClick((pt, ev) => { showPopup(ev, pt.popHead, pt.popText, pt.popMeta); })
+    .onPointHover(pt => { document.getElementById('globeViz').style.cursor = pt ? 'pointer' : 'grab'; })
+    // Arcs layer (flight corridors)
+    .arcColor(d => d.color)
+    .arcStroke(d => d.stroke || 0.4)
+    .arcDashLength(0.4)
+    .arcDashGap(0.2)
+    .arcDashAnimateTime(2000)
+    .arcAltitudeAutoScale(0.3)
+    .arcLabel(d => d.label || '')
+    // Rings layer (pulsing conflict events)
+    .ringColor(d => t => `rgba(255,120,80,${1-t})`)
+    .ringMaxRadius(d => d.maxR || 3)
+    .ringPropagationSpeed(d => d.speed || 2)
+    .ringRepeatPeriod(d => d.period || 800)
+    // Labels layer
+    .labelText(d => d.text)
+    .labelSize(d => d.size || 0.4)
+    .labelColor(d => d.color || 'rgba(106,138,130,0.9)')
+    .labelDotRadius(0)
+    .labelAltitude(0.012)
+    .labelResolution(2)
+    (document.getElementById('globeViz'));
 
-  // Graticule
-  allG.append('path').datum(d3.geoGraticule()()).attr('class','graticule').attr('d',path);
+  // Style the WebGL scene
+  const scene = globe.scene();
+  const renderer = globe.renderer();
+  renderer.setClearColor(0x000000, 0);
 
-  // D3 zoom behavior
-  zoomBehavior = d3.zoom()
-    .scaleExtent([1, 12])
-    .on('zoom', (event) => {
-      allG.attr('transform', event.transform);
-      // Scale down text and markers at high zoom to avoid clutter
-      const k = event.transform.k;
-      allG.selectAll('.marker-circle').attr('r', function(){ return +this.dataset.baseR / Math.sqrt(k); });
-      allG.selectAll('.marker-label').style('font-size', Math.max(7, 9/Math.sqrt(k))+'px');
-      allG.selectAll('.news-icon').attr('stroke-width', Math.max(0.8, 1.2/Math.sqrt(k)));
-    });
-  svg.call(zoomBehavior);
+  // Add subtle stars background
+  const starGeom = new THREE.BufferGeometry();
+  const starVerts = [];
+  for(let i=0; i<2000; i++){
+    const r = 800 + Math.random()*200;
+    const theta = Math.random()*Math.PI*2;
+    const phi = Math.acos(2*Math.random()-1);
+    starVerts.push(r*Math.sin(phi)*Math.cos(theta), r*Math.sin(phi)*Math.sin(theta), r*Math.cos(phi));
+  }
+  starGeom.setAttribute('position', new THREE.Float32BufferAttribute(starVerts, 3));
+  const starMat = new THREE.PointsMaterial({color:0x88bbaa, size:0.8, transparent:true, opacity:0.6});
+  scene.add(new THREE.Points(starGeom, starMat));
 
-  // Load world
-  fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
-    .then(r=>r.json()).then(world=>{
-      const countries = topojson.feature(world, world.objects.countries);
-      allG.selectAll('path.land').data(countries.features).enter()
-        .append('path').attr('class','land').attr('d',path);
-      allG.append('path').datum(topojson.mesh(world,world.objects.countries,(a,b)=>a!==b))
-        .attr('class','border').attr('d',path);
-      plotMarkers();
-    });
+  // Customize graticule color
+  scene.traverse(obj => {
+    if(obj.material && obj.type === 'Line'){
+      obj.material.color.set(0x1a3a2a);
+      obj.material.opacity = 0.3;
+      obj.material.transparent = true;
+    }
+  });
+
+  // Set initial POV
+  globe.pointOfView(regionPOV.world, 0);
+
+  // Auto-rotate slowly
+  globe.controls().autoRotate = true;
+  globe.controls().autoRotateSpeed = 0.3;
+  globe.controls().enableDamping = true;
+  globe.controls().dampingFactor = 0.1;
+
+  // Stop auto-rotate on interaction, resume after 10s
+  let rotateTimeout;
+  const el = document.getElementById('globeViz');
+  el.addEventListener('mousedown', () => {
+    globe.controls().autoRotate = false;
+    clearTimeout(rotateTimeout);
+  });
+  el.addEventListener('mouseup', () => {
+    rotateTimeout = setTimeout(() => { globe.controls().autoRotate = true; }, 10000);
+  });
+
+  // Resize handler
+  window.addEventListener('resize', () => {
+    const c = document.getElementById('mapContainer');
+    globe.width(c.clientWidth).height(c.clientHeight || 560);
+  });
+
+  // Plot globe markers (preloaded but hidden)
+  plotMarkers();
+
+  // Start in flat mode — hide globe, show flat map
+  document.getElementById('globeViz').style.display = 'none';
+  document.getElementById('flatMapSvg').style.display = 'block';
+  initFlatMap();
 
   // Legend
   document.getElementById('mapLegend').innerHTML=
-    [{c:'var(--accent)',l:'Air Traffic'},{c:'var(--danger)',l:'Thermal/Fire'},{c:'rgba(255,120,80,0.8)',l:'Conflict'},{c:'var(--accent2)',l:'SDR Receiver'},
-     {c:'#ffe082',l:'Nuclear Site'},{c:'#b388ff',l:'Chokepoint'},{c:'var(--warn)',l:'OSINT Event'},{c:'#69f0ae',l:'Health Alert'},{c:'#81d4fa',l:'World News'}]
+    [{c:'#64f0c8',l:'Air Traffic'},{c:'#ff5f63',l:'Thermal/Fire'},{c:'rgba(255,120,80,0.8)',l:'Conflict'},{c:'#44ccff',l:'SDR Receiver'},
+     {c:'#ffe082',l:'Nuclear Site'},{c:'#b388ff',l:'Chokepoint'},{c:'#ffb84c',l:'OSINT Event'},{c:'#69f0ae',l:'Health Alert'},{c:'#81d4fa',l:'World News'}]
     .map(x=>`<div class="leg-item"><div class="leg-dot" style="background:${x.c}"></div>${x.l}</div>`).join('');
 }
 
 function plotMarkers(){
-  const markersG = allG.append('g').attr('class','markers');
+  const points = [];
+  const labels = [];
 
-  // Air hotspots (green)
+  // === Air hotspots (green) ===
   const airCoords=[{lat:30,lon:44},{lat:24,lon:120},{lat:49,lon:32},{lat:57,lon:24},{lat:14,lon:114},{lat:37,lon:127}];
   D.air.forEach((a,i)=>{
     const c=airCoords[i]; if(!c) return;
-    const [x,y]=projection([c.lon,c.lat]);
-    const r=4+a.total/40;
-    const g=markersG.append('g').attr('class','air-marker').attr('transform',`translate(${x},${y})`)
-      .style('cursor','pointer')
-      .on('click',(ev)=>{ev.stopPropagation();showPopup(ev,a.region,`${a.total} aircraft tracked<br>No callsign: ${a.noCallsign}<br>High altitude: ${a.highAlt}<br>Top: ${a.top.slice(0,3).map(t=>t[0]+' ('+t[1]+')').join(', ')}`,`Air Activity`)});
-    g.append('circle').attr('class','marker-circle').attr('r',r).attr('data-base-r',r).attr('fill','rgba(100,240,200,0.7)').attr('stroke','rgba(100,240,200,0.3)').attr('stroke-width',1);
-    g.append('text').attr('class','marker-label').attr('x',10).attr('y',3).attr('fill','var(--dim)').attr('font-size','9px').attr('font-family','var(--mono)').text(a.region.replace(' Region','')+ ' '+a.total);
+    points.push({
+      lat:c.lat, lng:c.lon, size:0.25+a.total/200, alt:0.015,
+      color:'rgba(100,240,200,0.8)', type:'air',
+      label: a.region.replace(' Region','')+' '+a.total,
+      popHead: a.region, popMeta: 'Air Activity',
+      popText: `${a.total} aircraft tracked<br>No callsign: ${a.noCallsign}<br>High altitude: ${a.highAlt}<br>Top: ${a.top.slice(0,3).map(t=>t[0]+' ('+t[1]+')').join(', ')}`
+    });
+    labels.push({lat:c.lat, lng:c.lon+2, text:a.region.replace(' Region','')+' '+a.total, size:0.35, color:'rgba(106,138,130,0.8)'});
   });
 
-  // Thermal (red)
+  // === Thermal/fire (red) ===
   D.thermal.forEach(t=>{
     t.fires.forEach(f=>{
-      const [x,y]=projection([f.lon,f.lat]);
-      if(!x||!y) return;
-      const r=2+Math.min(f.frp/50,5);
-      const g=markersG.append('g').attr('transform',`translate(${x},${y})`)
-        .style('cursor','pointer')
-        .on('click',(ev)=>{ev.stopPropagation();showPopup(ev,'Thermal Detection',`Region: ${t.region}<br>FRP: ${f.frp.toFixed(1)} MW<br>Total: ${t.det.toLocaleString()}<br>Night: ${t.night.toLocaleString()}`,'FIRMS Satellite')});
-      g.append('circle').attr('class','marker-circle').attr('r',r).attr('data-base-r',r).attr('fill','rgba(255,95,99,0.6)').attr('stroke','rgba(255,95,99,0.2)').attr('stroke-width',0.5);
+      points.push({
+        lat:f.lat, lng:f.lon, size:0.12+Math.min(f.frp/200,0.3), alt:0.008,
+        color:'rgba(255,95,99,0.7)', type:'thermal',
+        popHead:'Thermal Detection', popMeta:'FIRMS Satellite',
+        popText:`Region: ${t.region}<br>FRP: ${f.frp.toFixed(1)} MW<br>Total: ${t.det.toLocaleString()}<br>Night: ${t.night.toLocaleString()}`
+      });
     });
   });
 
-  // Maritime chokepoints (purple diamonds)
+  // === Maritime chokepoints (purple) ===
   D.chokepoints.forEach(cp=>{
-    const [x,y]=projection([cp.lon,cp.lat]);
-    if(!x||!y) return;
-    const g=markersG.append('g').attr('transform',`translate(${x},${y})`)
-      .style('cursor','pointer')
-      .on('click',(ev)=>{ev.stopPropagation();showPopup(ev,cp.label,cp.note,'Maritime Intelligence')});
-    g.append('rect').attr('x',-4).attr('y',-4).attr('width',8).attr('height',8).attr('fill','rgba(179,136,255,0.7)').attr('stroke','rgba(179,136,255,0.3)').attr('stroke-width',0.5).attr('transform','rotate(45)');
-    g.append('text').attr('class','marker-label').attr('x',8).attr('y',3).attr('fill','var(--dim)').attr('font-size','8px').attr('font-family','var(--mono)').text(cp.label);
+    points.push({
+      lat:cp.lat, lng:cp.lon, size:0.35, alt:0.02,
+      color:'rgba(179,136,255,0.8)', type:'maritime',
+      popHead:cp.label, popMeta:'Maritime Intelligence', popText:cp.note
+    });
+    labels.push({lat:cp.lat, lng:cp.lon+1.5, text:cp.label, size:0.3, color:'rgba(179,136,255,0.6)'});
   });
 
-  // Nuclear sites (yellow)
+  // === Nuclear sites (yellow) ===
   const nukeCoords=[{lat:47.5,lon:34.6},{lat:51.4,lon:30.1},{lat:28.8,lon:50.9},{lat:39.8,lon:125.8},{lat:37.4,lon:141},{lat:31.0,lon:35.1}];
   D.nuke.forEach((n,i)=>{
     const c=nukeCoords[i]; if(!c) return;
-    const [x,y]=projection([c.lon,c.lat]); if(!x||!y) return;
-    const g=markersG.append('g').attr('transform',`translate(${x},${y})`)
-      .style('cursor','pointer')
-      .on('click',(ev)=>{ev.stopPropagation();showPopup(ev,n.site,`Status: ${n.anom?'ANOMALY':'Normal'}<br>Avg CPM: ${n.cpm?.toFixed(1)||'No data'}<br>Readings: ${n.n}`,'Radiation Monitoring')});
-    g.append('circle').attr('class','marker-circle').attr('r',4).attr('data-base-r',4).attr('fill','rgba(255,224,130,0.7)').attr('stroke','rgba(255,224,130,0.3)').attr('stroke-width',1);
-  });
-
-  // SDR receivers in conflict zones (cyan)
-  D.sdr.zones.forEach(z=>{
-    z.receivers.forEach(r=>{
-      const [x,y]=projection([r.lon,r.lat]); if(!x||!y) return;
-      const g=markersG.append('g').attr('transform',`translate(${x},${y})`)
-        .style('cursor','pointer')
-        .on('click',(ev)=>{ev.stopPropagation();showPopup(ev,'SDR Receiver',`${r.name}<br>Zone: ${z.region}<br>${z.count} in zone`,'KiwiSDR Network')});
-      g.append('circle').attr('class','marker-circle').attr('r',2.5).attr('data-base-r',2.5).attr('fill','rgba(68,204,255,0.5)').attr('stroke','rgba(68,204,255,0.2)').attr('stroke-width',0.5);
+    points.push({
+      lat:c.lat, lng:c.lon, size:0.3, alt:0.012,
+      color: n.anom ? 'rgba(255,95,99,0.9)' : 'rgba(255,224,130,0.8)', type:'nuke',
+      popHead:n.site, popMeta:'Radiation Monitoring',
+      popText:`Status: ${n.anom?'ANOMALY':'Normal'}<br>Avg CPM: ${n.cpm?.toFixed(1)||'No data'}<br>Readings: ${n.n}`
     });
   });
 
-  // OSINT events (orange) - from urgent Telegram
+  // === SDR receivers (cyan) ===
+  D.sdr.zones.forEach(z=>{
+    z.receivers.forEach(r=>{
+      points.push({
+        lat:r.lat, lng:r.lon, size:0.15, alt:0.005,
+        color:'rgba(68,204,255,0.6)', type:'sdr',
+        popHead:'SDR Receiver', popMeta:'KiwiSDR Network',
+        popText:`${r.name}<br>Zone: ${z.region}<br>${z.count} in zone`
+      });
+    });
+  });
+
+  // === OSINT events from Telegram (orange) ===
   const osintGeo=[{lat:45,lon:41,idx:0},{lat:48,lon:37,idx:1},{lat:48.5,lon:37.5,idx:2},{lat:45,lon:40.2,idx:3},{lat:50.6,lon:36.6,idx:5},{lat:48.5,lon:35,idx:6}];
   osintGeo.forEach(o=>{
     const post=D.tg.urgent[o.idx]; if(!post) return;
-    const [x,y]=projection([o.lon,o.lat]); if(!x||!y) return;
-    const g=markersG.append('g').attr('transform',`translate(${x},${y})`)
-      .style('cursor','pointer')
-      .on('click',(ev)=>{ev.stopPropagation();showPopup(ev,(post.channel||'').toUpperCase(),cleanText(post.text?.substring(0,200)||''),`${post.views?.toLocaleString()||'?'} views`)});
-    g.append('circle').attr('class','marker-circle').attr('r',4).attr('data-base-r',4).attr('fill','rgba(255,184,76,0.7)').attr('stroke','rgba(255,184,76,0.3)').attr('stroke-width',1);
+    points.push({
+      lat:o.lat, lng:o.lon, size:0.3, alt:0.018,
+      color:'rgba(255,184,76,0.8)', type:'osint',
+      popHead:(post.channel||'').toUpperCase(), popMeta:`${post.views?.toLocaleString()||'?'} views`,
+      popText:cleanText(post.text?.substring(0,200)||'')
+    });
   });
 
-  // WHO health alerts (green)
+  // === WHO health alerts (green) ===
   const whoGeo=[{lat:0.3,lon:32.6},{lat:-6.2,lon:106.8},{lat:-4.3,lon:15.3},{lat:35,lon:105},{lat:12.5,lon:105},{lat:35,lon:105},{lat:28,lon:84},{lat:24,lon:45},{lat:30,lon:70},{lat:-0.8,lon:11.6}];
   D.who.slice(0,10).forEach((w,i)=>{
     const c=whoGeo[i]; if(!c) return;
-    const [x,y]=projection([c.lon,c.lat]); if(!x||!y) return;
-    const g=markersG.append('g').attr('transform',`translate(${x},${y})`)
-      .style('cursor','pointer')
-      .on('click',(ev)=>{ev.stopPropagation();showPopup(ev,w.title,w.summary||'','WHO Outbreak')});
-    g.append('circle').attr('class','marker-circle').attr('r',3.5).attr('data-base-r',3.5).attr('fill','rgba(105,240,174,0.6)').attr('stroke','rgba(105,240,174,0.2)').attr('stroke-width',0.5);
+    points.push({
+      lat:c.lat, lng:c.lon, size:0.25, alt:0.01,
+      color:'rgba(105,240,174,0.7)', type:'health',
+      popHead:w.title, popMeta:'WHO Outbreak', popText:w.summary||''
+    });
   });
 
-  // NEWS markers (broadcast icon) - from RSS feeds
+  // === News markers (light blue) ===
   (D.news||[]).forEach(n=>{
-    const [x,y]=projection([n.lon,n.lat]); if(!x||!y) return;
-    const g=markersG.append('g').attr('transform',`translate(${x},${y})`)
-      .style('cursor','pointer')
-      .on('click',(ev)=>{ev.stopPropagation();showPopup(ev,n.source+' NEWS',cleanText(n.title),n.region+' · '+getAge(n.date))});
-    // Broadcast/signal icon instead of text label
-    const s=5;
-    g.append('path').attr('class','news-icon marker-circle').attr('data-base-r',s)
-      .attr('d',`M0,${s*0.3} L${-s*0.25},${s*0.5} L${-s*0.25},${-s*0.5} L0,${-s*0.3} Z M${s*0.15},${-s*0.55} A${s*0.55},${s*0.55} 0 0,1 ${s*0.15},${s*0.55} M${s*0.3},${-s*0.75} A${s*0.8},${s*0.8} 0 0,1 ${s*0.3},${s*0.75}`)
-      .attr('fill','none').attr('stroke','rgba(129,212,250,0.8)').attr('stroke-width',1.2).attr('stroke-linecap','round');
+    points.push({
+      lat:n.lat, lng:n.lon, size:0.2, alt:0.008,
+      color:'rgba(129,212,250,0.7)', type:'news',
+      popHead:n.source+' NEWS', popMeta:n.region+' · '+getAge(n.date),
+      popText:cleanText(n.title)
+    });
   });
 
-  // === ACLED CONFLICT EVENTS (pulsing red-orange rings) ===
-  const conflictEvents = (D.acled?.deadliestEvents || []).filter(e => e.lat && e.lon);
-  conflictEvents.forEach(e => {
-    const [x,y] = projection([e.lon, e.lat]);
-    if(!x || !y) return;
+  // Set points on globe
+  globe.pointsData(points);
+  globe.labelsData(labels);
+
+  // === ACLED CONFLICT EVENTS (pulsing rings) ===
+  const conflictRings = (D.acled?.deadliestEvents || []).filter(e => e.lat && e.lon).map(e => {
     const logFatal = Math.log2(Math.max(e.fatalities, 1));
-    const r = Math.max(4, Math.min(14, 2 + logFatal * 1.5));
-    const g = markersG.append('g').attr('transform',`translate(${x},${y})`)
-      .style('cursor','pointer')
-      .on('click',(ev)=>{ev.stopPropagation();showPopup(ev, e.type || 'CONFLICT', `${e.fatalities} fatalities<br>${e.location}, ${e.country}<br>Date: ${e.date}`, 'ACLED Conflict Data')});
-    g.append('circle').attr('class','conflict-ring marker-circle').attr('r',r).attr('data-base-r',r)
-      .attr('fill','none').attr('stroke','rgba(255,120,80,0.7)').attr('stroke-width',1.5);
-    g.append('circle').attr('r',r*0.4).attr('fill','rgba(255,120,80,0.3)');
+    return {
+      lat: e.lat, lng: e.lon,
+      maxR: Math.max(2, Math.min(6, 1 + logFatal)),
+      speed: 1.5 + Math.random(),
+      period: 600 + Math.random()*600,
+      popHead: e.type || 'CONFLICT', popMeta: 'ACLED Conflict Data',
+      popText: `${e.fatalities} fatalities<br>${e.location}, ${e.country}<br>Date: ${e.date}`
+    };
   });
+  globe.ringsData(conflictRings);
 
-  // === FLIGHT CORRIDORS (great circle arcs between air traffic regions + global hubs) ===
+  // === FLIGHT CORRIDORS (3D arcs) ===
   const airCoordsFlight = [
     {region:'Middle East',lat:30,lon:44}, {region:'Taiwan Strait',lat:24,lon:120},
     {region:'Ukraine Region',lat:49,lon:32}, {region:'Baltic Region',lat:57,lon:24},
     {region:'South China Sea',lat:14,lon:114}, {region:'Korean Peninsula',lat:37,lon:127}
   ];
-  // Global destination hubs for worldwide corridor distribution
   const globalHubs = [
-    {lat:40.6,lon:-73.8}, // New York
-    {lat:51.5,lon:-0.5},  // London
-    {lat:25.3,lon:55.4},  // Dubai
-    {lat:1.4,lon:103.8},  // Singapore
-    {lat:-33.9,lon:151.2},// Sydney
-    {lat:-23.4,lon:-46.5} // São Paulo
+    {lat:40.6,lon:-73.8},{lat:51.5,lon:-0.5},{lat:25.3,lon:55.4},
+    {lat:1.4,lon:103.8},{lat:-33.9,lon:151.2},{lat:-23.4,lon:-46.5}
   ];
-  const corridors = [];
+  const arcs = [];
   // Inter-hotspot corridors
   for(let i=0; i<D.air.length; i++){
     for(let j=i+1; j<D.air.length; j++){
-      const a = D.air[i], b = D.air[j];
-      const from = airCoordsFlight[i], to = airCoordsFlight[j];
-      if(!from || !to) continue;
-      const traffic = a.total + b.total;
-      if(traffic < 30) continue;
-      corridors.push({from, to, traffic, ncRatio:(a.noCallsign+b.noCallsign)/Math.max(traffic,1)});
+      const a=D.air[i], b=D.air[j];
+      const from=airCoordsFlight[i], to=airCoordsFlight[j];
+      if(!from||!to) continue;
+      const traffic=a.total+b.total;
+      if(traffic<30) continue;
+      const ncRatio=(a.noCallsign+b.noCallsign)/Math.max(traffic,1);
+      const color = ncRatio>0.15 ? ['rgba(255,95,99,0.6)','rgba(255,95,99,0.15)'] :
+                    ncRatio>0.05 ? ['rgba(255,184,76,0.5)','rgba(255,184,76,0.1)'] :
+                                   ['rgba(100,240,200,0.4)','rgba(100,240,200,0.08)'];
+      arcs.push({
+        startLat:from.lat, startLng:from.lon, endLat:to.lat, endLng:to.lon,
+        color, stroke:Math.max(0.3, Math.min(1.2, traffic/120)),
+        label:`${from.region} ↔ ${to.region}: ${traffic} aircraft`
+      });
     }
   }
-  // Hub corridors from high-traffic hotspots to global destinations
+  // Hub corridors
   D.air.forEach((a,i)=>{
-    if(!airCoordsFlight[i] || a.total < 25) return;
+    if(!airCoordsFlight[i]||a.total<25) return;
     globalHubs.forEach(hub=>{
-      // Skip very short routes (hub near the hotspot)
-      const dLat = Math.abs(airCoordsFlight[i].lat - hub.lat);
-      const dLon = Math.abs(airCoordsFlight[i].lon - hub.lon);
-      if(dLat + dLon < 20) return;
-      corridors.push({from:airCoordsFlight[i], to:hub, traffic:a.total*0.4, ncRatio:0});
+      const dLat=Math.abs(airCoordsFlight[i].lat-hub.lat);
+      const dLon=Math.abs(airCoordsFlight[i].lon-hub.lon);
+      if(dLat+dLon<20) return;
+      arcs.push({
+        startLat:airCoordsFlight[i].lat, startLng:airCoordsFlight[i].lon,
+        endLat:hub.lat, endLng:hub.lon,
+        color:['rgba(100,240,200,0.2)','rgba(100,240,200,0.05)'],
+        stroke:0.3
+      });
     });
   });
-  // Render corridors using d3.geoPath for correct globe projection + clipping
-  const corridorG = allG.append('g').attr('class','corridors-layer');
-  corridors.forEach(c => {
-    const interp = d3.geoInterpolate([c.from.lon, c.from.lat], [c.to.lon, c.to.lat]);
-    const coords = [];
-    for(let i=0; i<=40; i++) coords.push(interp(i/40));
-    const feature = {type:'Feature', geometry:{type:'LineString', coordinates:coords}};
-    const color = c.ncRatio > 0.15 ? 'rgba(255,95,99,0.4)' :
-                  c.ncRatio > 0.05 ? 'rgba(255,184,76,0.35)' : 'rgba(100,240,200,0.25)';
-    const sw = Math.max(0.8, Math.min(3, c.traffic / 80));
-    corridorG.append('path').datum(feature).attr('d', path)
-      .attr('class','corridor-line').attr('stroke', color).attr('stroke-width', sw);
-    corridorG.append('path').datum(feature).attr('d', path)
-      .attr('class','corridor-flow').attr('fill','none')
-      .attr('stroke', color.replace(/[\d.]+\)$/,'0.6)'))
-      .attr('stroke-width', Math.max(0.5, sw * 0.5))
-      .attr('stroke-dasharray','4 16');
-  });
-
-  // === GHOST FLIGHTS (flickering markers for no-callsign aircraft) ===
-  D.air.forEach((a,i) => {
-    if(a.noCallsign < 1) return;
-    const center = airCoordsFlight[i];
-    if(!center) return;
-    const ghostCount = Math.min(a.noCallsign, 8); // cap visual clutter
-    for(let g=0; g<ghostCount; g++){
-      const lat = center.lat + (Math.random() - 0.5) * 6;
-      const lon = center.lon + (Math.random() - 0.5) * 6;
-      const [x,y] = projection([lon, lat]);
-      if(!x || !y) continue;
-      markersG.append('rect').attr('class','ghost-marker marker-circle')
-        .attr('x', x-2).attr('y', y-2).attr('width',4).attr('height',4)
-        .attr('data-base-r', 2)
-        .attr('fill','rgba(100,240,200,0.15)').attr('stroke','rgba(100,240,200,0.3)')
-        .attr('stroke-width',0.5).attr('stroke-dasharray','1 1')
-        .style('animation-delay', (Math.random() * 2).toFixed(1) + 's');
-    }
-  });
+  globe.arcsData(arcs);
 }
 
 function showPopup(event,head,text,meta){
   const popup=document.getElementById('mapPopup');
   const container=document.getElementById('mapContainer');
   const rect=container.getBoundingClientRect();
-  // Use mouse position relative to container
-  let left=event.clientX - rect.left + 10;
-  let top=event.clientY - rect.top - 10;
+  let left, top;
+  if(event && event.clientX != null){
+    left=event.clientX - rect.left + 10;
+    top=event.clientY - rect.top - 10;
+  } else {
+    left=rect.width/2 - 140; top=rect.height/2 - 60;
+  }
   if(left+290>rect.width) left=left-300;
   if(top+150>rect.height) top=top-160;
   if(left<0) left=10;
   if(top<0) top=10;
   popup.style.left=left+'px';popup.style.top=top+'px';
-  popup.querySelector('.pp-head').textContent=head;
-  popup.querySelector('.pp-text').innerHTML=text;
-  popup.querySelector('.pp-meta').textContent=meta;
+  popup.querySelector('.pp-head').textContent=head||'';
+  popup.querySelector('.pp-text').innerHTML=text||'';
+  popup.querySelector('.pp-meta').textContent=meta||'';
   popup.classList.add('show');
 }
 function closePopup(){document.getElementById('mapPopup').classList.remove('show')}
 
-function setRegion(r){
-  document.querySelectorAll('.region-btn').forEach(b=>b.classList.toggle('active',b.dataset.region===r));
-  closePopup();
-  if(r==='world'){
-    svg.transition().duration(750).call(zoomBehavior.transform, d3.zoomIdentity);
-    return;
-  }
-  const bounds=regionBounds[r];
-  const p0=projection(bounds[0]), p1=projection(bounds[1]);
-  if(!p0||!p1) return;
-  const dx=Math.abs(p1[0]-p0[0]), dy=Math.abs(p1[1]-p0[1]);
-  const cx=(p0[0]+p1[0])/2, cy=(p0[1]+p1[1])/2;
-  const scale=Math.min(mapW/dx, mapH/dy)*0.85;
-  const tx=mapW/2-scale*cx, ty=mapH/2-scale*cy;
-  svg.transition().duration(750).call(
-    zoomBehavior.transform,
-    d3.zoomIdentity.translate(tx,ty).scale(scale)
-  );
-}
-
 // === MAP CONTROLS ===
-let flightsVisible = true;
-function mapZoom(factor) {
-  if (!svg || !zoomBehavior) return;
-  svg.transition().duration(300).call(zoomBehavior.scaleBy, factor);
-}
 function toggleFlights() {
   flightsVisible = !flightsVisible;
   const btn = document.getElementById('flightToggle');
   btn.classList.toggle('off', !flightsVisible);
-  // Toggle corridors, air markers, and ghost flights
-  allG.selectAll('.corridors-layer').style('display', flightsVisible ? null : 'none');
-  allG.selectAll('.ghost-marker').style('display', flightsVisible ? null : 'none');
-  // Air hotspot circles — they share markersG with other markers, so we tag them
-  allG.selectAll('.air-marker').style('display', flightsVisible ? null : 'none');
+  if(flightsVisible) {
+    plotMarkers(); // re-render with arcs
+  } else {
+    globe.arcsData([]); // hide arcs
+    // Remove air-type points
+    const pts = globe.pointsData().filter(p => p.type !== 'air');
+    globe.pointsData(pts);
+    const lbls = globe.labelsData().filter(l => l.text && !l.text.match(/\d+$/));
+    globe.labelsData(lbls);
+  }
 }
 
-// === GLOBE TOGGLE ===
-let isGlobe = false;
-let globeProjection;
+// === FLAT/GLOBE TOGGLE ===
+const flatRegionBounds = {
+  world:[[-180,-60],[180,80]], americas:[[-170,-56],[-30,72]], europe:[[-12,34],[45,72]],
+  middleEast:[[24,10],[65,45]], asiaPacific:[[60,-12],[180,55]], africa:[[-20,-36],[55,38]]
+};
 
-function toggleProjection(){
-  isGlobe = !isGlobe;
+function toggleMapMode(){
+  isFlat = !isFlat;
   const btn = document.getElementById('projToggle');
-  btn.textContent = isGlobe ? 'FLAT MODE' : 'GLOBE MODE';
-  btn.classList.toggle('active', isGlobe);
-
-  if(isGlobe){
-    globeProjection = d3.geoOrthographic()
-      .translate([mapW/2, mapH/2])
-      .scale(Math.min(mapW, mapH) / 2.3)
-      .clipAngle(90)
-      .rotate([-40, -20, 0]);
-    projection = globeProjection;
+  const hint = document.getElementById('mapHint');
+  btn.textContent = isFlat ? 'GLOBE MODE' : 'FLAT MODE';
+  hint.textContent = isFlat ? 'SCROLL TO ZOOM · DRAG TO PAN' : 'DRAG TO ROTATE · SCROLL TO ZOOM';
+  const globeEl = document.getElementById('globeViz');
+  const flatEl = document.getElementById('flatMapSvg');
+  if(isFlat){
+    globeEl.style.display = 'none';
+    flatEl.style.display = 'block';
+    if(!flatSvg) initFlatMap();
+    else { flatG.selectAll('*').remove(); drawFlatMap(); }
   } else {
-    projection = d3.geoNaturalEarth1().fitSize([mapW-20, mapH-20], {type:'Sphere'}).translate([mapW/2, mapH/2]);
+    globeEl.style.display = 'block';
+    flatEl.style.display = 'none';
   }
-  path = d3.geoPath(projection);
+}
 
-  // Clear and redraw everything
-  allG.attr('transform', null); // reset any stale flat-mode zoom transform
-  allG.selectAll('*').remove();
-  allG.append('path').datum(d3.geoGraticule()()).attr('class','graticule').attr('d',path);
+function initFlatMap(){
+  const container = document.getElementById('mapContainer');
+  flatW = container.clientWidth; flatH = container.clientHeight || 560;
+  flatSvg = d3.select('#flatMapSvg').attr('viewBox',`0 0 ${flatW} ${flatH}`).attr('preserveAspectRatio','xMidYMid meet');
+  flatProjection = d3.geoNaturalEarth1().fitSize([flatW-20,flatH-20],{type:'Sphere'}).translate([flatW/2,flatH/2]);
+  flatPath = d3.geoPath(flatProjection);
+  flatG = flatSvg.append('g');
+  flatZoom = d3.zoom().scaleExtent([1,12]).on('zoom',(event)=>{
+    flatG.attr('transform',event.transform);
+    const k=event.transform.k;
+    flatG.selectAll('.marker-circle').attr('r',function(){return +this.dataset.baseR/Math.sqrt(k)});
+    flatG.selectAll('.marker-label').style('font-size',Math.max(7,9/Math.sqrt(k))+'px');
+  });
+  flatSvg.call(flatZoom);
+  drawFlatMap();
+}
 
-  if(isGlobe){
-    // Add sphere outline for globe
-    allG.insert('path',':first-child').datum({type:'Sphere'})
-      .attr('d',path).attr('fill','rgba(4,12,20,0.9)').attr('stroke','rgba(100,240,200,0.15)').attr('stroke-width',0.5);
-    // Enable drag rotation for globe
-    svg.on('.zoom', null); // remove existing zoom
-    svg.call(d3.drag().on('drag',(event)=>{
-      const r = globeProjection.rotate();
-      const k = 0.5;
-      globeProjection.rotate([r[0]+event.dx*k, r[1]-event.dy*k, r[2]]);
-      redrawGlobe();
-    }));
-    // Add zoom for globe scale
-    svg.call(d3.zoom().scaleExtent([0.5,4]).on('zoom',(event)=>{
-      globeProjection.scale(Math.min(mapW,mapH)/2.3 * event.transform.k);
-      redrawGlobe();
-    }));
-  } else {
-    // Restore flat map zoom
-    svg.on('.drag', null);
-    svg.call(zoomBehavior);
-    svg.call(zoomBehavior.transform, d3.zoomIdentity);
-  }
-
-  // Reload countries
+function drawFlatMap(){
+  flatG.append('path').datum(d3.geoGraticule()()).attr('class','graticule').attr('d',flatPath);
   fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
     .then(r=>r.json()).then(world=>{
-      const countries = topojson.feature(world, world.objects.countries);
-      allG.selectAll('path.land').data(countries.features).enter()
-        .append('path').attr('class','land').attr('d',path);
-      allG.append('path').datum(topojson.mesh(world,world.objects.countries,(a,b)=>a!==b))
-        .attr('class','border').attr('d',path);
-      plotMarkers();
+      const countries=topojson.feature(world,world.objects.countries);
+      flatG.selectAll('path.land').data(countries.features).enter().append('path').attr('class','land').attr('d',flatPath);
+      flatG.append('path').datum(topojson.mesh(world,world.objects.countries,(a,b)=>a!==b)).attr('class','border').attr('d',flatPath);
+      plotFlatMarkers();
     });
 }
 
-function redrawGlobe(){
-  path = d3.geoPath(globeProjection);
-  allG.selectAll('path.land').attr('d',path);
-  allG.selectAll('path.border').attr('d',path);
-  allG.selectAll('.graticule').attr('d',path);
-  allG.select('path:first-child').attr('d', path({type:'Sphere'}));
-  // Remove and replot markers + corridors with updated projection
-  allG.selectAll('.corridors-layer').remove();
-  allG.selectAll('.markers').remove();
-  plotMarkers();
+function plotFlatMarkers(){
+  const mg=flatG.append('g').attr('class','markers');
+  const proj=flatProjection;
+  const addPt=(lat,lon,r,fill,stroke,onClick)=>{
+    const[x,y]=proj([lon,lat]);if(!x||!y)return null;
+    const g=mg.append('g').attr('transform',`translate(${x},${y})`).style('cursor','pointer');
+    if(onClick) g.on('click',ev=>{ev.stopPropagation();onClick(ev)});
+    g.append('circle').attr('class','marker-circle').attr('r',r).attr('data-base-r',r).attr('fill',fill).attr('stroke',stroke).attr('stroke-width',0.8);
+    return g;
+  };
+  // Air
+  const airCoords=[{lat:30,lon:44},{lat:24,lon:120},{lat:49,lon:32},{lat:57,lon:24},{lat:14,lon:114},{lat:37,lon:127}];
+  D.air.forEach((a,i)=>{
+    const c=airCoords[i];if(!c)return;
+    const g=addPt(c.lat,c.lon,4+a.total/40,'rgba(100,240,200,0.7)','rgba(100,240,200,0.3)',
+      ev=>showPopup(ev,a.region,`${a.total} aircraft<br>No callsign: ${a.noCallsign}<br>High alt: ${a.highAlt}`,'Air Activity'));
+    if(g) g.append('text').attr('class','marker-label').attr('x',10).attr('y',3).attr('fill','var(--dim)').attr('font-size','9px').attr('font-family','var(--mono)').text(a.region.replace(' Region','')+' '+a.total);
+  });
+  // Thermal
+  D.thermal.forEach(t=>t.fires.forEach(f=>{
+    addPt(f.lat,f.lon,2+Math.min(f.frp/50,5),'rgba(255,95,99,0.6)','rgba(255,95,99,0.2)',
+      ev=>showPopup(ev,'Thermal',`${t.region}<br>FRP: ${f.frp.toFixed(1)} MW`,'FIRMS'));
+  }));
+  // Chokepoints
+  D.chokepoints.forEach(cp=>{
+    const[x,y]=proj([cp.lon,cp.lat]);if(!x||!y)return;
+    const g=mg.append('g').attr('transform',`translate(${x},${y})`).style('cursor','pointer')
+      .on('click',ev=>{ev.stopPropagation();showPopup(ev,cp.label,cp.note,'Maritime')});
+    g.append('rect').attr('x',-4).attr('y',-4).attr('width',8).attr('height',8).attr('fill','rgba(179,136,255,0.7)').attr('stroke','rgba(179,136,255,0.3)').attr('stroke-width',0.5).attr('transform','rotate(45)');
+    g.append('text').attr('class','marker-label').attr('x',8).attr('y',3).attr('fill','var(--dim)').attr('font-size','8px').attr('font-family','var(--mono)').text(cp.label);
+  });
+  // Nuclear
+  const nukeCoords=[{lat:47.5,lon:34.6},{lat:51.4,lon:30.1},{lat:28.8,lon:50.9},{lat:39.8,lon:125.8},{lat:37.4,lon:141},{lat:31.0,lon:35.1}];
+  D.nuke.forEach((n,i)=>{const c=nukeCoords[i];if(!c)return;addPt(c.lat,c.lon,4,'rgba(255,224,130,0.7)','rgba(255,224,130,0.3)',ev=>showPopup(ev,n.site,`CPM: ${n.cpm?.toFixed(1)||'--'}`,'Radiation'))});
+  // SDR
+  D.sdr.zones.forEach(z=>z.receivers.forEach(r=>{addPt(r.lat,r.lon,2.5,'rgba(68,204,255,0.5)','rgba(68,204,255,0.2)',ev=>showPopup(ev,'SDR',`${r.name}<br>${z.region}`,'KiwiSDR'))}));
+  // OSINT
+  const osintGeo=[{lat:45,lon:41,idx:0},{lat:48,lon:37,idx:1},{lat:48.5,lon:37.5,idx:2},{lat:45,lon:40.2,idx:3},{lat:50.6,lon:36.6,idx:5},{lat:48.5,lon:35,idx:6}];
+  osintGeo.forEach(o=>{const p=D.tg.urgent[o.idx];if(!p)return;addPt(o.lat,o.lon,4,'rgba(255,184,76,0.7)','rgba(255,184,76,0.3)',ev=>showPopup(ev,(p.channel||'').toUpperCase(),cleanText(p.text?.substring(0,200)||''),`${p.views||'?'} views`))});
+  // WHO
+  const whoGeo=[{lat:0.3,lon:32.6},{lat:-6.2,lon:106.8},{lat:-4.3,lon:15.3},{lat:35,lon:105},{lat:12.5,lon:105},{lat:35,lon:105},{lat:28,lon:84},{lat:24,lon:45},{lat:30,lon:70},{lat:-0.8,lon:11.6}];
+  D.who.slice(0,10).forEach((w,i)=>{const c=whoGeo[i];if(!c)return;addPt(c.lat,c.lon,3.5,'rgba(105,240,174,0.6)','rgba(105,240,174,0.2)',ev=>showPopup(ev,w.title,w.summary||'','WHO'))});
+  // News
+  (D.news||[]).forEach(n=>{addPt(n.lat,n.lon,3,'rgba(129,212,250,0.6)','rgba(129,212,250,0.2)',ev=>showPopup(ev,n.source+' NEWS',cleanText(n.title),n.region))});
+  // ACLED
+  (D.acled?.deadliestEvents||[]).filter(e=>e.lat&&e.lon).forEach(e=>{
+    const[x,y]=proj([e.lon,e.lat]);if(!x||!y)return;
+    const r=Math.max(4,Math.min(14,2+Math.log2(Math.max(e.fatalities,1))*1.5));
+    const g=mg.append('g').attr('transform',`translate(${x},${y})`).style('cursor','pointer')
+      .on('click',ev=>{ev.stopPropagation();showPopup(ev,e.type||'CONFLICT',`${e.fatalities} fatalities<br>${e.location}, ${e.country}`,'ACLED')});
+    g.append('circle').attr('class','conflict-ring marker-circle').attr('r',r).attr('data-base-r',r).attr('fill','none').attr('stroke','rgba(255,120,80,0.7)').attr('stroke-width',1.5);
+    g.append('circle').attr('r',r*0.4).attr('fill','rgba(255,120,80,0.3)');
+  });
+  // Flight corridors
+  const airCoordsFlight=[{lat:30,lon:44},{lat:24,lon:120},{lat:49,lon:32},{lat:57,lon:24},{lat:14,lon:114},{lat:37,lon:127}];
+  const hubs=[{lat:40.6,lon:-73.8},{lat:51.5,lon:-0.5},{lat:25.3,lon:55.4},{lat:1.4,lon:103.8},{lat:-33.9,lon:151.2},{lat:-23.4,lon:-46.5}];
+  const cG=flatG.append('g').attr('class','corridors-layer');
+  for(let i=0;i<D.air.length;i++){for(let j=i+1;j<D.air.length;j++){
+    const a=D.air[i],b=D.air[j],from=airCoordsFlight[i],to=airCoordsFlight[j];
+    if(!from||!to)continue;const traffic=a.total+b.total;if(traffic<30)continue;
+    const ncR=(a.noCallsign+b.noCallsign)/Math.max(traffic,1);
+    const clr=ncR>0.15?'rgba(255,95,99,0.4)':ncR>0.05?'rgba(255,184,76,0.35)':'rgba(100,240,200,0.25)';
+    const interp=d3.geoInterpolate([from.lon,from.lat],[to.lon,to.lat]);
+    const coords=[];for(let k=0;k<=40;k++)coords.push(interp(k/40));
+    const feat={type:'Feature',geometry:{type:'LineString',coordinates:coords}};
+    cG.append('path').datum(feat).attr('d',flatPath).attr('fill','none').attr('stroke',clr).attr('stroke-width',Math.max(0.8,Math.min(3,traffic/80)));
+  }}
+  D.air.forEach((a,i)=>{if(!airCoordsFlight[i]||a.total<25)return;hubs.forEach(hub=>{
+    if(Math.abs(airCoordsFlight[i].lat-hub.lat)+Math.abs(airCoordsFlight[i].lon-hub.lon)<20)return;
+    const interp=d3.geoInterpolate([airCoordsFlight[i].lon,airCoordsFlight[i].lat],[hub.lon,hub.lat]);
+    const coords=[];for(let k=0;k<=40;k++)coords.push(interp(k/40));
+    cG.append('path').datum({type:'Feature',geometry:{type:'LineString',coordinates:coords}}).attr('d',flatPath).attr('fill','none').attr('stroke','rgba(100,240,200,0.15)').attr('stroke-width',0.6);
+  })});
+}
+
+// Update setRegion for flat mode
+const _origSetRegion = setRegion;
+
+// Override mapZoom for flat mode
+const _origMapZoom = mapZoom;
+
+function setRegion(r){
+  document.querySelectorAll('.region-btn').forEach(b=>b.classList.toggle('active',b.dataset.region===r));
+  closePopup();
+  if(isFlat && flatSvg && flatZoom){
+    if(r==='world'){flatSvg.transition().duration(750).call(flatZoom.transform,d3.zoomIdentity);return;}
+    const bounds=flatRegionBounds[r];
+    const p0=flatProjection(bounds[0]),p1=flatProjection(bounds[1]);if(!p0||!p1)return;
+    const dx=Math.abs(p1[0]-p0[0]),dy=Math.abs(p1[1]-p0[1]);
+    const cx=(p0[0]+p1[0])/2,cy=(p0[1]+p1[1])/2;
+    const scale=Math.min(flatW/dx,flatH/dy)*0.85;
+    flatSvg.transition().duration(750).call(flatZoom.transform,d3.zoomIdentity.translate(flatW/2-scale*cx,flatH/2-scale*cy).scale(scale));
+  } else {
+    const pov=regionPOV[r]||regionPOV.world;
+    globe.pointOfView(pov,1000);
+  }
+}
+
+function mapZoom(factor){
+  if(isFlat && flatSvg && flatZoom){
+    flatSvg.transition().duration(300).call(flatZoom.scaleBy,factor);
+  } else if(globe){
+    const pov=globe.pointOfView();
+    globe.pointOfView({altitude:pov.altitude/factor},300);
+  }
 }
 
 // Sparkline SVG generator

@@ -2,12 +2,12 @@
 
 # Crucix
 
-**Your own intelligence terminal. 26 sources. One command. Zero cloud.**
+**Your own intelligence terminal. 27 sources. One command. Zero cloud.**
 
 [![Node.js 22+](https://img.shields.io/badge/node-22%2B-brightgreen)](#quick-start)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License: AGPL v3](https://img.shields.io/badge/license-AGPLv3-blue.svg)](LICENSE)
 [![Dependencies](https://img.shields.io/badge/dependencies-1%20(express)-orange)](#architecture)
-[![Sources](https://img.shields.io/badge/OSINT%20sources-26-cyan)](#data-sources-26)
+[![Sources](https://img.shields.io/badge/OSINT%20sources-27-cyan)](#data-sources-27)
 [![Docker](https://img.shields.io/badge/docker-ready-blue?logo=docker)](#docker)
 
 ![Crucix Dashboard](docs/dashboard.png)
@@ -19,11 +19,15 @@
 |:---:|:---:|
 | ![Boot](docs/boot.png) | ![Map](docs/map.png) |
 
+| 3D Globe View |
+|:---:|
+| ![Globe](docs/globe.png) |
+
 </details>
 
 </div>
 
-Crucix pulls satellite fire detection, flight tracking, radiation monitoring, economic indicators, live market prices, conflict data, sanctions lists, and social sentiment from 26 open-source intelligence feeds — in parallel, every 15 minutes — and renders everything on a single self-contained Jarvis-style dashboard.
+Crucix pulls satellite fire detection, flight tracking, radiation monitoring, satellite constellation tracking, economic indicators, live market prices, conflict data, sanctions lists, and social sentiment from 27 open-source intelligence feeds — in parallel, every 15 minutes — and renders everything on a single self-contained Jarvis-style dashboard.
 
 Hook it up to an LLM and it becomes a **two-way intelligence assistant** — pushing multi-tier alerts to Telegram and Discord when something meaningful changes, responding to commands like `/brief` and `/sweep` from your phone, and generating actionable trade ideas grounded in real cross-domain data. Your own analyst that watches the world while you sleep.
 
@@ -64,7 +68,7 @@ npm run dev
 > ```
 > This bypasses npm's script runner, which can swallow errors on some systems (particularly PowerShell on Windows). You can also run `node diag.mjs` to diagnose the exact issue — it checks your Node version, tests each module import individually, and verifies port availability. See [Troubleshooting](#troubleshooting) for more.
 
-The dashboard opens automatically at `http://localhost:3117` and immediately begins its first intelligence sweep. This initial sweep queries all 26 sources in parallel and typically takes 30–60 seconds — the dashboard will appear empty until the sweep completes and pushes the first data update. After that, it auto-refreshes every 15 minutes via SSE (Server-Sent Events). No manual page refresh needed.
+The dashboard opens automatically at `http://localhost:3117` and immediately begins its first intelligence sweep. This initial sweep queries all 27 sources in parallel and typically takes 30–60 seconds — the dashboard will appear empty until the sweep completes and pushes the first data update. After that, it auto-refreshes every 15 minutes via SSE (Server-Sent Events). No manual page refresh needed.
 
 **Requirements:** Node.js 22+ (uses native `fetch`, top-level `await`, ESM)
 
@@ -85,8 +89,10 @@ Dashboard at `http://localhost:3117`. Sweep data persists in `./runs/` via volum
 
 ### Live Dashboard
 A self-contained Jarvis-style HUD with:
-- **D3 world map** with 7 marker types (fire detections, air traffic, radiation sites, maritime chokepoints, SDR receivers, OSINT events, health alerts, geolocated news)
-- **Region filters** (World, Americas, Europe, Middle East, Asia Pacific, Africa) with smooth zoom transitions
+- **3D WebGL globe** (Globe.gl) with atmosphere glow, star field, and smooth rotation — plus a classic flat map toggle
+- **9 marker types** across both views: fire detections, air traffic, radiation sites, maritime chokepoints, SDR receivers, OSINT events, health alerts, geolocated news, conflict events
+- **Animated 3D flight corridor arcs** between air traffic hotspots and global hubs
+- **Region filters** (World, Americas, Europe, Middle East, Asia Pacific, Africa) — rotates the globe or zooms the flat map
 - **Live market data** — indexes, crypto, energy, commodities via Yahoo Finance (no API key needed)
 - **Risk gauges** — VIX, high-yield spread, supply chain pressure index
 - **OSINT feed** — English-language posts from 17 Telegram intelligence channels (expandable)
@@ -94,11 +100,12 @@ A self-contained Jarvis-style HUD with:
 - **Sweep delta** — live panel showing what changed since last sweep (new signals, escalations, de-escalations with severity)
 - **Cross-source signals** — correlated intelligence across satellite, economic, conflict, and social domains
 - **Nuclear watch** — real-time radiation readings from Safecast + EPA RadNet
+- **Space watch** — CelesTrak satellite tracking: recent launches, ISS, military constellations, Starlink/OneWeb counts
 - **Leverageable ideas** — AI-generated trade ideas (with LLM) or signal-correlated ideas (without)
 
 ### Auto-Refresh
 The server runs a sweep cycle every 15 minutes (configurable). Each cycle:
-1. Queries all 26 sources in parallel (~30s)
+1. Queries all 27 sources in parallel (~30s)
 2. Synthesizes raw data into dashboard format
 3. Computes delta from previous run (what changed, escalated, de-escalated) — visible in the **Sweep Delta** panel on the dashboard
 4. Generates LLM trade ideas (if configured)
@@ -234,16 +241,17 @@ crucix/
 ├── docs/                      # Screenshots for README
 │
 ├── apis/
-│   ├── briefing.mjs           # Master orchestrator — runs all 26 sources in parallel
+│   ├── briefing.mjs           # Master orchestrator — runs all 27 sources in parallel
 │   ├── save-briefing.mjs      # CLI: save timestamped + latest.json
 │   ├── BRIEFING_PROMPT.md     # Intelligence synthesis protocol
 │   ├── BRIEFING_TEMPLATE.md   # Briefing output structure
 │   ├── utils/
 │   │   ├── fetch.mjs          # safeFetch() — timeout, retries, abort, auto-JSON
 │   │   └── env.mjs            # .env loader (no dotenv dependency)
-│   └── sources/               # 26 self-contained source modules
+│   └── sources/               # 27 self-contained source modules
 │       ├── gdelt.mjs          # Each exports briefing() → structured data
 │       ├── fred.mjs           # Can run standalone: node apis/sources/fred.mjs
+│       ├── space.mjs          # CelesTrak satellite tracking
 │       ├── yfinance.mjs       # Yahoo Finance — free live market data
 │       └── ...                # 23 more
 │
@@ -277,14 +285,14 @@ crucix/
 ### Design Principles
 - **Pure ESM** — every file is `.mjs` with explicit imports
 - **Minimal dependencies** — Express is the only runtime dependency. `discord.js` is optional (for Discord bot). LLM providers use raw `fetch()`, no SDKs.
-- **Parallel execution** — `Promise.allSettled()` fires all 26 sources simultaneously
+- **Parallel execution** — `Promise.allSettled()` fires all 27 sources simultaneously
 - **Graceful degradation** — missing keys produce errors, not crashes. LLM failures don't kill sweeps.
 - **Each source is standalone** — run `node apis/sources/gdelt.mjs` to test any source independently
 - **Self-contained dashboard** — the HTML file works with or without the server
 
 ---
 
-## Data Sources (26)
+## Data Sources (27)
 
 ### Tier 1: Core OSINT & Geopolitical (11)
 
@@ -326,7 +334,13 @@ crucix/
 | **Telegram** | 17 curated OSINT/conflict/finance channels (web scraping, expandable via config) | None |
 | **KiwiSDR** | Global HF radio receiver network (~600 receivers) | None |
 
-### Tier 4: Live Market Data (1)
+### Tier 4: Space & Satellites (1)
+
+| Source | What It Tracks | Auth |
+|--------|---------------|------|
+| **CelesTrak** | Satellite launches, ISS tracking, military constellations, Starlink/OneWeb counts | None |
+
+### Tier 5: Live Market Data (1)
 
 | Source | What It Tracks | Auth |
 |--------|---------------|------|
@@ -429,7 +443,7 @@ Crucix requires Node.js 22 or later. If you have an older version, download the 
 
 ### Dashboard shows empty panels after first start
 
-This is normal — the first sweep takes 30–60 seconds to query all 26 sources. The dashboard will populate automatically once the sweep completes. Check the terminal for sweep progress logs.
+This is normal — the first sweep takes 30–60 seconds to query all 27 sources. The dashboard will populate automatically once the sweep completes. Check the terminal for sweep progress logs.
 
 ### Some sources show errors
 
@@ -460,6 +474,7 @@ The `docs/` folder contains dashboard screenshots referenced by this README:
 | `docs/dashboard.png` | Full dashboard — hero image at the top of this README |
 | `docs/boot.png` | Cinematic boot sequence animation |
 | `docs/map.png` | D3 world map with marker types and flight arcs |
+| `docs/globe.png` | 3D WebGL globe view with atmosphere glow and markers |
 
 To update them: run the dashboard, wait for a sweep to complete, then use your browser's DevTools (`F12` → `Ctrl+Shift+P` → "Capture full size screenshot") or a tool like [LICEcap](https://www.cockos.com/licecap/) for GIFs.
 
@@ -467,7 +482,7 @@ To update them: run the dashboard, wait for a sweep to complete, then use your b
 
 ## Contributing
 
-Found a bug? Want to add a 27th source? PRs welcome. Each source is a standalone module in `apis/sources/` — just export a `briefing()` function that returns structured data and add it to the orchestrator in `apis/briefing.mjs`.
+Found a bug? Want to add a 28th source? PRs welcome. Each source is a standalone module in `apis/sources/` — just export a `briefing()` function that returns structured data and add it to the orchestrator in `apis/briefing.mjs`.
 
 If you find this useful, a star helps others find it too.
 
@@ -475,4 +490,4 @@ If you find this useful, a star helps others find it too.
 
 ## License
 
-MIT
+AGPL-3.0

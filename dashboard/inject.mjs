@@ -126,13 +126,26 @@ async function fetchRSS(url, source) {
 
 export async function fetchAllNews() {
   const feeds = [
+    // Global
     ['http://feeds.bbci.co.uk/news/world/rss.xml', 'BBC'],
     ['https://rss.nytimes.com/services/xml/rss/nyt/World.xml', 'NYT'],
     ['https://www.aljazeera.com/xml/rss/all.xml', 'Al Jazeera'],
-    ['https://rss.nytimes.com/services/xml/rss/nyt/Americas.xml', 'NYT Americas'],
-    ['https://rss.nytimes.com/services/xml/rss/nyt/AsiaPacific.xml', 'NYT Asia'],
+    // USA
+    ['https://feeds.npr.org/1001/rss.xml', 'NPR'],
     ['https://feeds.bbci.co.uk/news/technology/rss.xml', 'BBC Tech'],
     ['http://feeds.bbci.co.uk/news/science_and_environment/rss.xml', 'BBC Science'],
+    ['https://rss.nytimes.com/services/xml/rss/nyt/Americas.xml', 'NYT Americas'],
+    // Europe
+    ['https://rss.dw.com/rdf/rss-en-all', 'DW'],
+    ['https://www.france24.com/en/rss', 'France 24'],
+    ['https://www.euronews.com/rss?format=mrss', 'Euronews'],
+    // Africa & Cameroon region
+    ['https://rss.dw.com/rdf/rss-en-africa', 'DW Africa'],
+    ['https://www.rfi.fr/en/rss', 'RFI'],
+    ['https://www.africanews.com/feed/rss', 'Africa News'],
+    ['https://rss.nytimes.com/services/xml/rss/nyt/Africa.xml', 'NYT Africa'],
+    // Asia-Pacific
+    ['https://rss.nytimes.com/services/xml/rss/nyt/AsiaPacific.xml', 'NYT Asia'],
   ];
 
   const results = await Promise.allSettled(
@@ -164,8 +177,10 @@ export async function fetchAllNews() {
     }
   }
 
-  geoNews.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
-  return geoNews.slice(0, 50);
+  const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const filtered = geoNews.filter(n => !n.date || new Date(n.date) >= cutoff);
+  filtered.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+  return filtered.slice(0, 50);
 }
 
 // === Leverageable Ideas from Signals ===
@@ -549,9 +564,11 @@ function buildNewsFeed(rssNews, gdeltData, tgUrgent, tgTop) {
     });
   }
 
-  // Sort by timestamp descending, limit to 50
-  feed.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
-  return feed.slice(0, 50);
+  // Filter to last 30 days, sort by timestamp descending, limit to 50
+  const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const recent = feed.filter(item => !item.timestamp || new Date(item.timestamp) >= cutoff);
+  recent.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+  return recent.slice(0, 50);
 }
 
 // === CLI Mode: inject into HTML file ===

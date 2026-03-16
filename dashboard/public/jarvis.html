@@ -191,6 +191,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .ticker-wrap:hover .ticker-track{animation-play-state:paused}
 @keyframes tickerScroll{0%{transform:translateY(0)}100%{transform:translateY(-50%)}}
 .tk-card{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.03);cursor:default;transition:background 0.2s}
+.tk-card.clickable{cursor:pointer}
+.tk-card .tk-link{display:none;margin-left:auto;font-size:10px;color:var(--dim);transition:color 0.2s}
+.tk-card.clickable .tk-link{display:inline-flex;align-items:center}
+.tk-card.clickable:hover .tk-link{color:var(--accent)}
 .tk-card:hover{background:rgba(100,240,200,0.04)}
 .tk-card.urgent{border-left:2px solid var(--danger)}
 .tk-src{font-family:var(--mono);font-size:8px;letter-spacing:0.08em;text-transform:uppercase;padding:1px 5px;border:1px solid;display:inline-block;margin-right:4px}
@@ -953,7 +957,8 @@ function renderLower(){
   const tickerCards = feed.map(n => {
     const sc = srcClass(n.source);
     const age = n.timestamp ? getAge(n.timestamp) : '';
-    return `<div class="tk-card ${n.urgent?'urgent':''}"><span class="tk-src ${sc}">${(n.source||'NEWS').substring(0,12)}</span><span class="tk-time">${age}</span><div class="tk-head">${cleanText(n.headline||'')}</div></div>`;
+    const urlAttr = n.url ? ` data-url="${String(n.url).replace(/&/g,'&amp;').replace(/"/g,'&quot;')}"` : '';
+    return `<div class="tk-card ${n.urgent?'urgent':''} ${n.url?'clickable':''}"${urlAttr}><span class="tk-src ${sc}">${(n.source||'NEWS').substring(0,12)}</span><span class="tk-time">${age}</span><div class="tk-head">${cleanText(n.headline||'')}</div>${n.url?'<span class="tk-link">&#8599;</span>':''}</div>`;
   }).join('');
   const tickerDuration = Math.max(20, feed.length * 2.5);
 
@@ -1091,6 +1096,7 @@ function renderRight(){
 // === HELPERS ===
 function getAge(d){const ms=Date.now()-new Date(d).getTime();const h=Math.floor(ms/3600000);if(h<1)return 'just now';if(h<24)return h+'h ago';return Math.floor(h/24)+'d ago'}
 function cleanText(t){return t.replace(/&#39;/g,"'").replace(/&#33;/g,"!").replace(/&amp;/g,"&").replace(/<[^>]+>/g,'')}
+function safeExternalUrl(raw){try{const u=new URL(raw,location.href);return u.protocol==='http:'||u.protocol==='https:'?u.toString():null}catch{return null}}
 
 // === BOOT SEQUENCE ===
 function runBoot(){
@@ -1184,6 +1190,14 @@ function init(){
   // Close popup on click outside markers
   document.getElementById('mapContainer').addEventListener('click',e=>{
     if(!e.target.closest('.map-popup')) closePopup();
+  });
+  // Open article links from ticker cards
+  document.addEventListener('click',e=>{
+    const card=e.target.closest('.tk-card[data-url]');
+    if(card){
+      const url=safeExternalUrl(card.dataset.url);
+      if(url) window.open(url,'_blank','noopener');
+    }
   });
 }
 

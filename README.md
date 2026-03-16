@@ -148,10 +148,10 @@ Alerts are delivered as rich embeds with color-coded sidebars: red for FLASH, ye
 **Optional dependency:** The full bot requires `discord.js`. Install it with `npm install discord.js`. If it's not installed, Crucix automatically falls back to webhook-only mode.
 
 ### Optional LLM Layer
-Connect any of 4 LLM providers for enhanced analysis:
+Connect any of 5 LLM providers for enhanced analysis:
 - **AI trade ideas** — quantitative analyst producing 5-8 actionable ideas citing specific data
 - **Smarter alert evaluation** — LLM classifies signals into FLASH/PRIORITY/ROUTINE tiers with cross-domain correlation and confidence scoring
-- Providers: Anthropic Claude, OpenAI, Google Gemini, OpenAI Codex (ChatGPT subscription)
+- Providers: Anthropic Claude, OpenAI, Google Gemini, OpenRouter (Unified API), OpenAI Codex (ChatGPT subscription)
 - Graceful fallback — when LLM is unavailable, a rule-based engine takes over alert evaluation. LLM failures never crash the sweep cycle.
 
 ---
@@ -191,6 +191,7 @@ Set `LLM_PROVIDER` to one of: `anthropic`, `openai`, `gemini`, `codex`
 | `anthropic` | `LLM_API_KEY` | claude-sonnet-4-6 |
 | `openai` | `LLM_API_KEY` | gpt-5.4 |
 | `gemini` | `LLM_API_KEY` | gemini-3.1-pro |
+| `openrouter` | `LLM_API_KEY` | openrouter/auto |
 | `codex` | None (uses `~/.codex/auth.json`) | gpt-5.3-codex |
 
 For Codex, run `npx @openai/codex login` to authenticate via your ChatGPT subscription.
@@ -261,11 +262,12 @@ crucix/
 │       └── jarvis.html        # Self-contained Jarvis HUD
 │
 ├── lib/
-│   ├── llm/                   # LLM abstraction (4 providers, raw fetch, no SDKs)
+│   ├── llm/                   # LLM abstraction (5 providers, raw fetch, no SDKs)
 │   │   ├── provider.mjs       # Base class
 │   │   ├── anthropic.mjs      # Claude
 │   │   ├── openai.mjs         # GPT
 │   │   ├── gemini.mjs         # Gemini
+│   │   ├── openrouter.mjs     # OpenRouter (Unified API)
 │   │   ├── codex.mjs          # Codex (ChatGPT subscription)
 │   │   ├── ideas.mjs          # LLM-powered trade idea generation
 │   │   └── index.mjs          # Factory: createLLMProvider()
@@ -368,7 +370,7 @@ All settings are in `.env` with sensible defaults:
 |----------|---------|-------------|
 | `PORT` | `3117` | Dashboard server port |
 | `REFRESH_INTERVAL_MINUTES` | `15` | Auto-refresh interval |
-| `LLM_PROVIDER` | disabled | `anthropic`, `openai`, `gemini`, or `codex` |
+| `LLM_PROVIDER` | disabled | `anthropic`, `openai`, `gemini`, `codex`, or `openrouter` |
 | `LLM_API_KEY` | — | API key (not needed for codex) |
 | `LLM_MODEL` | per-provider default | Override model selection |
 | `TELEGRAM_BOT_TOKEN` | disabled | For Telegram alerts + bot commands |

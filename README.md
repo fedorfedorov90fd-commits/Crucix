@@ -486,6 +486,12 @@ Found a bug? Want to add a 28th source? PRs welcome. Each source is a standalone
 
 If you find this useful, a star helps others find it too.
 
+## Contact
+
+For partnerships, integrations, or other non-issue inquiries, you can reach me at `celesthioailabs@gmail.com`.
+
+For bugs and feature requests, please use GitHub Issues so discussion stays visible and actionable.
+
 ---
 
 ## License

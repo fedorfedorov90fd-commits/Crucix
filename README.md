@@ -486,6 +486,8 @@ Found a bug? Want to add a 28th source? PRs welcome. Each source is a standalone
 
 If you find this useful, a star helps others find it too.
 
+For contribution guidelines, review expectations, and source-add rules, see `CONTRIBUTING.md`. For security reports, see `SECURITY.md`.
+
 ## Contact
 
 For partnerships, integrations, or other non-issue inquiries, you can reach me at `celesthioailabs@gmail.com`.

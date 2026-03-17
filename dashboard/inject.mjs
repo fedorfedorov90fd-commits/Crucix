@@ -125,7 +125,7 @@ export async function fetchAllNews() {
   const feeds = [
     ['http://feeds.bbci.co.uk/news/world/rss.xml', 'BBC'],
     ['https://rss.nytimes.com/services/xml/rss/nyt/World.xml', 'NYT'],
-    ['https://feeds.aljazeera.com/xml/rss/all.xml', 'Al Jazeera'],
+    ['https://www.aljazeera.com/xml/rss/all.xml', 'Al Jazeera'],
     ['https://rss.nytimes.com/services/xml/rss/nyt/Americas.xml', 'NYT Americas'],
     ['https://rss.nytimes.com/services/xml/rss/nyt/AsiaPacific.xml', 'NYT Asia'],
     ['https://feeds.bbci.co.uk/news/technology/rss.xml', 'BBC Tech'],

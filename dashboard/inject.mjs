@@ -9,6 +9,9 @@ import { readFileSync, writeFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { exec } from 'child_process';
+import config from '../crucix.config.mjs';
+import { createLLMProvider } from '../lib/llm/index.mjs';
+import { generateLLMIdeas } from '../lib/llm/ideas.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -511,11 +514,42 @@ function buildNewsFeed(rssNews, gdeltData, tgUrgent, tgTop) {
 }
 
 // === CLI Mode: inject into HTML file ===
+function getCliArg(flag) {
+  const idx = process.argv.indexOf(flag);
+  return idx >= 0 ? process.argv[idx + 1] : null;
+}
+
 async function cliInject() {
   const data = JSON.parse(readFileSync(join(ROOT, 'runs/latest.json'), 'utf8'));
+  const htmlOverride = getCliArg('--html');
+  const shouldOpen = !process.argv.includes('--no-open');
 
   console.log('Fetching RSS news feeds...');
   const V2 = await synthesize(data);
+  const llmProvider = createLLMProvider(config.llm);
+
+  if (llmProvider?.isConfigured) {
+    try {
+      console.log(`[LLM] Generating ideas via ${llmProvider.name}...`);
+      const llmIdeas = await generateLLMIdeas(llmProvider, V2, null, []);
+      if (llmIdeas?.length) {
+        V2.ideas = llmIdeas;
+        V2.ideasSource = 'llm';
+        console.log(`[LLM] Generated ${llmIdeas.length} ideas`);
+      } else {
+        V2.ideas = [];
+        V2.ideasSource = 'llm-failed';
+        console.log('[LLM] No ideas returned');
+      }
+    } catch (err) {
+      V2.ideas = [];
+      V2.ideasSource = 'llm-failed';
+      console.log('[LLM] Idea generation failed:', err.message);
+    }
+  } else {
+    V2.ideas = [];
+    V2.ideasSource = 'disabled';
+  }
   console.log(`Generated ${V2.ideas.length} leverageable ideas`);
 
   const json = JSON.stringify(V2);
@@ -523,11 +557,14 @@ async function cliInject() {
   console.log('Size:', json.length, 'bytes | Air:', V2.air.length, '| Thermal:', V2.thermal.length,
     '| News:', V2.news.length, '| Ideas:', V2.ideas.length, '| Sources:', V2.health.length);
 
-  const htmlPath = join(ROOT, 'dashboard/public/jarvis.html');
+  const htmlPath = htmlOverride || join(ROOT, 'dashboard/public/jarvis.html');
   let html = readFileSync(htmlPath, 'utf8');
-  html = html.replace(/^(let|const) D = .*;\s*$/m, 'let D = ' + json + ';');
+  // Use a replacer function so JSON is inserted literally even if it contains `$`.
+  html = html.replace(/^(let|const) D = .*;\s*$/m, () => 'let D = ' + json + ';');
   writeFileSync(htmlPath, html);
   console.log('Data injected into jarvis.html!');
+
+  if (!shouldOpen) return;
 
   // Auto-open dashboard in default browser
   // NOTE: On Windows, `start` in PowerShell is an alias for Start-Service, not cmd's start.
@@ -542,7 +579,8 @@ async function cliInject() {
 }
 
 // Run CLI if invoked directly
-const isMain = process.argv[1] && fileURLToPath(import.meta.url).includes(process.argv[1].replace(/\\/g, '/'));
+const isMain = process.argv[1]
+  && fileURLToPath(import.meta.url).replace(/\\/g, '/') === process.argv[1].replace(/\\/g, '/');
 if (isMain) {
-  cliInject();
+  await cliInject();
 }

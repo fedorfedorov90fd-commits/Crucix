@@ -408,7 +408,7 @@ async function start() {
     process.exit(1);
   });
 
-  server.on('listening', () => {
+  server.on('listening', async () => {
     console.log(`[Crucix] Server running on http://localhost:${port}`);
 
     // Auto-open browser
@@ -420,17 +420,18 @@ async function start() {
       if (err) console.log('[Crucix] Could not auto-open browser:', err.message);
     });
 
-    // Try to load existing data first for instant display
+    // Try to load existing data first for instant display (await so dashboard shows immediately)
     try {
       const existing = JSON.parse(readFileSync(join(RUNS_DIR, 'latest.json'), 'utf8'));
-      synthesize(existing).then(data => {
-        currentData = data;
-        console.log('[Crucix] Loaded existing data from runs/latest.json');
-        broadcast({ type: 'update', data: currentData });
-      }).catch(() => {});
-    } catch { /* no existing data */ }
+      const data = await synthesize(existing);
+      currentData = data;
+      console.log('[Crucix] Loaded existing data from runs/latest.json — dashboard ready instantly');
+      broadcast({ type: 'update', data: currentData });
+    } catch {
+      console.log('[Crucix] No existing data found — first sweep required');
+    }
 
-    // Run first sweep
+    // Run first sweep (refreshes data in background)
     console.log('[Crucix] Running initial sweep...');
     runSweepCycle().catch(err => {
       console.error('[Crucix] Initial sweep failed:', err.message || err);

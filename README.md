@@ -209,7 +209,7 @@ Set `LLM_PROVIDER` to one of: `anthropic`, `openai`, `gemini`, `codex`, `openrou
 | `openrouter` | `LLM_API_KEY` | openrouter/auto |
 | `codex` | None (uses `~/.codex/auth.json`) | gpt-5.3-codex |
 | `minimax` | `LLM_API_KEY` | MiniMax-M2.5 |
-| `mistral` | `LLM_API_KEY` | mistral-medium |
+| `mistral` | `LLM_API_KEY` | mistral-large-latest |
 
 For Codex, run `npx @openai/codex login` to authenticate via your ChatGPT subscription.
 

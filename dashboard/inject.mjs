@@ -367,16 +367,54 @@ export async function synthesize(data) {
   const defense = (data.sources.USAspending?.recentDefenseContracts || []).slice(0, 5).map(c => ({
     recipient: c.recipient?.substring(0, 40), amount: c.amount, desc: c.description?.substring(0, 80)
   }));
-  const noaa = { totalAlerts: data.sources.NOAA?.totalSevereAlerts || 0 };
+  const noaa = {
+    totalAlerts: data.sources.NOAA?.totalSevereAlerts || 0,
+    alerts: (data.sources.NOAA?.topAlerts || []).filter(a => a.lat != null && a.lon != null).slice(0, 10).map(a => ({
+      event: a.event, severity: a.severity, headline: a.headline?.substring(0, 120),
+      lat: a.lat, lon: a.lon
+    }))
+  };
+
+  // EPA RadNet — pass through geo-tagged readings
+  const epaData = data.sources.EPA || {};
+  const epaStations = [];
+  const seenEpa = new Set();
+  for (const r of (epaData.readings || [])) {
+    if (r.lat == null || r.lon == null) continue;
+    const key = `${r.lat},${r.lon}`;
+    if (seenEpa.has(key)) continue;
+    seenEpa.add(key);
+    epaStations.push({ location: r.location, state: r.state, lat: r.lat, lon: r.lon, analyte: r.analyte, result: r.result, unit: r.unit });
+  }
+  const epa = { totalReadings: epaData.totalReadings || 0, stations: epaStations.slice(0, 10) };
 
   // Space/CelesTrak satellite data
   const spaceData = data.sources.Space || {};
+  // Approximate subsatellite position from TLE orbital elements
+  function estimateSatPosition(sat) {
+    if (!sat?.inclination || !sat?.epoch) return null;
+    const epoch = new Date(sat.epoch);
+    const now = new Date();
+    const elapsed = (now - epoch) / 1000;
+    const period = (sat.period || 92.7) * 60; // minutes to seconds
+    const orbits = elapsed / period;
+    const frac = orbits % 1;
+    const lat = sat.inclination * Math.sin(frac * 2 * Math.PI);
+    const lonShift = (elapsed / 86400) * 360;
+    const orbitLon = frac * 360;
+    const lon = ((orbitLon - lonShift) % 360 + 540) % 360 - 180;
+    return { lat: +lat.toFixed(2), lon: +lon.toFixed(2), name: sat.name };
+  }
+  const issPos = estimateSatPosition(spaceData.iss);
+  const spaceStations = (spaceData.spaceStations || []).map(s => estimateSatPosition(s)).filter(Boolean);
   const space = {
     totalNewObjects: spaceData.totalNewObjects || 0,
     militarySats: spaceData.militarySatellites || 0,
     militaryByCountry: spaceData.militaryByCountry || {},
     constellations: spaceData.constellations || {},
     iss: spaceData.iss || null,
+    issPosition: issPos,
+    stationPositions: spaceStations.slice(0, 5),
     recentLaunches: (spaceData.recentLaunches || []).slice(0, 10).map(l => ({
       name: l.name, country: l.country, epoch: l.epoch,
       apogee: l.apogee, perigee: l.perigee, type: l.objectType
@@ -398,7 +436,7 @@ export async function synthesize(data) {
     }))
   };
 
-  // GDELT news articles
+  // GDELT news articles + geo events
   const gdeltData = data.sources.GDELT || {};
   const gdelt = {
     totalArticles: gdeltData.totalArticles || 0,
@@ -406,7 +444,10 @@ export async function synthesize(data) {
     economy: (gdeltData.economy || []).length,
     health: (gdeltData.health || []).length,
     crisis: (gdeltData.crisis || []).length,
-    topTitles: (gdeltData.allArticles || []).slice(0, 5).map(a => a.title?.substring(0, 80))
+    topTitles: (gdeltData.allArticles || []).slice(0, 5).map(a => a.title?.substring(0, 80)),
+    geoPoints: (gdeltData.geoPoints || []).slice(0, 20).map(p => ({
+      lat: p.lat, lon: p.lon, name: (p.name || '').substring(0, 80), count: p.count || 1
+    }))
   };
 
   const health = Object.entries(data.sources).map(([name, src]) => ({
@@ -457,7 +498,7 @@ export async function synthesize(data) {
     meta: data.crucix, air, thermal, tSignals, chokepoints, nuke, nukeSignals,
     sdr: { total: sdrNet.totalReceivers || 0, online: sdrNet.online || 0, zones: sdrZones },
     tg: { posts: tgData.totalPosts || 0, urgent: tgUrgent, topPosts: tgTop },
-    who, fred, energy, bls, treasury, gscpi, defense, noaa, acled, gdelt, space, health, news,
+    who, fred, energy, bls, treasury, gscpi, defense, noaa, epa, acled, gdelt, space, health, news,
     markets, // Live Yahoo Finance market data
     ideas: [], ideasSource: 'disabled',
     // newsFeed for ticker (merged RSS + GDELT + Telegram)

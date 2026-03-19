@@ -97,6 +97,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .econ-row .eval{font-family:var(--mono);font-weight:600}
 
 /* CENTER: MAP */
+.map-region-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--border);background:var(--panel);backdrop-filter:blur(20px)}
 .map-container{flex:1;min-height:560px;border:1px solid var(--border);background:radial-gradient(ellipse at center,rgba(4,12,20,1),rgba(2,4,8,1));position:relative;overflow:hidden}
 #globeViz{width:100%;height:100%;cursor:grab}
 #globeViz:active{cursor:grabbing}
@@ -272,6 +273,7 @@ body.low-perf .ticker-wrap::-webkit-scrollbar-thumb{background:rgba(100,240,200,
   .topbar{padding:10px 12px}
   .top-left,.top-center,.top-right{width:100%}
   .top-center{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  .map-region-bar{display:none}
   .top-right{gap:6px}
   .region-btn,.meta-pill,.alert-badge,.guide-btn{font-size:10px}
   .grid{display:flex;flex-direction:column}
@@ -331,6 +333,7 @@ body.low-perf .ticker-wrap::-webkit-scrollbar-thumb{background:rgba(100,240,200,
   <div class="grid">
     <div class="col" id="leftRail"></div>
     <div class="col" id="centerCol">
+      <div class="map-region-bar" id="mapRegionBar"></div>
       <div class="map-container" id="mapContainer">
         <div id="globeViz"></div>
         <svg id="flatMapSvg" style="display:none;width:100%;height:100%;position:absolute;top:0;left:0;cursor:grab"></svg>
@@ -389,6 +392,7 @@ let globeInitialized = false;
 let flightsVisible = true;
 let lowPerfMode = localStorage.getItem('crucix_low_perf') === 'true';
 let isFlat = shouldStartFlat();
+let currentRegion = 'world';
 let flatSvg, flatProjection, flatPath, flatG, flatZoom, flatW, flatH;
 const signalGuideItems = [
   {
@@ -554,7 +558,26 @@ function togglePerfMode(){
 }
 
 // === TOPBAR ===
+function getRegionControlsMarkup(){
+  return ['world','americas','europe','middleEast','asiaPacific','africa'].map(r=>
+    `<button class="region-btn ${r===currentRegion?'active':''}" data-region="${r}" onclick="setRegion('${r}')">${r==='middleEast'?'MIDDLE EAST':r==='asiaPacific'?'ASIA PACIFIC':r.toUpperCase()}</button>`
+  ).join('');
+}
+
+function renderRegionControls(){
+  const mapRegionBar = document.getElementById('mapRegionBar');
+  if(!mapRegionBar) return;
+  if(isMobileLayout()){
+    mapRegionBar.innerHTML = '';
+    mapRegionBar.style.display = 'none';
+    return;
+  }
+  mapRegionBar.innerHTML = getRegionControlsMarkup();
+  mapRegionBar.style.display = 'flex';
+}
+
 function renderTopbar(){
+  const mobile = isMobileLayout();
   const ts = new Date(D.meta.timestamp);
   const d = ts.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}).toUpperCase();
   const timeStr = ts.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true});
@@ -563,11 +586,7 @@ function renderTopbar(){
       <span class="brand">CRUCIX MONITOR</span>
       <span class="regime-chip"><span class="blink"></span>WARTIME STAGFLATION RISK</span>
     </div>
-    <div class="top-center">
-      ${['world','americas','europe','middleEast','asiaPacific','africa'].map(r=>
-        `<button class="region-btn ${r==='world'?'active':''}" data-region="${r}" onclick="setRegion('${r}')">${r==='middleEast'?'MIDDLE EAST':r==='asiaPacific'?'ASIA PACIFIC':r.toUpperCase()}</button>`
-      ).join('')}
-    </div>
+    ${mobile ? `<div class="top-center">${getRegionControlsMarkup()}</div>` : ''}
     <div class="top-right">
       <button class="meta-pill perf-pill" onclick="togglePerfMode()" title="Reduce visual effects and start mobile in flat mode">${t('dashboard.perf','PERF')} <span class="v" id="perfStatus">${lowPerfMode?t('dashboard.perfLow','LOW'):t('dashboard.perfHigh','HIGH')}</span></button>
       <span class="meta-pill">${t('dashboard.sweep','SWEEP')} <span class="v">${(D.meta.totalDurationMs/1000).toFixed(1)}s</span></span>
@@ -577,6 +596,7 @@ function renderTopbar(){
       <button class="guide-btn" onclick="openGlossary()">${t('dashboard.guideBtn','What Signals Mean')}</button>
       <span class="alert-badge">${t('dashboard.highAlert','HIGH ALERT')}</span>
     </div>`;
+  renderRegionControls();
 }
 
 // === LEFT RAIL ===
@@ -1077,6 +1097,13 @@ function toggleFlights() {
   flightsVisible = !flightsVisible;
   const btn = document.getElementById('flightToggle');
   btn.classList.toggle('off', !flightsVisible);
+  if(isFlat){
+    if(flatG){
+      flatG.selectAll('*').remove();
+      drawFlatMap();
+    }
+    return;
+  }
   if(!globe){
     return;
   }
@@ -1149,13 +1176,6 @@ function initFlatMap(){
     flatG.selectAll('.marker-circle').attr('r',function(){return +this.dataset.baseR/Math.sqrt(k)});
     flatG.selectAll('.marker-label').style('font-size',Math.max(7,9/Math.sqrt(k))+'px')
       .style('display',k>=2.5?'block':'none');
-    // Priority-based visibility: hide low-priority markers at low zoom
-    flatG.selectAll('[data-priority]').style('display',function(){
-      const p=+this.dataset.priority;
-      if(p<=1) return 'block';
-      if(p<=2) return k>=2?'block':'none';
-      return k>=3.5?'block':'none';
-    });
   });
   flatSvg.call(flatZoom);
   drawFlatMap();
@@ -1184,12 +1204,14 @@ function plotFlatMarkers(){
   };
   // Air
   const airCoords=[{lat:30,lon:44},{lat:24,lon:120},{lat:49,lon:32},{lat:57,lon:24},{lat:14,lon:114},{lat:37,lon:127},{lat:25,lon:-80},{lat:4,lon:2},{lat:-34,lon:18},{lat:10,lon:51}];
-  D.air.forEach((a,i)=>{
-    const c=airCoords[i];if(!c)return;
-    const g=addPt(c.lat,c.lon,4+a.total/40,'rgba(100,240,200,0.7)','rgba(100,240,200,0.3)',
-      ev=>showPopup(ev,a.region,`${a.total} aircraft<br>No callsign: ${a.noCallsign}<br>High alt: ${a.highAlt}`,'Air Activity'),1);
-    if(g) g.append('text').attr('class','marker-label').attr('x',10).attr('y',3).attr('fill','var(--dim)').attr('font-size','9px').attr('font-family','var(--mono)').text(a.region.replace(' Region','')+' '+a.total);
-  });
+  if(flightsVisible){
+    D.air.forEach((a,i)=>{
+      const c=airCoords[i];if(!c)return;
+      const g=addPt(c.lat,c.lon,4+a.total/40,'rgba(100,240,200,0.7)','rgba(100,240,200,0.3)',
+        ev=>showPopup(ev,a.region,`${a.total} aircraft<br>No callsign: ${a.noCallsign}<br>High alt: ${a.highAlt}`,'Air Activity'),1);
+      if(g) g.append('text').attr('class','marker-label').attr('x',10).attr('y',3).attr('fill','var(--dim)').attr('font-size','9px').attr('font-family','var(--mono)').text(a.region.replace(' Region','')+' '+a.total);
+    });
+  }
   // Thermal
   D.thermal.forEach(t=>t.fires.forEach(f=>{
     addPt(f.lat,f.lon,2+Math.min(f.frp/50,5),'rgba(255,95,99,0.6)','rgba(255,95,99,0.2)',
@@ -1237,25 +1259,27 @@ function plotFlatMarkers(){
     g.append('circle').attr('r',r*0.4).attr('fill','rgba(255,120,80,0.3)');
   });
   // Flight corridors
-  const airCoordsFlight=[{lat:30,lon:44},{lat:24,lon:120},{lat:49,lon:32},{lat:57,lon:24},{lat:14,lon:114},{lat:37,lon:127},{lat:25,lon:-80},{lat:4,lon:2},{lat:-34,lon:18},{lat:10,lon:51}];
-  const hubs=[{lat:40.6,lon:-73.8},{lat:51.5,lon:-0.5},{lat:25.3,lon:55.4},{lat:1.4,lon:103.8},{lat:-33.9,lon:151.2},{lat:-23.4,lon:-46.5}];
-  const cG=flatG.append('g').attr('class','corridors-layer');
-  for(let i=0;i<D.air.length;i++){for(let j=i+1;j<D.air.length;j++){
-    const a=D.air[i],b=D.air[j],from=airCoordsFlight[i],to=airCoordsFlight[j];
-    if(!from||!to)continue;const traffic=a.total+b.total;if(traffic<30)continue;
-    const ncR=(a.noCallsign+b.noCallsign)/Math.max(traffic,1);
-    const clr=ncR>0.15?'rgba(255,95,99,0.4)':ncR>0.05?'rgba(255,184,76,0.35)':'rgba(100,240,200,0.25)';
-    const interp=d3.geoInterpolate([from.lon,from.lat],[to.lon,to.lat]);
-    const coords=[];for(let k=0;k<=40;k++)coords.push(interp(k/40));
-    const feat={type:'Feature',geometry:{type:'LineString',coordinates:coords}};
-    cG.append('path').datum(feat).attr('d',flatPath).attr('fill','none').attr('stroke',clr).attr('stroke-width',Math.max(0.8,Math.min(3,traffic/80)));
-  }}
-  D.air.forEach((a,i)=>{if(!airCoordsFlight[i]||a.total<25)return;hubs.forEach(hub=>{
-    if(Math.abs(airCoordsFlight[i].lat-hub.lat)+Math.abs(airCoordsFlight[i].lon-hub.lon)<20)return;
-    const interp=d3.geoInterpolate([airCoordsFlight[i].lon,airCoordsFlight[i].lat],[hub.lon,hub.lat]);
-    const coords=[];for(let k=0;k<=40;k++)coords.push(interp(k/40));
-    cG.append('path').datum({type:'Feature',geometry:{type:'LineString',coordinates:coords}}).attr('d',flatPath).attr('fill','none').attr('stroke','rgba(100,240,200,0.15)').attr('stroke-width',0.6);
-  })});
+  if(flightsVisible){
+    const airCoordsFlight=[{lat:30,lon:44},{lat:24,lon:120},{lat:49,lon:32},{lat:57,lon:24},{lat:14,lon:114},{lat:37,lon:127},{lat:25,lon:-80},{lat:4,lon:2},{lat:-34,lon:18},{lat:10,lon:51}];
+    const hubs=[{lat:40.6,lon:-73.8},{lat:51.5,lon:-0.5},{lat:25.3,lon:55.4},{lat:1.4,lon:103.8},{lat:-33.9,lon:151.2},{lat:-23.4,lon:-46.5}];
+    const cG=flatG.append('g').attr('class','corridors-layer');
+    for(let i=0;i<D.air.length;i++){for(let j=i+1;j<D.air.length;j++){
+      const a=D.air[i],b=D.air[j],from=airCoordsFlight[i],to=airCoordsFlight[j];
+      if(!from||!to)continue;const traffic=a.total+b.total;if(traffic<30)continue;
+      const ncR=(a.noCallsign+b.noCallsign)/Math.max(traffic,1);
+      const clr=ncR>0.15?'rgba(255,95,99,0.4)':ncR>0.05?'rgba(255,184,76,0.35)':'rgba(100,240,200,0.25)';
+      const interp=d3.geoInterpolate([from.lon,from.lat],[to.lon,to.lat]);
+      const coords=[];for(let k=0;k<=40;k++)coords.push(interp(k/40));
+      const feat={type:'Feature',geometry:{type:'LineString',coordinates:coords}};
+      cG.append('path').datum(feat).attr('d',flatPath).attr('fill','none').attr('stroke',clr).attr('stroke-width',Math.max(0.8,Math.min(3,traffic/80)));
+    }}
+    D.air.forEach((a,i)=>{if(!airCoordsFlight[i]||a.total<25)return;hubs.forEach(hub=>{
+      if(Math.abs(airCoordsFlight[i].lat-hub.lat)+Math.abs(airCoordsFlight[i].lon-hub.lon)<20)return;
+      const interp=d3.geoInterpolate([airCoordsFlight[i].lon,airCoordsFlight[i].lat],[hub.lon,hub.lat]);
+      const coords=[];for(let k=0;k<=40;k++)coords.push(interp(k/40));
+      cG.append('path').datum({type:'Feature',geometry:{type:'LineString',coordinates:coords}}).attr('d',flatPath).attr('fill','none').attr('stroke','rgba(100,240,200,0.15)').attr('stroke-width',0.6);
+    })});
+  }
 }
 
 // Update setRegion for flat mode
@@ -1265,6 +1289,7 @@ const _origSetRegion = setRegion;
 const _origMapZoom = mapZoom;
 
 function setRegion(r){
+  currentRegion = r;
   document.querySelectorAll('.region-btn').forEach(b=>b.classList.toggle('active',b.dataset.region===r));
   closePopup();
   if(isFlat && flatSvg && flatZoom){
@@ -1553,7 +1578,7 @@ function runBoot(){
       document.querySelectorAll('.mbar span,.smb span').forEach(bar=>{const w=bar.style.width;bar.style.width='0%';gsap.to(bar,{width:w,duration:1,ease:'power2.out'})});
       document.querySelectorAll('.spark-bar').forEach(bar=>{const h=bar.style.height;bar.style.height='0%';gsap.to(bar,{height:h,duration:0.8,ease:'power2.out'})});
     },1000);
-  },4.0);
+  },[],4.0);
 }
 
 function isMobileLayout(){ return window.innerWidth <= 1100; }
@@ -1644,6 +1669,7 @@ function syncResponsiveLayout(force=false){
   const mobileNow = isMobileLayout();
   if(force || lastResponsiveMobile === null || mobileNow !== lastResponsiveMobile){
     lastResponsiveMobile = mobileNow;
+    renderTopbar();
     renderLeftRail();
     renderLower();
     renderRight();

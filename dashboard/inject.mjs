@@ -5,7 +5,7 @@
 //
 // Exports synthesize(), generateIdeas(), fetchAllNews() for use by server.mjs
 
-import { readFileSync, writeFileSync } from 'fs';
+import { existsSync, readFileSync, readdirSync, writeFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { exec } from 'child_process';
@@ -100,6 +100,49 @@ function sanitizeExternalUrl(raw) {
   } catch {
     return undefined;
   }
+}
+
+function sumAirHotspots(hotspots = []) {
+  return hotspots.reduce((sum, hotspot) => sum + (hotspot.totalAircraft || 0), 0);
+}
+
+function summarizeAirHotspots(hotspots = []) {
+  return hotspots.map(h => ({
+    region: h.region,
+    total: h.totalAircraft || 0,
+    noCallsign: h.noCallsign || 0,
+    highAlt: h.highAltitude || 0,
+    top: Object.entries(h.byCountry || {}).sort((a, b) => b[1] - a[1]).slice(0, 5),
+  }));
+}
+
+function loadOpenSkyFallback(currentTimestamp) {
+  const runsDir = join(ROOT, 'runs');
+  if (!existsSync(runsDir)) return null;
+
+  const currentMs = currentTimestamp ? new Date(currentTimestamp).getTime() : NaN;
+  const files = readdirSync(runsDir)
+    .filter(name => /^briefing_.*\.json$/.test(name))
+    .sort()
+    .reverse();
+
+  for (const file of files) {
+    const filePath = join(runsDir, file);
+    try {
+      const prior = JSON.parse(readFileSync(filePath, 'utf8'));
+      const priorTimestamp = prior.sources?.OpenSky?.timestamp || prior.crucix?.timestamp || null;
+      if (priorTimestamp && Number.isFinite(currentMs) && new Date(priorTimestamp).getTime() >= currentMs) continue;
+
+      const hotspots = prior.sources?.OpenSky?.hotspots || [];
+      if (sumAirHotspots(hotspots) > 0) {
+        return { file, timestamp: priorTimestamp, hotspots };
+      }
+    } catch {
+      // Ignore unreadable historical runs and continue searching backward.
+    }
+  }
+
+  return null;
 }
 
 // === RSS Fetching ===
@@ -326,11 +369,12 @@ export function generateIdeas(V2) {
 
 // === Synthesize raw sweep data into dashboard format ===
 export async function synthesize(data) {
-  const air = (data.sources.OpenSky?.hotspots || []).map(h => ({
-    region: h.region, total: h.totalAircraft || 0, noCallsign: h.noCallsign || 0,
-    highAlt: h.highAltitude || 0,
-    top: Object.entries(h.byCountry || {}).sort((a, b) => b[1] - a[1]).slice(0, 5)
-  }));
+  const liveAirHotspots = data.sources.OpenSky?.hotspots || [];
+  const airFallback = sumAirHotspots(liveAirHotspots) > 0
+    ? null
+    : loadOpenSkyFallback(data.sources.OpenSky?.timestamp || data.crucix?.timestamp);
+  const effectiveAirHotspots = airFallback?.hotspots || liveAirHotspots;
+  const air = summarizeAirHotspots(effectiveAirHotspots);
   const thermal = (data.sources.FIRMS?.hotspots || []).map(h => ({
     region: h.region, det: h.totalDetections || 0, night: h.nightDetections || 0,
     hc: h.highConfidence || 0,
@@ -511,6 +555,14 @@ export async function synthesize(data) {
 
   const V2 = {
     meta: data.crucix, air, thermal, tSignals, chokepoints, nuke, nukeSignals,
+    airMeta: {
+      fallback: Boolean(airFallback),
+      liveTotal: sumAirHotspots(liveAirHotspots),
+      timestamp: airFallback?.timestamp || data.sources.OpenSky?.timestamp || data.crucix?.timestamp || null,
+      source: airFallback ? 'OpenSky fallback' : 'OpenSky',
+      ...(airFallback ? { fallbackFile: airFallback.file } : {}),
+      ...(data.sources.OpenSky?.error ? { error: data.sources.OpenSky.error } : {}),
+    },
     sdr: { total: sdrNet.totalReceivers || 0, online: sdrNet.online || 0, zones: sdrZones },
     tg: { posts: tgData.totalPosts || 0, urgent: tgUrgent, topPosts: tgTop },
     who, fred, energy, bls, treasury, gscpi, defense, noaa, epa, acled, gdelt, space, health, news,

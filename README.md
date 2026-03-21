@@ -544,7 +544,13 @@ For bugs and feature requests, please use GitHub Issues so discussion stays visi
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=calesthio/Crucix&type=Date)](https://star-history.com/#calesthio/Crucix&Date)
+<a href="https://star-history.com/#calesthio/Crucix&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=calesthio/Crucix&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=calesthio/Crucix&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=calesthio/Crucix&type=Date" />
+ </picture>
+</a>
 
 ---
 

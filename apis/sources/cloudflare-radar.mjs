@@ -1,7 +1,7 @@
 // Cloudflare Radar — Internet traffic anomalies and outages
 // Requires a free Cloudflare API token (CLOUDFLARE_API_TOKEN).
 // Get one at: https://dash.cloudflare.com/profile/api-tokens
-// Create a token with "Cloudflare Radar: Read" permissions.
+// Create a custom token with Account → Account Analytics → Read permission.
 //
 // Monitors internet outages, traffic anomalies, and attack trends
 // that correlate with conflict, censorship, and infrastructure disruption.
@@ -51,13 +51,27 @@ async function fetchAttackSummary() {
   const headers = getAuthHeaders();
   if (!headers) return { error: 'no_credentials' };
 
-  // Layer 3/4 DDoS attack summary
-  const url = `${RADAR_BASE}/attacks/layer3/summary?dateRange=7d&format=json`;
-  const data = await safeFetch(url, { timeout: 15000, headers });
+  // Layer 3 DDoS attack summaries by protocol and vector
+  // API requires a dimension: /summary/{dimension}
+  const [byProtocol, byVector] = await Promise.all([
+    safeFetch(`${RADAR_BASE}/attacks/layer3/summary/protocol?dateRange=7d&format=json`, { timeout: 15000, headers }),
+    safeFetch(`${RADAR_BASE}/attacks/layer3/summary/vector?dateRange=7d&format=json`, { timeout: 15000, headers }),
+  ]);
 
-  if (data.error) return { error: data.error };
+  const result = {};
 
-  return data.result?.summary || data.result || null;
+  if (!byProtocol.error && byProtocol.result) {
+    result.byProtocol = byProtocol.result.summary_0 || byProtocol.result;
+  }
+  if (!byVector.error && byVector.result) {
+    result.byVector = byVector.result.summary_0 || byVector.result;
+  }
+
+  if (!result.byProtocol && !result.byVector) {
+    return { error: byProtocol.error || byVector.error || 'No attack data returned' };
+  }
+
+  return result;
 }
 
 async function fetchTrafficAnomalies() {
@@ -137,7 +151,7 @@ export async function briefing() {
       source: 'Cloudflare-Radar',
       timestamp: new Date().toISOString(),
       status: 'no_credentials',
-      message: 'Set CLOUDFLARE_API_TOKEN in .env. Get a free token at https://dash.cloudflare.com/profile/api-tokens with "Cloudflare Radar: Read" permission.',
+      message: 'Set CLOUDFLARE_API_TOKEN in .env. Get a free token at https://dash.cloudflare.com/profile/api-tokens with Account → Account Analytics → Read permission.',
     };
   }
 

@@ -542,6 +542,12 @@ For bugs and feature requests, please use GitHub Issues so discussion stays visi
 
 ---
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=calesthio/Crucix&type=Date)](https://star-history.com/#calesthio/Crucix&Date)
+
+---
+
 ## License
 
 AGPL-3.0

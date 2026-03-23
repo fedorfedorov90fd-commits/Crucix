@@ -169,7 +169,10 @@ function parseWebPreview(html, channelId) {
         .replace(/&lt;/g, '<')
         .replace(/&gt;/g, '>')
         .replace(/&quot;/g, '"')
-        .replace(/&#039;/g, "'")
+        .replace(/&#0*39;/g, "'")
+        .replace(/&#x0*27;/gi, "'")
+        .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
+        .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCharCode(parseInt(h, 16)))
         .replace(/&nbsp;/g, ' ')
         .trim();
     }

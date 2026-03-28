@@ -233,7 +233,7 @@ Set `LLM_PROVIDER` to one of: `anthropic`, `openai`, `gemini`, `codex`, `openrou
 | `codex` | None (uses `~/.codex/auth.json`) | gpt-5.3-codex |
 | `minimax` | `LLM_API_KEY` | MiniMax-M2.5 |
 | `mistral` | `LLM_API_KEY` | mistral-large-latest |
-| `grok` | `LLM_API_KEY` | grok-3 |
+| `grok` | `LLM_API_KEY` | grok-4-latest |
 
 For Codex, run `npx @openai/codex login` to authenticate via your ChatGPT subscription.
 
@@ -308,6 +308,7 @@ crucix/
 │   │   ├── anthropic.mjs      # Claude
 │   │   ├── openai.mjs         # GPT
 │   │   ├── gemini.mjs         # Gemini
+├──     ├── grok.mjs           # Grok
 │   │   ├── openrouter.mjs     # OpenRouter (Unified API)
 │   │   ├── codex.mjs          # Codex (ChatGPT subscription)
 │   │   ├── minimax.mjs        # MiniMax (M2.5, 204K context)

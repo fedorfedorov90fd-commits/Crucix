@@ -7,9 +7,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-<script src="/lib/d3.min.js"></script>
-<script src="/lib/topojson-client.min.js"></script>
-<script src="/lib/three.min.js"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://d3js.org/topojson.v3.min.js"></script>
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
 <script src="https://unpkg.com/globe.gl@2.33.0"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -1934,8 +1934,7 @@ const GEO_LANG = {
     statusAnalyzing: '⏳ ANALYZING',
     noNews: '⚠️ Нет новостей для анализа. Дождитесь сбора данных.',
     analyzing: '⏳ Анализ...',
-    noResponse: 'Нет ответа от',
-    helpText: '📖 Модуль собирает новости из RSS-лент, сохраняет в JSON и отправляет в AI для анализа. Настройте провайдера и ключ, нажмите "Анализировать".'
+    noResponse: 'Нет ответа от'
   },
   en: {
     newsLabel: 'news',
@@ -1951,8 +1950,7 @@ const GEO_LANG = {
     statusAnalyzing: '⏳ ANALYZING',
     noNews: '⚠️ No news to analyze. Wait for data collection.',
     analyzing: '⏳ Analyzing...',
-    noResponse: 'No response from',
-    helpText: '📖 Module collects news from RSS feeds, saves to JSON and sends to AI for analysis. Configure provider and key, click "Analyze".'
+    noResponse: 'No response from'
   }
 };
 
@@ -1964,19 +1962,16 @@ function toggleGeoPanel() {
   
   if (body) {
     body.style.display = geoPanelCollapsed ? 'none' : 'block';
-    btn.textContent = geoPanelCollapsed ? '▶' : '▼';
+    btn.textContent = geoPanelCollapsed ? '+' : '−';
   }
   
+  // Меняем размер панели при сворачивании
   if (panel) {
     if (geoPanelCollapsed) {
       panel.style.minHeight = '40px';
       panel.style.height = 'auto';
-      panel.style.padding = '4px 10px';
-      panel.style.overflow = 'hidden';
     } else {
-      panel.style.minHeight = '180px';
-      panel.style.height = 'auto';
-      panel.style.padding = '8px 10px';
+      panel.style.minHeight = '160px';
     }
   }
 }
@@ -1987,6 +1982,7 @@ function toggleGeoLanguage() {
   const btn = document.querySelector('.lp-geopolitical .sec-head .lang-btn');
   if (btn) btn.textContent = geoLang === 'ru' ? '🇷🇺' : '🇬🇧';
   
+  // Обновляем все текстовые элементы
   const elements = {
     geoNewsLabel: lang.newsLabel,
     geoDaysLabel: lang.daysLabel,
@@ -2002,6 +1998,7 @@ function toggleGeoLanguage() {
   Object.entries(elements).forEach(([id, text]) => {
     const el = document.getElementById(id);
     if (el) {
+      // Для поля температуры сохраняем число
       if (id === 'geoTempLabel') {
         const val = document.getElementById('geoTempVal');
         el.textContent = text + ': ' + (val ? val.textContent : '0.1');
@@ -2011,8 +2008,10 @@ function toggleGeoLanguage() {
     }
   });
   
+  // Обновляем статус
   const statusBadge = document.getElementById('geoStatusBadge');
   if (statusBadge) {
+    const isLive = statusBadge.textContent.includes('LIVE') || statusBadge.textContent.includes('●');
     statusBadge.textContent = lang.statusLive;
   }
   
@@ -2055,21 +2054,6 @@ function loadGeoLang() {
     if (statusBadge) {
       statusBadge.textContent = lang.statusLive;
     }
-  }
-}
-
-function showGeoHelp() {
-  const lang = GEO_LANG[geoLang] || GEO_LANG.ru;
-  const resultEl = document.getElementById('geoResult');
-  if (resultEl) {
-    resultEl.style.display = 'block';
-    resultEl.innerHTML = lang.helpText;
-    resultEl.style.borderLeftColor = '#44ccff';
-    setTimeout(() => {
-      if (resultEl.innerHTML === lang.helpText) {
-        resultEl.style.display = 'none';
-      }
-    }, 8000);
   }
 }
 
@@ -2203,7 +2187,7 @@ async function runGeoAnalysis() {
   }
   
   try {
-    const prompt = `Ты — военно-политический аналитик. Проанализируй эти новости и выдели 5 ключевых событий, укажи признаки эскалации, сделай краткий прогноз на 48 часов. Отвечай сухо, фактологично, без эмоций.\n\nНовости:\n${headlines.join('\n')}`;
+    const prompt = `Ты — военно-политический аналитик. Проанализируй эти новости из российских СМИ и выдели 5 ключевых событий, укажи признаки эскалации, сделай краткий прогноз на 48 часов. Отвечай сухо, фактологично, без эмоций.\n\nНовости:\n${headlines.join('\n')}`;
     
     let result = '';
     let usedProvider = provider;
@@ -2227,7 +2211,7 @@ async function runGeoAnalysis() {
       const resp = await fetch('http://localhost:11434/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: model || 'llama3.1', prompt: prompt, stream: false })
+        body: JSON.stringify({ model: model, prompt: prompt, stream: false })
       });
       const data = await resp.json();
       result = data.response || lang.noResponse + ' Ollama';
@@ -2240,7 +2224,7 @@ async function runGeoAnalysis() {
           'Authorization': `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-          model: model || 'deepseek-chat',
+          model: model,
           messages: [
             { role: 'system', content: 'Ты — аналитик, отвечаешь сухо, фактологично, без эмоций.' },
             { role: 'user', content: prompt }
@@ -2340,11 +2324,10 @@ function initGeoPanel() {
   if (panel && geoPanelCollapsed) {
     panel.style.minHeight = '40px';
     panel.style.height = 'auto';
-    panel.style.padding = '4px 10px';
     const body = document.getElementById('geoBody');
     if (body) body.style.display = 'none';
     const btn = document.getElementById('geoToggleBtn');
-    if (btn) btn.textContent = '▶';
+    if (btn) btn.textContent = '+';
   }
   
   const analyzeBtn = document.getElementById('geoAnalyzeBtn');
@@ -2364,6 +2347,7 @@ function initGeoPanel() {
         if (id === 'geoTemperature') {
           const val = document.getElementById('geoTempVal');
           if (val) val.textContent = this.value;
+          // Обновляем метку температуры с учётом языка
           const label = document.getElementById('geoTempLabel');
           if (label) {
             const lang = GEO_LANG[geoLang];
@@ -2389,80 +2373,3 @@ function initGeoPanel() {
     autoEl.addEventListener('change', saveGeoSettings);
   }
 }
-
-  const autoEl = document.getElementById('geoAutoAnalyze');
-  if (autoEl) {
-    autoEl.addEventListener('change', saveGeoSettings);
-  }
-}
-
-// === SSE: Live Updates from Server ===
-function connectSSE(){
-  if (typeof EventSource === 'undefined') return;
-  if (location.protocol === 'file:') return;
-
-  const es = new EventSource('/events');
-  es.onmessage = (e) => {
-    try {
-      const msg = JSON.parse(e.data);
-      if (msg.type === 'update' && msg.data) {
-        D = msg.data;
-        reinit();
-        const topbar = document.querySelector('.topbar');
-        if (topbar) {
-          topbar.style.borderColor = 'var(--accent)';
-          setTimeout(() => topbar.style.borderColor = '', 1500);
-        }
-      } else if (msg.type === 'sweep_start') {
-        const badge = document.querySelector('.alert-badge');
-        if (badge) { badge.textContent = 'SWEEPING...'; badge.style.borderColor = 'var(--accent)'; }
-      }
-    } catch {}
-  };
-  es.onerror = () => {
-    es.close();
-    setTimeout(connectSSE, 5000);
-  };
-}
-
-// === INIT ===
-let booted = false;
-function init(){
-  renderTopbar();renderLeftRail();renderLower();renderRight();
-  renderGlossary();
-  initMap();
-  if (!booted) { runBoot(); booted = true; }
-  document.getElementById('mapContainer').addEventListener('click',e=>{
-    if(!e.target.closest('.map-popup')) closePopup();
-  });
-  document.addEventListener('click',e=>{
-    const card=e.target.closest('.tk-card[data-url]');
-    if(card){
-      const url=safeExternalUrl(card.dataset.url);
-      if(url) window.open(url,'_blank','noopener');
-    }
-  });
-  document.addEventListener('keydown',e=>{
-    if(e.key === 'Escape') closeGlossary();
-  });
-  syncResponsiveLayout(true);
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  const hasInlineData = !!(D && D.meta);
-  const canProbeApi = location.protocol !== 'file:';
-
-  if (canProbeApi && !hasInlineData) {
-    fetch('/api/data')
-      .then(r => r.json())
-      .then(data => { D = data; init(); connectSSE(); })
-      .catch(() => {
-        if (D && D.meta) { init(); connectSSE(); }
-      });
-  } else if (hasInlineData) {
-    init();
-  }
-});
-</script>
-</body>
-</html>

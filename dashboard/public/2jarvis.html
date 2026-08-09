@@ -1594,15 +1594,16 @@ function renderLower(){
       <div style="font-size:9px;margin-top:6px;opacity:0.6">Set LLM_PROVIDER + credentials in .env to enable AI-powered trade ideas</div>
     </div>`;
 
-  // ===== ТВОЯ ПАНЕЛЬ: ГЕОПОЛИТИКА + AI (СВОРАЧИВАЕМАЯ) =====
+// ===== ТВОЯ ПАНЕЛЬ: ГЕОПОЛИТИКА + AI (СВОРАЧИВАЕМАЯ) =====
   const geopoliticalPanel = `
     <div class="g-panel lp-geopolitical">
       <div class="sec-head" onclick="toggleGeoPanel()">
         <h3>🌍 ГЕОПОЛИТИКА + AI</h3>
         <div style="display:flex;align-items:center;gap:4px;">
           <span class="badge" id="geoStatusBadge" style="background:rgba(100,240,200,0.15);color:#64f0c8;font-size:7px;">● LIVE</span>
-          <span class="badge" id="geoToggleBtn" style="background:rgba(255,255,255,0.05);cursor:pointer;font-size:12px;padding:0 5px;">−</span>
-          <button onclick="toggleGeoLanguage()" class="lang-btn" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#6a8a82;border-radius:3px;padding:0 5px;font-size:8px;cursor:pointer;font-family:var(--mono);">🇷🇺</button>
+          <button onclick="event.stopPropagation();showGeoHelp()" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#6a8a82;border-radius:3px;padding:0 5px;font-size:8px;cursor:pointer;font-family:var(--mono);">❓</button>
+          <button onclick="event.stopPropagation();toggleGeoLanguage()" class="lang-btn" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#6a8a82;border-radius:3px;padding:0 5px;font-size:8px;cursor:pointer;font-family:var(--mono);">🇷🇺</button>
+          <span class="badge" id="geoToggleBtn" style="background:rgba(255,255,255,0.05);cursor:pointer;font-size:12px;padding:0 5px;">▼</span>
         </div>
       </div>
       <div id="geoBody">
@@ -1611,6 +1612,7 @@ function renderLower(){
             <span>📰 <span id="geoNewsCount">0</span> <span id="geoNewsLabel">новостей</span></span>
             <span>| ⏱ <span id="geoLastUpdate">—</span></span>
             <span>| 💾 <span id="geoStorageDays">7</span> <span id="geoDaysLabel">дней</span></span>
+            <span id="geoHelpText" style="color:#44ccff;font-size:7px;display:none;">📖 нажми ❓ для справки</span>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;">
             <div>
@@ -1961,6 +1963,7 @@ function toggleGeoPanel() {
   const body = document.getElementById('geoBody');
   const btn = document.getElementById('geoToggleBtn');
   const panel = document.querySelector('.lp-geopolitical');
+  const header = document.querySelector('.lp-geopolitical .sec-head');
   
   if (body) {
     body.style.display = geoPanelCollapsed ? 'none' : 'block';
@@ -1969,14 +1972,16 @@ function toggleGeoPanel() {
   
   if (panel) {
     if (geoPanelCollapsed) {
-      panel.style.minHeight = '40px';
+      panel.style.minHeight = '36px';
       panel.style.height = 'auto';
-      panel.style.padding = '4px 10px';
+      panel.style.padding = '4px 8px';
       panel.style.overflow = 'hidden';
+      if (header) header.style.marginBottom = '0';
     } else {
       panel.style.minHeight = '180px';
       panel.style.height = 'auto';
       panel.style.padding = '8px 10px';
+      if (header) header.style.marginBottom = '4px';
     }
   }
 }
@@ -1996,7 +2001,8 @@ function toggleGeoLanguage() {
     geoTempLabel: lang.tempLabel,
     geoDaysLabelInput: lang.daysInputLabel,
     geoAnalyzeLabel: lang.analyzeLabel,
-    geoAutoLabel: lang.autoLabel
+    geoAutoLabel: lang.autoLabel,
+    geoHelpText: lang.helpText
   };
   
   Object.entries(elements).forEach(([id, text]) => {
@@ -2036,7 +2042,8 @@ function loadGeoLang() {
       geoTempLabel: lang.tempLabel,
       geoDaysLabelInput: lang.daysInputLabel,
       geoAnalyzeLabel: lang.analyzeLabel,
-      geoAutoLabel: lang.autoLabel
+      geoAutoLabel: lang.autoLabel,
+      geoHelpText: lang.helpText
     };
     
     Object.entries(elements).forEach(([id, text]) => {
@@ -2059,7 +2066,7 @@ function loadGeoLang() {
 }
 
 function showGeoHelp() {
-  const lang = GEO_LANG[geoLang] || GEO_LANG.ru;
+  const lang = GEO_LANG[geoLang];
   const resultEl = document.getElementById('geoResult');
   if (resultEl) {
     resultEl.style.display = 'block';
@@ -2070,38 +2077,6 @@ function showGeoHelp() {
         resultEl.style.display = 'none';
       }
     }, 8000);
-  }
-}
-
-async function cleanOldNewsFiles() {
-  const daysInput = document.getElementById('geoStorageDaysInput');
-  const days = parseInt(daysInput?.value || 7);
-  
-  try {
-    const fs = await import('fs/promises');
-    const path = await import('path');
-    const dir = path.join(process.cwd(), 'data', 'ai_raw', 'geopolitical-reports');
-    
-    const files = await fs.readdir(dir);
-    const now = Date.now();
-    let deleted = 0;
-    
-    for (const file of files) {
-      if (!file.endsWith('.json')) continue;
-      const filePath = path.join(dir, file);
-      const stat = await fs.stat(filePath);
-      const ageDays = (now - stat.mtime.getTime()) / (1000 * 60 * 60 * 24);
-      if (ageDays > days) {
-        await fs.unlink(filePath);
-        deleted++;
-      }
-    }
-    
-    if (deleted > 0) {
-      console.log(`[Geo] Удалено ${deleted} старых файлов (старше ${days} дней)`);
-    }
-  } catch (error) {
-    // Игнорируем ошибки
   }
 }
 
@@ -2326,8 +2301,6 @@ function updateGeoStatus() {
       runGeoAnalysis();
     }
   }
-  
-  cleanOldNewsFiles();
 }
 
 function initGeoPanel() {
@@ -2338,9 +2311,9 @@ function initGeoPanel() {
   // Проверяем состояние сворачивания при загрузке
   const panel = document.querySelector('.lp-geopolitical');
   if (panel && geoPanelCollapsed) {
-    panel.style.minHeight = '40px';
+    panel.style.minHeight = '36px';
     panel.style.height = 'auto';
-    panel.style.padding = '4px 10px';
+    panel.style.padding = '4px 8px';
     const body = document.getElementById('geoBody');
     if (body) body.style.display = 'none';
     const btn = document.getElementById('geoToggleBtn');
@@ -2390,12 +2363,6 @@ function initGeoPanel() {
   }
 }
 
-  const autoEl = document.getElementById('geoAutoAnalyze');
-  if (autoEl) {
-    autoEl.addEventListener('change', saveGeoSettings);
-  }
-}
-
 // === SSE: Live Updates from Server ===
 function connectSSE(){
   if (typeof EventSource === 'undefined') return;
@@ -2425,26 +2392,56 @@ function connectSSE(){
   };
 }
 
-// === INIT ===
-let booted = false;
+renderTopbar();renderLeftRail();renderLower();renderRight();
+  renderGlossary();
+  initMap();
+  if (!booted) { runBoot(); booted = true; }
+  // ...
+}
+Добавь строку initGeoPanel(); после renderLower():
+
+javascript
 function init(){
   renderTopbar();renderLeftRail();renderLower();renderRight();
   renderGlossary();
   initMap();
+  initGeoPanel(); // <-- ДОБАВЬ ЭТУ СТРОКУ
   if (!booted) { runBoot(); booted = true; }
-  document.getElementById('mapContainer').addEventListener('click',e=>{
-    if(!e.target.closest('.map-popup')) closePopup();
+  // ...
+}
+Полный блок функции init() (для замены)
+Если не хочешь искать, вот полная функция init() — скопируй и замени существующую:
+
+javascript
+// === INIT ===
+let booted = false;
+function init(){
+  renderTopbar();
+  renderLeftRail();
+  renderLower();
+  renderRight();
+  renderGlossary();
+  initMap();
+  initGeoPanel(); // Инициализация геопанели
+  
+  if (!booted) { runBoot(); booted = true; }
+  
+  document.getElementById('mapContainer').addEventListener('click', e => {
+    if (!e.target.closest('.map-popup')) closePopup();
   });
-  document.addEventListener('click',e=>{
-    const card=e.target.closest('.tk-card[data-url]');
-    if(card){
-      const url=safeExternalUrl(card.dataset.url);
-      if(url) window.open(url,'_blank','noopener');
+  
+  document.addEventListener('click', e => {
+    const card = e.target.closest('.tk-card[data-url]');
+    if (card) {
+      const url = safeExternalUrl(card.dataset.url);
+      if (url) window.open(url, '_blank', 'noopener');
     }
   });
-  document.addEventListener('keydown',e=>{
-    if(e.key === 'Escape') closeGlossary();
+  
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeGlossary();
   });
+  
   syncResponsiveLayout(true);
 }
 

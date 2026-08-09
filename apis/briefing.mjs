@@ -47,6 +47,15 @@ import { briefing as yfinance } from './sources/yfinance.mjs';
 import { briefing as cisaKev } from './sources/cisa-kev.mjs';
 import { briefing as cloudflareRadar } from './sources/cloudflare-radar.mjs';
 
+// === Tier 7: Russian News Sources ===
+import { briefing as tassBriefing } from './sources/tass.mjs';
+import { briefing as kommersantBriefing } from './sources/kommersant.mjs';
+import { briefing as interfaxBriefing } from './sources/interfax.mjs';
+import { briefing as lentaBriefing } from './sources/lenta.mjs';
+import { briefing as aifBriefing } from './sources/aif.mjs';
+import { briefing as vedomostiBriefing } from './sources/vedomosti.mjs';
+import { briefing as izvestiaBriefing } from './sources/izvestia.mjs';
+
 const SOURCE_TIMEOUT_MS = 30_000; // 30s max per individual source
 
 export async function runSource(name, fn, ...args) {
@@ -67,7 +76,7 @@ export async function runSource(name, fn, ...args) {
 }
 
 export async function fullBriefing() {
-  console.error('[Crucix] Starting intelligence sweep — 29 sources...');
+  console.error('[Crucix] Starting intelligence sweep — 36 sources...');
   const start = Date.now();
 
   const allPromises = [
@@ -111,6 +120,15 @@ export async function fullBriefing() {
     // Tier 6: Cyber & Infrastructure
     runSource('CISA-KEV', cisaKev),
     runSource('Cloudflare-Radar', cloudflareRadar),
+
+    // Tier 7: Russian News Sources
+    runSource('ТАСС', tassBriefing),
+    runSource('Коммерсантъ', kommersantBriefing),
+    runSource('Интерфакс', interfaxBriefing),
+    runSource('Lenta.ru', lentaBriefing),
+    runSource('Аргументы и Факты', aifBriefing),
+    runSource('Ведомости', vedomostiBriefing),
+    // runSource('Известия', izvestiaBriefing), // временно отключено (HTTP 429)
   ];
 
   // Each runSource has its own 30s timeout, so allSettled will resolve
@@ -149,3 +167,11 @@ if (entryHref && import.meta.url === entryHref) {
   const data = await fullBriefing();
   console.log(JSON.stringify(data, null, 2));
 }
+
+// === Tier 8: Дополнительные источники ===
+import { briefing as cbrBriefing } from "./sources/cbr.mjs";
+import { briefing as guardianScienceBriefing } from "./sources/guardian_science.mjs";
+import { briefing as economistBriefing } from "./sources/economist.mjs";
+import { briefing as nytBriefing } from "./sources/nyt.mjs";
+import { briefing as sputnikBriefing } from "./sources/sputnik.mjs";
+import { briefing as basBriefing } from "./sources/bas.mjs";

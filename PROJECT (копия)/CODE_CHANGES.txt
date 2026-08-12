@@ -1,0 +1,35 @@
+=== ИСТОРИЯ ИЗМЕНЕНИЙ КОДА ===
+Дата: 2026-08-09
+
+1. apis/sources/drivers/base.mjs — создан
+   Базовый класс для всех драйверов
+
+2. apis/sources/drivers/max-driver.mjs — создан
+   Драйвер для MAX (требуется API-ключ)
+
+3. apis/sources/drivers/telegram-driver.mjs — создан
+   Драйвер для Telegram через Tor
+   - Ручная обработка редиректов (301/302)
+   - Парсинг HTML, JSON, регулярных выражений
+
+4. apis/sources/router.mjs — создан
+   Адаптивный шлюз для выбора драйвера
+
+5. apis/sources/ai-filter.mjs — создан
+   Интеллектуальный фильтр через Ollama
+   - Оценка новостей 0-10
+   - Поддержка 4 тем
+
+6. scripts/coordinator.mjs — создан
+   Координатор проекта (однопроходный)
+
+7. scripts/interactive.mjs — создан
+   Интерактивный координатор (диалоговый)
+
+8. scripts/daily-report.mjs — обновлён
+   Добавлена интеграция с AI-фильтром
+
+9. PROJECT/ — созданы файлы:
+   STATE.txt, ROADMAP.txt, ARCHITECTURE.txt
+   DECISIONS.txt, CODE_CHANGES.txt, STATUS_REPORT.txt
+

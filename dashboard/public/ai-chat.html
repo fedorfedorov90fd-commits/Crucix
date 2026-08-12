@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Чат — Crucix</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: #0a0a1a;
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .chat-container {
+            max-width: 900px;
+            width: 100%;
+            background: rgba(20, 20, 40, 0.92);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.06);
+            padding: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            height: 85vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .chat-header h1 {
+            font-size: 20px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .chat-header h1 span { color: #64f0c8; }
+        .chat-header .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .chat-header .controls a {
+            color: #2196f3;
+            text-decoration: none;
+            font-size: 13px;
+            padding: 4px 12px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        .chat-header .controls a:hover {
+            background: rgba(33,150,243,0.1);
+        }
+        .model-select {
+            padding: 4px 10px;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #e0e0e0;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            background: rgba(0,0,0,0.25);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            min-height: 200px;
+        }
+        .chat-messages::-webkit-scrollbar { width: 6px; }
+        .chat-messages::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+        .chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+        .message {
+            margin-bottom: 10px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            max-width: 85%;
+            word-wrap: break-word;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .message.user {
+            background: rgba(33, 150, 243, 0.12);
+            border: 1px solid rgba(33, 150, 243, 0.15);
+            margin-left: auto;
+        }
+        .message.ai {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
+            margin-right: auto;
+        }
+        .message .sender {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        .message .text {
+            font-size: 14px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+        .message .text ul, .message .text ol {
+            padding-left: 20px;
+            margin: 4px 0;
+        }
+        .message .text code {
+            background: rgba(255,255,255,0.06);
+            padding: 1px 6px;
+            border-radius: 3px;
+            font-size: 13px;
+        }
+        .typing {
+            color: #666;
+            font-size: 13px;
+            padding: 8px 14px;
+            animation: blink 1.2s infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        .chat-input {
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.04);
+            color: #e0e0e0;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .chat-input input:focus {
+            border-color: #2196f3;
+            background: rgba(255,255,255,0.06);
+        }
+        .chat-input input::placeholder { color: #555; }
+        .chat-input button {
+            padding: 10px 24px;
+            background: #2196f3;
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .chat-input button:hover { opacity: 0.85; }
+        .chat-input button:disabled { opacity: 0.4; cursor: not-allowed; }
+        .quick-questions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+        .quick-questions .quick-btn {
+            padding: 4px 12px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
+            color: #888;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .quick-questions .quick-btn:hover {
+            background: rgba(33,150,243,0.1);
+            color: #e0e0e0;
+            border-color: rgba(33,150,243,0.2);
+        }
+        .status-badge {
+            font-size: 11px;
+            padding: 2px 10px;
+            border-radius: 12px;
+            background: rgba(76,175,80,0.15);
+            color: #4caf50;
+        }
+        .status-badge.offline {
+            background: rgba(244,67,54,0.15);
+            color: #f44336;
+        }
+        @media (max-width: 600px) {
+            .chat-container { padding: 16px; height: 92vh; }
+            .message { max-width: 95%; }
+            .chat-header h1 { font-size: 17px; }
+            .quick-questions .quick-btn { font-size: 10px; padding: 3px 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>🧠 <span>AI Чат</span> · Crucix</h1>
+            <div class="controls">
+                <select id="model-select" class="model-select">
+                    <option value="deepseek-r1:1.5b">DeepSeek 1.5B</option>
+                    <option value="deepseek-r1:7b">DeepSeek 7B</option>
+                </select>
+                <a href="/jarvis">🏠 Главная</a>
+            </div>
+        </div>
+
+        <div class="quick-questions">
+            <button class="quick-btn" onclick="askQuick('Что такое Crucix?')">❓ Что такое Crucix?</button>
+            <button class="quick-btn" onclick="askQuick('Как запустить Crucix?')">🚀 Как запустить?</button>
+            <button class="quick-btn" onclick="askQuick('Как добавить RSS-ленту?')">📡 Добавить RSS</button>
+            <button class="quick-btn" onclick="askQuick('Что означают цвета новостей?')">🎨 Цвета новостей</button>
+            <button class="quick-btn" onclick="askQuick('Покажи мне модули Crucix')">📦 Модули</button>
+        </div>
+
+        <div class="chat-messages" id="chat-messages">
+            <div class="message ai">
+                <div class="sender">🤖 AI Помощник</div>
+                <div class="text">👋 Привет! Я твой AI-помощник по проекту <strong>Crucix</strong>.
+                
+Я знаю всё о проекте и могу помочь:
+• Настроить и запустить Crucix
+• Объяснить модули и функции
+• Ответить на вопросы о данных и аналитике
+• Помочь с решением проблем
+
+Просто задай мне вопрос! 😊</div>
+            </div>
+        </div>
+
+        <div class="chat-input">
+            <input type="text" id="chat-input" placeholder="Введите сообщение..." onkeypress="if(event.key==='Enter') sendMessage()">
+            <button id="send-btn" onclick="sendMessage()">Отправить</button>
+        </div>
+    </div>
+
+    <script>
+        const messagesContainer = document.getElementById('chat-messages');
+        const input = document.getElementById('chat-input');
+        const sendBtn = document.getElementById('send-btn');
+        const modelSelect = document.getElementById('model-select');
+        let chatHistory = [];
+
+        // Сохраняем историю в localStorage
+        function saveHistory() {
+            try {
+                const messages = messagesContainer.querySelectorAll('.message');
+                const history = [];
+                messages.forEach(msg => {
+                    const sender = msg.querySelector('.sender');
+                    const text = msg.querySelector('.text');
+                    if (sender && text) {
+                        const isUser = sender.textContent.includes('👤');
+                        history.push({
+                            role: isUser ? 'user' : 'ai',
+                            content: text.textContent
+                        });
+                    }
+                });
+                localStorage.setItem('crucix-chat-history', JSON.stringify(history));
+            } catch(e) {}
+        }
+
+        function loadHistory() {
+            try {
+                const saved = localStorage.getItem('crucix-chat-history');
+                if (saved) {
+                    const history = JSON.parse(saved);
+                    if (history.length > 0) {
+                        // Очищаем приветственное сообщение
+                        messagesContainer.innerHTML = '';
+                        history.forEach(msg => {
+                            addMessage(msg.content, msg.role === 'user', false);
+                        });
+                        return history;
+                    }
+                }
+            } catch(e) {}
+            return [];
+        }
+
+        function addMessage(text, isUser, save = true) {
+            const div = document.createElement('div');
+            div.className = 'message ' + (isUser ? 'user' : 'ai');
+            const senderName = isUser ? '👤 Вы' : '🤖 AI Помощник';
+            div.innerHTML = `
+                <div class="sender">${senderName}</div>
+                <div class="text">${text}</div>
+            `;
+            messagesContainer.appendChild(div);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            if (save) saveHistory();
+        }
+
+        function addTypingIndicator() {
+            const div = document.createElement('div');
+            div.className = 'typing';
+            div.id = 'typing-indicator';
+            div.textContent = '🤖 AI печатает...';
+            messagesContainer.appendChild(div);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const el = document.getElementById('typing-indicator');
+            if (el) el.remove();
+        }
+
+        function askQuick(question) {
+            input.value = question;
+            sendMessage();
+        }
+
+        async function sendMessage() {
+            const text = input.value.trim();
+            if (!text) return;
+
+            addMessage(text, true);
+            input.value = '';
+            sendBtn.disabled = true;
+
+            // Получаем историю
+            const history = [];
+            const msgs = messagesContainer.querySelectorAll('.message');
+            msgs.forEach(msg => {
+                const sender = msg.querySelector('.sender');
+                const textEl = msg.querySelector('.text');
+                if (sender && textEl) {
+                    const isUser = sender.textContent.includes('👤');
+                    history.push({
+                        role: isUser ? 'user' : 'assistant',
+                        content: textEl.textContent
+                    });
+                }
+            });
+
+            addTypingIndicator();
+
+            try {
+                const model = modelSelect.value;
+                const response = await fetch('/api/ai/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: text,
+                        model: model,
+                        history: history.slice(-10)
+                    })
+                });
+
+                removeTypingIndicator();
+                const data = await response.json();
+
+                if (data.success) {
+                    addMessage(data.response, false);
+                } else {
+                    let errorMsg = '❌ ' + (data.error || 'Неизвестная ошибка');
+                    if (data.error && data.error.includes('ollama')) {
+                        errorMsg = '❌ Ollama не запущен. Запустите: <code>ollama serve</code>';
+                    }
+                    addMessage(errorMsg, false);
+                }
+            } catch (e) {
+                removeTypingIndicator();
+                addMessage('❌ Ошибка соединения: ' + e.message, false);
+            }
+
+            sendBtn.disabled = false;
+            input.focus();
+        }
+
+        // Загрузка истории при старте
+        loadHistory();
+    </script>
+</body>
+</html>

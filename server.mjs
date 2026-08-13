@@ -1,341 +1,390 @@
-#!/usr/bin/env node
+/**
+ * CRUCIX — Open Source Intelligence Terminal
+ * Главный сервер
+ * Версия: 2.1.1
+ * Порт: 3117
+ */
 
-// ============================================================
-// SERVER.MJS — Главный сервер Crucix
-// ============================================================
-// HTTP-сервер на порту 3117
-// Раздаёт статику из dashboard/public/
-// Обрабатывает API-запросы
-// ============================================================
-
-import { createServer } from 'http';
-import { promises as fs } from 'fs';
-import { join, extname } from 'path';
+import http from 'http';
+import fs from 'fs/promises';
+import path from 'path';
 import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const PORT = process.env.PORT || 3117;
-const PUBLIC_DIR = join(__dirname, 'dashboard', 'public');
+import { parse } from 'url';
 
 // ============================================================
-// 1. ИМПОРТ API-МОДУЛЕЙ
+// ИМПОРТЫ API-МОДУЛЕЙ
 // ============================================================
 
-// RSS API
+// RSS
 import { handleRSSAPI } from './apis/sources/rss-manager-api.mjs';
 
-// Basket API (корзина данных)
-import { handleBasketAPI } from './apis/sources/basket-api.mjs';
-
-// News API
+// Новости
 import { handleNewsAPI } from './apis/sources/news-api.mjs';
 
-// AI Rating API
-import { handleAIRatingAPI } from './apis/sources/ai-news-rating.mjs';
+// Корзина
+import { handleBasketAPI } from './apis/sources/basket-api.mjs';
 
-// AI Chat API
+// AI
 import { handleAIChatAPI } from './apis/sources/ai-chat-api.mjs';
-
-// Storage API
-import { handleStorageAPI } from './apis/sources/storage-api.mjs';
-
-// Geo Markers API
-import { handleGeoMarkersAPI } from './apis/sources/geo-markers-api.mjs';
-
-// NewsAPI (альтернатива GDELT)
-import { handleNewsAPI as handleNewsAPIAlt } from './apis/sources/newsapi.mjs';
-
-// NewsAPI Basket (сбор и добавление в корзину)
-import { handleNewsAPIBasket } from './apis/sources/newsapi-basket-integration.mjs';
-
-// AI Analyzer (анализ новостей в корзине)
+import { handleAIRatingAPI } from './apis/sources/ai-news-rating.mjs';
 import { handleAIAnalyzer } from './apis/sources/ai-news-analyzer.mjs';
 
-// Global Index API (НОВОЕ!)
+// Хранилище
+import { handleStorageAPI } from './apis/sources/storage-api.mjs';
+
+// Геополитика
+import { handleGeoMarkersAPI } from './apis/sources/geo-markers-api.mjs';
+
+// Глобальный индекс (Модуль №5)
 import { handleGlobalIndexAPI } from './apis/sources/global-index-api.mjs';
 
+// Исторический анализ (Модуль №6)
+import { handleHistoricalAnalysisAPI } from './apis/sources/historical-analysis-api.mjs';
+
+// События для шкалы (Модуль №6, профессиональный)
+import { handleAnalysisEventsAPI } from './apis/sources/analysis-events-api.mjs';
+
+// NewsAPI
+import { handleNewsAPI as handleNewsAPIProxy } from './apis/sources/newsapi.mjs';
+import { handleNewsAPIBasket } from './apis/sources/newsapi-basket-integration.mjs';
+
 // ============================================================
-// 2. MIME-ТИПЫ
+// КОНСТАНТЫ
 // ============================================================
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const PORT = 3117;
+const PUBLIC_DIR = path.join(__dirname, 'dashboard/public');
+
+// MIME-типы
 const MIME_TYPES = {
-  '.html': 'text/html',
-  '.css': 'text/css',
-  '.js': 'application/javascript',
-  '.mjs': 'application/javascript',
-  '.json': 'application/json',
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg',
-  '.gif': 'image/gif',
-  '.svg': 'image/svg+xml',
-  '.ico': 'image/x-icon',
-  '.txt': 'text/plain',
-  '.xml': 'application/xml',
-  '.opml': 'application/xml',
-  '.pdf': 'application/pdf',
-  '.woff': 'font/woff',
-  '.woff2': 'font/woff2',
-  '.ttf': 'font/ttf',
-  '.eot': 'application/vnd.ms-fontobject',
+    '.html': 'text/html',
+    '.css': 'text/css',
+    '.js': 'application/javascript',
+    '.mjs': 'application/javascript',
+    '.json': 'application/json',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.gif': 'image/gif',
+    '.svg': 'image/svg+xml',
+    '.ico': 'image/x-icon',
+    '.txt': 'text/plain',
+    '.xml': 'application/xml',
+    '.pdf': 'application/pdf'
 };
 
 // ============================================================
-// 3. ОБРАБОТЧИК СТАТИЧЕСКИХ ФАЙЛОВ
+// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 // ============================================================
 
-async function serveStatic(req, res, filePath) {
-  try {
-    const ext = extname(filePath);
-    const mimeType = MIME_TYPES[ext] || 'application/octet-stream';
-    const content = await fs.readFile(filePath);
-    res.writeHead(200, {
-      'Content-Type': mimeType,
-      'Cache-Control': 'public, max-age=86400',
-    });
-    res.end(content);
-    return true;
-  } catch (e) {
-    return false;
-  }
-}
-
-async function findStaticFile(pathname) {
-  // Прямой путь в public
-  const direct = join(PUBLIC_DIR, pathname);
-  try {
-    await fs.access(direct);
-    return direct;
-  } catch (e) {}
-
-  // Если запрос на корень — index.html
-  if (pathname === '/' || pathname === '') {
-    const index = join(PUBLIC_DIR, 'index.html');
+/**
+ * Отправить HTML-страницу
+ */
+async function sendHTML(res, filePath, statusCode = 200) {
     try {
-      await fs.access(index);
-      return index;
-    } catch (e) {}
-  }
-
-  // Специальные страницы
-  const pages = ['jarvis', 'rss-feed', 'rss-dashboard', 'ai-chat', 'geo-map', 'basket', 'grid-tool', 'global-index'];
-  for (const page of pages) {
-    if (pathname === `/${page}` || pathname === `/${page}.html`) {
-      const file = join(PUBLIC_DIR, `${page}.html`);
-      try {
-        await fs.access(file);
-        return file;
-      } catch (e) {}
+        const fullPath = path.join(PUBLIC_DIR, filePath);
+        const content = await fs.readFile(fullPath, 'utf8');
+        res.writeHead(statusCode, { 'Content-Type': 'text/html' });
+        res.end(content);
+    } catch (error) {
+        console.error(`[Server] Ошибка отправки HTML: ${error.message}`);
+        res.writeHead(404, { 'Content-Type': 'text/html' });
+        res.end('<h1>404 — Страница не найдена</h1>');
     }
-  }
+}
 
-  // Файлы в подпапках
-  if (pathname.startsWith('/css/') || pathname.startsWith('/js/') || pathname.startsWith('/images/')) {
-    const file = join(PUBLIC_DIR, pathname);
+/**
+ * Отправить статический файл
+ */
+async function sendStaticFile(res, filePath) {
     try {
-      await fs.access(file);
-      return file;
-    } catch (e) {}
-  }
+        const fullPath = path.join(PUBLIC_DIR, filePath);
+        const content = await fs.readFile(fullPath);
+        const ext = path.extname(filePath);
+        const mimeType = MIME_TYPES[ext] || 'application/octet-stream';
+        res.writeHead(200, { 'Content-Type': mimeType });
+        res.end(content);
+    } catch (error) {
+        console.error(`[Server] Ошибка отправки статики: ${error.message}`);
+        res.writeHead(404);
+        res.end();
+    }
+}
 
-  return null;
+/**
+ * Логирование запросов
+ */
+function logRequest(req, pathname) {
+    const timestamp = new Date().toISOString();
+    console.log(`[${timestamp}] ${req.method} ${pathname}`);
 }
 
 // ============================================================
-// 4. ОСНОВНОЙ ОБРАБОТЧИК ЗАПРОСОВ
+// ОСНОВНОЙ ОБРАБОТЧИК ЗАПРОСОВ
 // ============================================================
 
-const server = createServer(async (req, res) => {
-  const url = new URL(req.url, `http://${req.headers.host}`);
-  const pathname = url.pathname;
+const server = http.createServer(async (req, res) => {
+    const parsedUrl = parse(req.url || '/', true);
+    const pathname = parsedUrl.pathname || '/';
+    const method = req.method || 'GET';
 
-  // CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, PUT, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    // Логируем запрос
+    logRequest(req, pathname);
 
-  if (req.method === 'OPTIONS') {
-    res.writeHead(200);
-    res.end();
-    return;
-  }
+    // ============================================================
+    // CORS (для всех ответов)
+    // ============================================================
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-  // ============================================================
-  // 4.1. Global Index API (НОВОЕ! — должно быть ПЕРВЫМ, чтобы не перехватывалось /api/geo/markers)
-  // ============================================================
-  if (pathname.startsWith('/api/geo/index')) {
-    await handleGlobalIndexAPI(req, res);
-    return;
-  }
+    if (method === 'OPTIONS') {
+        res.writeHead(200);
+        res.end();
+        return;
+    }
 
-  // ============================================================
-  // 4.2. RSS API
-  // ============================================================
-  if (pathname.startsWith('/api/rss/')) {
-    await handleRSSAPI(req, res);
-    return;
-  }
+    // ============================================================
+    // МАРШРУТЫ API
+    // ============================================================
 
-  // ============================================================
-  // 4.3. Basket API (корзина данных)
-  // ============================================================
-  if (pathname.startsWith('/api/basket')) {
-    await handleBasketAPI(req, res);
-    return;
-  }
+    // --- RSS ---
+    if (pathname.startsWith('/api/rss/')) {
+        await handleRSSAPI(req, res);
+        return;
+    }
 
-  // ============================================================
-  // 4.4. News API
-  // ============================================================
-  if (pathname.startsWith('/api/news/')) {
-    await handleNewsAPI(req, res);
-    return;
-  }
+    // --- Новости ---
+    if (pathname.startsWith('/api/news/')) {
+        await handleNewsAPI(req, res);
+        return;
+    }
 
-  // ============================================================
-  // 4.5. AI Rating API
-  // ============================================================
-  if (pathname.startsWith('/api/ai/rate')) {
-    await handleAIRatingAPI(req, res);
-    return;
-  }
+    // --- Корзина ---
+    if (pathname.startsWith('/api/basket')) {
+        await handleBasketAPI(req, res);
+        return;
+    }
 
-  // ============================================================
-  // 4.6. AI Chat API
-  // ============================================================
-  if (pathname.startsWith('/api/ai/chat')) {
-    await handleAIChatAPI(req, res);
-    return;
-  }
+    // --- AI Чат ---
+    if (pathname.startsWith('/api/ai/chat')) {
+        await handleAIChatAPI(req, res);
+        return;
+    }
 
-  // ============================================================
-  // 4.7. Storage API
-  // ============================================================
-  if (pathname.startsWith('/api/storage/')) {
-    await handleStorageAPI(req, res);
-    return;
-  }
+    // --- AI Рейтинг ---
+    if (pathname.startsWith('/api/ai/rate')) {
+        await handleAIRatingAPI(req, res);
+        return;
+    }
 
-  // ============================================================
-  // 4.8. Geo Markers API (все остальные /api/geo/*)
-  // ============================================================
-  if (pathname.startsWith('/api/geo/')) {
-    await handleGeoMarkersAPI(req, res);
-    return;
-  }
+    // --- AI Анализатор ---
+    if (pathname.startsWith('/api/ai/analyze')) {
+        await handleAIAnalyzer(req, res);
+        return;
+    }
 
-  // ============================================================
-  // 4.9. NewsAPI Basket (сбор и добавление в корзину)
-  // ============================================================
-  if (pathname.startsWith('/api/newsapi/basket')) {
-    await handleNewsAPIBasket(req, res);
-    return;
-  }
+    // --- Хранилище ---
+    if (pathname.startsWith('/api/storage/')) {
+        await handleStorageAPI(req, res);
+        return;
+    }
 
-  // ============================================================
-  // 4.10. NewsAPI (альтернатива GDELT)
-  // ============================================================
-  if (pathname.startsWith('/api/newsapi/')) {
-    await handleNewsAPIAlt(req, res);
-    return;
-  }
+    // --- Геополитика ---
+    if (pathname.startsWith('/api/geo/')) {
+        await handleGeoMarkersAPI(req, res);
+        return;
+    }
 
-  // ============================================================
-  // 4.11. AI Analyzer (анализ новостей в корзине)
-  // ============================================================
-  if (pathname.startsWith('/api/ai/analyze/')) {
-    await handleAIAnalyzer(req, res);
-    return;
-  }
+    // --- Глобальный индекс (Модуль №5) ---
+    if (pathname.startsWith('/api/geo/index')) {
+        await handleGlobalIndexAPI(req, res);
+        return;
+    }
 
-  // ============================================================
-  // 4.12. Другие API
-  // ============================================================
-  if (pathname.startsWith('/api/')) {
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ success: false, error: 'API не найден' }));
-    return;
-  }
+    // --- Исторический анализ (Модуль №6) ---
+    if (pathname.startsWith('/api/analysis/')) {
+        // Сначала проверяем events (более конкретный путь)
+        if (pathname === '/api/analysis/events') {
+            await handleAnalysisEventsAPI(req, res);
+            return;
+        }
+        // Остальные пути analysis
+        await handleHistoricalAnalysisAPI(req, res);
+        return;
+    }
 
-  // ============================================================
-  // 4.13. Статические файлы
-  // ============================================================
-  const filePath = await findStaticFile(pathname);
-  if (filePath) {
-    const served = await serveStatic(req, res, filePath);
-    if (served) return;
-  }
+    // --- NewsAPI ---
+    if (pathname.startsWith('/api/newsapi/')) {
+        if (pathname === '/api/newsapi/basket') {
+            await handleNewsAPIBasket(req, res);
+        } else {
+            await handleNewsAPIProxy(req, res);
+        }
+        return;
+    }
 
-  // ============================================================
-  // 4.14. 404
-  // ============================================================
-  res.writeHead(404, { 'Content-Type': 'text/html' });
-  res.end(`<!DOCTYPE html>
-<html>
-<head><title>404 — Crucix</title></head>
-<body style="background:#0a0a1a;color:#e0e0e0;font-family:sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;">
-  <div style="text-align:center;">
-    <h1 style="font-size:72px;margin:0;color:#2196f3;">404</h1>
-    <p style="font-size:20px;color:#888;">Страница не найдена</p>
-    <p style="color:#555;margin-top:20px;">
-      <a href="/" style="color:#2196f3;text-decoration:none;">← Вернуться на главную</a>
-    </p>
-  </div>
-</body>
-</html>`);
+    // ============================================================
+    // МАРШРУТЫ СТРАНИЦ
+    // ============================================================
+
+    // --- Главная ---
+    if (pathname === '/' || pathname === '/jarvis') {
+        await sendHTML(res, 'jarvis.html');
+        return;
+    }
+
+    // --- RSS Лента ---
+    if (pathname === '/rss-feed') {
+        await sendHTML(res, 'rss-feed.html');
+        return;
+    }
+
+    // --- RSS Управление ---
+    if (pathname === '/rss-dashboard') {
+        await sendHTML(res, 'rss-dashboard.html');
+        return;
+    }
+
+    // --- AI Чат ---
+    if (pathname === '/ai-chat') {
+        await sendHTML(res, 'ai-chat.html');
+        return;
+    }
+
+    // --- Геополитическая карта ---
+    if (pathname === '/geo-map') {
+        await sendHTML(res, 'geo-map.html');
+        return;
+    }
+
+    // --- Корзина ---
+    if (pathname === '/basket') {
+        await sendHTML(res, 'basket.html');
+        return;
+    }
+
+    // --- Инструмент "Сетка" ---
+    if (pathname === '/grid-tool') {
+        await sendHTML(res, 'grid-tool.html');
+        return;
+    }
+
+    // --- Глобальный индекс (Модуль №5) ---
+    if (pathname === '/global-index') {
+        await sendHTML(res, 'global-index.html');
+        return;
+    }
+
+    // --- Исторический анализ (Модуль №6) ---
+    if (pathname === '/historical-analysis') {
+        await sendHTML(res, 'historical-analysis.html');
+        return;
+    }
+
+    // ============================================================
+    // СТАТИЧЕСКИЕ ФАЙЛЫ
+    // ============================================================
+
+    if (pathname.startsWith('/css/')) {
+        await sendStaticFile(res, pathname);
+        return;
+    }
+
+    if (pathname.startsWith('/js/')) {
+        await sendStaticFile(res, pathname);
+        return;
+    }
+
+    if (pathname.startsWith('/images/')) {
+        await sendStaticFile(res, pathname);
+        return;
+    }
+
+    if (pathname === '/favicon.ico') {
+        res.writeHead(204);
+        res.end();
+        return;
+    }
+
+    // ============================================================
+    // 404 — НЕ НАЙДЕНО
+    // ============================================================
+
+    res.writeHead(404, { 'Content-Type': 'text/html' });
+    res.end(`
+        <!DOCTYPE html>
+        <html>
+        <head><title>404 — Страница не найдена</title></head>
+        <body style="background:#0a0e17;color:#e0e0e0;font-family:sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;flex-direction:column;">
+            <h1 style="font-size:72px;margin:0;background:linear-gradient(135deg,#ff6b6b,#4ecdc4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">404</h1>
+            <p style="font-size:20px;color:#8899aa;">Страница не найдена</p>
+            <a href="/" style="color:#4ecdc4;text-decoration:none;margin-top:20px;padding:10px 30px;border:1px solid #4ecdc4;border-radius:6px;">← На главную</a>
+        </body>
+        </html>
+    `);
 });
 
 // ============================================================
-// 5. ЗАПУСК СЕРВЕРА
+// ЗАПУСК СЕРВЕРА
 // ============================================================
 
-server.listen(PORT, () => {
-  console.log(`========================================`);
-  console.log(`  🚀 Crucix Server запущен`);
-  console.log(`  📡 Порт: ${PORT}`);
-  console.log(`  🌐 URL: http://localhost:${PORT}`);
-  console.log(`  📁 Public: ${PUBLIC_DIR}`);
-  console.log(`========================================`);
-  console.log(`  Доступные страницы:`);
-  console.log(`  - Главная: http://localhost:${PORT}/`);
-  console.log(`  - Интерфейс: http://localhost:${PORT}/jarvis`);
-  console.log(`  - RSS-лента: http://localhost:${PORT}/rss-feed`);
-  console.log(`  - RSS управление: http://localhost:${PORT}/rss-dashboard`);
-  console.log(`  - AI Чат: http://localhost:${PORT}/ai-chat`);
-  console.log(`  - Геокарта: http://localhost:${PORT}/geo-map`);
-  console.log(`  - Корзина: http://localhost:${PORT}/basket`);
-  console.log(`  - Сетка: http://localhost:${PORT}/grid-tool`);
-  console.log(`  - Глобальный индекс: http://localhost:${PORT}/global-index (НОВОЕ!)`);
-  console.log(`========================================`);
-  console.log(`  API:`);
-  console.log(`  - /api/rss/*   — управление RSS`);
-  console.log(`  - /api/news/*  — новости`);
-  console.log(`  - /api/basket   — корзина данных`);
-  console.log(`  - /api/ai/rate — AI оценка новостей`);
-  console.log(`  - /api/ai/chat — AI чат помощник`);
-  console.log(`  - /api/ai/analyze — AI анализ новостей в корзине`);
-  console.log(`  - /api/storage/* — управление хранением`);
-  console.log(`  - /api/geo/*   — геополитические маркеры`);
-  console.log(`  - /api/geo/index — ГЛОБАЛЬНЫЙ ИНДЕКС (НОВОЕ!)`);
-  console.log(`  - /api/geo/index/history — ИСТОРИЯ ИНДЕКСА (НОВОЕ!)`);
-  console.log(`  - /api/newsapi/basket — сбор NewsAPI в корзину`);
-  console.log(`  - /api/newsapi/* — NewsAPI (альтернатива GDELT)`);
-  console.log(`========================================`);
+server.listen(PORT, '0.0.0.0', () => {
+    console.log('');
+    console.log('╔══════════════════════════════════════════════════════════╗');
+    console.log('║                                                          ║');
+    console.log('║   🧠  CRUCIX — Open Source Intelligence Terminal       ║');
+    console.log('║                                                          ║');
+    console.log('║   Версия: 2.1.1                                         ║');
+    console.log('║   Порт:   ' + PORT + '                                          ║');
+    console.log('║                                                          ║');
+    console.log('║   🌐  http://localhost:' + PORT + '/                            ║');
+    console.log('║                                                          ║');
+    console.log('║   📋  Доступные страницы:                               ║');
+    console.log('║   ├─ /              — Главная (JARVIS)                  ║');
+    console.log('║   ├─ /rss-feed      — RSS лента                        ║');
+    console.log('║   ├─ /rss-dashboard — Управление RSS                   ║');
+    console.log('║   ├─ /ai-chat       — AI помощник                      ║');
+    console.log('║   ├─ /geo-map       — Геополитическая карта            ║');
+    console.log('║   ├─ /basket        — Корзина данных                   ║');
+    console.log('║   ├─ /grid-tool     — Инструмент "Сетка"               ║');
+    console.log('║   ├─ /global-index  — Глобальный индекс (Модуль №5)    ║');
+    console.log('║   └─ /historical-analysis — Исторический анализ (Модуль №6) ║');
+    console.log('║                                                          ║');
+    console.log('║   📡  API-эндпоинты:                                   ║');
+    console.log('║   ├─ /api/rss/*            — RSS управление            ║');
+    console.log('║   ├─ /api/news/*           — Новости                   ║');
+    console.log('║   ├─ /api/basket/*         — Корзина                   ║');
+    console.log('║   ├─ /api/ai/*             — AI (чат/рейтинг/анализ)  ║');
+    console.log('║   ├─ /api/geo/*            — Геополитика               ║');
+    console.log('║   ├─ /api/geo/index        — Глобальный индекс         ║');
+    console.log('║   ├─ /api/analysis/*       — Исторический анализ       ║');
+    console.log('║   ├─ /api/analysis/events  — События (проф. шкала)    ║');
+    console.log('║   └─ /api/newsapi/*        — NewsAPI                   ║');
+    console.log('║                                                          ║');
+    console.log('║   ✅  Сервер запущен и готов к работе!                 ║');
+    console.log('║                                                          ║');
+    console.log('╚══════════════════════════════════════════════════════════╝');
+    console.log('');
 });
 
 // ============================================================
-// 6. ОБРАБОТКА ЗАВЕРШЕНИЯ
+// ОБРАБОТКА ОШИБОК
 // ============================================================
 
-process.on('SIGINT', () => {
-  console.log('\n🛑 Сервер остановлен');
-  process.exit(0);
+process.on('uncaughtException', (error) => {
+    console.error('[Server] Необработанное исключение:', error);
 });
 
-process.on('SIGTERM', () => {
-  console.log('\n🛑 Сервер остановлен (SIGTERM)');
-  process.exit(0);
+process.on('unhandledRejection', (reason) => {
+    console.error('[Server] Необработанный reject:', reason);
 });
+
+// ============================================================
+// ЭКСПОРТ (для тестов)
+// ============================================================
 
 export default server;

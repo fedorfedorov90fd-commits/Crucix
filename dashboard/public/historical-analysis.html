@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Исторический анализ индекса — Crucix</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+    
+    <link rel="stylesheet" href="/css/historical-analysis.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <!-- ============================================================ -->
+    <!-- КООРДИНАТНАЯ СЕТКА (невидимая для юзера, включается Ctrl+Shift+G) -->
+    <!-- ============================================================ -->
+    <div class="grid-overlay" id="gridOverlay"></div>
+
+    <div class="container">
+        <!-- ============================================================ -->
+        <!-- ROW 1: ШАПКА (y: 0-60) -->
+        <!-- ============================================================ -->
+        <header class="header" data-row="1" data-y="0-60">
+            <div class="header-left">
+                <a href="/jarvis" class="back-btn">← На главную</a>
+                <h1>📊 Сравнительный исторический анализ</h1>
+            </div>
+            <div class="header-right">
+                <button id="copyAllBtn" class="btn-copy-header">📋 КОПИРОВАТЬ</button>
+                <span class="badge">Модуль №6</span>
+                <span class="badge" id="dataCount">Записей: 0</span>
+            </div>
+        </header>
+
+        <!-- ============================================================ -->
+        <!-- ROW 2: СТАТУС КОПИРОВАНИЯ (y: 60-90) -->
+        <!-- ============================================================ -->
+        <div id="copyStatus" class="copy-status" style="display:none;">
+            ✅ Все данные скопированы в буфер обмена!
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- ROW 3: ПАНЕЛЬ УПРАВЛЕНИЯ (y: 90-190) -->
+        <!-- ============================================================ -->
+        <section class="controls" data-row="3" data-y="90-190">
+            <div class="control-group">
+                <label for="periodDays">📅 Период сравнения (дней):</label>
+                <input type="number" id="periodDays" value="30" min="1" max="365">
+                <button id="compareBtn" class="btn-primary">Сравнить</button>
+            </div>
+
+            <div class="control-group checkboxes">
+                <label><input type="checkbox" id="showEvents" checked> 📌 События</label>
+                <label><input type="checkbox" id="showPredict" checked> 🔮 Прогноз</label>
+                <label><input type="checkbox" id="showAnomalies" checked> ⚠️ Аномалии</label>
+            </div>
+
+            <div class="control-group">
+                <label for="predictDays">Прогноз на (дней):</label>
+                <input type="number" id="predictDays" value="7" min="1" max="30">
+                <button id="predictBtn" class="btn-secondary">Рассчитать</button>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- ROW 4: СТАТИСТИКА (y: 190-310) -->
+        <!-- ============================================================ -->
+        <section class="stats-grid" id="statsGrid" data-row="4" data-y="190-310">
+            <div class="stat-card">
+                <div class="stat-label">📊 Текущий индекс</div>
+                <div class="stat-value" id="currentIndex">—</div>
+                <div class="stat-sub" id="currentDate">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">📈 Средний за период</div>
+                <div class="stat-value" id="avgIndex">—</div>
+                <div class="stat-sub" id="periodInfo">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">📉 Изменение</div>
+                <div class="stat-value" id="changeValue">—</div>
+                <div class="stat-sub" id="changePercent">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">📅 Всего дней</div>
+                <div class="stat-value" id="totalDays">—</div>
+                <div class="stat-sub" id="dateRange">—</div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- ROW 5: ГРАФИК (y: 310-730) -->
+        <!-- ============================================================ -->
+        <section class="chart-section" data-row="5" data-y="310-730">
+            <div class="chart-header">
+                <h2>📈 Динамика индекса напряжённости</h2>
+                <div class="chart-legend">
+                    <span class="legend-item"><span class="legend-color" style="background:#ff6b6b;"></span> Индекс</span>
+                    <span class="legend-item"><span class="legend-color" style="background:#4ecdc4;"></span> Среднее</span>
+                    <span class="legend-item"><span class="legend-color" style="background:#ffe66d;"></span> Аномалии</span>
+                    <span class="legend-item"><span class="legend-color" style="background:#a29bfe;"></span> Прогноз</span>
+                    <span class="legend-item"><span class="legend-color" style="background:#ff9f43;"></span> События</span>
+                </div>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="mainChart"></canvas>
+            </div>
+            <div class="chart-coords">
+                <span>X: <span id="coordX">—</span></span>
+                <span>Y: <span id="coordY">—</span></span>
+                <span>Дата: <span id="coordDate">—</span></span>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- ROW 6: СРАВНИТЕЛЬНЫЙ АНАЛИЗ (y: 730-830) -->
+        <!-- ============================================================ -->
+        <section class="compare-section" data-row="6" data-y="730-830">
+            <h2>📊 Сравнительный анализ</h2>
+            <div class="compare-grid">
+                <div class="compare-card">
+                    <h3>Текущий период</h3>
+                    <p class="compare-value" id="currentPeriodVal">—</p>
+                    <p class="compare-date" id="currentPeriodDate">—</p>
+                </div>
+                <div class="compare-card">
+                    <h3>Исторический период</h3>
+                    <p class="compare-value" id="historicalPeriodVal">—</p>
+                    <p class="compare-date" id="historicalPeriodDate">—</p>
+                </div>
+                <div class="compare-card highlight">
+                    <h3>Разница</h3>
+                    <p class="compare-value" id="diffValue">—</p>
+                    <p class="compare-date" id="diffPercent">—</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- ROW 7: АНОМАЛИИ (y: 830-890) -->
+        <!-- ============================================================ -->
+        <section class="anomalies-section" data-row="7" data-y="830-890">
+            <h2>⚠️ Обнаруженные аномалии</h2>
+            <div id="anomaliesList"><p class="loading">Загрузка...</p></div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- ROW 8: ПРОГНОЗ (y: 890-1010) -->
+        <!-- ============================================================ -->
+        <section class="predict-section" data-row="8" data-y="890-1010">
+            <h2>🔮 Прогноз</h2>
+            <div class="predict-grid">
+                <div class="predict-card">
+                    <h3>Тренд</h3>
+                    <p class="predict-value" id="trendValue">—</p>
+                    <p class="predict-sub" id="confidenceValue">Уверенность: —</p>
+                </div>
+                <div class="predict-card">
+                    <h3>Прогноз на <span id="predictDaysLabel">7</span> дней</h3>
+                    <div id="predictList"><p class="loading">Расчёт...</p></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- ROW 9: СОБЫТИЯ (y: 1010-1430) -->
+        <!-- ============================================================ -->
+        <section class="events-section" id="eventsSection" data-row="9" data-y="1010-1430">
+            <h2>📌 События на временной шкале</h2>
+            <div id="eventsList"><p class="loading">Загрузка...</p></div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- ROW 10: ЭКСПОРТ (y: 1430-1510) -->
+        <!-- ============================================================ -->
+        <section class="export-section" data-row="10" data-y="1430-1510">
+            <div class="export-row">
+                <button id="exportDataBtn" class="btn-primary">📥 Экспорт JSON</button>
+                <button id="exportCsvBtn" class="btn-secondary">📊 Экспорт CSV</button>
+            </div>
+        </section>
+    </div>
+
+    <script src="/js/historical-analysis.js"></script>
+</body>
+</html>

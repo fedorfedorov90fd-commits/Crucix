@@ -740,9 +740,90 @@ function renderTopbar(){
       <span class="meta-pill">${t('dashboard.sources','SOURCES')} <span class="v">${D.meta.sourcesOk}/${D.meta.sourcesQueried}</span></span>
       ${D.delta?.summary ? `<span class="meta-pill">${t('dashboard.delta','DELTA')} <span class="v">${D.delta.summary.direction==='risk-off'?'&#x25B2; '+t('dashboard.riskOff','RISK-OFF'):D.delta.summary.direction==='risk-on'?'&#x25BC; '+t('dashboard.riskOn','RISK-ON'):'&#x25C6; '+t('dashboard.mixed','MIXED')}</span></span>` : ''}
       <button class="guide-btn" onclick="openGlossary()">${t('dashboard.guideBtn','What Signals Mean')}</button>
-      <span class="alert-badge">${t('dashboard.highAlert','HIGH ALERT')}</span>
+      <span class="alert-badge" style="display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:500;height:20px;margin:0 2px;">
+  <a href="/jarvis" target="_blank" style="display:inline-flex;align-items:center;gap:2px;background:#f44336;color:#fff;font-size:9px;font-weight:500;padding:1px 6px;border-radius:3px;text-decoration:none;font-family:inherit;border:none;height:20px;cursor:pointer;">🔴 HIGH ALERT</a>
+  <a href="/rss-feed" target="_blank" style="display:inline-flex;align-items:center;gap:2px;background:#f26522;color:#fff;font-size:9px;font-weight:500;padding:1px 6px;border-radius:3px;text-decoration:none;font-family:inherit;border:none;height:20px;cursor:pointer;">📡 RSS 30</a>
+  <a href="/ai-chat" target="_blank" style="display:inline-flex;align-items:center;gap:2px;background:#64f0c8;color:#0a0a1a;font-size:9px;font-weight:500;padding:1px 6px;border-radius:3px;text-decoration:none;font-family:inherit;border:none;height:20px;cursor:pointer;">🧠 AI Чат</a>
+  <a href="/geo-map" target="_blank" style="display:inline-flex;align-items:center;gap:2px;background:#44ccff;color:#0a0a1a;font-size:9px;font-weight:500;padding:1px 6px;border-radius:3px;text-decoration:none;font-family:inherit;border:none;height:20px;cursor:pointer;">📡 КАРТА</a>
+  <a href="/basket" target="_blank" style="display:inline-flex;align-items:center;gap:2px;background:#2196f3;color:#fff;font-size:9px;font-weight:500;padding:1px 6px;border-radius:3px;text-decoration:none;font-family:inherit;border:none;height:20px;cursor:pointer;">📦 КОРЗИНА</a>
+  <a href="/grid-tool" style="display:inline-flex;align-items:center;gap:2px;background:#9c27b0;color:#fff;font-size:9px;font-weight:500;padding:1px 6px;border-radius:3px;text-decoration:none;font-family:inherit;border:none;height:20px;cursor:pointer;">📐 СЕТКА</a>
+  <a href="/global-index" target="_blank" style="display:inline-flex;align-items:center;gap:2px;background:#9c27b0;color:#fff;font-size:9px;font-weight:500;padding:1px 6px;border-radius:3px;text-decoration:none;font-family:inherit;border:none;height:20px;cursor:pointer;">🌍 ИНДЕКС</a>
+</span>
     </div>`;
   renderRegionControls();
+}
+
+// ============================================================
+// ВИДЖЕТ ГЛОБАЛЬНОГО ИНДЕКСА — ФУНКЦИЯ ЗАГРУЗКИ
+// ============================================================
+async function loadWidgetIndex() {
+  try {
+    const response = await fetch('/api/geo/index');
+    const data = await response.json();
+    
+    if (data.success) {
+      const valueEl = document.getElementById('widget-index-value');
+      const levelEl = document.getElementById('widget-index-level');
+      const trendEl = document.getElementById('widget-index-trend');
+      const barEl = document.getElementById('widget-index-bar');
+      
+      if (valueEl) {
+        valueEl.textContent = data.index;
+        const colors = {
+          critical: '#ef4444',
+          high: '#f97316',
+          medium: '#eab308',
+          normal: '#22c55e'
+        };
+        valueEl.style.color = colors[data.level] || '#2196f3';
+      }
+      
+      if (levelEl) {
+        const levelLabels = {
+          critical: '🔴 КРИТИЧЕСКИЙ',
+          high: '🟠 ВЫСОКИЙ',
+          medium: '🟡 СРЕДНИЙ',
+          normal: '🟢 НОРМАЛЬНЫЙ'
+        };
+        levelEl.textContent = levelLabels[data.level] || '--';
+        const colors = {
+          critical: '#ef4444',
+          high: '#f97316',
+          medium: '#eab308',
+          normal: '#22c55e'
+        };
+        levelEl.style.color = colors[data.level] || '#888';
+      }
+      
+      if (trendEl) {
+        const trendSymbols = {
+          up: '📈 растёт',
+          down: '📉 падает',
+          stable: '➡️ стабилен'
+        };
+        trendEl.textContent = trendSymbols[data.trend] || '--';
+        const trendColors = {
+          up: '#ef4444',
+          down: '#22c55e',
+          stable: '#eab308'
+        };
+        trendEl.style.color = trendColors[data.trend] || '#888';
+      }
+      
+      if (barEl) {
+        barEl.style.width = data.index + '%';
+        const barColors = {
+          critical: '#ef4444',
+          high: '#f97316',
+          medium: '#eab308',
+          normal: '#22c55e'
+        };
+        barEl.style.background = barColors[data.level] || '#2196f3';
+      }
+    }
+  } catch (e) {
+    console.error('[Widget] Ошибка загрузки индекса:', e);
+  }
 }
 
 // === LEFT RAIL ===
@@ -775,6 +856,24 @@ function renderLeftRail(){
   const claims=D.fred.find(f=>f.id==='ICSA');
 
   document.getElementById('leftRail').innerHTML=`
+    <!-- ГЛОБАЛЬНЫЙ ИНДЕКС — ВИДЖЕТ -->
+    <div class="g-panel" style="cursor:pointer;border-color:rgba(100,240,200,0.15);" onclick="window.location.href='/global-index'">
+      <div class="sec-head">
+        <h3 style="color:var(--accent);">🌍 Глобальный индекс</h3>
+        <span class="badge" style="font-size:10px;" id="widget-index-level">Загрузка...</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin:4px 0 6px;">
+        <span style="font-size:40px;font-weight:800;letter-spacing:-2px;" id="widget-index-value">--</span>
+        <span style="font-size:12px;color:var(--dim);" id="widget-index-trend">--</span>
+      </div>
+      <div style="width:100%;height:3px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;">
+        <div id="widget-index-bar" style="width:0%;height:100%;background:#2196f3;border-radius:2px;transition:width 0.5s ease;"></div>
+      </div>
+      <div style="font-family:var(--mono);font-size:8px;color:var(--dim);margin-top:4px;letter-spacing:0.05em;text-transform:uppercase;">
+        Нажмите для деталей →
+      </div>
+    </div>
+
     <div class="g-panel">
       <div class="sec-head"><h3>${t('panels.sensorGrid','Sensor Grid')}</h3><span class="badge">${t('badges.live','LIVE')}</span></div>
       ${layers.map(l=>`<div class="layer-item"><div class="layer-left"><div class="ldot ${l.dot}"></div><div><div class="layer-name">${l.name}</div><div class="layer-sub">${l.sub}</div></div></div><div class="layer-count">${l.count}</div></div>`).join('')}
@@ -1961,12 +2060,12 @@ function toggleGeoPanel() {
   const body = document.getElementById('geoBody');
   const btn = document.getElementById('geoToggleBtn');
   const panel = document.querySelector('.lp-geopolitical');
-  
+
   if (body) {
     body.style.display = geoPanelCollapsed ? 'none' : 'block';
     btn.textContent = geoPanelCollapsed ? '▶' : '▼';
   }
-  
+
   if (panel) {
     if (geoPanelCollapsed) {
       panel.style.minHeight = '40px';
@@ -1986,7 +2085,7 @@ function toggleGeoLanguage() {
   const lang = GEO_LANG[geoLang];
   const btn = document.querySelector('.lp-geopolitical .sec-head .lang-btn');
   if (btn) btn.textContent = geoLang === 'ru' ? '🇷🇺' : '🇬🇧';
-  
+
   const elements = {
     geoNewsLabel: lang.newsLabel,
     geoDaysLabel: lang.daysLabel,
@@ -1998,7 +2097,7 @@ function toggleGeoLanguage() {
     geoAnalyzeLabel: lang.analyzeLabel,
     geoAutoLabel: lang.autoLabel
   };
-  
+
   Object.entries(elements).forEach(([id, text]) => {
     const el = document.getElementById(id);
     if (el) {
@@ -2010,12 +2109,12 @@ function toggleGeoLanguage() {
       }
     }
   });
-  
+
   const statusBadge = document.getElementById('geoStatusBadge');
   if (statusBadge) {
     statusBadge.textContent = lang.statusLive;
   }
-  
+
   localStorage.setItem('geo_lang', geoLang);
 }
 
@@ -2026,7 +2125,7 @@ function loadGeoLang() {
     const lang = GEO_LANG[geoLang];
     const btn = document.querySelector('.lp-geopolitical .sec-head .lang-btn');
     if (btn) btn.textContent = geoLang === 'ru' ? '🇷🇺' : '🇬🇧';
-    
+
     const elements = {
       geoNewsLabel: lang.newsLabel,
       geoDaysLabel: lang.daysLabel,
@@ -2038,7 +2137,7 @@ function loadGeoLang() {
       geoAnalyzeLabel: lang.analyzeLabel,
       geoAutoLabel: lang.autoLabel
     };
-    
+
     Object.entries(elements).forEach(([id, text]) => {
       const el = document.getElementById(id);
       if (el) {
@@ -2050,7 +2149,7 @@ function loadGeoLang() {
         }
       }
     });
-    
+
     const statusBadge = document.getElementById('geoStatusBadge');
     if (statusBadge) {
       statusBadge.textContent = lang.statusLive;
@@ -2076,16 +2175,16 @@ function showGeoHelp() {
 async function cleanOldNewsFiles() {
   const daysInput = document.getElementById('geoStorageDaysInput');
   const days = parseInt(daysInput?.value || 7);
-  
+
   try {
     const fs = await import('fs/promises');
     const path = await import('path');
     const dir = path.join(process.cwd(), 'data', 'ai_raw', 'geopolitical-reports');
-    
+
     const files = await fs.readdir(dir);
     const now = Date.now();
     let deleted = 0;
-    
+
     for (const file of files) {
       if (!file.endsWith('.json')) continue;
       const filePath = path.join(dir, file);
@@ -2096,7 +2195,7 @@ async function cleanOldNewsFiles() {
         deleted++;
       }
     }
-    
+
     if (deleted > 0) {
       console.log(`[Geo] Удалено ${deleted} старых файлов (старше ${days} дней)`);
     }
@@ -2116,17 +2215,17 @@ function loadGeoSettings() {
       const temp = document.getElementById('geoTemperature');
       const auto = document.getElementById('geoAutoAnalyze');
       const days = document.getElementById('geoStorageDaysInput');
-      
+
       if (provider) provider.value = settings.provider || 'auto';
       if (model) model.value = settings.model || 'deepseek-chat';
       if (apiKey) apiKey.value = settings.apiKey || '';
       if (temp) temp.value = settings.temperature || 0.1;
       if (auto) auto.checked = settings.autoAnalyze || false;
       if (days) days.value = settings.storageDays || 7;
-      
+
       const display = document.getElementById('geoStorageDays');
       if (display) display.textContent = settings.storageDays || 7;
-      
+
       if (document.getElementById('geoTempVal')) {
         document.getElementById('geoTempVal').textContent = settings.temperature || 0.1;
       }
@@ -2141,7 +2240,7 @@ function saveGeoSettings() {
   const temp = document.getElementById('geoTemperature');
   const auto = document.getElementById('geoAutoAnalyze');
   const days = document.getElementById('geoStorageDaysInput');
-  
+
   const settings = {
     provider: provider ? provider.value : 'auto',
     model: model ? model.value : 'deepseek-chat',
@@ -2150,12 +2249,12 @@ function saveGeoSettings() {
     autoAnalyze: auto ? auto.checked : false,
     storageDays: days ? parseInt(days.value) || 7 : 7
   };
-  
+
   localStorage.setItem('geopolitical_settings', JSON.stringify(settings));
-  
+
   const display = document.getElementById('geoStorageDays');
   if (display) display.textContent = settings.storageDays;
-  
+
   const status = document.getElementById('geoSaveStatus');
   if (status) {
     status.textContent = '✅ Сохранено!';
@@ -2172,19 +2271,19 @@ function getNewsForAnalysis() {
 
 async function runGeoAnalysis() {
   if (geoAnalyzeInProgress) return;
-  
+
   const resultEl = document.getElementById('geoResult');
   const loadingEl = document.getElementById('geoLoading');
   const statusBadge = document.getElementById('geoStatusBadge');
   const lang = GEO_LANG[geoLang] || GEO_LANG.ru;
-  
+
   if (!resultEl || !loadingEl) return;
-  
+
   const provider = document.getElementById('geoAiProvider')?.value || 'auto';
   const model = document.getElementById('geoAiModel')?.value || 'deepseek-chat';
   const apiKey = document.getElementById('geoApiKey')?.value || '';
   const temperature = parseFloat(document.getElementById('geoTemperature')?.value || 0.1);
-  
+
   const headlines = getNewsForAnalysis();
   if (headlines.length === 0) {
     resultEl.style.display = 'block';
@@ -2192,7 +2291,7 @@ async function runGeoAnalysis() {
     resultEl.style.borderLeftColor = 'var(--warn)';
     return;
   }
-  
+
   geoAnalyzeInProgress = true;
   loadingEl.style.display = 'block';
   resultEl.style.display = 'none';
@@ -2201,13 +2300,13 @@ async function runGeoAnalysis() {
     statusBadge.style.background = 'rgba(255,184,76,0.2)';
     statusBadge.style.color = '#ffb84c';
   }
-  
+
   try {
     const prompt = `Ты — военно-политический аналитик. Проанализируй эти новости и выдели 5 ключевых событий, укажи признаки эскалации, сделай краткий прогноз на 48 часов. Отвечай сухо, фактологично, без эмоций.\n\nНовости:\n${headlines.join('\n')}`;
-    
+
     let result = '';
     let usedProvider = provider;
-    
+
     if (provider === 'auto') {
       try {
         const resp = await fetch('http://localhost:11434/api/tags', { signal: AbortSignal.timeout(1000) });
@@ -2222,7 +2321,7 @@ async function runGeoAnalysis() {
     } else {
       usedProvider = provider;
     }
-    
+
     if (usedProvider === 'ollama') {
       const resp = await fetch('http://localhost:11434/api/generate', {
         method: 'POST',
@@ -2270,11 +2369,11 @@ async function runGeoAnalysis() {
       const data = await resp.json();
       result = data.choices?.[0]?.message?.content || lang.noResponse + ' OpenRouter';
     }
-    
+
     resultEl.style.display = 'block';
     resultEl.innerHTML = result;
     resultEl.style.borderLeftColor = '#00d4ff';
-    
+
   } catch (error) {
     resultEl.style.display = 'block';
     resultEl.innerHTML = `❌ ${error.message || 'Неизвестная ошибка'}`;
@@ -2298,17 +2397,17 @@ function updateGeoStatus() {
   const updateEl = document.getElementById('geoLastUpdate');
   const daysDisplay = document.getElementById('geoStorageDays');
   const statusBadge = document.getElementById('geoStatusBadge');
-  
+
   if (countEl) countEl.textContent = total;
   if (updateEl) {
     const ts = D.meta?.timestamp ? new Date(D.meta.timestamp) : new Date();
     updateEl.textContent = ts.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
   }
-  
+
   if (statusBadge) {
     statusBadge.textContent = GEO_LANG[geoLang].statusLive;
   }
-  
+
   try {
     const saved = localStorage.getItem('geopolitical_settings');
     if (saved) {
@@ -2316,7 +2415,7 @@ function updateGeoStatus() {
       if (daysDisplay) daysDisplay.textContent = settings.storageDays || 7;
     }
   } catch {}
-  
+
   const auto = document.getElementById('geoAutoAnalyze');
   if (auto && auto.checked && total > 0) {
     const lastRun = localStorage.getItem('geo_last_analysis_time');
@@ -2326,7 +2425,7 @@ function updateGeoStatus() {
       runGeoAnalysis();
     }
   }
-  
+
   cleanOldNewsFiles();
 }
 
@@ -2334,7 +2433,7 @@ function initGeoPanel() {
   loadGeoLang();
   loadGeoSettings();
   updateGeoStatus();
-  
+
   // Проверяем состояние сворачивания при загрузке
   const panel = document.querySelector('.lp-geopolitical');
   if (panel && geoPanelCollapsed) {
@@ -2346,7 +2445,7 @@ function initGeoPanel() {
     const btn = document.getElementById('geoToggleBtn');
     if (btn) btn.textContent = '▶';
   }
-  
+
   const analyzeBtn = document.getElementById('geoAnalyzeBtn');
   if (analyzeBtn) {
     analyzeBtn.addEventListener('click', () => {
@@ -2354,7 +2453,7 @@ function initGeoPanel() {
       runGeoAnalysis();
     });
   }
-  
+
   const inputs = ['geoAiProvider', 'geoAiModel', 'geoTemperature', 'geoStorageDaysInput'];
   inputs.forEach(id => {
     const el = document.getElementById(id);
@@ -2378,17 +2477,11 @@ function initGeoPanel() {
       });
     }
   });
-  
+
   const keyEl = document.getElementById('geoApiKey');
   if (keyEl) {
     keyEl.addEventListener('input', saveGeoSettings);
   }
-  
-  const autoEl = document.getElementById('geoAutoAnalyze');
-  if (autoEl) {
-    autoEl.addEventListener('change', saveGeoSettings);
-  }
-}
 
   const autoEl = document.getElementById('geoAutoAnalyze');
   if (autoEl) {
@@ -2427,6 +2520,15 @@ function connectSSE(){
 
 // === INIT ===
 let booted = false;
+
+// Загружаем виджет индекса при старте
+document.addEventListener('DOMContentLoaded', () => {
+  // Загрузка виджета индекса
+  loadWidgetIndex();
+  // Обновление каждые 5 минут
+  setInterval(loadWidgetIndex, 300000);
+});
+
 function init(){
   renderTopbar();renderLeftRail();renderLower();renderRight();
   renderGlossary();
@@ -2464,5 +2566,4 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 </script>
-</body>
 </html>

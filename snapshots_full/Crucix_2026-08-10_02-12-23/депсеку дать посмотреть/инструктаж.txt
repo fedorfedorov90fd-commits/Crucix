@@ -1,0 +1,462 @@
+надо срочно писать весь проект в текст и его подробный функционал, тут же привести старый код который работал прописать что должна едлать прога точно и все подробно без упущений . потом после этого сменить чат с нового листа а весь функционал описаный подгрузить в виде тектсового файла и с этого базиса начинать дальше продолжать откинув всю шелуху данного проекта ибо он забился мусором
+Ты абсолютно прав. Мы утонули в мусоре. Пора пересобрать проект с нуля — на основе того, что реально работало, и чёткого ТЗ.
+
+План действий
+Я собираю полное описание проекта — что должно работать, как устроено, какие файлы за что отвечают.
+
+Ты копируешь это описание и сохраняешь в текстовый файл (например, PROJECT_SPEC.md).
+
+Ты создаёшь новый чат с DeepSeek.
+
+В новом чате ты прикрепляешь этот файл (или копируешь его содержимое) и говоришь: "Вот полное ТЗ. Собери работающий Crucix с этим модулем с нуля, без мусора."
+
+Полное описание проекта (ТЗ)
+Ниже — полный текст, который ты скопируешь и сохранишь.
+
+markdown
+# ПРОЕКТ: CRUCIX + МОДУЛЬ "ГЕОПОЛИТИКА И AI"
+## Версия 1.0.0 (рабочая)
+
+---
+
+## 1. ЦЕЛЬ ПРОЕКТА
+
+Создать работающую версию Crucix (OSINT-дашборд) с дополнительным модулем "Геополитика + AI", который:
+
+- Собирает новости из RSS-лент (российские + международные СМИ)
+- Сохраняет их в папку `data/ai_raw/geopolitical-reports/`
+- Отправляет собранные новости в AI (DeepSeek / OpenRouter / Ollama)
+- Показывает аналитику в интерфейсе Crucix
+- Имеет сворачиваемую панель с настройками
+- Поддерживает русский и английский язык интерфейса
+- Автоматически удаляет старые файлы (настраиваемое количество дней)
+
+---
+
+## 2. ИСПОЛЬЗУЕМЫЕ ТЕХНОЛОГИИ
+
+| Компонент | Технология | Версия |
+|-----------|------------|--------|
+| Язык | JavaScript (ES Modules) | — |
+| Сервер | Node.js + Express | 20.x |
+| Интерфейс | HTML + CSS + Vanilla JS | — |
+| 3D-глобус | Globe.gl + Three.js | 2.33.0 |
+| Библиотеки | d3, topojson, gsap | — |
+| RSS-парсинг | Встроенный fetch + RegExp | — |
+| AI-интеграция | REST API (DeepSeek, OpenRouter, Ollama) | — |
+| Хранение настроек | localStorage (браузер) | — |
+| Хранение данных | JSON-файлы (Node.js fs) | — |
+
+---
+
+## 3. СТРУКТУРА ПРОЕКТА (рабочая)
+/home/ta8_/Рабочий стол/Crucix/
+├── apis/
+│ └── sources/
+│ └── geopolitical-reports.mjs # Модуль сбора новостей + AI
+├── dashboard/
+│ ├── panels/
+│ │ └── geopolitical-reports/
+│ │ ├── index.mjs # Логика панели в интерфейсе
+│ │ ├── config.mjs # Настройки панели (пустой)
+│ │ └── style.css # Стили панели
+│ ├── public/
+│ │ └── jarvis.html # ГЛАВНЫЙ ИНТЕРФЕЙС (с панелью)
+│ └── inject.mjs # Регистрация панелей
+├── server.mjs # ТОЧКА ВХОДА (сервер)
+├── test-geopolitical.mjs # Тестовый скрипт для терминала
+└── data/
+├── ai_raw/
+│ └── geopolitical-reports/
+│ └── YYYY-MM-DD.json # Данные для ИИ
+└── feeds/
+└── feeds.opml # Список RSS-лент (редактируемый)
+
+text
+
+---
+
+## 4. ОСНОВНЫЕ КОМПОНЕНТЫ И ИХ ФУНКЦИИ
+
+### 4.1. `server.mjs` — ТОЧКА ВХОДА
+
+**Задача:** Запустить HTTP-сервер на порту 3117, раздавать статику и обрабатывать API-запросы.
+
+**Требования:**
+- Отдавать `dashboard/public/jarvis.html` по адресу `/`
+- Отдавать статику из `dashboard/public/`
+- Иметь эндпоинт `/api/health` для проверки статуса
+- Иметь эндпоинт `/api/data` для получения собранных данных
+
+**Итоговый код (рабочий, минимальный):**
+
+```javascript
+import express from 'express';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const app = express();
+const PORT = 3117;
+
+app.use(express.static(join(__dirname, 'dashboard/public')));
+
+app.get('/', (req, res) => {
+  res.sendFile(join(__dirname, 'dashboard/public/jarvis.html'));
+});
+
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', uptime: process.uptime() });
+});
+
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
+4.2. dashboard/public/jarvis.html — ГЛАВНЫЙ ИНТЕРФЕЙС
+Задача: Отрисовать 3D-глобус, боковые панели, нижнюю сетку с панелями, включая "Геополитика + AI".
+
+Требования:
+
+Загружать библиотеки из CDN (или локально)
+
+Отображать панель "🌍 ГЕОПОЛИТИКА + AI" в нижней сетке
+
+Панель должна быть сворачиваемой (клик по заголовку)
+
+Панель должна содержать:
+
+Счётчик новостей
+
+Настройки AI-провайдера (DeepSeek/OpenRouter/Ollama/Авто)
+
+Поле для API-ключа
+
+Выбор модели
+
+Ползунок температуры
+
+Поле "Новости хранить дней" (1–9999)
+
+Чекбокс "Авто-анализ"
+
+Кнопку "Анализировать"
+
+Блок для вывода результата
+
+Поддержка русского и английского языка (кнопка 🇷🇺/🇬🇧)
+
+Автоочистка старых файлов (по настройке "Новости хранить дней")
+
+Стили:
+
+Тёмная тема (как в оригинальном Crucix)
+
+Синяя рамка для панели (отличие от других)
+
+Компактные размеры (не более 420px в ширину)
+
+4.3. apis/sources/geopolitical-reports.mjs — МОДУЛЬ СБОРА ДАННЫХ
+Задача: Собирать новости из RSS-лент, сохранять в data/ai_raw/geopolitical-reports/, отправлять в AI по запросу.
+
+Требования:
+
+Читать список RSS-лент из data/feeds/feeds.opml
+
+Если файла нет — создать с базовым набором (ТАСС, РИА, Интерфакс, Lenta, Коммерсантъ + международные)
+
+Парсить RSS-ленты и извлекать: title, date, url, summary, source
+
+Сохранять данные в data/ai_raw/geopolitical-reports/YYYY-MM-DD.json
+
+При сохранении объединять с существующими данными и удалять дубликаты по URL
+
+Поддерживать вызов AI-анализа через выбранного провайдера
+
+Возвращать данные в формате, понятном Crucix (FeatureCollection)
+
+Настройки:
+
+Хранятся в localStorage (ключ: geopolitical_reports_settings)
+
+Поля: aiProvider, aiApiKey, aiModel, aiTemperature, aiAutoSelect, storageDays
+
+4.4. dashboard/panels/geopolitical-reports/index.mjs — ПАНЕЛЬ В ИНТЕРФЕЙСЕ
+Задача: Отрисовать панель в интерфейсе Crucix и связать её с модулем.
+
+Требования:
+
+Вызывать renderSettings() из модуля
+
+Обрабатывать нажатие кнопок (сохранить настройки, анализировать)
+
+Обновлять счётчик новостей и время последнего сбора
+
+Поддерживать сворачивание/разворачивание
+
+4.5. dashboard/inject.mjs — РЕГИСТРАЦИЯ ПАНЕЛЕЙ
+Задача: Зарегистрировать панель "Геополитика + AI" в Crucix.
+
+Требования:
+
+Импортировать модуль: import geopoliticalReports from '../apis/sources/geopolitical-reports.mjs'
+
+Добавить панель в объект PANELS
+
+Экспортировать synthesize() для совместимости с сервером
+
+Итоговый код:
+
+javascript
+export const PANELS = {
+  'news': { id: 'news', label: '📰 Новости', defaultActive: true },
+  'map': { id: 'map', label: '🗺️ Карта', defaultActive: true },
+  'sources': { id: 'sources', label: '📡 Источники', defaultActive: true },
+  'geopolitical-reports': {
+    id: 'geopolitical-reports',
+    label: '🌍 Геополитика + AI',
+    component: geopoliticalReports,
+    defaultActive: true
+  }
+};
+
+export async function synthesize(data) {
+  // Безопасная обработка data
+  return { news: [], ideas: [], sources: {}, sourcesOk: 0, sourcesFailed: 0, timestamp: new Date().toISOString() };
+}
+4.6. test-geopolitical.mjs — ТЕСТОВЫЙ СКРИПТ
+Задача: Проверить работу модуля через терминал без запуска Crucix.
+
+Требования:
+
+Импортировать модуль
+
+Вызвать fetch() и показать количество новостей
+
+Проверить наличие OPML-файла и "корзины"
+
+5. ПОРЯДОК ЗАПУСКА
+Установить зависимости:
+
+bash
+cd /home/ta8_/Рабочий\ стол/Crucix
+npm install
+Запустить сервер:
+
+bash
+node server.mjs
+Открыть в браузере:
+
+text
+http://localhost:3117
+Для теста модуля (в отдельном терминале):
+
+bash
+node test-geopolitical.mjs
+6. ОЖИДАЕМЫЙ РЕЗУЛЬТАТ
+Страница Crucix открывается с 3D-глобусом и боковыми панелями.
+
+В нижней сетке отображается панель "🌍 ГЕОПОЛИТИКА + AI".
+
+Панель сворачивается по клику на заголовок.
+
+Переключение языка работает (🇷🇺/🇬🇧).
+
+Счётчик новостей показывает количество собранных новостей.
+
+Настройки сохраняются в localStorage.
+
+Кнопка "Анализировать" отправляет новости в AI и показывает результат.
+
+Авто-очистка удаляет файлы старше указанного количества дней.
+
+7. ПОЛНЫЙ СПИСОК ФАЙЛОВ (которые должны быть рабочими)
+Файл	Путь	Статус
+server.mjs	/home/ta8_/Рабочий стол/Crucix/server.mjs	ДОЛЖЕН РАБОТАТЬ
+jarvis.html	/home/ta8_/Рабочий стол/Crucix/dashboard/public/jarvis.html	ДОЛЖЕН РАБОТАТЬ
+inject.mjs	/home/ta8_/Рабочий стол/Crucix/dashboard/inject.mjs	ДОЛЖЕН РАБОТАТЬ
+geopolitical-reports.mjs	/home/ta8_/Рабочий стол/Crucix/apis/sources/geopolitical-reports.mjs	ДОЛЖЕН РАБОТАТЬ
+index.mjs	/home/ta8_/Рабочий стол/Crucix/dashboard/panels/geopolitical-reports/index.mjs	ДОЛЖЕН РАБОТАТЬ
+test-geopolitical.mjs	/home/ta8_/Рабочий стол/Crucix/test-geopolitical.mjs	ДОЛЖЕН РАБОТАТЬ
+8. ИЗВЕСТНЫЕ ОШИБКИ (которые нужно исключить)
+❌ Cannot read properties of undefined (reading 'sourcesOk') — исправляется защитой в synthesize()
+
+❌ Cannot GET / — исправляется маршрутом app.get('/', ...) в server.mjs
+
+❌ Чёрный фон — исправляется правильным jarvis.html и загрузкой библиотек
+
+❌ Панель не сворачивается — исправляется CSS и JavaScript в jarvis.html
+
+9. КАК ПРОДОЛЖИТЬ
+Скопируй этот текст в файл PROJECT_SPEC.md в папке проекта.
+
+Создай новый чат с DeepSeek.
+
+Прикрепи этот файл или скопируй его содержимое в первый запрос.
+
+Напиши: "Вот полное ТЗ. Собери работающий Crucix с этим модулем с нуля, без мусора. Все файлы должны быть рабочими и совместимыми."
+
+Конец документации
+
+text
+наверон можно еще что то написать поподробнее, разумеется если есть - подумай и реши что то есть еще что надо описать. например какие то правила
+Ты прав. Я добавил критически важные разделы, которые мы упустили. Это правила работы, безопасность, установка зависимостей и проверка работоспособности.
+
+Дополненное ТЗ (вставь в конец или объедини с предыдущим)
+10. ПРАВИЛА РАБОТЫ С ПРОЕКТОМ (ЧТОБЫ НЕ ПОВТОРЯТЬ ОШИБОК)
+10.1. Правило №1: Никогда не редактировать server.mjs без крайней необходимости
+Почему: Мы 5 раз переписывали server.mjs, и каждый раз ломали работающий сервер.
+
+Решение: Есть только одна рабочая версия server.mjs:
+
+javascript
+import express from 'express';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const app = express();
+const PORT = 3117;
+
+app.use(express.static(join(__dirname, 'dashboard/public')));
+
+app.get('/', (req, res) => {
+  res.sendFile(join(__dirname, 'dashboard/public/jarvis.html'));
+});
+
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', uptime: process.uptime() });
+});
+
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
+Этот файл НИКОГДА не менять. Если нужно добавить API — добавлять в новый файл, а не в server.mjs.
+
+10.2. Правило №2: ВСЕ изменения — только в jarvis.html и geopolitical-reports.mjs
+Почему: Эти два файла отвечают за 90% функционала. Остальное — только если критично.
+
+Что можно менять:
+
+jarvis.html — стили, расположение панели, кнопки, язык
+
+geopolitical-reports.mjs — список RSS-лент, логика AI, формат данных
+
+10.3. Правило №3: Проверять изменения через тестовый скрипт
+Перед тем как открывать браузер, запустить:
+
+bash
+node test-geopolitical.mjs
+Если скрипт выдаёт ошибки — не открывать браузер, сначала исправить.
+
+10.4. Правило №4: Не использовать Яндекс Браузер для отладки
+Яндекс Браузер имеет свои блокировки, которые не имеют отношения к коду. Для проверки использовать:
+
+Firefox (основной)
+
+Chromium (если есть)
+
+10.5. Правило №5: Все изменения — только через полную замену файла
+Никаких "найди строку и замени". Только полная замена файла командой cat > файл << 'EOF' ... EOF.
+
+10.6. Правило №6: Резервное копирование перед изменениями
+Перед любыми изменениями делать бэкап:
+
+bash
+cp file.mjs file.mjs.bak
+10.7. Правило №7: Не смешивать логику сервера и логику интерфейса
+server.mjs — только сервер
+
+jarvis.html — только интерфейс
+
+geopolitical-reports.mjs — только сбор данных и AI
+
+11. УСТАНОВКА ЗАВИСИМОСТЕЙ (точный список)
+Для работы проекта нужны ТОЛЬКО эти пакеты:
+
+bash
+npm install express
+Дополнительно (уже в проекте):
+
+three@0.160.0
+
+globe.gl@2.33.0
+
+d3@7.8.5
+
+topojson-client@3.0.0
+
+gsap@3.12.5
+
+12. ПРОВЕРКА РАБОТОСПОСОБНОСТИ (пошаговая)
+Шаг	Действие	Ожидаемый результат
+1	cd /home/ta8_/Рабочий\ стол/Crucix	Переход в папку
+2	node server.mjs	Надпись "Server running on http://localhost:3117"
+3	curl http://localhost:3117/api/health	{"status":"ok","uptime":...}
+4	Открыть http://localhost:3117 в Firefox	3D-глобус + панели
+5	Найти панель "🌍 ГЕОПОЛИТИКА + AI"	Панель видна внизу страницы
+6	Нажать на заголовок панели	Панель сворачивается/разворачивается
+7	Нажать 🇷🇺	Язык меняется на английский
+8	Нажать "Анализировать"	Появляется результат (если есть ключ)
+9	node test-geopolitical.mjs	Вывод количества новостей и проверка "корзины"
+13. СТРУКТУРА JSON В "КОРЗИНЕ" (для ИИ)
+json
+{
+  "source": "geopolitical-reports",
+  "fetchedAt": "2026-08-08T20:00:00.000Z",
+  "totalReports": 361,
+  "reports": [
+    {
+      "id": "geopolitical-1234567890-0",
+      "title": "Новость",
+      "date": "2026-08-08",
+      "url": "https://...",
+      "summary": "Краткое описание...",
+      "source": "ТАСС",
+      "sourceId": "tass",
+      "category": "geopolitics",
+      "language": "ru",
+      "type": "analysis"
+    }
+  ]
+}
+14. ПРИМЕР OPML-ФАЙЛА (data/feeds/feeds.opml)
+xml
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="1.0">
+  <head>
+    <title>Geopolitical Reports Feeds</title>
+  </head>
+  <body>
+    <outline text="Российские СМИ">
+      <outline type="rss" text="ТАСС" xmlUrl="https://tass.ru/rss/v2.xml"/>
+      <outline type="rss" text="РИА Новости" xmlUrl="https://ria.ru/export/rss2/index.xml"/>
+      <outline type="rss" text="Интерфакс" xmlUrl="http://interfax.ru/rss.asp"/>
+      <outline type="rss" text="Lenta.ru" xmlUrl="https://lenta.ru/rss"/>
+      <outline type="rss" text="Коммерсантъ" xmlUrl="http://www.kommersant.ru/RSS/main.xml"/>
+    </outline>
+    <outline text="Международные СМИ">
+      <outline type="rss" text="Reuters" xmlUrl="https://www.reuters.com/rss/"/>
+      <outline type="rss" text="Associated Press" xmlUrl="https://feeds.ap.org/rss/"/>
+      <outline type="rss" text="BBC News" xmlUrl="https://feeds.bbci.co.uk/news/rss.xml"/>
+      <outline type="rss" text="Al Jazeera" xmlUrl="https://www.aljazeera.com/xml/rss/all.xml"/>
+      <outline type="rss" text="France 24" xmlUrl="https://www.france24.com/en/rss"/>
+    </outline>
+  </body>
+</opml>
+15. НАСТРОЙКИ В localStorage (ключи и значения)
+Ключ	Значение	По умолчанию
+geopolitical_reports_settings	JSON-объект с настройками	{"aiProvider":"auto","aiApiKey":"","aiModel":"deepseek-chat","aiTemperature":0.1,"aiAutoSelect":true,"storageDays":7,"feeds":["tass","ria","interfax","lenta","kommersant"]}
+geo_lang	"ru" или "en"	"ru"
+geo_last_analysis_time	Timestamp последнего авто-анализа	—
+geo_panel_collapsed	"true" или "false"	"false"
+16. ИЗВЕСТНЫЕ ПРОБЛЕМЫ И ИХ РЕШЕНИЯ
+Проблема	Причина	Решение
+Чёрный фон	Ошибка в inject.mjs или server.mjs	Проверить synthesize()
+Панель не сворачивается	Нет CSS-перехода или неправильный display	Добавить transition в CSS
+API-ключ не сохраняется	Ошибка в handleSettingsSave()	Проверить localStorage.setItem()
+Нет ответа от AI	Нет ключа или проблемы с сетью	Проверить ключ и интернет
+Файлы не удаляются	Ошибка в cleanOldNewsFiles()	Проверить права на запись
+OPML не читается	Неправильный путь или формат	Проверить data/feeds/feeds.opml
+Конец дополненной документации
+
+text

@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSS Лента новостей — Crucix</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: #0a0a1a;
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .rss-feed-container {
+            max-width: 1200px;
+            width: 100%;
+            background: rgba(20, 20, 40, 0.9);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.06);
+            padding: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+        }
+        .feed-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+        .feed-header h1 { font-size: 22px; font-weight: 700; color: #fff; }
+        .lang-selector { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+        .lang-selector .lang-btn { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; color: #e0e0e0; padding: 2px 8px; font-size: 10px; cursor: pointer; }
+        .lang-selector .lang-btn.active { background: rgba(33,150,243,0.2); border-color: #2196f3; color: #fff; }
+        .feed-controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .feed-control-group { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #aaa; }
+        .feed-control-group select { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; color: #e0e0e0; padding: 2px 6px; font-size: 12px; }
+        .btn-header { display: inline-flex; align-items: center; gap: 3px; padding: 4px 10px; border: none; border-radius: 3px; font-size: 11px; font-weight: 600; color: #fff; text-decoration: none; }
+        .btn-home { background: #2196f3; }
+        .btn-manage { background: #f26522; }
+        .feed-filters { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 12px; padding: 6px 0; border-top: 1px solid rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .filter-btn { padding: 3px 8px; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; background: rgba(255,255,255,0.04); color: #999; cursor: pointer; font-size: 10px; }
+        .filter-btn:hover { background: rgba(255,255,255,0.08); color: #e0e0e0; }
+        .filter-btn.active { background: #2196f3; border-color: #2196f3; color: #fff; }
+        .feed-window { height: 420px; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid rgba(255,255,255,0.04); margin-bottom: 12px; }
+        .feed-window::-webkit-scrollbar { width: 6px; }
+        .feed-window::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+        .feed-window::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+        .feed-item {
+            display: flex; align-items: center; padding: 6px 12px; border-bottom: 1px solid rgba(255,255,255,0.04);
+            font-size: 13px; cursor: pointer; border-left: 4px solid #444; border-radius: 0 4px 4px 0; margin: 1px 0;
+        }
+        .feed-item:hover { filter: brightness(1.15); }
+        .feed-item.critical { border-left-color: #ff1744; background: rgba(255,23,68,0.12); }
+        .feed-item.critical .feed-title { color: #ff6b7a; }
+        .feed-item.critical .feed-score { background: #ff1744; color: #fff; }
+        .feed-item.important { border-left-color: #ff9100; background: rgba(255,145,0,0.10); }
+        .feed-item.important .feed-title { color: #ffb74d; }
+        .feed-item.important .feed-score { background: #ff9100; color: #fff; }
+        .feed-item.normal { border-left-color: #4caf50; background: rgba(76,175,80,0.06); }
+        .feed-item.normal .feed-title { color: #81c784; }
+        .feed-item.normal .feed-score { background: #4caf50; color: #fff; }
+        .feed-item.unknown { border-left-color: #555; background: rgba(255,255,255,0.02); }
+        .feed-item.unknown .feed-title { color: #999; }
+        .feed-item.unknown .feed-score { background: #444; color: #888; }
+        .feed-item .feed-icon { flex-shrink: 0; margin-right: 8px; font-size: 14px; opacity: 0.7; }
+        .feed-item .feed-title { flex: 1; font-weight: 500; font-size: 13px; }
+        .feed-item .feed-source { flex-shrink: 0; font-size: 10px; color: #888; margin-left: 8px; background: rgba(255,255,255,0.06); padding: 1px 8px; border-radius: 10px; }
+        .feed-item .feed-time { flex-shrink: 0; font-size: 10px; color: #555; margin-left: 8px; }
+        .feed-item .feed-score { flex-shrink: 0; font-size: 10px; font-weight: 700; margin-left: 8px; padding: 1px 8px; border-radius: 10px; min-width: 28px; text-align: center; }
+        .feed-loading { padding: 40px; text-align: center; color: #666; font-size: 14px; }
+        .feed-empty { padding: 40px; text-align: center; color: #666; font-size: 14px; }
+        .feed-footer { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 12px; color: #666; border-top: 1px solid rgba(255,255,255,0.04); flex-wrap: wrap; gap: 6px; }
+        .feed-footer .footer-links { display: flex; gap: 12px; }
+        .feed-footer .footer-links a { color: #888; text-decoration: none; font-size: 12px; }
+        .feed-footer .footer-links a:hover { color: #e0e0e0; }
+        .feed-footer .footer-links .manage-link { color: #f26522; font-weight: 600; }
+        .feed-footer .footer-links .home-link { color: #2196f3; font-weight: 600; }
+        .feed-legend { display: flex; gap: 12px; margin-bottom: 10px; padding: 4px 12px; font-size: 10px; color: #888; background: rgba(255,255,255,0.03); border-radius: 4px; flex-wrap: wrap; align-items: center; border: 1px solid rgba(255,255,255,0.04); }
+        .feed-legend .legend-item { display: flex; align-items: center; gap: 4px; }
+        .feed-legend .legend-color { width: 16px; height: 3px; border-radius: 2px; display: inline-block; }
+        .feed-legend .legend-color.critical { background: #ff1744; }
+        .feed-legend .legend-color.important { background: #ff9100; }
+        .feed-legend .legend-color.normal { background: #4caf50; }
+        .feed-legend .legend-color.unknown { background: #555; }
+    </style>
+</head>
+<body>
+<div class="rss-feed-container">
+    <header class="feed-header">
+        <h1 id="feed-title">📰 Лента новостей</h1>
+        <div class="feed-controls">
+            <div class="lang-selector">
+                <button class="lang-btn active" data-lang="ru" onclick="setLanguage('ru')">🇷🇺 RU</button>
+                <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">🇬🇧 EN</button>
+                <button class="lang-btn" data-lang="zh" onclick="setLanguage('zh')">🇨🇳 中文</button>
+                <button class="lang-btn" data-lang="hi" onclick="setLanguage('hi')">🇮🇳 हिंदी</button>
+            </div>
+            <div class="feed-control-group">
+                <label id="label-news-count">Новостей:</label>
+                <select id="feed-count">
+                    <option value="10">10</option>
+                    <option value="20" selected>20</option>
+                    <option value="30">30</option>
+                </select>
+            </div>
+            <a href="/jarvis" class="btn-header btn-home" id="btn-home">🏠 Главная</a>
+            <a href="/rss-dashboard" class="btn-header btn-manage" id="btn-manage">⚙️ Управление</a>
+        </div>
+    </header>
+
+    <div class="feed-legend">
+        <span class="legend-item"><span class="legend-color critical"></span> <span id="legend-critical">Критические (8-10)</span></span>
+        <span class="legend-item"><span class="legend-color important"></span> <span id="legend-important">Важные (5-7)</span></span>
+        <span class="legend-item"><span class="legend-color normal"></span> <span id="legend-normal">Обычные (0-4)</span></span>
+        <span class="legend-item"><span class="legend-color unknown"></span> <span id="legend-unknown">Ожидают оценки</span></span>
+        <span style="color:#555;margin-left:4px;" id="legend-ai-label">| Оценка от ИИ</span>
+    </div>
+
+    <div class="feed-filters">
+        <button class="filter-btn active" data-region="all" id="filter-all">🌍 МИР</button>
+        <button class="filter-btn" data-region="us" id="filter-us">🇺🇸 США</button>
+        <button class="filter-btn" data-region="europe" id="filter-europe">🇪🇺 ЕВРОПА</button>
+        <button class="filter-btn" data-region="africa" id="filter-africa">🌍 АФРИКА</button>
+        <button class="filter-btn" data-region="middle-east" id="filter-middle-east">🏛 БЛИЖНИЙ ВОСТОК</button>
+        <button class="filter-btn" data-region="latin-america" id="filter-latin-america">🌎 ЛАТИНСКАЯ АМЕРИКА</button>
+        <button class="filter-btn" data-region="asia-pacific" id="filter-asia-pacific">🌏 АЗИАТСКО-ТИХООКЕАНСКИЙ</button>
+        <button class="filter-btn" data-region="energy" id="filter-energy">⚡ ЭНЕРГЕТИКА</button>
+        <button class="filter-btn" data-region="government" id="filter-government">🏛 ПРАВИТЕЛЬСТВО</button>
+        <button class="filter-btn" data-region="think-tanks" id="filter-think-tanks">🧠 АНАЛИТИКА</button>
+        <button class="filter-btn" data-region="forecasts" id="filter-forecasts">📊 ПРОГНОЗЫ</button>
+        <button class="filter-btn" data-region="critical" id="filter-critical">🔥 ТОЛЬКО ВАЖНЫЕ</button>
+        <button class="filter-btn" data-region="russia" id="filter-russia">🇷🇺 РОССИЯ</button>
+        <button class="filter-btn" data-region="china" id="filter-china">🇨🇳 КИТАЙ</button>
+        <button class="filter-btn" data-region="india" id="filter-india">🇮🇳 ИНДИЯ</button>
+        <button class="filter-btn" data-region="japan" id="filter-japan">🇯🇵 ЯПОНИЯ</button>
+        <button class="filter-btn" data-region="south-korea" id="filter-south-korea">🇰🇷 КОРЕЯ</button>
+        <button class="filter-btn" data-region="north-korea" id="filter-north-korea">🇰🇵 СЕВ. КОРЕЯ</button>
+        <button class="filter-btn" data-region="iran" id="filter-iran">🇮🇷 ИРАН</button>
+        <button class="filter-btn" data-region="israel" id="filter-israel">🇮🇱 ИЗРАИЛЬ</button>
+        <button class="filter-btn" data-region="turkey" id="filter-turkey">🇹🇷 ТУРЦИЯ</button>
+        <button class="filter-btn" data-region="ukraine" id="filter-ukraine">🇺🇦 УКРАИНА</button>
+        <button class="filter-btn" data-region="uk" id="filter-uk">🇬🇧 ВЕЛИКОБРИТАНИЯ</button>
+        <button class="filter-btn" data-region="germany" id="filter-germany">🇩🇪 ГЕРМАНИЯ</button>
+        <button class="filter-btn" data-region="france" id="filter-france">🇫🇷 ФРАНЦИЯ</button>
+    </div>
+
+    <div class="feed-window" id="feed-window">
+        <div id="feed-track"><div class="feed-loading" id="loading-text">Загрузка новостей...</div></div>
+    </div>
+
+    <div class="feed-footer">
+        <span id="feed-counter">Новостей за сегодня: 0</span>
+        <div class="footer-links">
+            <a href="/jarvis" class="home-link" id="footer-home">🏠 Главная</a>
+            <a href="/rss-dashboard" class="manage-link" id="footer-manage">⚙️ Управление RSS</a>
+        </div>
+    </div>
+</div>
+
+<script>
+console.log('✅ RSS скрипт запущен!');
+
+let currentLang = localStorage.getItem('rss-lang') || 'ru';
+
+// ======== МНОГОЯЗЫЧНОСТЬ ========
+const langData = {
+    ru: {
+        title: '📰 Лента новостей', newsLabel: 'Новостей:', home: '🏠 Главная', manage: '⚙️ Управление',
+        critical: 'Критические (8-10)', important: 'Важные (5-7)', normal: 'Обычные (0-4)',
+        unknown: 'Ожидают оценки', aiLabel: '| Оценка от ИИ', loading: 'Загрузка новостей...',
+        empty: 'Нет новостей', counter: 'Новостей за сегодня:', footerHome: '🏠 Главная', footerManage: '⚙️ Управление RSS',
+        filters: {
+            all: '🌍 МИР', us: '🇺🇸 США', europe: '🇪🇺 ЕВРОПА', africa: '🌍 АФРИКА',
+            'middle-east': '🏛 БЛИЖНИЙ ВОСТОК', 'latin-america': '🌎 ЛАТИНСКАЯ АМЕРИКА',
+            'asia-pacific': '🌏 АЗИАТСКО-ТИХООКЕАНСКИЙ', energy: '⚡ ЭНЕРГЕТИКА',
+            government: '🏛 ПРАВИТЕЛЬСТВО', 'think-tanks': '🧠 АНАЛИТИКА', forecasts: '📊 ПРОГНОЗЫ',
+            critical: '🔥 ТОЛЬКО ВАЖНЫЕ', russia: '🇷🇺 РОССИЯ', china: '🇨🇳 КИТАЙ',
+            india: '🇮🇳 ИНДИЯ', japan: '🇯🇵 ЯПОНИЯ', 'south-korea': '🇰🇷 КОРЕЯ',
+            'north-korea': '🇰🇵 СЕВ. КОРЕЯ', iran: '🇮🇷 ИРАН', israel: '🇮🇱 ИЗРАИЛЬ',
+            turkey: '🇹🇷 ТУРЦИЯ', ukraine: '🇺🇦 УКРАИНА', uk: '🇬🇧 ВЕЛИКОБРИТАНИЯ',
+            germany: '🇩🇪 ГЕРМАНИЯ', france: '🇫🇷 ФРАНЦИЯ'
+        }
+    },
+    en: {
+        title: '📰 News Feed', newsLabel: 'News:', home: '🏠 Home', manage: '⚙️ Manage',
+        critical: 'Critical (8-10)', important: 'Important (5-7)', normal: 'Normal (0-4)',
+        unknown: 'Awaiting rating', aiLabel: '| AI Score', loading: 'Loading news...',
+        empty: 'No news', counter: 'News today:', footerHome: '🏠 Home', footerManage: '⚙️ Manage RSS',
+        filters: {
+            all: '🌍 WORLD', us: '🇺🇸 USA', europe: '🇪🇺 EUROPE', africa: '🌍 AFRICA',
+            'middle-east': '🏛 MIDDLE EAST', 'latin-america': '🌎 LATIN AMERICA',
+            'asia-pacific': '🌏 ASIA-PACIFIC', energy: '⚡ ENERGY',
+            government: '🏛 GOVERNMENT', 'think-tanks': '🧠 THINK TANKS', forecasts: '📊 FORECASTS',
+            critical: '🔥 ONLY IMPORTANT', russia: '🇷🇺 RUSSIA', china: '🇨🇳 CHINA',
+            india: '🇮🇳 INDIA', japan: '🇯🇵 JAPAN', 'south-korea': '🇰🇷 S. KOREA',
+            'north-korea': '🇰🇵 N. KOREA', iran: '🇮🇷 IRAN', israel: '🇮🇱 ISRAEL',
+            turkey: '🇹🇷 TURKEY', ukraine: '🇺🇦 UKRAINE', uk: '🇬🇧 UK',
+            germany: '🇩🇪 GERMANY', france: '🇫🇷 FRANCE'
+        }
+    },
+    zh: {
+        title: '📰 新闻提要', newsLabel: '新闻:', home: '🏠 主页', manage: '⚙️ 管理',
+        critical: '关键 (8-10)', important: '重要 (5-7)', normal: '普通 (0-4)',
+        unknown: '等待评分', aiLabel: '| AI 评分', loading: '加载新闻...',
+        empty: '没有新闻', counter: '今日新闻:', footerHome: '🏠 主页', footerManage: '⚙️ 管理 RSS',
+        filters: {
+            all: '🌍 世界', us: '🇺🇸 美国', europe: '🇪🇺 欧洲', africa: '🌍 非洲',
+            'middle-east': '🏛 中东', 'latin-america': '🌎 拉丁美洲',
+            'asia-pacific': '🌏 亚太地区', energy: '⚡ 能源',
+            government: '🏛 政府', 'think-tanks': '🧠 智库', forecasts: '📊 预测',
+            critical: '🔥 仅重要', russia: '🇷🇺 俄罗斯', china: '🇨🇳 中国',
+            india: '🇮🇳 印度', japan: '🇯🇵 日本', 'south-korea': '🇰🇷 韩国',
+            'north-korea': '🇰🇵 朝鲜', iran: '🇮🇷 伊朗', israel: '🇮🇱 以色列',
+            turkey: '🇹🇷 土耳其', ukraine: '🇺🇦 乌克兰', uk: '🇬🇧 英国',
+            germany: '🇩🇪 德国', france: '🇫🇷 法国'
+        }
+    },
+    hi: {
+        title: '📰 समाचार फ़ीड', newsLabel: 'समाचार:', home: '🏠 होम', manage: '⚙️ प्रबंधन',
+        critical: 'गंभीर (8-10)', important: 'महत्वपूर्ण (5-7)', normal: 'सामान्य (0-4)',
+        unknown: 'रेटिंग की प्रतीक्षा', aiLabel: '| AI स्कोर', loading: 'समाचार लोड हो रहा है...',
+        empty: 'कोई समाचार नहीं', counter: 'आज के समाचार:', footerHome: '🏠 होम', footerManage: '⚙️ RSS प्रबंधन',
+        filters: {
+            all: '🌍 विश्व', us: '🇺🇸 अमेरिका', europe: '🇪🇺 यूरोप', africa: '🌍 अफ्रीका',
+            'middle-east': '🏛 मध्य पूर्व', 'latin-america': '🌎 लैटिन अमेरिका',
+            'asia-pacific': '🌏 एशिया-प्रशांत', energy: '⚡ ऊर्जा',
+            government: '🏛 सरकार', 'think-tanks': '🧠 थिंक टैंक', forecasts: '📊 पूर्वानुमान',
+            critical: '🔥 केवल महत्वपूर्ण', russia: '🇷🇺 रूस', china: '🇨🇳 चीन',
+            india: '🇮🇳 भारत', japan: '🇯🇵 जापान', 'south-korea': '🇰🇷 दक्षिण कोरिया',
+            'north-korea': '🇰🇵 उत्तर कोरिया', iran: '🇮🇷 ईरान', israel: '🇮🇱 इज़राइल',
+            turkey: '🇹🇷 तुर्की', ukraine: '🇺🇦 यूक्रेन', uk: '🇬🇧 यूके',
+            germany: '🇩🇪 जर्मनी', france: '🇫🇷 फ्रांस'
+        }
+    }
+};
+
+function setLanguage(lang) {
+    currentLang = lang;
+    localStorage.setItem('rss-lang', lang);
+    document.querySelectorAll('.lang-selector .lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+    updateLanguage();
+}
+
+function updateLanguage() {
+    const d = langData[currentLang];
+    if (!d) return;
+    document.getElementById('feed-title').textContent = d.title;
+    document.getElementById('label-news-count').textContent = d.newsLabel;
+    document.getElementById('btn-home').textContent = d.home;
+    document.getElementById('btn-manage').textContent = d.manage;
+    document.getElementById('legend-critical').textContent = d.critical;
+    document.getElementById('legend-important').textContent = d.important;
+    document.getElementById('legend-normal').textContent = d.normal;
+    document.getElementById('legend-unknown').textContent = d.unknown;
+    document.getElementById('legend-ai-label').textContent = d.aiLabel;
+    document.getElementById('loading-text').textContent = d.loading;
+    document.getElementById('footer-home').textContent = d.footerHome;
+    document.getElementById('footer-manage').textContent = d.footerManage;
+    const f = d.filters;
+    ['all','us','europe','africa','middle-east','latin-america','asia-pacific','energy','government','think-tanks','forecasts','critical','russia','china','india','japan','south-korea','north-korea','iran','israel','turkey','ukraine','uk','germany','france'].forEach(id => {
+        const el = document.getElementById('filter-' + id);
+        if (el && f[id]) el.textContent = f[id];
+    });
+    updateCounter();
+}
+
+// ======== КАРТА РЕГИОНОВ ========
+function detectRegion(source) {
+    if (!source) return 'world';
+    const s = source.toLowerCase();
+    if (s.includes('bbc') || s.includes('guardian') || s.includes('economist') || s.includes('ft')) return 'uk';
+    if (s.includes('cnn') || s.includes('bloomberg') || s.includes('washington post') || s.includes('wall street journal')) return 'us';
+    if (s.includes('france 24') || s.includes('le monde')) return 'france';
+    if (s.includes('deutsche welle') || s.includes('spiegel')) return 'germany';
+    if (s.includes('al jazeera') || s.includes('alarabiya')) return 'middle-east';
+    if (s.includes('nikkei') || s.includes('kyodo')) return 'japan';
+    if (s.includes('xinhua') || s.includes('scmp') || s.includes('cgtn')) return 'china';
+    if (s.includes('yonhap') || s.includes('chosun')) return 'south-korea';
+    if (s.includes('kcna')) return 'north-korea';
+    if (s.includes('irna') || s.includes('mehr')) return 'iran';
+    if (s.includes('haaretz') || s.includes('times of israel')) return 'israel';
+    if (s.includes('hurriyet') || s.includes('sabah')) return 'turkey';
+    if (s.includes('ukrinform')) return 'ukraine';
+    if (s.includes('tass') || s.includes('ria') || s.includes('interfax')) return 'russia';
+    return 'world';
+}
+
+function getRegionEmoji(r) {
+    const m = {
+        'world':'🌍','us':'🇺🇸','europe':'🇪🇺','africa':'🌍','middle-east':'🏛',
+        'latin-america':'🌎','asia-pacific':'🌏','energy':'⚡','government':'🏛',
+        'think-tanks':'🧠','forecasts':'📊','russia':'🇷🇺','china':'🇨🇳',
+        'india':'🇮🇳','japan':'🇯🇵','south-korea':'🇰🇷','north-korea':'🇰🇵',
+        'iran':'🇮🇷','israel':'🇮🇱','turkey':'🇹🇷','ukraine':'🇺🇦',
+        'uk':'🇬🇧','germany':'🇩🇪','france':'🇫🇷'
+    };
+    return m[r] || '📰';
+}
+
+function getScoreClass(s) {
+    if (s === null || s === undefined) return 'unknown';
+    if (s >= 8) return 'critical';
+    if (s >= 5) return 'important';
+    return 'normal';
+}
+
+function getScoreDisplay(s) {
+    if (s === null || s === undefined) return '⏳';
+    return s;
+}
+
+function openArticle(url) {
+    if (url && url !== '#') window.open(url, '_blank');
+    else alert('Ссылка на статью отсутствует');
+}
+
+// ======== ОСНОВНАЯ ЛОГИКА ========
+const track = document.getElementById('feed-track');
+const counter = document.getElementById('feed-counter');
+let allNews = [], currentRegion = 'all', maxItems = 20;
+let aiRated = false;
+
+function renderNews() {
+    let filtered = allNews;
+    if (currentRegion === 'critical') {
+        filtered = allNews.filter(i => i.ai_score !== null && i.ai_score >= 7);
+    } else if (currentRegion !== 'all') {
+        filtered = allNews.filter(i => i.region === currentRegion);
+        if (filtered.length === 0) filtered = allNews;
+    }
+    const display = filtered.slice(0, maxItems);
+    if (display.length === 0) {
+        track.innerHTML = `<div class="feed-empty">${langData[currentLang].empty}</div>`;
+        return;
+    }
+    let html = '';
+    for (const item of display) {
+        const score = item.ai_score;
+        const scoreClass = getScoreClass(score);
+        const scoreDisplay = getScoreDisplay(score);
+        const regionEmoji = getRegionEmoji(item.region);
+        const time = new Date(item.date);
+        const timeStr = time.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+        const url = item.url || '#';
+        html += `<div class="feed-item ${scoreClass}" onclick="openArticle('${url}')">
+            <span class="feed-icon">${regionEmoji}</span>
+            <span class="feed-title">${item.title}</span>
+            <span class="feed-source">${item.source}</span>
+            <span class="feed-time">${timeStr}</span>
+            <span class="feed-score">${scoreDisplay}</span>
+        </div>`;
+    }
+    track.innerHTML = html;
+    updateCounter();
+}
+
+function updateCounter() {
+    const today = new Date().toISOString().slice(0, 10);
+    const todayItems = allNews.filter(i => i.date && i.date.startsWith(today));
+    const data = langData[currentLang];
+    counter.textContent = `${data.counter} ${todayItems.length}`;
+}
+
+// ======== ЗАГРУЗКА НОВОСТЕЙ ========
+console.log('📡 Загрузка новостей...');
+fetch('/api/news/latest?limit=80')
+    .then(r => r.json())
+    .then(data => {
+        console.log('📰 Получено:', data.total);
+        if (data.news && data.news.length > 0) {
+            allNews = data.news.slice(0, 50).map(item => {
+                let date = item.collectedAt || item.pubDate || new Date().toISOString();
+                if (item.pubDate) {
+                    try {
+                        const d = new Date(item.pubDate);
+                        if (!isNaN(d)) date = d.toISOString();
+                    } catch(e) {}
+                }
+                return {
+                    id: item.id || 'news-' + Math.random(),
+                    title: item.title || 'Без заголовка',
+                    source: item.source || 'Источник',
+                    region: detectRegion(item.source),
+                    date: date,
+                    url: item.link || '#',
+                    summary: item.description || '',
+                    ai_score: null
+                };
+            });
+            
+            // Сначала показываем новости без оценок
+            renderNews();
+            
+            // Запрашиваем AI оценки для первых 15 новостей
+            const toRate = allNews.slice(0, 15);
+            console.log('🤖 Запрос AI оценок для', toRate.length, 'новостей...');
+            
+            fetch('/api/ai/rate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ news: toRate })
+            })
+            .then(r => r.json())
+            .then(aiData => {
+                console.log('📊 Ответ от AI:', aiData);
+                if (aiData.success && aiData.news) {
+                    for (const rated of aiData.news) {
+                        const item = allNews.find(i => i.id === rated.id);
+                        if (item) {
+                            item.ai_score = rated.ai_score;
+                            console.log('📊 Оценка для', item.title.slice(0, 30), ':', rated.ai_score);
+                        }
+                    }
+                    renderNews();
+                    console.log('✅ AI оценки получены и применены!');
+                } else {
+                    console.warn('⚠️ AI не вернул оценки');
+                }
+            })
+            .catch(e => {
+                console.warn('⚠️ Ошибка AI:', e);
+            });
+        }
+    })
+    .catch(e => {
+        console.error('❌ Ошибка загрузки:', e);
+        track.innerHTML = '<div class="feed-empty">Ошибка загрузки</div>';
+    });
+
+// ======== ФИЛЬТРЫ ========
+document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        currentRegion = this.dataset.region;
+        renderNews();
+    });
+});
+
+document.getElementById('feed-count').addEventListener('change', function() {
+    maxItems = parseInt(this.value);
+    renderNews();
+});
+
+// ======== ИНИЦИАЛИЗАЦИЯ ========
+document.querySelectorAll('.lang-selector .lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === currentLang));
+updateLanguage();
+</script>
+</body>
+</html>

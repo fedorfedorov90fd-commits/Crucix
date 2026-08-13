@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Управление интерфейсом — Crucix</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: monospace; background: #0a0a1a; color: #e0e0e0; padding: 20px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    h1 { font-size: 20px; margin-bottom: 16px; color: #2196f3; }
+    .controls { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+    .controls button { padding: 6px 14px; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; background: rgba(255,255,255,0.05); color: #e0e0e0; cursor: pointer; font-size: 12px; }
+    .controls button:hover { background: rgba(255,255,255,0.1); }
+    .controls button.primary { background: #2196f3; border-color: #2196f3; color: #fff; }
+    .grid-container { position: relative; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; overflow: auto; }
+    canvas { display: block; width: 100%; height: auto; cursor: crosshair; }
+    .info { margin-top: 12px; display: flex; gap: 20px; flex-wrap: wrap; font-size: 12px; color: #888; }
+    .info .label { color: #555; }
+    .info .value { color: #e0e0e0; }
+    .coords { background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 4px; font-size: 11px; }
+    .coords span { color: #2196f3; }
+    .export-box { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 4px; margin-top: 12px; font-size: 11px; max-height: 200px; overflow: auto; white-space: pre-wrap; word-break: break-all; display: none; }
+    .export-box.active { display: block; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>📐 Управление интерфейсом — координатная сетка</h1>
+
+  <div class="controls">
+    <button class="primary" onclick="captureLayout()">📸 Захватить расположение</button>
+    <button onclick="copyCoords()">📋 Копировать координаты</button>
+    <button onclick="toggleExport()">📤 Показать JSON</button>
+    <button onclick="window.location.reload()">🔄 Обновить</button>
+    <span style="font-size:11px;color:#555;margin-left:8px;">Клик на элемент → координаты внизу</span>
+  </div>
+
+  <div class="grid-container" id="gridContainer">
+    <canvas id="gridCanvas" width="1200" height="800"></canvas>
+  </div>
+
+  <div class="info">
+    <div><span class="label">Элементов:</span> <span class="value" id="elementCount">0</span></div>
+    <div><span class="label">Последний клик:</span> <span class="value" id="lastClick">—</span></div>
+    <div><span class="label">Координаты:</span> <span class="value" id="mouseCoords">X: 0, Y: 0</span></div>
+  </div>
+
+  <div class="coords" id="clickCoords" style="display:none;">
+    📍 Координаты клика: <span id="clickX">0</span>, <span id="clickY">0</span>
+  </div>
+
+  <div class="export-box" id="exportBox"></div>
+
+  <div style="margin-top:16px;font-size:11px;color:#444;border-top:1px solid rgba(255,255,255,0.04);padding-top:12px;">
+    <span>💡 Используй для точного позиционирования новых элементов. Координаты в пикселях относительно левого верхнего угла.</span>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('gridCanvas');
+const ctx = canvas.getContext('2d');
+const W = 1200, H = 800;
+canvas.width = W; canvas.height = H;
+
+// Данные для отрисовки
+let elements = [];
+let lastClick = null;
+
+// Отрисовка сетки и элементов
+function drawGrid() {
+  ctx.clearRect(0, 0, W, H);
+  
+  // Сетка (каждые 50px)
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.lineWidth = 0.5;
+  for (let x = 0; x <= W; x += 50) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+  }
+  for (let y = 0; y <= H; y += 50) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+
+  // Основные линии каждые 200px
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x <= W; x += 200) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+  }
+  for (let y = 0; y <= H; y += 200) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+
+  // Отметки
+  ctx.fillStyle = 'rgba(255,255,255,0.15)';
+  ctx.font = '9px monospace';
+  for (let x = 0; x <= W; x += 200) {
+    ctx.fillText(x, x+2, 12);
+  }
+  for (let y = 0; y <= H; y += 200) {
+    ctx.fillText(y, 2, y+9);
+  }
+
+  // Элементы
+  if (elements.length > 0) {
+    for (const el of elements) {
+      ctx.fillStyle = el.color || 'rgba(33,150,243,0.15)';
+      ctx.strokeStyle = el.color || '#2196f3';
+      ctx.lineWidth = 1;
+      ctx.fillRect(el.x, el.y, el.w, el.h);
+      ctx.strokeRect(el.x, el.y, el.w, el.h);
+      
+      ctx.fillStyle = '#e0e0e0';
+      ctx.font = '10px monospace';
+      const label = el.label || `${el.x},${el.y}`;
+      ctx.fillText(label, el.x + 4, el.y + 14);
+      
+      // Координаты справа
+      ctx.fillStyle = 'rgba(255,255,255,0.2)';
+      ctx.font = '8px monospace';
+      ctx.fillText(`${el.x},${el.y}`, el.x + el.w - 50, el.y + 10);
+    }
+  }
+
+  // Перекрестие мыши
+  if (mouseX !== undefined && mouseY !== undefined) {
+    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+    ctx.lineWidth = 0.5;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(mouseX, 0); ctx.lineTo(mouseX, H); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, mouseY); ctx.lineTo(W, mouseY); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  document.getElementById('elementCount').textContent = elements.length;
+}
+
+let mouseX = 0, mouseY = 0;
+
+canvas.addEventListener('mousemove', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  mouseX = Math.round((e.clientX - rect.left) * scaleX);
+  mouseY = Math.round((e.clientY - rect.top) * scaleY);
+  document.getElementById('mouseCoords').textContent = `X: ${mouseX}, Y: ${mouseY}`;
+  drawGrid();
+});
+
+canvas.addEventListener('click', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const x = Math.round((e.clientX - rect.left) * scaleX);
+  const y = Math.round((e.clientY - rect.top) * scaleY);
+  
+  lastClick = { x, y };
+  document.getElementById('clickCoords').style.display = 'block';
+  document.getElementById('clickX').textContent = x;
+  document.getElementById('clickY').textContent = y;
+  document.getElementById('lastClick').textContent = `X: ${x}, Y: ${y}`;
+  drawGrid();
+});
+
+// Захват расположения элементов из jarvis.html
+async function captureLayout() {
+  try {
+    const response = await fetch('/jarvis');
+    const html = await response.text();
+    
+    // Парсим кнопки
+    const buttonRegex = /<a[^>]*href="([^"]*)"[^>]*>([^<]*)<\/a>/g;
+    const buttons = [];
+    let match;
+    while ((match = buttonRegex.exec(html)) !== null) {
+      const href = match[1];
+      const label = match[2].replace(/[^\w\s📡🔴🧠📦]/g, '').trim();
+      // Ищем цвет
+      const colorMatch = /background:([^;]+)/.exec(match[0]);
+      const color = colorMatch ? colorMatch[1].trim() : '#2196f3';
+      buttons.push({
+        label: label || href,
+        href: href,
+        color: color
+      });
+    }
+
+    // Распределяем кнопки по сетке (примерное расположение)
+    const positions = [
+      { x: 10, y: 10, w: 60, h: 20 },  // placeholder
+    ];
+    
+    elements = [];
+    const colors = ['#f44336', '#f26522', '#64f0c8', '#44ccff', '#2196f3'];
+    const labels = ['HIGH ALERT', 'RSS 30', 'AI Чат', 'КАРТА', 'КОРЗИНА'];
+    
+    for (let i = 0; i < Math.min(buttons.length, 5); i++) {
+      elements.push({
+        x: 40 + i * 80,
+        y: 30,
+        w: 65,
+        h: 22,
+        label: labels[i] || buttons[i]?.label || `Кнопка ${i}`,
+        color: colors[i] || '#555'
+      });
+    }
+
+    drawGrid();
+    
+    // Показываем экспорт
+    document.getElementById('exportBox').classList.add('active');
+    document.getElementById('exportBox').textContent = JSON.stringify(elements, null, 2);
+    
+  } catch (e) {
+    alert('Ошибка захвата: ' + e.message);
+  }
+}
+
+function copyCoords() {
+  const text = JSON.stringify(elements, null, 2);
+  navigator.clipboard.writeText(text).then(() => {
+    alert('✅ Координаты скопированы в буфер обмена');
+  }).catch(() => {
+    // fallback
+    const area = document.createElement('textarea');
+    area.value = text;
+    document.body.appendChild(area);
+    area.select();
+    document.execCommand('copy');
+    document.body.removeChild(area);
+    alert('✅ Координаты скопированы');
+  });
+}
+
+function toggleExport() {
+  const box = document.getElementById('exportBox');
+  box.classList.toggle('active');
+}
+
+// Загружаем пример при старте
+setTimeout(() => {
+  // Добавляем примерные элементы
+  elements = [
+    { x: 40, y: 30, w: 65, h: 22, label: 'HIGH ALERT', color: '#f44336' },
+    { x: 110, y: 30, w: 65, h: 22, label: 'RSS 30', color: '#f26522' },
+    { x: 180, y: 30, w: 65, h: 22, label: 'AI Чат', color: '#64f0c8' },
+    { x: 250, y: 30, w: 65, h: 22, label: 'КАРТА', color: '#44ccff' },
+    { x: 320, y: 30, w: 65, h: 22, label: 'КОРЗИНА', color: '#2196f3' },
+  ];
+  drawGrid();
+}, 100);
+
+console.log('📐 Система управления интерфейсом загружена');
+console.log('🔹 Клик на сетку → координаты');
+console.log('🔹 "Захватить расположение" → анализ кнопок из jarvis.html');
+console.log('🔹 "Копировать координаты" → JSON для вставки в код');
+</script>
+</body>
+</html>

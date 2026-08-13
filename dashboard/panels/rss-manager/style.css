@@ -1,0 +1,263 @@
+/* Панель управления RSS */
+
+#rss-manager-panel {
+  padding: 16px;
+  background: var(--panel-bg, #1a1a2e);
+  color: var(--panel-text, #e0e0e0);
+  border-radius: 8px;
+}
+
+.rss-manager-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.rss-manager-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.rss-stats {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.rss-stats .stat {
+  font-size: 14px;
+  padding: 4px 12px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.05);
+}
+
+.rss-stats .stat strong {
+  font-weight: 700;
+}
+
+.rss-stats .alive strong { color: #4caf50; }
+.rss-stats .dead strong { color: #f44336; }
+.rss-stats .unknown strong { color: #ff9800; }
+
+.rss-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 6px;
+}
+
+.rss-controls-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.rss-controls .btn {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.rss-controls .btn:hover {
+  transform: translateY(-1px);
+  opacity: 0.9;
+}
+
+.rss-controls .btn-primary {
+  background: #2196f3;
+  color: #fff;
+}
+
+.rss-controls .btn-secondary {
+  background: #555;
+  color: #fff;
+}
+
+.rss-controls .btn-success {
+  background: #4caf50;
+  color: #fff;
+}
+
+.rss-controls .btn-danger {
+  background: #f44336;
+  color: #fff;
+}
+
+.rss-controls .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.rss-add-form {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.rss-add-form input {
+  padding: 6px 10px;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 4px;
+  background: rgba(255,255,255,0.05);
+  color: #e0e0e0;
+  font-size: 13px;
+  min-width: 120px;
+  flex: 1;
+}
+
+.rss-add-form input:focus {
+  outline: none;
+  border-color: #2196f3;
+}
+
+.rss-add-form input::placeholder {
+  color: #888;
+}
+
+.rss-list-container {
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 8px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.rss-list-header {
+  display: grid;
+  grid-template-columns: 1.5fr 2fr 1fr 0.8fr 0.6fr;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.05);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #888;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.rss-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.rss-item {
+  display: grid;
+  grid-template-columns: 1.5fr 2fr 1fr 0.8fr 0.6fr;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  font-size: 13px;
+  align-items: center;
+  transition: background 0.15s;
+}
+
+.rss-item:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+.rss-item .col-name {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rss-item .col-url {
+  color: #888;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: monospace;
+}
+
+.rss-item .col-category {
+  font-size: 12px;
+  color: #aaa;
+  background: rgba(255,255,255,0.05);
+  padding: 2px 8px;
+  border-radius: 3px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.rss-item .col-status {
+  font-size: 12px;
+  text-align: center;
+}
+
+.rss-item .status-alive { color: #4caf50; }
+.rss-item .status-dead { color: #f44336; }
+.rss-item .status-unknown { color: #ff9800; }
+
+.rss-item .col-actions {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+
+.rss-item .btn-rss-delete {
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.rss-item .btn-rss-delete:hover {
+  background: rgba(244, 67, 54, 0.2);
+  color: #f44336;
+}
+
+.rss-list .loading,
+.rss-list .empty,
+.rss-list .error {
+  padding: 30px;
+  text-align: center;
+  color: #888;
+  font-size: 14px;
+}
+
+.rss-list .error {
+  color: #f44336;
+}
+
+/* Стили для скроллбара */
+.rss-list-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.rss-list-container::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.03);
+}
+
+.rss-list-container::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.15);
+  border-radius: 3px;
+}
+
+.rss-list-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.25);
+}

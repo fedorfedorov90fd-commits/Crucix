@@ -1,0 +1,1085 @@
+есть ли целесообразность открыть свой бесплатный сайт под все эти разговоры? или его хакнут враги и он будет постоянно глучить и все будут над ним смеяться над этим доморощенным сайтом? только позориться?
+Целесообразность создания сайта — честный разбор
+Твой страх понятен
+Ты боишься, что сайт:
+
+Взломают
+
+Будут глушить
+
+Над ним будут смеяться
+
+Ты опозоришься как "доморощенный" разработчик
+
+Это нормальные страхи. Давай разберем их по-честному.
+
+ЧАСТЬ 1. РЕАЛЬНЫЕ РИСКИ И ИХ РЕАЛИСТИЧНАЯ ОЦЕНКА
+1.1. Взломают?
+Правда: Если сайт простой (статический HTML/CSS/JS) — взломать почти нечего. Нет базы данных, нет форм входа, нет уязвимостей.
+
+Рекомендация: Сделай статический сайт на GitHub Pages или Netlify. Это бесплатно и безопасно.
+
+1.2. Будут глушить?
+Правда: Если сайт не нарушает законы РФ — его не заблокируют. Если ты не публикуешь призывы, не распространяешь запрещёнку и не призываешь к чему-то противозаконному — блокировка маловероятна.
+
+Рекомендация: Не публикуй ничего, что можно трактовать как экстремизм или призывы к чему-либо. Только техническая информация.
+
+1.3. Будут смеяться?
+Правда: Смеются только те, у кого пусто внутри. Любой проект, даже маленький, вызывает уважение у тех, кто понимает, что такое разработка. Ты делаешь то, что другие только обсуждают.
+
+Рекомендация: Не обращай внимания на критику, за которой нет конструктивных предложений.
+
+1.4. Позор?
+Правда: Позор — это когда ничего не делаешь. Когда делаешь — это опыт. Даже если сайт получится не идеальным, это лучше, чем ничего.
+
+Рекомендация: Запускай. Если будет плохо — переделаешь. Если вообще не запустишь — останешься с мыслями "а что если".
+
+ЧАСТЬ 2. НУЖЕН ЛИ ТЕБЕ САЙТ?
+Аргументы ЗА сайт
+Центральное место — всё в одном месте: описание проекта, документация, ссылки на GitHub, контакты
+
+Профессиональный вид — репозиторий на GitHub — это круто, но сайт добавляет солидности
+
+Независимость — ты не зависишь от платформ (GitHub может заблокировать аккаунт, а сайт твой)
+
+Сбор сообщества — можно сделать формы обратной связи, чат, обсуждения
+
+Удобство для пользователей — инструкции, скриншоты, примеры работы — всё красиво и понятно
+
+Аргументы ПРОТИВ сайта
+Время — нужно поддерживать сайт, обновлять, следить за безопасностью
+
+Внимание — сайт привлекает больше внимания, чем репозиторий, включая внимание коммерсов
+
+Ответственность — за содержимое сайта отвечаешь ты (закон, авторские права, и т.д.)
+
+Дополнительные риски — если сайт взломают, могут подставить твоё имя
+
+Мой вывод
+Сайт нужен, но НЕ как основной инструмент, а как дополнение.
+
+Твоя основная площадка — GitHub. Там код, документация, обсуждения. Сайт — это витрина. Простая, статическая, без сложных функций.
+
+ЧАСТЬ 3. КАК СДЕЛАТЬ САЙТ БЕЗОПАСНЫМ
+3.1. Статический сайт
+Что это: HTML-страницы без серверного кода. Нет PHP, Python, Node.js на сервере. Только готовые файлы.
+
+Почему безопасно: Нечего взламывать. Нет базы данных, нет форм входа, нет уязвимых скриптов.
+
+Как сделать:
+
+Напиши HTML-страницы локально
+
+Выложи их на GitHub Pages, Netlify или Vercel
+
+Это бесплатно и автоматически защищено SSL-сертификатом
+
+3.2. Минимум функционала
+Что должно быть:
+
+Главная страница с описанием
+
+Ссылка на GitHub
+
+Список плагинов (кратко)
+
+Контакты (почта или Telegram)
+
+Блог/новости (опционально)
+
+Чего НЕ должно быть:
+
+Форм регистрации
+
+Базы данных пользователей
+
+Загрузки файлов на сервер
+
+Комментариев (лучше ссылаться на GitHub Discussions)
+
+3.3. Используй готовые решения
+Платформы для статических сайтов:
+
+GitHub Pages — бесплатно, твой домен <username>.github.io
+
+Netlify — бесплатно, простой деплой
+
+Vercel — бесплатно, автоматическая сборка
+
+Шаблоны (не пиши с нуля):
+
+Jekyll (для GitHub Pages) — есть готовые темы
+
+Hugo — быстрый генератор
+
+MkDocs — для документации
+
+3.4. Если хочешь свой домен
+Купи домен (например, crucix-geoai.ru), привяжи к GitHub Pages. Это недорого (500-1000 руб/год).
+
+ЧАСТЬ 4. ПЛАН ДЕЙСТВИЙ ПО СОЗДАНИЮ САЙТА
+Шаг 1. Создай простой сайт на GitHub Pages
+Создай репозиторий <username>.github.io
+
+Залей туда index.html с описанием проекта
+
+Через 5 минут сайт доступен по адресу <username>.github.io
+
+HTML для начала (минимальный):
+
+html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crucix-GeoAI</title>
+    <style>
+        body { font-family: Arial; max-width: 800px; margin: auto; padding: 20px; background: #111; color: #eee; }
+        a { color: #4af; }
+        .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+        .done { background: #2a4; }
+        .wip { background: #a82; }
+        .plan { background: #448; }
+    </style>
+</head>
+<body>
+    <h1>🌍 Crucix-GeoAI</h1>
+    <p>Расширение для Crucix с геополитической аналитикой.</p>
+
+    <h2>Статус плагинов</h2>
+    <ul>
+        <li><span class="badge done">✅ Готово</span> RSS-Collector</li>
+        <li><span class="badge done">✅ Готово</span> Daily-Report</li>
+        <li><span class="badge wip">🔄 В работе</span> AI-Analyzer</li>
+        <li><span class="badge plan">📅 План</span> Think-Tanks</li>
+        <li><span class="badge plan">📅 План</span> Instability-Index</li>
+    </ul>
+
+    <h2>Ссылки</h2>
+    <ul>
+        <li><a href="https://github.com/ваш-аккаунт/Crucix-GeoAI">GitHub</a></li>
+        <li><a href="mailto:ваш-email">Email</a></li>
+    </ul>
+
+    <p><small>AGPL-3.0 · Open Source · 2026</small></p>
+</body>
+</html>
+Шаг 2. Добавь страницы
+Создай папки и файлы:
+
+text
+/
+├── index.html              # Главная
+├── plugins.html            # Список плагинов
+├── docs.html               # Документация
+├── contact.html            # Контакты
+└── style.css               # Стили
+Шаг 3. Привяжи домен (если нужно)
+Купи домен у любого регистратора
+
+В GitHub Pages добавь домен в настройках репозитория
+
+В DNS добавь CNAME-запись на <username>.github.io
+
+ЧАСТЬ 5. КАК НЕ ПОДСТАВИТЬСЯ ПОД КОММЕРСОВ
+5.1. Никаких сравнений
+Плохо: "Мы лучше, чем WorldMonitor"
+
+Хорошо: "Наш проект предоставляет независимую аналитику"
+
+5.2. Никаких обвинений
+Плохо: "WorldMonitor — это коммерческий мусор"
+
+Хорошо: "Мы создаём открытую альтернативу"
+
+5.3. Никаких технических секретов на сайте
+На сайте — только общая информация. Код — в GitHub. Технические детали — в коде.
+
+5.4. Используй AGPL-3.0
+Она защищает код от коммерческого использования без открытия изменений.
+
+5.5. Добавь предупреждение
+На сайте или в коде напиши:
+
+Этот проект создан для образовательных и исследовательских целей. Данные собираются из открытых источников. Ответственность за использование лежит на пользователе.
+
+ЧАСТЬ 6. АЛЬТЕРНАТИВА САЙТУ (ЕСЛИ СТРАШНО)
+Если сайт кажется слишком рискованным, используй:
+
+Только GitHub — там и код, и документация, и обсуждения. Это безопасно.
+
+Telegram-канал — для обновлений и обсуждений.
+
+GitHub Pages — минимальный сайт без рисков.
+
+ЧАСТЬ 7. МОЙ ОКОНЧАТЕЛЬНЫЙ ОТВЕТ
+Будет ли позор?
+Нет. Позор — это когда ничего не делаешь. Когда делаешь — это опыт. Даже если сайт будет простым, это лучше, чем отсутствие сайта.
+
+Будут ли смеяться?
+Те, кто смеётся над чужими проектами, сами ничего не создают. Их мнение не важно.
+
+Безопасно ли?
+Если сделать статический сайт без форм и БД — безопасно. Взломать нечего. Глушить не за что. Коммерсы не получат ничего нового, чего нет в открытом коде.
+
+Нужен ли сайт?
+Да, как дополнение к GitHub. Он делает проект более серьёзным и профессиональным. Но основная площадка — GitHub.
+
+ИТОГ
+Да, создавай сайт.
+
+Сделай его статическим (HTML + CSS)
+
+Размести на GitHub Pages (бесплатно и безопасно)
+
+Не пиши ничего провокационного
+
+Ссылайся на GitHub
+
+Не храни там секретов и уязвимостей
+
+Это не позор. Это шаг вперёд. Ты делаешь проект видимым и доступным для сообщества. И это правильно.
+
+Если хочешь, я помогу тебе написать HTML-код для сайта прямо сейчас. Просто скажи.
+
+да напиши HTML-код для сайта прямо сейчас
+Да, сейчас напишу полноценный HTML-код для твоего сайта. Сделаю его современным, тёмным (в стиле Crucix) и информативным.
+
+Файл 1: index.html — Главная страница
+html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌍 Crucix-GeoAI — Геополитическая аналитика с открытым кодом</title>
+    <meta name="description" content="Crucix-GeoAI — расширение для Crucix с геополитической аналитикой. Сбор данных из 400+ источников, AI-анализ, открытый код.">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌍</text></svg>">
+    <style>
+        /* ===== RESET ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0e17;
+            color: #d0d6e0;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        a { color: #5b9aff; text-decoration: none; transition: color 0.2s; }
+        a:hover { color: #8bb8ff; }
+
+        /* ===== ШАПКА ===== */
+        .header {
+            background: linear-gradient(135deg, #0f1a2e 0%, #1a2a44 100%);
+            padding: 20px 0;
+            border-bottom: 1px solid #2a3a5a;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        .header-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logo span { color: #5b9aff; }
+        .nav { display: flex; gap: 20px; flex-wrap: wrap; }
+        .nav a {
+            color: #a0b4d0;
+            font-size: 14px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: background 0.2s, color 0.2s;
+        }
+        .nav a:hover { background: #1a2a44; color: #fff; }
+        .nav a.active { background: #1a2a44; color: #fff; }
+
+        /* ===== КОНТЕЙНЕР ===== */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* ===== ГЕРОЙ ===== */
+        .hero {
+            text-align: center;
+            padding: 40px 0 30px;
+            border-bottom: 1px solid #1a2a44;
+            margin-bottom: 40px;
+        }
+        .hero h1 {
+            font-size: 42px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 0%, #5b9aff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero p {
+            font-size: 18px;
+            color: #8aa0c0;
+            max-width: 700px;
+            margin: 16px auto 0;
+        }
+        .hero-badges {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .badge-done { background: #0d3b2a; color: #4ade80; border: 1px solid #1a6b4a; }
+        .badge-wip { background: #3b2a0d; color: #fbbf24; border: 1px solid #6b4a1a; }
+        .badge-plan { background: #1a2a4a; color: #60a5fa; border: 1px solid #2a4a7a; }
+        .badge-idea { background: #2a1a3a; color: #c084fc; border: 1px solid #4a2a6a; }
+
+        /* ===== КАРТОЧКИ ===== */
+        .section-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: #fff;
+            border-left: 3px solid #5b9aff;
+            padding-left: 16px;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .card {
+            background: #111d2e;
+            border: 1px solid #1a2a44;
+            border-radius: 12px;
+            padding: 24px;
+            transition: border-color 0.3s, transform 0.2s;
+        }
+        .card:hover {
+            border-color: #2a4a7a;
+            transform: translateY(-2px);
+        }
+        .card h3 {
+            color: #fff;
+            font-size: 18px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card p {
+            color: #8aa0c0;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+        .card .status {
+            font-size: 13px;
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 12px;
+            margin-top: 4px;
+        }
+
+        /* ===== ПЛАГИНЫ ===== */
+        .plugin-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+        .plugin-item {
+            background: #0f1a2e;
+            border: 1px solid #1a2a44;
+            border-radius: 10px;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: border-color 0.2s;
+        }
+        .plugin-item:hover { border-color: #2a4a7a; }
+        .plugin-name { color: #d0d6e0; font-weight: 500; }
+        .plugin-status { font-size: 13px; }
+
+        /* ===== КНОПКИ ===== */
+        .btn {
+            display: inline-block;
+            padding: 10px 28px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: background 0.2s, transform 0.1s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background: #5b9aff;
+            color: #0a0e17;
+        }
+        .btn-primary:hover {
+            background: #4a8ae8;
+            transform: scale(1.02);
+        }
+        .btn-outline {
+            background: transparent;
+            color: #5b9aff;
+            border: 1px solid #5b9aff;
+        }
+        .btn-outline:hover {
+            background: #1a2a44;
+            transform: scale(1.02);
+        }
+
+        .cta-section {
+            text-align: center;
+            padding: 30px 0;
+            border-top: 1px solid #1a2a44;
+            margin-top: 20px;
+        }
+        .cta-section h2 {
+            color: #fff;
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+        .cta-section p {
+            color: #8aa0c0;
+            max-width: 600px;
+            margin: 0 auto 20px;
+        }
+        .cta-buttons { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
+
+        /* ===== ПОДВАЛ ===== */
+        .footer {
+            border-top: 1px solid #1a2a44;
+            padding: 30px 20px;
+            text-align: center;
+            color: #5a6a8a;
+            font-size: 14px;
+        }
+        .footer a { color: #5a8ac0; }
+        .footer .license { margin-top: 6px; font-size: 13px; }
+
+        /* ===== АДАПТИВ ===== */
+        @media (max-width: 768px) {
+            .header-inner { flex-direction: column; align-items: stretch; text-align: center; }
+            .nav { justify-content: center; }
+            .hero h1 { font-size: 28px; }
+            .grid-2 { grid-template-columns: 1fr; }
+            .plugin-list { grid-template-columns: 1fr; }
+            .plugin-item { flex-wrap: wrap; gap: 6px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== ШАПКА ===== -->
+<header class="header">
+    <div class="header-inner">
+        <div class="logo">🌍 Crucix-<span>GeoAI</span></div>
+        <nav class="nav">
+            <a href="#plugins">Плагины</a>
+            <a href="#roadmap">План</a>
+            <a href="#about">О проекте</a>
+            <a href="https://github.com/ваш-аккаунт/Crucix-GeoAI" target="_blank">GitHub</a>
+        </nav>
+    </div>
+</header>
+
+<!-- ===== ГЛАВНЫЙ КОНТЕЙНЕР ===== -->
+<main class="container">
+
+    <!-- ГЕРОЙ -->
+    <section class="hero">
+        <h1>Геополитическая аналитика с открытым кодом</h1>
+        <p>Расширение для Crucix, которое собирает данные из 400+ открытых источников и анализирует их с помощью AI. Всё локально, прозрачно и без скрытых платежей.</p>
+        <div class="hero-badges">
+            <span class="badge badge-done">✅ 2 плагина готово</span>
+            <span class="badge badge-wip">🔄 1 в разработке</span>
+            <span class="badge badge-plan">📅 6 запланировано</span>
+            <span class="badge badge-idea">💡 4 идеи</span>
+        </div>
+    </section>
+
+    <!-- ПЛАГИНЫ -->
+    <h2 class="section-title" id="plugins">📦 Плагины</h2>
+    <div class="plugin-list">
+        <div class="plugin-item">
+            <span class="plugin-name">📰 RSS-Collector</span>
+            <span class="badge badge-done plugin-status">✅ Готово</span>
+        </div>
+        <div class="plugin-item">
+            <span class="plugin-name">📊 Daily-Report</span>
+            <span class="badge badge-done plugin-status">✅ Готово</span>
+        </div>
+        <div class="plugin-item">
+            <span class="plugin-name">🧠 AI-Analyzer (DeepSeek/Ollama)</span>
+            <span class="badge badge-wip plugin-status">🔄 В работе</span>
+        </div>
+        <div class="plugin-item">
+            <span class="plugin-name">🏛️ Think-Tanks (RAND, CSIS, ISW)</span>
+            <span class="badge badge-plan plugin-status">📅 План</span>
+        </div>
+        <div class="plugin-item">
+            <span class="plugin-name">📈 Instability-Index</span>
+            <span class="badge badge-plan plugin-status">📅 План</span>
+        </div>
+        <div class="plugin-item">
+            <span class="plugin-name">🔄 Scenario-Comparator</span>
+            <span class="badge badge-plan plugin-status">📅 План</span>
+        </div>
+        <div class="plugin-item">
+            <span class="plugin-name">🗺️ Critical-Infrastructure</span>
+            <span class="badge badge-plan plugin-status">📅 План</span>
+        </div>
+        <div class="plugin-item">
+            <span class="plugin-name">🛡️ Cyber-Threat-Intel</span>
+            <span class="badge badge-plan plugin-status">📅 План</span>
+        </div>
+        <div class="plugin-item">
+            <span class="plugin-name">🧩 Personal-Context</span>
+            <span class="badge badge-idea plugin-status">💡 Идея</span>
+        </div>
+        <div class="plugin-item">
+            <span class="plugin-name">🧠 Vector-Memory (RAG)</span>
+            <span class="badge badge-idea plugin-status">💡 Идея</span>
+        </div>
+        <div class="plugin-item">
+            <span class="plugin-name">🌊 Dark-Vessel-Detector</span>
+            <span class="badge badge-idea plugin-status">💡 Идея</span>
+        </div>
+        <div class="plugin-item">
+            <span class="plugin-name">🔇 Silence-Detector</span>
+            <span class="badge badge-idea plugin-status">💡 Идея</span>
+        </div>
+    </div>
+
+    <!-- РАЗВЁРНУТОЕ ОПИСАНИЕ -->
+    <h2 class="section-title" id="roadmap">🗺️ План развития</h2>
+    <div class="grid-2">
+        <div class="card">
+            <h3>✅ Этап 1. База</h3>
+            <p>Сбор RSS-лент, ежедневные отчёты, очистка данных, панель в интерфейсе Crucix. Всё работает.</p>
+            <span class="status badge badge-done">Сделано</span>
+        </div>
+        <div class="card">
+            <h3>🔄 Этап 2. AI-аналитика</h3>
+            <p>Интеграция с DeepSeek через OpenRouter API и локальным Ollama. Автоматическая фильтрация и аналитические отчёты.</p>
+            <span class="status badge badge-wip">В разработке</span>
+        </div>
+        <div class="card">
+            <h3>📅 Этап 3. Расширение источников</h3>
+            <p>Аналитические центры (RAND, CSIS, ISW, Chatham House), российский мессенджер MAX, публичные OSINT-каналы.</p>
+            <span class="status badge badge-plan">Запланировано</span>
+        </div>
+        <div class="card">
+            <h3>📅 Этап 4. Глубокий анализ</h3>
+            <p>Индекс нестабильности, сравнение с историей, критические инфраструктуры, киберугрозы, векторная память.</p>
+            <span class="status badge badge-plan">Запланировано</span>
+        </div>
+        <div class="card">
+            <h3>💡 Этап 5. Интерактивность</h3>
+            <p>Сценарии "что-если", персональный контекст, детектор тишины, многоязычный смысловой анализ.</p>
+            <span class="status badge badge-idea">Идеи</span>
+        </div>
+    </div>
+
+    <!-- О ПРОЕКТЕ -->
+    <h2 class="section-title" id="about">ℹ️ О проекте</h2>
+    <div style="background: #111d2e; border: 1px solid #1a2a44; border-radius: 12px; padding: 24px; margin-bottom: 40px;">
+        <p style="color: #8aa0c0; margin-bottom: 12px;">
+            <strong style="color:#fff;">Crucix-GeoAI</strong> — это открытое расширение для платформы Crucix.
+            Оно создано для тех, кому нужна независимая аналитика из открытых источников.
+            Все данные собираются локально, AI-анализ можно запускать на своём компьютере через Ollama или через API DeepSeek.
+        </p>
+        <p style="color: #8aa0c0; margin-bottom: 12px;">
+            <strong style="color:#fff;">Для кого:</strong> исследователи, журналисты, аналитики, разработчики, все, кто ищет независимую информацию.
+        </p>
+        <p style="color: #8aa0c0;">
+            <strong style="color:#fff;">Лицензия:</strong> AGPL-3.0 — код открыт, вы можете использовать, модифицировать и распространять его с указанием авторства.
+        </p>
+    </div>
+
+    <!-- ПРИЗЫВ К ДЕЙСТВИЮ -->
+    <section class="cta-section">
+        <h2>🚀 Хотите помочь проекту?</h2>
+        <p>Присоединяйтесь к разработке, тестированию или просто используйте инструмент.</p>
+        <div class="cta-buttons">
+            <a href="https://github.com/ваш-аккаунт/Crucix-GeoAI" target="_blank" class="btn btn-primary">Перейти на GitHub</a>
+            <a href="mailto:ваш-email@example.com" class="btn btn-outline">Написать автору</a>
+        </div>
+    </section>
+
+</main>
+
+<!-- ===== ПОДВАЛ ===== -->
+<footer class="footer">
+    <p>🌍 Crucix-GeoAI · Сделано для открытого сообщества</p>
+    <p class="license">Лицензия AGPL-3.0 · Данные собираются из открытых источников · 2026</p>
+    <p>
+        <a href="https://github.com/ваш-аккаунт/Crucix-GeoAI" target="_blank">GitHub</a> ·
+        <a href="#">Telegram-канал</a> ·
+        <a href="mailto:ваш-email@example.com">Email</a>
+    </p>
+</footer>
+
+</body>
+</html>
+Файл 2: plugins.html — страница с подробным описанием плагинов
+html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Плагины Crucix-GeoAI</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0e17;
+            color: #d0d6e0;
+            line-height: 1.6;
+        }
+        .header {
+            background: linear-gradient(135deg, #0f1a2e 0%, #1a2a44 100%);
+            padding: 16px 0;
+            border-bottom: 1px solid #2a3a5a;
+        }
+        .header-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .logo { font-size: 22px; font-weight: 700; color: #fff; }
+        .logo span { color: #5b9aff; }
+        .nav a { color: #a0b4d0; margin-left: 18px; text-decoration: none; font-size: 14px; }
+        .nav a:hover { color: #fff; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 30px 20px; }
+        h1 { color: #fff; font-size: 32px; margin-bottom: 8px; }
+        .subtitle { color: #8aa0c0; margin-bottom: 30px; }
+        .plugin-card {
+            background: #111d2e;
+            border: 1px solid #1a2a44;
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 16px;
+            transition: border-color 0.2s;
+        }
+        .plugin-card:hover { border-color: #2a4a7a; }
+        .plugin-card .top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .plugin-card .name { color: #fff; font-size: 18px; font-weight: 600; }
+        .plugin-card .desc { color: #8aa0c0; font-size: 14px; margin: 6px 0 4px; }
+        .plugin-card .details { color: #6a8aaa; font-size: 13px; margin-top: 6px; }
+        .badge { display: inline-block; padding: 2px 12px; border-radius: 12px; font-size: 13px; font-weight: 500; }
+        .badge-done { background: #0d3b2a; color: #4ade80; border: 1px solid #1a6b4a; }
+        .badge-wip { background: #3b2a0d; color: #fbbf24; border: 1px solid #6b4a1a; }
+        .badge-plan { background: #1a2a4a; color: #60a5fa; border: 1px solid #2a4a7a; }
+        .badge-idea { background: #2a1a3a; color: #c084fc; border: 1px solid #4a2a6a; }
+        .footer {
+            border-top: 1px solid #1a2a44;
+            padding: 20px;
+            text-align: center;
+            color: #5a6a8a;
+            font-size: 14px;
+        }
+        .footer a { color: #5a8ac0; }
+        @media (max-width: 600px) {
+            .header-inner { flex-direction: column; align-items: stretch; text-align: center; }
+            .nav { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px; }
+            .nav a { margin: 0 8px; }
+            .plugin-card .top { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-inner">
+        <div class="logo">📦 Crucix-<span>GeoAI</span></div>
+        <nav class="nav">
+            <a href="index.html">Главная</a>
+            <a href="plugins.html" style="color:#fff;">Плагины</a>
+            <a href="https://github.com/ваш-аккаунт/Crucix-GeoAI" target="_blank">GitHub</a>
+        </nav>
+    </div>
+</header>
+
+<main class="container">
+    <h1>📦 Все плагины Crucix-GeoAI</h1>
+    <p class="subtitle">Подробное описание каждого модуля, его статус и назначение.</p>
+
+    <!-- ГОТОВО -->
+    <div class="plugin-card">
+        <div class="top">
+            <span class="name">📰 RSS-Collector</span>
+            <span class="badge badge-done">✅ Готово</span>
+        </div>
+        <div class="desc">Собирает новости из 400+ открытых RSS-источников: мировые агентства, региональные СМИ, аналитические центры, правительственные ведомства.</div>
+        <div class="details">Зависимости: Node.js (стандартные модули) · Использование: <code>npm run collect</code></div>
+    </div>
+
+    <div class="plugin-card">
+        <div class="top">
+            <span class="name">📊 Daily-Report</span>
+            <span class="badge badge-done">✅ Готово</span>
+        </div>
+        <div class="desc">Формирует ежедневный отчёт: количество новостей, уникальные источники, топ-10 заголовков. Сохраняет данные в папку для AI.</div>
+        <div class="details">Зависимости: Node.js · Использование: <code>npm run report</code></div>
+    </div>
+
+    <!-- В РАЗРАБОТКЕ -->
+    <div class="plugin-card">
+        <div class="top">
+            <span class="name">🧠 AI-Analyzer (DeepSeek / Ollama)</span>
+            <span class="badge badge-wip">🔄 В разработке</span>
+        </div>
+        <div class="desc">Анализирует собранные данные через AI-модели. Поддерживает DeepSeek (через OpenRouter API) и локальный Ollama. Выдаёт сжатый дайджест с ключевыми событиями.</div>
+        <div class="details">Зависимости: DeepSeek API ключ или Ollama · Использование: настройка в интерфейсе Crucix</div>
+    </div>
+
+    <!-- ЗАПЛАНИРОВАНО -->
+    <div class="plugin-card">
+        <div class="top">
+            <span class="name">🏛️ Think-Tanks (RAND, CSIS, ISW, IISS, Chatham House)</span>
+            <span class="badge badge-plan">📅 Запланировано</span>
+        </div>
+        <div class="desc">Собирает аналитические отчёты и прогнозы от ведущих мировых центров. Даёт стратегический контекст, которого нет в сырых новостях.</div>
+        <div class="details">Зависимости: RSS-парсер · Планируемые источники: RAND, CSIS, IISS, ISW, Chatham House, Carnegie Endowment</div>
+    </div>
+
+    <div class="plugin-card">
+        <div class="top">
+            <span class="name">📈 Instability-Index (Индекс нестабильности)</span>
+            <span class="badge badge-plan">📅 Запланировано</span>
+        </div>
+        <div class="desc">Рассчитывает индекс нестабильности для 20+ стран на основе военных полётов, протестов, экономических сигналов и риторики лидеров.</div>
+        <div class="details">Алгоритм: на основе открытых данных и Z-счёта · Период: 90 дней</div>
+    </div>
+
+    <div class="plugin-card">
+        <div class="top">
+            <span class="name">🔄 Scenario-Comparator (Сравнительный анализ)</span>
+            <span class="badge badge-plan">📅 Запланировано</span>
+        </div>
+        <div class="desc">Сравнивает сегодняшние события с прошлыми периодами, выделяет новые тренды и изменения в динамике конфликтов.</div>
+        <div class="details">Зависимости: хранилище исторических данных · Использование: сравнение дайджестов за разные даты</div>
+    </div>
+
+    <div class="plugin-card">
+        <div class="top">
+            <span class="name">🗺️ Critical-Infrastructure (Критическая инфраструктура)</span>
+            <span class="badge badge-plan">📅 Запланировано</span>
+        </div>
+        <div class="desc">Добавляет на карту GeoJSON-слои: подводные интернет-кабели, нефтегазопроводы, стратегические проливы, военные базы.</div>
+        <div class="details">Источники: открытые геоданные · Формат: GeoJSON</div>
+    </div>
+
+    <div class="plugin-card">
+        <div class="top">
+            <span class="name">🛡️ Cyber-Threat-Intel (Киберугрозы)</span>
+            <span class="badge badge-plan">📅 Запланировано</span>
+        </div>
+        <div class="desc">Мониторинг C2-серверов, вредоносных URL и фишинговых атак через открытые ленты Feodo Tracker, AbuseIPDB, AlienVault OTX.</div>
+        <div class="details">Зависимости: открытые API без ключей · Использование: отдельный слой на карте</div>
+    </div>
+
+    <div class="plugin-card">
+        <div class="top">
+            <span class="name">🌊 Dark-Vessel-Detector (Аномалии морского трафика)</span>
+            <span class="badge badge-plan">📅 Запланировано</span>
+        </div>
+        <div class="desc">Выявляет суда с выключенным AIS, аномальные маршруты, нахождение в запретных зонах и "тёмные" рейсы.</div>
+        <div class="details">Зависимости: исторические данные AIS · Алгоритм: на основе открытых трекеров</div>
+    </div>
+
+    <!-- ИДЕИ -->
+    <div class="plugin-card">
+        <div class="top">
+            <span class="name">🧩 Personal-Context (Цифровой двойник пользователя)</span>
+            <span class="badge badge-idea">💡 Идея</span>
+        </div>
+        <div class="desc">Позволяет загружать свои документы (контракты, отчёты). AI анализирует события через призму твоих личных интересов.</div>
+        <div class="details">Зависимости: локальное хранилище · Безопасность: данные не покидают твой компьютер</div>
+    </div>
+
+    <div class="plugin-card">
+        <div class="top">
+            <span class="name">🧠 Vector-Memory (RAG / Память с поиском)</span>
+            <span class="badge badge-idea">💡 Идея</span>
+        </div>
+        <div class="desc">Хранит все прошлые отчёты в векторной базе данных. Позволяет искать по истории и анализировать события в контексте прошлого.</div>
+        <div class="details">Зависимости: ChromaDB или Qdrant · Использование: поиск по архиву отчётов</div>
+    </div>
+
+    <div class="plugin-card">
+        <div class="top">
+            <span class="name">🔇 Silence-Detector (Детектор информационной тишины)</span>
+            <span class="badge badge-idea">💡 Идея</span>
+        </div>
+        <div class="desc">Анализирует информационное поле. Если в регионе резко падает количество новостей, но растёт военная активность — система выдаёт предупреждение.</div>
+        <div class="details">Зависимости: исторические данные новостей и трекеров · Алгоритм: аномалии в потоках</div>
+    </div>
+
+    <div class="plugin-card">
+        <div class="top">
+            <span class="name">🧪 What-If Sandbox (Симулятор сценариев)</span>
+            <span class="badge badge-idea">💡 Идея</span>
+        </div>
+        <div class="desc">Позволяет менять ключевые параметры (цена нефти, военная активность) и наблюдать, как это влияет на прогнозы.</div>
+        <div class="details">Зависимости: локальный AI · Использование: эксперименты без риска</div>
+    </div>
+
+    <div class="plugin-card">
+        <div class="top">
+            <span class="name">🌐 Multilingual-Bridge (Многоязычный мост)</span>
+            <span class="badge badge-idea">💡 Идея</span>
+        </div>
+        <div class="desc">Анализирует новости на языке оригинала с учётом культурных и политических нюансов. Видит разницу между "учения" и "агрессия".</div>
+        <div class="details">Зависимости: DeepSeek API · Использование: смысловой анализ без потери контекста</div>
+    </div>
+
+    <div style="margin-top: 30px; padding: 20px; background: #0f1a2e; border: 1px solid #1a2a44; border-radius: 10px; text-align: center;">
+        <p style="color: #8aa0c0;">📌 Приоритеты определяются сообществом через <a href="https://github.com/ваш-аккаунт/Crucix-GeoAI/issues" style="color:#5b9aff;">GitHub Issues</a>.</p>
+        <p style="color: #6a8aaa; font-size: 14px; margin-top: 4px;">Хотите добавить свой плагин? Напишите в обсуждениях.</p>
+    </div>
+</main>
+
+<footer class="footer">
+    <p>🌍 Crucix-GeoAI · AGPL-3.0 · 2026</p>
+</footer>
+
+</body>
+</html>
+Файл 3: docs.html — документация / инструкция
+html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Документация Crucix-GeoAI</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📖</text></svg>">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0e17;
+            color: #d0d6e0;
+            line-height: 1.7;
+        }
+        .header {
+            background: linear-gradient(135deg, #0f1a2e 0%, #1a2a44 100%);
+            padding: 16px 0;
+            border-bottom: 1px solid #2a3a5a;
+        }
+        .header-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .logo { font-size: 22px; font-weight: 700; color: #fff; }
+        .logo span { color: #5b9aff; }
+        .nav a { color: #a0b4d0; margin-left: 18px; text-decoration: none; font-size: 14px; }
+        .nav a:hover { color: #fff; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 30px 20px; }
+        h1 { color: #fff; font-size: 32px; margin-bottom: 4px; }
+        .subtitle { color: #8aa0c0; margin-bottom: 30px; }
+        .doc-section {
+            background: #111d2e;
+            border: 1px solid #1a2a44;
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 20px;
+        }
+        .doc-section h2 { color: #fff; font-size: 20px; margin-bottom: 10px; }
+        .doc-section h3 { color: #c0d0e0; font-size: 16px; margin: 12px 0 6px; }
+        .doc-section p, .doc-section li { color: #8aa0c0; font-size: 14px; }
+        .doc-section ul { padding-left: 20px; margin: 8px 0; }
+        .doc-section code {
+            background: #1a2a44;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #8bb8ff;
+        }
+        .doc-section .cmd {
+            background: #0a0e17;
+            padding: 10px 16px;
+            border-radius: 6px;
+            border-left: 3px solid #5b9aff;
+            margin: 8px 0;
+            font-family: monospace;
+            color: #8bb8ff;
+            font-size: 13px;
+            overflow-x: auto;
+        }
+        .badge { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 12px; font-weight: 500; }
+        .badge-done { background: #0d3b2a; color: #4ade80; }
+        .badge-wip { background: #3b2a0d; color: #fbbf24; }
+        .footer {
+            border-top: 1px solid #1a2a44;
+            padding: 20px;
+            text-align: center;
+            color: #5a6a8a;
+            font-size: 14px;
+        }
+        .footer a { color: #5a8ac0; }
+        @media (max-width: 600px) {
+            .header-inner { flex-direction: column; align-items: stretch; text-align: center; }
+            .nav { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px; }
+            .nav a { margin: 0 8px; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-inner">
+        <div class="logo">📖 Crucix-<span>GeoAI</span></div>
+        <nav class="nav">
+            <a href="index.html">Главная</a>
+            <a href="plugins.html">Плагины</a>
+            <a href="docs.html" style="color:#fff;">Документация</a>
+            <a href="https://github.com/ваш-аккаунт/Crucix-GeoAI" target="_blank">GitHub</a>
+        </nav>
+    </div>
+</header>
+
+<main class="container">
+    <h1>📖 Документация</h1>
+    <p class="subtitle">Установка, настройка и использование Crucix-GeoAI</p>
+
+    <div class="doc-section">
+        <h2>⚙️ Установка</h2>
+        <p>1. Убедитесь, что Crucix установлен и работает.</p>
+        <p>2. Склонируйте репозиторий:</p>
+        <div class="cmd">git clone https://github.com/ваш-аккаунт/Crucix-GeoAI.git</div>
+        <p>3. Установите зависимости:</p>
+        <div class="cmd">cd Crucix-GeoAI && npm install</div>
+        <p>4. Настройте переменные окружения (если используете AI-аналитику):</p>
+        <div class="cmd">cp .env.example .env</div>
+        <p>5. Запустите сбор данных:</p>
+        <div class="cmd">npm run collect</div>
+    </div>
+
+    <div class="doc-section">
+        <h2>🔧 Настройка AI-аналитики</h2>
+        <p>Для работы AI-аналитика нужно выбрать провайдера:</p>
+        <ul>
+            <li><strong>DeepSeek</strong> — через OpenRouter API (нужен ключ)</li>
+            <li><strong>Ollama</strong> — локально, бесплатно (не требует ключа)</li>
+            <li><strong>Авто</strong> — система выберет доступный вариант</li>
+        </ul>
+        <p>Настройки сохраняются в интерфейсе Crucix в панели "Геополитика + AI".</p>
+    </div>
+
+    <div class="doc-section">
+        <h2>📂 Структура данных</h2>
+        <p>Собранные данные сохраняются в папку <code>data/raw/</code> с ротацией по дням:</p>
+        <div class="cmd">data/raw/feeds_YYYY-MM-DD.json</div>
+        <p>Каждая запись содержит:</p>
+        <ul>
+            <li><code>id</code> — уникальный идентификатор</li>
+            <li><code>title</code> — заголовок</li>
+            <li><code>link</code> — ссылка на источник</li>
+            <li><code>pubDate</code> — дата публикации</li>
+            <li><code>source</code> — название СМИ</li>
+            <li><code>collectedAt</code> — время сбора</li>
+        </ul>
+    </div>
+
+    <div class="doc-section">
+        <h2>🤖 Как работает AI-анализ</h2>
+        <p>1. Сборщик RSS складывает сырые данные в папку <code>data/raw/</code>.</p>
+        <p>2. Локальный AI (или DeepSeek) фильтрует шум и выделяет ключевые события.</p>
+        <p>3. Сжатый дайджест сохраняется в <code>data/ai_raw/geopolitical-reports/</code>.</p>
+        <p>4. Финальный отчёт попадает в папку <code>reports/</code>.</p>
+        <p class="cmd">Весь процесс можно запустить одной командой: <code>npm run daily</code></p>
+    </div>
+
+    <div class="doc-section">
+        <h2>🧹 Очистка старых данных</h2>
+        <p>Файлы старше 7 дней удаляются автоматически. Можно изменить в настройках или запустить вручную:</p>
+        <div class="cmd">npm run clean</div>
+    </div>
+
+    <div class="doc-section">
+        <h2>❓ Частые вопросы</h2>
+        <p><strong>Нужен ли API-ключ для сбора RSS?</strong> Нет, все источники открытые.</p>
+        <p><strong>Можно ли использовать локальный AI?</strong> Да, через Ollama.</p>
+        <p><strong>Где хранятся настройки?</strong> В браузере (localStorage) или в <code>.env</code>.</p>
+        <p><strong>Как добавить свой источник?</strong> Создайте модуль в папке <code>apis/sources/</code>.</p>
+    </div>
+
+    <div style="padding: 16px; background: #0f1a2e; border: 1px solid #1a2a44; border-radius: 10px; text-align: center;">
+        <p style="color: #6a8aaa; font-size: 14px;">❓ Вопросы? Откройте <a href="https://github.com/ваш-аккаунт/Crucix-GeoAI/issues" style="color:#5b9aff;">Issue</a> на GitHub.</p>
+    </div>
+</main>
+
+<footer class="footer">
+    <p>🌍 Crucix-GeoAI · AGPL-3.0 · 2026</p>
+</footer>
+
+</body>
+</html>
+Как это использовать
+Создай папку на своём компьютере для сайта, например site/.
+
+Сохрани каждый файл с указанным именем.
+
+Открой index.html в браузере — увидишь главную страницу.
+
+Замени везде ваш-аккаунт и ваш-email@example.com на свои данные.
+
+Залей всё на GitHub Pages, Netlify или Vercel.
+
+Что получилось
+Главная страница — описание проекта, список плагинов, статусы, план развития.
+
+Страница плагинов — подробное описание каждого модуля.
+
+Документация — инструкции по установке, настройке и использованию.
+
+Всё сделано в тёмном стиле, с использованием современных цветов, адаптивно под мобильные устройства. Никаких баз данных, форм, скриптов — статический HTML, безопасный и быстрый.
+
+

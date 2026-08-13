@@ -1,0 +1,59 @@
+=== ИСТОРИЯ ИЗМЕНЕНИЙ КОДА ===
+Дата: 2026-08-13
+
+=== МОДУЛЬ №5: ГЛОБАЛЬНЫЙ ИНДЕКС НАПРЯЖЁННОСТИ ===
+
+1. apis/sources/global-index-api.mjs — СОЗДАН
+   - API: /api/geo/index — текущий индекс
+   - API: /api/geo/index/history — история индекса
+   - Расчёт на основе: новости, термальные, авиация, геополитика, экономика
+   - Сохранение истории в data/geo/index-history.json
+   - Автоочистка истории (90 дней)
+
+2. dashboard/public/global-index.html — СОЗДАН
+   - Полная страница индекса
+   - График динамики за 30 дней (Chart.js)
+   - Компоненты индекса с цветными шкалами
+   - Интерпретация уровня
+
+3. dashboard/public/css/global-index.css — СОЗДАН
+   - Стили для страницы индекса
+   - Адаптивный дизайн
+   - Цветовая схема: критический/высокий/средний/нормальный
+
+4. dashboard/public/js/global-index.js — СОЗДАН
+   - Загрузка данных с /api/geo/index
+   - Рендеринг индекса, компонентов и графика
+   - Автообновление каждые 5 минут
+
+5. server.mjs — ОБНОВЛЁН
+   - Добавлен импорт handleGlobalIndexAPI
+   - Добавлен маршрут /api/geo/index
+   - Добавлена страница /global-index
+   - Обновлены логи при запуске
+
+6. dashboard/public/jarvis.html — ОБНОВЛЁН
+   - Добавлен виджет индекса в левую колонку
+   - Добавлена функция loadWidgetIndex()
+   - Добавлена кнопка "🌍 ИНДЕКС" в верхнюю панель
+   - Автообновление виджета каждые 5 минут
+
+7. data/geo/index-history.json — СОЗДАН (автоматически)
+   - История значений индекса
+
+=== ФАЙЛЫ СОЗДАННЫЕ В МОДУЛЕ №5 ===
+- apis/sources/global-index-api.mjs
+- dashboard/public/global-index.html
+- dashboard/public/css/global-index.css
+- dashboard/public/js/global-index.js
+
+=== ФАЙЛЫ ОБНОВЛЁННЫЕ В МОДУЛЕ №5 ===
+- server.mjs
+- dashboard/public/jarvis.html
+
+=== НОВЫЕ API ===
+- GET /api/geo/index — текущий индекс
+- GET /api/geo/index/history — история индекса
+
+=== НОВЫЕ СТРАНИЦЫ ===
+- /global-index — глобальный индекс напряжённости

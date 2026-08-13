@@ -1,107 +1,71 @@
 #!/usr/bin/env node
-// Crucix Dashboard Data Synthesizer
 
-import { existsSync, readFileSync, readdirSync, writeFileSync } from 'fs';
-import { dirname, join } from 'path';
-import { fileURLToPath } from 'url';
-import config from '../crucix.config.mjs';
-import { createLLMProvider } from '../lib/llm/index.mjs';
-import { generateLLMIdeas } from '../lib/llm/ideas.mjs';
+// ============================================================
+// ПОДКЛЮЧЕНИЕ ПАНЕЛЕЙ
+// ============================================================
 
-// === ИМПОРТ ТВОЕЙ ПАНЕЛИ ===
-import geopoliticalReports from '../apis/sources/geopolitical-reports.mjs';
+// Панель геополитики
+import geopoliticalPanel from './panels/geopolitical-reports/index.mjs';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT = join(__dirname, '..');
+// Панель управления RSS
+import rssManagerPanel from './panels/rss-manager/index.mjs';
 
-// === Панели ===
-export const PANELS = {
-  'news': {
-    id: 'news',
-    label: '📰 Новости',
-    defaultActive: true
-  },
-  'map': {
-    id: 'map',
-    label: '🗺️ Карта',
-    defaultActive: true
-  },
-  'sources': {
-    id: 'sources',
-    label: '📡 Источники',
-    defaultActive: true
-  },
-  'geopolitical-reports': {
-    id: 'geopolitical-reports',
-    label: '🌍 Геополитика + AI',
-    component: geopoliticalReports,
-    defaultActive: true
-  }
-};
+// ============================================================
+// РЕГИСТРАЦИЯ ПАНЕЛЕЙ
+// ============================================================
 
-export async function generateIdeas(data, llmProvider) {
-  if (!llmProvider || !data || !data.news || data.news.length === 0) {
-    return [];
-  }
-  try {
-    return await generateLLMIdeas(data.news, llmProvider) || [];
-  } catch (error) {
-    console.warn('[Inject] Ошибка генерации идей:', error.message);
-    return [];
-  }
+export const panels = [];
+
+// Регистрация панели геополитики
+panels.push({
+  id: geopoliticalPanel.id || 'geopolitical',
+  name: geopoliticalPanel.name || 'Геополитика + AI',
+  icon: geopoliticalPanel.icon || '🌍',
+  category: geopoliticalPanel.category || 'Аналитика',
+  priority: geopoliticalPanel.priority || 10,
+  render: geopoliticalPanel.render || (() => '<div>Панель не загружена</div>'),
+  onLoad: geopoliticalPanel.onLoad || (() => {}),
+  onUnload: geopoliticalPanel.onUnload || (() => {})
+});
+
+// Регистрация панели управления RSS
+panels.push({
+  id: rssManagerPanel.id || 'rss-manager',
+  name: rssManagerPanel.name || 'Управление RSS',
+  icon: rssManagerPanel.icon || '📡',
+  category: rssManagerPanel.category || 'Управление',
+  priority: rssManagerPanel.priority || 10,
+  render: rssManagerPanel.render || (() => '<div>Панель не загружена</div>'),
+  onLoad: rssManagerPanel.onLoad || (() => {}),
+  onUnload: rssManagerPanel.onUnload || (() => {})
+});
+
+// ============================================================
+// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+// ============================================================
+
+// Получить панель по ID
+export function getPanel(id) {
+  return panels.find(p => p.id === id);
 }
 
-export async function fetchAllNews() {
-  return [];
+// Получить панели по категории
+export function getPanelsByCategory(category) {
+  return panels.filter(p => p.category === category);
 }
 
-export async function synthesize(data) {
-  console.log('[Inject] Синтез данных для дашборда...');
-  
-  // БЕЗОПАСНАЯ ПРОВЕРКА: если data нет или невалидна, создаём пустую структуру
-  if (!data || typeof data !== 'object') {
-    console.warn('[Inject] Нет данных для синтеза, создаём пустую структуру');
-    return {
-      news: [],
-      ideas: [],
-      sources: {},
-      sourcesOk: 0,
-      sourcesFailed: 0,
-      timestamp: new Date().toISOString()
-    };
-  }
-  
-  // БЕЗОПАСНОЕ ИЗВЛЕЧЕНИЕ с дефолтными значениями
-  const safeData = {
-    news: Array.isArray(data.news) ? data.news : [],
-    sources: data.sources && typeof data.sources === 'object' ? data.sources : {},
-    sourcesOk: typeof data.sourcesOk === 'number' ? data.sourcesOk : 0,
-    sourcesFailed: typeof data.sourcesFailed === 'number' ? data.sourcesFailed : 0,
-    llmProvider: data.llmProvider || null
-  };
-  
-  let ideas = [];
-  if (safeData.llmProvider && safeData.news.length > 0) {
-    try {
-      ideas = await generateLLMIdeas(safeData.news, safeData.llmProvider);
-    } catch (error) {
-      console.warn('[Inject] Ошибка генерации идей:', error.message);
-    }
-  }
-  
-  return {
-    news: safeData.news,
-    ideas: ideas || [],
-    sources: safeData.sources,
-    sourcesOk: safeData.sourcesOk,
-    sourcesFailed: safeData.sourcesFailed,
-    timestamp: new Date().toISOString()
-  };
+// Получить все панели (сортировка по приоритету)
+export function getAllPanels() {
+  return panels.sort((a, b) => (a.priority || 0) - (b.priority || 0));
 }
+
+// ============================================================
+// ЭКСПОРТ ПО УМОЛЧАНИЮ
+// ============================================================
 
 export default {
-  PANELS,
-  synthesize,
-  generateIdeas,
-  fetchAllNews
+  panels,
+  getPanel,
+  getPanelsByCategory,
+  getAllPanels
 };

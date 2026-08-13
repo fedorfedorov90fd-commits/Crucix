@@ -1,42 +1,46 @@
-// Shared fetch utility with timeout, retries, and error handling
+// apis/utils/fetch.mjs
+// Утилита для HTTP-запросов с повторными попытками
 
-export async function safeFetch(url, opts = {}) {
-  const { timeout = 15000, retries = 1, headers = {} } = opts;
-  let lastError;
-  for (let i = 0; i <= retries; i++) {
-    try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), timeout);
-      const res = await fetch(url, {
-        signal: controller.signal,
-        headers: { 'User-Agent': 'Crucix/1.0', ...headers },
-      });
-      clearTimeout(timer);
-      if (!res.ok) {
-        const body = await res.text().catch(() => '');
-        throw new Error(`HTTP ${res.status}: ${body.slice(0, 200)}`);
-      }
-      const text = await res.text();
-      try { return JSON.parse(text); } catch { return { rawText: text.slice(0, 500) }; }
-    } catch (e) {
-      lastError = e;
-      // GDELT needs 5s between requests, others are fine with shorter delays
-      if (i < retries) await new Promise(r => setTimeout(r, 2000 * (i + 1)));
+export async function fetchWithRetry(url, options = {}, retries = 3, delay = 1000) {
+    let lastError;
+
+    for (let attempt = 0; attempt < retries; attempt++) {
+        try {
+            const response = await fetch(url, {
+                ...options,
+                signal: options.timeout ? AbortSignal.timeout(options.timeout) : undefined
+            });
+
+            // Если ответ успешный, возвращаем его
+            if (response.ok) {
+                return response;
+            }
+
+            // Если сервер вернул ошибку 429 (Too Many Requests) или 5xx, пробуем снова
+            if (response.status === 429 || response.status >= 500) {
+                const waitTime = delay * Math.pow(2, attempt);
+                console.warn(`[fetchWithRetry] Попытка ${attempt + 1}/${retries} не удалась (${response.status}), ждём ${waitTime}ms`);
+                await sleep(waitTime);
+                continue;
+            }
+
+            // Другие ошибки (400, 404, etc.) не повторяем
+            return response;
+
+        } catch (error) {
+            lastError = error;
+            console.warn(`[fetchWithRetry] Попытка ${attempt + 1}/${retries} упала с ошибкой:`, error.message);
+
+            if (attempt < retries - 1) {
+                const waitTime = delay * Math.pow(2, attempt);
+                await sleep(waitTime);
+            }
+        }
     }
-  }
-  return { error: lastError?.message || 'Unknown error', source: url };
+
+    throw new Error(`Не удалось выполнить запрос после ${retries} попыток: ${lastError?.message || 'неизвестная ошибка'}`);
 }
 
-export function ago(hours) {
-  return new Date(Date.now() - hours * 3600000).toISOString();
-}
-
-export function today() {
-  return new Date().toISOString().split('T')[0];
-}
-
-export function daysAgo(n) {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
-  return d.toISOString().split('T')[0];
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }

@@ -10,10 +10,8 @@ const ROOT = join(__dirname, '..');
 const DATA_DIR = join(ROOT, 'data', 'raw');
 const FEEDS_FILE = join(ROOT, 'data', 'feeds', 'feeds.opml');
 
-// Убедимся, что папка существует
 await fs.mkdir(DATA_DIR, { recursive: true });
 
-// Парсинг OPML
 function parseOpml(xml) {
   const feeds = [];
   const regex = /<outline[^>]*type="rss"[^>]*text="([^"]*)"[^>]*xmlUrl="([^"]*)"/g;
@@ -24,17 +22,18 @@ function parseOpml(xml) {
   return feeds;
 }
 
-// Парсинг RSS-ленты
 async function fetchFeed(url) {
   try {
-    const res = await fetch(url, { 
-      headers: { 'User-Agent': 'Crucix-Collector/1.0' },
-      signal: AbortSignal.timeout(10000) 
+    const res = await fetch(url, {
+      headers: { 
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'application/rss+xml, application/xml, text/xml, */*'
+      },
+      signal: AbortSignal.timeout(30000)
     });
     if (!res.ok) return [];
     const text = await res.text();
     
-    // Простой парсинг RSS (без библиотек)
     const items = [];
     const itemRegex = /<item>([\s\S]*?)<\/item>/g;
     let itemMatch;
@@ -54,7 +53,6 @@ async function fetchFeed(url) {
   }
 }
 
-// Основная функция
 async function collectAllFeeds() {
   console.log('[Collector] Чтение списка RSS-лент...');
   const xml = await fs.readFile(FEEDS_FILE, 'utf-8');
@@ -63,6 +61,7 @@ async function collectAllFeeds() {
 
   const allItems = [];
   let processed = 0;
+  let successCount = 0;
 
   for (const feed of feeds) {
     processed++;
@@ -70,32 +69,32 @@ async function collectAllFeeds() {
       console.log(`[Collector] Обработано ${processed}/${feeds.length}`);
     }
     const items = await fetchFeed(feed.url);
-    for (const item of items) {
-      allItems.push({
-        ...item,
-        source: feed.name,
-        collectedAt: new Date().toISOString(),
-        category: 'news'
-      });
+    if (items.length > 0) {
+      successCount++;
+      for (const item of items) {
+        allItems.push({
+          ...item,
+          source: feed.name,
+          collectedAt: new Date().toISOString(),
+          category: 'news'
+        });
+      }
     }
-    // Задержка, чтобы не перегружать серверы
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise(resolve => setTimeout(resolve, 500));
   }
 
-  // Сохраняем в файл с ротацией по дням
+  console.log(`[Collector] Успешно загружено ${successCount} из ${feeds.length} источников`);
+  console.log(`[Collector] Всего записей: ${allItems.length}`);
+
   const today = new Date().toISOString().slice(0, 10);
   const outputFile = join(DATA_DIR, `feeds_${today}.json`);
-  
-  // Читаем существующий файл, если есть (для избежания дубликатов)
+
   let existing = [];
   try {
     const old = await fs.readFile(outputFile, 'utf-8');
     existing = JSON.parse(old);
-  } catch (e) {
-    // Файла нет — нормально
-  }
+  } catch (e) {}
 
-  // Объединяем и удаляем дубликаты по id
   const combined = [...existing, ...allItems];
   const unique = new Map();
   for (const item of combined) {
@@ -109,5 +108,4 @@ async function collectAllFeeds() {
   console.log(`[Collector] Сохранено ${final.length} записей в ${outputFile}`);
 }
 
-// Запуск
 collectAllFeeds().catch(console.error);

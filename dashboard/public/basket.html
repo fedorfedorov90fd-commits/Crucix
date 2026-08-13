@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Единая корзина данных — Crucix</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: monospace; background: #0a0a1a; color: #e0e0e0; padding: 20px; }
+    .container { max-width: 1400px; margin: 0 auto; }
+    h1 { font-size: 24px; margin-bottom: 20px; color: #2196f3; }
+    .stats { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px; }
+    .stat-card { background: rgba(255,255,255,0.05); padding: 12px 20px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06); }
+    .stat-card .label { font-size: 12px; color: #888; }
+    .stat-card .value { font-size: 24px; font-weight: bold; color: #fff; }
+    .filters { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+    .filters input, .filters select { padding: 8px 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: #e0e0e0; font-size: 13px; }
+    .filters input:focus { border-color: #2196f3; outline: none; }
+    .items { display: flex; flex-direction: column; gap: 8px; }
+    .item { background: rgba(255,255,255,0.03); padding: 12px 16px; border-radius: 6px; border-left: 3px solid #555; cursor: pointer; transition: background 0.15s; }
+    .item:hover { background: rgba(255,255,255,0.06); }
+    .item .title { font-size: 15px; font-weight: 500; color: #e0e0e0; }
+    .item .meta { font-size: 12px; color: #888; margin-top: 4px; display: flex; gap: 12px; flex-wrap: wrap; }
+    .item .meta .source { color: #4caf50; }
+    .item .meta .score { color: #ffeb3b; }
+    .item .meta .region { color: #2196f3; }
+    .item .summary { font-size: 13px; color: #aaa; margin-top: 4px; }
+    .item .score-high { border-left-color: #f44336; }
+    .item .score-medium { border-left-color: #ff9800; }
+    .item .score-low { border-left-color: #4caf50; }
+    .pagination { display: flex; gap: 8px; justify-content: center; margin-top: 20px; }
+    .pagination button { padding: 6px 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: #e0e0e0; cursor: pointer; }
+    .pagination button:hover { background: rgba(255,255,255,0.1); }
+    .pagination button.active { background: #2196f3; border-color: #2196f3; }
+    .loading { text-align: center; padding: 40px; color: #666; }
+    .empty { text-align: center; padding: 40px; color: #555; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>📦 Единая корзина данных</h1>
+
+  <div class="stats" id="stats">
+    <div class="stat-card"><div class="label">Всего новостей</div><div class="value" id="total">—</div></div>
+    <div class="stat-card"><div class="label">За сегодня</div><div class="value" id="today">—</div></div>
+    <div class="stat-card"><div class="label">Источников</div><div class="value" id="sources">—</div></div>
+  </div>
+
+  <div class="filters">
+    <input type="text" id="search" placeholder="Поиск по заголовку..." />
+    <select id="sourceFilter"><option value="">Все источники</option></select>
+    <select id="regionFilter"><option value="">Все регионы</option></select>
+    <button onclick="loadData()" style="padding:8px 16px;background:#2196f3;border:none;border-radius:4px;color:#fff;cursor:pointer;">Обновить</button>
+  </div>
+
+  <div class="items" id="items">
+    <div class="loading">Загрузка...</div>
+  </div>
+
+  <div class="pagination" id="pagination"></div>
+</div>
+
+<script>
+let allItems = [];
+let currentPage = 1;
+const perPage = 50;
+
+async function loadData() {
+  const statsRes = await fetch('/api/basket/stats');
+  const statsData = await statsRes.json();
+  if (statsData.success) {
+    document.getElementById('total').textContent = statsData.stats.total;
+    document.getElementById('today').textContent = statsData.stats.today;
+    document.getElementById('sources').textContent = Object.keys(statsData.stats.sources).length;
+  }
+
+  const itemsRes = await fetch('/api/basket?limit=500');
+  const itemsData = await itemsRes.json();
+  if (itemsData.success) {
+    allItems = itemsData.items;
+    populateFilters();
+    renderItems();
+  }
+}
+
+function populateFilters() {
+  const sources = new Set();
+  const regions = new Set();
+  for (const item of allItems) {
+    if (item.source) sources.add(item.source);
+    if (item.region) regions.add(item.region);
+  }
+
+  const sourceSelect = document.getElementById('sourceFilter');
+  sourceSelect.innerHTML = '<option value="">Все источники</option>';
+  for (const s of sources) {
+    sourceSelect.innerHTML += `<option value="${s}">${s}</option>`;
+  }
+
+  const regionSelect = document.getElementById('regionFilter');
+  regionSelect.innerHTML = '<option value="">Все регионы</option>';
+  for (const r of regions) {
+    regionSelect.innerHTML += `<option value="${r}">${r}</option>`;
+  }
+}
+
+function renderItems() {
+  const search = document.getElementById('search').value.toLowerCase();
+  const source = document.getElementById('sourceFilter').value;
+  const region = document.getElementById('regionFilter').value;
+
+  let filtered = allItems.filter(item => {
+    if (search && !item.title.toLowerCase().includes(search)) return false;
+    if (source && item.source !== source) return false;
+    if (region && item.region !== region) return false;
+    return true;
+  });
+
+  const totalPages = Math.ceil(filtered.length / perPage);
+  const start = (currentPage - 1) * perPage;
+  const pageItems = filtered.slice(start, start + perPage);
+
+  const container = document.getElementById('items');
+  if (pageItems.length === 0) {
+    container.innerHTML = '<div class="empty">Нет новостей</div>';
+    return;
+  }
+
+  let html = '';
+  for (const item of pageItems) {
+    const score = item.aiScore || 0;
+    const scoreClass = score >= 7 ? 'score-high' : score >= 4 ? 'score-medium' : 'score-low';
+    const date = item.publishedAt ? new Date(item.publishedAt).toLocaleDateString() : '—';
+    const time = item.publishedAt ? new Date(item.publishedAt).toLocaleTimeString() : '—';
+
+    html += `
+      <div class="item ${scoreClass}" onclick="window.open('${item.url || '#'}', '_blank')">
+        <div class="title">${item.title || 'Без заголовка'}</div>
+        <div class="summary">${item.content ? item.content.slice(0, 200) + (item.content.length > 200 ? '...' : '') : ''}</div>
+        <div class="meta">
+          <span class="source">📰 ${item.sourceName || item.source || 'unknown'}</span>
+          <span class="score">⭐ ${score}/10</span>
+          <span class="region">🌍 ${item.region || 'world'}</span>
+          <span>📅 ${date} ${time}</span>
+          ${item.aiSummary ? `<span>🤖 ${item.aiSummary.slice(0, 60)}${item.aiSummary.length > 60 ? '...' : ''}</span>` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  container.innerHTML = html;
+
+  // Пагинация
+  const pagination = document.getElementById('pagination');
+  let pagHtml = '';
+  for (let i = 1; i <= Math.min(totalPages, 10); i++) {
+    pagHtml += `<button class="${i === currentPage ? 'active' : ''}" onclick="currentPage=${i};renderItems();">${i}</button>`;
+  }
+  if (totalPages > 10) {
+    pagHtml += `<span>...</span><button onclick="currentPage=${totalPages};renderItems();">${totalPages}</button>`;
+  }
+  pagination.innerHTML = pagHtml;
+}
+
+document.getElementById('search').addEventListener('input', () => { currentPage = 1; renderItems(); });
+document.getElementById('sourceFilter').addEventListener('change', () => { currentPage = 1; renderItems(); });
+document.getElementById('regionFilter').addEventListener('change', () => { currentPage = 1; renderItems(); });
+
+loadData();
+</script>
+</body>
+</html>

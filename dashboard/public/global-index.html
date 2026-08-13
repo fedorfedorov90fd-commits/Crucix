@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Глобальный индекс напряжённости — Crucix</title>
+  <link rel="stylesheet" href="/css/global-index.css">
+</head>
+<body>
+  <div class="index-container">
+    <!-- Шапка -->
+    <header class="index-header">
+      <h1>🌍 Глобальный индекс напряжённости</h1>
+      <div class="index-meta">
+        <span id="index-timestamp">Загрузка...</span>
+        <button class="btn-refresh" onclick="loadIndex()">🔄 Обновить</button>
+        <a href="/jarvis" class="btn-back">← На главную</a>
+      </div>
+    </header>
+
+    <!-- Основной показатель -->
+    <div class="index-main">
+      <div class="index-number" id="index-number">
+        <span class="number">--</span>
+        <span class="label">ИНДЕКС</span>
+      </div>
+      <div class="index-level" id="index-level">
+        <span class="level-badge">--</span>
+        <span class="trend" id="index-trend">--</span>
+      </div>
+    </div>
+
+    <!-- График -->
+    <div class="index-chart-container">
+      <h3>Динамика за 30 дней</h3>
+      <canvas id="index-chart"></canvas>
+    </div>
+
+    <!-- Компоненты -->
+    <div class="index-components">
+      <h3>Компоненты индекса</h3>
+      <div class="components-grid" id="components-grid">
+        <div class="component-item" data-component="news">
+          <span class="component-icon">📰</span>
+          <span class="component-name">Новости</span>
+          <span class="component-value" id="comp-news">--</span>
+          <div class="component-bar"><div class="bar-fill" id="bar-news" style="width:0%"></div></div>
+        </div>
+        <div class="component-item" data-component="thermal">
+          <span class="component-icon">🔥</span>
+          <span class="component-name">Термальные</span>
+          <span class="component-value" id="comp-thermal">--</span>
+          <div class="component-bar"><div class="bar-fill" id="bar-thermal" style="width:0%"></div></div>
+        </div>
+        <div class="component-item" data-component="aviation">
+          <span class="component-icon">✈️</span>
+          <span class="component-name">Авиация</span>
+          <span class="component-value" id="comp-aviation">--</span>
+          <div class="component-bar"><div class="bar-fill" id="bar-aviation" style="width:0%"></div></div>
+        </div>
+        <div class="component-item" data-component="geo">
+          <span class="component-icon">🗺️</span>
+          <span class="component-name">Геополитика</span>
+          <span class="component-value" id="comp-geo">--</span>
+          <div class="component-bar"><div class="bar-fill" id="bar-geo" style="width:0%"></div></div>
+        </div>
+        <div class="component-item" data-component="economy">
+          <span class="component-icon">📊</span>
+          <span class="component-name">Экономика</span>
+          <span class="component-value" id="comp-economy">--</span>
+          <div class="component-bar"><div class="bar-fill" id="bar-economy" style="width:0%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Интерпретация -->
+    <div class="index-interpretation" id="index-interpretation">
+      <h3>Интерпретация</h3>
+      <p id="interpretation-text">Загрузка...</p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="/js/global-index.js"></script>
+</body>
+</html>

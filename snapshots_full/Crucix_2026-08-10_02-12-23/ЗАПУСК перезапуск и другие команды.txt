@@ -1,0 +1,388 @@
+cd /home/ta8_/Рабочий\ стол/Crucix
+npm run dev
+
+
+cd /home/ta8_/Рабочий\ стол/Crucix
+npm run dev
+
+===================================
+
+Запуск в фоне
+Чтобы сервер работал после закрытия терминала:
+
+bash
+cd /home/ta8_/Рабочий\ стол/Crucix
+nohup node server.mjs > crucix.log 2>&1 &
+
+
+
+\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+ЗАПУСК И ОСТАНОВКА
+Запуск в текущем терминале:
+
+text
+node server.mjs
+Запуск через npm (стандартный способ):
+
+text
+npm run dev
+Запуск в фоне (сервер продолжает работу после закрытия терминала):
+
+text
+nohup node server.mjs > crucix.log 2>&1 &
+Остановка сервера (если запущен в фоне):
+
+text
+pkill -f "node server.mjs"
+Проверка, работает ли сервер:
+
+text
+ps aux | grep server.mjs
+ПРОВЕРКА СТАТУСА
+Проверить здоровье сервера:
+
+text
+curl http://localhost:3117/api/health
+Получить все данные:
+
+text
+curl http://localhost:3117/api/data
+Проверить статус источников:
+
+text
+curl http://localhost:3117/api/sources
+УПРАВЛЕНИЕ СБОРОМ ДАННЫХ
+Принудительно запустить сбор данных (свеп):
+
+text
+curl -X POST http://localhost:3117/api/sweep
+ПРОСМОТР ЛОГОВ
+Просмотр логов в реальном времени:
+
+text
+tail -f crucix.log
+Просмотр последних 50 строк лога:
+
+text
+tail -50 crucix.log
+Просмотр лога с поиском ошибок:
+
+text
+grep -i error crucix.log
+РАБОТА С ФАЙЛАМИ КОНФИГУРАЦИИ
+Просмотр текущих настроек:
+
+text
+cat .env
+Редактирование настроек:
+
+text
+nano .env
+После изменения .env нужно перезапустить сервер.
+
+ПРОВЕРКА ПОРТОВ
+Узнать, кто занял порт 3117:
+
+text
+sudo lsof -i :3117
+Убить процесс на порту 3117:
+
+text
+sudo kill -9 (PID)
+ОБНОВЛЕНИЕ И ВОССТАНОВЛЕНИЕ
+Обновить зависимости:
+
+text
+npm install
+Восстановить server.mjs из бэкапа:
+
+text
+cp server.mjs.bak server.mjs
+БЫСТРЫЕ КОМАНДЫ ДЛЯ ПЕРЕЗАПУСКА
+Остановить и запустить заново одной командой:
+
+text
+pkill -f "node server.mjs" && sleep 2 && nohup node server.mjs > crucix.log 2>&1 &
+Полный перезапуск с очисткой лога:
+
+text
+pkill -f "node server.mjs" && rm crucix.log && nohup node server.mjs > crucix.log 2>&1 &
+ПОЛЕЗНЫЕ ПРОВЕРКИ
+Проверить, отвечает ли сервер на запросы:
+
+text
+curl -v http://localhost:3117/
+Проверить версию Node.js:
+
+text
+node --version
+Проверить, какие модули установлены:
+
+text
+npm list --depth=0
+Это основные команды для ежедневного управления Crucix.
+
+\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+Что теперь работает:
+✅ Сервер - http://localhost:3117
+✅ Интерфейс - отображается нормально
+✅ API Health - http://localhost:3117/api/health
+
+Что дальше:
+1. Сбор данных
+Сервер автоматически собирает данные из 26 источников каждые 15 минут. Подождите немного, чтобы появились первые данные.
+
+2. Настройка LLM (опционально)
+Если хотите использовать AI для анализа, отредактируйте файл .env:
+
+bash
+nano /home/ta8_/Рабочий\ стол/Crucix/.env
+Добавьте:
+
+text
+LLM_PROVIDER=openrouter
+OPENROUTER_API_KEY=ваш_ключ
+Или для DeepSeek:
+
+text
+LLM_PROVIDER=deepseek
+DEEPSEEK_API_KEY=ваш_ключ
+3. Настройка Telegram/Discord (опционально)
+В том же файле .env:
+
+text
+TELEGRAM_BOT_TOKEN=ваш_токен
+DISCORD_WEBHOOK=ваш_вебхук
+4. Запуск в фоне
+Чтобы сервер работал после закрытия терминала:
+
+bash
+cd /home/ta8_/Рабочий\ стол/Crucix
+nohup node server.mjs > crucix.log 2>&1 &
+5. Проверка логов
+bash
+tail -f /home/ta8_/Рабочий\ стол/Crucix/crucix.log
+
+
+\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+
+вот продвинутые и редкие команды для Crucix, которые пригодятся в особых случаях:
+
+
+
+РАБОТА С БАЗОЙ ДАННЫХ И СОСТОЯНИЕМ
+Очистить состояние Crucix (сбросить все данные):
+
+text
+rm -rf /home/ta8_/Рабочий\ стол/Crucix/data/state.json
+Создать резервную копию состояния:
+
+text
+cp /home/ta8_/Рабочий\ стол/Crucix/data/state.json /home/ta8_/Рабочий\ стол/Crucix/data/state_backup_$(date +%Y%m%d_%H%M%S).json
+Очистить кэш AI (геополитические отчеты):
+
+text
+rm -rf /home/ta8_/Рабочий\ стол/Crucix/data/ai_raw/geopolitical-reports/*.json
+Очистить все логи:
+
+text
+rm -rf /home/ta8_/Рабочий\ стол/Crucix/logs/*.log
+ДИАГНОСТИКА И ОТЛАДКА
+Запустить сервер с полной отладкой (все ошибки в консоль):
+
+text
+node --trace-warnings --unhandled-rejections=strict server.mjs
+Проверить синтаксис server.mjs без запуска:
+
+text
+node --check server.mjs
+Запустить с увеличенной памятью (если сервер падает из-за нехватки памяти):
+
+text
+node --max-old-space-size=4096 server.mjs
+Узнать, сколько памяти потребляет Crucix:
+
+text
+ps aux | grep node | grep server.mjs | awk '{print $6/1024 " MB"}'
+РАБОТА С ПОРТАМИ И СЕТЬЮ
+Принудительно занять порт и запустить на нем:
+
+text
+PORT=3118 node server.mjs
+Запустить с привязкой к конкретному IP (не только localhost):
+
+text
+HOST=0.0.0.0 node server.mjs
+Проверить все открытые порты Crucix:
+
+text
+sudo ss -tulpn | grep node
+Убить все процессы Crucix (если несколько зависло):
+
+text
+pkill -9 -f "node.*server.mjs"
+ВОССТАНОВЛЕНИЕ ИЗ РЕПОЗИТОРИЯ
+Сбросить server.mjs до версии из репозитория:
+
+text
+git checkout server.mjs
+Сбросить все локальные изменения (ОСТОРОЖНО!):
+
+text
+git reset --hard HEAD
+Стянуть последние обновления из репозитория:
+
+text
+git pull
+Посмотреть историю изменений server.mjs:
+
+text
+git log --oneline server.mjs
+Вернуться к конкретной версии файла:
+
+text
+git checkout HASH_COMMIT server.mjs
+РАБОТА С МОДУЛЯМИ
+Переустановить все зависимости с нуля:
+
+text
+rm -rf node_modules package-lock.json && npm install
+Обновить все пакеты до последних версий (ОСТОРОЖНО!):
+
+text
+npm update --save
+Посмотреть уязвимости в зависимостях:
+
+text
+npm audit
+Исправить уязвимости автоматически:
+
+text
+npm audit fix
+ПЕРЕМЕННЫЕ ОКРУЖЕНИЯ
+Посмотреть все переменные окружения, которые использует Crucix:
+
+text
+env | grep -E "(PORT|HOST|LLM|OPENROUTER|DEEPSEEK|TELEGRAM|DISCORD)"
+Экспортировать переменные для временного изменения без правки .env:
+
+text
+export LLM_PROVIDER=openrouter
+export OPENROUTER_API_KEY=ваш_ключ
+node server.mjs
+МОНИТОРИНГ
+Проверить нагрузку на CPU от Crucix:
+
+text
+ps aux | grep server.mjs | awk '{print $3 "% CPU"}'
+Следить за логами в реальном времени с фильтром (показывать только ошибки):
+
+text
+tail -f crucix.log | grep -i error
+Следить за логами в реальном времени с фильтром (показывать только сбор данных):
+
+text
+tail -f crucix.log | grep -i sweep
+Посчитать количество запросов к API:
+
+text
+grep -c "GET /api" crucix.log
+РАБОТА С РАСПИСАНИЕМ СБОРА ДАННЫХ
+Изменить интервал сбора данных (в минутах) без перезапуска:
+
+text
+curl -X POST http://localhost:3117/api/settings -H "Content-Type: application/json" -d '{"sweepInterval":5}'
+Отключить автоматический сбор:
+
+text
+curl -X POST http://localhost:3117/api/settings -H "Content-Type: application/json" -d '{"autoSweep":false}'
+РАБОТА С РЕСУРСАМИ
+Очистить кэш карты (если глючит отображение):
+
+text
+rm -rf /home/ta8_/Рабочий\ стол/Crucix/dashboard/public/.cache
+Проверить свободное место на диске:
+
+text
+df -h /home/ta8_/Рабочий\ стол/Crucix
+Найти файлы, созданные за последние 24 часа в папке data:
+
+text
+find /home/ta8_/Рабочий\ стол/Crucix/data -type f -mtime -1
+ПРОДВИНУТЫЕ ЗАПРОСЫ К API
+Получить все новости в формате JSON с сортировкой:
+
+text
+curl -s http://localhost:3117/api/data | jq '.news | sort_by(.date) | reverse'
+Получить только геополитические отчеты:
+
+text
+curl -s http://localhost:3117/api/geopolitical | jq '.[].analysis'
+Проверить количество активных источников:
+
+text
+curl -s http://localhost:3117/api/health | jq '.sourcesOk'
+ВОССТАНОВЛЕНИЕ ПОСЛЕ СБОЯ
+Полный ресет Crucix (осторожно, удалит все данные):
+
+text
+cd /home/ta8_/Рабочий\ стол/Crucix
+pkill -f "node server.mjs"
+rm -rf data/state.json data/ai_raw/geopolitical-reports/* logs/*.log
+rm -rf node_modules package-lock.json
+npm install
+node server.mjs
+ПРОДВИНУТЫЕ НАСТРОЙКИ
+Создать кастомный конфиг для запуска:
+
+text
+node server.mjs --config custom-config.mjs
+Запустить в режиме только для чтения (не сохранять состояние):
+
+text
+READONLY=true node server.mjs
+Запустить с отключенными внешними запросами (оффлайн режим):
+
+text
+OFFLINE=true node server.mjs
+Это самые продвинутые и редкие команды, которые обычно не используются ежедневно, но выручают в сложных ситуациях.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

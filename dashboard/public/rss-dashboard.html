@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление RSS — Crucix</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: #0a0a1a;
+            color: #e0e0e0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .header h1 { font-size: 24px; color: #fff; }
+        .header .nav-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .header .nav-buttons .btn {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            color: #fff;
+            text-decoration: none;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .header .nav-buttons .btn:hover { transform: scale(1.05); opacity: 0.9; }
+        .btn-home { background: #2196f3; }
+        .btn-feed { background: #f26522; }
+        .stats {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+        }
+        .stats .stat { font-size: 14px; }
+        .stats .stat .num { font-weight: 700; color: #fff; }
+        .stats .stat.alive .num { color: #4caf50; }
+        .stats .stat.dead .num { color: #f44336; }
+        .stats .stat.unknown .num { color: #ff9800; }
+        .controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        .controls .btn {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #fff;
+            transition: all 0.2s;
+        }
+        .controls .btn:hover { opacity: 0.85; transform: translateY(-1px); }
+        .btn-primary { background: #2196f3; }
+        .btn-success { background: #4caf50; }
+        .btn-secondary { background: #555; }
+        .add-form {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        .add-form input {
+            padding: 6px 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 4px;
+            background: rgba(255,255,255,0.05);
+            color: #e0e0e0;
+            font-size: 13px;
+            flex: 1;
+            min-width: 120px;
+        }
+        .add-form input:focus { outline: none; border-color: #2196f3; }
+        .add-form input::placeholder { color: #666; }
+        .list-container {
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 6px;
+            overflow: hidden;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .list-container::-webkit-scrollbar { width: 6px; }
+        .list-container::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+        .list-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+        .list-header {
+            display: grid;
+            grid-template-columns: 0.4fr 1.5fr 2fr 0.8fr 0.8fr;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.06);
+            font-size: 12px;
+            color: #888;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .list-item {
+            display: grid;
+            grid-template-columns: 0.4fr 1.5fr 2fr 0.8fr 0.8fr;
+            padding: 6px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.02);
+            font-size: 13px;
+            align-items: center;
+            transition: background 0.15s;
+            cursor: default;
+        }
+        .list-item:hover { background: rgba(255,255,255,0.05); }
+        .list-item .num {
+            color: #444;
+            font-size: 12px;
+            text-align: center;
+            font-weight: 600;
+        }
+        .list-item .status {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 8px;
+            text-align: center;
+            display: inline-block;
+            width: fit-content;
+        }
+        .list-item .status.alive { background: rgba(76,175,80,0.2); color: #4caf50; }
+        .list-item .status.dead { background: rgba(244,67,54,0.2); color: #f44336; }
+        .list-item .status.unknown { background: rgba(255,152,0,0.2); color: #ff9800; }
+        .list-item .actions {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+        .list-item .actions button {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 2px 4px;
+            transition: color 0.2s;
+            border-radius: 4px;
+        }
+        .list-item .actions button:hover { background: rgba(255,255,255,0.05); }
+        .list-item .actions .edit-btn:hover { color: #2196f3; }
+        .list-item .actions .del-btn:hover { color: #f44336; }
+        .list-item .actions .open-btn:hover { color: #4caf50; }
+        .list-item .feed-url {
+            font-size: 11px;
+            color: #666;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+        .list-item .feed-url:hover { color: #888; text-decoration: underline; }
+        .list-item .feed-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .loading, .empty { padding: 30px; text-align: center; color: #666; }
+        .error { padding: 30px; text-align: center; color: #f44336; }
+        .list-footer {
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.03);
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.04);
+        }
+        .edit-modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .edit-modal .modal-content {
+            background: #1a1a2e;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.8);
+        }
+        .edit-modal .modal-content h2 {
+            color: #fff;
+            font-size: 18px;
+            margin-bottom: 16px;
+        }
+        .edit-modal .modal-content label {
+            display: block;
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+        .edit-modal .modal-content input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 4px;
+            background: rgba(255,255,255,0.05);
+            color: #e0e0e0;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+        .edit-modal .modal-content input:focus { outline: none; border-color: #2196f3; }
+        .edit-modal .modal-content .modal-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+        .edit-modal .modal-content .modal-buttons button {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #fff;
+            transition: all 0.2s;
+        }
+        .edit-modal .modal-content .modal-buttons button:hover { opacity: 0.85; }
+        .edit-modal .modal-content .btn-save { background: #2196f3; }
+        .edit-modal .modal-content .btn-cancel { background: #555; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>📡 Управление RSS</h1>
+        <div class="nav-buttons">
+            <a href="/jarvis" class="btn btn-home">🏠 Главная</a>
+            <a href="/rss-feed" class="btn btn-feed">📰 Лента</a>
+        </div>
+    </div>
+
+    <div class="stats" id="stats">
+        <span class="stat">Всего: <span class="num" id="total">--</span></span>
+        <span class="stat alive">✅ Доступные: <span class="num" id="alive">--</span></span>
+        <span class="stat dead">❌ Недоступные: <span class="num" id="dead">--</span></span>
+        <span class="stat unknown">❓ Не проверено: <span class="num" id="unknown">--</span></span>
+    </div>
+
+    <div class="controls">
+        <button class="btn btn-primary" onclick="updateAll()">🔄 Обновить все</button>
+        <button class="btn btn-success" onclick="exportOPML()">📤 Экспорт OPML</button>
+        <button class="btn btn-secondary" onclick="importOPML()">📥 Импорт OPML</button>
+    </div>
+
+    <div class="add-form">
+        <input type="text" id="feed-name" placeholder="Название ленты">
+        <input type="url" id="feed-url" placeholder="URL RSS (например, https://example.com/rss)">
+        <button class="btn btn-success" onclick="addFeed()">➕ Добавить</button>
+    </div>
+
+    <div class="list-container" id="list-container">
+        <div class="list-header">
+            <span>#</span>
+            <span>Название</span>
+            <span>URL</span>
+            <span>Статус</span>
+            <span>Действия</span>
+        </div>
+        <div id="feed-list">
+            <div class="loading">Загрузка лент...</div>
+        </div>
+        <div class="list-footer" id="list-footer">
+            <span class="count">Загрузка...</span>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно редактирования -->
+<div id="edit-modal" style="display:none;" class="edit-modal">
+    <div class="modal-content">
+        <h2>✏️ Редактировать ленту</h2>
+        <label>Название</label>
+        <input type="text" id="edit-name">
+        <label>URL</label>
+        <input type="url" id="edit-url">
+        <div class="modal-buttons">
+            <button class="btn-cancel" onclick="closeEditModal()">Отмена</button>
+            <button class="btn-save" onclick="saveEdit()">💾 Сохранить</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let editFeedId = null;
+
+async function loadData() {
+    try {
+        const res = await fetch('/api/rss/init');
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('total').textContent = data.stats.total || 0;
+            document.getElementById('alive').textContent = data.stats.alive || 0;
+            document.getElementById('dead').textContent = data.stats.dead || 0;
+            document.getElementById('unknown').textContent = data.stats.unknown || 0;
+            renderList(data.feeds);
+        }
+    } catch (e) {
+        document.getElementById('feed-list').innerHTML = '<div class="error">Ошибка: ' + e.message + '</div>';
+    }
+}
+
+function renderList(feeds) {
+    const container = document.getElementById('feed-list');
+    const footer = document.getElementById('list-footer');
+    
+    if (!feeds || feeds.length === 0) {
+        container.innerHTML = '<div class="empty">Нет RSS-лент</div>';
+        footer.innerHTML = '<span class="count">Всего: 0</span>';
+        return;
+    }
+    
+    let html = '';
+    let num = 1;
+    for (const feed of feeds) {
+        const statusClass = feed.status === 'alive' ? 'alive' : feed.status === 'dead' ? 'dead' : 'unknown';
+        const statusText = feed.status === 'alive' ? '✅ Доступная' : feed.status === 'dead' ? '❌ Недоступная' : '❓ Не проверено';
+        const urlShort = feed.url.length > 35 ? feed.url.slice(0, 32) + '...' : feed.url;
+        const nameShort = feed.name.length > 22 ? feed.name.slice(0, 19) + '...' : feed.name;
+        
+        html += '<div class="list-item">';
+        html += '<span class="num">' + num + '</span>';
+        html += '<span class="feed-name" title="' + feed.name + '">' + nameShort + '</span>';
+        html += '<span class="feed-url" title="' + feed.url + '" onclick="window.open(\'' + feed.url + '\',\'_blank\')">' + urlShort + '</span>';
+        html += '<span class="status ' + statusClass + '">' + statusText + '</span>';
+        html += '<div class="actions">';
+        html += '<button class="edit-btn" onclick="openEditModal(\'' + feed.id + '\', \'' + feed.name.replace(/'/g, "\\'") + '\', \'' + feed.url.replace(/'/g, "\\'") + '\')" title="Редактировать">✏️</button>';
+        html += '<button class="open-btn" onclick="window.open(\'' + feed.url + '\',\'_blank\')" title="Открыть в новой вкладке">🔗</button>';
+        html += '<button class="del-btn" onclick="deleteFeed(\'' + feed.id + '\')" title="Удалить">🗑</button>';
+        html += '</div>';
+        html += '</div>';
+        num++;
+    }
+    
+    container.innerHTML = html;
+    footer.innerHTML = '<span class="count">Всего: ' + feeds.length + ' лент</span>';
+}
+
+function openEditModal(id, name, url) {
+    editFeedId = id;
+    document.getElementById('edit-name').value = name;
+    document.getElementById('edit-url').value = url;
+    document.getElementById('edit-modal').style.display = 'flex';
+}
+
+function closeEditModal() {
+    document.getElementById('edit-modal').style.display = 'none';
+    editFeedId = null;
+}
+
+async function saveEdit() {
+    if (!editFeedId) return;
+    const name = document.getElementById('edit-name').value.trim();
+    const url = document.getElementById('edit-url').value.trim();
+    if (!name || !url) {
+        alert('Введите название и URL');
+        return;
+    }
+    
+    try {
+        const delRes = await fetch('/api/rss/feeds/' + editFeedId, { method: 'DELETE' });
+        if (!delRes.ok) throw new Error('Не удалось удалить старую ленту');
+        
+        const addRes = await fetch('/api/rss/feeds', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, url, category: 'Пользовательские' })
+        });
+        const data = await addRes.json();
+        
+        if (data.success) {
+            closeEditModal();
+            loadData();
+            alert('✅ Лента обновлена!');
+        } else {
+            alert('Ошибка: ' + data.error);
+        }
+    } catch (e) {
+        alert('Ошибка: ' + e.message);
+    }
+}
+
+async function updateAll() {
+    const btn = event?.target;
+    const orig = btn.textContent;
+    btn.textContent = '⏳ Обновление...';
+    btn.disabled = true;
+    try {
+        const res = await fetch('/api/rss/update', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('total').textContent = data.stats.total || 0;
+            document.getElementById('alive').textContent = data.stats.alive || 0;
+            document.getElementById('dead').textContent = data.stats.dead || 0;
+            document.getElementById('unknown').textContent = data.stats.unknown || 0;
+            renderList(data.results);
+            alert('Обновлено! Доступных: ' + data.stats.alive + ', Недоступных: ' + data.stats.dead);
+        }
+    } catch (e) { alert('Ошибка: ' + e.message); }
+    finally { btn.textContent = orig; btn.disabled = false; }
+}
+
+async function addFeed() {
+    const name = document.getElementById('feed-name').value.trim();
+    const url = document.getElementById('feed-url').value.trim();
+    if (!name || !url) { alert('Введите название и URL'); return; }
+    try {
+        const res = await fetch('/api/rss/feeds', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, url, category: 'Пользовательские' })
+        });
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('feed-name').value = '';
+            document.getElementById('feed-url').value = '';
+            loadData();
+        } else { alert('Ошибка: ' + data.error); }
+    } catch (e) { alert('Ошибка: ' + e.message); }
+}
+
+async function deleteFeed(id) {
+    if (!confirm('Удалить эту ленту?')) return;
+    try {
+        const res = await fetch('/api/rss/feeds/' + id, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) { loadData(); }
+        else { alert('Ошибка: ' + data.error); }
+    } catch (e) { alert('Ошибка: ' + e.message); }
+}
+
+async function exportOPML() {
+    try {
+        const res = await fetch('/api/rss/export');
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'feeds.opml';
+        a.click();
+        URL.revokeObjectURL(url);
+    } catch (e) { alert('Ошибка: ' + e.message); }
+}
+
+function importOPML() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.opml,.xml';
+    input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        try {
+            const text = await file.text();
+            const res = await fetch('/api/rss/import', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ xml: text })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert('Импортировано ' + data.feeds.length + ' лент');
+                loadData();
+            } else { alert('Ошибка: ' + data.error); }
+        } catch (e) { alert('Ошибка: ' + e.message); }
+    };
+    input.click();
+}
+
+loadData();
+setInterval(loadData, 30000);
+</script>
+</body>
+</html>
+<!-- ======== НАСТРОЙКИ ХРАНЕНИЯ ======== -->
+<div class="settings-panel" style="margin-top:20px;padding:16px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid rgba(255,255,255,0.06);">
+    <h3 style="color:#fff;font-size:16px;margin-bottom:12px;">⚙️ Настройки хранения новостей</h3>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+        <div style="display:flex;align-items:center;gap:6px;">
+            <label style="color:#888;font-size:13px;">Хранить дней:</label>
+            <input type="number" id="storage-days" value="7" min="1" max="730" style="width:70px;padding:4px 8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:4px;color:#e0e0e0;font-size:13px;">
+            <span style="color:#666;font-size:12px;">(1-730 дней)</span>
+        </div>
+        <button id="btn-apply-storage" class="btn btn-primary" style="padding:4px 16px;background:#2196f3;border:none;border-radius:4px;color:#fff;cursor:pointer;font-size:13px;">Применить</button>
+        <button id="btn-clean-now" class="btn btn-danger" style="padding:4px 16px;background:#f44336;border:none;border-radius:4px;color:#fff;cursor:pointer;font-size:13px;">🧹 Очистить сейчас</button>
+    </div>
+    <div style="margin-top:8px;font-size:12px;color:#555;">
+        📊 Текущий размер данных: <span id="storage-size">расчёт...</span> | 
+        📁 Папка: <code style="background:rgba(255,255,255,0.05);padding:2px 8px;border-radius:3px;">/data/raw/</code> | 
+        📅 Файлов: <span id="storage-files">0</span>
+    </div>
+    <div id="storage-status" style="margin-top:6px;font-size:12px;color:#ff9800;display:none;"></div>
+</div>

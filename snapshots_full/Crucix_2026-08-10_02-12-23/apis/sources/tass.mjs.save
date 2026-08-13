@@ -1,0 +1,48 @@
+// ТАСС — новостное агентство России
+import { safeFetch } from '../utils/fetch.mjs';
+
+export async function briefing() {
+  try {
+    const response = await safeFetch('https://tass.ru/rss/v2.xml');
+    const text = await response.text();
+    
+    // Простой парсинг XML (можно использовать библиотеку, но для примера так)
+    const items = [];
+    const itemMatches = text.matchAll(/<item>([\s\S]*?)<\/item>/g);
+    
+    for (const match of itemMatches) {
+      const item = match[1];
+      const title = item.match(/<title>([\s\S]*?)<\/title>/)?.[1] || '';
+      const link = item.match(/<link>([\s\S]*?)<\/link>/)?.[1] || '';
+      const pubDate = item.match(/<pubDate>([\s\S]*?)<\/pubDate>/)?.[1] || '';
+      const description = item.match(/<description>([\s\S]*?)<\/description>/)?.[1] || '';
+      
+      items.push({
+        title: title.replace(/<[^>]*>/g, '').trim(),
+        url: link,
+        publishedAt: pubDate,
+        summary: description.replace(/<[^>]*>/g, '').trim().substring(0, 200),
+        source: 'ТАСС',
+      });
+    }
+    
+    return {
+      source: 'ТАСС',
+      timestamp: new Date().toISOString(),
+      items: items.slice(0, 10), // берем только 10 последних
+    };
+  } catch (error) {
+    return {
+      source: 'ТАСС',
+      timestamp: new Date().toISOString(),
+      error: error.message,
+      items: [],
+    };
+  }
+}
+
+if (process.argv[1]?.endsWith('tass.mjs')) {
+  const data = await briefing();
+  console.log(JSON.stringify(data, null, 2));
+}o
+

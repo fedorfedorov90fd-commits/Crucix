@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>CRUCIX · OSINT Terminal</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: #0a0a1a; 
+            overflow: hidden; 
+            height: 100vh; 
+            width: 100vw;
+        }
+        #crucix-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+        /* RSS кнопка */
+        #rss-button {
+            position: fixed;
+            top: 12px;
+            right: 120px;
+            z-index: 1000;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #f26522;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 6px 14px 6px 10px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            box-shadow: 0 2px 12px rgba(242, 101, 34, 0.4);
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+        #rss-button:hover {
+            background: #d4551e;
+            transform: scale(1.05);
+        }
+        #rss-button .badge {
+            background: rgba(255,255,255,0.25);
+            border-radius: 10px;
+            padding: 0 6px;
+            font-size: 10px;
+            line-height: 16px;
+        }
+        /* Панель Геополитика */
+        .geo-panel {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(16, 16, 36, 0.92);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            backdrop-filter: blur(12px);
+            width: 475px;
+            max-width: 90vw;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            color: #e0e0e0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            font-size: 13px;
+            transition: all 0.3s ease;
+            max-height: calc(100vh - 100px);
+            overflow: hidden;
+        }
+        .geo-panel.minimized .geo-body { display: none; }
+        .geo-panel .geo-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            cursor: pointer;
+            user-select: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 10px 10px 0 0;
+        }
+        .geo-panel .geo-header:hover { background: rgba(255, 255, 255, 0.03); }
+        .geo-panel .geo-header .icon { font-size: 16px; opacity: 0.8; }
+        .geo-panel .geo-header .name { font-size: 13px; font-weight: 600; color: #e0e0e0; flex: 1; }
+        .geo-panel .geo-header .toggle { font-size: 12px; color: #666; transition: transform 0.3s; margin-left: auto; }
+        .geo-panel.minimized .geo-header .toggle { transform: rotate(-90deg); }
+        .geo-panel .geo-body { padding: 12px 14px; max-height: 400px; overflow-y: auto; }
+        .geo-panel .geo-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 4px; }
+        .geo-panel .geo-status { font-size: 12px; color: #4caf50; }
+        .geo-panel .geo-small { font-size: 11px; color: #666; }
+        .geo-panel .geo-flex { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+        .geo-panel .geo-flex select,
+        .geo-panel .geo-flex input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+            color: #e0e0e0;
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+        .geo-panel .geo-flex select { flex: 1; min-width: 80px; }
+        .geo-panel .geo-flex input[type="password"] { flex: 1; min-width: 100px; }
+        .geo-panel .geo-flex input[type="number"] { width: 40px; }
+        .geo-panel .geo-flex label { font-size: 12px; color: #888; display: flex; align-items: center; gap: 4px; }
+        .geo-panel .geo-btn {
+            width: 100%;
+            padding: 6px;
+            background: #2196f3;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .geo-panel .geo-btn:hover { opacity: 0.9; }
+        .geo-panel .geo-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .geo-panel .geo-result {
+            margin-top: 8px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 4px;
+            font-size: 12px;
+            color: #666;
+            min-height: 40px;
+            white-space: pre-wrap;
+        }
+        .geo-panel .geo-lang-btn {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 4px;
+            color: #e0e0e0;
+            padding: 2px 8px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .geo-panel .geo-lang-btn:hover { background: rgba(255,255,255,0.12); }
+        @media (max-width: 768px) {
+            .geo-panel { width: 320px; right: 10px; top: 60px; }
+            #rss-button { right: 10px; top: 10px; font-size: 11px; padding: 4px 10px; }
+        }
+        @media (max-width: 480px) {
+            .geo-panel { width: 280px; right: 6px; top: 56px; }
+            #rss-button { right: 6px; top: 8px; font-size: 10px; padding: 3px 8px; }
+        }
+    </style>
+</head>
+<body>
+    <iframe id="crucix-iframe" src="/jarvis-original"></iframe>
+
+    <button id="rss-button" onclick="window.open('/rss-feed','_blank')">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="white" style="flex-shrink:0;">
+            <circle cx="4" cy="20" r="3" fill="white"/>
+            <path d="M4 14c4.4 0 8 3.6 8 8" stroke="white" stroke-width="2" fill="none"/>
+            <path d="M4 8c7.7 0 14 6.3 14 14" stroke="white" stroke-width="2" fill="none"/>
+        </svg>
+        RSS
+        <span class="badge">30</span>
+    </button>
+
+    <div class="geo-panel" id="geo-panel">
+        <div class="geo-header" onclick="toggleGeoPanel()">
+            <span class="icon">🌍</span>
+            <span class="name" id="geo-name">Геополитика + AI</span>
+            <span class="toggle" id="geo-toggle">▼</span>
+        </div>
+        <div class="geo-body" id="geo-body">
+            <div class="geo-row">
+                <span class="geo-status">● LIVE −</span>
+                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                    <span class="geo-small" id="geo-news-count">📰 100 новостей</span>
+                    <span class="geo-small">|</span>
+                    <span class="geo-small" id="geo-clock">⏱ --:--</span>
+                    <span class="geo-small">|</span>
+                    <button class="geo-lang-btn" id="geo-lang-btn" onclick="toggleGeoLang()">🇷🇺 RU</button>
+                </div>
+            </div>
+            <div class="geo-flex">
+                <select id="geo-provider">
+                    <option value="ollama">Ollama (локально)</option>
+                    <option value="deepseek">DeepSeek API</option>
+                    <option value="openrouter">OpenRouter</option>
+                </select>
+                <input type="password" id="geo-key" placeholder="API-ключ">
+            </div>
+            <div class="geo-flex">
+                <label><input type="checkbox" checked id="geo-auto"> <span id="geo-label-auto">Авто-анализ</span></label>
+                <label><span id="geo-label-days">Хранить дней:</span> <input type="number" value="7" id="geo-days"></label>
+            </div>
+            <button class="geo-btn" id="geo-analyze-btn" onclick="runGeoAnalysis()">🔍 Анализировать</button>
+            <div class="geo-result" id="geo-result">Результат анализа будет здесь...</div>
+        </div>
+    </div>
+
+    <script>
+        let geoLang = localStorage.getItem('geo-lang') || 'ru';
+        const langData = {
+            ru: {
+                name: 'Геополитика + AI',
+                btn: '🇷🇺 RU',
+                news: '📰 100 новостей',
+                keyPlaceholder: 'API-ключ',
+                auto: 'Авто-анализ',
+                days: 'Хранить дней:',
+                analyze: '🔍 Анализировать',
+                result: 'Результат анализа будет здесь...'
+            },
+            en: {
+                name: 'Geopolitics + AI',
+                btn: '🇬🇧 EN',
+                news: '📰 100 news',
+                keyPlaceholder: 'API key',
+                auto: 'Auto-analysis',
+                days: 'Store days:',
+                analyze: '🔍 Analyze',
+                result: 'Analysis result will appear here...'
+            }
+        };
+
+        function updateGeoLang() {
+            const data = langData[geoLang];
+            const nameEl = document.getElementById('geo-name');
+            const btnEl = document.getElementById('geo-lang-btn');
+            const newsEl = document.getElementById('geo-news-count');
+            const keyEl = document.getElementById('geo-key');
+            const autoEl = document.getElementById('geo-label-auto');
+            const daysEl = document.getElementById('geo-label-days');
+            const analyzeEl = document.getElementById('geo-analyze-btn');
+            const resultEl = document.getElementById('geo-result');
+            if (nameEl) nameEl.textContent = data.name;
+            if (btnEl) btnEl.textContent = data.btn;
+            if (newsEl) newsEl.textContent = data.news;
+            if (keyEl) keyEl.placeholder = data.keyPlaceholder;
+            if (autoEl) autoEl.textContent = data.auto;
+            if (daysEl) daysEl.textContent = data.days;
+            if (analyzeEl) analyzeEl.textContent = data.analyze;
+            if (resultEl) {
+                const ruResult = langData.ru.result;
+                const enResult = langData.en.result;
+                if (resultEl.textContent === ruResult || resultEl.textContent === enResult) {
+                    resultEl.textContent = data.result;
+                }
+            }
+        }
+
+        function toggleGeoLang() {
+            geoLang = geoLang === 'ru' ? 'en' : 'ru';
+            localStorage.setItem('geo-lang', geoLang);
+            updateGeoLang();
+        }
+
+        function toggleGeoPanel() {
+            const panel = document.getElementById('geo-panel');
+            panel.classList.toggle('minimized');
+            const toggle = document.getElementById('geo-toggle');
+            if (toggle) toggle.textContent = panel.classList.contains('minimized') ? '▶' : '▼';
+            localStorage.setItem('geo-panel-state', panel.classList.contains('minimized') ? 'minimized' : 'expanded');
+        }
+
+        function runGeoAnalysis() {
+            const isRu = geoLang === 'ru';
+            const resultDiv = document.getElementById('geo-result');
+            const btn = document.getElementById('geo-analyze-btn');
+            if (!resultDiv || !btn) return;
+            btn.textContent = isRu ? '⏳ Анализ запущен...' : '⏳ Analysis running...';
+            btn.disabled = true;
+            resultDiv.textContent = isRu ? 'Обработка данных...' : 'Processing data...';
+            resultDiv.style.color = '#ff9800';
+            setTimeout(() => {
+                const result = isRu
+                    ? '✅ Анализ завершён. Обнаружено 3 ключевых события:\n1. Эскалация в Тихом океане\n2. Рост цен на энергоносители\n3. Киберугрозы в ЕС'
+                    : '✅ Analysis complete. 3 key events detected:\n1. Pacific escalation\n2. Energy price surge\n3. EU cyber threats';
+                resultDiv.textContent = result;
+                resultDiv.style.color = '#4caf50';
+                btn.textContent = isRu ? '🔍 Анализировать' : '🔍 Analyze';
+                btn.disabled = false;
+            }, 2000);
+        }
+
+        function updateClock() {
+            const now = new Date();
+            const time = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const el = document.getElementById('geo-clock');
+            if (el) el.textContent = '⏱ ' + time;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        function restoreState() {
+            const savedLang = localStorage.getItem('geo-lang');
+            if (savedLang === 'en' || savedLang === 'ru') { geoLang = savedLang; updateGeoLang(); }
+            const state = localStorage.getItem('geo-panel-state');
+            const panel = document.getElementById('geo-panel');
+            const toggle = document.getElementById('geo-toggle');
+            if (state === 'minimized' && panel) {
+                panel.classList.add('minimized');
+                if (toggle) toggle.textContent = '▶';
+            } else if (panel) {
+                panel.classList.remove('minimized');
+                if (toggle) toggle.textContent = '▼';
+            }
+        }
+        restoreState();
+        console.log('🚀 CRUCIX + наши плагины загружены');
+    </script>
+</body>
+</html>

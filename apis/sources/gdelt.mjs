@@ -1,138 +1,283 @@
-// GDELT — Global Database of Events, Language, and Tone
-// No auth required. Updates every 15 minutes. Monitors news in 100+ languages.
-// DOC 2.0 API: full-text search across last 3 months of global news
-// GEO 2.0 API: geolocation mapping of events
+#!/usr/bin/env node
+// apis/sources/gdelt.mjs
+// GDELT API v2.0 - альтернативный эндпоинт
 
-import { safeFetch } from '../utils/fetch.mjs';
+const BASE_URL = 'https://api.gdeltproject.org/api/v2';
+const TIMEOUT = 30000;
 
-const BASE = 'https://api.gdeltproject.org/api/v2';
+// === ВАРИАНТ 1: Использование /search/ (более стабильный) ===
+export async function getEventsViaSearch(query = '*', hours = 24, maxRecords = 50) {
+    // Используем search API вместо doc API
+    const url = `${BASE_URL}/search/search?query=${encodeURIComponent(query)}&mode=artlist&maxrecords=${maxRecords}&format=json&timespan=${hours}h`;
 
-// Search recent global events/articles by keyword
-export async function searchEvents(query = '', opts = {}) {
-  const {
-    mode = 'ArtList',       // ArtList, TimelineVol, TimelineVolInfo, TimelineTone, TimelineLang, TimelineSourceCountry
-    maxRecords = 75,
-    timespan = '24h',       // e.g. "24h", "7d", "3m"
-    format = 'json',
-    sortBy = 'DateDesc',    // DateDesc, DateAsc, ToneDesc, ToneAsc
-  } = opts;
+    try {
+        console.log(`[GDELT] Search запрос: ${url}`);
 
-  // If no query, use broad geopolitical terms
-  const q = query || 'conflict OR crisis OR military OR sanctions OR war OR economy';
-  const params = new URLSearchParams({
-    query: q,
-    mode,
-    maxrecords: String(maxRecords),
-    timespan,
-    format,
-    sort: sortBy,
-  });
+        const response = await fetch(url, {
+            headers: {
+                'User-Agent': 'Crucix-OSINT/2.0'
+            }
+        });
 
-  return safeFetch(`${BASE}/doc/doc?${params}`);
+        if (!response.ok) {
+            console.error(`[GDELT] Ошибка ${response.status}: ${response.statusText}`);
+            return [];
+        }
+
+        const text = await response.text();
+
+        // Проверяем, что это JSON
+        if (!text.trim().startsWith('{')) {
+            console.error('[GDELT] Ответ не JSON, пробуем альтернативный формат');
+            return [];
+        }
+
+        const data = JSON.parse(text);
+        return parseEvents(data);
+
+    } catch (error) {
+        console.error('[GDELT] Search ошибка:', error.message);
+        return [];
+    }
 }
 
-// Get tone/sentiment timeline for a topic
-export async function toneTrend(query, timespan = '7d') {
-  const params = new URLSearchParams({
-    query,
-    mode: 'TimelineTone',
-    timespan,
-    format: 'json',
-  });
-  return safeFetch(`${BASE}/doc/doc?${params}`);
+// === ВАРИАНТ 2: Использование /doc/ с query параметром (проверенный) ===
+export async function getRecentEvents(hours = 24, maxRecords = 25) {
+    // Увеличиваем задержку перед запросом
+    await sleep(2000);
+
+    const url = `${BASE_URL}/doc/doc?query=(* *)&mode=artlist&maxrecords=${maxRecords}&format=json&timespan=${hours}h`;
+
+    try {
+        console.log(`[GDELT] Запрос: ${url}`);
+
+        const response = await fetch(url, {
+            headers: {
+                'User-Agent': 'Crucix-OSINT/2.0',
+                'Accept': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            console.error(`[GDELT] Ошибка ${response.status}: ${response.statusText}`);
+            return [];
+        }
+
+        const text = await response.text();
+
+        if (!text.trim().startsWith('{')) {
+            console.error('[GDELT] Ответ не JSON');
+            return [];
+        }
+
+        const data = JSON.parse(text);
+        return parseEvents(data);
+
+    } catch (error) {
+        console.error('[GDELT] Ошибка:', error.message);
+        return [];
+    }
 }
 
-// Get volume timeline for a topic (how much coverage)
-export async function volumeTrend(query, timespan = '7d') {
-  const params = new URLSearchParams({
-    query,
-    mode: 'TimelineVol',
-    timespan,
-    format: 'json',
-  });
-  return safeFetch(`${BASE}/doc/doc?${params}`);
+// === ВАРИАНТ 3: Использование /geofeed/ для событий с координатами ===
+export async function getGeoEvents(hours = 24, maxRecords = 50) {
+    await sleep(2000);
+
+    const url = `${BASE_URL}/geofeed/geofeed?query=*&mode=artlist&maxrecords=${maxRecords}&format=json&timespan=${hours}h`;
+
+    try {
+        console.log(`[GDELT] GeoFeed запрос: ${url}`);
+
+        const response = await fetch(url, {
+            headers: {
+                'User-Agent': 'Crucix-OSINT/2.0',
+                'Accept': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            console.error(`[GDELT] GeoFeed ошибка ${response.status}`);
+            return [];
+        }
+
+        const text = await response.text();
+        if (!text.trim().startsWith('{')) {
+            return [];
+        }
+
+        const data = JSON.parse(text);
+        return parseEvents(data);
+
+    } catch (error) {
+        console.error('[GDELT] GeoFeed ошибка:', error.message);
+        return [];
+    }
 }
 
-// GEO API — geographic event mapping
-export async function geoEvents(query = '', opts = {}) {
-  const {
-    mode = 'PointData',
-    timespan = '24h',
-    format = 'GeoJSON',
-    maxPoints = 500,
-  } = opts;
+// === ПАРСИНГ ОТВЕТА ===
+function parseEvents(data) {
+    let articles = [];
 
-  const q = query || 'conflict OR military OR protest OR explosion';
-  const params = new URLSearchParams({
-    query: q,
-    mode,
-    timespan,
-    format,
-    maxpoints: String(maxPoints),
-  });
+    if (data && data.articles && Array.isArray(data.articles)) {
+        articles = data.articles;
+    } else if (data && data.article && Array.isArray(data.article)) {
+        articles = data.article;
+    } else if (data && data.result && Array.isArray(data.result)) {
+        articles = data.result;
+    } else if (Array.isArray(data)) {
+        articles = data;
+    }
 
-  return safeFetch(`${BASE}/geo/geo?${params}`);
-}
+    if (articles.length === 0) {
+        return [];
+    }
 
-// Compact article for briefing
-function compactArticle(a) {
-  return {
-    title: a.title,
-    url: a.url,
-    date: a.seendate,
-    domain: a.domain,
-    language: a.language,
-    country: a.sourcecountry,
-  };
-}
-
-// GDELT rate limit: 1 request per 5 seconds
-function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-// Briefing mode — get top global events summary (sequential due to rate limit)
-export async function briefing() {
-  // Single broad query to stay within rate limits
-  const all = await searchEvents(
-    'conflict OR military OR economy OR crisis OR war OR sanctions OR tariff OR strike OR outbreak',
-    { maxRecords: 50, timespan: '24h' }
-  );
-
-  const articles = (all?.articles || []).map(compactArticle);
-
-  // Categorize by keyword matching in titles
-  const categorize = (keywords) => articles.filter(a =>
-    keywords.some(k => a.title?.toLowerCase().includes(k))
-  );
-
-  // Geo events — get mapped event locations (separate API, respects rate limit)
-  await delay(5500);
-  let geoPoints = [];
-  try {
-    const geo = await geoEvents('conflict OR military OR protest OR crisis', { maxPoints: 30, timespan: '24h' });
-    geoPoints = (geo?.features || []).filter(f => f.geometry?.coordinates).map(f => ({
-      lat: f.geometry.coordinates[1],
-      lon: f.geometry.coordinates[0],
-      name: f.properties?.name || f.properties?.html || '',
-      count: f.properties?.count || 1,
-      type: f.properties?.type || 'event',
+    return articles.slice(0, 50).map((article, index) => ({
+        id: article.url || article.URL || `gdelt-${Date.now()}-${index}`,
+        title: article.title || article.Title || article.headline || 'Без заголовка',
+        description: article.description || article.Description || article.snippet || article.Snippet || '',
+        url: article.url || article.URL || '',
+        source: article.source || article.Source || article.sourcecountry || 'GDELT',
+        date: article.date || article.Date || article.seendate || article.pubdate || new Date().toISOString(),
+        country: article.country || article.Country || article.sourcecountry || article.location || 'Unknown',
+        category: article.theme || article.Theme || article.cat || 'General',
+        coordinates: article.lat && article.lon ? {
+            lat: parseFloat(article.lat),
+            lon: parseFloat(article.lon)
+        } : (article.location && article.location.lat ? {
+            lat: parseFloat(article.location.lat),
+            lon: parseFloat(article.location.lon)
+        } : null),
+        relevance: article.relevance || article.Relevance || 0,
+        tone: article.tone || article.Tone || 0
     }));
-  } catch (e) { /* geo endpoint optional — don't break briefing */ }
-
-  return {
-    source: 'GDELT',
-    timestamp: new Date().toISOString(),
-    totalArticles: articles.length,
-    allArticles: articles,
-    geoPoints,
-    conflicts: categorize(['military', 'conflict', 'war', 'strike', 'missile', 'attack', 'bomb', 'troops']),
-    economy: categorize(['economy', 'recession', 'inflation', 'market', 'sanctions', 'tariff', 'trade', 'gdp']),
-    health: categorize(['pandemic', 'outbreak', 'epidemic', 'disease', 'virus', 'health']),
-    crisis: categorize(['crisis', 'disaster', 'emergency', 'refugee', 'famine']),
-  };
 }
 
-// Run standalone
-if (process.argv[1]?.endsWith('gdelt.mjs')) {
-  const data = await briefing();
-  console.log(JSON.stringify(data, null, 2));
+// === API ОБРАБОТЧИК ===
+export async function handleGDELTAPI(req, res) {
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    const pathname = url.pathname;
+    const params = url.searchParams;
+
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    if (req.method === 'OPTIONS') {
+        res.writeHead(200);
+        res.end();
+        return;
+    }
+
+    if (req.method !== 'GET') {
+        res.writeHead(405);
+        res.end(JSON.stringify({ success: false, error: 'Метод не поддерживается' }));
+        return;
+    }
+
+    try {
+        const hours = parseInt(params.get('hours')) || 24;
+        const maxRecords = Math.min(parseInt(params.get('max')) || 25, 50);
+        const query = params.get('query') || '*';
+        const action = pathname.replace('/api/gdelt/', '');
+
+        let events = [];
+
+        // Ждём перед запросом
+        await sleep(1500);
+
+        switch (action) {
+            case 'recent':
+                events = await getRecentEvents(hours, maxRecords);
+                break;
+
+            case 'search':
+                events = await getEventsViaSearch(query, hours, maxRecords);
+                break;
+
+            case 'geo':
+                events = await getGeoEvents(hours, maxRecords);
+                break;
+
+            case 'summary':
+                // Берём последние события для сводки
+                const allEvents = await getRecentEvents(hours, Math.min(maxRecords, 30));
+                const summary = {
+                    total: allEvents.length,
+                    byCountry: {},
+                    byCategory: {},
+                    topEvents: allEvents.slice(0, 10).map(e => ({
+                        title: e.title,
+                        source: e.source,
+                        country: e.country,
+                        date: e.date
+                    }))
+                };
+
+                allEvents.forEach(e => {
+                    summary.byCountry[e.country] = (summary.byCountry[e.country] || 0) + 1;
+                    summary.byCategory[e.category] = (summary.byCategory[e.category] || 0) + 1;
+                });
+
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: true, summary }));
+                return;
+
+            case 'ping':
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({
+                    success: true,
+                    message: 'GDELT API работает',
+                    timestamp: new Date().toISOString()
+                }));
+                return;
+
+            default:
+                res.writeHead(404);
+                res.end(JSON.stringify({
+                    success: false,
+                    error: 'Неизвестный эндпоинт. Доступные: recent, search, geo, summary, ping'
+                }));
+                return;
+        }
+
+        if (!events || events.length === 0) {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                success: true,
+                events: [],
+                count: 0,
+                message: 'Нет событий за указанный период',
+                params: { hours, maxRecords, query }
+            }));
+            return;
+        }
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+            success: true,
+            events,
+            count: events.length,
+            params: { hours, maxRecords, query }
+        }));
+
+    } catch (error) {
+        console.error('[GDELT API] Ошибка:', error.message);
+        res.writeHead(500);
+        res.end(JSON.stringify({
+            success: false,
+            error: error.message || 'Внутренняя ошибка сервера'
+        }));
+    }
 }
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+export default {
+    getRecentEvents,
+    getEventsViaSearch,
+    getGeoEvents,
+    handleGDELTAPI
+};

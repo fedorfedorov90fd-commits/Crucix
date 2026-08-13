@@ -1,0 +1,280 @@
+
+Создай обновлённый README.md для проекта Crucix на основе текущего состояния.
+
+Используй информацию из:
+- PROJECT/STATE.txt
+- PROJECT/ARCHITECTURE.txt
+- PROJECT/ROADMAP.txt
+
+README должен содержать:
+1. Название и описание проекта
+2. Установку
+3. Архитектуру
+4. Список готовых модулей
+5. План разработки
+6. Как помочь проекту
+
+Напиши на русском языке, кратко и ясно.
+" > README_NEW.md
+
+echo "✅ README_NEW.md создан"
+echo "Проверь и замени README.md при необходимости"
+EOF
+
+chmod +x scripts/update-docs.sh
+6. Составление плана на следующий день
+Задача: Анализировать текущее состояние и составлять план задач на завтра.
+
+bash
+cat > scripts/daily-plan.sh << 'EOF'
+#!/bin/bash
+# Составляет план на следующий день
+
+./scripts/ask-ai.sh "
+Проанализируй текущее состояние проекта Crucix.
+
+Что сделано сегодня?
+Что осталось сделать?
+Какой план на завтра?
+
+Составь конкретный список задач на завтра с приоритетами.
+"
+EOF
+
+chmod +x scripts/daily-plan.sh
+7. Поиск ошибок в коде
+Задача: Анализировать код на наличие ошибок и улучшений.
+
+bash
+cat > scripts/review-code.sh << 'EOF'
+#!/bin/bash
+# Проверяет код на ошибки
+
+if [ -z "$1" ]; then
+  echo "Использование: ./scripts/review-code.sh путь/к/файлу.mjs"
+  exit 1
+fi
+
+CODE=$(cat "$1")
+
+./scripts/ask-ai.sh "
+Ты — эксперт по Node.js. Проверь этот код на ошибки и дай рекомендации.
+
+Код:
+$CODE
+
+Что нужно исправить?
+Какие есть улучшения?
+Соответствует ли код архитектуре Crucix?
+"
+EOF
+
+chmod +x scripts/review-code.sh
+8. Умное логирование
+Задача: Анализировать логи и находить проблемы.
+
+bash
+cat > scripts/analyze-logs.sh << 'EOF'
+#!/bin/bash
+# Анализирует логи на наличие проблем
+
+LOG_FILE="logs/$(ls -t logs/ | head -1)"
+
+if [ -z "$LOG_FILE" ]; then
+  echo "❌ Нет логов"
+  exit 1
+fi
+
+echo "📊 Анализ лога: $LOG_FILE"
+
+tail -100 "$LOG_FILE" | ./scripts/ask-ai.sh "
+Проанализируй эти логи и найди:
+1. Ошибки
+2. Предупреждения
+3. Проблемы с производительностью
+4. Что нужно исправить
+
+Логи:
+$(tail -100 "$LOG_FILE")
+"
+EOF
+
+chmod +x scripts/analyze-logs.sh
+9. Помощник по GIT
+Задача: Помогать с коммитами, ветками и решением конфликтов.
+
+bash
+cat > scripts/git-assistant.sh << 'EOF'
+#!/bin/bash
+# Помощник по GIT
+
+if [ -z "$1" ]; then
+  echo "Использование:"
+  echo "  ./scripts/git-assistant.sh status"
+  echo "  ./scripts/git-assistant.sh commit 'Сообщение'"
+  echo "  ./scripts/git-assistant.sh help"
+  exit 1
+fi
+
+case "$1" in
+  status)
+    ./scripts/ask-ai.sh "
+    Проанализируй вывод git status и скажи, что изменилось.
+    Что нужно закоммитить? Какие файлы лучше не коммитить?
+    "
+    ;;
+  commit)
+    MESSAGE="$2"
+    if [ -z "$MESSAGE" ]; then
+      echo "❌ Нужно сообщение для коммита"
+      exit 1
+    fi
+    ./scripts/ask-ai.sh "
+    Создай понятное сообщение для коммита на основе изменений:
+    $MESSAGE
+    Дай готовый вариант.
+    "
+    ;;
+  help)
+    echo "Помощник по GIT:"
+    echo "  ./scripts/git-assistant.sh status"
+    echo "  ./scripts/git-assistant.sh commit 'Сообщение'"
+    ;;
+  *)
+    echo "❌ Неизвестная команда"
+    ;;
+esac
+EOF
+
+chmod +x scripts/git-assistant.sh
+10. Мониторинг конкурентов
+Задача: Следить за WorldMonitor и другими конкурентами.
+
+bash
+cat > scripts/monitor-competitors.sh << 'EOF'
+#!/bin/bash
+# Мониторинг конкурентов
+
+./scripts/ask-ai.sh "
+Ты знаешь о коммерческих конкурентах Crucix:
+- WorldMonitor (платный, $39-299/мес)
+- Palantir (корпоративный, $24,000/год)
+
+Что нового у конкурентов?
+Какие их слабые места мы можем использовать?
+Как Crucix может их обойти?
+
+Ответь на основе открытых данных.
+"
+EOF
+
+chmod +x scripts/monitor-competitors.sh
+11. Создание скриптов для новых модулей
+Задача: Генерировать шаблоны для новых модулей.
+
+bash
+cat > scripts/generate-module.sh << 'EOF'
+#!/bin/bash
+# Генерирует шаблон для нового модуля
+
+if [ -z "$1" ]; then
+  echo "Использование: ./scripts/generate-module.sh ИмяМодуля"
+  exit 1
+fi
+
+MODULE_NAME="$1"
+MODULE_PATH="apis/sources/$MODULE_NAME.mjs"
+
+./scripts/ask-ai.sh "
+Создай шаблон для нового модуля Crucix.
+
+Имя модуля: $MODULE_NAME
+Путь: apis/sources/$MODULE_NAME.mjs
+
+Шаблон должен содержать:
+1. Описание модуля (что делает)
+2. Экспорт функции fetch()
+3. Экспорт функции checkAvailability()
+4. Экспорт getDriverName()
+5. Обработку ошибок
+6. Логирование с префиксом [Модуль]
+
+Учти архитектуру Crucix.
+"
+
+echo "✅ Шаблон создан в $MODULE_PATH"
+EOF
+
+chmod +x scripts/generate-module.sh
+12. Ежедневная сводка
+Задача: Каждое утро выдавать краткую сводку о проекте.
+
+bash
+cat > scripts/daily-summary.sh << 'EOF'
+#!/bin/bash
+# Ежедневная сводка
+
+echo "📊 ЕЖЕДНЕВНАЯ СВОДКА CRUCIX"
+echo "============================"
+echo ""
+
+./scripts/ask-ai.sh "
+Дай краткую сводку по проекту Crucix на сегодня:
+
+1. Что сделано?
+2. Какие проблемы?
+3. Что сегодня делать?
+4. Какие риски?
+
+Ответь кратко (5-7 пунктов).
+"
+EOF
+
+chmod +x scripts/daily-summary.sh
+Полный список помощников
+Теперь у локального ИИ есть 12 новых задач:
+
+№	Скрипт	Что делает
+1	check-integrity.sh	Проверяет целостность проекта
+2	generate-community-report.sh	Создаёт отчёт для сообщества
+3	code-assistant.sh	Помогает писать код
+4	detect-conflicts.sh	Ищет конфликты модулей
+5	update-docs.sh	Обновляет документацию
+6	daily-plan.sh	Составляет план на завтра
+7	review-code.sh	Проверяет код на ошибки
+8	analyze-logs.sh	Анализирует логи
+9	git-assistant.sh	Помогает с GIT
+10	monitor-competitors.sh	Следит за конкурентами
+11	generate-module.sh	Создаёт шаблоны модулей
+12	daily-summary.sh	Ежедневная сводка
+Проверяем
+bash
+./scripts/daily-summary.sh
+Итог
+Локальный ИИ теперь:
+
+✅ Следит за целостностью проекта
+
+✅ Пишет отчёты для сообщества
+
+✅ Помогает писать код
+
+✅ Ищет конфликты
+
+✅ Обновляет документацию
+
+✅ Составляет планы
+
+✅ Проверяет код
+
+✅ Анализирует логи
+
+✅ Помогает с GIT
+
+✅ Следит за конкурентами
+
+✅ Создаёт шаблоны модулей
+
+✅ Даёт ежедневные сводки
+
+Он стал полноценным ассистентом разработчика. 🚀

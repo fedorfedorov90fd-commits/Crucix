@@ -1,316 +1,420 @@
-// ACLED — Armed Conflict Location & Event Data
-// Auth strategy (tries in order):
-//   1. Cookie-based session: POST /user/login?_format=json → session cookie
-//   2. OAuth Bearer token:   POST /oauth/token → Authorization header
-// Set ACLED_EMAIL and ACLED_PASSWORD in .env (your myACLED login credentials).
-// Data endpoint: GET https://acleddata.com/api/acled/read
+#!/usr/bin/env node
 
-import { daysAgo } from '../utils/fetch.mjs';
-import '../utils/env.mjs';
+// ============================================================
+// ACLED — КОНФЛИКТЫ И ПРОТЕСТЫ
+// ============================================================
+// Источник: ACLED (Armed Conflict Location & Event Data Project)
+// Данные: конфликты, протесты, насилие по всему миру
+// Обновление: еженедельно
+// ============================================================
 
-const LOGIN_URL = 'https://acleddata.com/user/login?_format=json';
-const TOKEN_URL = 'https://acleddata.com/oauth/token';
-const API_BASE  = 'https://acleddata.com/api/acled/read';
+import { fetchWithRetry } from '../utils/fetch.mjs';
 
-// Session cache
-let sessionCache = { cookies: null, token: null, method: null, expires: 0 };
+// ============================================================
+// 1. КОНСТАНТЫ
+// ============================================================
 
-// Strategy 1: Cookie-based session login (mirrors browser login)
-async function loginCookie(email, password) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 15000);
-  try {
-    const res = await fetch(LOGIN_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: email, pass: password }),
-      redirect: 'manual',
-      signal: controller.signal,
-    });
-    clearTimeout(timer);
+const ACLED_API = 'https://api.acleddata.com/acled/read';
 
-    // Collect Set-Cookie headers
-    const setCookies = res.headers.getSetCookie?.() || [];
-    const cookieStr = setCookies.map(c => c.split(';')[0]).join('; ');
+// Типы событий
+const EVENT_TYPES = {
+    BATTLES: 'Battles',
+    EXPLOSIONS: 'Explosions/Remote violence',
+    PROTESTS: 'Protests',
+    RIOTS: 'Riots',
+    STRATEGIC: 'Strategic developments',
+    VIOLENCE: 'Violence against civilians'
+};
 
-    if (res.ok && cookieStr) {
-      return { cookies: cookieStr };
+// Уровни эскалации
+const ESCALATION_LEVELS = {
+    CRITICAL: { min: 50, label: '🔴 Критическая', color: '#ef4444' },
+    HIGH: { min: 20, label: '🟠 Высокая', color: '#f97316' },
+    MEDIUM: { min: 5, label: '🟡 Средняя', color: '#eab308' },
+    LOW: { min: 0, label: '🟢 Низкая', color: '#22c55e' }
+};
+
+// ============================================================
+// 2. ОСНОВНАЯ ФУНКЦИЯ
+// ============================================================
+
+/**
+ * Получить данные о конфликтах
+ * 
+ * @param {Object} options
+ * @param {number} options.days - Количество дней (по умолчанию 30)
+ * @param {string} options.country - Фильтр по стране
+ * @param {string} options.region - Фильтр по региону
+ * @param {number} options.limit - Максимум записей (по умолчанию 500)
+ * @returns {Promise<Object>} Данные о конфликтах
+ */
+export async function fetchConflicts(options = {}) {
+    const {
+        days = 30,
+        country = null,
+        region = null,
+        limit = 500
+    } = options;
+
+    const email = process.env.ACLED_EMAIL || '';
+    const password = process.env.ACLED_PASSWORD || '';
+
+    // Проверка авторизации
+    if (!email || !password) {
+        console.warn('[ACLED] API ключи не найдены. Установите ACLED_EMAIL и ACLED_PASSWORD в .env');
+        return getDemoData();
     }
 
-    // Some Drupal sites return 303 redirect on successful login — cookies still set
-    if (res.status >= 300 && res.status < 400 && cookieStr) {
-      return { cookies: cookieStr };
-    }
+    try {
+        const params = new URLSearchParams({
+            email: email,
+            password: password,
+            limit: limit,
+            event_date__gte: getDateString(days),
+            sort: 'event_date',
+            'sort_order': 'desc'
+        });
 
-    const errText = await res.text().catch(() => '');
-    return { error: `Cookie login failed (HTTP ${res.status}): ${errText.slice(0, 200)}` };
-  } catch (e) {
-    clearTimeout(timer);
-    const cause = e.cause ? ` → ${e.cause.message || e.cause.code || e.cause}` : '';
-    return { error: `Cookie login error: ${e.message}${cause}` };
-  }
+        if (country) params.append('country', country);
+        if (region) params.append('region', region);
+
+        const url = `${ACLED_API}?${params}`;
+        console.log(`[ACLED] Запрос данных за ${days} дней`);
+
+        const response = await fetchWithRetry(url, { timeout: 15000 });
+        const data = await response.json();
+
+        if (!data.data || data.data.length === 0) {
+            console.log('[ACLED] Событий не обнаружено');
+            return {
+                success: true,
+                count: 0,
+                events: [],
+                summary: {
+                    total: 0,
+                    fatalities: 0,
+                    byType: {},
+                    byCountry: {},
+                    byRegion: {}
+                },
+                escalation: null,
+                timestamp: new Date().toISOString()
+            };
+        }
+
+        // Обрабатываем данные
+        const events = data.data.map(e => parseEvent(e));
+        const summary = getSummary(events);
+        const escalation = analyzeEscalation(events);
+
+        console.log(`[ACLED] Найдено ${events.length} событий (${summary.fatalities} жертв)`);
+
+        return {
+            success: true,
+            count: events.length,
+            events: events,
+            summary: summary,
+            escalation: escalation,
+            source: 'ACLED',
+            timestamp: new Date().toISOString()
+        };
+
+    } catch (error) {
+        console.error('[ACLED] Ошибка:', error.message);
+        console.warn('[ACLED] Использую демо-данные');
+        return getDemoData();
+    }
 }
 
-// Strategy 2: OAuth2 password grant
-async function loginOAuth(email, password) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 15000);
-  try {
-    const body = new URLSearchParams({
-      username: email,
-      password: password,
-      grant_type: 'password',
-      client_id: 'acled',
-    });
+// ============================================================
+// 3. ОБРАБОТКА ОДНОГО СОБЫТИЯ
+// ============================================================
 
-    const res = await fetch(TOKEN_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: body.toString(),
-      signal: controller.signal,
-    });
-    clearTimeout(timer);
-
-    if (!res.ok) {
-      const errText = await res.text().catch(() => '');
-      return { error: `OAuth failed (HTTP ${res.status}): ${errText.slice(0, 200)}` };
-    }
-
-    const data = await res.json();
-    if (!data.access_token) {
-      return { error: `OAuth response missing access_token: ${JSON.stringify(data).slice(0, 200)}` };
-    }
-
-    return { token: data.access_token };
-  } catch (e) {
-    clearTimeout(timer);
-    const cause = e.cause ? ` → ${e.cause.message || e.cause.code || e.cause}` : '';
-    return { error: `OAuth error: ${e.message}${cause}` };
-  }
-}
-
-// Try both auth strategies
-async function authenticate() {
-  const email    = process.env.ACLED_EMAIL;
-  const password = process.env.ACLED_PASSWORD;
-  if (!email || !password) {
-    return { error: 'No ACLED credentials. Set ACLED_EMAIL and ACLED_PASSWORD in .env.' };
-  }
-
-  // Return cached session if still valid
-  if (sessionCache.method && Date.now() < sessionCache.expires) {
-    return sessionCache;
-  }
-
-  const errors = [];
-  const debug = process.argv.includes('--debug');
-
-  // Try OAuth first (official programmatic method per ACLED docs)
-  const oauthResult = await loginOAuth(email, password);
-  if (oauthResult.token) {
-    if (debug) console.error(`[ACLED DEBUG] OAuth OK — token: ${oauthResult.token.slice(0, 20)}...`);
-    sessionCache = { cookies: null, token: oauthResult.token, method: 'oauth', expires: Date.now() + 23 * 60 * 60 * 1000 };
-    return sessionCache;
-  }
-  errors.push(`OAuth: ${oauthResult.error}`);
-  if (debug) console.error(`[ACLED DEBUG] OAuth failed: ${oauthResult.error}`);
-
-  // Fall back to cookie-based session
-  const cookieResult = await loginCookie(email, password);
-  if (cookieResult.cookies) {
-    if (debug) console.error(`[ACLED DEBUG] Cookie OK — cookies: ${cookieResult.cookies.slice(0, 80)}...`);
-    sessionCache = { cookies: cookieResult.cookies, token: null, method: 'cookie', expires: Date.now() + 12 * 60 * 60 * 1000 };
-    return sessionCache;
-  }
-  errors.push(`Cookie: ${cookieResult.error}`);
-
-  return { error: `All ACLED auth methods failed.\n${errors.join('\n')}` };
-}
-
-// Build headers based on auth method
-function authHeaders(session) {
-  const headers = { 'User-Agent': 'Crucix/1.0', 'Content-Type': 'application/json' };
-  if (session.method === 'cookie' && session.cookies) {
-    headers['Cookie'] = session.cookies;
-  } else if (session.method === 'oauth' && session.token) {
-    headers['Authorization'] = `Bearer ${session.token}`;
-  }
-  return headers;
-}
-
-// Event type constants
-export const EVENT_TYPES = [
-  'Battles',
-  'Explosions/Remote violence',
-  'Violence against civilians',
-  'Protests',
-  'Riots',
-  'Strategic developments',
-];
-
-// Query conflict events with flexible filters
-export async function getEvents(opts = {}) {
-  const {
-    limit = 500,
-    eventDateStart,
-    eventDateEnd,
-    eventType,
-    country,
-    region,
-  } = opts;
-
-  const session = await authenticate();
-  if (session.error) return { error: session.error };
-
-  const params = new URLSearchParams({ _format: 'json', limit: String(limit) });
-  if (eventDateStart && eventDateEnd) {
-    params.set('event_date', `${eventDateStart}|${eventDateEnd}`);
-    params.set('event_date_where', 'BETWEEN');
-  }
-  if (eventType) params.set('event_type', eventType);
-  if (country) params.set('country', country);
-  if (region) params.set('region', String(region));
-
-  const debug = process.argv.includes('--debug');
-  try {
-    const url = `${API_BASE}?${params}`;
-    const hdrs = authHeaders(session);
-    if (debug) {
-      console.error(`[ACLED DEBUG] Data request: GET ${url}`);
-      console.error(`[ACLED DEBUG] Headers: ${JSON.stringify(hdrs)}`);
-    }
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 25000);
-    const res = await fetch(url, {
-      headers: hdrs,
-      signal: controller.signal,
-    });
-    clearTimeout(timer);
-    if (debug) console.error(`[ACLED DEBUG] Data response: HTTP ${res.status}`);
-
-    if (!res.ok) {
-      const errText = await res.text().catch(() => '');
-      if (debug) console.error(`[ACLED DEBUG] Error body: ${errText.slice(0, 500)}`);
-      if (res.status === 401 || res.status === 403) {
-        // Clear cache and report
-        sessionCache = { cookies: null, token: null, method: null, expires: 0 };
-        const hint = res.status === 403
-          ? '\n→ Fix: Log in at https://acleddata.com/user/login, then:\n'
-            + '  1. Accept Terms of Use (profile → Terms of Use button → check the box)\n'
-            + '  2. Complete all required profile fields\n'
-            + '  3. Ensure your account has the "API" access group\n'
-            + '  Contact access@acleddata.com if issues persist.'
-          : '';
-        return { error: `ACLED data access denied (HTTP ${res.status}, auth method: ${session.method}). Response: ${errText.slice(0, 300)}${hint}` };
-      }
-      return { error: `HTTP ${res.status}: ${errText.slice(0, 200)}` };
-    }
-
-    const data = await res.json();
-
-    // ACLED may return a 200 with an error status in the body
-    if (data?.status && data.status !== 200) {
-      return { error: `ACLED API error: status ${data.status} — ${data.message || 'Unknown error'}` };
-    }
-
-    return data;
-  } catch (e) {
-    if (e.name === 'AbortError') {
-      return { error: 'ACLED data request timed out (25s)' };
-    }
-    const rootCause = e.cause ? `${e.cause.message || e.cause.code || e.cause}` : '';
-    return { error: `ACLED data error: ${e.message}${rootCause ? ' → ' + rootCause : ''}` };
-  }
-}
-
-// Summarize events by a given field
-function groupBy(events, field) {
-  const map = {};
-  for (const e of events) {
-    const key = e[field] || 'Unknown';
-    if (!map[key]) map[key] = { count: 0, fatalities: 0 };
-    map[key].count += 1;
-    map[key].fatalities += parseInt(e.fatalities, 10) || 0;
-  }
-  return map;
-}
-
-// Briefing — last 7 days of global conflict events
-export async function briefing() {
-  if (!process.env.ACLED_EMAIL || !process.env.ACLED_PASSWORD) {
+function parseEvent(event) {
     return {
-      source: 'ACLED',
-      timestamp: new Date().toISOString(),
-      status: 'no_credentials',
-      message: 'Set ACLED_EMAIL and ACLED_PASSWORD in .env. Register at https://acleddata.com/user/register',
+        id: event.data_id || `acled_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        date: event.event_date || null,
+        country: event.country || null,
+        region: event.region || null,
+        type: event.event_type || null,
+        subType: event.sub_event_type || null,
+        actor1: event.actor1 || null,
+        actor2: event.actor2 || null,
+        fatalities: parseInt(event.fatalities) || 0,
+        lat: parseFloat(event.latitude) || null,
+        lng: parseFloat(event.longitude) || null,
+        location: event.location || null,
+        description: event.notes || null,
+        source: event.source || null,
+        timestamp: event.timestamp || null,
+        severity: getSeverity(event)
     };
-  }
-
-  const start = daysAgo(7);
-  const end   = daysAgo(0);
-
-  const data = await getEvents({
-    eventDateStart: start,
-    eventDateEnd: end,
-    limit: 2000,
-  });
-
-  if (data?.error) {
-    return { source: 'ACLED', timestamp: new Date().toISOString(), error: data.error };
-  }
-
-  let events = data?.data || [];
-
-  // Enrich all events with numeric lat/lon
-  events = events.map(e => ({
-    ...e,
-    lat: parseFloat(e.latitude) || null,
-    lon: parseFloat(e.longitude) || null,
-  }));
-
-  const totalFatalities = events.reduce(
-    (sum, e) => sum + (parseInt(e.fatalities, 10) || 0), 0
-  );
-
-  const byRegion  = groupBy(events, 'region');
-  const byType    = groupBy(events, 'event_type');
-  const byCountry = groupBy(events, 'country');
-
-  const topCountries = Object.entries(byCountry)
-    .sort((a, b) => b[1].count - a[1].count)
-    .slice(0, 10)
-    .reduce((obj, [k, v]) => { obj[k] = v; return obj; }, {});
-
-  const deadliestEvents = events
-    .filter(e => parseInt(e.fatalities, 10) > 0)
-    .sort((a, b) => (parseInt(b.fatalities, 10) || 0) - (parseInt(a.fatalities, 10) || 0))
-    .slice(0, 15)
-    .map(e => ({
-      date:       e.event_date,
-      type:       e.event_type,
-      subType:    e.sub_event_type,
-      country:    e.country,
-      location:   e.location,
-      fatalities: parseInt(e.fatalities, 10) || 0,
-      lat:        parseFloat(e.latitude) || null,
-      lon:        parseFloat(e.longitude) || null,
-      notes:      e.notes?.slice(0, 200),
-    }));
-
-  return {
-    source: 'ACLED',
-    timestamp: new Date().toISOString(),
-    period: { start, end },
-    totalEvents: events.length,
-    totalFatalities,
-    byRegion,
-    byType,
-    topCountries,
-    deadliestEvents,
-  };
 }
 
-if (process.argv[1]?.endsWith('acled.mjs')) {
-  const data = await briefing();
-  console.log(JSON.stringify(data, null, 2));
+// ============================================================
+// 4. ОПРЕДЕЛЕНИЕ СЕВЕРНОСТИ
+// ============================================================
+
+function getSeverity(event) {
+    const fatalities = parseInt(event.fatalities) || 0;
+    const type = event.event_type || '';
+
+    if (fatalities >= 10) return 'critical';
+    if (fatalities >= 5) return 'high';
+    if (fatalities >= 1) return 'medium';
+    
+    // Типы с высоким риском даже без жертв
+    if (['Battles', 'Explosions/Remote violence'].includes(type)) return 'medium';
+    if (['Violence against civilians'].includes(type)) return 'medium';
+    
+    return 'low';
 }
+
+// ============================================================
+// 5. АНАЛИЗ ЭСКАЛАЦИИ
+// ============================================================
+
+function analyzeEscalation(events) {
+    if (!events || events.length < 3) return null;
+
+    // Разбиваем на периоды
+    const now = new Date();
+    const last7Days = events.filter(e => {
+        const d = new Date(e.date);
+        return (now - d) < 7 * 24 * 60 * 60 * 1000;
+    });
+
+    const previous7Days = events.filter(e => {
+        const d = new Date(e.date);
+        const diff = now - d;
+        return diff >= 7 * 24 * 60 * 60 * 1000 && diff < 14 * 24 * 60 * 60 * 1000;
+    });
+
+    // Считаем жертв за периоды
+    const fatalitiesLast7 = last7Days.reduce((s, e) => s + e.fatalities, 0);
+    const fatalitiesPrev7 = previous7Days.reduce((s, e) => s + e.fatalities, 0);
+
+    // Основные показатели
+    const change = last7Days.length - previous7Days.length;
+    const fatalChange = fatalitiesLast7 - fatalitiesPrev7;
+
+    let trend = 'stable';
+    if (change > 2 || fatalChange > 5) trend = 'escalating';
+    else if (change < -2 || fatalChange < -5) trend = 'de-escalating';
+
+    const totalEvents = events.length;
+    let level = 'low';
+    if (totalEvents > 50) level = 'critical';
+    else if (totalEvents > 20) level = 'high';
+    else if (totalEvents > 5) level = 'medium';
+
+    return {
+        totalEvents: totalEvents,
+        last7Days: last7Days.length,
+        previous7Days: previous7Days.length,
+        change: change,
+        changePercent: previous7Days.length > 0 
+            ? Math.round((change / previous7Days.length) * 100) 
+            : 0,
+        fatalitiesLast7: fatalitiesLast7,
+        fatalitiesPrev7: fatalitiesPrev7,
+        fatalChange: fatalChange,
+        trend: trend,
+        level: level,
+        levelLabel: ESCALATION_LEVELS[level.toUpperCase()]?.label || level,
+        levelColor: ESCALATION_LEVELS[level.toUpperCase()]?.color || '#888'
+    };
+}
+
+// ============================================================
+// 6. СТАТИСТИКА
+// ============================================================
+
+function getSummary(events) {
+    const summary = {
+        total: events.length,
+        fatalities: events.reduce((s, e) => s + e.fatalities, 0),
+        byType: {},
+        byCountry: {},
+        byRegion: {},
+        bySeverity: {
+            critical: 0,
+            high: 0,
+            medium: 0,
+            low: 0
+        }
+    };
+
+    for (const e of events) {
+        // По типам
+        const type = e.type || 'unknown';
+        summary.byType[type] = (summary.byType[type] || 0) + 1;
+
+        // По странам
+        const country = e.country || 'unknown';
+        summary.byCountry[country] = (summary.byCountry[country] || 0) + 1;
+
+        // По регионам
+        const region = e.region || 'unknown';
+        summary.byRegion[region] = (summary.byRegion[region] || 0) + 1;
+
+        // По severity
+        const severity = e.severity || 'low';
+        summary.bySeverity[severity] = (summary.bySeverity[severity] || 0) + 1;
+    }
+
+    return summary;
+}
+
+// ============================================================
+// 7. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+// ============================================================
+
+function getDateString(days) {
+    const d = new Date();
+    d.setDate(d.getDate() - days);
+    return d.toISOString().split('T')[0];
+}
+
+// ============================================================
+// 8. ДЕМО-ДАННЫЕ
+// ============================================================
+
+function getDemoData() {
+    const demoTimestamp = new Date().toISOString();
+    
+    const demoEvents = [
+        { id: 'demo-1', date: '2026-08-14', country: 'Украина', region: 'Eastern Europe', type: 'Battles', subType: 'Armed clash', actor1: 'Ukrainian Forces', actor2: 'Russian Forces', fatalities: 12, lat: 47.5, lng: 34.8, description: 'Столкновение в Запорожской области', severity: 'critical' },
+        { id: 'demo-2', date: '2026-08-14', country: 'Украина', region: 'Eastern Europe', type: 'Explosions/Remote violence', subType: 'Air strike', actor1: 'Russian Forces', actor2: 'Civilian', fatalities: 5, lat: 48.2, lng: 37.3, description: 'Авиаудар по Краматорску', severity: 'high' },
+        { id: 'demo-3', date: '2026-08-13', country: 'Иран', region: 'Middle East', type: 'Protests', subType: 'Demonstration', actor1: 'Protesters', actor2: 'Security Forces', fatalities: 2, lat: 35.7, lng: 51.4, description: 'Протесты в Тегеране', severity: 'medium' },
+        { id: 'demo-4', date: '2026-08-13', country: 'Израиль', region: 'Middle East', type: 'Explosions/Remote violence', subType: 'Rocket attack', actor1: 'Hamas', actor2: 'IDF', fatalities: 0, lat: 31.5, lng: 34.5, description: 'Ракетный обстрел Ашкелона', severity: 'medium' },
+        { id: 'demo-5', date: '2026-08-12', country: 'Судан', region: 'Africa', type: 'Battles', subType: 'Armed clash', actor1: 'SAF', actor2: 'RSF', fatalities: 25, lat: 15.5, lng: 32.5, description: 'Бои в Хартуме', severity: 'critical' },
+        { id: 'demo-6', date: '2026-08-12', country: 'Мьянма', region: 'Asia', type: 'Violence against civilians', subType: 'Attack', actor1: 'Military Junta', actor2: 'Civilians', fatalities: 8, lat: 19.7, lng: 96.1, description: 'Нападение на деревню', severity: 'high' },
+        { id: 'demo-7', date: '2026-08-11', country: 'Мексика', region: 'Americas', type: 'Violence against civilians', subType: 'Attack', actor1: 'Cartel', actor2: 'Civilians', fatalities: 6, lat: 20.6, lng: -100.3, description: 'Атака картеля', severity: 'high' },
+        { id: 'demo-8', date: '2026-08-11', country: 'Палестина', region: 'Middle East', type: 'Protests', subType: 'Demonstration', actor1: 'Palestinians', actor2: 'IDF', fatalities: 1, lat: 31.8, lng: 35.2, description: 'Протесты в Вифлееме', severity: 'medium' },
+        { id: 'demo-9', date: '2026-08-10', country: 'Эфиопия', region: 'Africa', type: 'Battles', subType: 'Armed clash', actor1: 'Government Forces', actor2: 'TPLF', fatalities: 15, lat: 12.5, lng: 39.5, description: 'Бои в Тиграе', severity: 'critical' },
+        { id: 'demo-10', date: '2026-08-10', country: 'Венесуэла', region: 'Americas', type: 'Protests', subType: 'Demonstration', actor1: 'Opposition', actor2: 'Security Forces', fatalities: 0, lat: 10.5, lng: -66.9, description: 'Протесты в Каракасе', severity: 'low' }
+    ];
+
+    const summary = {
+        total: demoEvents.length,
+        fatalities: demoEvents.reduce((s, e) => s + e.fatalities, 0),
+        byType: { Battles: 3, 'Explosions/Remote violence': 2, Protests: 3, 'Violence against civilians': 2 },
+        byCountry: { Украина: 2, Иран: 1, Израиль: 1, Судан: 1, Мьянма: 1, Мексика: 1, Палестина: 1, Эфиопия: 1, Венесуэла: 1 },
+        byRegion: { 'Eastern Europe': 2, 'Middle East': 3, Africa: 2, Asia: 1, Americas: 2 },
+        bySeverity: { critical: 3, high: 3, medium: 3, low: 1 }
+    };
+
+    const escalation = {
+        totalEvents: demoEvents.length,
+        last7Days: 8,
+        previous7Days: 2,
+        change: 6,
+        changePercent: 300,
+        fatalitiesLast7: 59,
+        fatalitiesPrev7: 15,
+        fatalChange: 44,
+        trend: 'escalating',
+        level: 'high',
+        levelLabel: '🟠 Высокая',
+        levelColor: '#f97316'
+    };
+
+    return {
+        success: true,
+        count: demoEvents.length,
+        events: demoEvents,
+        summary: summary,
+        escalation: escalation,
+        source: 'DEMO (ACLED)',
+        timestamp: demoTimestamp,
+        isDemo: true
+    };
+}
+
+// ============================================================
+// 9. API-ОБРАБОТЧИК
+// ============================================================
+
+export async function handleACLEDApi(req, res) {
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    const path = url.pathname;
+
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    if (req.method === 'OPTIONS') {
+        res.writeHead(200);
+        res.end();
+        return;
+    }
+
+    try {
+        // GET /api/acled/events — получить данные о конфликтах
+        if (path === '/api/acled/events' && req.method === 'GET') {
+            const params = url.searchParams;
+            const days = parseInt(params.get('days')) || 30;
+            const country = params.get('country') || null;
+            const region = params.get('region') || null;
+            const limit = parseInt(params.get('limit')) || 500;
+
+            const data = await fetchConflicts({ days, country, region, limit });
+
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(data));
+            return;
+        }
+
+        // GET /api/acled/escalation — получить только анализ эскалации
+        if (path === '/api/acled/escalation' && req.method === 'GET') {
+            const data = await fetchConflicts({ days: 30 });
+
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                success: true,
+                escalation: data.escalation,
+                timestamp: data.timestamp
+            }));
+            return;
+        }
+
+        // GET /api/acled/status — статус модуля
+        if (path === '/api/acled/status' && req.method === 'GET') {
+            const email = process.env.ACLED_EMAIL || '';
+            const password = process.env.ACLED_PASSWORD || '';
+
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                success: true,
+                module: 'ACLED',
+                status: (email && password) ? 'active' : 'demo',
+                authSet: !!(email && password),
+                timestamp: new Date().toISOString()
+            }));
+            return;
+        }
+
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: false, error: 'Неизвестный путь' }));
+
+    } catch (error) {
+        console.error('[ACLED API] Ошибка:', error);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+            success: false,
+            error: 'Внутренняя ошибка сервера',
+            details: error.message
+        }));
+    }
+}
+
+// ============================================================
+// 10. ЭКСПОРТ
+// ============================================================
+
+export default {
+    fetchConflicts,
+    handleACLEDApi,
+    analyzeEscalation
+};

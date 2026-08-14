@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Сетка интерфейса — Crucix</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a1a;
+      color: #e0e0e0;
+      font-family: 'Segoe UI', monospace;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .viewer {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
+    .viewer iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #0a0a1a;
+    }
+
+    /* ВЕРХНЯЯ ПАНЕЛЬ */
+    .toolbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 12px;
+      background: rgba(10,10,26,0.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      font-family: monospace;
+      font-size: 9px;
+      height: 32px;
+    }
+    .toolbar .title { color: #888; font-size: 10px; font-weight: 600; }
+    .toolbar .title span { color: #2196f3; }
+    .toolbar .sep { color: #333; padding: 0 4px; }
+    .toolbar button {
+      padding: 4px 14px;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 4px;
+      background: rgba(255,255,255,0.05);
+      color: #e0e0e0;
+      font-size: 10px;
+      font-family: monospace;
+      cursor: pointer;
+      transition: 0.15s;
+      height: 24px;
+      white-space: nowrap;
+    }
+    .toolbar button:hover {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+    }
+    .toolbar button.primary {
+      background: #2196f3;
+      border-color: #2196f3;
+      color: #fff;
+    }
+    .toolbar button.primary:hover { background: #1976d2; }
+    .toolbar .count { color: #555; font-size: 9px; margin-left: auto; }
+    .toolbar .count span { color: #2196f3; font-weight: 600; }
+
+    /* СЕТКА — ТОЛЬКО ЛИНИИ */
+    .grid-overlay {
+      position: fixed;
+      top: 32px;
+      left: 0;
+      width: 100vw;
+      height: calc(100vh - 32px);
+      pointer-events: none;
+      z-index: 9998;
+      display: block;
+    }
+    .grid-overlay canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* ИНФО — ТОЛЬКО ТЕКСТ */
+    .info-panel {
+      position: fixed;
+      bottom: 12px;
+      right: 12px;
+      z-index: 99999;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 4px;
+      padding: 6px 10px;
+      font-size: 8px;
+      color: #555;
+      font-family: monospace;
+      min-width: 150px;
+      pointer-events: none;
+    }
+    .info-panel .row {
+      display: flex;
+      justify-content: space-between;
+      padding: 1px 0;
+    }
+    .info-panel .row .key { color: #666; }
+    .info-panel .row .val { color: #e0e0e0; }
+    .info-panel .row .val.highlight { color: #2196f3; }
+
+    /* ПОДСКАЗКА — ТОЛЬКО ПРИ НАВЕДЕНИИ */
+    .tooltip {
+      position: fixed;
+      z-index: 99999;
+      background: rgba(0,0,0,0.9);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-size: 8px;
+      color: #e0e0e0;
+      font-family: monospace;
+      pointer-events: none;
+      display: none;
+      max-width: 400px;
+      line-height: 1.5;
+    }
+    .tooltip.active { display: block; }
+    .tooltip .id { color: #2196f3; font-weight: 600; }
+    .tooltip .coords { color: #4caf50; }
+    .tooltip .size { color: #ffeb3b; }
+  </style>
+</head>
+<body>
+
+<!-- ВЕРХНЯЯ ПАНЕЛЬ -->
+<div class="toolbar">
+  <span class="title">📐 <span>Сетка</span></span>
+  <span class="sep">|</span>
+  <button class="primary" onclick="copyFullPage()">📋 Копировать ВСЮ страницу</button>
+  <button onclick="toggleGrid()">⊞ Сетка</button>
+  <span class="sep">|</span>
+  <span class="count">Элементов: <span id="elCount">0</span></span>
+  <span style="color:#444;font-size:8px;">Наведи на элемент → подсказка</span>
+</div>
+
+<!-- СЕТКА (ТОЛЬКО ЛИНИИ) -->
+<div class="grid-overlay" id="gridOverlay">
+  <canvas id="gridCanvas"></canvas>
+</div>
+
+<!-- ИНФО -->
+<div class="info-panel">
+  <div class="row"><span class="key">Координаты</span><span class="val highlight" id="mousePos">X: —, Y: —</span></div>
+  <div class="row"><span class="key">Под курсором</span><span class="val" id="hoverEl">—</span></div>
+</div>
+
+<!-- ПОДСКАЗКА -->
+<div class="tooltip" id="tooltip">
+  <div><span class="id" id="tipId">#0</span> <span id="tipLabel">—</span></div>
+  <div><span class="coords" id="tipCoords">X:— Y:—</span> <span class="size" id="tipSize">W:— H:—</span></div>
+</div>
+
+<!-- ОСНОВНОЙ ВИДЕР -->
+<div class="viewer">
+  <iframe id="jarvisFrame" src="/jarvis"></iframe>
+</div>
+
+<script>
+const iframe = document.getElementById('jarvisFrame');
+const overlay = document.getElementById('gridOverlay');
+const canvas = document.getElementById('gridCanvas');
+const ctx = canvas.getContext('2d');
+
+let elements = [];
+let showGrid = true;
+let mouseX = 0, mouseY = 0;
+let scale = 1;
+
+// ============================================================
+// РАЗМЕРЫ
+// ============================================================
+function resizeCanvas() {
+  const rect = overlay.getBoundingClientRect();
+  canvas.width = rect.width * devicePixelRatio;
+  canvas.height = rect.height * devicePixelRatio;
+  canvas.style.width = rect.width + 'px';
+  canvas.style.height = rect.height + 'px';
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+  scale = rect.width / 1920;
+  drawGrid();
+}
+
+// ============================================================
+// ЗАГРУЗКА ЭЛЕМЕНТОВ
+// ============================================================
+function loadElements() {
+  try {
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    const all = doc.querySelectorAll('*');
+    const iframeRect = iframe.getBoundingClientRect();
+    elements = [];
+    let id = 0;
+
+    all.forEach(el => {
+      const rect = el.getBoundingClientRect();
+      if (rect.width > 5 && rect.height > 5) {
+        const s = window.getComputedStyle(el);
+        elements.push({
+          id: id++,
+          label: el.textContent?.slice(0, 35)?.replace(/\s+/g, ' ') || el.className?.slice(0, 20) || el.tagName,
+          x: Math.round(rect.left - iframeRect.left),
+          y: Math.round(rect.top - iframeRect.top),
+          w: Math.round(rect.width),
+          h: Math.round(rect.height),
+          color: s.color || '—',
+          bgColor: s.backgroundColor || '—',
+          fontSize: s.fontSize || '—',
+          fontFamily: s.fontFamily || '—',
+          fontWeight: s.fontWeight || '—',
+          padding: s.padding || '—',
+          border: s.border || '—',
+          borderRadius: s.borderRadius || '—',
+          display: s.display || '—',
+          position: s.position || '—',
+          zIndex: s.zIndex || '—',
+          opacity: s.opacity || '—',
+          textAlign: s.textAlign || '—',
+          textTransform: s.textTransform || '—',
+          tag: el.tagName,
+          selector: el.className || el.tagName
+        });
+      }
+    });
+
+    document.getElementById('elCount').textContent = elements.length;
+    drawGrid();
+  } catch (e) {
+    setTimeout(loadElements, 500);
+  }
+}
+
+// ============================================================
+// ОТРИСОВКА СЕТКИ — ТОЛЬКО ЛИНИИ, БЕЗ ЗАЛИВОК
+// ============================================================
+function drawGrid() {
+  const w = canvas.width / devicePixelRatio;
+  const h = canvas.height / devicePixelRatio;
+  ctx.clearRect(0, 0, w, h);
+  if (!showGrid) return;
+
+  // Тонкая сетка 50px
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.lineWidth = 0.5;
+  for (let x = 0; x <= w; x += 50) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+  }
+  for (let y = 0; y <= h; y += 50) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+  }
+
+  // Основная сетка 200px с цифрами
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x <= w; x += 200) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+    ctx.font = '7px monospace';
+    ctx.fillText(x, x+2, 10);
+  }
+  for (let y = 0; y <= h; y += 200) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+    ctx.font = '7px monospace';
+    ctx.fillText(y, 2, y+8);
+  }
+
+  // Только тонкая рамка вокруг элемента под курсором — БЕЗ ЗАЛИВКИ
+  if (hoveredElement) {
+    const el = hoveredElement;
+    const x = el.x * scale;
+    const y = el.y * scale;
+    const ew = Math.max(el.w * scale, 10);
+    const eh = Math.max(el.h * scale, 10);
+    ctx.strokeStyle = '#2196f3';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([3, 4]);
+    ctx.strokeRect(x, y, ew, eh);
+    ctx.setLineDash([]);
+    // Маленькая метка с ID
+    ctx.fillStyle = 'rgba(33,150,243,0.6)';
+    ctx.font = '7px monospace';
+    ctx.fillText(`#${el.id}`, x+2, y+8);
+  }
+
+  // Перекрестие
+  if (mouseX > 0 && mouseY > 0) {
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = 0.5;
+    ctx.setLineDash([2, 4]);
+    ctx.beginPath(); ctx.moveTo(mouseX, 0); ctx.lineTo(mouseX, h); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, mouseY); ctx.lineTo(w, mouseY); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+}
+
+// ============================================================
+// УПРАВЛЕНИЕ
+// ============================================================
+let hoveredElement = null;
+
+function toggleGrid() {
+  showGrid = !showGrid;
+  drawGrid();
+}
+
+// ============================================================
+// ФОРМАТИРОВАНИЕ ЭЛЕМЕНТА
+// ============================================================
+function formatElementFull(el) {
+  return [
+    `#${el.id} | ${el.label}`,
+    `  Координаты: X=${el.x} Y=${el.y}  Размер: W=${el.w} H=${el.h}`,
+    `  Цвет: ${el.color}  Фон: ${el.bgColor}`,
+    `  Шрифт: ${el.fontSize} ${el.fontFamily}  Вес: ${el.fontWeight}`,
+    `  Отступы: ${el.padding}  Рамка: ${el.border}  Радиус: ${el.borderRadius}`,
+    `  Display: ${el.display}  Position: ${el.position}`,
+    `  Z-index: ${el.zIndex}  Opacity: ${el.opacity}`,
+    `  Текст: ${el.textAlign} ${el.textTransform}`,
+    `  Тег: ${el.tag}  Класс: ${el.selector}`
+  ].join('\n');
+}
+
+// ============================================================
+// КОПИРОВАТЬ ВСЮ СТРАНИЦУ
+// ============================================================
+function copyFullPage() {
+  if (elements.length === 0) {
+    alert('⏳ Элементы ещё не загружены. Подожди секунду...');
+    return;
+  }
+
+  const header = `=== СТРАНИЦА jarvis.html — ПОЛНАЯ ДЕТАЛИЗАЦИЯ ===\n`;
+  const footer = `\n=== ИТОГО: ${elements.length} элементов ===\n`;
+  const body = elements.map(el => formatElementFull(el)).join('\n\n');
+  const text = header + body + footer;
+
+  navigator.clipboard.writeText(text).then(() => {
+    alert(`✅ Скопировано ${elements.length} элементов`);
+  }).catch(() => {
+    const area = document.createElement('textarea');
+    area.value = text;
+    document.body.appendChild(area);
+    area.select();
+    document.execCommand('copy');
+    document.body.removeChild(area);
+    alert(`✅ Скопировано ${elements.length} элементов`);
+  });
+}
+
+// ============================================================
+// МЫШЬ
+// ============================================================
+document.addEventListener('mousemove', (e) => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+  document.getElementById('mousePos').textContent = `X: ${mouseX}, Y: ${mouseY}`;
+
+  let found = null;
+  for (const el of elements) {
+    const x = el.x * scale;
+    const y = el.y * scale;
+    if (mouseX >= x && mouseX <= x + el.w * scale && mouseY >= y && mouseY <= y + el.h * scale) {
+      found = el;
+      break;
+    }
+  }
+  hoveredElement = found;
+  document.getElementById('hoverEl').textContent = found ? `#${found.id} ${found.label}` : '—';
+
+  // Подсказка
+  const tooltip = document.getElementById('tooltip');
+  if (found) {
+    tooltip.classList.add('active');
+    tooltip.style.left = (mouseX + 12) + 'px';
+    tooltip.style.top = (mouseY + 12) + 'px';
+    document.getElementById('tipId').textContent = `#${found.id}`;
+    document.getElementById('tipLabel').textContent = found.label;
+    document.getElementById('tipCoords').textContent = `X:${found.x} Y:${found.y}`;
+    document.getElementById('tipSize').textContent = `W:${found.w} H:${found.h}`;
+  } else {
+    tooltip.classList.remove('active');
+  }
+
+  drawGrid();
+});
+
+// ============================================================
+// ЗАПУСК
+// ============================================================
+window.addEventListener('resize', resizeCanvas);
+
+iframe.addEventListener('load', () => {
+  setTimeout(loadElements, 500);
+});
+
+setTimeout(() => {
+  if (iframe.contentDocument) loadElements();
+}, 1000);
+
+console.log('📐 Инструмент "Сетка" загружен');
+console.log('📋 Нажми "Копировать ВСЮ страницу" → полная детализация');
+console.log('🖱 Наведи на элемент → подсказка');
+console.log('✅ НЕТ РАЗДРАЖАЮЩИХ ЗАЛИВОК — только сетка и рамка при наведении');
+</script>
+</body>
+</html>

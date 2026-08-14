@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Радиационный мониторинг — Safecast</title>
+    <link rel="stylesheet" href="/css/safecast.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+
+    <!-- ============================================================
+         ВЕРХНЯЯ ПАНЕЛЬ (TOP BAR)
+         ============================================================ -->
+    <header class="topbar">
+        <div class="topbar-left">
+            <span class="topbar-brand">⚡ CRUCIX MONITOR</span>
+            <span class="topbar-status">МОДУЛЬ SAFECAST</span>
+        </div>
+        <div class="topbar-right">
+            <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+            <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ</button>
+            <button class="topbar-btn btn-grid" id="grid-toggle" title="Ctrl+Shift+G">📐 СЕТКА</button>
+            <div class="lang-switch">
+                <button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
+                <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ============================================================
+         ОСНОВНОЙ КОНТЕНТ
+         ============================================================ -->
+    <main class="main-content">
+        <h1 class="page-title">☢️ Радиационный мониторинг (Safecast)</h1>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-label">Всего локаций</span>
+                <span class="stat-value blue" id="stat-total">—</span>
+                <span class="stat-sub">под наблюдением</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Критический уровень</span>
+                <span class="stat-value red" id="stat-critical">—</span>
+                <span class="stat-sub">требует внимания</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Средний уровень</span>
+                <span class="stat-value yellow" id="stat-average">—</span>
+                <span class="stat-sub">CPM</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Максимальный</span>
+                <span class="stat-value orange" id="stat-max">—</span>
+                <span class="stat-sub" id="stat-max-site">—</span>
+            </div>
+        </div>
+
+        <div class="map-container">
+            <div id="radiation-map"></div>
+            <div class="map-legend">
+                <div class="legend-item"><span class="dot" style="background:#22c55e;"></span> Нормальный</div>
+                <div class="legend-item"><span class="dot" style="background:#eab308;"></span> Повышенный</div>
+                <div class="legend-item"><span class="dot" style="background:#f97316;"></span> Высокий</div>
+                <div class="legend-item"><span class="dot" style="background:#ef4444;"></span> Критический</div>
+            </div>
+        </div>
+
+        <div class="sites-grid" id="sites-grid"></div>
+
+        <div class="anomalies-panel" id="anomalies-panel">
+            <div class="panel-title">⚠️ Обнаруженные аномалии</div>
+            <div id="anomalies-list"></div>
+        </div>
+
+        <div class="export-panel">
+            <button class="btn-export" id="export-json">📥 JSON</button>
+            <button class="btn-export" id="export-csv">📥 CSV</button>
+            <span style="color:#444;font-size:11px;margin-left:auto;">v2.1.1</span>
+        </div>
+    </main>
+
+    <!-- ============================================================
+         КООРДИНАТНАЯ СЕТКА
+         ============================================================ -->
+    <div id="coordinate-grid"></div>
+    <div id="grid-coords">X: 0  Y: 0</div>
+
+    <script src="/js/safecast.js"></script>
+</body>
+</html>

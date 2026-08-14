@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRUCIX — Разделённый дашборд</title>
+  <link rel="stylesheet" href="/crucix/css/styles.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo">CRUCIX <span>▸</span> РАЗДЕЛЁННЫЙ</div>
+    <div class="nav-buttons">
+      <a href="/jarvis" class="nav-btn red">🔴 HIGH ALERT</a>
+      <a href="/rss-feed" class="nav-btn orange">📡 RSS 30</a>
+      <a href="/ai-chat" class="nav-btn green">🧠 AI Чат</a>
+      <a href="/geo-map" class="nav-btn blue">📡 КАРТА</a>
+      <a href="/basket" class="nav-btn purple">📦 КОРЗИНА</a>
+      <span class="dot" style="width:6px;height:6px;border-radius:50%;background:#4caf50;display:inline-block;margin-left:6px;"></span>
+      <span style="font-size:9px;color:#444;">LIVE</span>
+    </div>
+    <div class="info">
+      <span>SOURCES 28/29</span>
+      <span>SWEEP 30.1s</span>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- LEFT -->
+    <div class="left-panel">
+      <div class="panel">
+        <div class="title">Sensor Grid</div>
+        <div class="value" id="sdrCount">—</div>
+        <div class="row"><span class="label">SDR Coverage</span><span class="val" id="sdrStatus">—</span></div>
+        <div class="row"><span class="label">Air Activity</span><span class="val" id="airActivity">—</span></div>
+        <div class="row"><span class="label">Thermal Spikes</span><span class="val yellow" id="thermalSpikes">—</span></div>
+        <div class="row"><span class="label">Maritime Watch</span><span class="val" id="maritimeWatch">—</span></div>
+        <div class="row"><span class="label">Nuclear Sites</span><span class="val" id="nuclearSites">—</span></div>
+        <div class="row"><span class="label">Conflict Events</span><span class="val red" id="conflictEvents">—</span></div>
+        <div class="row"><span class="label">Health Watch</span><span class="val" id="healthWatch">—</span></div>
+      </div>
+      <div class="panel">
+        <div class="title">World News</div>
+        <div class="value" id="newsCount">—</div>
+        <div class="row"><span class="label">RSS geolocated</span><span class="val" id="newsStatus">—</span></div>
+      </div>
+      <div class="panel">
+        <div class="title">OSINT Feed</div>
+        <div class="value" id="osintUrgent">—</div>
+        <div class="row"><span class="label">urgent</span><span class="val" id="osintTotal">—</span></div>
+      </div>
+    </div>
+
+    <!-- CENTER -->
+    <div class="center-panel">
+      <div class="icon">📦</div>
+      <div style="font-size:16px;color:#555;">Единая корзина данных</div>
+      <div style="font-size:13px;color:#444;" id="basketTotal">— новостей</div>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <a href="/basket" style="padding:6px 16px;background:#2196f3;border:none;border-radius:4px;color:#fff;text-decoration:none;font-size:12px;cursor:pointer;">📦 Открыть корзину</a>
+        <button onclick="clearBasket()" style="padding:6px 16px;background:#f44336;border:none;border-radius:4px;color:#fff;font-size:12px;cursor:pointer;">🧹 Очистить</button>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="right-panel">
+      <div class="panel">
+        <div class="title">Risk Gauges</div>
+        <div class="row"><span class="label">VIX (Fear)</span><span class="val yellow" id="vix">—</span></div>
+        <div class="row"><span class="label">HY Spread</span><span class="val yellow" id="hySpread">—</span></div>
+        <div class="row"><span class="label">USD Index</span><span class="val" id="usdIndex">—</span></div>
+        <div class="row"><span class="label">Jobless Claims</span><span class="val" id="joblessClaims">—</span></div>
+        <div class="row"><span class="label">30Y Mortgage</span><span class="val yellow" id="mortgage">—</span></div>
+        <div class="row"><span class="label">M2 Supply</span><span class="val" id="m2Supply">—</span></div>
+        <div class="row"><span class="label">Nat. Debt</span><span class="val red" id="natDebt">—</span></div>
+      </div>
+      <div class="panel">
+        <div class="title">Space Watch</div>
+        <div class="row"><span class="label">New Objects (30d)</span><span class="val" id="newObjects">—</span></div>
+        <div class="row"><span class="label">Military Sats</span><span class="val" id="militarySats">—</span></div>
+        <div class="row"><span class="label">Starlink</span><span class="val" id="starlink">—</span></div>
+        <div class="row"><span class="label">OneWeb</span><span class="val" id="oneweb">—</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="/crucix/js/app.js"></script>
+</body>
+</html>

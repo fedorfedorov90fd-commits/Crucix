@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Радиомониторинг — KiwiSDR</title>
+    <link rel="stylesheet" href="/css/kiwisdr.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <!-- ============================================================
+         ВЕРХНЯЯ ПАНЕЛЬ (TOP BAR)
+         ============================================================ -->
+    <header class="topbar">
+        <div class="topbar-left">
+            <span class="topbar-brand">⚡ CRUCIX MONITOR</span>
+            <span class="topbar-status">МОДУЛЬ KIIWISDR</span>
+        </div>
+        <div class="topbar-right">
+            <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+            <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ</button>
+            <button class="topbar-btn btn-grid" id="grid-toggle" title="Ctrl+Shift+G">📐 СЕТКА</button>
+            <div class="lang-switch">
+                <button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
+                <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ============================================================
+         ОСНОВНОЙ КОНТЕНТ
+         ============================================================ -->
+    <main class="main-content">
+        <h1 class="page-title">📻 Радиомониторинг (KiwiSDR)</h1>
+
+        <!-- Статистика -->
+        <div class="stats-grid" id="stats-grid">
+            <div class="stat-card">
+                <span class="stat-label">Всего приёмников</span>
+                <span class="stat-value blue" id="stat-total">—</span>
+                <span class="stat-sub">по всему миру</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Онлайн</span>
+                <span class="stat-value green" id="stat-online">—</span>
+                <span class="stat-sub">доступны</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Офлайн</span>
+                <span class="stat-value red" id="stat-offline">—</span>
+                <span class="stat-sub">недоступны</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Регионов</span>
+                <span class="stat-value yellow" id="stat-regions">—</span>
+                <span class="stat-sub">с покрытием</span>
+            </div>
+        </div>
+
+        <!-- Карта -->
+        <div class="map-container">
+            <div id="sdr-map"></div>
+            <div class="map-legend">
+                <div class="legend-item"><span class="dot" style="background:#22c55e;"></span> Онлайн</div>
+                <div class="legend-item"><span class="dot" style="background:#ef4444;"></span> Офлайн</div>
+            </div>
+        </div>
+
+        <!-- Список приёмников -->
+        <div class="receivers-grid" id="receivers-grid"></div>
+
+        <!-- Экспорт -->
+        <div class="export-panel">
+            <button class="btn-export" id="export-json">📥 JSON</button>
+            <button class="btn-export" id="export-csv">📥 CSV</button>
+            <span style="color:#444;font-size:11px;margin-left:auto;">v2.1.1</span>
+        </div>
+    </main>
+
+    <!-- ============================================================
+         КООРДИНАТНАЯ СЕТКА
+         ============================================================ -->
+    <div id="coordinate-grid"></div>
+    <div id="grid-coords">X: 0  Y: 0</div>
+
+    <script src="/js/kiwisdr.js"></script>
+</body>
+</html>

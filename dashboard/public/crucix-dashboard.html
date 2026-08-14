@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRUCIX — Новый дашборд</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a1a;
+      color: #e0e0e0;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      padding: 10px;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      gap: 8px;
+    }
+
+    /* ===== HEADER ===== */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 14px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.04);
+      height: 40px;
+      flex-shrink: 0;
+    }
+    .header .logo { font-size: 14px; font-weight: 700; color: #fff; }
+    .header .logo span { color: #2196f3; }
+    .header .info { font-size: 10px; color: #555; display: flex; gap: 12px; align-items: center; }
+    .header .info .dot { width: 6px; height: 6px; border-radius: 50%; background: #4caf50; display: inline-block; }
+
+    /* ===== КНОПКИ ===== */
+    .nav-buttons {
+      display: flex;
+      gap: 3px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 9px !important;
+      font-weight: 500;
+      padding: 2px 7px;
+      border-radius: 3px;
+      text-decoration: none;
+      font-family: inherit;
+      border: none;
+      height: 18px;
+      cursor: pointer;
+      background: rgba(255,255,255,0.05);
+      color: #ccc;
+      transition: 0.15s;
+    }
+    .nav-btn:hover { opacity: 0.8; }
+    .nav-btn.red { background: #f44336; color: #fff; }
+    .nav-btn.orange { background: #f26522; color: #fff; }
+    .nav-btn.green { background: #64f0c8; color: #0a0a1a; }
+    .nav-btn.blue { background: #44ccff; color: #0a0a1a; }
+    .nav-btn.purple { background: #2196f3; color: #fff; }
+
+    /* ===== ОСНОВНАЯ ЧАСТЬ ===== */
+    .main {
+      display: flex;
+      flex: 1;
+      gap: 8px;
+      min-height: 0;
+    }
+
+    /* ===== ПАНЕЛИ ===== */
+    .panel {
+      background: rgba(255,255,255,0.02);
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.04);
+      padding: 10px 12px;
+      overflow-y: auto;
+    }
+    .panel .title { font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; color: #555; margin-bottom: 6px; }
+    .panel .value { font-size: 18px; font-weight: 600; color: #fff; }
+    .panel .value .unit { font-size: 10px; font-weight: 400; color: #666; }
+    .panel .row { display: flex; justify-content: space-between; padding: 2px 0; font-size: 11px; border-bottom: 1px solid rgba(255,255,255,0.02); }
+    .panel .row .label { color: #666; }
+    .panel .row .val { color: #ccc; }
+    .panel .row .val.green { color: #4caf50; }
+    .panel .row .val.red { color: #f44336; }
+    .panel .row .val.yellow { color: #ffeb3b; }
+
+    .left-panel { width: 220px; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; }
+    .center-panel { flex: 1; display: flex; align-items: center; justify-content: center; color: #333; font-size: 14px; flex-direction: column; gap: 12px; }
+    .center-panel .icon { font-size: 48px; opacity: 0.3; }
+    .right-panel { width: 240px; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; }
+
+    /* ===== СКРОЛЛ ===== */
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+    /* ===== АДАПТИВ ===== */
+    @media (max-width: 768px) {
+      .left-panel, .right-panel { display: none; }
+      .header { flex-wrap: wrap; height: auto; gap: 4px; padding: 6px 10px; }
+      .nav-btn { font-size: 8px !important; padding: 1px 5px; height: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo">CRUCIX <span>▸</span> НОВЫЙ ДАШБОРД</div>
+    <div class="nav-buttons">
+      <a href="/jarvis" class="nav-btn red">🔴 HIGH ALERT</a>
+      <a href="/rss-feed" class="nav-btn orange">📡 RSS 30</a>
+      <a href="/ai-chat" class="nav-btn green">🧠 AI Чат</a>
+      <a href="/geo-map" class="nav-btn blue">📡 КАРТА</a>
+      <a href="/basket" class="nav-btn purple">📦 КОРЗИНА</a>
+      <span class="dot" style="width:6px;height:6px;border-radius:50%;background:#4caf50;display:inline-block;margin-left:6px;"></span>
+      <span style="font-size:9px;color:#444;">LIVE</span>
+    </div>
+    <div class="info">
+      <span>SOURCES 28/29</span>
+      <span>SWEEP 30.1s</span>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- LEFT -->
+    <div class="left-panel">
+      <div class="panel">
+        <div class="title">Sensor Grid</div>
+        <div class="value" id="sdrCount">—</div>
+        <div class="row"><span class="label">SDR Coverage</span><span class="val" id="sdrStatus">—</span></div>
+        <div class="row"><span class="label">Air Activity</span><span class="val" id="airActivity">—</span></div>
+        <div class="row"><span class="label">Thermal Spikes</span><span class="val yellow" id="thermalSpikes">—</span></div>
+        <div class="row"><span class="label">Maritime Watch</span><span class="val" id="maritimeWatch">—</span></div>
+        <div class="row"><span class="label">Nuclear Sites</span><span class="val" id="nuclearSites">—</span></div>
+        <div class="row"><span class="label">Conflict Events</span><span class="val red" id="conflictEvents">—</span></div>
+        <div class="row"><span class="label">Health Watch</span><span class="val" id="healthWatch">—</span></div>
+      </div>
+      <div class="panel">
+        <div class="title">World News</div>
+        <div class="value" id="newsCount">—</div>
+        <div class="row"><span class="label">RSS geolocated</span><span class="val" id="newsStatus">—</span></div>
+      </div>
+      <div class="panel">
+        <div class="title">OSINT Feed</div>
+        <div class="value" id="osintUrgent">—</div>
+        <div class="row"><span class="label">urgent</span><span class="val" id="osintTotal">—</span></div>
+      </div>
+    </div>
+
+    <!-- CENTER -->
+    <div class="center-panel">
+      <div class="icon">📦</div>
+      <div style="font-size:16px;color:#555;">Единая корзина данных</div>
+      <div style="font-size:13px;color:#444;" id="basketTotal">— новостей</div>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <a href="/basket" style="padding:6px 16px;background:#2196f3;border:none;border-radius:4px;color:#fff;text-decoration:none;font-size:12px;cursor:pointer;">📦 Открыть корзину</a>
+        <button onclick="clearBasket()" style="padding:6px 16px;background:#f44336;border:none;border-radius:4px;color:#fff;font-size:12px;cursor:pointer;">🧹 Очистить</button>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="right-panel">
+      <div class="panel">
+        <div class="title">Risk Gauges</div>
+        <div class="row"><span class="label">VIX (Fear)</span><span class="val yellow" id="vix">—</span></div>
+        <div class="row"><span class="label">HY Spread</span><span class="val yellow" id="hySpread">—</span></div>
+        <div class="row"><span class="label">USD Index</span><span class="val" id="usdIndex">—</span></div>
+        <div class="row"><span class="label">Jobless Claims</span><span class="val" id="joblessClaims">—</span></div>
+        <div class="row"><span class="label">30Y Mortgage</span><span class="val yellow" id="mortgage">—</span></div>
+        <div class="row"><span class="label">M2 Supply</span><span class="val" id="m2Supply">—</span></div>
+        <div class="row"><span class="label">Nat. Debt</span><span class="val red" id="natDebt">—</span></div>
+      </div>
+      <div class="panel">
+        <div class="title">Space Watch</div>
+        <div class="row"><span class="label">New Objects (30d)</span><span class="val" id="newObjects">—</span></div>
+        <div class="row"><span class="label">Military Sats</span><span class="val" id="militarySats">—</span></div>
+        <div class="row"><span class="label">Starlink</span><span class="val" id="starlink">—</span></div>
+        <div class="row"><span class="label">OneWeb</span><span class="val" id="oneweb">—</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ============================================================
+// ЗАГРУЗКА ДАННЫХ
+// ============================================================
+async function loadData() {
+  try {
+    const res = await fetch('/api/data');
+    const data = await res.json();
+
+    // Левая панель
+    document.getElementById('sdrCount').textContent = data.sdr?.count || '—';
+    document.getElementById('sdrStatus').textContent = data.sdr?.status || '—';
+    document.getElementById('airActivity').textContent = data.air?.theaters || '—';
+    document.getElementById('thermalSpikes').textContent = data.thermal?.detections || '—';
+    document.getElementById('maritimeWatch').textContent = data.maritime?.chokepoints || '—';
+    document.getElementById('nuclearSites').textContent = data.nuclear?.monitors || '—';
+    document.getElementById('conflictEvents').textContent = data.acled?.totalEvents || '—';
+    document.getElementById('healthWatch').textContent = data.health?.alerts || '—';
+    document.getElementById('newsCount').textContent = data.news?.length || '—';
+    document.getElementById('newsStatus').textContent = data.news?.geolocated || '—';
+    document.getElementById('osintUrgent').textContent = data.osint?.urgent || '—';
+    document.getElementById('osintTotal').textContent = data.osint?.total || '—';
+
+    // Центр
+    document.getElementById('basketTotal').textContent = data.basket?.total || '0';
+
+    // Правая панель
+    document.getElementById('vix').textContent = data.risk?.vix || '—';
+    document.getElementById('hySpread').textContent = data.risk?.hySpread || '—';
+    document.getElementById('usdIndex').textContent = data.risk?.usdIndex || '—';
+    document.getElementById('joblessClaims').textContent = data.risk?.joblessClaims || '—';
+    document.getElementById('mortgage').textContent = data.risk?.mortgage || '—';
+    document.getElementById('m2Supply').textContent = data.risk?.m2Supply || '—';
+    document.getElementById('natDebt').textContent = data.risk?.natDebt || '—';
+    document.getElementById('newObjects').textContent = data.space?.newObjects || '—';
+    document.getElementById('militarySats').textContent = data.space?.militarySats || '—';
+    document.getElementById('starlink').textContent = data.space?.starlink || '—';
+    document.getElementById('oneweb').textContent = data.space?.oneweb || '—';
+  } catch (e) {
+    console.error('Ошибка загрузки:', e);
+  }
+}
+
+function clearBasket() {
+  if (!confirm('Удалить все новости из корзины?')) return;
+  fetch('/api/basket/clean', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ days: 0 })
+  }).then(() => {
+    alert('✅ Корзина очищена');
+    loadData();
+  }).catch(() => alert('❌ Ошибка'));
+}
+
+// Автообновление
+loadData();
+setInterval(loadData, 30000);
+
+console.log('🔴 CRUCIX НОВЫЙ ДАШБОРД v2.1');
+console.log('Кнопки: HIGH ALERT | RSS 30 | AI Чат | КАРТА | КОРЗИНА');
+</script>
+</body>
+</html>

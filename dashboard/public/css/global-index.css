@@ -1,0 +1,287 @@
+/* Глобальный индекс напряжённости — Crucix */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+  background: #0a0a1a;
+  color: #e0e0e0;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.index-container {
+  max-width: 900px;
+  margin: 0 auto;
+  background: rgba(20, 20, 40, 0.9);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 30px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+/* Шапка */
+.index-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 30px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.index-header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.index-meta {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 13px;
+  color: #888;
+}
+
+.btn-refresh, .btn-back {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.btn-refresh {
+  background: #2196f3;
+  color: #fff;
+}
+
+.btn-refresh:hover {
+  background: #1976d2;
+}
+
+.btn-back {
+  background: rgba(255, 255, 255, 0.08);
+  color: #aaa;
+  text-decoration: none;
+}
+
+.btn-back:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+/* Основной показатель */
+.index-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  padding: 20px 0 30px;
+}
+
+.index-number {
+  text-align: center;
+}
+
+.index-number .number {
+  font-size: 80px;
+  font-weight: 800;
+  letter-spacing: -2px;
+  transition: color 0.3s;
+}
+
+.index-number .label {
+  display: block;
+  font-size: 14px;
+  color: #666;
+  letter-spacing: 2px;
+  margin-top: 4px;
+}
+
+.index-level {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.level-badge {
+  padding: 8px 24px;
+  border-radius: 20px;
+  font-size: 18px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.level-badge.critical {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border: 1px solid #ef4444;
+}
+
+.level-badge.high {
+  background: rgba(249, 115, 22, 0.2);
+  color: #f97316;
+  border: 1px solid #f97316;
+}
+
+.level-badge.medium {
+  background: rgba(234, 179, 8, 0.2);
+  color: #eab308;
+  border: 1px solid #eab308;
+}
+
+.level-badge.normal {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+  border: 1px solid #22c55e;
+}
+
+.trend {
+  font-size: 14px;
+  color: #888;
+}
+
+.trend.up { color: #ef4444; }
+.trend.down { color: #22c55e; }
+.trend.stable { color: #eab308; }
+
+/* График */
+.index-chart-container {
+  margin: 20px 0 30px;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+}
+
+.index-chart-container h3 {
+  font-size: 14px;
+  color: #888;
+  margin-bottom: 12px;
+  font-weight: 400;
+}
+
+#index-chart {
+  max-height: 200px;
+}
+
+/* Компоненты */
+.index-components {
+  margin: 20px 0 30px;
+}
+
+.index-components h3 {
+  font-size: 14px;
+  color: #888;
+  margin-bottom: 12px;
+  font-weight: 400;
+}
+
+.components-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.component-item {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.component-icon {
+  font-size: 18px;
+}
+
+.component-name {
+  font-size: 13px;
+  color: #aaa;
+}
+
+.component-value {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.component-bar {
+  grid-column: 1 / -1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.component-bar .bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+.bar-fill.news { background: #2196f3; }
+.bar-fill.thermal { background: #f44336; }
+.bar-fill.aviation { background: #4caf50; }
+.bar-fill.geo { background: #9c27b0; }
+.bar-fill.economy { background: #ff9800; }
+
+/* Интерпретация */
+.index-interpretation {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  padding: 16px 20px;
+}
+
+.index-interpretation h3 {
+  font-size: 14px;
+  color: #888;
+  margin-bottom: 8px;
+  font-weight: 400;
+}
+
+.index-interpretation p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #ccc;
+}
+
+/* Адаптивность */
+@media (max-width: 600px) {
+  .index-container {
+    padding: 16px;
+  }
+  
+  .index-main {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .index-number .number {
+    font-size: 56px;
+  }
+  
+  .components-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .index-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .index-meta {
+    flex-wrap: wrap;
+  }
+}

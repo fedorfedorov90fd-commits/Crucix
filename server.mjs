@@ -77,6 +77,9 @@ import { handleNewsAPIBasket } from './apis/sources/newsapi-basket-integration.m
 // Спутниковый мониторинг (Модуль №9)
 import { handleSatelliteAPI } from './apis/sources/satellite-api.mjs';
 
+// Военная авиация (Модуль №10)
+import { handleAviationAPI } from './apis/sources/aviation-api.mjs';
+
 // ============================================================
 // 2. MIME-ТИПЫ
 // ============================================================
@@ -107,9 +110,6 @@ const MIME_TYPES = {
 // 3. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 // ============================================================
 
-/**
- * Отправить HTML-страницу
- */
 async function sendHTML(res, filePath, statusCode = 200) {
     try {
         const fullPath = join(PUBLIC_DIR, filePath);
@@ -133,9 +133,6 @@ async function sendHTML(res, filePath, statusCode = 200) {
     }
 }
 
-/**
- * Отправить статический файл
- */
 async function sendStaticFile(res, filePath) {
     try {
         const fullPath = join(PUBLIC_DIR, filePath);
@@ -151,9 +148,6 @@ async function sendStaticFile(res, filePath) {
     }
 }
 
-/**
- * Логирование запросов
- */
 function logRequest(req, pathname) {
     const timestamp = new Date().toISOString();
     console.log(`[${timestamp}] ${req.method} ${pathname}`);
@@ -168,12 +162,9 @@ const server = createServer(async (req, res) => {
     const pathname = url.pathname;
     const method = req.method || 'GET';
 
-    // Логируем запрос
     logRequest(req, pathname);
 
-    // ============================================================
-    // 4.1. CORS (для всех ответов)
-    // ============================================================
+    // CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -300,6 +291,12 @@ const server = createServer(async (req, res) => {
         return;
     }
 
+    // --- Военная авиация (Модуль №10) ---
+    if (pathname.startsWith('/api/aviation/')) {
+        await handleAviationAPI(req, res);
+        return;
+    }
+
     // ============================================================
     // 4.3. МАРШРУТЫ СТРАНИЦ
     // ============================================================
@@ -376,6 +373,12 @@ const server = createServer(async (req, res) => {
         return;
     }
 
+    // --- Военная авиация (Модуль №10) ---
+    if (pathname === '/aviation' || pathname === '/aviation.html') {
+        await sendHTML(res, 'aviation.html');
+        return;
+    }
+
     // ============================================================
     // 4.4. СТАТИЧЕСКИЕ ФАЙЛЫ
     // ============================================================
@@ -392,7 +395,7 @@ const server = createServer(async (req, res) => {
     }
 
     // ============================================================
-    // 4.5. 404 — НЕ НАЙДЕНО
+    // 4.5. 404
     // ============================================================
 
     res.writeHead(404, { 'Content-Type': 'text/html' });
@@ -436,7 +439,8 @@ server.listen(PORT, '0.0.0.0', () => {
     console.log('║   ├─ /historical-analysis — Исторический анализ (Модуль №6)            ║');
     console.log('║   ├─ /correlation         — Кросс-корреляция (Модуль №7)               ║');
     console.log('║   ├─ /infrastructure      — Критическая инфраструктура (Модуль №8)     ║');
-    console.log('║   └─ /satellite           — Спутниковый мониторинг (Модуль №9)         ║');
+    console.log('║   ├─ /satellite           — Спутниковый мониторинг (Модуль №9)         ║');
+    console.log('║   └─ /aviation            — Военная авиация (Модуль №10)               ║');
     console.log('║                                                                          ║');
     console.log('║   📡  API-ЭНДПОИНТЫ:                                                     ║');
     console.log('║   ├─ /api/rss/*            — RSS управление                             ║');
@@ -453,6 +457,7 @@ server.listen(PORT, '0.0.0.0', () => {
     console.log('║   │   ├─ /api/infrastructure/ofac/*   — Санкции (OFAC)                 ║');
     console.log('║   │   └─ /api/infrastructure/ships/*  — Порты (Ships)                  ║');
     console.log('║   ├─ /api/satellite/*      — Спутниковый мониторинг (Модуль №9)         ║');
+    console.log('║   ├─ /api/aviation/*       — Военная авиация (Модуль №10)               ║');
     console.log('║   └─ /api/newsapi/*        — NewsAPI                                    ║');
     console.log('║                                                                          ║');
     console.log('║   ✅  Сервер запущен и готов к работе!                                  ║');
@@ -473,10 +478,6 @@ process.on('unhandledRejection', (reason) => {
     console.error('[Server] Необработанный reject:', reason);
 });
 
-// ============================================================
-// 7. ОБРАБОТКА ЗАВЕРШЕНИЯ
-// ============================================================
-
 process.on('SIGINT', () => {
     console.log('\n🛑 Сервер остановлен (Ctrl+C)');
     process.exit(0);
@@ -486,9 +487,5 @@ process.on('SIGTERM', () => {
     console.log('\n🛑 Сервер остановлен (SIGTERM)');
     process.exit(0);
 });
-
-// ============================================================
-// 8. ЭКСПОРТ (для тестов)
-// ============================================================
 
 export default server;

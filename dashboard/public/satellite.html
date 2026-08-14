@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Спутниковый мониторинг — Crucix</title>
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  
+  <style>
+    /* ============================================================
+       ГЛОБАЛЬНЫЕ СТИЛИ (СКОПИРОВАНЫ С JARVIS)
+       ============================================================ */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      background: #0a0a0f;
+      color: #c8d0d8;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    /* ============================================================
+       ВЕРХНЯЯ ПАНЕЛЬ (ТОЧНАЯ КОПИЯ JARVIS)
+       ============================================================ */
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: rgba(10, 10, 20, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+    }
+    
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .topbar-brand {
+      font-size: 14px;
+      font-weight: 700;
+      color: #5bc0f8;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-shadow: 0 0 20px rgba(91, 192, 248, 0.15);
+    }
+    
+    .topbar-status {
+      font-size: 11px;
+      color: #ffd700;
+      text-shadow: 0 0 15px rgba(255, 215, 0, 0.1);
+    }
+    
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .topbar-btn {
+      height: 28px;
+      padding: 0 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.03);
+      color: #888;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .topbar-btn:hover {
+      background: rgba(255, 255, 255, 0.06);
+      transform: translateY(-1px);
+    }
+    
+    /* Кнопка "← НА ГЛАВНУЮ" */
+    .btn-home {
+      color: #5bc0f8;
+      border-color: rgba(91, 192, 248, 0.2);
+      background: rgba(91, 192, 248, 0.06);
+    }
+    .btn-home:hover {
+      background: rgba(91, 192, 248, 0.15);
+    }
+    
+    /* Кнопка "📋 КОПИРОВАТЬ" */
+    .btn-copy {
+      color: #5bc0f8;
+      border-color: rgba(91, 192, 248, 0.15);
+      background: rgba(91, 192, 248, 0.06);
+    }
+    .btn-copy:hover {
+      background: rgba(91, 192, 248, 0.15);
+    }
+    
+    /* Кнопка "📐 СЕТКА" */
+    .btn-grid {
+      color: #9c27b0;
+      border-color: rgba(156, 39, 176, 0.15);
+      background: rgba(156, 39, 176, 0.06);
+    }
+    .btn-grid:hover {
+      background: rgba(156, 39, 176, 0.15);
+    }
+    .btn-grid.active {
+      background: rgba(156, 39, 176, 0.2);
+      border-color: rgba(156, 39, 176, 0.3);
+    }
+    
+    /* Переключатель языка */
+    .lang-switch {
+      display: flex;
+      gap: 2px;
+      padding: 2px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    
+    .lang-btn {
+      padding: 2px 8px;
+      border: none;
+      background: transparent;
+      color: #666;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 3px;
+      transition: all 0.2s;
+    }
+    
+    .lang-btn:hover {
+      color: #888;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .lang-btn.active {
+      color: #5bc0f8;
+      background: rgba(91, 192, 248, 0.1);
+    }
+    
+    /* Время и статусы */
+    .topbar-time {
+      font-size: 11px;
+      color: #666;
+      font-variant-numeric: tabular-nums;
+    }
+    
+    .topbar-sources {
+      font-size: 11px;
+      color: #4caf50;
+    }
+    
+    /* ============================================================
+       ОСНОВНОЙ КОНТЕНТ
+       ============================================================ */
+    .main-content {
+      padding-top: 76px;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding-left: 20px;
+      padding-right: 20px;
+      padding-bottom: 40px;
+    }
+    
+    .page-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #e8f0f8;
+      letter-spacing: -0.5px;
+      margin-bottom: 20px;
+      text-shadow: 0 0 30px rgba(91, 192, 248, 0.05);
+    }
+    
+    /* ============================================================
+       ПАНЕЛЬ УПРАВЛЕНИЯ
+       ============================================================ */
+    .controls-panel {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      padding: 16px;
+      background: rgba(10, 10, 20, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .control-group label {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      color: #666;
+      letter-spacing: 0.5px;
+    }
+    
+    .control-group select,
+    .control-group input {
+      padding: 4px 8px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.03);
+      color: #c8d0d8;
+      font-size: 12px;
+      font-family: monospace;
+    }
+    
+    .control-group select:focus,
+    .control-group input:focus {
+      outline: none;
+      border-color: #5bc0f8;
+    }
+    
+    .btn {
+      height: 28px;
+      padding: 0 14px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.03);
+      color: #c8d0d8;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.06);
+      transform: translateY(-1px);
+    }
+    
+    .btn-primary {
+      background: #5bc0f8;
+      color: #0a0a0f;
+      border-color: #5bc0f8;
+    }
+    .btn-primary:hover {
+      background: #4a8af4;
+    }
+    
+    .btn-success {
+      background: #4caf50;
+      color: #0a0a0f;
+      border-color: #4caf50;
+    }
+    .btn-success:hover {
+      background: #388e3c;
+    }
+    
+    /* ============================================================
+       СТАТИСТИКА
+       ============================================================ */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .stat-card {
+      background: rgba(10, 10, 20, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 8px;
+      padding: 12px 16px;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    
+    .stat-card:hover {
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+    
+    .stat-label {
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      color: #666;
+      letter-spacing: 0.5px;
+      display: block;
+    }
+    
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #e8f0f8;
+      display: block;
+      margin: 4px 0;
+    }
+    
+    .stat-value.green { color: #4caf50; }
+    .stat-value.red { color: #f44336; }
+    .stat-value.orange { color: #f26522; }
+    .stat-value.yellow { color: #ffd700; }
+    .stat-value.blue { color: #5bc0f8; }
+    
+    .stat-sub {
+      font-size: 11px;
+      color: #666;
+      display: block;
+    }
+    
+    /* ============================================================
+       КАРТА
+       ============================================================ */
+    .map-container {
+      background: rgba(10, 10, 20, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 8px;
+      padding: 4px;
+      height: 400px;
+      margin-bottom: 16px;
+      position: relative;
+    }
+    
+    #satellite-map {
+      width: 100%;
+      height: 100%;
+      border-radius: 4px;
+      background: #0a0a0f;
+    }
+    
+    /* ============================================================
+       ГАЛЕРЕЯ СНИМКОВ
+       ============================================================ */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .gallery-item {
+      background: rgba(10, 10, 20, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 8px;
+      overflow: hidden;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+    
+    .gallery-item:hover {
+      border-color: rgba(255, 255, 255, 0.12);
+      transform: translateY(-2px);
+    }
+    
+    .gallery-item .thumb {
+      width: 100%;
+      height: 120px;
+      background: rgba(255, 255, 255, 0.03);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      color: #444;
+    }
+    
+    .gallery-item .info {
+      padding: 8px 12px;
+    }
+    
+    .gallery-item .info .name {
+      font-size: 12px;
+      color: #e8f0f8;
+      font-weight: 500;
+    }
+    
+    .gallery-item .info .meta {
+      font-size: 10px;
+      color: #666;
+      margin-top: 2px;
+    }
+    
+    .gallery-item .info .badge {
+      display: inline-block;
+      padding: 1px 8px;
+      border-radius: 10px;
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+    
+    .badge-optical { background: rgba(91, 192, 248, 0.2); color: #5bc0f8; }
+    .badge-radar { background: rgba(255, 215, 0, 0.2); color: #ffd700; }
+    
+    /* ============================================================
+       ПАНЕЛЬ ДЕТАЛЕЙ СНИМКА
+       ============================================================ */
+    .detail-panel {
+      display: none;
+      background: rgba(10, 10, 20, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+      backdrop-filter: blur(8px);
+    }
+    
+    .detail-panel.visible {
+      display: block;
+    }
+    
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    
+    .detail-header h2 {
+      font-size: 18px;
+      color: #e8f0f8;
+    }
+    
+    .detail-close {
+      background: none;
+      border: none;
+      color: #666;
+      font-size: 20px;
+      cursor: pointer;
+    }
+    .detail-close:hover {
+      color: #e8f0f8;
+    }
+    
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    
+    .detail-item {
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 4px;
+    }
+    
+    .detail-item .label {
+      font-size: 10px;
+      text-transform: uppercase;
+      color: #666;
+      letter-spacing: 0.5px;
+      display: block;
+    }
+    
+    .detail-item .value {
+      font-size: 14px;
+      color: #c8d0d8;
+      margin-top: 2px;
+    }
+    
+    /* ============================================================
+       ОРБИТАЛЬНЫЕ ГРУППИРОВКИ
+       ============================================================ */
+    .orbits-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .orbit-card {
+      background: rgba(10, 10, 20, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 8px;
+      padding: 12px 16px;
+      text-align: center;
+    }
+    
+    .orbit-card .name {
+      font-size: 12px;
+      color: #888;
+    }
+    
+    .orbit-card .count {
+      font-size: 22px;
+      font-weight: 700;
+      color: #e8f0f8;
+      display: block;
+    }
+    
+    .orbit-card .type {
+      font-size: 10px;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    /* ============================================================
+       ИЗМЕНЕНИЯ
+       ============================================================ */
+    .changes-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    
+    .change-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      background: rgba(10, 10, 20, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 6px;
+      border-left: 3px solid #ffd700;
+    }
+    
+    .change-item .icon {
+      font-size: 20px;
+    }
+    
+    .change-item .info {
+      flex: 1;
+    }
+    
+    .change-item .info .title {
+      font-size: 13px;
+      color: #e8f0f8;
+    }
+    
+    .change-item .info .desc {
+      font-size: 11px;
+      color: #888;
+    }
+    
+    .change-item .confidence {
+      font-size: 12px;
+      font-weight: 600;
+      color: #ffd700;
+    }
+    
+    /* ============================================================
+       КООРДИНАТНАЯ СЕТКА (СКРЫТА ОТ ЮЗЕРА)
+       ============================================================ */
+    #coordinate-grid {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 99999;
+      background-image: 
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+      display: none;
+    }
+    
+    #coordinate-grid.visible {
+      display: block;
+    }
+    
+    #grid-coords {
+      position: fixed;
+      bottom: 12px;
+      right: 12px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #00ff00;
+      font-family: monospace;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 4px;
+      z-index: 100000;
+      pointer-events: none;
+      display: none;
+    }
+    
+    #grid-coords.visible {
+      display: block;
+    }
+    
+    /* ============================================================
+       УВЕДОМЛЕНИЯ
+       ============================================================ */
+    .notification {
+      position: fixed;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.85);
+      color: #ffffff;
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-size: 13px;
+      z-index: 100001;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      animation: notif-fade 2.5s forwards;
+    }
+    
+    @keyframes notif-fade {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+    
+    /* ============================================================
+       АДАПТИВНОСТЬ
+       ============================================================ */
+    @media (max-width: 768px) {
+      .topbar { padding: 0 12px; height: 52px; }
+      .topbar-brand { font-size: 12px; }
+      .topbar-status { display: none; }
+      .topbar-btn { font-size: 10px; padding: 0 8px; height: 24px; }
+      .topbar-time { display: none; }
+      .main-content { padding-top: 68px; padding-left: 12px; padding-right: 12px; }
+      .page-title { font-size: 18px; }
+      .controls-panel { flex-direction: column; align-items: stretch; }
+      .control-group { justify-content: space-between; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .map-container { height: 280px; }
+      .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+      .detail-grid { grid-template-columns: 1fr; }
+    }
+    
+    @media (max-width: 480px) {
+      .topbar { padding: 0 8px; height: 46px; }
+      .topbar-brand { font-size: 10px; letter-spacing: 1px; }
+      .topbar-btn { font-size: 9px; padding: 0 6px; height: 20px; }
+      .topbar-btn .btn-text { display: none; }
+      .lang-btn { font-size: 9px; padding: 1px 5px; }
+      .main-content { padding-top: 62px; padding-left: 8px; padding-right: 8px; }
+      .page-title { font-size: 16px; }
+      .stats-grid { grid-template-columns: 1fr; }
+      .map-container { height: 220px; }
+      .gallery-grid { grid-template-columns: 1fr 1fr; }
+      .stat-value { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============================================================
+       ВЕРХНЯЯ ПАНЕЛЬ (TOP BAR) — ТОЧНАЯ КОПИЯ JARVIS
+       ============================================================ -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-brand">⚡ CRUCIX MONITOR</span>
+      <span class="topbar-status">МОДУЛЬ №9</span>
+    </div>
+    <div class="topbar-right">
+      <!-- КНОПКА "← НА ГЛАВНУЮ" -->
+      <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">
+        ← НА ГЛАВНУЮ
+      </button>
+
+      <!-- КНОПКА "📋 КОПИРОВАТЬ" -->
+      <button class="topbar-btn btn-copy" id="copy-btn" title="Копировать все данные страницы">
+        📋 КОПИРОВАТЬ
+      </button>
+
+      <!-- КНОПКА "📐 СЕТКА" (скрыта от пользователя) -->
+      <button class="topbar-btn btn-grid" id="grid-toggle" title="Ctrl+Shift+G">
+        📐 СЕТКА
+      </button>
+
+      <!-- ПЕРЕКЛЮЧАТЕЛЬ ЯЗЫКА -->
+      <div class="lang-switch">
+        <button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
+        <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       ОСНОВНОЙ КОНТЕНТ
+       ============================================================ -->
+  <main class="main-content">
+
+    <h1 class="page-title" id="page-title">🛰️ Спутниковый мониторинг</h1>
+
+    <!-- ============================================================
+         ПАНЕЛЬ УПРАВЛЕНИЯ
+         ============================================================ -->
+    <div class="controls-panel" id="controls-panel">
+      <div class="control-group">
+        <label>Спутник:</label>
+        <select id="satellite-filter">
+          <option value="all">Все</option>
+          <option value="sentinel2">Sentinel-2</option>
+          <option value="sentinel1">Sentinel-1</option>
+          <option value="landsat9">Landsat 9</option>
+          <option value="modis">MODIS</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Тип:</label>
+        <select id="type-filter">
+          <option value="all">Все</option>
+          <option value="optical">Оптические</option>
+          <option value="radar">Радарные</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Дата:</label>
+        <input type="date" id="date-filter">
+      </div>
+      <button class="btn btn-primary" id="search-btn">🔍 Поиск</button>
+      <button class="btn btn-success" id="refresh-btn">🔄 Обновить</button>
+    </div>
+
+    <!-- ============================================================
+         СТАТИСТИКА
+         ============================================================ -->
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card">
+        <span class="stat-label">Всего снимков</span>
+        <span class="stat-value blue" id="stat-total">—</span>
+        <span class="stat-sub">в архиве</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Спутников</span>
+        <span class="stat-value green" id="stat-satellites">—</span>
+        <span class="stat-sub">активных</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Орбитальных</span>
+        <span class="stat-value orange" id="stat-orbits">—</span>
+        <span class="stat-sub">спутников всего</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Изменений</span>
+        <span class="stat-value yellow" id="stat-changes">—</span>
+        <span class="stat-sub">обнаружено</span>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         КАРТА
+         ============================================================ -->
+    <div class="map-container">
+      <div id="satellite-map"></div>
+    </div>
+
+    <!-- ============================================================
+         ПАНЕЛЬ ДЕТАЛЕЙ СНИМКА
+         ============================================================ -->
+    <div class="detail-panel" id="detail-panel">
+      <div class="detail-header">
+        <h2 id="detail-name">Снимок</h2>
+        <button class="detail-close" id="detail-close">✕</button>
+      </div>
+      <div class="detail-grid" id="detail-grid">
+        <div class="detail-item">
+          <span class="label">Спутник</span>
+          <span class="value" id="detail-satellite">—</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Дата</span>
+          <span class="value" id="detail-date">—</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Разрешение</span>
+          <span class="value" id="detail-resolution">—</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Облачность</span>
+          <span class="value" id="detail-cloud">—</span>
+        </div>
+        <div class="detail-item" style="grid-column: span 2;">
+          <span class="label">Координаты</span>
+          <span class="value" id="detail-coords">—</span>
+        </div>
+        <div class="detail-item" style="grid-column: span 2;">
+          <span class="label">Описание</span>
+          <span class="value" id="detail-desc">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         ГАЛЕРЕЯ СНИМКОВ
+         ============================================================ -->
+    <h3 style="color:#888;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">📸 Снимки</h3>
+    <div class="gallery-grid" id="gallery-grid">
+      <div style="grid-column:span 2;text-align:center;color:#666;padding:20px;">Загрузка снимков...</div>
+    </div>
+
+    <!-- ============================================================
+         ОРБИТАЛЬНЫЕ ГРУППИРОВКИ
+         ============================================================ -->
+    <h3 style="color:#888;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 8px;">🔄 Орбитальные группировки</h3>
+    <div class="orbits-grid" id="orbits-grid">
+      <div style="grid-column:span 2;text-align:center;color:#666;padding:10px;">Загрузка данных...</div>
+    </div>
+
+    <!-- ============================================================
+         ИЗМЕНЕНИЯ
+         ============================================================ -->
+    <h3 style="color:#888;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 8px;">📋 Обнаруженные изменения</h3>
+    <div class="changes-list" id="changes-list">
+      <div style="text-align:center;color:#666;padding:10px;">Загрузка изменений...</div>
+    </div>
+
+  </main>
+
+  <!-- ============================================================
+       КООРДИНАТНАЯ СЕТКА (СКРЫТА ОТ ЮЗЕРА)
+       ============================================================ -->
+  <div id="coordinate-grid"></div>
+  <div id="grid-coords">X: 0  Y: 0</div>
+
+  <!-- ============================================================
+       LEAFLET JS
+       ============================================================ -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- ============================================================
+       JAVASCRIPT
+       ============================================================ -->
+  <script>
+    // ============================================================
+    // 1. ПЕРЕКЛЮЧАТЕЛЬ ЯЗЫКА
+    // ============================================================
+    let currentLang = localStorage.getItem('crucix-lang') || 'ru';
+
+    function switchLang(lang) {
+      currentLang = lang;
+      localStorage.setItem('crucix-lang', lang);
+
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+      });
+
+      updateTexts(lang);
+      showNotification(`🌐 Язык: ${lang.toUpperCase()}`);
+    }
+
+    function updateTexts(lang) {
+      const texts = {
+        ru: {
+          title: '🛰️ Спутниковый мониторинг',
+          satellite: 'Спутник:',
+          type: 'Тип:',
+          date: 'Дата:',
+          search: '🔍 Поиск',
+          refresh: '🔄 Обновить',
+          total: 'Всего снимков',
+          satellites: 'Спутников',
+          orbits: 'Орбитальных',
+          changes: 'Изменений',
+          in_archive: 'в архиве',
+          active: 'активных',
+          total_sats: 'спутников всего',
+          detected: 'обнаружено'
+        },
+        en: {
+          title: '🛰️ Satellite Monitoring',
+          satellite: 'Satellite:',
+          type: 'Type:',
+          date: 'Date:',
+          search: '🔍 Search',
+          refresh: '🔄 Refresh',
+          total: 'Total Images',
+          satellites: 'Satellites',
+          orbits: 'Orbital',
+          changes: 'Changes',
+          in_archive: 'in archive',
+          active: 'active',
+          total_sats: 'total satellites',
+          detected: 'detected'
+        }
+      };
+
+      const t = texts[lang] || texts.ru;
+      document.getElementById('page-title').textContent = t.title;
+      document.querySelector('#controls-panel .control-group:nth-child(1) label').textContent = t.satellite;
+      document.querySelector('#controls-panel .control-group:nth-child(2) label').textContent = t.type;
+      document.querySelector('#controls-panel .control-group:nth-child(3) label').textContent = t.date;
+      document.getElementById('search-btn').textContent = t.search;
+      document.getElementById('refresh-btn').textContent = t.refresh;
+      document.querySelector('#stats-grid .stat-card:nth-child(1) .stat-label').textContent = t.total;
+      document.querySelector('#stats-grid .stat-card:nth-child(2) .stat-label').textContent = t.satellites;
+      document.querySelector('#stats-grid .stat-card:nth-child(3) .stat-label').textContent = t.orbits;
+      document.querySelector('#stats-grid .stat-card:nth-child(4) .stat-label').textContent = t.changes;
+      document.querySelector('#stats-grid .stat-card:nth-child(1) .stat-sub').textContent = t.in_archive;
+      document.querySelector('#stats-grid .stat-card:nth-child(2) .stat-sub').textContent = t.active;
+      document.querySelector('#stats-grid .stat-card:nth-child(3) .stat-sub').textContent = t.total_sats;
+      document.querySelector('#stats-grid .stat-card:nth-child(4) .stat-sub').textContent = t.detected;
+    }
+
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.lang === currentLang);
+    });
+    updateTexts(currentLang);
+
+    // ============================================================
+    // 2. КООРДИНАТНАЯ СЕТКА (Ctrl+Shift+G) — СКРЫТА ОТ ЮЗЕРА
+    // ============================================================
+    let gridVisible = false;
+    const gridEl = document.getElementById('coordinate-grid');
+    const coordsEl = document.getElementById('grid-coords');
+    const gridBtn = document.getElementById('grid-toggle');
+
+    document.addEventListener('keydown', function(e) {
+      if (e.ctrlKey && e.shiftKey && e.key === 'G') {
+        e.preventDefault();
+        toggleGrid();
+      }
+    });
+
+    gridBtn.addEventListener('click', toggleGrid);
+
+    function toggleGrid() {
+      gridVisible = !gridVisible;
+      gridEl.classList.toggle('visible', gridVisible);
+      coordsEl.classList.toggle('visible', gridVisible);
+      gridBtn.classList.toggle('active', gridVisible);
+
+      if (gridVisible) {
+        showNotification('⊞ Сетка включена (Ctrl+Shift+G для выключения)');
+        document.addEventListener('mousemove', updateCoords);
+      } else {
+        showNotification('⊞ Сетка выключена');
+        document.removeEventListener('mousemove', updateCoords);
+      }
+    }
+
+    function updateCoords(e) {
+      coordsEl.textContent = `X: ${e.clientX}  Y: ${e.clientY}`;
+    }
+
+    // ============================================================
+    // 3. УВЕДОМЛЕНИЯ
+    // ============================================================
+    function showNotification(msg) {
+      const el = document.createElement('div');
+      el.className = 'notification';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2500);
+    }
+
+    // ============================================================
+    // 4. ОСНОВНОЙ КЛАСС СТРАНИЦЫ
+    // ============================================================
+    class SatellitePage {
+      constructor() {
+        this.map = null;
+        this.markers = [];
+        this.images = [];
+        this.selectedImage = null;
+        this.changes = [];
+        this.orbits = {};
+        this.status = {};
+        this.init();
+      }
+
+      init() {
+        // Кнопка копирования
+        document.getElementById('copy-btn').addEventListener('click', () => this.copyData());
+
+        // Кнопка поиска
+        document.getElementById('search-btn').addEventListener('click', () => this.loadImages());
+
+        // Кнопка обновления
+        document.getElementById('refresh-btn').addEventListener('click', () => this.loadAll());
+
+        // Закрытие деталей
+        document.getElementById('detail-close').addEventListener('click', () => {
+          document.getElementById('detail-panel').classList.remove('visible');
+          this.selectedImage = null;
+        });
+
+        // Инициализация карты
+        this.initMap();
+
+        // Загрузка данных
+        this.loadAll();
+
+        // Автообновление каждые 5 минут
+        setInterval(() => this.loadAll(), 5 * 60 * 1000);
+      }
+
+      // ============================================================
+      // КАРТА
+      // ============================================================
+      initMap() {
+        this.map = L.map('satellite-map', {
+          center: [30, 20],
+          zoom: 2,
+          zoomControl: false,
+          attributionControl: false
+        });
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+          attribution: '© OpenStreetMap, © CartoDB'
+        }).addTo(this.map);
+
+        L.control.zoom({ position: 'topright' }).addTo(this.map);
+
+        this.map.on('click', () => {
+          document.getElementById('detail-panel').classList.remove('visible');
+          this.selectedImage = null;
+        });
+      }
+
+      // ============================================================
+      // ЗАГРУЗКА ВСЕХ ДАННЫХ
+      // ============================================================
+      async loadAll() {
+        await this.loadStatus();
+        await this.loadImages();
+        await this.loadOrbits();
+        await this.loadChanges();
+        this.renderMarkers();
+        this.renderStats();
+      }
+
+      // ============================================================
+      // СТАТУС СПУТНИКОВ
+      // ============================================================
+      async loadStatus() {
+        try {
+          const response = await fetch('/api/satellite/status');
+          const data = await response.json();
+
+          if (data.success) {
+            this.status = data;
+          }
+        } catch (e) {
+          console.error('[Satellite] Ошибка загрузки статуса:', e);
+        }
+      }
+
+      // ============================================================
+      // СНИМКИ
+      // ============================================================
+      async loadImages() {
+        try {
+          const satellite = document.getElementById('satellite-filter').value;
+          const type = document.getElementById('type-filter').value;
+          const date = document.getElementById('date-filter').value;
+
+          let url = '/api/satellite/search';
+          const params = [];
+          if (satellite !== 'all') params.push(`satellite=${satellite}`);
+          if (date) params.push(`date=${date}`);
+          if (params.length > 0) url += '?' + params.join('&');
+
+          const response = await fetch(url);
+          const data = await response.json();
+
+          if (data.success) {
+            let images = data.images || [];
+
+            // Фильтр по типу
+            if (type !== 'all') {
+              const satTypes = {
+                'optical': ['sentinel2', 'landsat9', 'modis'],
+                'radar': ['sentinel1']
+              };
+              images = images.filter(img => satTypes[type]?.includes(img.satellite));
+            }
+
+            this.images = images;
+            this.renderGallery(images);
+            this.renderMarkers();
+            this.renderStats();
+          }
+        } catch (e) {
+          console.error('[Satellite] Ошибка загрузки снимков:', e);
+        }
+      }
+
+      // ============================================================
+      // ГАЛЕРЕЯ
+      // ============================================================
+      renderGallery(images) {
+        const container = document.getElementById('gallery-grid');
+
+        if (!images || images.length === 0) {
+          container.innerHTML = '<div style="grid-column:span 2;text-align:center;color:#666;padding:20px;">Снимков не найдено</div>';
+          return;
+        }
+
+        const satNames = {
+          sentinel2: 'Sentinel-2',
+          sentinel1: 'Sentinel-1 (Radar)',
+          landsat9: 'Landsat 9',
+          modis: 'MODIS'
+        };
+
+        const typeLabels = {
+          sentinel1: 'radar',
+          sentinel2: 'optical',
+          landsat9: 'optical',
+          modis: 'optical'
+        };
+
+        let html = '';
+        for (const img of images) {
+          const typeClass = typeLabels[img.satellite] === 'radar' ? 'badge-radar' : 'badge-optical';
+          const typeName = typeLabels[img.satellite] === 'radar' ? 'радар' : 'оптический';
+          html += `
+            <div class="gallery-item" data-id="${img.id}" onclick="window.page.showDetail('${img.id}')">
+              <div class="thumb">
+                ${typeLabels[img.satellite] === 'radar' ? '📡' : '🛰️'}
+              </div>
+              <div class="info">
+                <div class="name">${img.location || 'Без названия'}</div>
+                <div class="meta">${satNames[img.satellite] || img.satellite} · ${img.date}</div>
+                <span class="badge ${typeClass}">${typeName}</span>
+                <span style="font-size:10px;color:#666;margin-left:6px;">☁️ ${img.cloudCover || 0}%</span>
+              </div>
+            </div>
+          `;
+        }
+        container.innerHTML = html;
+      }
+
+      // ============================================================
+      // МАРКЕРЫ НА КАРТЕ
+      // ============================================================
+      renderMarkers() {
+        for (const marker of this.markers) {
+          this.map.removeLayer(marker);
+        }
+        this.markers = [];
+
+        const colors = {
+          sentinel2: '#5bc0f8',
+          sentinel1: '#ffd700',
+          landsat9: '#4caf50',
+          modis: '#f26522'
+        };
+
+        for (const img of this.images) {
+          if (!img.coordinates) continue;
+
+          const color = colors[img.satellite] || '#888';
+          const icon = L.divIcon({
+            className: 'custom-marker',
+            html: `
+              <div style="
+                width: 10px;
+                height: 10px;
+                background: ${color};
+                border-radius: 50%;
+                border: 2px solid rgba(255,255,255,0.3);
+                box-shadow: 0 0 15px ${color}40;
+                cursor: pointer;
+              "></div>
+            `,
+            iconSize: [10, 10],
+            iconAnchor: [5, 5]
+          });
+
+          const marker = L.marker([img.coordinates.lat, img.coordinates.lng], { icon })
+            .addTo(this.map)
+            .on('click', () => {
+              this.showDetail(img.id);
+            });
+
+          marker.bindTooltip(`
+            <div style="
+              background: rgba(10,10,20,0.95);
+              color: #c8d0d8;
+              padding: 8px 12px;
+              border-radius: 4px;
+              border: 1px solid rgba(255,255,255,0.06);
+              font-size: 12px;
+              max-width: 200px;
+            ">
+              <strong style="color:#e8f0f8;">${img.location || 'Снимок'}</strong><br>
+              <span style="color:#888;">${img.satellite}</span><br>
+              <span style="color:#666;">${img.date}</span>
+            </div>
+          `, { direction: 'top', offset: [0, -10] });
+
+          this.markers.push(marker);
+        }
+
+        if (this.images.length > 0) {
+          const bounds = L.latLngBounds(this.images
+            .filter(img => img.coordinates)
+            .map(img => [img.coordinates.lat, img.coordinates.lng])
+          );
+          if (bounds.isValid()) {
+            this.map.fitBounds(bounds, { padding: [50, 50], maxZoom: 6 });
+          }
+        }
+      }
+
+      // ============================================================
+      // ДЕТАЛИ СНИМКА
+      // ============================================================
+      async showDetail(id) {
+        try {
+          const response = await fetch(`/api/satellite/image/${id}`);
+          const data = await response.json();
+
+          if (data.success) {
+            this.selectedImage = data.image;
+            const img = data.image;
+            const panel = document.getElementById('detail-panel');
+            panel.classList.add('visible');
+
+            document.getElementById('detail-name').textContent = img.location || 'Снимок';
+            document.getElementById('detail-satellite').textContent = img.satellite || '—';
+            document.getElementById('detail-date').textContent = img.date || '—';
+            document.getElementById('detail-resolution').textContent = img.resolution || '—';
+            document.getElementById('detail-cloud').textContent = `${img.cloudCover || 0}%`;
+            document.getElementById('detail-coords').textContent =
+              `${img.coordinates?.lat?.toFixed(4) || '—'}, ${img.coordinates?.lng?.toFixed(4) || '—'}`;
+            document.getElementById('detail-desc').textContent = img.description || 'Нет описания';
+          }
+        } catch (e) {
+          console.error('[Satellite] Ошибка загрузки деталей:', e);
+        }
+      }
+
+      // ============================================================
+      // ОРБИТАЛЬНЫЕ ГРУППИРОВКИ
+      // ============================================================
+      async loadOrbits() {
+        try {
+          const response = await fetch('/api/satellite/orbits');
+          const data = await response.json();
+
+          if (data.success) {
+            this.orbits = data.constellations || {};
+            this.renderOrbits();
+          }
+        } catch (e) {
+          console.error('[Satellite] Ошибка загрузки орбит:', e);
+        }
+      }
+
+      renderOrbits() {
+        const container = document.getElementById('orbits-grid');
+
+        const entries = Object.entries(this.orbits);
+        if (entries.length === 0) {
+          container.innerHTML = '<div style="grid-column:span 2;text-align:center;color:#666;padding:10px;">Нет данных об орбитах</div>';
+          return;
+        }
+
+        let html = '';
+        for (const [key, orbit] of entries) {
+          const typeColors = {
+            LEO: '#5bc0f8',
+            MEO: '#ffd700',
+            GEO: '#f26522'
+          };
+          html += `
+            <div class="orbit-card">
+              <div class="name">${orbit.name || key}</div>
+              <span class="count" style="color:${typeColors[orbit.type] || '#888'};">${orbit.count || 0}</span>
+              <div class="type">${orbit.type || '—'} · ${orbit.altitude || '—'} км</div>
+            </div>
+          `;
+        }
+        container.innerHTML = html;
+      }
+
+      // ============================================================
+      // ИЗМЕНЕНИЯ
+      // ============================================================
+      async loadChanges() {
+        try {
+          const response = await fetch('/api/satellite/changes');
+          const data = await response.json();
+
+          if (data.success) {
+            this.changes = data.changes || [];
+            this.renderChanges();
+          }
+        } catch (e) {
+          console.error('[Satellite] Ошибка загрузки изменений:', e);
+        }
+      }
+
+      renderChanges() {
+        const container = document.getElementById('changes-list');
+
+        if (!this.changes || this.changes.length === 0) {
+          container.innerHTML = '<div style="text-align:center;color:#666;padding:10px;">Изменений не обнаружено</div>';
+          return;
+        }
+
+        const typeIcons = {
+          construction: '🏗️',
+          damage: '💥',
+          destruction: '🔥',
+          default: '📌'
+        };
+
+        let html = '';
+        for (const c of this.changes) {
+          const icon = typeIcons[c.type] || typeIcons.default;
+          html += `
+            <div class="change-item">
+              <span class="icon">${icon}</span>
+              <div class="info">
+                <div class="title">${c.location}</div>
+                <div class="desc">${c.description} (${c.dateFrom} → ${c.dateTo})</div>
+              </div>
+              <span class="confidence">${c.confidence || 0}%</span>
+            </div>
+          `;
+        }
+        container.innerHTML = html;
+      }
+
+      // ============================================================
+      // СТАТИСТИКА
+      // ============================================================
+      renderStats() {
+        const total = this.images.length;
+        const satellites = this.status.satellites ? Object.keys(this.status.satellites).length : 0;
+        const totalOrbits = Object.values(this.orbits).reduce((sum, o) => sum + (o.count || 0), 0);
+        const changes = this.changes.length;
+
+        document.getElementById('stat-total').textContent = total;
+        document.getElementById('stat-satellites').textContent = satellites;
+        document.getElementById('stat-orbits').textContent = totalOrbits.toLocaleString();
+        document.getElementById('stat-changes').textContent = changes;
+      }
+
+      // ============================================================
+      // КОПИРОВАНИЕ ДАННЫХ
+      // ============================================================
+      copyData() {
+        let text = `=== Спутниковый мониторинг ===\n`;
+        text += `Дата: ${new Date().toLocaleString()}\n\n`;
+
+        text += `--- СТАТИСТИКА ---\n`;
+        text += `Всего снимков: ${this.images.length}\n`;
+        text += `Активных спутников: ${this.status.satellites ? Object.keys(this.status.satellites).length : 0}\n`;
+        text += `Орбитальных спутников: ${Object.values(this.orbits).reduce((sum, o) => sum + (o.count || 0), 0)}\n`;
+        text += `Обнаружено изменений: ${this.changes.length}\n\n`;
+
+        text += `--- СПУТНИКИ ---\n`;
+        for (const [key, sat] of Object.entries(this.orbits)) {
+          text += `${sat.name || key}: ${sat.count || 0} (${sat.type || '—'}, ${sat.altitude || '—'} км)\n`;
+        }
+
+        text += `\n--- СНИМКИ (${this.images.length}) ---\n`;
+        for (const img of this.images) {
+          text += `${img.date} | ${img.satellite} | ${img.location || 'Без названия'}\n`;
+        }
+
+        text += `\n--- ИЗМЕНЕНИЯ (${this.changes.length}) ---\n`;
+        for (const c of this.changes) {
+          text += `${c.location}: ${c.description} (${c.confidence || 0}%)\n`;
+        }
+
+        text += `\n--- JSON ДАННЫЕ ---\n`;
+        text += JSON.stringify({
+          images: this.images,
+          orbits: this.orbits,
+          changes: this.changes,
+          status: this.status
+        }, null, 2);
+
+        navigator.clipboard.writeText(text).then(() => {
+          showNotification('✅ Данные скопированы в буфер обмена');
+        }).catch(() => {
+          const area = document.createElement('textarea');
+          area.value = text;
+          document.body.appendChild(area);
+          area.select();
+          document.execCommand('copy');
+          document.body.removeChild(area);
+          showNotification('✅ Данные скопированы');
+        });
+      }
+    }
+
+    // ============================================================
+    // 5. ЗАПУСК
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', function() {
+      window.page = new SatellitePage();
+    });
+  </script>
+
+</body>
+</html>

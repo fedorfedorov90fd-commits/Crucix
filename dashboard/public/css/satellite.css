@@ -1,0 +1,305 @@
+/* ============================================================
+   СПУТНИКОВЫЙ МОНИТОРИНГ — Стили (Модуль №9)
+   ============================================================ */
+
+/* Дополнительные стили для спутниковой страницы */
+.satellite-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Карта */
+.satellite-map-wrapper {
+    background: rgba(10, 10, 20, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 8px;
+    padding: 4px;
+    height: 400px;
+    margin-bottom: 16px;
+    position: relative;
+}
+
+#satellite-map {
+    width: 100%;
+    height: 100%;
+    border-radius: 4px;
+    background: #0a0a0f;
+}
+
+/* Галерея */
+.satellite-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.satellite-gallery .gallery-item {
+    background: rgba(10, 10, 20, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.satellite-gallery .gallery-item:hover {
+    border-color: rgba(255, 255, 255, 0.12);
+    transform: translateY(-2px);
+}
+
+.satellite-gallery .gallery-item .thumb {
+    width: 100%;
+    height: 140px;
+    background: rgba(255, 255, 255, 0.03);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    color: #444;
+}
+
+.satellite-gallery .gallery-item .info {
+    padding: 10px 14px;
+}
+
+.satellite-gallery .gallery-item .info .name {
+    font-size: 13px;
+    color: #e8f0f8;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.satellite-gallery .gallery-item .info .meta {
+    font-size: 11px;
+    color: #666;
+    margin-top: 2px;
+}
+
+.satellite-gallery .gallery-item .info .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-top: 4px;
+}
+
+.satellite-gallery .badge-optical {
+    background: rgba(91, 192, 248, 0.2);
+    color: #5bc0f8;
+}
+
+.satellite-gallery .badge-radar {
+    background: rgba(255, 215, 0, 0.2);
+    color: #ffd700;
+}
+
+/* Орбиты */
+.satellite-orbits {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.satellite-orbits .orbit-card {
+    background: rgba(10, 10, 20, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 8px;
+    padding: 12px 16px;
+    text-align: center;
+}
+
+.satellite-orbits .orbit-card .name {
+    font-size: 12px;
+    color: #888;
+}
+
+.satellite-orbits .orbit-card .count {
+    font-size: 22px;
+    font-weight: 700;
+    color: #e8f0f8;
+    display: block;
+}
+
+.satellite-orbits .orbit-card .type {
+    font-size: 10px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Изменения */
+.satellite-changes {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.satellite-changes .change-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: rgba(10, 10, 20, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 6px;
+    border-left: 3px solid #ffd700;
+}
+
+.satellite-changes .change-item .icon {
+    font-size: 20px;
+}
+
+.satellite-changes .change-item .info {
+    flex: 1;
+}
+
+.satellite-changes .change-item .info .title {
+    font-size: 13px;
+    color: #e8f0f8;
+}
+
+.satellite-changes .change-item .info .desc {
+    font-size: 11px;
+    color: #888;
+}
+
+.satellite-changes .change-item .confidence {
+    font-size: 12px;
+    font-weight: 600;
+    color: #ffd700;
+}
+
+/* Детали снимка */
+.satellite-detail {
+    display: none;
+    background: rgba(10, 10, 20, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    backdrop-filter: blur(8px);
+}
+
+.satellite-detail.visible {
+    display: block;
+}
+
+.satellite-detail .detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.satellite-detail .detail-header h2 {
+    font-size: 18px;
+    color: #e8f0f8;
+}
+
+.satellite-detail .detail-close {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.satellite-detail .detail-close:hover {
+    color: #e8f0f8;
+}
+
+.satellite-detail .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.satellite-detail .detail-item {
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 4px;
+}
+
+.satellite-detail .detail-item .label {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #666;
+    letter-spacing: 0.5px;
+    display: block;
+}
+
+.satellite-detail .detail-item .value {
+    font-size: 14px;
+    color: #c8d0d8;
+    margin-top: 2px;
+}
+
+/* Легенда карты */
+.satellite-legend {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(10, 10, 20, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 6px;
+    padding: 10px 14px;
+    z-index: 10;
+    font-size: 11px;
+    backdrop-filter: blur(8px);
+}
+
+.satellite-legend .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #888;
+    padding: 2px 0;
+}
+
+.satellite-legend .legend-item .color-box {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .satellite-gallery {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+    .satellite-orbits {
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    }
+    .satellite-detail .detail-grid {
+        grid-template-columns: 1fr;
+    }
+    .satellite-map-wrapper {
+        height: 280px;
+    }
+}
+
+@media (max-width: 480px) {
+    .satellite-gallery {
+        grid-template-columns: 1fr 1fr;
+    }
+    .satellite-gallery .gallery-item .thumb {
+        height: 100px;
+    }
+    .satellite-gallery .gallery-item .info .name {
+        font-size: 11px;
+    }
+    .satellite-map-wrapper {
+        height: 220px;
+    }
+}

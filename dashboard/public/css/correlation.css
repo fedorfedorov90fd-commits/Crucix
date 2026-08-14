@@ -1,0 +1,166 @@
+/* Кросс-корреляционный анализатор — Crucix */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #0a0a1a;
+  color: #e0e0e0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding: 20px;
+  min-height: 100vh;
+}
+
+.correlation-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: rgba(20, 20, 40, 0.9);
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 24px;
+  backdrop-filter: blur(10px);
+}
+
+/* Заголовок */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+header h1 { font-size: 24px; font-weight: 700; color: #fff; }
+.badge { background: #2196f3; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 12px; }
+
+/* Управление */
+.controls-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  padding: 16px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.control-group label {
+  font-size: 13px;
+  color: #aaa;
+}
+
+.control-group select,
+.control-group input {
+  padding: 6px 10px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 4px;
+  background: rgba(255,255,255,0.05);
+  color: #e0e0e0;
+  font-size: 13px;
+}
+
+.btn {
+  padding: 8px 18px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+.btn:hover { transform: translateY(-1px); opacity: 0.9; }
+.btn-primary { background: #2196f3; color: #fff; }
+.btn-secondary { background: #444; color: #fff; }
+
+/* Статистика */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: rgba(255,255,255,0.03);
+  padding: 16px;
+  border-radius: 8px;
+  text-align: center;
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+.stat-label { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-value { font-size: 28px; font-weight: 700; display: block; margin: 4px 0; color: #fff; }
+.stat-sub { font-size: 13px; color: #aaa; }
+
+.stat-value.positive { color: #4caf50; }
+.stat-value.negative { color: #f44336; }
+.stat-value.strong { color: #ff9800; }
+
+/* Графики */
+.chart-container {
+  background: rgba(0,0,0,0.3);
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid rgba(255,255,255,0.04);
+  height: 300px;
+  position: relative;
+}
+
+.chart-container h3 {
+  font-size: 14px;
+  color: #888;
+  margin-bottom: 8px;
+}
+
+/* Аномалии */
+.anomalies-panel {
+  margin-top: 20px;
+  padding: 16px;
+  background: rgba(255, 152, 0, 0.05);
+  border: 1px solid rgba(255, 152, 0, 0.1);
+  border-radius: 8px;
+}
+
+.anomalies-panel h3 { font-size: 14px; color: #ff9800; margin-bottom: 8px; }
+
+#anomalies-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.anomaly-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 12px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.anomaly-item .strong { color: #ff9800; font-weight: 700; }
+
+/* Экспорт */
+.export-panel {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .controls-panel { flex-direction: column; align-items: stretch; }
+  .control-group { justify-content: space-between; }
+  .stats-grid { grid-template-columns: 1fr; }
+  .chart-container { height: 200px; }
+}

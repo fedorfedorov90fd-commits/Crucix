@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Кросс-корреляционный анализатор — Crucix</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0f;
+      color: #c8d0d8;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: rgba(10, 10, 20, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+    }
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .topbar-brand {
+      font-size: 14px;
+      font-weight: 700;
+      color: #5bc0f8;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-shadow: 0 0 20px rgba(91, 192, 248, 0.15);
+    }
+    .topbar-status {
+      font-size: 11px;
+      color: #ffd700;
+      text-shadow: 0 0 15px rgba(255, 215, 0, 0.1);
+    }
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .topbar-btn {
+      height: 28px;
+      padding: 0 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.03);
+      color: #888;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .topbar-btn:hover {
+      background: rgba(255, 255, 255, 0.06);
+      transform: translateY(-1px);
+    }
+    .btn-home {
+      color: #5bc0f8;
+      border-color: rgba(91, 192, 248, 0.2);
+      background: rgba(91, 192, 248, 0.06);
+    }
+    .btn-home:hover {
+      background: rgba(91, 192, 248, 0.15);
+    }
+    .btn-copy {
+      color: #5bc0f8;
+      border-color: rgba(91, 192, 248, 0.15);
+      background: rgba(91, 192, 248, 0.06);
+    }
+    .btn-copy:hover {
+      background: rgba(91, 192, 248, 0.15);
+    }
+    .btn-grid {
+      color: #9c27b0;
+      border-color: rgba(156, 39, 176, 0.15);
+      background: rgba(156, 39, 176, 0.06);
+    }
+    .btn-grid:hover {
+      background: rgba(156, 39, 176, 0.15);
+    }
+    .btn-grid.active {
+      background: rgba(156, 39, 176, 0.2);
+      border-color: rgba(156, 39, 176, 0.3);
+    }
+    .lang-switch {
+      display: flex;
+      gap: 2px;
+      padding: 2px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .lang-btn {
+      padding: 2px 8px;
+      border: none;
+      background: transparent;
+      color: #666;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 3px;
+      transition: all 0.2s;
+    }
+    .lang-btn:hover {
+      color: #888;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .lang-btn.active {
+      color: #5bc0f8;
+      background: rgba(91, 192, 248, 0.1);
+    }
+    .main-content {
+      padding-top: 76px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding-left: 20px;
+      padding-right: 20px;
+      padding-bottom: 40px;
+    }
+    .page-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #e8f0f8;
+      letter-spacing: -0.5px;
+      margin-bottom: 20px;
+      text-shadow: 0 0 30px rgba(91, 192, 248, 0.05);
+    }
+    .controls-panel {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      padding: 16px;
+      background: rgba(10, 10, 20, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .control-group label {
+      font-size: 12px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .control-group select,
+    .control-group input {
+      padding: 6px 10px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      color: #c8d0d8;
+      font-size: 13px;
+      font-family: monospace;
+    }
+    .control-group select:focus,
+    .control-group input:focus {
+      outline: none;
+      border-color: #5bc0f8;
+    }
+    .btn {
+      height: 32px;
+      padding: 0 16px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.03);
+      color: #c8d0d8;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.06);
+      transform: translateY(-1px);
+    }
+    .btn-primary {
+      background: #5bc0f8;
+      color: #0a0a0f;
+      border-color: #5bc0f8;
+    }
+    .btn-primary:hover {
+      background: #4a8af4;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .stat-card {
+      background: rgba(10, 10, 20, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .stat-card:hover {
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+    .stat-label {
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      color: #666;
+      letter-spacing: 0.5px;
+      display: block;
+    }
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #e8f0f8;
+      display: block;
+      margin: 4px 0;
+    }
+    .stat-value.positive { color: #4caf50; }
+    .stat-value.negative { color: #f44336; }
+    .stat-value.warning { color: #ffd700; }
+    .stat-value.info { color: #5bc0f8; }
+    .stat-value.strong { color: #ff9800; }
+    .stat-sub {
+      font-size: 12px;
+      color: #666;
+      display: block;
+    }
+    .chart-container {
+      background: rgba(10, 10, 20, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 8px;
+      padding: 16px;
+      height: 280px;
+      margin-bottom: 16px;
+    }
+    .chart-title {
+      font-size: 12px;
+      font-weight: 500;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    .chart-container canvas {
+      width: 100% !important;
+      height: calc(100% - 30px) !important;
+    }
+    .chart-small {
+      height: 200px;
+    }
+    .anomalies-panel {
+      background: rgba(255, 152, 0, 0.05);
+      border: 1px solid rgba(255, 152, 0, 0.1);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .anomalies-panel .panel-title {
+      font-size: 12px;
+      font-weight: 500;
+      color: #ffd700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    .anomaly-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 12px;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 4px;
+      font-size: 13px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    }
+    .anomaly-item .source-pair { color: #888; }
+    .anomaly-item .corr-value { color: #ff9800; font-weight: 700; }
+    .export-panel {
+      display: flex;
+      gap: 8px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      margin-top: 16px;
+    }
+    .btn-export {
+      height: 28px;
+      padding: 0 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.03);
+      color: #666;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-export:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: #c8d0d8;
+    }
+    #coordinate-grid {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 99999;
+      background-image: 
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+      display: none;
+    }
+    #coordinate-grid.visible { display: block; }
+    #grid-coords {
+      position: fixed;
+      bottom: 12px;
+      right: 12px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #00ff00;
+      font-family: monospace;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 4px;
+      z-index: 100000;
+      pointer-events: none;
+      display: none;
+    }
+    #grid-coords.visible { display: block; }
+    .notification {
+      position: fixed;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.85);
+      color: #ffffff;
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-size: 13px;
+      z-index: 100001;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      animation: notif-fade 2.5s forwards;
+    }
+    @keyframes notif-fade {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+    @media (max-width: 768px) {
+      .topbar { padding: 0 12px; height: 52px; }
+      .topbar-brand { font-size: 12px; }
+      .topbar-status { display: none; }
+      .topbar-btn { font-size: 10px; padding: 0 8px; height: 24px; }
+      .main-content { padding-top: 68px; padding-left: 12px; padding-right: 12px; }
+      .page-title { font-size: 18px; }
+      .controls-panel { flex-direction: column; align-items: stretch; }
+      .control-group { justify-content: space-between; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .chart-container { height: 200px; }
+    }
+    @media (max-width: 480px) {
+      .topbar { padding: 0 8px; height: 46px; }
+      .topbar-brand { font-size: 10px; letter-spacing: 1px; }
+      .topbar-btn { font-size: 9px; padding: 0 6px; height: 20px; }
+      .topbar-btn .btn-text { display: none; }
+      .lang-btn { font-size: 9px; padding: 1px 5px; }
+      .main-content { padding-top: 62px; padding-left: 8px; padding-right: 8px; }
+      .page-title { font-size: 16px; }
+      .stats-grid { grid-template-columns: 1fr; }
+      .stat-value { font-size: 22px; }
+      .chart-container { height: 150px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-brand">⚡ CRUCIX MONITOR</span>
+      <span class="topbar-status">МОДУЛЬ №7</span>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+      <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ</button>
+      <button class="topbar-btn btn-grid" id="grid-toggle">📐 СЕТКА</button>
+      <div class="lang-switch">
+        <button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
+        <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <h1 class="page-title">🔗 Кросс-корреляционный анализатор</h1>
+    
+    <div class="controls-panel">
+      <div class="control-group">
+        <label>Источник 1:</label>
+        <select id="source1">
+          <option value="index">📊 Глобальный индекс</option>
+          <option value="news" selected>📰 Новости (RSS)</option>
+          <option value="basket">📦 Новости (корзина)</option>
+          <option value="events">📌 События</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Источник 2:</label>
+        <select id="source2">
+          <option value="index">📊 Глобальный индекс</option>
+          <option value="news">📰 Новости (RSS)</option>
+          <option value="basket">📦 Новости (корзина)</option>
+          <option value="events" selected>📌 События</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Дней:</label>
+        <input type="number" id="days" value="30" min="3" max="90" style="width:60px;">
+      </div>
+      <button class="btn btn-primary" id="calculate-btn">📊 Рассчитать</button>
+    </div>
+    
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-label">Корреляция</span>
+        <span class="stat-value info" id="correlation-value">—</span>
+        <span class="stat-sub" id="correlation-interp">Ожидание расчёта</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Оптимальная задержка</span>
+        <span class="stat-value warning" id="lag-value">—</span>
+        <span class="stat-sub" id="lag-interp">дней</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Точек данных</span>
+        <span class="stat-value" id="points-value">—</span>
+        <span class="stat-sub" id="days-value">дней</span>
+      </div>
+    </div>
+    
+    <div class="chart-container">
+      <div class="chart-title">📈 Сравнение временных рядов</div>
+      <canvas id="main-chart"></canvas>
+    </div>
+    
+    <div class="chart-container chart-small">
+      <div class="chart-title">📊 Корреляция по задержкам (lag)</div>
+      <canvas id="lag-chart"></canvas>
+    </div>
+    
+    <div class="anomalies-panel">
+      <div class="panel-title">⚠️ Сильные корреляции (обнаружены)</div>
+      <div id="anomalies-list">
+        <div style="color:#666;font-size:13px;padding:8px 0;">Загрузка...</div>
+      </div>
+    </div>
+    
+    <div class="export-panel">
+      <button class="btn-export" id="export-json">📥 JSON</button>
+      <button class="btn-export" id="export-csv">📥 CSV</button>
+      <span style="color:#444;font-size:11px;margin-left:auto;">v2.1.1</span>
+    </div>
+    
+  </main>
+
+  <div id="coordinate-grid"></div>
+  <div id="grid-coords">X: 0  Y: 0</div>
+
+  <script>
+    // ============================================================
+    // 1. ПЕРЕКЛЮЧАТЕЛЬ ЯЗЫКА
+    // ============================================================
+    let currentLang = localStorage.getItem('crucix-lang') || 'ru';
+    
+    function switchLang(lang) {
+      currentLang = lang;
+      localStorage.setItem('crucix-lang', lang);
+      document.querySelectorAll('.lang-btn').forEach(function(btn) {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+      });
+      updateTexts(lang);
+      showNotification('🌐 Язык: ' + lang.toUpperCase());
+    }
+    
+    function updateTexts(lang) {
+      var texts = {
+        ru: {
+          title: '🔗 Кросс-корреляционный анализатор',
+          source1: 'Источник 1:',
+          source2: 'Источник 2:',
+          days: 'Дней:',
+          calculate: '📊 Рассчитать',
+          correlation: 'Корреляция',
+          lag: 'Оптимальная задержка',
+          points: 'Точек данных',
+          waiting: 'Ожидание расчёта',
+          days_label: 'дней',
+          chart_title: '📈 Сравнение временных рядов',
+          lag_chart_title: '📊 Корреляция по задержкам (lag)',
+          anomalies_title: '⚠️ Сильные корреляции (обнаружены)',
+          no_anomalies: 'Сильных корреляций не обнаружено'
+        },
+        en: {
+          title: '🔗 Cross-Correlation Analyzer',
+          source1: 'Source 1:',
+          source2: 'Source 2:',
+          days: 'Days:',
+          calculate: '📊 Calculate',
+          correlation: 'Correlation',
+          lag: 'Optimal Lag',
+          points: 'Data Points',
+          waiting: 'Waiting for calculation',
+          days_label: 'days',
+          chart_title: '📈 Time Series Comparison',
+          lag_chart_title: '📊 Correlation by Lag',
+          anomalies_title: '⚠️ Strong Correlations Detected',
+          no_anomalies: 'No strong correlations detected'
+        }
+      };
+      
+      var t = texts[lang] || texts.ru;
+      
+      var titleEl = document.querySelector('.page-title');
+      if (titleEl) titleEl.textContent = t.title;
+      
+      var labels = document.querySelectorAll('.controls-panel .control-group label');
+      if (labels.length >= 3) {
+        labels[0].textContent = t.source1;
+        labels[1].textContent = t.source2;
+        labels[2].textContent = t.days;
+      }
+      
+      var calcBtn = document.getElementById('calculate-btn');
+      if (calcBtn) calcBtn.textContent = t.calculate;
+      
+      var statLabels = document.querySelectorAll('.stats-grid .stat-card .stat-label');
+      if (statLabels.length >= 3) {
+        statLabels[0].textContent = t.correlation;
+        statLabels[1].textContent = t.lag;
+        statLabels[2].textContent = t.points;
+      }
+      
+      var interpEl = document.getElementById('correlation-interp');
+      if (interpEl) {
+        var currentText = interpEl.textContent;
+        if (currentText === 'Ожидание расчёта' || currentText === 'Waiting for calculation') {
+          interpEl.textContent = t.waiting;
+        }
+      }
+      
+      var lagInterp = document.getElementById('lag-interp');
+      if (lagInterp) {
+        if (lagInterp.textContent === 'дней' || lagInterp.textContent === 'days') {
+          lagInterp.textContent = t.days_label;
+        }
+      }
+      
+      var chartTitles = document.querySelectorAll('.chart-container .chart-title');
+      if (chartTitles.length >= 2) {
+        chartTitles[0].textContent = t.chart_title;
+        chartTitles[1].textContent = t.lag_chart_title;
+      }
+      
+      var anomaliesTitle = document.querySelector('.anomalies-panel .panel-title');
+      if (anomaliesTitle) anomaliesTitle.textContent = t.anomalies_title;
+    }
+    
+    // ============================================================
+    // 2. КООРДИНАТНАЯ СЕТКА
+    // ============================================================
+    var gridVisible = false;
+    var gridEl = document.getElementById('coordinate-grid');
+    var coordsEl = document.getElementById('grid-coords');
+    var gridBtn = document.getElementById('grid-toggle');
+    
+    document.addEventListener('keydown', function(e) {
+      if (e.ctrlKey && e.shiftKey && e.key === 'G') {
+        e.preventDefault();
+        toggleGrid();
+      }
+    });
+    
+    if (gridBtn) {
+      gridBtn.addEventListener('click', toggleGrid);
+    }
+    
+    function toggleGrid() {
+      gridVisible = !gridVisible;
+      if (gridEl) gridEl.classList.toggle('visible', gridVisible);
+      if (coordsEl) coordsEl.classList.toggle('visible', gridVisible);
+      if (gridBtn) gridBtn.classList.toggle('active', gridVisible);
+      
+      if (gridVisible) {
+        showNotification('⊞ Сетка включена (Ctrl+Shift+G для выключения)');
+        document.addEventListener('mousemove', updateCoords);
+      } else {
+        showNotification('⊞ Сетка выключена');
+        document.removeEventListener('mousemove', updateCoords);
+      }
+    }
+    
+    function updateCoords(e) {
+      if (coordsEl) coordsEl.textContent = 'X: ' + e.clientX + '  Y: ' + e.clientY;
+    }
+    
+    // ============================================================
+    // 3. УВЕДОМЛЕНИЯ
+    // ============================================================
+    function showNotification(msg) {
+      var el = document.createElement('div');
+      el.className = 'notification';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(function() { el.remove(); }, 2500);
+    }
+    
+    // ============================================================
+    // 4. ОСНОВНОЙ КЛАСС СТРАНИЦЫ
+    // ============================================================
+    var CorrelationPage = function() {
+      this.data = null;
+      this.chart1 = null;
+      this.chart2 = null;
+      this.isLoading = false;
+      this.init();
+    };
+    
+    CorrelationPage.prototype.init = function() {
+      var self = this;
+      
+      // Кнопка копирования
+      var copyBtn = document.getElementById('copy-btn');
+      if (copyBtn) {
+        copyBtn.addEventListener('click', function() {
+          self.copyData();
+        });
+      }
+      
+      // Кнопка расчёта
+      var calcBtn = document.getElementById('calculate-btn');
+      if (calcBtn) {
+        calcBtn.addEventListener('click', function() {
+          self.calculate();
+        });
+      }
+      
+      // Enter для расчёта
+      var daysInput = document.getElementById('days');
+      if (daysInput) {
+        daysInput.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') self.calculate();
+        });
+      }
+      
+      // Экспорт
+      var exportJson = document.getElementById('export-json');
+      if (exportJson) {
+        exportJson.addEventListener('click', function() {
+          self.exportJSON();
+        });
+      }
+      
+      var exportCsv = document.getElementById('export-csv');
+      if (exportCsv) {
+        exportCsv.addEventListener('click', function() {
+          self.exportCSV();
+        });
+      }
+      
+      // Автоматический расчёт
+      this.calculate();
+      this.loadAnomalies();
+    };
+    
+    // ============================================================
+    // 5. РАСЧЁТ
+    // ============================================================
+    CorrelationPage.prototype.calculate = function() {
+      var self = this;
+      
+      if (this.isLoading) return;
+      this.isLoading = true;
+      
+      var source1El = document.getElementById('source1');
+      var source2El = document.getElementById('source2');
+      var daysEl = document.getElementById('days');
+      
+      var source1 = source1El ? source1El.value : 'index';
+      var source2 = source2El ? source2El.value : 'news';
+      var days = daysEl ? parseInt(daysEl.value) || 30 : 30;
+      
+      var corrEl = document.getElementById('correlation-value');
+      var interpEl = document.getElementById('correlation-interp');
+      
+      if (corrEl) corrEl.textContent = '⏳';
+      if (interpEl) interpEl.textContent = 'Расчёт...';
+      
+      var url = '/api/correlation/calculate?source1=' + source1 + '&source2=' + source2 + '&days=' + days;
+      
+      fetch(url)
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+          self.isLoading = false;
+          
+          if (!data.success) {
+            throw new Error(data.error || 'Ошибка расчёта');
+          }
+          
+          self.data = data;
+          self.displayResults(data);
+          self.renderCharts(data);
+          showNotification('✅ Данные загружены');
+        })
+        .catch(function(e) {
+          self.isLoading = false;
+          console.error('[Correlation] Ошибка:', e);
+          if (corrEl) corrEl.textContent = '❌';
+          if (interpEl) interpEl.textContent = e.message;
+          self.data = null;
+        });
+    };
+    
+    CorrelationPage.prototype.displayResults = function(data) {
+      var corr = data.correlation || 0;
+      var corrEl = document.getElementById('correlation-value');
+      var interpEl = document.getElementById('correlation-interp');
+      
+      if (corrEl) {
+        corrEl.textContent = corr.toFixed(3);
+        corrEl.className = 'stat-value';
+        if (Math.abs(corr) >= 0.8) corrEl.classList.add('strong');
+        else if (corr > 0.3) corrEl.classList.add('positive');
+        else if (corr < -0.3) corrEl.classList.add('negative');
+        else corrEl.classList.add('info');
+      }
+      
+      if (interpEl) {
+        interpEl.textContent = data.interpretation || 'Нет данных';
+      }
+      
+      var lagEl = document.getElementById('lag-value');
+      if (lagEl) {
+        lagEl.textContent = data.optimalLag !== undefined ? data.optimalLag : '—';
+      }
+      
+      var lagInterp = document.getElementById('lag-interp');
+      if (lagInterp) {
+        lagInterp.textContent = data.optimalLag !== undefined ? 
+          (data.optimalCorrelation ? data.optimalCorrelation.toFixed(3) : '') : 'дней';
+      }
+      
+      var pointsEl = document.getElementById('points-value');
+      if (pointsEl) {
+        pointsEl.textContent = data.days || '—';
+      }
+      
+      var daysEl = document.getElementById('days-value');
+      if (daysEl) {
+        daysEl.textContent = data.days ? 'дней' : '';
+      }
+    };
+    
+    CorrelationPage.prototype.renderCharts = function(data) {
+      if (!data.dates || data.dates.length < 2) return;
+      
+      var self = this;
+      var sourceNames = {
+        index: 'Глобальный индекс',
+        news: 'Новости (RSS)',
+        basket: 'Новости (корзина)',
+        events: 'События',
+        thermal: 'Термальные',
+        economy: 'Экономика',
+        aviation: 'Авиация',
+        conflicts: 'Конфликты'
+      };
+      
+      var ctx1 = document.getElementById('main-chart');
+      if (!ctx1) return;
+      
+      var canvas1 = ctx1.getContext('2d');
+      if (this.chart1) { this.chart1.destroy(); this.chart1 = null; }
+      
+      this.chart1 = new Chart(canvas1, {
+        type: 'line',
+        data: {
+          labels: data.dates,
+          datasets: [
+            {
+              label: sourceNames[data.source1] || data.source1,
+              data: data.values1,
+              borderColor: '#5bc0f8',
+              backgroundColor: 'rgba(91, 192, 248, 0.1)',
+              fill: true,
+              tension: 0.3,
+              pointRadius: 2
+            },
+            {
+              label: sourceNames[data.source2] || data.source2,
+              data: data.values2,
+              borderColor: '#ffd700',
+              backgroundColor: 'rgba(255, 215, 0, 0.1)',
+              fill: true,
+              tension: 0.3,
+              pointRadius: 2
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { 
+              labels: { color: '#c8d0d8', font: { size: 11 } }
+            }
+          },
+          scales: {
+            x: { 
+              ticks: { color: '#666', maxTicksLimit: 15, font: { size: 10 } },
+              grid: { color: 'rgba(255,255,255,0.03)' }
+            },
+            y: { 
+              ticks: { color: '#666', font: { size: 10 } },
+              grid: { color: 'rgba(255,255,255,0.03)' }
+            }
+          }
+        }
+      });
+      
+      if (data.allLags && data.allLags.length > 0) {
+        var ctx2 = document.getElementById('lag-chart');
+        if (!ctx2) return;
+        var canvas2 = ctx2.getContext('2d');
+        if (this.chart2) { this.chart2.destroy(); this.chart2 = null; }
+        
+        var labels = data.allLags.map(function(d) { return String(d.lag); });
+        var values = data.allLags.map(function(d) { return d.correlation; });
+        
+        this.chart2 = new Chart(canvas2, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Корреляция',
+              data: values,
+              backgroundColor: values.map(function(v) {
+                return Math.abs(v) >= 0.7 ? 'rgba(255, 215, 0, 0.8)' :
+                       v > 0 ? 'rgba(76, 175, 80, 0.6)' : 'rgba(244, 67, 54, 0.6)';
+              }),
+              borderColor: values.map(function(v) {
+                return Math.abs(v) >= 0.7 ? '#ffd700' :
+                       v > 0 ? '#4caf50' : '#f44336';
+              }),
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { 
+                ticks: { color: '#666', font: { size: 10 } },
+                grid: { color: 'rgba(255,255,255,0.03)' },
+                title: { display: true, text: 'Задержка (дни)', color: '#666', font: { size: 10 } }
+              },
+              y: { 
+                ticks: { color: '#666', font: { size: 10 } },
+                grid: { color: 'rgba(255,255,255,0.03)' },
+                title: { display: true, text: 'Корреляция', color: '#666', font: { size: 10 } }
+              }
+            }
+          }
+        });
+      }
+    };
+    
+    CorrelationPage.prototype.loadAnomalies = function() {
+      var self = this;
+      
+      fetch('/api/correlation/anomalies?threshold=0.7&days=30')
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+          var list = document.getElementById('anomalies-list');
+          if (!list) return;
+          
+          if (!data.success || data.anomalies.length === 0) {
+            list.innerHTML = '<div style="color:#666;font-size:13px;padding:8px 0;">' + 
+              (currentLang === 'ru' ? 'Сильных корреляций не обнаружено' : 'No strong correlations detected') + 
+              '</div>';
+            return;
+          }
+          
+          var sourceNames = { index: 'Индекс', news: 'Новости', basket: 'Корзина', events: 'События' };
+          var html = '';
+          for (var i = 0; i < data.anomalies.length; i++) {
+            var a = data.anomalies[i];
+            html += '<div class="anomaly-item">';
+            html += '<span class="source-pair">' + (sourceNames[a.source1] || a.source1) + ' ↔ ' + (sourceNames[a.source2] || a.source2) + '</span>';
+            html += '<span class="corr-value">' + a.correlation.toFixed(3) + '</span>';
+            html += '<span style="color:#666;font-size:12px;">' + (a.interpretation || '') + '</span>';
+            html += '</div>';
+          }
+          list.innerHTML = html;
+        })
+        .catch(function(e) {
+          console.error('[Correlation] Ошибка загрузки аномалий:', e);
+          var list = document.getElementById('anomalies-list');
+          if (list) {
+            list.innerHTML = '<div style="color:#666;font-size:13px;padding:8px 0;">' + 
+              (currentLang === 'ru' ? 'Сильных корреляций не обнаружено' : 'No strong correlations detected') + 
+              '</div>';
+          }
+        });
+    };
+    
+    // ============================================================
+    // 6. КОПИРОВАНИЕ ВСЕХ ДАННЫХ (ИСПРАВЛЕНО!)
+    // ============================================================
+    CorrelationPage.prototype.copyData = function() {
+      var self = this;
+      
+      // СОБИРАЕМ ВСЁ СО СТРАНИЦЫ, ДАЖЕ ЕСЛИ НЕТ ДАННЫХ
+      var text = '=== Кросс-корреляционный анализатор ===\n';
+      text += 'Дата: ' + new Date().toLocaleString() + '\n\n';
+      
+      // 1. ПАРАМЕТРЫ
+      text += '--- ПАРАМЕТРЫ ---\n';
+      var source1 = document.getElementById('source1');
+      var source2 = document.getElementById('source2');
+      var days = document.getElementById('days');
+      text += 'Источник 1: ' + (source1 ? source1.options[source1.selectedIndex].text : '—') + '\n';
+      text += 'Источник 2: ' + (source2 ? source2.options[source2.selectedIndex].text : '—') + '\n';
+      text += 'Дней: ' + (days ? days.value : '—') + '\n\n';
+      
+      // 2. СТАТИСТИКА
+      text += '--- СТАТИСТИКА ---\n';
+      var statCards = document.querySelectorAll('.stat-card');
+      statCards.forEach(function(card) {
+        var label = card.querySelector('.stat-label');
+        var value = card.querySelector('.stat-value');
+        var sub = card.querySelector('.stat-sub');
+        text += (label ? label.textContent : '—') + ': ' + (value ? value.textContent : '—');
+        if (sub && sub.textContent) text += ' (' + sub.textContent + ')';
+        text += '\n';
+      });
+      
+      // 3. ДАННЫЕ (ЕСЛИ ЕСТЬ)
+      if (this.data && this.data.dates && this.data.dates.length > 0) {
+        text += '\n--- РЕЗУЛЬТАТЫ РАСЧЁТА ---\n';
+        text += 'Корреляция: ' + (this.data.correlation ? this.data.correlation.toFixed(4) : '—') + '\n';
+        text += 'Интерпретация: ' + (this.data.interpretation || '—') + '\n';
+        text += 'Оптимальная задержка: ' + (this.data.optimalLag !== undefined ? this.data.optimalLag : '—') + ' дн.\n';
+        text += 'Точек данных: ' + (this.data.days || '—') + '\n';
+        
+        text += '\n--- ДАННЫЕ ПО ДНЯМ ---\n';
+        var sourceNames = {
+          index: 'Глобальный индекс',
+          news: 'Новости (RSS)',
+          basket: 'Новости (корзина)',
+          events: 'События'
+        };
+        var s1Name = sourceNames[this.data.source1] || this.data.source1;
+        var s2Name = sourceNames[this.data.source2] || this.data.source2;
+        
+        for (var i = 0; i < this.data.dates.length; i++) {
+          text += this.data.dates[i] + ': ' + 
+            (this.data.values1[i] !== undefined ? this.data.values1[i].toFixed(2) : '—') + ' (' + s1Name + ') | ' +
+            (this.data.values2[i] !== undefined ? this.data.values2[i].toFixed(2) : '—') + ' (' + s2Name + ')\n';
+        }
+        
+        if (this.data.allLags && this.data.allLags.length > 0) {
+          text += '\n--- ВСЕ ЗАДЕРЖКИ ---\n';
+          for (var j = 0; j < this.data.allLags.length; j++) {
+            var lag = this.data.allLags[j];
+            text += 'Задержка ' + lag.lag + ': ' + lag.correlation.toFixed(4) + '\n';
+          }
+        }
+        
+        text += '\n--- JSON ДАННЫЕ ---\n';
+        text += JSON.stringify(this.data, null, 2);
+      } else {
+        text += '\n--- ДАННЫЕ НЕ ЗАГРУЖЕНЫ ---\n';
+        text += 'Нажмите "📊 Рассчитать" для получения данных\n';
+      }
+      
+      // 4. АНОМАЛИИ
+      var anomaliesList = document.getElementById('anomalies-list');
+      if (anomaliesList) {
+        text += '\n--- АНОМАЛИИ ---\n';
+        var items = anomaliesList.querySelectorAll('.anomaly-item');
+        if (items.length > 0) {
+          items.forEach(function(item) {
+            text += item.textContent.trim() + '\n';
+          });
+        } else {
+          text += anomaliesList.textContent.trim() + '\n';
+        }
+      }
+      
+      // 5. КОПИРОВАНИЕ
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text)
+          .then(function() {
+            self.showNotification('✅ Данные скопированы в буфер обмена');
+          })
+          .catch(function() {
+            self.fallbackCopy(text);
+          });
+      } else {
+        self.fallbackCopy(text);
+      }
+    };
+    
+    CorrelationPage.prototype.fallbackCopy = function(text) {
+      var area = document.createElement('textarea');
+      area.value = text;
+      area.style.position = 'fixed';
+      area.style.left = '-9999px';
+      area.style.top = '-9999px';
+      document.body.appendChild(area);
+      area.select();
+      try {
+        document.execCommand('copy');
+        this.showNotification('✅ Данные скопированы');
+      } catch (e) {
+        this.showNotification('❌ Ошибка копирования');
+      }
+      document.body.removeChild(area);
+    };
+    
+    // ============================================================
+    // 7. ЭКСПОРТ
+    // ============================================================
+    CorrelationPage.prototype.exportJSON = function() {
+      if (!this.data) {
+        this.showNotification('⏳ Нет данных для экспорта');
+        return;
+      }
+      var blob = new Blob([JSON.stringify(this.data, null, 2)], { type: 'application/json' });
+      this.download(blob, 'correlation_data.json');
+    };
+    
+    CorrelationPage.prototype.exportCSV = function() {
+      if (!this.data) {
+        this.showNotification('⏳ Нет данных для экспорта');
+        return;
+      }
+      var d = this.data;
+      var csv = 'Дата,Источник1,Источник2\n';
+      for (var i = 0; i < d.dates.length; i++) {
+        csv += d.dates[i] + ',' + d.values1[i] + ',' + d.values2[i] + '\n';
+      }
+      var blob = new Blob([csv], { type: 'text/csv' });
+      this.download(blob, 'correlation_data.csv');
+    };
+    
+    CorrelationPage.prototype.download = function(blob, filename) {
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    };
+    
+    CorrelationPage.prototype.showNotification = function(msg) {
+      var el = document.createElement('div');
+      el.className = 'notification';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(function() { el.remove(); }, 2500);
+    };
+    
+    // ============================================================
+    // 8. ЗАПУСК
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', function() {
+      window.page = new CorrelationPage();
+    });
+  </script>
+  
+</body>
+</html>

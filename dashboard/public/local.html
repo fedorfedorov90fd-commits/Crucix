@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Локальный мониторинг — Crucix</title>
+  
+  <!-- Leaflet для карты -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  
+  <style>
+    /* ============================================================
+       ГЛОБАЛЬНЫЕ СТИЛИ (КАК НА JARVIS)
+       ============================================================ */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      background: #0a0a0f;
+      color: #c8d0d8;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    /* ============================================================
+       ВЕРХНЯЯ ПАНЕЛЬ (ТОЧНАЯ КОПИЯ JARVIS)
+       ============================================================ */
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: rgba(10, 10, 20, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+    }
+    
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .topbar-brand {
+      font-size: 14px;
+      font-weight: 700;
+      color: #5bc0f8;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-shadow: 0 0 20px rgba(91, 192, 248, 0.15);
+    }
+    
+    .topbar-status {
+      font-size: 11px;
+      color: #ffd700;
+      text-shadow: 0 0 15px rgba(255, 215, 0, 0.1);
+    }
+    
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .topbar-btn {
+      height: 28px;
+      padding: 0 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.03);
+      color: #888;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .topbar-btn:hover {
+      background: rgba(255, 255, 255, 0.06);
+      transform: translateY(-1px);
+    }
+    
+    .btn-home {
+      color: #5bc0f8;
+      border-color: rgba(91, 192, 248, 0.2);
+      background: rgba(91, 192, 248, 0.06);
+    }
+    .btn-home:hover {
+      background: rgba(91, 192, 248, 0.15);
+    }
+    
+    .btn-copy {
+      color: #5bc0f8;
+      border-color: rgba(91, 192, 248, 0.15);
+      background: rgba(91, 192, 248, 0.06);
+    }
+    .btn-copy:hover {
+      background: rgba(91, 192, 248, 0.15);
+    }
+    
+    .btn-grid {
+      color: #9c27b0;
+      border-color: rgba(156, 39, 176, 0.15);
+      background: rgba(156, 39, 176, 0.06);
+    }
+    .btn-grid:hover {
+      background: rgba(156, 39, 176, 0.15);
+    }
+    .btn-grid.active {
+      background: rgba(156, 39, 176, 0.2);
+      border-color: rgba(156, 39, 176, 0.3);
+    }
+    
+    .lang-switch {
+      display: flex;
+      gap: 2px;
+      padding: 2px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    
+    .lang-btn {
+      padding: 2px 8px;
+      border: none;
+      background: transparent;
+      color: #666;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 3px;
+      transition: all 0.2s;
+    }
+    
+    .lang-btn:hover {
+      color: #888;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .lang-btn.active {
+      color: #5bc0f8;
+      background: rgba(91, 192, 248, 0.1);
+    }
+    
+    .topbar-time {
+      font-size: 11px;
+      color: #666;
+      font-variant-numeric: tabular-nums;
+    }
+    
+    /* ============================================================
+       ОСНОВНОЙ КОНТЕНТ
+       ============================================================ */
+    .main-content {
+      padding-top: 76px;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding-left: 20px;
+      padding-right: 20px;
+      padding-bottom: 40px;
+    }
+    
+    .page-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #e8f0f8;
+      letter-spacing: -0.5px;
+      margin-bottom: 20px;
+      text-shadow: 0 0 30px rgba(91, 192, 248, 0.05);
+    }
+    
+    /* ============================================================
+       ПАНЕЛЬ УПРАВЛЕНИЯ
+       ============================================================ */
+    .controls-panel {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      padding: 16px;
+      background: rgba(10, 10, 20, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .control-group label {
+      font-size: 12px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .control-group input {
+      padding: 6px 10px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      color: #c8d0d8;
+      font-size: 13px;
+      font-family: monospace;
+      width: 80px;
+    }
+    
+    .control-group input:focus {
+      outline: none;
+      border-color: #5bc0f8;
+    }
+    
+    .btn {
+      height: 32px;
+      padding: 0 16px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.03);
+      color: #c8d0d8;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.06);
+      transform: translateY(-1px);
+    }
+    
+    .btn-primary {
+      background: #5bc0f8;
+      color: #0a0a0f;
+      border-color: #5bc0f8;
+    }
+    .btn-primary:hover {
+      background: #4a8af4;
+    }
+    
+    .btn-success {
+      background: #4caf50;
+      color: #0a0a0f;
+      border-color: #4caf50;
+    }
+    .btn-success:hover {
+      background: #388e3c;
+    }
+    
+    .btn-danger {
+      background: #f44336;
+      color: #fff;
+      border-color: #f44336;
+    }
+    .btn-danger:hover {
+      background: #d32f2f;
+    }
+    
+    /* ============================================================
+       СТАТИСТИКА
+       ============================================================ */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .stat-card {
+      background: rgba(10, 10, 20, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    
+    .stat-card:hover {
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+    
+    .stat-label {
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      color: #666;
+      letter-spacing: 0.5px;
+      display: block;
+    }
+    
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #e8f0f8;
+      display: block;
+      margin: 4px 0;
+    }
+    
+    .stat-value.positive { color: #4caf50; }
+    .stat-value.negative { color: #f44336; }
+    .stat-value.warning { color: #ffd700; }
+    .stat-value.info { color: #5bc0f8; }
+    .stat-value.danger { color: #ff6b6b; }
+    
+    .stat-sub {
+      font-size: 12px;
+      color: #666;
+      display: block;
+    }
+    
+    /* ============================================================
+       КАРТА
+       ============================================================ */
+    .map-container {
+      background: rgba(10, 10, 20, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 8px;
+      padding: 4px;
+      height: 400px;
+      margin-bottom: 16px;
+      position: relative;
+    }
+    
+    #local-map {
+      width: 100%;
+      height: 100%;
+      border-radius: 4px;
+      background: #0a0a0f;
+    }
+    
+    /* Легенда карты */
+    .map-legend {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(10, 10, 20, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 6px;
+      padding: 10px 14px;
+      z-index: 10;
+      font-size: 11px;
+      backdrop-filter: blur(8px);
+    }
+    
+    .map-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #888;
+      padding: 2px 0;
+    }
+    
+    .map-legend-item .color-box {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    /* ============================================================
+       СПИСКИ
+       ============================================================ */
+    .data-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .data-panel {
+      background: rgba(10, 10, 20, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 8px;
+      padding: 16px;
+      max-height: 250px;
+      overflow-y: auto;
+    }
+    
+    .data-panel h3 {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .data-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      font-size: 12px;
+    }
+    
+    .data-item .label {
+      color: #aaa;
+    }
+    
+    .data-item .value {
+      color: #e8f0f8;
+      font-weight: 500;
+    }
+    
+    .data-item .value.danger { color: #ff6b6b; }
+    .data-item .value.warning { color: #ffd700; }
+    .data-item .value.success { color: #4caf50; }
+    
+    .empty-data {
+      color: #666;
+      text-align: center;
+      padding: 20px;
+      font-size: 13px;
+    }
+    
+    /* ============================================================
+       КООРДИНАТНАЯ СЕТКА (СКРЫТА ОТ ЮЗЕРА)
+       ============================================================ */
+    #coordinate-grid {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 99999;
+      background-image: 
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+      display: none;
+    }
+    
+    #coordinate-grid.visible {
+      display: block;
+    }
+    
+    #grid-coords {
+      position: fixed;
+      bottom: 12px;
+      right: 12px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #00ff00;
+      font-family: monospace;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 4px;
+      z-index: 100000;
+      pointer-events: none;
+      display: none;
+    }
+    
+    #grid-coords.visible {
+      display: block;
+    }
+    
+    /* ============================================================
+       УВЕДОМЛЕНИЯ
+       ============================================================ */
+    .notification {
+      position: fixed;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.85);
+      color: #ffffff;
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-size: 13px;
+      z-index: 100001;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      animation: notif-fade 2.5s forwards;
+    }
+    
+    @keyframes notif-fade {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+    
+    /* ============================================================
+       АДАПТИВНОСТЬ
+       ============================================================ */
+    @media (max-width: 768px) {
+      .topbar { padding: 0 12px; height: 52px; }
+      .topbar-brand { font-size: 12px; }
+      .topbar-status { display: none; }
+      .topbar-btn { font-size: 10px; padding: 0 8px; height: 24px; }
+      .main-content { padding-top: 68px; padding-left: 12px; padding-right: 12px; }
+      .page-title { font-size: 18px; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .map-container { height: 280px; }
+      .data-grid { grid-template-columns: 1fr; }
+      .controls-panel { flex-direction: column; align-items: stretch; }
+      .control-group { justify-content: space-between; }
+    }
+    
+    @media (max-width: 480px) {
+      .topbar { padding: 0 8px; height: 46px; }
+      .topbar-brand { font-size: 10px; letter-spacing: 1px; }
+      .topbar-btn { font-size: 9px; padding: 0 6px; height: 20px; }
+      .topbar-btn .btn-text { display: none; }
+      .lang-btn { font-size: 9px; padding: 1px 5px; }
+      .main-content { padding-top: 62px; padding-left: 8px; padding-right: 8px; }
+      .page-title { font-size: 16px; }
+      .stats-grid { grid-template-columns: 1fr; }
+      .stat-value { font-size: 22px; }
+      .map-container { height: 220px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============================================================
+       ВЕРХНЯЯ ПАНЕЛЬ (TOP BAR) — ТОЧНАЯ КОПИЯ JARVIS
+       ============================================================ -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-brand">⚡ CRUCIX MONITOR</span>
+      <span class="topbar-status">МОДУЛЬ LOCAL</span>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-time" id="topbar-time">SWEEP 30.1s</span>
+      <span class="topbar-time" id="topbar-date">APR 3, 2026 07:18 PM</span>
+      
+      <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+      <button class="topbar-btn btn-copy" id="copy-btn" title="Копировать все данные страницы">📋 КОПИРОВАТЬ</button>
+      <button class="topbar-btn btn-grid" id="grid-toggle" title="Ctrl+Shift+G">📐 СЕТКА</button>
+      
+      <div class="lang-switch">
+        <button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
+        <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       ОСНОВНОЙ КОНТЕНТ
+       ============================================================ -->
+  <main class="main-content">
+    <h1 class="page-title" id="page-title">📍 Локальный мониторинг</h1>
+    
+    <!-- Панель управления -->
+    <div class="controls-panel" id="controls-panel">
+      <div class="control-group">
+        <label>Широта:</label>
+        <input type="number" id="lat-input" value="55.7558" step="0.0001">
+      </div>
+      <div class="control-group">
+        <label>Долгота:</label>
+        <input type="number" id="lon-input" value="37.6173" step="0.0001">
+      </div>
+      <div class="control-group">
+        <label>Радиус (км):</label>
+        <input type="number" id="radius-input" value="50" min="10" max="500">
+      </div>
+      <div class="control-group" style="margin-left:auto;">
+        <button class="btn btn-primary" id="refresh-btn">🔄 Обновить</button>
+        <button class="btn btn-success" id="center-btn">📍 Моё местоположение</button>
+      </div>
+    </div>
+    
+    <!-- Статистика -->
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card">
+        <span class="stat-label">Предупреждения (NWS)</span>
+        <span class="stat-value warning" id="stat-alerts">—</span>
+        <span class="stat-sub">погодные оповещения</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Землетрясения</span>
+        <span class="stat-value info" id="stat-quakes">—</span>
+        <span class="stat-sub">в радиусе</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Пожары (FIRMS)</span>
+        <span class="stat-value danger" id="stat-fires">—</span>
+        <span class="stat-sub">термальные точки</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Время обновления</span>
+        <span class="stat-value info" id="stat-time">—</span>
+        <span class="stat-sub">последний запрос</span>
+      </div>
+    </div>
+    
+    <!-- Карта -->
+    <div class="map-container">
+      <div id="local-map"></div>
+      <div class="map-legend">
+        <div class="map-legend-item"><span class="color-box" style="background:#ff6b6b;"></span> Пожар (FIRMS)</div>
+        <div class="map-legend-item"><span class="color-box" style="background:#ffd700;"></span> Предупреждение (NWS)</div>
+        <div class="map-legend-item"><span class="color-box" style="background:#5bc0f8;"></span> Землетрясение</div>
+        <div class="map-legend-item"><span class="color-box" style="background:#4caf50;"></span> Ваше местоположение</div>
+      </div>
+    </div>
+    
+    <!-- Детальные данные -->
+    <div class="data-grid" id="data-grid">
+      <div class="data-panel" id="alerts-panel">
+        <h3>🌤️ Погодные предупреждения (NWS)</h3>
+        <div id="alerts-container">
+          <div class="empty-data">Загрузка...</div>
+        </div>
+      </div>
+      <div class="data-panel" id="fires-panel">
+        <h3>🔥 Термальные точки (FIRMS)</h3>
+        <div id="fires-container">
+          <div class="empty-data">Загрузка...</div>
+        </div>
+      </div>
+    </div>
+    
+  </main>
+
+  <!-- ============================================================
+       КООРДИНАТНАЯ СЕТКА (СКРЫТА ОТ ЮЗЕРА)
+       ============================================================ -->
+  <div id="coordinate-grid"></div>
+  <div id="grid-coords">X: 0  Y: 0</div>
+
+  <!-- ============================================================
+       JAVASCRIPT
+       ============================================================ -->
+  <script>
+    // ============================================================
+    // 1. ПЕРЕКЛЮЧАТЕЛЬ ЯЗЫКА
+    // ============================================================
+    let currentLang = localStorage.getItem('crucix-lang') || 'ru';
+    
+    function switchLang(lang) {
+      currentLang = lang;
+      localStorage.setItem('crucix-lang', lang);
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+      });
+      updateTexts(lang);
+      showNotification(`🌐 Язык: ${lang.toUpperCase()}`);
+    }
+    
+    function updateTexts(lang) {
+      const texts = {
+        ru: {
+          title: '📍 Локальный мониторинг',
+          alerts: 'Предупреждения (NWS)',
+          quakes: 'Землетрясения',
+          fires: 'Пожары (FIRMS)',
+          time: 'Время обновления',
+          weather: 'Погодные предупреждения (NWS)',
+          thermal: 'Термальные точки (FIRMS)',
+          loading: 'Загрузка...',
+          no_data: 'Нет данных'
+        },
+        en: {
+          title: '📍 Local Monitoring',
+          alerts: 'Alerts (NWS)',
+          quakes: 'Earthquakes',
+          fires: 'Fires (FIRMS)',
+          time: 'Update Time',
+          weather: 'Weather Alerts (NWS)',
+          thermal: 'Thermal Points (FIRMS)',
+          loading: 'Loading...',
+          no_data: 'No data'
+        }
+      };
+      
+      const t = texts[lang] || texts.ru;
+      document.getElementById('page-title').textContent = t.title;
+      
+      const labels = document.querySelectorAll('.stat-label');
+      if (labels.length >= 4) {
+        labels[0].textContent = t.alerts;
+        labels[1].textContent = t.quakes;
+        labels[2].textContent = t.fires;
+        labels[3].textContent = t.time;
+      }
+      
+      document.querySelector('#alerts-panel h3').textContent = t.weather;
+      document.querySelector('#fires-panel h3').textContent = t.thermal;
+    }
+    
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.lang === currentLang);
+    });
+    updateTexts(currentLang);
+    
+    // ============================================================
+    // 2. ВРЕМЯ В ВЕРХНЕЙ ПАНЕЛИ
+    // ============================================================
+    function updateTopbar() {
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase();
+      const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+      document.getElementById('topbar-date').textContent = `${dateStr} ${timeStr}`;
+    }
+    updateTopbar();
+    setInterval(updateTopbar, 60000);
+    
+    // ============================================================
+    // 3. КООРДИНАТНАЯ СЕТКА (Ctrl+Shift+G) — СКРЫТА ОТ ЮЗЕРА
+    // ============================================================
+    let gridVisible = false;
+    const gridEl = document.getElementById('coordinate-grid');
+    const coordsEl = document.getElementById('grid-coords');
+    const gridBtn = document.getElementById('grid-toggle');
+    
+    document.addEventListener('keydown', function(e) {
+      if (e.ctrlKey && e.shiftKey && e.key === 'G') {
+        e.preventDefault();
+        toggleGrid();
+      }
+    });
+    
+    gridBtn.addEventListener('click', toggleGrid);
+    
+    function toggleGrid() {
+      gridVisible = !gridVisible;
+      gridEl.classList.toggle('visible', gridVisible);
+      coordsEl.classList.toggle('visible', gridVisible);
+      gridBtn.classList.toggle('active', gridVisible);
+      
+      if (gridVisible) {
+        showNotification('⊞ Сетка включена (Ctrl+Shift+G для выключения)');
+        document.addEventListener('mousemove', updateCoords);
+      } else {
+        showNotification('⊞ Сетка выключена');
+        document.removeEventListener('mousemove', updateCoords);
+      }
+    }
+    
+    function updateCoords(e) {
+      coordsEl.textContent = `X: ${e.clientX}  Y: ${e.clientY}`;
+    }
+    
+    // ============================================================
+    // 4. УВЕДОМЛЕНИЯ
+    // ============================================================
+    function showNotification(msg) {
+      const el = document.createElement('div');
+      el.className = 'notification';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2500);
+    }
+    
+    // ============================================================
+    // 5. ОСНОВНОЙ КЛАСС СТРАНИЦЫ
+    // ============================================================
+    class LocalPage {
+      constructor() {
+        this.data = null;
+        this.map = null;
+        this.markers = [];
+        this.userMarker = null;
+        this.init();
+      }
+      
+      init() {
+        // Кнопка копирования
+        document.getElementById('copy-btn').addEventListener('click', () => this.copyData());
+        
+        // Кнопка обновления
+        document.getElementById('refresh-btn').addEventListener('click', () => this.loadData());
+        
+        // Кнопка центрирования
+        document.getElementById('center-btn').addEventListener('click', () => this.getLocation());
+        
+        // Enter в полях
+        document.querySelectorAll('.control-group input').forEach(input => {
+          input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.loadData();
+          });
+        });
+        
+        // Инициализация карты
+        this.initMap();
+        
+        // Загрузка данных
+        this.loadData();
+        
+        // Автообновление каждые 5 минут
+        setInterval(() => this.loadData(), 5 * 60 * 1000);
+      }
+      
+      // ============================================================
+      // КАРТА
+      // ============================================================
+      initMap() {
+        const lat = parseFloat(document.getElementById('lat-input').value) || 55.7558;
+        const lon = parseFloat(document.getElementById('lon-input').value) || 37.6173;
+        
+        this.map = L.map('local-map', {
+          center: [lat, lon],
+          zoom: 9,
+          zoomControl: false,
+          attributionControl: false
+        });
+        
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+          attribution: '© OpenStreetMap, © CartoDB'
+        }).addTo(this.map);
+        
+        L.control.zoom({ position: 'topright' }).addTo(this.map);
+        
+        // Добавляем маркер пользователя
+        this.addUserMarker(lat, lon);
+      }
+      
+      addUserMarker(lat, lon) {
+        if (this.userMarker) {
+          this.map.removeLayer(this.userMarker);
+        }
+        
+        const icon = L.divIcon({
+          className: 'user-marker',
+          html: `<div style="
+            width: 16px;
+            height: 16px;
+            background: #4caf50;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+            cursor: pointer;
+          "></div>`,
+          iconSize: [16, 16],
+          iconAnchor: [8, 8]
+        });
+        
+        this.userMarker = L.marker([lat, lon], { icon }).addTo(this.map);
+        this.userMarker.bindTooltip('📍 Ваше местоположение', { permanent: false, direction: 'top' });
+      }
+      
+      // ============================================================
+      // ЗАГРУЗКА ДАННЫХ
+      // ============================================================
+      async loadData() {
+        try {
+          const lat = parseFloat(document.getElementById('lat-input').value) || 55.7558;
+          const lon = parseFloat(document.getElementById('lon-input').value) || 37.6173;
+          const radius = parseFloat(document.getElementById('radius-input').value) || 50;
+          
+          showNotification('⏳ Загрузка локальных данных...');
+          
+          const url = `/api/local/feed?lat=${lat}&lon=${lon}&radius=${radius}`;
+          const response = await fetch(url);
+          const data = await response.json();
+          
+          if (data.success) {
+            this.data = data;
+            this.renderStats(data);
+            this.renderMarkers(data);
+            this.renderAlerts(data);
+            this.renderFires(data);
+            this.updateTime(data.timestamp);
+            
+            // Обновляем маркер пользователя
+            this.addUserMarker(lat, lon);
+            
+            // Центрируем карту
+            this.map.setView([lat, lon], 9);
+            
+            showNotification(`✅ Данные загружены (радиус ${radius} км)`);
+          } else {
+            showNotification('❌ Ошибка загрузки данных');
+          }
+        } catch (e) {
+          console.error('[Local] Ошибка загрузки:', e);
+          showNotification('❌ Ошибка соединения с сервером');
+        }
+      }
+      
+      // ============================================================
+      // СТАТИСТИКА
+      // ============================================================
+      renderStats(data) {
+        document.getElementById('stat-alerts').textContent = data.alerts?.count || 0;
+        document.getElementById('stat-quakes').textContent = data.quakes?.count || 0;
+        document.getElementById('stat-fires').textContent = data.fires?.count || 0;
+      }
+      
+      updateTime(timestamp) {
+        if (timestamp) {
+          const date = new Date(timestamp);
+          document.getElementById('stat-time').textContent = date.toLocaleTimeString('ru-RU');
+        } else {
+          document.getElementById('stat-time').textContent = '—';
+        }
+      }
+      
+      // ============================================================
+      // МАРКЕРЫ НА КАРТЕ
+      // ============================================================
+      renderMarkers(data) {
+        // Очищаем старые маркеры (кроме маркера пользователя)
+        for (const marker of this.markers) {
+          this.map.removeLayer(marker);
+        }
+        this.markers = [];
+        
+        // Пожары (красные)
+        for (const fire of (data.fires?.items || [])) {
+          if (fire.lat && fire.lon) {
+            const icon = L.divIcon({
+              className: 'fire-marker',
+              html: `<div style="
+                width: 8px;
+                height: 8px;
+                background: #ff6b6b;
+                border-radius: 50%;
+                border: 1px solid rgba(255,255,255,0.3);
+                box-shadow: 0 0 15px rgba(255,107,107,0.5);
+              "></div>`,
+              iconSize: [8, 8],
+              iconAnchor: [4, 4]
+            });
+            const marker = L.marker([fire.lat, fire.lon], { icon }).addTo(this.map);
+            marker.bindTooltip(`🔥 Пожар (FRP: ${fire.confidence || '?'})`, { direction: 'top' });
+            this.markers.push(marker);
+          }
+        }
+        
+        // Предупреждения (жёлтые)
+        for (const alert of (data.alerts?.items || [])) {
+          // Используем центр области для маркера (упрощённо)
+          if (alert.area) {
+            // Пропускаем, так как нет точных координат
+          }
+        }
+      }
+      
+      // ============================================================
+      // ОПОВЕЩЕНИЯ (NWS)
+      // ============================================================
+      renderAlerts(data) {
+        const container = document.getElementById('alerts-container');
+        const alerts = data.alerts?.items || [];
+        
+        if (alerts.length === 0) {
+          container.innerHTML = `<div class="empty-data">${currentLang === 'ru' ? 'Нет погодных предупреждений' : 'No weather alerts'}</div>`;
+          return;
+        }
+        
+        let html = '';
+        for (const alert of alerts.slice(0, 10)) {
+          const severityClass = alert.severity === 'Extreme' ? 'danger' :
+                               alert.severity === 'Severe' ? 'warning' : '';
+          html += `
+            <div class="data-item">
+              <span class="label">${alert.headline || 'Предупреждение'}</span>
+              <span class="value ${severityClass}">${alert.severity || 'Unknown'}</span>
+            </div>
+          `;
+        }
+        container.innerHTML = html;
+      }
+      
+      // ============================================================
+      // ПОЖАРЫ (FIRMS)
+      // ============================================================
+      renderFires(data) {
+        const container = document.getElementById('fires-container');
+        const fires = data.fires?.items || [];
+        
+        if (fires.length === 0) {
+          container.innerHTML = `<div class="empty-data">${currentLang === 'ru' ? 'Нет термальных точек' : 'No thermal points'}</div>`;
+          return;
+        }
+        
+        let html = '';
+        for (const fire of fires.slice(0, 10)) {
+          html += `
+            <div class="data-item">
+              <span class="label">🔥 ${fire.lat.toFixed(3)}, ${fire.lon.toFixed(3)}</span>
+              <span class="value danger">${fire.confidence || 'Unknown'}</span>
+            </div>
+          `;
+        }
+        container.innerHTML = html;
+      }
+      
+      // ============================================================
+      // ГЕОЛОКАЦИЯ
+      // ============================================================
+      getLocation() {
+        if (!navigator.geolocation) {
+          showNotification('❌ Геолокация не поддерживается');
+          return;
+        }
+        
+        showNotification('⏳ Определение местоположения...');
+        
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            
+            document.getElementById('lat-input').value = lat.toFixed(4);
+            document.getElementById('lon-input').value = lon.toFixed(4);
+            
+            this.loadData();
+            showNotification(`✅ Местоположение: ${lat.toFixed(4)}, ${lon.toFixed(4)}`);
+          },
+          (error) => {
+            showNotification(`❌ Ошибка геолокации: ${error.message}`);
+          },
+          { enableHighAccuracy: true, timeout: 10000 }
+        );
+      }
+      
+      // ============================================================
+      // КОПИРОВАНИЕ ДАННЫХ
+      // ============================================================
+      copyData() {
+        if (!this.data) {
+          showNotification('⏳ Данные ещё не загружены');
+          return;
+        }
+        
+        const d = this.data;
+        let text = `=== Локальный мониторинг ===\n`;
+        text += `Дата: ${new Date().toLocaleString()}\n`;
+        text += `Центр: ${d.center?.lat}, ${d.center?.lon}\n`;
+        text += `Радиус: ${d.radius} км\n\n`;
+        
+        text += `--- СТАТИСТИКА ---\n`;
+        text += `Предупреждений (NWS): ${d.alerts?.count || 0}\n`;
+        text += `Землетрясений: ${d.quakes?.count || 0}\n`;
+        text += `Пожаров (FIRMS): ${d.fires?.count || 0}\n\n`;
+        
+        text += `--- ПРЕДУПРЕЖДЕНИЯ ---\n`;
+        for (const alert of (d.alerts?.items || []).slice(0, 10)) {
+          text += `${alert.headline || 'Alert'} | ${alert.severity || 'Unknown'}\n`;
+        }
+        
+        text += `\n--- ПОЖАРЫ ---\n`;
+        for (const fire of (d.fires?.items || []).slice(0, 10)) {
+          text += `${fire.lat}, ${fire.lon} | ${fire.confidence || 'Unknown'}\n`;
+        }
+        
+        text += `\n--- JSON ДАННЫЕ ---\n`;
+        text += JSON.stringify(d, null, 2);
+        
+        navigator.clipboard.writeText(text).then(() => {
+          showNotification('✅ Данные скопированы в буфер обмена');
+        }).catch(() => {
+          const area = document.createElement('textarea');
+          area.value = text;
+          document.body.appendChild(area);
+          area.select();
+          document.execCommand('copy');
+          document.body.removeChild(area);
+          showNotification('✅ Данные скопированы');
+        });
+      }
+    }
+    
+    // ============================================================
+    // 6. ЗАПУСК
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', function() {
+      window.page = new LocalPage();
+    });
+  </script>
+  
+</body>
+</html>

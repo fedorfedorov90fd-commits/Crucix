@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Смысловой анализ — Crucix</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0f;
+      color: #c8d0d8;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; height: 60px;
+      background: rgba(10, 10, 20, 0.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04); z-index: 100;
+      display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; }
+    .topbar-status { font-size: 11px; color: #ffd700; }
+
+    .topbar-right { display: flex; align-items: center; gap: 6px; }
+    .topbar-btn {
+      height: 28px; padding: 0 12px; border: 1px solid rgba(255,255,255,0.08); border-radius: 4px;
+      background: rgba(255,255,255,0.03); color: #888; font-size: 11px; font-weight: 500;
+      text-transform: uppercase; cursor: pointer; transition: all 0.2s;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .topbar-btn:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+    .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
+    .btn-home:hover { background: rgba(91,192,248,0.15); }
+    .btn-copy { color: #5bc0f8; border-color: rgba(91,192,248,0.15); background: rgba(91,192,248,0.06); }
+    .btn-copy:hover { background: rgba(91,192,248,0.15); }
+    .btn-grid { color: #9c27b0; border-color: rgba(156,39,176,0.15); background: rgba(156,39,176,0.06); }
+    .btn-grid:hover { background: rgba(156,39,176,0.15); }
+    .btn-grid.active { background: rgba(156,39,176,0.2); border-color: rgba(156,39,176,0.3); }
+
+    .lang-switch {
+      display: flex; gap: 2px; padding: 2px;
+      background: rgba(255,255,255,0.03); border-radius: 4px; border: 1px solid rgba(255,255,255,0.06);
+    }
+    .lang-btn { padding: 2px 8px; border: none; background: transparent; color: #666; font-size: 11px; font-weight: 500; cursor: pointer; border-radius: 3px; transition: all 0.2s; }
+    .lang-btn:hover { color: #888; background: rgba(255,255,255,0.05); }
+    .lang-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.1); }
+
+    .main-content { padding-top: 76px; max-width: 1200px; margin: 0 auto; padding-left: 20px; padding-right: 20px; padding-bottom: 40px; }
+    .page-title { font-size: 24px; font-weight: 700; color: #e8f0f8; margin-bottom: 20px; }
+
+    .input-panel {
+      background: rgba(10,10,20,0.5); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px; padding: 20px; margin-bottom: 16px;
+    }
+    .input-panel textarea {
+      width: 100%; min-height: 120px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 6px; color: #c8d0d8; padding: 12px; font-size: 14px; font-family: inherit; resize: vertical;
+    }
+    .input-panel textarea:focus { outline: none; border-color: #5bc0f8; }
+    .input-panel .controls { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; align-items: center; }
+    .input-panel .controls select { padding: 6px 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; color: #c8d0d8; font-size: 13px; }
+    .input-panel .controls select:focus { outline: none; border-color: #5bc0f8; }
+    .btn { padding: 8px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s; }
+    .btn:hover { transform: translateY(-1px); opacity: 0.9; }
+    .btn-primary { background: #5bc0f8; color: #0a0a0f; }
+    .btn-secondary { background: #444; color: #fff; }
+    .btn-success { background: #4caf50; color: #fff; }
+
+    .results-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px;
+    }
+    .result-card {
+      background: rgba(10,10,20,0.5); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px; padding: 16px;
+    }
+    .result-card .label { font-size: 10px; text-transform: uppercase; color: #666; letter-spacing: 0.5px; display: block; margin-bottom: 4px; }
+    .result-card .value { font-size: 16px; color: #e8f0f8; }
+    .result-card .value.positive { color: #4caf50; }
+    .result-card .value.negative { color: #f44336; }
+    .result-card .value.neutral { color: #ffd700; }
+
+    .entity-tag {
+      display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; margin: 2px;
+      background: rgba(91,192,248,0.15); color: #5bc0f8; border: 1px solid rgba(91,192,248,0.2);
+    }
+    .entity-tag.person { background: rgba(76,175,80,0.15); color: #4caf50; border-color: rgba(76,175,80,0.2); }
+    .entity-tag.location { background: rgba(255,215,0,0.15); color: #ffd700; border-color: rgba(255,215,0,0.2); }
+    .entity-tag.organization { background: rgba(242,101,34,0.15); color: #f26522; border-color: rgba(242,101,34,0.2); }
+    .entity-tag.date { background: rgba(156,39,176,0.15); color: #9c27b0; border-color: rgba(156,39,176,0.2); }
+    .entity-tag.number { background: rgba(33,150,243,0.15); color: #2196f3; border-color: rgba(33,150,243,0.2); }
+
+    .category-score {
+      display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+    .category-score .bar { height: 4px; background: #5bc0f8; border-radius: 2px; margin-top: 4px; transition: width 0.5s; }
+
+    #coordinate-grid {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 99999;
+      background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 50px 50px; display: none;
+    }
+    #coordinate-grid.visible { display: block; }
+    #grid-coords {
+      position: fixed; bottom: 12px; right: 12px; background: rgba(0,0,0,0.7);
+      color: #00ff00; font-family: monospace; font-size: 11px; padding: 4px 10px; border-radius: 4px;
+      z-index: 100000; pointer-events: none; display: none;
+    }
+    #grid-coords.visible { display: block; }
+
+    .notification {
+      position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.85); color: #fff; padding: 8px 20px; border-radius: 6px;
+      font-size: 13px; z-index: 100001; border: 1px solid rgba(255,255,255,0.1);
+      animation: notif-fade 2.5s forwards;
+    }
+    @keyframes notif-fade {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+
+    @media (max-width: 768px) {
+      .topbar { padding: 0 12px; height: 52px; }
+      .topbar-brand { font-size: 12px; }
+      .topbar-status { display: none; }
+      .topbar-btn { font-size: 10px; padding: 0 8px; height: 24px; }
+      .main-content { padding-top: 68px; padding-left: 12px; padding-right: 12px; }
+      .page-title { font-size: 18px; }
+      .results-grid { grid-template-columns: 1fr; }
+      .input-panel textarea { min-height: 80px; }
+    }
+    @media (max-width: 480px) {
+      .topbar { padding: 0 8px; height: 46px; }
+      .topbar-brand { font-size: 10px; letter-spacing: 1px; }
+      .topbar-btn { font-size: 9px; padding: 0 6px; height: 20px; }
+      .topbar-btn .btn-text { display: none; }
+      .lang-btn { font-size: 9px; padding: 1px 5px; }
+      .main-content { padding-top: 62px; padding-left: 8px; padding-right: 8px; }
+      .page-title { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-brand">⚡ CRUCIX MONITOR</span>
+      <span class="topbar-status">МОДУЛЬ №15</span>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+      <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ</button>
+      <button class="topbar-btn btn-grid" id="grid-toggle">📐 СЕТКА</button>
+      <div class="lang-switch">
+        <button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
+        <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <h1 class="page-title" id="page-title">🌐 Многоязычный смысловой анализ</h1>
+
+    <div class="input-panel">
+      <textarea id="input-text" placeholder="Введите текст для анализа на любом языке...">Россия и Украина ведут переговоры о прекращении огня. Экономическая ситуация в регионе остается напряженной.</textarea>
+      <div class="controls">
+        <select id="target-lang">
+          <option value="ru">🇷🇺 Русский</option>
+          <option value="en" selected>🇬🇧 English</option>
+          <option value="zh">🇨🇳 中文</option>
+          <option value="hi">🇮🇳 हिन्दी</option>
+        </select>
+        <button class="btn btn-primary" onclick="analyzeText()">🔍 Анализировать</button>
+        <button class="btn btn-secondary" onclick="clearText()">✖ Очистить</button>
+        <span style="color:#666;font-size:12px;margin-left:auto;" id="word-count">Слов: 0</span>
+      </div>
+    </div>
+
+    <div class="results-grid" id="results">
+      <div class="result-card">
+        <span class="label">📝 Язык</span>
+        <div class="value" id="lang-result">—</div>
+      </div>
+      <div class="result-card">
+        <span class="label">💬 Тональность</span>
+        <div class="value" id="sentiment-result">—</div>
+      </div>
+      <div class="result-card" style="grid-column: span 2;">
+        <span class="label">📋 Перевод</span>
+        <div class="value" id="translation-result" style="font-size:14px;">—</div>
+      </div>
+      <div class="result-card" style="grid-column: span 2;">
+        <span class="label">🏷️ Сущности</span>
+        <div class="value" id="entities-result" style="font-size:13px;">—</div>
+      </div>
+      <div class="result-card" style="grid-column: span 2;">
+        <span class="label">📊 Классификация</span>
+        <div id="classification-result">—</div>
+      </div>
+    </div>
+
+  </main>
+
+  <div id="coordinate-grid"></div>
+  <div id="grid-coords">X: 0  Y: 0</div>
+
+  <script>
+    // ============================================================
+    // 1. ПЕРЕКЛЮЧАТЕЛЬ ЯЗЫКА
+    // ============================================================
+    let currentLang = localStorage.getItem('crucix-lang') || 'ru';
+
+    function switchLang(lang) {
+      currentLang = lang;
+      localStorage.setItem('crucix-lang', lang);
+      document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+      showNotification(`🌐 Язык: ${lang.toUpperCase()}`);
+      updateTexts(lang);
+    }
+
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === currentLang));
+
+    function updateTexts(lang) {
+      const texts = {
+        ru: { title: '🌐 Многоязычный смысловой анализ', placeholder: 'Введите текст для анализа на любом языке...', analyze: '🔍 Анализировать', clear: '✖ Очистить' },
+        en: { title: '🌐 Multilingual Semantic Analysis', placeholder: 'Enter text for analysis in any language...', analyze: '🔍 Analyze', clear: '✖ Clear' }
+      };
+      const t = texts[lang] || texts.ru;
+      document.getElementById('page-title').textContent = t.title;
+      document.getElementById('input-text').placeholder = t.placeholder;
+      document.querySelector('.btn-primary').textContent = t.analyze;
+      document.querySelector('.btn-secondary').textContent = t.clear;
+    }
+
+    updateTexts(currentLang);
+
+    // ============================================================
+    // 2. КООРДИНАТНАЯ СЕТКА (Ctrl+Shift+G)
+    // ============================================================
+    let gridVisible = false;
+    document.addEventListener('keydown', function(e) {
+      if (e.ctrlKey && e.shiftKey && e.key === 'G') { e.preventDefault(); toggleGrid(); }
+    });
+    document.getElementById('grid-toggle').addEventListener('click', toggleGrid);
+
+    function toggleGrid() {
+      gridVisible = !gridVisible;
+      document.getElementById('coordinate-grid').classList.toggle('visible', gridVisible);
+      document.getElementById('grid-coords').classList.toggle('visible', gridVisible);
+      document.getElementById('grid-toggle').classList.toggle('active', gridVisible);
+      if (gridVisible) {
+        showNotification('⊞ Сетка включена (Ctrl+Shift+G для выключения)');
+        document.addEventListener('mousemove', updateCoords);
+      } else {
+        showNotification('⊞ Сетка выключена');
+        document.removeEventListener('mousemove', updateCoords);
+      }
+    }
+
+    function updateCoords(e) {
+      document.getElementById('grid-coords').textContent = `X: ${e.clientX}  Y: ${e.clientY}`;
+    }
+
+    // ============================================================
+    // 3. УВЕДОМЛЕНИЯ
+    // ============================================================
+    function showNotification(msg) {
+      const el = document.createElement('div');
+      el.className = 'notification';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2500);
+    }
+
+    // ============================================================
+    // 4. АНАЛИЗ ТЕКСТА
+    // ============================================================
+    document.getElementById('input-text').addEventListener('input', function() {
+      const words = this.value.trim().split(/\s+/).filter(w => w.length > 0).length;
+      document.getElementById('word-count').textContent = `Слов: ${words}`;
+    });
+
+    async function analyzeText() {
+      const text = document.getElementById('input-text').value.trim();
+      if (!text) { showNotification('⚠️ Введите текст для анализа'); return; }
+
+      const targetLang = document.getElementById('target-lang').value;
+      const btn = document.querySelector('.btn-primary');
+      btn.textContent = '⏳ Анализ...';
+      btn.disabled = true;
+
+      try {
+        // 1. Полный анализ
+        const resp = await fetch('/api/nlp/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, lang: null })
+        });
+        const data = await resp.json();
+
+        if (data.success) {
+          const langNames = { ru: '🇷🇺 Русский', en: '🇬🇧 English', zh: '🇨🇳 中文', hi: '🇮🇳 हिन्दी' };
+          document.getElementById('lang-result').textContent = langNames[data.lang] || data.lang;
+
+          const sentEl = document.getElementById('sentiment-result');
+          sentEl.textContent = `${data.sentiment.emoji} ${data.sentiment.label} (${Math.round(data.sentiment.confidence)}%)`;
+          sentEl.className = 'value ' + data.sentiment.sentiment;
+
+          // 2. Перевод
+          const transResp = await fetch('/api/nlp/translate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text, targetLang })
+          });
+          const transData = await transResp.json();
+          document.getElementById('translation-result').textContent = transData.success ? transData.translated : '—';
+
+          // 3. Сущности
+          const entitiesResp = await fetch('/api/nlp/entities', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text })
+          });
+          const entitiesData = await entitiesResp.json();
+          const entitiesEl = document.getElementById('entities-result');
+          if (entitiesData.success && entitiesData.entities.length > 0) {
+            entitiesEl.innerHTML = entitiesData.entities.map(e =>
+              `<span class="entity-tag ${e.type}">${e.type}: ${e.value}</span>`
+            ).join(' ');
+          } else {
+            entitiesEl.textContent = 'Сущности не обнаружены';
+          }
+
+          // 4. Классификация
+          const classifyResp = await fetch('/api/nlp/classify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text })
+          });
+          const classifyData = await classifyResp.json();
+          const classEl = document.getElementById('classification-result');
+          if (classifyData.success) {
+            let html = `<div style="margin-bottom:4px;">Категория: <strong style="color:#5bc0f8;">${classifyData.category}</strong> (${Math.round(classifyData.confidence)}%)</div>`;
+            html += `<div style="font-size:12px;">`;
+            for (const [cat, score] of Object.entries(classifyData.scores || {})) {
+              const pct = Math.min(100, score * 25);
+              html += `<div class="category-score">${cat}<span>${Math.round(pct)}%</span></div>`;
+              html += `<div class="bar" style="width:${pct}%;background:${pct > 60 ? '#4caf50' : pct > 30 ? '#ffd700' : '#f44336'};"></div>`;
+            }
+            html += `</div>`;
+            classEl.innerHTML = html;
+          } else {
+            classEl.textContent = '—';
+          }
+
+          showNotification('✅ Анализ завершён');
+        } else {
+          showNotification('❌ ' + (data.error || 'Ошибка анализа'));
+        }
+      } catch (e) {
+        console.error('[NLP] Ошибка:', e);
+        showNotification('❌ Ошибка соединения с сервером');
+      }
+
+      btn.textContent = '🔍 Анализировать';
+      btn.disabled = false;
+    }
+
+    function clearText() {
+      document.getElementById('input-text').value = '';
+      document.getElementById('word-count').textContent = 'Слов: 0';
+      document.getElementById('lang-result').textContent = '—';
+      document.getElementById('sentiment-result').textContent = '—';
+      document.getElementById('sentiment-result').className = 'value';
+      document.getElementById('translation-result').textContent = '—';
+      document.getElementById('entities-result').textContent = '—';
+      document.getElementById('classification-result').textContent = '—';
+    }
+
+    // ============================================================
+    // 5. КНОПКА КОПИРОВАНИЯ
+    // ============================================================
+    function copyPageData() {
+      const text = document.getElementById('input-text').value || '';
+      const lang = document.getElementById('lang-result').textContent || '—';
+      const sentiment = document.getElementById('sentiment-result').textContent || '—';
+      const translation = document.getElementById('translation-result').textContent || '—';
+      const entities = document.getElementById('entities-result').textContent || '—';
+      const classification = document.getElementById('classification-result').textContent || '—';
+
+      let data = `=== Смысловой анализ ===\n`;
+      data += `Дата: ${new Date().toLocaleString()}\n\n`;
+      data += `--- ИСХОДНЫЙ ТЕКСТ ---\n${text}\n\n`;
+      data += `--- РЕЗУЛЬТАТЫ ---\n`;
+      data += `Язык: ${lang}\n`;
+      data += `Тональность: ${sentiment}\n`;
+      data += `Перевод: ${translation}\n`;
+      data += `Сущности: ${entities}\n`;
+      data += `Классификация: ${classification}\n`;
+
+      navigator.clipboard.writeText(data).then(() => {
+        showNotification('✅ Данные скопированы в буфер обмена');
+      }).catch(() => {
+        const area = document.createElement('textarea');
+        area.value = data;
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand('copy');
+        document.body.removeChild(area);
+        showNotification('✅ Данные скопированы');
+      });
+    }
+
+    document.getElementById('copy-btn').addEventListener('click', copyPageData);
+
+    // ============================================================
+    // 6. АВТОЗАГРУЗКА
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(analyzeText, 500);
+    });
+  </script>
+</body>
+</html>

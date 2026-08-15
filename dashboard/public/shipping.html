@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Морской трекинг — Crucix</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0f;
+      color: #c8d0d8;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: rgba(10, 10, 20, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+    }
+
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 20px rgba(91, 192, 248, 0.15); }
+    .topbar-status { font-size: 11px; color: #ffd700; text-shadow: 0 0 15px rgba(255, 215, 0, 0.1); }
+
+    .topbar-right { display: flex; align-items: center; gap: 6px; }
+    .topbar-btn {
+      height: 28px; padding: 0 12px; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 4px;
+      background: rgba(255, 255, 255, 0.03); color: #888; font-size: 11px; font-weight: 500;
+      text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .topbar-btn:hover { background: rgba(255, 255, 255, 0.06); transform: translateY(-1px); }
+    .btn-home { color: #5bc0f8; border-color: rgba(91, 192, 248, 0.2); background: rgba(91, 192, 248, 0.06); }
+    .btn-home:hover { background: rgba(91, 192, 248, 0.15); }
+    .btn-copy { color: #5bc0f8; border-color: rgba(91, 192, 248, 0.15); background: rgba(91, 192, 248, 0.06); }
+    .btn-copy:hover { background: rgba(91, 192, 248, 0.15); }
+    .btn-grid { color: #9c27b0; border-color: rgba(156, 39, 176, 0.15); background: rgba(156, 39, 176, 0.06); }
+    .btn-grid:hover { background: rgba(156, 39, 176, 0.15); }
+    .btn-grid.active { background: rgba(156, 39, 176, 0.2); border-color: rgba(156, 39, 176, 0.3); }
+
+    .lang-switch {
+      display: flex; gap: 2px; padding: 2px; background: rgba(255, 255, 255, 0.03);
+      border-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .lang-btn { padding: 2px 8px; border: none; background: transparent; color: #666; font-size: 11px; font-weight: 500; cursor: pointer; border-radius: 3px; transition: all 0.2s; }
+    .lang-btn:hover { color: #888; background: rgba(255, 255, 255, 0.05); }
+    .lang-btn.active { color: #5bc0f8; background: rgba(91, 192, 248, 0.1); }
+
+    .main-content { padding-top: 76px; max-width: 1400px; margin: 0 auto; padding-left: 20px; padding-right: 20px; padding-bottom: 40px; }
+    .page-title { font-size: 24px; font-weight: 700; color: #e8f0f8; letter-spacing: -0.5px; margin-bottom: 20px; text-shadow: 0 0 30px rgba(91, 192, 248, 0.05); }
+
+    .controls-panel {
+      display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 16px;
+      background: rgba(10, 10, 20, 0.5); border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 8px; margin-bottom: 16px;
+    }
+    .control-group { display: flex; align-items: center; gap: 6px; }
+    .control-group label { font-size: 11px; font-weight: 500; text-transform: uppercase; color: #666; letter-spacing: 0.5px; }
+    .control-group select { padding: 4px 8px; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 4px; background: rgba(255, 255, 255, 0.03); color: #c8d0d8; font-size: 12px; font-family: monospace; }
+    .control-group select:focus { outline: none; border-color: #5bc0f8; }
+
+    .btn {
+      height: 28px; padding: 0 14px; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 4px;
+      background: rgba(255, 255, 255, 0.03); color: #c8d0d8; font-size: 11px; font-weight: 500;
+      text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s;
+    }
+    .btn:hover { background: rgba(255, 255, 255, 0.06); transform: translateY(-1px); }
+    .btn-primary { background: #5bc0f8; color: #0a0a0f; border-color: #5bc0f8; }
+    .btn-primary:hover { background: #4a8af4; }
+
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px;
+    }
+    .stat-card {
+      background: rgba(10, 10, 20, 0.5); border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 8px;
+      padding: 12px 16px; text-align: center; transition: all 0.2s;
+    }
+    .stat-card:hover { border-color: rgba(255, 255, 255, 0.08); }
+    .stat-label { font-size: 10px; font-weight: 500; text-transform: uppercase; color: #666; letter-spacing: 0.5px; display: block; }
+    .stat-value { font-size: 24px; font-weight: 700; color: #e8f0f8; display: block; margin: 4px 0; }
+    .stat-value.green { color: #4caf50; }
+    .stat-value.red { color: #f44336; }
+    .stat-value.orange { color: #f26522; }
+    .stat-value.yellow { color: #ffd700; }
+    .stat-value.blue { color: #5bc0f8; }
+    .stat-sub { font-size: 11px; color: #666; display: block; }
+
+    .map-container {
+      background: rgba(10, 10, 20, 0.5); border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 8px;
+      padding: 4px; height: 450px; margin-bottom: 16px; position: relative;
+    }
+    #shipping-map { width: 100%; height: 100%; border-radius: 4px; background: #0a0a0f; }
+
+    .map-legend {
+      position: absolute; bottom: 20px; right: 20px; background: rgba(10, 10, 20, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 6px; padding: 10px 14px;
+      z-index: 10; font-size: 11px; backdrop-filter: blur(8px);
+    }
+    .map-legend-item { display: flex; align-items: center; gap: 6px; color: #888; padding: 2px 0; }
+    .map-legend-item .color-box { width: 10px; height: 10px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.1); }
+
+    .detail-panel {
+      display: none; background: rgba(10, 10, 20, 0.7); border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px; padding: 16px; margin-bottom: 16px; backdrop-filter: blur(8px);
+    }
+    .detail-panel.visible { display: block; }
+    .detail-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.04); }
+    .detail-header h2 { font-size: 18px; color: #e8f0f8; }
+    .detail-close { background: none; border: none; color: #666; font-size: 20px; cursor: pointer; }
+    .detail-close:hover { color: #e8f0f8; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .detail-item { padding: 8px 12px; background: rgba(255, 255, 255, 0.03); border-radius: 4px; }
+    .detail-item .label { font-size: 10px; text-transform: uppercase; color: #666; letter-spacing: 0.5px; display: block; }
+    .detail-item .value { font-size: 14px; color: #c8d0d8; margin-top: 2px; }
+
+    .vessels-list {
+      display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;
+    }
+    .vessel-item {
+      display: flex; align-items: center; gap: 12px; padding: 10px 16px;
+      background: rgba(10, 10, 20, 0.5); border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 6px; border-left: 3px solid #4caf50; cursor: pointer; transition: all 0.2s;
+    }
+    .vessel-item:hover { background: rgba(255, 255, 255, 0.05); }
+    .vessel-item.dark { border-left-color: #f44336; }
+    .vessel-item.suspicious { border-left-color: #f26522; }
+    .vessel-item .icon { font-size: 20px; }
+    .vessel-item .info { flex: 1; }
+    .vessel-item .info .name { font-size: 13px; color: #e8f0f8; }
+    .vessel-item .info .desc { font-size: 11px; color: #888; }
+    .vessel-item .status-badge {
+      font-size: 10px; font-weight: 600; padding: 2px 10px; border-radius: 12px; text-transform: uppercase;
+    }
+    .status-badge.normal { background: rgba(76, 175, 80, 0.2); color: #4caf50; }
+    .status-badge.dark { background: rgba(244, 67, 54, 0.2); color: #f44336; }
+    .status-badge.suspicious { background: rgba(242, 101, 34, 0.2); color: #f26522; }
+
+    #coordinate-grid {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 99999;
+      background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 50px 50px; display: none;
+    }
+    #coordinate-grid.visible { display: block; }
+    #grid-coords {
+      position: fixed; bottom: 12px; right: 12px; background: rgba(0, 0, 0, 0.7);
+      color: #00ff00; font-family: monospace; font-size: 11px; padding: 4px 10px;
+      border-radius: 4px; z-index: 100000; pointer-events: none; display: none;
+    }
+    #grid-coords.visible { display: block; }
+
+    .notification {
+      position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.85); color: #ffffff; padding: 8px 20px; border-radius: 6px;
+      font-size: 13px; z-index: 100001; border: 1px solid rgba(255, 255, 255, 0.1);
+      animation: notif-fade 2.5s forwards;
+    }
+    @keyframes notif-fade {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+
+    @media (max-width: 768px) {
+      .topbar { padding: 0 12px; height: 52px; }
+      .topbar-brand { font-size: 12px; }
+      .topbar-status { display: none; }
+      .topbar-btn { font-size: 10px; padding: 0 8px; height: 24px; }
+      .main-content { padding-top: 68px; padding-left: 12px; padding-right: 12px; }
+      .page-title { font-size: 18px; }
+      .controls-panel { flex-direction: column; align-items: stretch; }
+      .control-group { justify-content: space-between; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .map-container { height: 300px; }
+      .detail-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 480px) {
+      .topbar { padding: 0 8px; height: 46px; }
+      .topbar-brand { font-size: 10px; letter-spacing: 1px; }
+      .topbar-btn { font-size: 9px; padding: 0 6px; height: 20px; }
+      .topbar-btn .btn-text { display: none; }
+      .lang-btn { font-size: 9px; padding: 1px 5px; }
+      .main-content { padding-top: 62px; padding-left: 8px; padding-right: 8px; }
+      .page-title { font-size: 16px; }
+      .stats-grid { grid-template-columns: 1fr; }
+      .map-container { height: 220px; }
+      .stat-value { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-brand">⚡ CRUCIX MONITOR</span>
+      <span class="topbar-status">МОДУЛЬ №11</span>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+      <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ</button>
+      <button class="topbar-btn btn-grid" id="grid-toggle">📐 СЕТКА</button>
+      <div class="lang-switch">
+        <button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
+        <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <h1 class="page-title" id="page-title">🚢 Морской трекинг — детектор тёмных судов</h1>
+
+    <div class="controls-panel">
+      <div class="control-group">
+        <label>Тип:</label>
+        <select id="type-filter">
+          <option value="all">Все</option>
+          <option value="cargo">Грузовые</option>
+          <option value="tanker">Танкеры</option>
+          <option value="container">Контейнеровозы</option>
+          <option value="passenger">Пассажирские</option>
+          <option value="fishing">Рыболовные</option>
+          <option value="unknown">Неизвестные</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Статус:</label>
+        <select id="status-filter">
+          <option value="all">Все</option>
+          <option value="normal">🟢 Нормальные</option>
+          <option value="dark">🔴 Тёмные</option>
+          <option value="suspicious">🟠 Подозрительные</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" id="refresh-btn">🔄 Обновить</button>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card"><span class="stat-label">Всего судов</span><span class="stat-value blue" id="stat-total">—</span><span class="stat-sub">в море</span></div>
+      <div class="stat-card"><span class="stat-label">Нормальные</span><span class="stat-value green" id="stat-normal">—</span><span class="stat-sub">с AIS</span></div>
+      <div class="stat-card"><span class="stat-label">Тёмные</span><span class="stat-value red" id="stat-dark">—</span><span class="stat-sub">без AIS</span></div>
+      <div class="stat-card"><span class="stat-label">Подозрительные</span><span class="stat-value orange" id="stat-suspicious">—</span><span class="stat-sub">требуют внимания</span></div>
+    </div>
+
+    <div class="map-container">
+      <div id="shipping-map"></div>
+      <div class="map-legend">
+        <div class="map-legend-item"><span class="color-box" style="background:#4caf50;"></span> Нормальные</div>
+        <div class="map-legend-item"><span class="color-box" style="background:#f44336;"></span> Тёмные</div>
+        <div class="map-legend-item"><span class="color-box" style="background:#f26522;"></span> Подозрительные</div>
+      </div>
+    </div>
+
+    <div class="detail-panel" id="detail-panel">
+      <div class="detail-header">
+        <h2 id="detail-name">Судно</h2>
+        <button class="detail-close" id="detail-close">✕</button>
+      </div>
+      <div class="detail-grid">
+        <div class="detail-item"><span class="label">Тип</span><span class="value" id="detail-type">—</span></div>
+        <div class="detail-item"><span class="label">Флаг</span><span class="value" id="detail-flag">—</span></div>
+        <div class="detail-item"><span class="label">Скорость</span><span class="value" id="detail-speed">—</span></div>
+        <div class="detail-item"><span class="label">Курс</span><span class="value" id="detail-heading">—</span></div>
+        <div class="detail-item"><span class="label">Пункт назначения</span><span class="value" id="detail-dest">—</span></div>
+        <div class="detail-item"><span class="label">Статус</span><span class="value" id="detail-status">—</span></div>
+        <div class="detail-item" style="grid-column:span 2;"><span class="label">Причина</span><span class="value" id="detail-reason">—</span></div>
+      </div>
+    </div>
+
+    <h3 style="color:#888;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">🚢 Суда в зоне мониторинга</h3>
+    <div class="vessels-list" id="vessels-list">
+      <div style="text-align:center;color:#666;padding:10px;">Загрузка судов...</div>
+    </div>
+
+  </main>
+
+  <div id="coordinate-grid"></div>
+  <div id="grid-coords">X: 0  Y: 0</div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    let currentLang = localStorage.getItem('crucix-lang') || 'ru';
+    function switchLang(lang) {
+      currentLang = lang;
+      localStorage.setItem('crucix-lang', lang);
+      document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+      showNotification(`🌐 Язык: ${lang.toUpperCase()}`);
+    }
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === currentLang));
+
+    let gridVisible = false;
+    document.addEventListener('keydown', function(e) {
+      if (e.ctrlKey && e.shiftKey && e.key === 'G') { e.preventDefault(); toggleGrid(); }
+    });
+    document.getElementById('grid-toggle').addEventListener('click', toggleGrid);
+    function toggleGrid() {
+      gridVisible = !gridVisible;
+      document.getElementById('coordinate-grid').classList.toggle('visible', gridVisible);
+      document.getElementById('grid-coords').classList.toggle('visible', gridVisible);
+      document.getElementById('grid-toggle').classList.toggle('active', gridVisible);
+      if (gridVisible) {
+        showNotification('⊞ Сетка включена (Ctrl+Shift+G для выключения)');
+        document.addEventListener('mousemove', updateCoords);
+      } else {
+        showNotification('⊞ Сетка выключена');
+        document.removeEventListener('mousemove', updateCoords);
+      }
+    }
+    function updateCoords(e) {
+      document.getElementById('grid-coords').textContent = `X: ${e.clientX}  Y: ${e.clientY}`;
+    }
+
+    function showNotification(msg) {
+      const el = document.createElement('div');
+      el.className = 'notification';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2500);
+    }
+
+    class ShippingPage {
+      constructor() {
+        this.map = null; this.markers = []; this.vessels = [];
+        this.init();
+      }
+      init() {
+        document.getElementById('copy-btn').addEventListener('click', () => this.copyData());
+        document.getElementById('refresh-btn').addEventListener('click', () => this.loadAll());
+        document.getElementById('detail-close').addEventListener('click', () => {
+          document.getElementById('detail-panel').classList.remove('visible');
+        });
+        document.getElementById('type-filter').addEventListener('change', () => this.loadAll());
+        document.getElementById('status-filter').addEventListener('change', () => this.loadAll());
+        this.initMap();
+        this.loadAll();
+        setInterval(() => this.loadAll(), 30000);
+      }
+      initMap() {
+        this.map = L.map('shipping-map', { center: [35, 25], zoom: 3, zoomControl: false, attributionControl: false });
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution: '© OpenStreetMap, © CartoDB' }).addTo(this.map);
+        L.control.zoom({ position: 'topright' }).addTo(this.map);
+      }
+      async loadAll() {
+        const type = document.getElementById('type-filter').value;
+        const status = document.getElementById('status-filter').value;
+        let url = '/api/shipping/vessels?';
+        if (type !== 'all') url += `type=${type}&`;
+        if (status !== 'all') url += `status=${status}&`;
+        try {
+          const resp = await fetch(url);
+          const data = await resp.json();
+          if (data.success) {
+            this.vessels = data.vessels || [];
+            this.renderStats();
+            this.renderMarkers();
+            this.renderList();
+          }
+        } catch(e) { console.error('[Shipping] Ошибка:', e); }
+      }
+      renderStats() {
+        const total = this.vessels.length;
+        const normal = this.vessels.filter(v => v.status === 'normal').length;
+        const dark = this.vessels.filter(v => v.status === 'dark').length;
+        const suspicious = this.vessels.filter(v => v.status === 'suspicious').length;
+        document.getElementById('stat-total').textContent = total;
+        document.getElementById('stat-normal').textContent = normal;
+        document.getElementById('stat-dark').textContent = dark;
+        document.getElementById('stat-suspicious').textContent = suspicious;
+      }
+      renderMarkers() {
+        for (const m of this.markers) this.map.removeLayer(m);
+        this.markers = [];
+        const colors = { normal: '#4caf50', dark: '#f44336', suspicious: '#f26522' };
+        for (const v of this.vessels) {
+          const color = colors[v.status] || '#888';
+          const icon = L.divIcon({
+            className: 'vessel-marker',
+            html: `<div style="width:10px;height:10px;background:${color};border-radius:50%;border:2px solid rgba(255,255,255,0.3);box-shadow:0 0 20px ${color}60;cursor:pointer;"></div>`,
+            iconSize: [10, 10], iconAnchor: [5, 5]
+          });
+          const marker = L.marker([v.lat, v.lng], { icon }).addTo(this.map)
+            .on('click', () => this.showDetail(v.id));
+          marker.bindTooltip(`<div style="background:rgba(10,10,20,0.95);color:#c8d0d8;padding:8px 12px;border-radius:4px;font-size:12px;border:1px solid rgba(255,255,255,0.06);"><strong>${v.name}</strong><br><span style="color:#888;">${v.type} · ${v.flag}</span></div>`, { direction: 'top', offset: [0, -10] });
+          this.markers.push(marker);
+        }
+        if (this.vessels.length > 0) {
+          const bounds = L.latLngBounds(this.vessels.map(v => [v.lat, v.lng]));
+          if (bounds.isValid()) this.map.fitBounds(bounds, { padding: [50, 50], maxZoom: 4 });
+        }
+      }
+      renderList() {
+        const container = document.getElementById('vessels-list');
+        if (!this.vessels.length) {
+          container.innerHTML = '<div style="text-align:center;color:#666;padding:10px;">Судов не найдено</div>';
+          return;
+        }
+        const icons = { normal: '🟢', dark: '🔴', suspicious: '🟠' };
+        let html = '';
+        for (const v of this.vessels) {
+          html += `
+            <div class="vessel-item ${v.status}" onclick="window.shipping?.showDetail('${v.id}')">
+              <span class="icon">${icons[v.status] || '⛴️'}</span>
+              <div class="info">
+                <div class="name">${v.name}</div>
+                <div class="desc">${v.type} · ${v.flag} · ${v.speed || 0} уз</div>
+              </div>
+              <span class="status-badge ${v.status}">${v.status}</span>
+            </div>
+          `;
+        }
+        container.innerHTML = html;
+      }
+      async showDetail(id) {
+        try {
+          const resp = await fetch(`/api/shipping/vessel/${id}`);
+          const data = await resp.json();
+          if (data.success) {
+            const v = data.vessel;
+            document.getElementById('detail-panel').classList.add('visible');
+            document.getElementById('detail-name').textContent = v.name || '—';
+            document.getElementById('detail-type').textContent = v.type || '—';
+            document.getElementById('detail-flag').textContent = v.flag || '—';
+            document.getElementById('detail-speed').textContent = `${v.speed || 0} уз`;
+            document.getElementById('detail-heading').textContent = `${v.heading || 0}°`;
+            document.getElementById('detail-dest').textContent = v.destination || '—';
+            const statusColors = { normal: '#4caf50', dark: '#f44336', suspicious: '#f26522' };
+            const statusEl = document.getElementById('detail-status');
+            statusEl.textContent = v.status || '—';
+            statusEl.style.color = statusColors[v.status] || '#888';
+            document.getElementById('detail-reason').textContent = data.darkReason || 'Нормальное судно';
+          }
+        } catch(e) { console.error('[Shipping] Ошибка деталей:', e); }
+      }
+      copyData() {
+        let text = `=== Морской трекинг ===\nДата: ${new Date().toLocaleString()}\n\n`;
+        text += `--- СТАТИСТИКА ---\nВсего: ${this.vessels.length}\n`;
+        text += `Нормальных: ${this.vessels.filter(v => v.status === 'normal').length}\n`;
+        text += `Тёмных: ${this.vessels.filter(v => v.status === 'dark').length}\n`;
+        text += `Подозрительных: ${this.vessels.filter(v => v.status === 'suspicious').length}\n\n`;
+        text += `--- СУДА ---\n`;
+        for (const v of this.vessels) {
+          text += `${v.name} | ${v.type} | ${v.flag} | ${v.status} | ${v.speed} уз\n`;
+        }
+        text += `\n--- JSON ---\n${JSON.stringify(this.vessels, null, 2)}`;
+        navigator.clipboard.writeText(text).then(() => showNotification('✅ Данные скопированы'));
+      }
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      window.shipping = new ShippingPage();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ollama Chat — Crucix</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a1a;
+            color: #e0e0e0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .chat-container {
+            width: 100%;
+            max-width: 900px;
+            height: 90vh;
+            background: rgba(20, 20, 40, 0.95);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+        }
+        .chat-header {
+            padding: 16px 24px;
+            background: rgba(0,0,0,0.3);
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .chat-header h1 { font-size: 18px; color: #5bc0f8; font-weight: 700; }
+        .chat-header .model-badge {
+            font-size: 11px;
+            background: rgba(91,192,248,0.15);
+            padding: 4px 12px;
+            border-radius: 12px;
+            color: #5bc0f8;
+            border: 1px solid rgba(91,192,248,0.1);
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 24px;
+            background: rgba(0,0,0,0.15);
+        }
+        .message {
+            margin-bottom: 16px;
+            display: flex;
+        }
+        .message.user { justify-content: flex-end; }
+        .message .bubble {
+            max-width: 80%;
+            padding: 10px 16px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.06);
+            line-height: 1.6;
+            font-size: 14px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .message.user .bubble {
+            background: rgba(91,192,248,0.2);
+            border: 1px solid rgba(91,192,248,0.2);
+        }
+        .message .label {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 4px;
+            padding: 0 4px;
+        }
+        .system-message {
+            color: #555;
+            font-size: 13px;
+            text-align: center;
+            padding: 20px 0;
+        }
+        .chat-input {
+            padding: 12px 20px;
+            border-top: 1px solid rgba(255,255,255,0.04);
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0;
+            background: rgba(0,0,0,0.2);
+        }
+        .chat-input textarea {
+            flex: 1;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            color: #e0e0e0;
+            padding: 10px 14px;
+            font-size: 14px;
+            resize: none;
+            outline: none;
+            font-family: inherit;
+            height: 48px;
+            transition: border-color 0.2s;
+            line-height: 1.5;
+        }
+        .chat-input textarea:focus { border-color: rgba(91,192,248,0.3); }
+        .chat-input textarea::placeholder { color: #555; }
+        .chat-input button {
+            padding: 0 24px;
+            background: #5bc0f8;
+            color: #0a0a1a;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            white-space: nowrap;
+            height: 48px;
+        }
+        .chat-input button:hover { background: #4aafed; transform: translateY(-1px); }
+        .chat-input button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+        .clear-btn {
+            background: rgba(244,67,54,0.15);
+            color: #f44336;
+            border: 1px solid rgba(244,67,54,0.2);
+            padding: 4px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+        .clear-btn:hover { background: rgba(244,67,54,0.25); }
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #666;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4caf50;
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+        .error-message { color: #f44336; font-size: 13px; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>🧠 Ollama Chat</h1>
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div class="status-indicator"><span class="status-dot"></span><span>Online</span></div>
+                <span class="model-badge">deepseek-r1:1.5b</span>
+                <button class="clear-btn" onclick="clearChat()">Очистить</button>
+            </div>
+        </div>
+        <div class="chat-messages" id="messages">
+            <div class="system-message">🤖 Привет! Я DeepSeek 1.5B. Загружена полная память проекта Crucix из AI_MEMORY/. Отвечаю только на русском.</div>
+        </div>
+        <div class="chat-input">
+            <textarea id="input" placeholder="Введите сообщение на русском..." rows="1"></textarea>
+            <button id="send">Отправить</button>
+        </div>
+    </div>
+
+    <script>
+        const messagesEl = document.getElementById('messages');
+        const inputEl = document.getElementById('input');
+        const sendBtn = document.getElementById('send');
+        let isProcessing = false;
+
+        // Системный промпт с памятью проекта (загружается при старте)
+        // ВАЖНО: для полной памяти используй скрипт load-ai-memory.sh
+        const SYSTEM_PROMPT = `Ты — эксперт по проекту Crucix.
+        
+        ПРАВИЛА:
+        1. Отвечай ТОЛЬКО на РУССКОМ языке.
+        2. Используй информацию из памяти проекта.
+        3. Указывай полные пути к файлам.
+        4. Если не знаешь — скажи честно.
+        
+        ПАМЯТЬ ПРОЕКТА:
+        Проект: Crucix — OSINT-платформа
+        Версия: 2.1.2
+        Дата: 2026-08-14
+        Путь: /home/ta8_/Рабочий стол/Crucix
+        Порт: 3117
+        
+        Модули (11 шт):
+        1. OFAC — Санкционный мониторинг (/api/ofac/*)
+        2. EIA — Энергетика (/api/eia/*)
+        3. WHO — Здравоохранение (/api/who/*)
+        4. CISA-KEV — Киберугрозы (/api/cisa/*)
+        5. NOAA — Погода (/api/noaa/*)
+        6. Space — Космос (/api/space/*)
+        7. Comtrade — Торговля (/api/comtrade/*)
+        8. EPA — Экология (/api/epa/*)
+        9. GSCPI — Цепи поставок (/api/gscpi/*)
+        10. TASS — Новости ТАСС (/api/tass/*)
+        11. OpenSanctions — Санкции (/api/opensanctions/*)
+        
+        Страницы: /jarvis, /rss-feed, /rss-dashboard, /ai-chat, /geo-map,
+        /basket, /grid-tool, /global-index, /historical-analysis,
+        /correlation, /infrastructure
+        
+        AI_MEMORY папка: /home/ta8_/Рабочий стол/Crucix/AI_MEMORY/
+        Файлы: 00_RULES.txt, 00_CRUCIX_CONTEXT.txt, 01_PROJECT_OVERVIEW.txt,
+        02_ARCHITECTURE.txt, 03_ROADMAP.txt, 06_STATE.txt, 07_DECISIONS.txt,
+        08_CODE_CHANGES.txt, 09_STATUS_REPORT.txt, 11_MODULES_COMPLETE.txt,
+        12_OLLAMA_MEMORY.txt
+        
+        Ollama: версия 0.32.9, модель deepseek-r1:1.5b`;
+
+        function addMessage(role, content, isError = false) {
+            const div = document.createElement('div');
+            div.className = `message ${role}`;
+            const label = document.createElement('div');
+            label.className = 'label';
+            label.textContent = role === 'user' ? '👤 Вы' : '🤖 AI';
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            if (isError) bubble.style.color = '#f44336';
+            bubble.textContent = content;
+            div.appendChild(label);
+            div.appendChild(bubble);
+            messagesEl.appendChild(div);
+            messagesEl.scrollTop = messagesEl.scrollHeight;
+        }
+
+        function addLoading() {
+            const div = document.createElement('div');
+            div.className = 'message assistant';
+            div.id = 'loading';
+            const label = document.createElement('div');
+            label.className = 'label';
+            label.textContent = '🤖 AI';
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            bubble.textContent = '⏳ Думаю...';
+            div.appendChild(label);
+            div.appendChild(bubble);
+            messagesEl.appendChild(div);
+            messagesEl.scrollTop = messagesEl.scrollHeight;
+        }
+
+        function removeLoading() {
+            const el = document.getElementById('loading');
+            if (el) el.remove();
+        }
+
+        function clearChat() {
+            messagesEl.innerHTML = `<div class="system-message">💬 Чат очищен. Задавай новый вопрос!</div>`;
+        }
+
+        async function sendMessage() {
+            const text = inputEl.value.trim();
+            if (!text || isProcessing) return;
+
+            isProcessing = true;
+            sendBtn.disabled = true;
+            inputEl.value = '';
+            addMessage('user', text);
+            addLoading();
+
+            const prompt = `${SYSTEM_PROMPT}\n\nВОПРОС ПОЛЬЗОВАТЕЛЯ: ${text}\n\nОТВЕТЬ НА РУССКОМ ЯЗЫКЕ, ИСПОЛЬЗУЯ ПАМЯТЬ ПРОЕКТА.`;
+
+            try {
+                const response = await fetch('/api/ollama/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: 'deepseek-r1:1.5b',
+                        prompt: prompt,
+                        stream: false,
+                        options: {
+                            num_predict: 800,
+                            temperature: 0.5,
+                            top_p: 0.9,
+                            repeat_penalty: 1.1
+                        }
+                    })
+                });
+
+                const data = await response.json();
+                removeLoading();
+                
+                if (data.response) {
+                    let cleanResponse = data.response;
+                    const thinkMatch = cleanResponse.match(/<thinking>[\s\S]*?<\/thinking>/);
+                    if (thinkMatch) {
+                        cleanResponse = cleanResponse.replace(thinkMatch[0], '').trim();
+                    }
+                    cleanResponse = cleanResponse.replace(/\n{3,}/g, '\n\n');
+                    addMessage('assistant', cleanResponse || 'Ответ получен, но он пустой.');
+                } else if (data.error) {
+                    addMessage('assistant', `❌ Ошибка: ${data.error}`, true);
+                } else {
+                    addMessage('assistant', '❌ Не удалось получить ответ', true);
+                }
+            } catch (error) {
+                removeLoading();
+                addMessage('assistant', `❌ Ошибка: ${error.message}`, true);
+            }
+
+            isProcessing = false;
+            sendBtn.disabled = false;
+            inputEl.focus();
+        }
+
+        inputEl.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        sendBtn.addEventListener('click', sendMessage);
+        inputEl.focus();
+
+        inputEl.addEventListener('input', () => {
+            inputEl.style.height = 'auto';
+            inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
+        });
+    </script>
+</body>
+</html>

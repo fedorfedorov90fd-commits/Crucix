@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Лента новостей — Crucix</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0f;
+      color: #c8d0d8;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; height: 60px;
+      background: rgba(10, 10, 20, 0.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04); z-index: 100;
+      display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; }
+    .topbar-status { font-size: 11px; color: #ffd700; }
+
+    .topbar-right { display: flex; align-items: center; gap: 6px; }
+    .topbar-btn {
+      height: 28px; padding: 0 12px; border: 1px solid rgba(255,255,255,0.08); border-radius: 4px;
+      background: rgba(255,255,255,0.03); color: #888; font-size: 11px; font-weight: 500;
+      text-transform: uppercase; cursor: pointer; transition: all 0.2s;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .topbar-btn:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+    .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
+    .btn-home:hover { background: rgba(91,192,248,0.15); }
+    .btn-copy { color: #5bc0f8; border-color: rgba(91,192,248,0.15); background: rgba(91,192,248,0.06); }
+    .btn-copy:hover { background: rgba(91,192,248,0.15); }
+    .btn-grid { color: #9c27b0; border-color: rgba(156,39,176,0.15); background: rgba(156,39,176,0.06); }
+    .btn-grid:hover { background: rgba(156,39,176,0.15); }
+    .btn-grid.active { background: rgba(156,39,176,0.2); border-color: rgba(156,39,176,0.3); }
+
+    .lang-switch {
+      display: flex; gap: 2px; padding: 2px;
+      background: rgba(255,255,255,0.03); border-radius: 4px; border: 1px solid rgba(255,255,255,0.06);
+    }
+    .lang-btn { padding: 2px 8px; border: none; background: transparent; color: #666; font-size: 11px; font-weight: 500; cursor: pointer; border-radius: 3px; transition: all 0.2s; }
+    .lang-btn:hover { color: #888; background: rgba(255,255,255,0.05); }
+    .lang-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.1); }
+
+    .main-content { padding-top: 76px; max-width: 1200px; margin: 0 auto; padding-left: 20px; padding-right: 20px; padding-bottom: 40px; }
+    .page-title { font-size: 24px; font-weight: 700; color: #e8f0f8; margin-bottom: 20px; }
+
+    .controls-panel {
+      display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 12px 16px;
+      background: rgba(10,10,20,0.5); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px; margin-bottom: 16px;
+    }
+    .controls-panel select, .controls-panel input {
+      padding: 6px 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 4px; color: #c8d0d8; font-size: 12px; font-family: inherit;
+    }
+    .controls-panel select:focus, .controls-panel input:focus { outline: none; border-color: #5bc0f8; }
+    .controls-panel .search-input { flex: 1; min-width: 150px; }
+
+    .btn { padding: 6px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.2s; }
+    .btn:hover { transform: translateY(-1px); opacity: 0.9; }
+    .btn-primary { background: #5bc0f8; color: #0a0a0f; }
+    .btn-secondary { background: #444; color: #fff; }
+    .btn-success { background: #4caf50; color: #fff; }
+    .btn-danger { background: #f44336; color: #fff; }
+
+    .stats-row {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;
+    }
+    .stat-tag {
+      padding: 4px 12px; background: rgba(10,10,20,0.3); border-radius: 12px; font-size: 11px; color: #888;
+    }
+    .stat-tag strong { color: #e8f0f8; }
+
+    .feed-container { display: flex; flex-direction: column; gap: 8px; }
+    .news-item {
+      display: flex; flex-direction: column; gap: 4px; padding: 12px 16px;
+      background: rgba(10,10,20,0.4); border: 1px solid rgba(255,255,255,0.04); border-radius: 6px;
+      border-left: 3px solid #4caf50; transition: all 0.2s;
+    }
+    .news-item:hover { background: rgba(255,255,255,0.03); }
+    .news-item .header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+    .news-item .title { font-size: 14px; font-weight: 500; color: #e8f0f8; }
+    .news-item .title a { color: #e8f0f8; text-decoration: none; }
+    .news-item .title a:hover { color: #5bc0f8; }
+    .news-item .summary { font-size: 12px; color: #888; }
+    .news-item .meta { display: flex; flex-wrap: wrap; gap: 12px; font-size: 11px; color: #666; }
+    .news-item .meta .source { color: #5bc0f8; }
+    .news-item .meta .time { color: #666; }
+    .news-item .badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; text-transform: uppercase; }
+    .badge-critical { background: rgba(244,67,54,0.2); color: #f44336; }
+    .badge-high { background: rgba(242,101,34,0.2); color: #f26522; }
+    .badge-medium { background: rgba(255,215,0,0.2); color: #ffd700; }
+    .badge-low { background: rgba(76,175,80,0.2); color: #4caf50; }
+    .badge-favorite { cursor: pointer; font-size: 16px; padding: 0 4px; }
+    .badge-favorite:hover { transform: scale(1.2); }
+    .news-item .category-tag { font-size: 10px; color: #5bc0f8; }
+
+    .favorites-btn { background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.2); color: #ffd700; }
+    .favorites-btn:hover { background: rgba(255,215,0,0.2); }
+
+    #coordinate-grid {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 99999;
+      background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 50px 50px; display: none;
+    }
+    #coordinate-grid.visible { display: block; }
+    #grid-coords {
+      position: fixed; bottom: 12px; right: 12px; background: rgba(0,0,0,0.7);
+      color: #00ff00; font-family: monospace; font-size: 11px; padding: 4px 10px; border-radius: 4px;
+      z-index: 100000; pointer-events: none; display: none;
+    }
+    #grid-coords.visible { display: block; }
+
+    .notification {
+      position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.85); color: #fff; padding: 8px 20px; border-radius: 6px;
+      font-size: 13px; z-index: 100001; border: 1px solid rgba(255,255,255,0.1);
+      animation: notif-fade 2.5s forwards;
+    }
+    @keyframes notif-fade {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+
+    @media (max-width: 768px) {
+      .topbar { padding: 0 12px; height: 52px; }
+      .topbar-brand { font-size: 12px; }
+      .topbar-status { display: none; }
+      .topbar-btn { font-size: 10px; padding: 0 8px; height: 24px; }
+      .main-content { padding-top: 68px; padding-left: 12px; padding-right: 12px; }
+      .page-title { font-size: 18px; }
+      .controls-panel { flex-direction: column; align-items: stretch; }
+      .controls-panel .search-input { flex: 1; }
+      .news-item .header { flex-direction: column; }
+    }
+    @media (max-width: 480px) {
+      .topbar { padding: 0 8px; height: 46px; }
+      .topbar-brand { font-size: 10px; letter-spacing: 1px; }
+      .topbar-btn { font-size: 9px; padding: 0 6px; height: 20px; }
+      .topbar-btn .btn-text { display: none; }
+      .lang-btn { font-size: 9px; padding: 1px 5px; }
+      .main-content { padding-top: 62px; padding-left: 8px; padding-right: 8px; }
+      .page-title { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-brand">⚡ CRUCIX MONITOR</span>
+      <span class="topbar-status">МОДУЛЬ №19</span>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+      <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ</button>
+      <button class="topbar-btn btn-grid" id="grid-toggle">📐 СЕТКА</button>
+      <div class="lang-switch">
+        <button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
+        <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <h1 class="page-title" id="page-title">📰 Лента живых новостных потоков</h1>
+
+    <div class="controls-panel">
+      <select id="category-filter">
+        <option value="all">📰 Все категории</option>
+        <option value="politics">🏛️ Политика</option>
+        <option value="economy">💰 Экономика</option>
+        <option value="military">⚔️ Военные</option>
+        <option value="technology">💻 Технологии</option>
+        <option value="environment">🌿 Экология</option>
+        <option value="health">🏥 Здоровье</option>
+        <option value="cyber">🛡️ Кибер</option>
+      </select>
+      <select id="region-filter">
+        <option value="all">🌍 Все регионы</option>
+        <option value="global">🌍 Глобально</option>
+        <option value="europe">🇪🇺 Европа</option>
+        <option value="usa">🇺🇸 США</option>
+        <option value="asia">🌏 Азия</option>
+        <option value="middle-east">🏛️ Ближний Восток</option>
+        <option value="africa">🌍 Африка</option>
+        <option value="ukraine">🇺🇦 Украина</option>
+        <option value="russia">🇷🇺 Россия</option>
+      </select>
+      <select id="importance-filter">
+        <option value="all">⭐ Все</option>
+        <option value="critical">🚨 Критические</option>
+        <option value="high">🔥 Высокие</option>
+        <option value="medium">📊 Средние</option>
+        <option value="low">📌 Низкие</option>
+      </select>
+      <input type="text" id="search-input" class="search-input" placeholder="🔍 Поиск..." oninput="loadFeed()">
+      <button class="btn btn-primary" onclick="loadFeed()">🔄 Обновить</button>
+      <button class="btn favorites-btn" onclick="toggleFavorites()">⭐ Избранное</button>
+      <span style="font-size:11px;color:#666;margin-left:auto;" id="feed-count"></span>
+    </div>
+
+    <div class="stats-row" id="stats-row">
+      <span class="stat-tag">📰 Всего: <strong id="stat-total">0</strong></span>
+      <span class="stat-tag">🚨 Критические: <strong id="stat-critical">0</strong></span>
+      <span class="stat-tag">🔥 Высокие: <strong id="stat-high">0</strong></span>
+      <span class="stat-tag">😊 Позитивные: <strong id="stat-positive">0</strong></span>
+      <span class="stat-tag">😟 Негативные: <strong id="stat-negative">0</strong></span>
+    </div>
+
+    <div class="feed-container" id="feed-container">
+      <div style="text-align:center;color:#666;padding:20px;">Загрузка новостей...</div>
+    </div>
+
+  </main>
+
+  <div id="coordinate-grid"></div>
+  <div id="grid-coords">X: 0  Y: 0</div>
+
+  <script>
+    // ============================================================
+    // 1. ПЕРЕКЛЮЧАТЕЛЬ ЯЗЫКА
+    // ============================================================
+    let currentLang = localStorage.getItem('crucix-lang') || 'ru';
+    let showFavoritesOnly = false;
+
+    function switchLang(lang) {
+      currentLang = lang;
+      localStorage.setItem('crucix-lang', lang);
+      document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+      showNotification(`🌐 Язык: ${lang.toUpperCase()}`);
+      updateTexts(lang);
+    }
+
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === currentLang));
+
+    function updateTexts(lang) {
+      const texts = {
+        ru: { title: '📰 Лента живых новостных потоков' },
+        en: { title: '📰 Live News Feed' }
+      };
+      const t = texts[lang] || texts.ru;
+      document.getElementById('page-title').textContent = t.title;
+    }
+
+    updateTexts(currentLang);
+
+    // ============================================================
+    // 2. КООРДИНАТНАЯ СЕТКА
+    // ============================================================
+    let gridVisible = false;
+    document.addEventListener('keydown', function(e) {
+      if (e.ctrlKey && e.shiftKey && e.key === 'G') { e.preventDefault(); toggleGrid(); }
+    });
+    document.getElementById('grid-toggle').addEventListener('click', toggleGrid);
+
+    function toggleGrid() {
+      gridVisible = !gridVisible;
+      document.getElementById('coordinate-grid').classList.toggle('visible', gridVisible);
+      document.getElementById('grid-coords').classList.toggle('visible', gridVisible);
+      document.getElementById('grid-toggle').classList.toggle('active', gridVisible);
+      if (gridVisible) {
+        showNotification('⊞ Сетка включена (Ctrl+Shift+G для выключения)');
+        document.addEventListener('mousemove', updateCoords);
+      } else {
+        showNotification('⊞ Сетка выключена');
+        document.removeEventListener('mousemove', updateCoords);
+      }
+    }
+
+    function updateCoords(e) {
+      document.getElementById('grid-coords').textContent = `X: ${e.clientX}  Y: ${e.clientY}`;
+    }
+
+    function showNotification(msg) {
+      const el = document.createElement('div');
+      el.className = 'notification';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2500);
+    }
+
+    // ============================================================
+    // 3. ОСНОВНЫЕ ФУНКЦИИ
+    // ============================================================
+
+    async function loadFeed() {
+      const category = document.getElementById('category-filter').value;
+      const region = document.getElementById('region-filter').value;
+      const importance = document.getElementById('importance-filter').value;
+      const search = document.getElementById('search-input').value;
+
+      try {
+        let url = `/api/live/feed?category=${category}&region=${region}&importance=${importance}&search=${encodeURIComponent(search)}`;
+        const resp = await fetch(url);
+        const data = await resp.json();
+
+        if (data.success) {
+          let feed = data.feed || [];
+          if (showFavoritesOnly) {
+            feed = feed.filter(n => n.isFavorite);
+          }
+          renderFeed(feed);
+          renderStats(data.stats);
+          document.getElementById('feed-count').textContent = feed.length + ' новостей';
+        }
+      } catch(e) { console.error('[Live] Ошибка загрузки:', e); }
+    }
+
+    function renderFeed(feed) {
+      const container = document.getElementById('feed-container');
+      if (!feed || !feed.length) {
+        container.innerHTML = '<div style="text-align:center;color:#666;padding:20px;">Новостей не найдено</div>';
+        return;
+      }
+
+      const importanceLabels = {
+        critical: '🚨 КРИТИЧЕСКИЙ',
+        high: '🔥 ВЫСОКИЙ',
+        medium: '📊 СРЕДНИЙ',
+        low: '📌 НИЗКИЙ'
+      };
+      const importanceClasses = {
+        critical: 'badge-critical',
+        high: 'badge-high',
+        medium: 'badge-medium',
+        low: 'badge-low'
+      };
+
+      let html = '';
+      for (const n of feed) {
+        const time = new Date(n.timestamp).toLocaleString();
+        const importanceClass = importanceClasses[n.importance] || 'badge-medium';
+        const importanceLabel = importanceLabels[n.importance] || n.importance;
+        const favIcon = n.isFavorite ? '⭐' : '☆';
+        const sentEmoji = n.sentiment === 'positive' ? '😊' : n.sentiment === 'negative' ? '😟' : '😐';
+
+        html += `
+          <div class="news-item" style="border-left-color: ${n.importance === 'critical' ? '#f44336' : n.importance === 'high' ? '#f26522' : n.importance === 'medium' ? '#ffd700' : '#4caf50'}">
+            <div class="header">
+              <div class="title">
+                <a href="${n.url || '#'}" target="_blank">${n.title}</a>
+                <span class="badge-favorite" onclick="toggleFavorite('${n.id}')">${favIcon}</span>
+              </div>
+              <span class="badge ${importanceClass}">${importanceLabel}</span>
+            </div>
+            <div class="summary">${n.summary || ''}</div>
+            <div class="meta">
+              <span class="source">${n.source || 'Unknown'}</span>
+              <span class="category-tag">${n.category || ''}</span>
+              <span class="time">${time}</span>
+              <span>${sentEmoji}</span>
+              ${n.region ? `<span>📍 ${n.region}</span>` : ''}
+            </div>
+          </div>
+        `;
+      }
+      container.innerHTML = html;
+    }
+
+    function renderStats(stats) {
+      if (!stats) return;
+      document.getElementById('stat-total').textContent = stats.total || 0;
+      document.getElementById('stat-critical').textContent = stats.byImportance?.critical || 0;
+      document.getElementById('stat-high').textContent = stats.byImportance?.high || 0;
+      document.getElementById('stat-positive').textContent = stats.bySentiment?.positive || 0;
+      document.getElementById('stat-negative').textContent = stats.bySentiment?.negative || 0;
+    }
+
+    async function toggleFavorite(newsId) {
+      try {
+        const resp = await fetch('/api/live/favorite', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ newsId })
+        });
+        const data = await resp.json();
+        if (data.success) {
+          showNotification(data.action === 'added' ? '⭐ Добавлено в избранное' : '☆ Удалено из избранного');
+          loadFeed();
+        }
+      } catch(e) { console.error('[Live] Ошибка:', e); }
+    }
+
+    function toggleFavorites() {
+      showFavoritesOnly = !showFavoritesOnly;
+      const btn = document.querySelector('.favorites-btn');
+      btn.style.borderColor = showFavoritesOnly ? '#ffd700' : 'rgba(255,215,0,0.2)';
+      btn.style.background = showFavoritesOnly ? 'rgba(255,215,0,0.2)' : 'rgba(255,215,0,0.1)';
+      loadFeed();
+    }
+
+    // Фильтры
+    document.getElementById('category-filter').addEventListener('change', loadFeed);
+    document.getElementById('region-filter').addEventListener('change', loadFeed);
+    document.getElementById('importance-filter').addEventListener('change', loadFeed);
+
+    // ============================================================
+    // 4. КНОПКА КОПИРОВАНИЯ
+    // ============================================================
+    function copyPageData() {
+      const items = document.querySelectorAll('.news-item');
+      let text = `=== Лента новостей ===\n`;
+      text += `Дата: ${new Date().toLocaleString()}\n\n`;
+      for (const el of items) {
+        const title = el.querySelector('.title')?.textContent?.trim() || '';
+        const summary = el.querySelector('.summary')?.textContent?.trim() || '';
+        const meta = el.querySelector('.meta')?.textContent?.trim() || '';
+        text += `📰 ${title}\n`;
+        if (summary) text += `   ${summary}\n`;
+        text += `   ${meta}\n\n`;
+      }
+
+      navigator.clipboard.writeText(text).then(() => {
+        showNotification('✅ Данные скопированы');
+      }).catch(() => {
+        const area = document.createElement('textarea');
+        area.value = text;
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand('copy');
+        document.body.removeChild(area);
+        showNotification('✅ Данные скопированы');
+      });
+    }
+
+    document.getElementById('copy-btn').addEventListener('click', copyPageData);
+
+    // ============================================================
+    // 5. ЗАГРУЗКА
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', function() {
+      loadFeed();
+      setInterval(loadFeed, 30000);
+    });
+  </script>
+</body>
+</html>

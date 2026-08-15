@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Gateway — Crucix</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0f;
+      color: #c8d0d8;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; height: 60px;
+      background: rgba(10, 10, 20, 0.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04); z-index: 100;
+      display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; }
+    .topbar-status { font-size: 11px; color: #ffd700; }
+
+    .topbar-right { display: flex; align-items: center; gap: 6px; }
+    .topbar-btn {
+      height: 28px; padding: 0 12px; border: 1px solid rgba(255,255,255,0.08); border-radius: 4px;
+      background: rgba(255,255,255,0.03); color: #888; font-size: 11px; font-weight: 500;
+      text-transform: uppercase; cursor: pointer; transition: all 0.2s;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .topbar-btn:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+    .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
+    .btn-home:hover { background: rgba(91,192,248,0.15); }
+    .btn-copy { color: #5bc0f8; border-color: rgba(91,192,248,0.15); background: rgba(91,192,248,0.06); }
+    .btn-copy:hover { background: rgba(91,192,248,0.15); }
+    .btn-grid { color: #9c27b0; border-color: rgba(156,39,176,0.15); background: rgba(156,39,176,0.06); }
+    .btn-grid:hover { background: rgba(156,39,176,0.15); }
+    .btn-grid.active { background: rgba(156,39,176,0.2); border-color: rgba(156,39,176,0.3); }
+
+    .lang-switch {
+      display: flex; gap: 2px; padding: 2px;
+      background: rgba(255,255,255,0.03); border-radius: 4px; border: 1px solid rgba(255,255,255,0.06);
+    }
+    .lang-btn { padding: 2px 8px; border: none; background: transparent; color: #666; font-size: 11px; font-weight: 500; cursor: pointer; border-radius: 3px; transition: all 0.2s; }
+    .lang-btn:hover { color: #888; background: rgba(255,255,255,0.05); }
+    .lang-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.1); }
+
+    .main-content { padding-top: 76px; max-width: 1000px; margin: 0 auto; padding-left: 20px; padding-right: 20px; padding-bottom: 40px; }
+    .page-title { font-size: 24px; font-weight: 700; color: #e8f0f8; margin-bottom: 20px; }
+
+    .provider-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px;
+    }
+    .provider-card {
+      background: rgba(10,10,20,0.5); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px; padding: 12px 16px;
+      border-left: 3px solid #4caf50; transition: all 0.2s; cursor: default;
+    }
+    .provider-card.offline { border-left-color: #f44336; opacity: 0.6; }
+    .provider-card .name { font-size: 14px; font-weight: 600; color: #e8f0f8; }
+    .provider-card .type { font-size: 11px; color: #888; }
+    .provider-card .status { font-size: 11px; margin-top: 4px; }
+    .provider-card .status.online { color: #4caf50; }
+    .provider-card .status.offline { color: #f44336; }
+    .provider-card .active-badge { font-size: 10px; background: #5bc0f8; color: #0a0a0f; padding: 2px 8px; border-radius: 10px; }
+
+    .chat-panel {
+      background: rgba(10,10,20,0.5); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px; padding: 16px; margin-bottom: 16px;
+    }
+    .chat-panel textarea {
+      width: 100%; min-height: 100px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 6px; color: #c8d0d8; padding: 12px; font-size: 14px; font-family: inherit; resize: vertical;
+    }
+    .chat-panel textarea:focus { outline: none; border-color: #5bc0f8; }
+    .chat-panel .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; align-items: center; }
+    .chat-panel .controls select { padding: 6px 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; color: #c8d0d8; font-size: 13px; }
+
+    .btn { padding: 8px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s; }
+    .btn:hover { transform: translateY(-1px); opacity: 0.9; }
+    .btn-primary { background: #5bc0f8; color: #0a0a0f; }
+    .btn-secondary { background: #444; color: #fff; }
+    .btn-success { background: #4caf50; color: #fff; }
+    .btn-danger { background: #f44336; color: #fff; }
+
+    .response-box {
+      background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 12px;
+      margin-top: 12px; font-size: 14px; color: #c8d0d8; min-height: 60px;
+    }
+    .response-box .meta { font-size: 11px; color: #666; margin-top: 8px; }
+
+    #coordinate-grid {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 99999;
+      background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 50px 50px; display: none;
+    }
+    #coordinate-grid.visible { display: block; }
+    #grid-coords {
+      position: fixed; bottom: 12px; right: 12px; background: rgba(0,0,0,0.7);
+      color: #00ff00; font-family: monospace; font-size: 11px; padding: 4px 10px; border-radius: 4px;
+      z-index: 100000; pointer-events: none; display: none;
+    }
+    #grid-coords.visible { display: block; }
+
+    .notification {
+      position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.85); color: #fff; padding: 8px 20px; border-radius: 6px;
+      font-size: 13px; z-index: 100001; border: 1px solid rgba(255,255,255,0.1);
+      animation: notif-fade 2.5s forwards;
+    }
+    @keyframes notif-fade {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+
+    @media (max-width: 768px) {
+      .topbar { padding: 0 12px; height: 52px; }
+      .topbar-brand { font-size: 12px; }
+      .topbar-status { display: none; }
+      .topbar-btn { font-size: 10px; padding: 0 8px; height: 24px; }
+      .main-content { padding-top: 68px; padding-left: 12px; padding-right: 12px; }
+      .page-title { font-size: 18px; }
+      .provider-grid { grid-template-columns: 1fr 1fr; }
+      .chat-panel .controls { flex-direction: column; align-items: stretch; }
+    }
+    @media (max-width: 480px) {
+      .topbar { padding: 0 8px; height: 46px; }
+      .topbar-brand { font-size: 10px; letter-spacing: 1px; }
+      .topbar-btn { font-size: 9px; padding: 0 6px; height: 20px; }
+      .topbar-btn .btn-text { display: none; }
+      .lang-btn { font-size: 9px; padding: 1px 5px; }
+      .main-content { padding-top: 62px; padding-left: 8px; padding-right: 8px; }
+      .page-title { font-size: 16px; }
+      .provider-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-brand">⚡ CRUCIX MONITOR</span>
+      <span class="topbar-status">МОДУЛЬ №22</span>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+      <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ</button>
+      <button class="topbar-btn btn-grid" id="grid-toggle">📐 СЕТКА</button>
+      <div class="lang-switch">
+        <button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
+        <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <h1 class="page-title" id="page-title">🤖 AI Gateway</h1>
+
+    <div class="provider-grid" id="providers-grid"></div>
+
+    <div class="chat-panel">
+      <textarea id="prompt-input" placeholder="Введите запрос для AI (чат)...">Опиши текущую глобальную напряжённость</textarea>
+      <div class="controls">
+        <select id="provider-select">
+          <option value="ollama">Ollama (локальный)</option>
+          <option value="openai">OpenAI (облачный)</option>
+          <option value="huggingface">HuggingFace (облачный)</option>
+          <option value="groq">Groq (облачный)</option>
+        </select>
+        <select id="model-select">
+          <option value="deepseek-r1:1.5b">DeepSeek 1.5B</option>
+          <option value="deepseek-r1:7b">DeepSeek 7B</option>
+          <option value="llama3.2">Llama 3.2</option>
+        </select>
+        <button class="btn btn-primary" onclick="sendChat()">💬 Отправить</button>
+        <button class="btn btn-secondary" onclick="clearChat()">✖ Очистить</button>
+        <span style="font-size:11px;color:#666;margin-left:auto;">
+          <label><input type="checkbox" id="cache-toggle" checked> Кэш</label>
+        </span>
+      </div>
+      <div class="response-box" id="response-box">
+        <span style="color:#666;">Ответ появится здесь...</span>
+      </div>
+    </div>
+
+  </main>
+
+  <div id="coordinate-grid"></div>
+  <div id="grid-coords">X: 0  Y: 0</div>
+
+  <script>
+    // ============================================================
+    // 1. ПЕРЕКЛЮЧАТЕЛЬ ЯЗЫКА
+    // ============================================================
+    let currentLang = localStorage.getItem('crucix-lang') || 'ru';
+
+    function switchLang(lang) {
+      currentLang = lang;
+      localStorage.setItem('crucix-lang', lang);
+      document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+      showNotification(`🌐 Язык: ${lang.toUpperCase()}`);
+      updateTexts(lang);
+    }
+
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === currentLang));
+
+    function updateTexts(lang) {
+      const texts = {
+        ru: { title: '🤖 AI Gateway' },
+        en: { title: '🤖 AI Gateway' }
+      };
+      const t = texts[lang] || texts.ru;
+      document.getElementById('page-title').textContent = t.title;
+    }
+
+    updateTexts(currentLang);
+
+    // ============================================================
+    // 2. КООРДИНАТНАЯ СЕТКА
+    // ============================================================
+    let gridVisible = false;
+    document.addEventListener('keydown', function(e) {
+      if (e.ctrlKey && e.shiftKey && e.key === 'G') { e.preventDefault(); toggleGrid(); }
+    });
+    document.getElementById('grid-toggle').addEventListener('click', toggleGrid);
+
+    function toggleGrid() {
+      gridVisible = !gridVisible;
+      document.getElementById('coordinate-grid').classList.toggle('visible', gridVisible);
+      document.getElementById('grid-coords').classList.toggle('visible', gridVisible);
+      document.getElementById('grid-toggle').classList.toggle('active', gridVisible);
+      if (gridVisible) {
+        showNotification('⊞ Сетка включена (Ctrl+Shift+G для выключения)');
+        document.addEventListener('mousemove', updateCoords);
+      } else {
+        showNotification('⊞ Сетка выключена');
+        document.removeEventListener('mousemove', updateCoords);
+      }
+    }
+
+    function updateCoords(e) {
+      document.getElementById('grid-coords').textContent = `X: ${e.clientX}  Y: ${e.clientY}`;
+    }
+
+    function showNotification(msg) {
+      const el = document.createElement('div');
+      el.className = 'notification';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2500);
+    }
+
+    // ============================================================
+    // 3. ОСНОВНЫЕ ФУНКЦИИ
+    // ============================================================
+
+    async function loadProviders() {
+      try {
+        const resp = await fetch('/api/gateway/providers');
+        const data = await resp.json();
+        if (data.success) {
+          renderProviders(data.providers);
+        }
+      } catch(e) { console.error('[Gateway] Ошибка загрузки:', e); }
+    }
+
+    function renderProviders(providers) {
+      const container = document.getElementById('providers-grid');
+      let html = '';
+      for (const p of providers) {
+        const statusClass = p.status === 'online' ? 'online' : 'offline';
+        const statusText = p.status === 'online' ? '🟢 Онлайн' : p.status === 'disabled' ? '⛔ Отключён' : '🔴 Офлайн';
+        const activeBadge = p.active ? '<span class="active-badge">Активен</span>' : '';
+        html += `
+          <div class="provider-card ${p.status === 'online' ? '' : 'offline'}">
+            <div class="name">${p.name} ${activeBadge}</div>
+            <div class="type">${p.type} · ${p.requiresKey ? '🔑 Требуется ключ' : '🔓 Без ключа'}</div>
+            <div class="status ${statusClass}">${statusText}</div>
+            <div style="font-size:10px;color:#666;margin-top:2px;">${p.models?.slice(0,3).join(', ')}</div>
+          </div>
+        `;
+      }
+      container.innerHTML = html;
+    }
+
+    async function sendChat() {
+      const prompt = document.getElementById('prompt-input').value.trim();
+      if (!prompt) { showNotification('⚠️ Введите запрос'); return; }
+
+      const provider = document.getElementById('provider-select').value;
+      const model = document.getElementById('model-select').value;
+      const useCache = document.getElementById('cache-toggle').checked;
+      const responseBox = document.getElementById('response-box');
+
+      responseBox.innerHTML = '<span style="color:#888;">⏳ Генерация ответа...</span>';
+
+      try {
+        const resp = await fetch('/api/gateway/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt, model, useCache })
+        });
+        const data = await resp.json();
+
+        if (data.success) {
+          let text = data.text || 'Нет ответа';
+          // Очищаем от тегов мышления
+          text = text.replace(/<thinking>[\s\S]*?<\/thinking>/g, '').trim();
+          responseBox.innerHTML = `
+            <div>${text}</div>
+            <div class="meta">Провайдер: ${data.providerUsed || provider} | Модель: ${data.model || model} ${data.cached ? '📦 (кэш)' : ''}</div>
+          `;
+        } else {
+          responseBox.innerHTML = `<span style="color:#f44336;">❌ Ошибка: ${data.error || 'Неизвестная ошибка'}</span>`;
+        }
+      } catch (e) {
+        responseBox.innerHTML = `<span style="color:#f44336;">❌ Ошибка соединения: ${e.message}</span>`;
+      }
+    }
+
+    function clearChat() {
+      document.getElementById('prompt-input').value = '';
+      document.getElementById('response-box').innerHTML = '<span style="color:#666;">Ответ появится здесь...</span>';
+    }
+
+    // ============================================================
+    // 4. КОПИРОВАНИЕ
+    // ============================================================
+    document.getElementById('copy-btn').addEventListener('click', function() {
+      const data = {
+        title: document.title,
+        time: new Date().toLocaleString(),
+        providers: document.getElementById('providers-grid').textContent,
+        prompt: document.getElementById('prompt-input').value,
+        response: document.getElementById('response-box').textContent
+      };
+      const text = `=== ${data.title} ===\nДата: ${data.time}\n\nПровайдеры:\n${data.providers}\n\nЗапрос:\n${data.prompt}\n\nОтвет:\n${data.response}`;
+      navigator.clipboard.writeText(text).then(() => showNotification('✅ Данные скопированы'));
+    });
+
+    // ============================================================
+    // 5. ЗАПУСК
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', function() {
+      loadProviders();
+    });
+  </script>
+<script src="/js/export.js"></script>
+</body>
+</html>

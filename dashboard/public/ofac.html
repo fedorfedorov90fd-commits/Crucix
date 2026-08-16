@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>OFAC — Санкции</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0f;color:#c8d0d8;font-family:sans-serif;font-size:13px}
+.topbar{position:fixed;top:0;left:0;right:0;height:60px;background:rgba(10,10,20,0.92);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,0.04);z-index:100;display:flex;justify-content:space-between;align-items:center;padding:0 20px}
+.topbar-brand{font-size:14px;font-weight:700;color:#5bc0f8;text-transform:uppercase;letter-spacing:2px}
+.topbar-btn{height:28px;padding:0 12px;border:1px solid rgba(255,255,255,0.08);border-radius:4px;background:rgba(255,255,255,0.03);color:#888;font-size:11px;font-weight:500;text-transform:uppercase;cursor:pointer;transition:all 0.2s}
+.topbar-btn:hover{background:rgba(255,255,255,0.06)}
+.btn-home{color:#5bc0f8;border-color:rgba(91,192,248,0.2)}
+.btn-copy{color:#5bc0f8;border-color:rgba(91,192,248,0.15)}
+.main-content{padding-top:76px;max-width:1200px;margin:0 auto;padding:76px 20px 40px}
+.page-title{font-size:28px;font-weight:700;color:#e8f0f8;margin-bottom:8px}
+.page-subtitle{color:#666;font-size:14px;margin-bottom:24px}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:rgba(10,10,20,0.5);border:1px solid rgba(255,255,255,0.04);border-radius:8px;padding:16px;text-align:center}
+.stat-card .stat-label{font-size:11px;text-transform:uppercase;color:#666}
+.stat-card .stat-value{font-size:28px;font-weight:700;color:#5bc0f8;margin:6px 0}
+.panel{background:rgba(10,10,20,0.5);border:1px solid rgba(255,255,255,0.04);border-radius:8px;padding:16px;margin-bottom:16px}
+.panel-title{font-size:12px;font-weight:600;text-transform:uppercase;color:#666;margin-bottom:12px}
+.sanction-item{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.03)}
+.sanction-item .name{color:#c8d0d8}
+.sanction-item .country{color:#888}
+.sanction-item .badge{font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(239,68,68,0.15);color:#ef4444}
+.loading{color:#666;text-align:center;padding:20px}
+.notification{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:#fff;padding:8px 20px;border-radius:6px;font-size:13px;z-index:100001;border:1px solid rgba(255,255,255,0.1);animation:notif-fade 2.5s forwards}
+@keyframes notif-fade{0%{opacity:0;transform:translateX(-50%) translateY(10px)}10%{opacity:1;transform:translateX(-50%) translateY(0)}80%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-20px)}}
+</style>
+</head>
+<body>
+<header class="topbar"><div class="topbar-left"><span class="topbar-brand">🚫 OFAC</span></div><div class="topbar-right"><button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button><button class="topbar-btn btn-help" onclick="showHelp()">❓ HELP</button>
+    <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ</button></div></header>
+<main class="main-content">
+<h1 class="page-title">🚫 Санкционный мониторинг (OFAC)</h1>
+<p class="page-subtitle">Мониторинг санкционных списков</p>
+<div class="stats-grid"><div class="stat-card"><div class="stat-label">Всего</div><div class="stat-value" id="total">—</div></div><div class="stat-card"><div class="stat-label">Стран</div><div class="stat-value" id="countries">—</div></div><div class="stat-card"><div class="stat-label">OFAC</div><div class="stat-value" id="ofac-count">—</div></div></div>
+<div class="panel"><div class="panel-title">📋 Санкции</div><div id="sanctions-list"><div class="loading">Загрузка...</div></div></div>
+</main>
+<script>
+document.addEventListener('DOMContentLoaded',function(){fetch('/api/ofac/data').then(r=>r.json()).then(d=>{if(d.success){render(d.data);}else{document.getElementById('sanctions-list').innerHTML='<div class="loading">❌ Нет данных</div>';}}).catch(()=>{document.getElementById('sanctions-list').innerHTML='<div class="loading">❌ Ошибка загрузки</div>';});});
+function render(d){document.getElementById('total').textContent=d.summary.total||'—';document.getElementById('countries').textContent=Object.keys(d.summary.byCountry||{}).length||'—';document.getElementById('ofac-count').textContent=d.summary.bySanction?.OFAC||0;var html='';for(var s of d.entities){var sanctions=s.sanctions.join(', ');html+='<div class="sanction-item"><span><span class="name">'+s.name+'</span> <span class="country">'+s.country+'</span></span><span><span class="badge">'+sanctions+'</span> <span style="color:#555;font-size:11px;">'+s.type+'</span></span></div>';}document.getElementById('sanctions-list').innerHTML=html;}
+document.getElementById('copy-btn').addEventListener('click',function(){var t='=== OFAC ===\nДата: '+new Date().toLocaleString()+'\n';document.querySelectorAll('.sanction-item').forEach(function(el){t+=el.textContent.trim()+'\n';});navigator.clipboard.writeText(t).then(function(){showNotif('✅ Данные скопированы');}).catch(function(){var a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();document.execCommand('copy');document.body.removeChild(a);showNotif('✅ Данные скопированы');});});
+function showNotif(m){var e=document.createElement('div');e.className='notification';e.textContent=m;document.body.appendChild(e);setTimeout(function(){e.remove();},2500);}
+</script>
+<script src="/js/help.js"></script>
+</body></html>

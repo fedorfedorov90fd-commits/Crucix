@@ -227,6 +227,12 @@ async function queryWithFallback(prompt, config, options = {}) {
 // 5. HTTP-ОБРАБОТЧИК
 // ============================================================
 
+// GET /api/gateway/status — статус модуля
+  if (path === '/api/gateway/status' && req.method === 'GET') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ success: true, module: 'gateway', status: 'online', timestamp: new Date().toISOString() }));
+  }
+
 export async function handleGatewayAPI(req, res) {
     const url = new URL(req.url, `http://${req.headers.host}`);
     const path = url.pathname;
@@ -382,6 +388,14 @@ export async function handleGatewayAPI(req, res) {
         }
 
         // 404
+  // ============================================================
+  // GET /api/gateway/status — статус модуля
+  // ============================================================
+  if (path === '/api/gateway/status' && req.method === 'GET') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ success: true, module: 'gateway', status: 'online', timestamp: new Date().toISOString() }));
+    return;
+  }
         res.writeHead(404, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
             success: false,

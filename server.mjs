@@ -3,10 +3,6 @@
 // ============================================================
 // SERVER.MJS — Главный сервер Crucix
 // ============================================================
-// HTTP-сервер на порту 3117
-// Раздаёт статику из dashboard/public/
-// Обрабатывает API-запросы
-// ============================================================
 
 import { createServer } from 'http';
 import { promises as fs } from 'fs';
@@ -16,9 +12,10 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3117;
 const PUBLIC_DIR = join(__dirname, 'dashboard', 'public');
+const ROOT_DIR = join(__dirname);
 
 // ============================================================
-// 1. ИМПОРТ API-МОДУЛЕЙ
+// 1. ИМПОРТЫ
 // ============================================================
 
 import { handleRSSAPI } from './apis/sources/rss-manager-api.mjs';
@@ -53,6 +50,14 @@ import { handleAIGatewayAPI } from './apis/sources/ai-gateway.mjs';
 import { handleHiddenLinksAPI } from './apis/sources/hidden-links.mjs';
 import { handleMarketPredictorAPI } from './apis/sources/market-predictor.mjs';
 import { handleEarlyWarningAPI } from './apis/sources/early-warning.mjs';
+import { handleScenarioAPI } from './apis/sources/scenario-generator.mjs';
+import { handleSentimentAPI } from './apis/sources/sentiment-analyzer.mjs';
+import { handleLiveAPI } from './apis/sources/live-api.mjs';
+import { handleSilenceAPI } from './apis/sources/silence-api.mjs';
+import { handleLensesAPI } from './apis/sources/lenses-api.mjs';
+import { handleKiwiSDRAPI } from './apis/sources/kiwisdr.mjs';
+import { handleSafecastApi } from './apis/sources/safecast.mjs';
+import { handleHelpAPI } from './apis/sources/help-api.mjs';
 import { handleAIProcessorAPI } from './apis/sources/ai-processor.mjs';
 import { handleNewsAPIProxy } from './apis/sources/newsapi.mjs';
 
@@ -79,7 +84,7 @@ const MIME_TYPES = {
 };
 
 // ============================================================
-// 3. ОБРАБОТЧИК СТАТИЧЕСКИХ ФАЙЛОВ
+// 3. СТАТИЧЕСКИЕ ФАЙЛЫ
 // ============================================================
 
 async function serveStatic(req, res, filePath) {
@@ -115,13 +120,33 @@ async function findStaticFile(pathname) {
     '/ai-gateway': 'ai-gateway.html',
     '/hidden-links': 'hidden-links.html',
     '/market-predictor': 'market-predictor.html',
-    '/early-warning': 'early-warning.html'
+    '/early-warning': 'early-warning.html',
+    '/scenarios': 'scenarios.html',
+    '/sentiment': 'sentiment.html',
+    '/kartochki': 'kartochki.html',
+    '/profile': 'profile.html',
+    '/silence': 'silence.html',
+    '/live': 'live.html',
+    '/lenses': 'lenses.html',
+    '/kiwisdr': 'kiwisdr.html',
+    '/safecast': 'safecast.html',
+    '/noaa': 'noaa.html',
+    '/ofac': 'ofac.html',
+    '/eia': 'eia.html',
+    '/cisa': 'cisa.html',
+    '/who': 'who.html',
+    '/news': 'news.html'
   };
 
   const cleanPath = pathname.replace('.html', '');
   const file = pages[cleanPath] || pages[pathname];
   if (file) {
     const fullPath = join(PUBLIC_DIR, file);
+    try { await fs.access(fullPath); return fullPath; } catch (e) {}
+  }
+
+  if (pathname.startsWith('/lib/')) {
+    const fullPath = join(ROOT_DIR, pathname);
     try { await fs.access(fullPath); return fullPath; } catch (e) {}
   }
 
@@ -134,7 +159,7 @@ async function findStaticFile(pathname) {
 }
 
 // ============================================================
-// 4. ОСНОВНОЙ ОБРАБОТЧИК ЗАПРОСОВ
+// 4. ОСНОВНОЙ ОБРАБОТЧИК
 // ============================================================
 
 const server = createServer(async (req, res) => {
@@ -152,6 +177,7 @@ const server = createServer(async (req, res) => {
   }
 
   // API маршруты
+  if (pathname.startsWith('/api/geo/index')) { await handleGlobalIndexAPI(req, res); return; }
   if (pathname.startsWith('/api/rss/')) { await handleRSSAPI(req, res); return; }
   if (pathname.startsWith('/api/geo/')) { await handleGeoAPI(req, res); return; }
   if (pathname.startsWith('/api/basket')) { await handleBasketAPI(req, res); return; }
@@ -161,7 +187,6 @@ const server = createServer(async (req, res) => {
   if (pathname.startsWith('/api/newsapi/basket')) { await handleNewsAPIBasket(req, res); return; }
   if (pathname.startsWith('/api/newsapi/')) { await handleNewsAPIProxy(req, res); return; }
   if (pathname.startsWith('/api/storage/')) { await handleStorageAPI(req, res); return; }
-  if (pathname.startsWith('/api/geo/index')) { await handleGlobalIndexAPI(req, res); return; }
   if (pathname.startsWith('/api/analysis/')) { await handleHistoricalAnalysisAPI(req, res); return; }
   if (pathname.startsWith('/api/correlation/')) { await handleCorrelationAPI(req, res); return; }
   if (pathname.startsWith('/api/infrastructure/')) { await handleInfrastructureAPI(req, res); return; }
@@ -185,6 +210,14 @@ const server = createServer(async (req, res) => {
   if (pathname.startsWith('/api/hidden-links/')) { await handleHiddenLinksAPI(req, res); return; }
   if (pathname.startsWith('/api/market/')) { await handleMarketPredictorAPI(req, res); return; }
   if (pathname.startsWith('/api/early-warning/')) { await handleEarlyWarningAPI(req, res); return; }
+  if (pathname.startsWith('/api/scenarios/')) { await handleScenarioAPI(req, res); return; }
+  if (pathname.startsWith('/api/sentiment/')) { await handleSentimentAPI(req, res); return; }
+  if (pathname.startsWith('/api/live/')) { await handleLiveAPI(req, res); return; }
+  if (pathname.startsWith('/api/silence/')) { await handleSilenceAPI(req, res); return; }
+  if (pathname.startsWith('/api/lenses/')) { await handleLensesAPI(req, res); return; }
+  if (pathname.startsWith('/api/kiwisdr/')) { await handleKiwiSDRAPI(req, res); return; }
+  if (pathname.startsWith('/api/safecast/')) { await handleSafecastApi(req, res); return; }
+  if (pathname.startsWith('/api/help/')) { await handleHelpAPI(req, res); return; }
   if (pathname.startsWith('/api/ai-processor/')) { await handleAIProcessorAPI(req, res); return; }
 
   // Статические файлы
@@ -214,7 +247,9 @@ const PAGE_LIST = [
   '/historical-analysis', '/correlation', '/infrastructure',
   '/usgs', '/local', '/scheduler', '/trust', '/diagnostics',
   '/ai-gateway', '/hidden-links', '/market-predictor',
-  '/early-warning'
+  '/early-warning', '/scenarios', '/sentiment', '/kartochki',
+  '/profile', '/silence', '/live', '/lenses', '/kiwisdr',
+  '/safecast', '/noaa', '/ofac', '/eia', '/cisa', '/who', '/news'
 ];
 
 server.listen(PORT, () => {
@@ -243,12 +278,27 @@ server.listen(PORT, () => {
                  p === '/ai-gateway' ? 'AI Gateway ⭐' :
                  p === '/hidden-links' ? 'Скрытые связи ⭐' :
                  p === '/market-predictor' ? 'Рыночный прогноз ⭐' :
-                 p === '/early-warning' ? 'Раннее предупреждение ⭐' : p;
+                 p === '/early-warning' ? 'Раннее предупреждение ⭐' :
+                 p === '/scenarios' ? 'Сценарии ⭐' :
+                 p === '/sentiment' ? 'Тональность ⭐' :
+                 p === '/kartochki' ? 'Все страницы ⭐' :
+                 p === '/profile' ? 'Профиль ⭐' :
+                 p === '/silence' ? 'Детектор тишины ⭐' :
+                 p === '/live' ? 'Лента новостей ⭐' :
+                 p === '/lenses' ? 'Тематические линзы ⭐' :
+                 p === '/kiwisdr' ? 'KiwiSDR ⭐' :
+                 p === '/safecast' ? 'SafeCast ⭐' :
+                 p === '/noaa' ? 'NOAA ⭐' :
+                 p === '/ofac' ? 'OFAC ⭐' :
+                 p === '/eia' ? 'EIA ⭐' :
+                 p === '/cisa' ? 'CISA ⭐' :
+                 p === '/who' ? 'WHO ⭐' :
+                 p === '/news' ? 'News ⭐' : p;
     console.log(`  ${p}  ${name}`);
   }
   console.log(`========================================`);
   console.log(`  🧠 AI-процессор: BASIC`);
-  console.log(`  🌟 Модулей: 30/30 (100%) ✅`);
+  console.log(`  🌟 Модулей: 32/32 (100%) ✅`);
   console.log(`========================================`);
 });
 

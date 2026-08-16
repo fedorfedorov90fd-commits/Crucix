@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Все страницы Crucix</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0f;
+      color: #c8d0d8;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; height: 60px;
+      background: rgba(10,10,20,0.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.04); z-index: 100;
+      display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; }
+    .topbar-status { font-size: 11px; color: #ffd700; }
+    .topbar-right { display: flex; align-items: center; gap: 6px; }
+    .topbar-btn {
+      height: 28px; padding: 0 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 4px;
+      background: rgba(255,255,255,0.03);
+      color: #888;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .topbar-btn:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+    .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
+    .btn-home:hover { background: rgba(91,192,248,0.15); }
+    .btn-copy { color: #5bc0f8; border-color: rgba(91,192,248,0.15); background: rgba(91,192,248,0.06); }
+    .btn-copy:hover { background: rgba(91,192,248,0.15); }
+    .btn-grid { color: #9c27b0; border-color: rgba(156,39,176,0.15); background: rgba(156,39,176,0.06); }
+    .btn-grid:hover { background: rgba(156,39,176,0.15); }
+    .topbar-time { font-size: 11px; color: #666; }
+    .main-content { padding-top: 76px; max-width: 1400px; margin: 0 auto; padding: 76px 20px 40px; }
+    .page-title { font-size: 28px; font-weight: 700; color: #e8f0f8; margin-bottom: 8px; }
+    .page-subtitle { color: #666; font-size: 14px; margin-bottom: 24px; }
+    .stats-row {
+      display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;
+    }
+    .stat-item {
+      background: rgba(10,10,20,0.5);
+      border: 1px solid rgba(255,255,255,0.03);
+      border-radius: 6px;
+      padding: 8px 14px;
+      min-width: 100px;
+    }
+    .stat-item .stat-label { font-size: 10px; font-weight: 500; text-transform: uppercase; color: #666; letter-spacing: 0.5px; }
+    .stat-item .stat-value { font-size: 20px; font-weight: 700; color: #5bc0f8; margin-top: 2px; }
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 14px;
+    }
+    .card {
+      background: rgba(10,10,20,0.6);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 10px;
+      padding: 14px 16px;
+      text-decoration: none;
+      transition: all 0.25s;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      cursor: pointer;
+    }
+    .card:hover {
+      border-color: rgba(255,255,255,0.15);
+      transform: translateY(-3px);
+      background: rgba(10,10,20,0.85);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    }
+    .card .number { font-size: 10px; color: #444; font-weight: 600; }
+    .card .icon { font-size: 26px; }
+    .card .name { font-size: 14px; font-weight: 600; color: #e8f0f8; }
+    .card .desc { font-size: 11px; color: #666; }
+    .card .badge {
+      font-size: 8px;
+      padding: 2px 10px;
+      border-radius: 12px;
+      align-self: flex-start;
+      margin-top: 4px;
+      background: rgba(91,192,248,0.12);
+      color: #5bc0f8;
+    }
+    .badge.green { background: rgba(76,175,80,0.12); color: #4caf50; }
+    .badge.orange { background: rgba(242,101,34,0.12); color: #f26522; }
+    .badge.purple { background: rgba(139,92,246,0.12); color: #8b5cf6; }
+    .badge.red { background: rgba(239,68,68,0.12); color: #ef4444; }
+    .badge.yellow { background: rgba(234,179,8,0.12); color: #eab308; }
+    #coordinate-grid {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 99999;
+      background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 50px 50px; display: none;
+    }
+    #coordinate-grid.visible { display: block; }
+    #grid-coords {
+      position: fixed; bottom: 12px; right: 12px;
+      background: rgba(0,0,0,0.7); color: #00ff00;
+      font-family: monospace; font-size: 11px; padding: 4px 10px;
+      border-radius: 4px; z-index: 100000; pointer-events: none; display: none;
+    }
+    #grid-coords.visible { display: block; }
+    .notification {
+      position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.85); color: #fff; padding: 8px 20px;
+      border-radius: 6px; font-size: 13px; z-index: 100001;
+      border: 1px solid rgba(255,255,255,0.1);
+      animation: notif-fade 2.5s forwards;
+    }
+    @keyframes notif-fade {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+    @media (max-width: 768px) {
+      .topbar { padding: 0 12px; height: 52px; }
+      .topbar-brand { font-size: 12px; }
+      .topbar-status { display: none; }
+      .topbar-btn { font-size: 10px; padding: 0 8px; height: 24px; }
+      .main-content { padding-top: 68px; padding-left: 12px; padding-right: 12px; }
+      .page-title { font-size: 22px; }
+      .cards-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+    }
+    @media (max-width: 480px) {
+      .topbar { padding: 0 8px; height: 46px; }
+      .topbar-brand { font-size: 10px; }
+      .topbar-btn { font-size: 9px; padding: 0 6px; height: 20px; }
+      .main-content { padding-top: 62px; padding-left: 8px; padding-right: 8px; }
+      .page-title { font-size: 18px; }
+      .cards-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .card { padding: 10px; }
+      .card .desc { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-brand">⚡ CRUCIX MONITOR</span>
+      <span class="topbar-status">ВСЕ СТРАНИЦЫ</span>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-time" id="topbar-date">Загрузка...</span>
+      <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+      <button class="topbar-btn btn-help" onclick="showHelp()">❓ HELP</button>
+    <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ</button>
+      <button class="topbar-btn btn-grid" id="grid-toggle">📐 СЕТКА</button>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <h1 class="page-title">🗂️ Все страницы Crucix</h1>
+    <p class="page-subtitle">Навигация по всем 28 страницам платформы</p>
+
+    <div class="stats-row" id="stats-row">
+      <div class="stat-item">
+        <div class="stat-label">Всего страниц</div>
+        <div class="stat-value" id="stat-total">0</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Модулей</div>
+        <div class="stat-value green" id="stat-modules">0</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">⭐ Новых</div>
+        <div class="stat-value" id="stat-new">0</div>
+      </div>
+    </div>
+
+    <div class="cards-grid" id="cards-grid"></div>
+  </main>
+
+  <div id="coordinate-grid"></div>
+  <div id="grid-coords">X: 0  Y: 0</div>
+
+  <script>
+    function updateTopbar() {
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('ru-RU', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase();
+      const timeStr = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+      document.getElementById('topbar-date').textContent = `${dateStr} ${timeStr}`;
+    }
+    updateTopbar();
+    setInterval(updateTopbar, 60000);
+
+    function showNotification(msg) {
+      document.querySelectorAll('.notification').forEach(el => el.remove());
+      const el = document.createElement('div');
+      el.className = 'notification';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2500);
+    }
+
+    let gridVisible = false;
+    document.addEventListener('keydown', function(e) {
+      if (e.ctrlKey && e.shiftKey && e.key === 'G') { e.preventDefault(); toggleGrid(); }
+    });
+    document.getElementById('grid-toggle').addEventListener('click', toggleGrid);
+
+    function toggleGrid() {
+      gridVisible = !gridVisible;
+      document.getElementById('coordinate-grid').classList.toggle('visible', gridVisible);
+      document.getElementById('grid-coords').classList.toggle('visible', gridVisible);
+      document.getElementById('grid-toggle').classList.toggle('active', gridVisible);
+      if (gridVisible) {
+        showNotification('⊞ Сетка включена');
+        document.addEventListener('mousemove', updateCoords);
+      } else {
+        showNotification('⊞ Сетка выключена');
+        document.removeEventListener('mousemove', updateCoords);
+      }
+    }
+    function updateCoords(e) {
+      document.getElementById('grid-coords').textContent = `X: ${e.clientX}  Y: ${e.clientY}`;
+    }
+
+    const PAGES = [
+      { number: '01', url: '/', icon: '⚡', name: 'Главная', desc: 'Корневая страница Crucix', badge: 'Главная', badgeClass: '' },
+      { number: '02', url: '/jarvis', icon: '🏠', name: 'Главный интерфейс', desc: 'Основная панель управления Crucix', badge: 'Главная', badgeClass: '' },
+      { number: '03', url: '/rss-feed', icon: '📰', name: 'RSS лента', desc: 'Поток новостей с региональными фильтрами', badge: 'RSS', badgeClass: 'orange' },
+      { number: '04', url: '/rss-dashboard', icon: '📡', name: 'Управление RSS', desc: 'Добавление, удаление и обновление лент', badge: 'RSS', badgeClass: 'orange' },
+      { number: '05', url: '/ai-chat', icon: '🧠', name: 'AI чат', desc: 'Общение с локальным искусственным интеллектом', badge: 'AI', badgeClass: 'green' },
+      { number: '06', url: '/geo-map', icon: '🌍', name: 'Геополитическая карта', desc: 'Интерактивная карта с маркерами и статусами', badge: 'Карта', badgeClass: 'blue' },
+      { number: '07', url: '/basket', icon: '📦', name: 'Корзина данных', desc: 'Все собранные новости и события', badge: 'Данные', badgeClass: 'blue' },
+      { number: '08', url: '/global-index', icon: '📊', name: 'Глобальный индекс', desc: 'Индекс напряжённости в мире', badge: 'Аналитика', badgeClass: 'purple' },
+      { number: '09', url: '/historical-analysis', icon: '📈', name: 'Исторический анализ', desc: 'Сравнение периодов и выявление трендов', badge: 'Аналитика', badgeClass: 'purple' },
+      { number: '10', url: '/correlation', icon: '🔗', name: 'Кросс-корреляция', desc: 'Связи между событиями и данными', badge: 'Аналитика', badgeClass: 'purple' },
+      { number: '11', url: '/infrastructure', icon: '🏗️', name: 'Инфраструктура', desc: 'Критические объекты и их статус', badge: 'Инфра', badgeClass: 'orange' },
+      { number: '12', url: '/usgs', icon: '🌋', name: 'Землетрясения', desc: 'Мониторинг землетрясений в реальном времени', badge: 'USGS', badgeClass: 'orange' },
+      { number: '13', url: '/local', icon: '📍', name: 'Локальный мониторинг', desc: 'События вокруг вашего местоположения', badge: 'Локальный', badgeClass: 'green' },
+      { number: '14', url: '/scheduler', icon: '⏰', name: 'Планировщик задач', desc: 'Автоматизация фоновых процессов', badge: 'Управление', badgeClass: 'blue' },
+      { number: '15', url: '/trust', icon: '🛡️', name: 'Доверие к источникам', desc: 'Рейтинг надёжности СМИ и источников', badge: 'Доверие', badgeClass: 'green' },
+      { number: '16', url: '/diagnostics', icon: '🩺', name: 'Диагностика', desc: 'Состояние всех модулей системы', badge: 'Система', badgeClass: 'purple' },
+      { number: '17', url: '/ai-gateway', icon: '🤖', name: 'AI Gateway', desc: 'Единый шлюз к OpenAI, Anthropic, Groq', badge: 'AI', badgeClass: 'green' },
+      { number: '18', url: '/hidden-links', icon: '🔍', name: 'Скрытые связи', desc: 'Детектор неочевидных связей между событиями', badge: 'AI', badgeClass: 'purple' },
+      { number: '19', url: '/market-predictor', icon: '📉', name: 'Рыночный прогноз', desc: 'Прогнозирование реакции рынков на события', badge: 'Финансы', badgeClass: 'yellow' },
+      { number: '20', url: '/early-warning', icon: '🚨', name: 'Раннее предупреждение', desc: 'Система прогнозирования кризисов за 7-14 дней', badge: 'Критично', badgeClass: 'red' },
+      { number: '21', url: '/scenarios', icon: '🧠', name: 'Генератор сценариев', desc: 'Создание гипотетических сценариев будущего', badge: 'AI', badgeClass: 'purple' },
+      { number: '22', url: '/sentiment', icon: '💬', name: 'Тональность', desc: 'Квантовый анализ тональности новостей', badge: 'AI', badgeClass: 'purple' },
+      { number: '23', url: '/grid-tool', icon: '📐', name: 'Сетка', desc: 'Инструмент для вёрстки и координатной разметки', badge: 'Инструмент', badgeClass: 'orange' },
+      { number: '24', url: '/kartochki', icon: '🗂️', name: 'Все страницы', desc: 'Навигация по всем страницам Crucix', badge: 'Навигация', badgeClass: 'blue' },
+      { number: '25', url: '/profile', icon: '👤', name: 'Профиль', desc: 'Настройки профиля пользователя', badge: 'Профиль', badgeClass: 'green' },
+      { number: '26', url: '/silence', icon: '🔇', name: 'Детектор тишины', desc: 'Обнаружение информационной тишины в регионах', badge: 'Аналитика', badgeClass: 'purple' },
+      { number: '27', url: '/live', icon: '📺', name: 'Лента новостей', desc: 'Живой поток новостей в реальном времени', badge: 'Новости', badgeClass: 'orange' },
+      { number: '28', url: '/lenses', icon: '🔍', name: 'Тематические линзы', desc: 'Профили интерфейса по темам', badge: 'Интерфейс', badgeClass: 'green' }
+    ];
+
+    function renderCards() {
+      const grid = document.getElementById('cards-grid');
+      let html = '';
+      for (const p of PAGES) {
+        const badgeClass = p.badgeClass || 'blue';
+        html += `
+          <a class="card" href="${p.url}" onclick="event.preventDefault(); window.location.href='${p.url}'">
+            <span class="number">${p.number}</span>
+            <span class="icon">${p.icon}</span>
+            <span class="name">${p.name}</span>
+            <span class="desc">${p.desc}</span>
+            <span class="badge ${badgeClass}">${p.badge}</span>
+          </a>
+        `;
+      }
+      grid.innerHTML = html;
+
+      document.getElementById('stat-total').textContent = PAGES.length;
+      document.getElementById('stat-modules').textContent = PAGES.filter(p => p.badgeClass === 'purple' || p.badgeClass === 'green' || p.badgeClass === 'red').length;
+      document.getElementById('stat-new').textContent = PAGES.filter(p => p.number >= 25).length;
+    }
+
+    document.getElementById('copy-btn').addEventListener('click', function() {
+      let text = `=== CRUCIX — ВСЕ СТРАНИЦЫ ===\n`;
+      text += `Дата: ${new Date().toLocaleString()}\n\n`;
+      text += `--- СТРАНИЦЫ (${PAGES.length}) ---\n`;
+      for (const p of PAGES) {
+        text += `${p.number}. ${p.icon} ${p.name} — ${p.desc}\n   URL: ${p.url}\n`;
+      }
+      text += `\n--- CRUCIX OSINT TERMINAL ---\n`;
+      text += `🌐 http://localhost:3117\n`;
+
+      navigator.clipboard.writeText(text).then(() => {
+        showNotification('✅ Данные скопированы');
+      }).catch(() => {
+        const area = document.createElement('textarea');
+        area.value = text;
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand('copy');
+        document.body.removeChild(area);
+        showNotification('✅ Данные скопированы');
+      });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      renderCards();
+    });
+  </script>
+<script src="/js/help.js"></script>
+</body>
+</html>

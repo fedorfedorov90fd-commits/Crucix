@@ -1,0 +1,226 @@
+[
+  {
+    "id": "demo-1",
+    "name": "Эскалация на Ближнем Востоке",
+    "description": "Конфликт между Ираном и Израилем перерастает в прямые военные столкновения с участием США.",
+    "category": "geopolitics",
+    "icon": "⚔️",
+    "probability": 0.777485453291514,
+    "confidence": 85,
+    "impacts": [
+      {
+        "type": "economic",
+        "severity": 80,
+        "description": "Рост цен на нефть (+25%)"
+      },
+      {
+        "type": "political",
+        "severity": 70,
+        "description": "Смена внешнеполитического курса"
+      },
+      {
+        "type": "military",
+        "severity": 90,
+        "description": "Введение военного положения в регионе"
+      }
+    ],
+    "triggerEvent": "Иран нанёс ракетные удары по Израилю",
+    "timestamp": "2026-08-16T13:43:55.227Z"
+  },
+  {
+    "id": "demo-2",
+    "name": "Экономический кризис в Европе",
+    "description": "Рост инфляции и энергетический кризис приводят к рецессии в еврозоне.",
+    "category": "economy",
+    "icon": "📉",
+    "probability": 0.5910934875852206,
+    "confidence": 78,
+    "impacts": [
+      {
+        "type": "economic",
+        "severity": 85,
+        "description": "Падение ВВП на 3.2%"
+      },
+      {
+        "type": "social",
+        "severity": 75,
+        "description": "Рост безработицы до 12%"
+      },
+      {
+        "type": "political",
+        "severity": 60,
+        "description": "Смена правительств в 3 странах"
+      }
+    ],
+    "triggerEvent": "ЕЦБ повысил ставку до 5.5%",
+    "timestamp": "2026-08-16T13:43:55.227Z"
+  },
+  {
+    "id": "demo-7",
+    "name": "Смена политического курса в США",
+    "description": "Новая администрация кардинально меняет внешнеполитический курс.",
+    "category": "politics",
+    "icon": "🏛️",
+    "probability": 0.49524658288877277,
+    "confidence": 70,
+    "impacts": [
+      {
+        "type": "political",
+        "severity": 90,
+        "description": "Пересмотр международных союзов"
+      },
+      {
+        "type": "economic",
+        "severity": 75,
+        "description": "Изменение торговой политики"
+      },
+      {
+        "type": "social",
+        "severity": 65,
+        "description": "Поляризация общества"
+      }
+    ],
+    "triggerEvent": "Результаты президентских выборов",
+    "timestamp": "2026-08-16T13:43:55.227Z"
+  },
+  {
+    "id": "demo-3",
+    "name": "Кибератака на энергосистему США",
+    "description": "Массированная кибератака выводит из строя энергосистему восточного побережья.",
+    "category": "cyber",
+    "icon": "💻",
+    "probability": 0.4912999399607594,
+    "confidence": 72,
+    "impacts": [
+      {
+        "type": "economic",
+        "severity": 90,
+        "description": "Ущерб $200 млрд"
+      },
+      {
+        "type": "political",
+        "severity": 80,
+        "description": "Ужесточение киберзаконодательства"
+      },
+      {
+        "type": "social",
+        "severity": 70,
+        "description": "Массовые протесты из-за блэкаута"
+      }
+    ],
+    "triggerEvent": "Обнаружена уязвимость в SCADA-системах",
+    "timestamp": "2026-08-16T13:43:55.227Z"
+  },
+  {
+    "id": "demo-4",
+    "name": "Прорыв в мирных переговорах",
+    "description": "Украина и Россия достигают соглашения о прекращении огня и начале переговоров.",
+    "category": "diplomacy",
+    "icon": "🤝",
+    "probability": 0.47602878761047074,
+    "confidence": 65,
+    "impacts": [
+      {
+        "type": "political",
+        "severity": 85,
+        "description": "Изменение международного порядка"
+      },
+      {
+        "type": "economic",
+        "severity": 70,
+        "description": "Снижение цен на энергоносители"
+      },
+      {
+        "type": "social",
+        "severity": 60,
+        "description": "Возвращение беженцев"
+      }
+    ],
+    "triggerEvent": "Встреча лидеров в Стамбуле",
+    "timestamp": "2026-08-16T13:43:55.227Z"
+  },
+  {
+    "id": "demo-8",
+    "name": "Энергетический коллапс в Европе",
+    "description": "Полное прекращение поставок газа из России приводит к коллапсу экономики ЕС.",
+    "category": "energy",
+    "icon": "⚡",
+    "probability": 0.42537823266958197,
+    "confidence": 75,
+    "impacts": [
+      {
+        "type": "economic",
+        "severity": 95,
+        "description": "Деиндустриализация Европы"
+      },
+      {
+        "type": "social",
+        "severity": 85,
+        "description": "Массовые протесты"
+      },
+      {
+        "type": "political",
+        "severity": 80,
+        "description": "Раскол ЕС"
+      }
+    ],
+    "triggerEvent": "Россия прекратила транзит газа",
+    "timestamp": "2026-08-16T13:43:55.227Z"
+  },
+  {
+    "id": "demo-6",
+    "name": "Новая пандемия",
+    "description": "Вспышка нового вируса с высоким уровнем смертности и быстрым распространением.",
+    "category": "health",
+    "icon": "🦠",
+    "probability": 0.3445286144884162,
+    "confidence": 55,
+    "impacts": [
+      {
+        "type": "health",
+        "severity": 95,
+        "description": "Миллионы заболевших"
+      },
+      {
+        "type": "economic",
+        "severity": 85,
+        "description": "Глобальная рецессия"
+      },
+      {
+        "type": "social",
+        "severity": 80,
+        "description": "Карантинные ограничения"
+      }
+    ],
+    "triggerEvent": "Выявлены первые случаи в Китае",
+    "timestamp": "2026-08-16T13:43:55.227Z"
+  },
+  {
+    "id": "demo-5",
+    "name": "Землетрясение в Калифорнии",
+    "description": "Мощное землетрясение магнитудой 7.8 разрушает Лос-Анджелес и Сан-Франциско.",
+    "category": "environment",
+    "icon": "🌋",
+    "probability": 0.3180505662093922,
+    "confidence": 60,
+    "impacts": [
+      {
+        "type": "economic",
+        "severity": 95,
+        "description": "Ущерб $500 млрд"
+      },
+      {
+        "type": "social",
+        "severity": 90,
+        "description": "Десятки тысяч жертв"
+      },
+      {
+        "type": "political",
+        "severity": 70,
+        "description": "Реакция федерального правительства"
+      }
+    ],
+    "triggerEvent": "Активность разлома Сан-Андреас",
+    "timestamp": "2026-08-16T13:43:55.227Z"
+  }
+]

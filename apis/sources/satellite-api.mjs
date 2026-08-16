@@ -150,6 +150,12 @@ const ORBIT_DATA = {
 // 4. HTTP-ОБРАБОТЧИК
 // ============================================================
 
+// GET /api/satellite/status — статус модуля
+  if (path === '/api/satellite/status' && req.method === 'GET') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ success: true, module: 'satellite', status: 'online', timestamp: new Date().toISOString() }));
+  }
+
 export async function handleSatelliteAPI(req, res) {
   const url = new URL(req.url, `http://${req.headers.host}`);
   const path = url.pathname;
@@ -348,6 +354,14 @@ export async function handleSatelliteAPI(req, res) {
     }
 
     // 404
+  // ============================================================
+  // GET /api/satellite/status — статус модуля
+  // ============================================================
+  if (path === '/api/satellite/status' && req.method === 'GET') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ success: true, module: 'satellite', status: 'online', timestamp: new Date().toISOString() }));
+    return;
+  }
     res.writeHead(404, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ success: false, error: 'Неизвестный путь' }));
 

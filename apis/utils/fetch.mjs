@@ -11,12 +11,10 @@ export async function fetchWithRetry(url, options = {}, retries = 3, delay = 100
                 signal: options.timeout ? AbortSignal.timeout(options.timeout) : undefined
             });
 
-            // Если ответ успешный, возвращаем его
             if (response.ok) {
                 return response;
             }
 
-            // Если сервер вернул ошибку 429 (Too Many Requests) или 5xx, пробуем снова
             if (response.status === 429 || response.status >= 500) {
                 const waitTime = delay * Math.pow(2, attempt);
                 console.warn(`[fetchWithRetry] Попытка ${attempt + 1}/${retries} не удалась (${response.status}), ждём ${waitTime}ms`);
@@ -24,23 +22,30 @@ export async function fetchWithRetry(url, options = {}, retries = 3, delay = 100
                 continue;
             }
 
-            // Другие ошибки (400, 404, etc.) не повторяем
             return response;
 
         } catch (error) {
             lastError = error;
-            console.warn(`[fetchWithRetry] Попытка ${attempt + 1}/${retries} упала с ошибкой:`, error.message);
-
             if (attempt < retries - 1) {
                 const waitTime = delay * Math.pow(2, attempt);
+                console.warn(`[fetchWithRetry] Ошибка: ${error.message}, повтор через ${waitTime}ms`);
                 await sleep(waitTime);
             }
         }
     }
 
-    throw new Error(`Не удалось выполнить запрос после ${retries} попыток: ${lastError?.message || 'неизвестная ошибка'}`);
+    throw lastError || new Error('Неизвестная ошибка fetch');
+}
+
+// ============================================================
+// safeFetch — полная копия fetchWithRetry для совместимости
+// ============================================================
+export async function safeFetch(url, options = {}, retries = 3, delay = 1000) {
+    return fetchWithRetry(url, options, retries, delay);
 }
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+export default { fetchWithRetry, safeFetch };

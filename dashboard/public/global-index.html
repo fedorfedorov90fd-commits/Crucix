@@ -474,7 +474,8 @@
             <span class="topbar-sources">SOURCES 28/29</span>
             
             <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
-            <button class="topbar-btn btn-copy" id="copy-btn" title="Копировать все данные страницы">📋 КОПИРОВАТЬ</button>
+            <button class="topbar-btn btn-help" onclick="showHelp()">❓ HELP</button>
+    <button class="topbar-btn btn-copy" id="copy-btn" title="Копировать все данные страницы">📋 КОПИРОВАТЬ</button>
             <button class="topbar-btn btn-rss" onclick="window.location.href='/rss-feed'">📡 RSS</button>
             <button class="topbar-btn btn-ai" onclick="window.location.href='/ai-chat'">🧠 AI Чат</button>
             <button class="topbar-btn btn-map" onclick="window.location.href='/geo-map'">🌍 КАРТА</button>
@@ -861,5 +862,6 @@
         });
     </script>
 <script src="/js/export.js"></script>
+<script src="/js/help.js"></script>
 </body>
 </html>

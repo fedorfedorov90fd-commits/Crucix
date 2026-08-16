@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRUCIX — OSINT Terminal</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0f;
+      color: #c8d0d8;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', monospace;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      text-align: center;
+      max-width: 600px;
+      padding: 40px;
+    }
+    .logo {
+      font-size: 48px;
+      font-weight: 700;
+      color: #5bc0f8;
+      text-shadow: 0 0 40px rgba(91, 192, 248, 0.2);
+      letter-spacing: 4px;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      color: #ffd700;
+      font-size: 14px;
+      margin-bottom: 30px;
+      letter-spacing: 2px;
+    }
+    .version {
+      color: #555;
+      font-size: 12px;
+      margin-bottom: 30px;
+    }
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+    .links a {
+      color: #888;
+      text-decoration: none;
+      padding: 8px 20px;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 4px;
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+    .links a:hover {
+      border-color: rgba(255,255,255,0.15);
+      color: #e8f0f8;
+      background: rgba(255,255,255,0.03);
+    }
+    .links a.primary {
+      color: #5bc0f8;
+      border-color: rgba(91, 192, 248, 0.2);
+    }
+    .links a.primary:hover {
+      background: rgba(91, 192, 248, 0.06);
+    }
+    .copy-btn {
+      padding: 8px 24px;
+      background: rgba(91, 192, 248, 0.08);
+      border: 1px solid rgba(91, 192, 248, 0.15);
+      border-radius: 4px;
+      color: #5bc0f8;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .copy-btn:hover {
+      background: rgba(91, 192, 248, 0.15);
+    }
+    .status {
+      margin-top: 30px;
+      padding: 16px;
+      background: rgba(255, 215, 0, 0.05);
+      border: 1px solid rgba(255, 215, 0, 0.08);
+      border-radius: 6px;
+      color: #888;
+      font-size: 13px;
+    }
+    .status strong { color: #ffd700; }
+    .notification {
+      position: fixed;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.85);
+      color: #ffffff;
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-size: 13px;
+      z-index: 100001;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      animation: notif-fade 2.5s forwards;
+    }
+    @keyframes notif-fade {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">⚡ CRUCIX</div>
+    <div class="subtitle">Open Source Intelligence Terminal</div>
+    <div class="version">Версия 2.1.2 · Все 25 модулей готовы</div>
+    
+    <div class="links">
+      <a href="/jarvis" class="primary">📊 Оригинальный интерфейс</a>
+      <a href="/jarviskart">📋 Все модули</a>
+      <a href="/rss-feed">📰 RSS Лента</a>
+      <a href="/ai-chat">🧠 AI Чат</a>
+      <a href="/geo-map">🌍 Карта</a>
+      <a href="/scheduler">⏰ Планировщик</a>
+      <a href="/trust">🛡️ Доверие</a>
+    </div>
+    
+    <button class="copy-btn" onclick="copyPageData()">📋 КОПИРОВАТЬ ДАННЫЕ</button>
+    
+    <div class="status">
+      <strong>✅ 25 модулей готовы</strong><br>
+      🛡️ 24 источника в системе доверия · 📊 Средний рейтинг: 80
+    </div>
+  </div>
+
+  <script>
+    function copyPageData() {
+      const data = {
+        title: document.title,
+        time: new Date().toLocaleString(),
+        version: '2.1.2',
+        modules: 25,
+        sources: 24,
+        avgTrust: 80
+      };
+      
+      const text = '=== ' + data.title + ' ===\n' +
+                   'Дата: ' + data.time + '\n' +
+                   'Версия: ' + data.version + '\n' +
+                   'Модулей: ' + data.modules + '/25\n' +
+                   'Источников: ' + data.sources + '\n' +
+                   'Средний рейтинг: ' + data.avgTrust + '\n\n' +
+                   '--- CRUCIX OSINT TERMINAL ---\n' +
+                   '🌐 http://localhost:3117\n';
+      
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function() {
+          showNotification('✅ Данные скопированы');
+        }).catch(function() {
+          fallbackCopy(text);
+        });
+      } else {
+        fallbackCopy(text);
+      }
+    }
+    
+    function fallbackCopy(text) {
+      var area = document.createElement('textarea');
+      area.value = text;
+      area.style.cssText = 'position:fixed;left:-9999px;top:-9999px;';
+      document.body.appendChild(area);
+      area.select();
+      try {
+        document.execCommand('copy');
+        showNotification('✅ Данные скопированы');
+      } catch (e) {
+        showNotification('❌ Ошибка копирования');
+      }
+      document.body.removeChild(area);
+    }
+    
+    function showNotification(msg) {
+      var els = document.querySelectorAll('.notification');
+      for (var i = 0; i < els.length; i++) {
+        els[i].remove();
+      }
+      var el = document.createElement('div');
+      el.className = 'notification';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(function() { el.remove(); }, 2500);
+    }
+  </script>
+<script src="/js/help.js"></script>
+</body>
+</html>

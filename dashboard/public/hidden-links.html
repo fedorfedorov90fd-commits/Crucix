@@ -15,7 +15,8 @@
     <div class="topbar-right">
       <span class="topbar-time" id="topbar-date">Загрузка...</span>
       <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
-      <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ</button>
+      <button class="topbar-btn btn-help" onclick="showHelp()">❓ HELP</button>
+    <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ</button>
       <button class="topbar-btn btn-grid" id="grid-toggle">📐 СЕТКА</button>
     </div>
   </header>
@@ -68,5 +69,6 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/vis-network.min.js"></script>
   <script src="/js/hidden-links.js"></script>
+<script src="/js/help.js"></script>
 </body>
 </html>

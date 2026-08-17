@@ -21,14 +21,19 @@ export async function handleGlobalIndexAPI(req, res) {
     return;
   }
 
-  // GET /api/geo/index — статус для диагностики
+  // СТАТУС ДЛЯ ДИАГНОСТИКИ
   if (path === '/api/geo/index' && req.method === 'GET') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ success: true, module: 'global-index', status: 'online' }));
+    res.end(JSON.stringify({
+      success: true,
+      module: 'global-index',
+      status: 'online',
+      timestamp: new Date().toISOString()
+    }));
     return;
   }
 
-  // GET /api/geo/index/history — история индекса
+  // ИСТОРИЯ ИНДЕКСА
   if (path === '/api/geo/index/history' && req.method === 'GET') {
     try {
       const data = await fs.readFile(HISTORY_FILE, 'utf-8');

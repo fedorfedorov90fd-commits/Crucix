@@ -13,9 +13,15 @@ export async function handleSatelliteAPI(req, res) {
     return;
   }
 
+  // СТАТУС ДЛЯ ДИАГНОСТИКИ
   if (path === '/api/satellite/status' && req.method === 'GET') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ success: true, module: 'satellite', status: 'online' }));
+    res.end(JSON.stringify({
+      success: true,
+      module: 'satellite',
+      status: 'online',
+      timestamp: new Date().toISOString()
+    }));
     return;
   }
 

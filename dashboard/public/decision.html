@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Дашборд решений — Crucix</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a1a;
+      color: #e0e0e0;
+      min-height: 100vh;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 20px;
+      background: rgba(10, 10, 30, 0.95);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      z-index: 100;
+      height: 48px;
+    }
+    .header h1 { font-size: 18px; font-weight: 700; color: #fff; }
+    .header h1 span { color: #44ccff; }
+    .header .nav-links {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .header .nav-links a {
+      color: #888;
+      text-decoration: none;
+      font-size: 13px;
+      padding: 4px 12px;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    .header .nav-links a:hover { background: rgba(255,255,255,0.05); color: #e0e0e0; }
+    .header .nav-links a.home { color: #2196f3; }
+    .header .nav-links a.active { color: #44ccff; background: rgba(68,204,255,0.1); }
+    .btn-copy {
+      padding: 4px 12px;
+      background: rgba(33,150,243,0.2);
+      border: 1px solid rgba(33,150,243,0.3);
+      border-radius: 4px;
+      color: #2196f3;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    .btn-copy:hover { background: rgba(33,150,243,0.3); }
+
+    .main-content {
+      padding: 16px 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .page-title { font-size: 24px; font-weight: 700; color: #e8f0f8; margin-bottom: 4px; }
+    .page-subtitle { color: #666; font-size: 14px; margin-bottom: 16px; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .stat-card {
+      background: rgba(10,10,20,0.5);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 8px;
+      padding: 12px 16px;
+      text-align: center;
+    }
+    .stat-card .label { font-size: 10px; text-transform: uppercase; color: #666; letter-spacing: 0.5px; }
+    .stat-card .value { font-size: 22px; font-weight: 700; color: #e8f0f8; margin-top: 2px; }
+    .stat-card .value.green { color: #4caf50; }
+    .stat-card .value.blue { color: #5bc0f8; }
+    .stat-card .value.orange { color: #f97316; }
+    .stat-card .value.red { color: #ef4444; }
+    .stat-card .value.yellow { color: #ffd700; }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .btn {
+      padding: 6px 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    .btn:hover { transform: translateY(-1px); opacity: 0.9; }
+    .btn-primary { background: #2196f3; color: #fff; }
+    .btn-secondary { background: #444; color: #fff; }
+    .btn-danger { background: #ef4444; color: #fff; }
+    .btn-warning { background: #eab308; color: #fff; }
+    .btn-success { background: #22c55e; color: #fff; }
+    .status-label {
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      background: rgba(255,255,255,0.05);
+      color: #888;
+      margin-left: auto;
+    }
+
+    .grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .panel {
+      background: rgba(10,10,20,0.5);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .panel .title { font-size: 14px; font-weight: 600; color: #e8f0f8; margin-bottom: 8px; }
+
+    .decision-item {
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      border-left: 4px solid #5bc0f8;
+      margin-bottom: 6px;
+      background: rgba(255,255,255,0.02);
+      border-radius: 2px;
+    }
+    .decision-item.critical { border-left-color: #ef4444; background: rgba(239,68,68,0.05); }
+    .decision-item.warning { border-left-color: #eab308; background: rgba(234,179,8,0.05); }
+    .decision-item.info { border-left-color: #5bc0f8; background: rgba(91,192,248,0.03); }
+    .decision-item .title { font-weight: 600; color: #e8f0f8; font-size: 14px; }
+    .decision-item .desc { font-size: 12px; color: #c8d0d8; margin: 4px 0; }
+    .decision-item .actions { font-size: 11px; color: #666; margin-top: 4px; }
+    .decision-item .actions span { background: rgba(255,255,255,0.03); padding: 2px 8px; border-radius: 3px; margin-right: 4px; }
+    .decision-item .time { font-size: 10px; color: #555; float: right; }
+
+    .module-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      font-size: 12px;
+    }
+    .module-item .name { color: #888; }
+    .module-item .status.online { color: #22c55e; }
+    .module-item .status.offline { color: #ef4444; }
+
+    .loading { padding: 20px; text-align: center; color: #666; font-size: 14px; }
+    .notification {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-size: 13px;
+      z-index: 100001;
+      border: 1px solid rgba(255,255,255,0.1);
+      animation: notif-fade 2.5s forwards;
+    }
+    @keyframes notif-fade {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+
+    @media (max-width: 768px) {
+      .grid-2col { grid-template-columns: 1fr; }
+      .header { padding: 6px 12px; height: 42px; }
+      .header h1 { font-size: 15px; }
+      .main-content { padding: 10px; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1>🎯 <span>Дашборд</span> решений</h1>
+    <div class="nav-links">
+      <a href="/jarvis" class="home">🏠 Главная</a>
+      <a href="/decision" class="active">🎯 Решения</a>
+      <button class="btn-copy" id="copy-btn">📋 Копировать</button>
+    </div>
+  </header>
+
+  <div class="main-content">
+    <h1 class="page-title">🎯 Дашборд решений</h1>
+    <p class="page-subtitle">Единый центр принятия решений — агрегация всех 58 модулей</p>
+
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card">
+        <div class="label">Модулей</div>
+        <div class="value blue" id="stat-modules">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Онлайн</div>
+        <div class="value green" id="stat-online">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Критических</div>
+        <div class="value red" id="stat-critical">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Предупреждений</div>
+        <div class="value yellow" id="stat-warnings">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Решений</div>
+        <div class="value orange" id="stat-decisions">0</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-primary" id="btn-update">🔄 Обновить дашборд</button>
+      <button class="btn btn-secondary" id="btn-refresh">🔄 Обновить</button>
+      <span class="status-label" id="status-label">⏹ Готов</span>
+    </div>
+
+    <div class="grid-2col">
+      <div class="panel">
+        <div class="title">🚨 Активные решения</div>
+        <div id="decisions-content">
+          <div class="loading">Нажмите "Обновить дашборд"</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="title">📊 Статус модулей</div>
+        <div id="modules-content">
+          <div class="loading">Загрузка...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    console.log('🎯 Дашборд решений загружается...');
+
+    async function loadData() {
+      await Promise.all([loadStats(), loadDecisions(), loadModules()]);
+    }
+
+    async function loadStats() {
+      try {
+        const res = await fetch('/api/decision/status');
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('stat-modules').textContent = data.stats.modules || 0;
+          document.getElementById('stat-online').textContent = data.stats.modules_online || 0;
+          document.getElementById('stat-critical').textContent = data.stats.critical_decisions || 0;
+          document.getElementById('stat-warnings').textContent = data.stats.warning_decisions || 0;
+          document.getElementById('stat-decisions').textContent = data.stats.total_decisions || 0;
+        }
+      } catch (e) { console.error('[Decision] Ошибка загрузки статистики:', e); }
+    }
+
+    async function loadDecisions() {
+      try {
+        const res = await fetch('/api/decision/latest');
+        const data = await res.json();
+        if (data.success) {
+          const container = document.getElementById('decisions-content');
+          if (data.decisions.length === 0) {
+            container.innerHTML = '<div class="loading">Нет активных решений</div>';
+            return;
+          }
+          let html = '';
+          for (const dec of data.decisions) {
+            const typeClass = dec.type === 'critical' ? 'critical' : dec.type === 'warning' ? 'warning' : 'info';
+            const time = new Date(dec.timestamp).toLocaleString();
+            html += `
+              <div class="decision-item ${typeClass}">
+                <span class="time">${time}</span>
+                <div class="title">${dec.title}</div>
+                <div class="desc">${dec.description}</div>
+                ${dec.actions ? `<div class="actions">${dec.actions.map(a => `<span>${a}</span>`).join('')}</div>` : ''}
+              </div>
+            `;
+          }
+          container.innerHTML = html;
+        }
+      } catch (e) { console.error('[Decision] Ошибка загрузки решений:', e); }
+    }
+
+    async function loadModules() {
+      try {
+        const res = await fetch('/api/decision/modules');
+        const data = await res.json();
+        if (data.success) {
+          const container = document.getElementById('modules-content');
+          let html = '';
+          for (const [key, module] of Object.entries(data.modules)) {
+            const statusClass = module.status === 'online' ? 'online' : 'offline';
+            const statusText = module.status === 'online' ? '🟢 Онлайн' : '🔴 Офлайн';
+            html += `
+              <div class="module-item">
+                <span class="name">${module.name || key}</span>
+                <span class="status ${statusClass}">${statusText}</span>
+              </div>
+            `;
+          }
+          container.innerHTML = html || '<div class="loading">Нет данных о модулях</div>';
+        }
+      } catch (e) { console.error('[Decision] Ошибка загрузки модулей:', e); }
+    }
+
+    async function updateDashboard() {
+      const btn = document.getElementById('btn-update');
+      const label = document.getElementById('status-label');
+      btn.textContent = '⏳ Обновление...';
+      btn.disabled = true;
+      label.textContent = '⏳ Сбор данных...';
+      label.className = 'status-label';
+
+      try {
+        const res = await fetch('/api/decision/update', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          showNotification(`✅ Дашборд обновлён! ${data.result.decisions.length} решений`);
+          await loadData();
+        } else {
+          showNotification('❌ Ошибка обновления');
+        }
+      } catch (e) {
+        showNotification('❌ Ошибка: ' + e.message);
+      } finally {
+        btn.textContent = '🔄 Обновить дашборд';
+        btn.disabled = false;
+        label.textContent = '⏹ Готов';
+        label.className = 'status-label';
+      }
+    }
+
+    function showNotification(msg) {
+      document.querySelectorAll('.notification').forEach(el => el.remove());
+      const el = document.createElement('div');
+      el.className = 'notification';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2500);
+    }
+
+    document.getElementById('copy-btn').addEventListener('click', function() {
+      const text = `=== CRUCIX — ДАШБОРД РЕШЕНИЙ ===
+Дата: ${new Date().toLocaleString()}
+
+--- СТАТИСТИКА ---
+Модулей: ${document.getElementById('stat-modules').textContent}
+Онлайн: ${document.getElementById('stat-online').textContent}
+Критических: ${document.getElementById('stat-critical').textContent}
+Предупреждений: ${document.getElementById('stat-warnings').textContent}
+Решений: ${document.getElementById('stat-decisions').textContent}
+
+--- АКТИВНЫЕ РЕШЕНИЯ ---
+${document.getElementById('decisions-content').textContent}
+
+--- СТАТУС МОДУЛЕЙ ---
+${document.getElementById('modules-content').textContent}
+
+--- CRUCIX OSINT TERMINAL ---
+🌐 http://localhost:3117/decision`;
+
+      navigator.clipboard.writeText(text).then(() => {
+        showNotification('✅ Данные скопированы');
+      }).catch(() => {
+        const area = document.createElement('textarea');
+        area.value = text;
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand('copy');
+        document.body.removeChild(area);
+        showNotification('✅ Данные скопированы');
+      });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('btn-update').addEventListener('click', updateDashboard);
+      document.getElementById('btn-refresh').addEventListener('click', loadData);
+      loadData();
+    });
+  </script>
+</body>
+</html>

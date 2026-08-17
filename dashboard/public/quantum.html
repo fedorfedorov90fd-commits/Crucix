@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quantum OSINT — Crucix</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a1a;
+      color: #e0e0e0;
+      min-height: 100vh;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 20px;
+      background: rgba(10, 10, 30, 0.95);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      z-index: 100;
+      height: 48px;
+    }
+    .header h1 { font-size: 18px; font-weight: 700; color: #fff; }
+    .header h1 span { color: #44ccff; }
+    .header .nav-links {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .header .nav-links a {
+      color: #888;
+      text-decoration: none;
+      font-size: 13px;
+      padding: 4px 12px;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    .header .nav-links a:hover { background: rgba(255,255,255,0.05); color: #e0e0e0; }
+    .header .nav-links a.home { color: #2196f3; }
+    .header .nav-links a.active { color: #44ccff; background: rgba(68,204,255,0.1); }
+    .btn-copy {
+      padding: 4px 12px;
+      background: rgba(33,150,243,0.2);
+      border: 1px solid rgba(33,150,243,0.3);
+      border-radius: 4px;
+      color: #2196f3;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    .btn-copy:hover { background: rgba(33,150,243,0.3); }
+
+    .main-content {
+      padding: 16px 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .page-title { font-size: 24px; font-weight: 700; color: #e8f0f8; margin-bottom: 4px; }
+    .page-subtitle { color: #666; font-size: 14px; margin-bottom: 16px; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .stat-card {
+      background: rgba(10,10,20,0.5);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 8px;
+      padding: 12px 16px;
+      text-align: center;
+    }
+    .stat-card .label { font-size: 10px; text-transform: uppercase; color: #666; letter-spacing: 0.5px; }
+    .stat-card .value { font-size: 22px; font-weight: 700; color: #e8f0f8; margin-top: 2px; }
+    .stat-card .value.green { color: #4caf50; }
+    .stat-card .value.blue { color: #5bc0f8; }
+    .stat-card .value.orange { color: #f97316; }
+    .stat-card .value.red { color: #ef4444; }
+    .stat-card .value.yellow { color: #ffd700; }
+    .stat-card .value.purple { color: #a855f7; }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .btn {
+      padding: 6px 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    .btn:hover { transform: translateY(-1px); opacity: 0.9; }
+    .btn-primary { background: #2196f3; color: #fff; }
+    .btn-secondary { background: #444; color: #fff; }
+    .btn-purple { background: #7c3aed; color: #fff; }
+    .btn-success { background: #22c55e; color: #fff; }
+    .status-label {
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      background: rgba(255,255,255,0.05);
+      color: #888;
+      margin-left: auto;
+    }
+
+    .grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .panel {
+      background: rgba(10,10,20,0.5);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .panel .title { font-size: 14px; font-weight: 600; color: #e8f0f8; margin-bottom: 8px; }
+
+    .state-item {
+      padding: 8px 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      font-size: 13px;
+    }
+    .state-item .name { color: #e8f0f8; font-weight: 500; }
+    .state-item .prob { color: #5bc0f8; }
+    .state-item .superposition { font-size: 11px; color: #888; }
+    .state-item .amplitude { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 11px; }
+    .state-item .amplitude.high { background: rgba(239,68,68,0.2); color: #ef4444; }
+    .state-item .amplitude.medium { background: rgba(234,179,8,0.2); color: #eab308; }
+    .state-item .amplitude.low { background: rgba(34,197,94,0.2); color: #22c55e; }
+
+    .entanglement-item {
+      padding: 6px 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      font-size: 12px;
+    }
+    .entanglement-item .pair { color: #a855f7; }
+    .entanglement-item .strength { color: #ffd700; }
+
+    .prediction-item {
+      padding: 8px 10px;
+      border-left: 3px solid #a855f7;
+      margin-bottom: 4px;
+      background: rgba(168,85,247,0.05);
+      border-radius: 2px;
+    }
+    .prediction-item .state { font-weight: 600; color: #e8f0f8; }
+    .prediction-item .result { font-size: 13px; color: #c8d0d8; }
+
+    .loading { padding: 20px; text-align: center; color: #666; font-size: 14px; }
+    .notification {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-size: 13px;
+      z-index: 100001;
+      border: 1px solid rgba(255,255,255,0.1);
+      animation: notif-fade 2.5s forwards;
+    }
+    @keyframes notif-fade {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+
+    @media (max-width: 768px) {
+      .grid-2col { grid-template-columns: 1fr; }
+      .header { padding: 6px 12px; height: 42px; }
+      .header h1 { font-size: 15px; }
+      .main-content { padding: 10px; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1>⚛️ <span>Quantum</span> OSINT</h1>
+    <div class="nav-links">
+      <a href="/jarvis" class="home">🏠 Главная</a>
+      <a href="/quantum" class="active">⚛️ Квант</a>
+      <button class="btn-copy" id="copy-btn">📋 Копировать</button>
+    </div>
+  </header>
+
+  <div class="main-content">
+    <h1 class="page-title">⚛️ Quantum OSINT</h1>
+    <p class="page-subtitle">Квантовый анализ — суперпозиция, запутанность, интерференция</p>
+
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card">
+        <div class="label">Состояний</div>
+        <div class="value blue" id="stat-states">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Запутанностей</div>
+        <div class="value purple" id="stat-entanglements">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Измерений</div>
+        <div class="value orange" id="stat-measurements">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Средняя вероятность</div>
+        <div class="value yellow" id="stat-probability">0%</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-purple" id="btn-analysis">🔬 Квантовый анализ</button>
+      <button class="btn btn-success" id="btn-prediction">🔮 Квантовый прогноз</button>
+      <button class="btn btn-secondary" id="btn-refresh">🔄 Обновить</button>
+      <span class="status-label" id="status-label">⏹ Готов</span>
+    </div>
+
+    <div class="grid-2col">
+      <div class="panel">
+        <div class="title">⚛️ Квантовые состояния</div>
+        <div id="states-content">
+          <div class="loading">Загрузка...</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="title">🔗 Квантовая запутанность</div>
+        <div id="entanglements-content">
+          <div class="loading">Загрузка...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="title">🔮 Квантовый прогноз</div>
+      <div id="prediction-content">
+        <div class="loading">Нажмите "Квантовый прогноз"</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    console.log('⚛️ Quantum OSINT загружается...');
+
+    async function loadData() {
+      await Promise.all([loadStats(), loadStates(), loadEntanglements()]);
+    }
+
+    async function loadStats() {
+      try {
+        const res = await fetch('/api/quantum/status');
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('stat-states').textContent = data.stats.total_states || 0;
+          document.getElementById('stat-entanglements').textContent = data.stats.total_entanglements || 0;
+          document.getElementById('stat-measurements').textContent = data.stats.total_measurements || 0;
+          document.getElementById('stat-probability').textContent = (data.stats.average_probability || 0) + '%';
+        }
+      } catch (e) { console.error('[Quantum] Ошибка загрузки статистики:', e); }
+    }
+
+    async function loadStates() {
+      try {
+        const res = await fetch('/api/quantum/states');
+        const data = await res.json();
+        if (data.success) {
+          const container = document.getElementById('states-content');
+          let html = '';
+          for (const state of data.states) {
+            const prob = Math.round(state.probability * 100);
+            const sup = state.superposition.join(', ');
+            html += `
+              <div class="state-item">
+                <div class="name">${state.name}</div>
+                <div class="prob">Вероятность: ${prob}%</div>
+                <div class="superposition">Суперпозиция: ${sup}</div>
+                <div style="margin-top:4px;">
+                  ${state.amplitudes.map((a, i) => {
+                    const cls = a > 0.5 ? 'high' : a > 0.3 ? 'medium' : 'low';
+                    return `<span class="amplitude ${cls}">${state.superposition[i]}: ${Math.round(a * 100)}%</span>`;
+                  }).join(' ')}
+                </div>
+              </div>
+            `;
+          }
+          container.innerHTML = html;
+        }
+      } catch (e) { console.error('[Quantum] Ошибка загрузки состояний:', e); }
+    }
+
+    async function loadEntanglements() {
+      try {
+        const res = await fetch('/api/quantum/entanglements');
+        const data = await res.json();
+        if (data.success) {
+          const container = document.getElementById('entanglements-content');
+          let html = '';
+          for (const ent of data.entanglements) {
+            html += `
+              <div class="entanglement-item">
+                <span class="pair">${ent.state_a} ⇄ ${ent.state_b}</span>
+                <span class="strength">Корреляция: ${ent.correlation}%</span>
+                <span style="color:#a855f7;">Запутанность: ${ent.entanglement}%</span>
+              </div>
+            `;
+          }
+          container.innerHTML = html || '<div class="loading">Нет запутанностей</div>';
+        }
+      } catch (e) { console.error('[Quantum] Ошибка загрузки запутанностей:', e); }
+    }
+
+    async function quantumAnalysis() {
+      const btn = document.getElementById('btn-analysis');
+      const label = document.getElementById('status-label');
+      btn.textContent = '⏳ Анализ...';
+      btn.disabled = true;
+      label.textContent = '⏳ Квантовый анализ...';
+      label.className = 'status-label';
+
+      try {
+        const res = await fetch('/api/quantum/analysis');
+        const data = await res.json();
+        if (data.success) {
+          showNotification('✅ Квантовый анализ завершён!');
+          await loadData();
+          // Показываем результат в прогнозе
+          const predContainer = document.getElementById('prediction-content');
+          const summary = data.analysis.summary;
+          predContainer.innerHTML = `
+            <div style="padding:12px;">
+              <div style="color:#a855f7;font-size:16px;font-weight:600;">📊 Квантовый анализ</div>
+              <div style="margin-top:8px;">
+                <div>Состояний: ${summary.total_states}</div>
+                <div>Запутанностей: ${summary.total_entanglements}</div>
+                <div>Средняя вероятность: ${summary.average_probability}%</div>
+                <div>Средняя запутанность: ${summary.average_entanglement}%</div>
+                <div>Квантовое состояние: ${summary.quantum_state}</div>
+              </div>
+            </div>
+          `;
+        }
+      } catch (e) {
+        showNotification('❌ Ошибка: ' + e.message);
+      } finally {
+        btn.textContent = '🔬 Квантовый анализ';
+        btn.disabled = false;
+        label.textContent = '⏹ Готов';
+        label.className = 'status-label';
+      }
+    }
+
+    async function quantumPrediction() {
+      const btn = document.getElementById('btn-prediction');
+      const label = document.getElementById('status-label');
+      btn.textContent = '⏳ Прогноз...';
+      btn.disabled = true;
+      label.textContent = '⏳ Квантовый прогноз...';
+      label.className = 'status-label';
+
+      try {
+        const res = await fetch('/api/quantum/prediction');
+        const data = await res.json();
+        if (data.success) {
+          const container = document.getElementById('prediction-content');
+          const pred = data.prediction;
+          let html = `
+            <div style="padding:12px;">
+              <div style="color:#a855f7;font-size:16px;font-weight:600;">🔮 Квантовый прогноз</div>
+              <div style="color:#888;font-size:12px;margin-bottom:8px;">Квантовая энтропия: ${pred.quantum_entropy}%</div>
+          `;
+          for (const p of pred.predictions) {
+            const cls = p.probability > 70 ? 'color:#ef4444;' : p.probability > 50 ? 'color:#eab308;' : 'color:#22c55e;';
+            html += `
+              <div class="prediction-item">
+                <div class="state">${p.state}</div>
+                <div class="result">→ ${p.most_likely} (${p.probability}%, уверенность: ${p.confidence}%)</div>
+              </div>
+            `;
+          }
+          html += `
+            <div style="margin-top:12px;padding:12px;background:rgba(168,85,247,0.08);border-radius:6px;border:1px solid rgba(168,85,247,0.2);">
+              <strong style="color:#a855f7;">Рекомендация:</strong>
+              <span style="color:#c8d0d8;">${pred.recommendation}</span>
+            </div>
+          </div>`;
+          container.innerHTML = html;
+          showNotification('✅ Квантовый прогноз готов!');
+        }
+      } catch (e) {
+        showNotification('❌ Ошибка: ' + e.message);
+      } finally {
+        btn.textContent = '🔮 Квантовый прогноз';
+        btn.disabled = false;
+        label.textContent = '⏹ Готов';
+        label.className = 'status-label';
+      }
+    }
+
+    function showNotification(msg) {
+      document.querySelectorAll('.notification').forEach(el => el.remove());
+      const el = document.createElement('div');
+      el.className = 'notification';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2500);
+    }
+
+    document.getElementById('copy-btn').addEventListener('click', function() {
+      const text = `=== CRUCIX — QUANTUM OSINT ===
+Дата: ${new Date().toLocaleString()}
+
+--- СТАТИСТИКА ---
+Состояний: ${document.getElementById('stat-states').textContent}
+Запутанностей: ${document.getElementById('stat-entanglements').textContent}
+Измерений: ${document.getElementById('stat-measurements').textContent}
+Средняя вероятность: ${document.getElementById('stat-probability').textContent}
+
+--- КВАНТОВЫЕ СОСТОЯНИЯ ---
+${document.getElementById('states-content').textContent}
+
+--- ЗАПУТАННОСТИ ---
+${document.getElementById('entanglements-content').textContent}
+
+--- ПРОГНОЗ ---
+${document.getElementById('prediction-content').textContent}
+
+--- CRUCIX OSINT TERMINAL ---
+🌐 http://localhost:3117/quantum`;
+
+      navigator.clipboard.writeText(text).then(() => {
+        showNotification('✅ Данные скопированы');
+      }).catch(() => {
+        const area = document.createElement('textarea');
+        area.value = text;
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand('copy');
+        document.body.removeChild(area);
+        showNotification('✅ Данные скопированы');
+      });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('btn-analysis').addEventListener('click', quantumAnalysis);
+      document.getElementById('btn-prediction').addEventListener('click', quantumPrediction);
+      document.getElementById('btn-refresh').addEventListener('click', loadData);
+      loadData();
+    });
+  </script>
+</body>
+</html>

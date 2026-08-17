@@ -79,6 +79,7 @@ import { handleExportAPI } from './apis/sources/export-api.mjs';
 import { handleHelpAPI } from './apis/sources/help-api.mjs';
 import { handleStrategicAPI } from './apis/sources/strategic-layer.mjs';
 import { handlePredictionAPI } from './apis/sources/prediction-intel.mjs';
+import { handleMASAAPI } from './apis/sources/masa.mjs';
 
 // ============================================================
 // 2. MIME-ТИПЫ
@@ -163,7 +164,8 @@ async function findStaticFile(pathname) {
     '/export': 'export.html',
     '/help': 'help.html',
     '/strategic-layer': 'strategic-layer.html',
-    '/prediction-intel': 'prediction-intel.html'
+    '/prediction-intel': 'prediction-intel.html',
+    '/masa': 'masa.html'
   };
 
   const cleanPath = pathname.replace('.html', '');
@@ -261,6 +263,7 @@ const server = createServer(async (req, res) => {
   if (pathname.startsWith('/api/help/')) { await handleHelpAPI(req, res); return; }
   if (pathname.startsWith('/api/strategic/')) { await handleStrategicAPI(req, res); return; }
   if (pathname.startsWith('/api/prediction/')) { await handlePredictionAPI(req, res); return; }
+  if (pathname.startsWith('/api/masa/')) { await handleMASAAPI(req, res); return; }
 
   // Статические файлы
   const filePath = await findStaticFile(pathname);
@@ -289,7 +292,7 @@ server.listen(PORT, () => {
   console.log(`  📡 Порт: ${PORT}`);
   console.log(`  🌐 URL: http://localhost:${PORT}`);
   console.log(`========================================`);
-  console.log(`  📋 СТРАНИЦ (45):`);
+  console.log(`  📋 СТРАНИЦ (46):`);
   console.log(`  /  Главная`);
   console.log(`  /jarvis  Интерфейс`);
   console.log(`  /rss-feed  RSS лента`);
@@ -333,10 +336,11 @@ server.listen(PORT, () => {
   console.log(`  /export  Экспорт данных ⭐`);
   console.log(`  /help  Справка ⭐`);
   console.log(`  /strategic-layer  Стратегический слой ⭐`);
-  console.log(`  /prediction-intel  ПРОГНОЗНЫЙ ИНТЕЛЛЕКТ ⭐ НОВЫЙ!`);
+  console.log(`  /prediction-intel  Прогнозный интеллект ⭐`);
+  console.log(`  /masa  МУЛЬТИ-АГЕНТНЫЙ АНАЛИЗ ⭐ НОВЫЙ!`);
   console.log(`========================================`);
   console.log(`  🧠 AI-процессор: BASIC`);
-  console.log(`  🌟 Модулей: 54/54 (100%) ✅`);
+  console.log(`  🌟 Модулей: 55/55 (100%) ✅`);
   console.log(`========================================`);
 });
 

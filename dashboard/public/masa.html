@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Мульти-агентный анализ — Crucix</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a1a;
+      color: #e0e0e0;
+      min-height: 100vh;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 20px;
+      background: rgba(10, 10, 30, 0.95);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      z-index: 100;
+      height: 48px;
+    }
+    .header h1 { font-size: 18px; font-weight: 700; color: #fff; }
+    .header h1 span { color: #44ccff; }
+    .header .nav-links {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .header .nav-links a {
+      color: #888;
+      text-decoration: none;
+      font-size: 13px;
+      padding: 4px 12px;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    .header .nav-links a:hover { background: rgba(255,255,255,0.05); color: #e0e0e0; }
+    .header .nav-links a.home { color: #2196f3; }
+    .header .nav-links a.active { color: #44ccff; background: rgba(68,204,255,0.1); }
+    .btn-copy {
+      padding: 4px 12px;
+      background: rgba(33,150,243,0.2);
+      border: 1px solid rgba(33,150,243,0.3);
+      border-radius: 4px;
+      color: #2196f3;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    .btn-copy:hover { background: rgba(33,150,243,0.3); }
+
+    .main-content {
+      padding: 16px 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .page-title { font-size: 24px; font-weight: 700; color: #e8f0f8; margin-bottom: 4px; }
+    .page-subtitle { color: #666; font-size: 14px; margin-bottom: 16px; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .stat-card {
+      background: rgba(10,10,20,0.5);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 8px;
+      padding: 12px 16px;
+      text-align: center;
+    }
+    .stat-card .label { font-size: 10px; text-transform: uppercase; color: #666; letter-spacing: 0.5px; }
+    .stat-card .value { font-size: 22px; font-weight: 700; color: #e8f0f8; margin-top: 2px; }
+    .stat-card .value.green { color: #4caf50; }
+    .stat-card .value.blue { color: #5bc0f8; }
+    .stat-card .value.orange { color: #f97316; }
+    .stat-card .value.red { color: #ef4444; }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .btn {
+      padding: 6px 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    .btn:hover { transform: translateY(-1px); opacity: 0.9; }
+    .btn-primary { background: #2196f3; color: #fff; }
+    .btn-secondary { background: #444; color: #fff; }
+    .btn-success { background: #22c55e; color: #fff; }
+    .btn-danger { background: #ef4444; color: #fff; }
+    .status-label {
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      background: rgba(255,255,255,0.05);
+      color: #888;
+      margin-left: auto;
+    }
+
+    .agents-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .agent-card {
+      background: rgba(10,10,20,0.5);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 8px;
+      padding: 14px 16px;
+      transition: all 0.3s;
+    }
+    .agent-card:hover { border-color: rgba(255,255,255,0.08); }
+    .agent-card .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: transparent;
+      border: none;
+      padding: 0;
+      height: auto;
+    }
+    .agent-card .name { font-size: 14px; font-weight: 600; color: #e8f0f8; }
+    .agent-card .icon { font-size: 20px; }
+    .agent-card .expertise { font-size: 11px; color: #666; margin-top: 2px; }
+    .agent-card .bias { font-size: 11px; color: #555; margin-top: 2px; }
+    .agent-card .insights { margin-top: 8px; }
+    .agent-card .insight {
+      font-size: 12px;
+      color: #c8d0d8;
+      padding: 4px 8px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 4px;
+      margin-top: 4px;
+      border-left: 3px solid #5bc0f8;
+    }
+    .agent-card .confidence {
+      font-size: 12px;
+      color: #888;
+      margin-top: 8px;
+    }
+    .agent-card .confidence .high { color: #22c55e; }
+    .agent-card .confidence .medium { color: #eab308; }
+    .agent-card .confidence .low { color: #ef4444; }
+
+    .committee-panel {
+      background: rgba(10,10,20,0.5);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .committee-panel .title { font-size: 16px; font-weight: 600; color: #e8f0f8; margin-bottom: 8px; }
+    .committee-panel .risk-bar {
+      height: 20px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 8px 0;
+    }
+    .committee-panel .risk-fill {
+      height: 100%;
+      border-radius: 10px;
+      transition: width 0.5s ease;
+    }
+    .committee-panel .risk-fill.low { background: #22c55e; }
+    .committee-panel .risk-fill.medium { background: #eab308; }
+    .committee-panel .risk-fill.high { background: #ef4444; }
+    .committee-panel .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+    .committee-panel .row .label { color: #666; font-size: 13px; }
+    .committee-panel .row .value { color: #e8f0f8; font-weight: 600; }
+
+    .weaknesses-panel {
+      background: rgba(10,10,20,0.5);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .weakness-item {
+      padding: 6px 10px;
+      border-left: 3px solid #ef4444;
+      margin-bottom: 4px;
+      background: rgba(239,68,68,0.05);
+      border-radius: 2px;
+      font-size: 12px;
+    }
+    .weakness-item .severity-high { border-color: #ef4444; }
+    .weakness-item .severity-medium { border-color: #eab308; }
+    .weakness-item .severity-low { border-color: #22c55e; }
+
+    .summary-panel {
+      background: rgba(10,10,20,0.5);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .summary-panel .text {
+      font-size: 14px;
+      color: #c8d0d8;
+      line-height: 1.6;
+    }
+
+    .loading { padding: 40px; text-align: center; color: #666; font-size: 14px; }
+    .notification {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-size: 13px;
+      z-index: 100001;
+      border: 1px solid rgba(255,255,255,0.1);
+      animation: notif-fade 2.5s forwards;
+    }
+    @keyframes notif-fade {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+
+    @media (max-width: 600px) {
+      .header { padding: 6px 12px; height: 42px; }
+      .header h1 { font-size: 15px; }
+      .main-content { padding: 10px; }
+      .agents-grid { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1>🧠 <span>Мульти-агентный</span> анализ (MASA)</h1>
+    <div class="nav-links">
+      <a href="/jarvis" class="home">🏠 Главная</a>
+      <a href="/masa" class="active">🧠 MASA</a>
+      <button class="btn-copy" id="copy-btn">📋 Копировать</button>
+    </div>
+  </header>
+
+  <div class="main-content">
+    <h1 class="page-title">🧠 Мульти-агентная система анализа</h1>
+    <p class="page-subtitle">5 AI-агентов анализируют ситуацию с разных точек зрения → Комитет по решениям</p>
+
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card">
+        <div class="label">Агентов</div>
+        <div class="value blue" id="stat-agents">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Отчётов</div>
+        <div class="value green" id="stat-reports">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Уровень риска</div>
+        <div class="value orange" id="stat-risk">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Уверенность</div>
+        <div class="value yellow" id="stat-confidence">—</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-primary" id="btn-analyze">🔬 Запустить анализ</button>
+      <button class="btn btn-secondary" id="btn-refresh">🔄 Обновить</button>
+      <span class="status-label" id="status-label">⏹ Готов</span>
+    </div>
+
+    <div class="summary-panel" id="summary-panel">
+      <div class="title">📋 Резюме</div>
+      <div class="text" id="summary-text">Нажмите "Запустить анализ" для получения отчёта</div>
+    </div>
+
+    <div class="committee-panel" id="committee-panel">
+      <div class="title">📊 Комитет по решениям</div>
+      <div id="committee-content">
+        <div class="loading">Ожидание анализа...</div>
+      </div>
+    </div>
+
+    <div class="agents-grid" id="agents-grid">
+      <div class="loading">⏳ Загрузка агентов...</div>
+    </div>
+
+    <div class="weaknesses-panel" id="weaknesses-panel">
+      <div class="title">⚠️ Слабые места в анализе</div>
+      <div id="weaknesses-content">
+        <div class="loading">Ожидание анализа...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    console.log('🧠 MASA загружается...');
+
+    async function loadAgents() {
+      try {
+        const res = await fetch('/api/masa/agents');
+        const data = await res.json();
+        return data.agents || [];
+      } catch (e) {
+        console.error('[MASA] Ошибка загрузки агентов:', e);
+        return [];
+      }
+    }
+
+    async function loadStats() {
+      try {
+        const res = await fetch('/api/masa/status');
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('stat-agents').textContent = data.stats.total_agents || 0;
+          document.getElementById('stat-reports').textContent = data.stats.total_reports || 0;
+        }
+      } catch (e) {
+        console.error('[MASA] Ошибка загрузки статистики:', e);
+      }
+    }
+
+    async function loadLatest() {
+      try {
+        const res = await fetch('/api/masa/latest');
+        const data = await res.json();
+        if (data.success && data.report) {
+          renderReport(data.report);
+        }
+      } catch (e) {
+        console.error('[MASA] Ошибка загрузки отчёта:', e);
+      }
+    }
+
+    async function runAnalysis() {
+      const btn = document.getElementById('btn-analyze');
+      const label = document.getElementById('status-label');
+      btn.textContent = '⏳ Анализ...';
+      btn.disabled = true;
+      label.textContent = '⏳ Агенты анализируют...';
+      label.className = 'status-label';
+
+      try {
+        const res = await fetch('/api/masa/analyze', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          renderReport(data.report);
+          await loadStats();
+          showNotification('✅ Анализ завершён!');
+        } else {
+          showNotification('❌ Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+        }
+      } catch (e) {
+        showNotification('❌ Ошибка: ' + e.message);
+      } finally {
+        btn.textContent = '🔬 Запустить анализ';
+        btn.disabled = false;
+        label.textContent = '⏹ Готов';
+        label.className = 'status-label';
+      }
+    }
+
+    function renderReport(report) {
+      // Резюме
+      document.getElementById('summary-text').textContent = report.summary || 'Анализ завершён';
+
+      // Комитет
+      const committee = report.committee || {};
+      const riskLevel = committee.risk_level || 0;
+      const riskClass = riskLevel > 70 ? 'high' : riskLevel > 40 ? 'medium' : 'low';
+
+      document.getElementById('stat-risk').textContent = riskLevel + '%';
+      document.getElementById('stat-confidence').textContent = (committee.confidence || 0) + '%';
+
+      let committeeHtml = `
+        <div class="row">
+          <span class="label">Уровень риска</span>
+          <span class="value" style="color:${riskLevel > 70 ? '#ef4444' : riskLevel > 40 ? '#eab308' : '#22c55e'}">${riskLevel}%</span>
+        </div>
+        <div class="risk-bar">
+          <div class="risk-fill ${riskClass}" style="width:${riskLevel}%;"></div>
+        </div>
+        <div class="row">
+          <span class="label">Уверенность комитета</span>
+          <span class="value" style="color:${committee.confidence > 70 ? '#22c55e' : committee.confidence > 40 ? '#eab308' : '#ef4444'}">${committee.confidence}%</span>
+        </div>
+        <div class="row">
+          <span class="label">Консенсус агентов</span>
+          <span class="value" style="color:${committee.consensus > 70 ? '#22c55e' : committee.consensus > 40 ? '#eab308' : '#ef4444'}">${committee.consensus}%</span>
+        </div>
+      `;
+
+      if (committee.recommendations && committee.recommendations.length > 0) {
+        committeeHtml += `<div style="margin-top:8px;padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:4px;">
+          <strong style="color:#888;font-size:12px;">Рекомендации:</strong>
+          ${committee.recommendations.map(r => `<div style="font-size:12px;color:#c8d0d8;padding:2px 0;">✅ ${r}</div>`).join('')}
+        </div>`;
+      }
+
+      document.getElementById('committee-content').innerHTML = committeeHtml;
+
+      // Агенты
+      const agents = report.agents || [];
+      let agentsHtml = '';
+      for (const agent of agents) {
+        const confClass = agent.confidence > 70 ? 'high' : agent.confidence > 40 ? 'medium' : 'low';
+        agentsHtml += `
+          <div class="agent-card">
+            <div class="header">
+              <div>
+                <div class="name">${agent.agent_icon} ${agent.agent_name}</div>
+                <div class="expertise">${agent.expertise || '—'}</div>
+                <div class="bias">${agent.bias || '—'}</div>
+              </div>
+            </div>
+            <div class="insights">
+              ${agent.insights.map(i => `<div class="insight">${i}</div>`).join('')}
+            </div>
+            <div class="confidence">Уверенность: <span class="${confClass}">${agent.confidence}%</span></div>
+          </div>
+        `;
+      }
+      document.getElementById('agents-grid').innerHTML = agentsHtml;
+
+      // Слабые места
+      const weaknesses = report.weaknesses || [];
+      let weakHtml = '';
+      if (weaknesses.length === 0) {
+        weakHtml = '<div style="padding:12px;color:#22c55e;">✅ Слабых мест не обнаружено</div>';
+      } else {
+        for (const w of weaknesses) {
+          weakHtml += `
+            <div class="weakness-item">
+              <strong>${w.agent || 'Система'}</strong>: ${w.issue}
+              <span style="color:${w.severity === 'high' ? '#ef4444' : w.severity === 'medium' ? '#eab308' : '#22c55e'};font-size:11px;">
+                [${w.severity.toUpperCase()}]
+              </span>
+            </div>
+          `;
+        }
+      }
+      document.getElementById('weaknesses-content').innerHTML = weakHtml;
+    }
+
+    function showNotification(msg) {
+      document.querySelectorAll('.notification').forEach(el => el.remove());
+      const el = document.createElement('div');
+      el.className = 'notification';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2500);
+    }
+
+    document.getElementById('copy-btn').addEventListener('click', function() {
+      const text = `=== CRUCIX — МУЛЬТИ-АГЕНТНЫЙ АНАЛИЗ (MASA) ===
+Дата: ${new Date().toLocaleString()}
+
+--- СТАТИСТИКА ---
+Агентов: ${document.getElementById('stat-agents').textContent}
+Отчётов: ${document.getElementById('stat-reports').textContent}
+Уровень риска: ${document.getElementById('stat-risk').textContent}
+Уверенность: ${document.getElementById('stat-confidence').textContent}
+
+--- РЕЗЮМЕ ---
+${document.getElementById('summary-text').textContent}
+
+--- КОМИТЕТ ---
+${document.getElementById('committee-content').textContent}
+
+--- CRUCIX OSINT TERMINAL ---
+🌐 http://localhost:3117/masa`;
+
+      navigator.clipboard.writeText(text).then(() => {
+        showNotification('✅ Данные скопированы');
+      }).catch(() => {
+        const area = document.createElement('textarea');
+        area.value = text;
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand('copy');
+        document.body.removeChild(area);
+        showNotification('✅ Данные скопированы');
+      });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('btn-analyze').addEventListener('click', runAnalysis);
+      document.getElementById('btn-refresh').addEventListener('click', function() {
+        loadStats();
+        loadLatest();
+      });
+      loadStats();
+      loadLatest();
+      loadAgents().then(agents => {
+        if (agents.length > 0) {
+          // Если агенты загружены, но отчёта нет — показываем агентов
+        }
+      });
+    });
+  </script>
+</body>
+</html>

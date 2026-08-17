@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blockchain Verification — Crucix</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a1a;
+      color: #e0e0e0;
+      min-height: 100vh;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 20px;
+      background: rgba(10, 10, 30, 0.95);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      z-index: 100;
+      height: 48px;
+    }
+    .header h1 { font-size: 18px; font-weight: 700; color: #fff; }
+    .header h1 span { color: #44ccff; }
+    .header .nav-links {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .header .nav-links a {
+      color: #888;
+      text-decoration: none;
+      font-size: 13px;
+      padding: 4px 12px;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    .header .nav-links a:hover { background: rgba(255,255,255,0.05); color: #e0e0e0; }
+    .header .nav-links a.home { color: #2196f3; }
+    .header .nav-links a.active { color: #44ccff; background: rgba(68,204,255,0.1); }
+    .btn-copy {
+      padding: 4px 12px;
+      background: rgba(33,150,243,0.2);
+      border: 1px solid rgba(33,150,243,0.3);
+      border-radius: 4px;
+      color: #2196f3;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    .btn-copy:hover { background: rgba(33,150,243,0.3); }
+
+    .main-content {
+      padding: 16px 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .page-title { font-size: 24px; font-weight: 700; color: #e8f0f8; margin-bottom: 4px; }
+    .page-subtitle { color: #666; font-size: 14px; margin-bottom: 16px; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .stat-card {
+      background: rgba(10,10,20,0.5);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 8px;
+      padding: 12px 16px;
+      text-align: center;
+    }
+    .stat-card .label { font-size: 10px; text-transform: uppercase; color: #666; letter-spacing: 0.5px; }
+    .stat-card .value { font-size: 22px; font-weight: 700; color: #e8f0f8; margin-top: 2px; }
+    .stat-card .value.green { color: #4caf50; }
+    .stat-card .value.blue { color: #5bc0f8; }
+    .stat-card .value.orange { color: #f97316; }
+    .stat-card .value.purple { color: #a855f7; }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .btn {
+      padding: 6px 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    .btn:hover { transform: translateY(-1px); opacity: 0.9; }
+    .btn-primary { background: #2196f3; color: #fff; }
+    .btn-secondary { background: #444; color: #fff; }
+    .btn-success { background: #22c55e; color: #fff; }
+    .status-label {
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      background: rgba(255,255,255,0.05);
+      color: #888;
+      margin-left: auto;
+    }
+
+    .grid-2col {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .panel {
+      background: rgba(10,10,20,0.5);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .panel .title { font-size: 14px; font-weight: 600; color: #e8f0f8; margin-bottom: 8px; }
+
+    .block-item {
+      padding: 8px 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      font-size: 12px;
+      background: rgba(255,255,255,0.02);
+      border-radius: 4px;
+      margin-bottom: 4px;
+    }
+    .block-item .index { color: #a855f7; font-weight: 600; }
+    .block-item .hash { font-family: monospace; font-size: 10px; color: #666; }
+    .block-item .data { color: #c8d0d8; }
+
+    .verify-item {
+      padding: 8px 10px;
+      border-left: 3px solid #22c55e;
+      margin-bottom: 4px;
+      background: rgba(34,197,94,0.05);
+      border-radius: 2px;
+      font-size: 12px;
+    }
+    .verify-item .hash { font-family: monospace; font-size: 10px; color: #666; }
+
+    .form-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .form-row input, .form-row textarea {
+      padding: 6px 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 4px;
+      color: #e0e0e0;
+      font-size: 12px;
+      flex: 1;
+      min-width: 100px;
+    }
+    .form-row input:focus, .form-row textarea:focus {
+      outline: none;
+      border-color: #a855f7;
+    }
+    .form-row textarea { min-height: 60px; font-family: monospace; }
+
+    .loading { padding: 20px; text-align: center; color: #666; font-size: 14px; }
+    .notification {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-size: 13px;
+      z-index: 100001;
+      border: 1px solid rgba(255,255,255,0.1);
+      animation: notif-fade 2.5s forwards;
+    }
+    @keyframes notif-fade {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+
+    @media (max-width: 768px) {
+      .grid-2col { grid-template-columns: 1fr; }
+      .header { padding: 6px 12px; height: 42px; }
+      .header h1 { font-size: 15px; }
+      .main-content { padding: 10px; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1>🔗 <span>Blockchain</span> Verification</h1>
+    <div class="nav-links">
+      <a href="/jarvis" class="home">🏠 Главная</a>
+      <a href="/blockchain" class="active">🔗 Блокчейн</a>
+      <button class="btn-copy" id="copy-btn">📋 Копировать</button>
+    </div>
+  </header>
+
+  <div class="main-content">
+    <h1 class="page-title">🔗 Blockchain Verification</h1>
+    <p class="page-subtitle">Неподдельная история данных — хеширование и верификация</p>
+
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card">
+        <div class="label">Блоков</div>
+        <div class="value blue" id="stat-blocks">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Верификаций</div>
+        <div class="value green" id="stat-verifications">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Хешей</div>
+        <div class="value purple" id="stat-hashes">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Цепь</div>
+        <div class="value green" id="stat-valid">✅ Валидна</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-primary" id="btn-refresh">🔄 Обновить</button>
+      <span class="status-label" id="status-label">⏹ Готов</span>
+    </div>
+
+    <div class="grid-2col">
+      <div class="panel">
+        <div class="title">📦 Блокчейн</div>
+        <div id="chain-content">
+          <div class="loading">Загрузка...</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="title">🔍 Верификация данных</div>
+        <div class="form-row">
+          <textarea id="verify-data" placeholder="Введите данные для верификации..."></textarea>
+        </div>
+        <div class="form-row">
+          <input type="text" id="verify-hash" placeholder="Или введите хеш для проверки...">
+        </div>
+        <div class="form-row">
+          <button class="btn btn-success" id="btn-verify">🔍 Верифицировать</button>
+          <button class="btn btn-primary" id="btn-add">➕ Добавить в блокчейн</button>
+        </div>
+        <div id="verify-result" style="margin-top:8px;"></div>
+        <div style="margin-top:12px;">
+          <div class="title">📋 Последние верификации</div>
+          <div id="verifications-content">
+            <div class="loading">Загрузка...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    console.log('🔗 Blockchain Verification загружается...');
+
+    async function loadData() {
+      await Promise.all([loadStats(), loadChain(), loadVerifications()]);
+    }
+
+    async function loadStats() {
+      try {
+        const res = await fetch('/api/blockchain/status');
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('stat-blocks').textContent = data.stats.total_blocks || 0;
+          document.getElementById('stat-verifications').textContent = data.stats.total_verifications || 0;
+          document.getElementById('stat-hashes').textContent = data.stats.total_hashes || 0;
+          document.getElementById('stat-valid').textContent = data.stats.chain_valid ? '✅ Валидна' : '❌ Невалидна';
+          document.getElementById('stat-valid').style.color = data.stats.chain_valid ? '#22c55e' : '#ef4444';
+        }
+      } catch (e) { console.error('[Blockchain] Ошибка загрузки статистики:', e); }
+    }
+
+    async function loadChain() {
+      try {
+        const res = await fetch('/api/blockchain/chain?limit=10');
+        const data = await res.json();
+        if (data.success) {
+          const container = document.getElementById('chain-content');
+          if (data.chain.length === 0) {
+            container.innerHTML = '<div class="loading">Нет блоков</div>';
+            return;
+          }
+          let html = '';
+          for (const block of data.chain) {
+            const hash = block.hash || '—';
+            const shortHash = hash.slice(0, 16) + '...';
+            const dataStr = typeof block.data === 'object' ? JSON.stringify(block.data).slice(0, 50) + '...' : String(block.data).slice(0, 50);
+            html += `
+              <div class="block-item">
+                <div class="index">#${block.index}</div>
+                <div class="hash">${shortHash}</div>
+                <div class="data">${dataStr}</div>
+                <div style="font-size:10px;color:#555;">${block.verified_by || 'system'} · ${new Date(block.timestamp).toLocaleString()}</div>
+              </div>
+            `;
+          }
+          container.innerHTML = html;
+        }
+      } catch (e) { console.error('[Blockchain] Ошибка загрузки цепи:', e); }
+    }
+
+    async function loadVerifications() {
+      try {
+        const res = await fetch('/api/blockchain/verifications?limit=5');
+        const data = await res.json();
+        if (data.success) {
+          const container = document.getElementById('verifications-content');
+          if (data.verifications.length === 0) {
+            container.innerHTML = '<div class="loading">Нет верификаций</div>';
+            return;
+          }
+          let html = '';
+          for (const ver of data.verifications) {
+            const hash = ver.hash || '—';
+            const shortHash = hash.slice(0, 16) + '...';
+            html += `
+              <div class="verify-item">
+                <div class="hash">${shortHash}</div>
+                <div style="font-size:11px;color:#888;">${new Date(ver.timestamp).toLocaleString()}</div>
+              </div>
+            `;
+          }
+          container.innerHTML = html;
+        }
+      } catch (e) { console.error('[Blockchain] Ошибка загрузки верификаций:', e); }
+    }
+
+    async function verifyData() {
+      const dataInput = document.getElementById('verify-data');
+      const hashInput = document.getElementById('verify-hash');
+      const resultDiv = document.getElementById('verify-result');
+      
+      const data = dataInput.value.trim();
+      const hash = hashInput.value.trim();
+
+      if (!data && !hash) {
+        resultDiv.innerHTML = '<div style="color:#ef4444;">⚠️ Введите данные или хеш</div>';
+        return;
+      }
+
+      resultDiv.innerHTML = '<div style="color:#888;">⏳ Проверка...</div>';
+
+      try {
+        if (hash) {
+          // Проверка хеша
+          const res = await fetch(`/api/blockchain/verify/${hash}`);
+          const result = await res.json();
+          if (result.success) {
+            const r = result.result;
+            resultDiv.innerHTML = `
+              <div style="color:${r.verified ? '#22c55e' : '#ef4444'};padding:8px;background:rgba(${r.verified ? '34,197,94' : '239,68,68'},0.1);border-radius:4px;">
+                ${r.message}
+                ${r.timestamp ? `<div style="font-size:11px;color:#888;">Блок #${r.block_index} · ${new Date(r.timestamp).toLocaleString()}</div>` : ''}
+              </div>
+            `;
+          }
+        } else if (data) {
+          // Добавление в блокчейн
+          const res = await fetch('/api/blockchain/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+          const result = await res.json();
+          if (result.success) {
+            const r = result.result;
+            resultDiv.innerHTML = `
+              <div style="color:#22c55e;padding:8px;background:rgba(34,197,94,0.1);border-radius:4px;">
+                ✅ Данные записаны в блокчейн!
+                <div style="font-size:11px;color:#888;">Блок #${r.block.index} · ${new Date(r.block.timestamp).toLocaleString()}</div>
+                <div style="font-size:10px;font-family:monospace;color:#666;word-break:break-all;">${r.block.hash}</div>
+              </div>
+            `;
+            await loadData();
+          }
+        }
+      } catch (e) {
+        resultDiv.innerHTML = `<div style="color:#ef4444;">❌ Ошибка: ${e.message}</div>`;
+      }
+    }
+
+    async function addToBlockchain() {
+      const dataInput = document.getElementById('verify-data');
+      const resultDiv = document.getElementById('verify-result');
+      
+      const data = dataInput.value.trim();
+      if (!data) {
+        resultDiv.innerHTML = '<div style="color:#ef4444;">⚠️ Введите данные</div>';
+        return;
+      }
+
+      resultDiv.innerHTML = '<div style="color:#888;">⏳ Добавление...</div>';
+
+      try {
+        const res = await fetch('/api/blockchain/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        if (result.success) {
+          const r = result.result;
+          resultDiv.innerHTML = `
+            <div style="color:#22c55e;padding:8px;background:rgba(34,197,94,0.1);border-radius:4px;">
+              ✅ Данные записаны в блокчейн!
+              <div style="font-size:11px;color:#888;">Блок #${r.block.index} · ${new Date(r.block.timestamp).toLocaleString()}</div>
+              <div style="font-size:10px;font-family:monospace;color:#666;word-break:break-all;">${r.block.hash}</div>
+            </div>
+          `;
+          dataInput.value = '';
+          await loadData();
+        }
+      } catch (e) {
+        resultDiv.innerHTML = `<div style="color:#ef4444;">❌ Ошибка: ${e.message}</div>`;
+      }
+    }
+
+    function showNotification(msg) {
+      document.querySelectorAll('.notification').forEach(el => el.remove());
+      const el = document.createElement('div');
+      el.className = 'notification';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2500);
+    }
+
+    document.getElementById('copy-btn').addEventListener('click', function() {
+      const text = `=== CRUCIX — BLOCKCHAIN VERIFICATION ===
+Дата: ${new Date().toLocaleString()}
+
+--- СТАТИСТИКА ---
+Блоков: ${document.getElementById('stat-blocks').textContent}
+Верификаций: ${document.getElementById('stat-verifications').textContent}
+Хешей: ${document.getElementById('stat-hashes').textContent}
+Цепь: ${document.getElementById('stat-valid').textContent}
+
+--- БЛОКЧЕЙН ---
+${document.getElementById('chain-content').textContent}
+
+--- ВЕРИФИКАЦИИ ---
+${document.getElementById('verifications-content').textContent}
+
+--- CRUCIX OSINT TERMINAL ---
+🌐 http://localhost:3117/blockchain`;
+
+      navigator.clipboard.writeText(text).then(() => {
+        showNotification('✅ Данные скопированы');
+      }).catch(() => {
+        const area = document.createElement('textarea');
+        area.value = text;
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand('copy');
+        document.body.removeChild(area);
+        showNotification('✅ Данные скопированы');
+      });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('btn-verify').addEventListener('click', verifyData);
+      document.getElementById('btn-add').addEventListener('click', addToBlockchain);
+      document.getElementById('btn-refresh').addEventListener('click', loadData);
+      loadData();
+    });
+  </script>
+</body>
+</html>

@@ -18,7 +18,7 @@ const PORT = process.env.PORT || 3117;
 const PUBLIC_DIR = join(__dirname, 'dashboard', 'public');
 
 // ============================================================
-// 1. ИМПОРТ API-МОДУЛЕЙ (БАЗОВЫЕ)
+// 1. ИМПОРТ API-МОДУЛЕЙ
 // ============================================================
 
 import { handleRSSAPI } from './apis/sources/rss-manager-api.mjs';
@@ -28,6 +28,7 @@ import { handleAIChatAPI } from './apis/sources/ai-chat-api.mjs';
 import { handleAIRatingAPI } from './apis/sources/ai-news-rating.mjs';
 import { handleNewsAPI } from './apis/sources/news-api.mjs';
 import { handleNewsAPIBasket } from './apis/sources/newsapi-basket-integration.mjs';
+import { handleNewsAPIProxy } from './apis/sources/newsapi.mjs';
 import { handleStorageAPI } from './apis/sources/storage-api.mjs';
 import { handleGlobalIndexAPI } from './apis/sources/global-index-api.mjs';
 import { handleHistoricalAnalysisAPI } from './apis/sources/historical-analysis-api.mjs';
@@ -52,12 +53,6 @@ import { handleDiagnosticsAPI } from './apis/sources/diagnostics-api.mjs';
 import { handleAIGatewayAPI } from './apis/sources/ai-gateway.mjs';
 import { handleHiddenLinksAPI } from './apis/sources/hidden-links.mjs';
 import { handleAIProcessorAPI } from './apis/sources/ai-processor.mjs';
-import { handleNewsAPIProxy } from './apis/sources/newsapi.mjs';
-
-// ============================================================
-// 1.1. ИМПОРТ API-МОДУЛЕЙ (ПАРТИЯ 1 — АНАЛИТИКА)
-// ============================================================
-
 import { handleConflictPredictorAPI } from './apis/sources/conflict-predictor.mjs';
 import { handleAnomalyDetectorAPI } from './apis/sources/anomaly-detector.mjs';
 import { handleScenarioGeneratorAPI } from './apis/sources/scenario-generator.mjs';
@@ -67,11 +62,6 @@ import { handleSemanticAPI } from './apis/sources/semantic-analysis.mjs';
 import { handleReportsAPI } from './apis/sources/automated-reports.mjs';
 import { handleStrategicIntelAPI } from './apis/sources/strategic-intel.mjs';
 import { handleCyberIntelAPI } from './apis/sources/cyber-intel.mjs';
-
-// ============================================================
-// 1.2. ИМПОРТ API-МОДУЛЕЙ (ПАРТИЯ 2 — МОНИТОРИНГ)
-// ============================================================
-
 import { handleAviationAPI } from './apis/sources/aviation-monitor.mjs';
 import { handleMaritimeAPI } from './apis/sources/maritime-monitor.mjs';
 import { handleDarkShipsAPI } from './apis/sources/dark-ships.mjs';
@@ -82,22 +72,13 @@ import { handleEnvironmentAPI } from './apis/sources/environment-monitor.mjs';
 import { handleHealthAPI } from './apis/sources/health-monitor.mjs';
 import { handleWeatherAPI } from './apis/sources/weather-monitor.mjs';
 import { handleSpaceMonitorAPI } from './apis/sources/space-monitor.mjs';
-
-// ============================================================
-// 1.3. ИМПОРТ API-МОДУЛЕЙ (ПАРТИЯ 3 — ИНФРАСТРУКТУРА)
-// ============================================================
-
 import { handleNewsAggregatorAPI } from './apis/sources/news-aggregator.mjs';
 import { handleSupplyChainAPI } from './apis/sources/supply-chain-monitor.mjs';
 import { handleMonitorAPI } from './apis/sources/monitor-api.mjs';
 import { handleExportAPI } from './apis/sources/export-api.mjs';
 import { handleHelpAPI } from './apis/sources/help-api.mjs';
-
-// ============================================================
-// 1.4. ИМПОРТ МОДУЛЯ №53 — СТРАТЕГИЧЕСКИЙ СЛОЙ (RSSL)
-// ============================================================
-
 import { handleStrategicAPI } from './apis/sources/strategic-layer.mjs';
+import { handlePredictionAPI } from './apis/sources/prediction-intel.mjs';
 
 // ============================================================
 // 2. MIME-ТИПЫ
@@ -181,7 +162,8 @@ async function findStaticFile(pathname) {
     '/monitor': 'monitor.html',
     '/export': 'export.html',
     '/help': 'help.html',
-    '/strategic-layer': 'strategic-layer.html'
+    '/strategic-layer': 'strategic-layer.html',
+    '/prediction-intel': 'prediction-intel.html'
   };
 
   const cleanPath = pathname.replace('.html', '');
@@ -217,7 +199,10 @@ const server = createServer(async (req, res) => {
     return;
   }
 
-  // API маршруты (базовые)
+  // ============================================================
+  // API маршруты
+  // ============================================================
+
   if (pathname.startsWith('/api/rss/')) { await handleRSSAPI(req, res); return; }
   if (pathname.startsWith('/api/geo/')) { await handleGeoAPI(req, res); return; }
   if (pathname.startsWith('/api/basket')) { await handleBasketAPI(req, res); return; }
@@ -250,8 +235,6 @@ const server = createServer(async (req, res) => {
   if (pathname.startsWith('/api/ai-gateway/')) { await handleAIGatewayAPI(req, res); return; }
   if (pathname.startsWith('/api/hidden-links/')) { await handleHiddenLinksAPI(req, res); return; }
   if (pathname.startsWith('/api/ai-processor/')) { await handleAIProcessorAPI(req, res); return; }
-
-  // API маршруты (ПАРТИЯ 1)
   if (pathname.startsWith('/api/conflict/')) { await handleConflictPredictorAPI(req, res); return; }
   if (pathname.startsWith('/api/anomaly-detector/')) { await handleAnomalyDetectorAPI(req, res); return; }
   if (pathname.startsWith('/api/scenario-generator/')) { await handleScenarioGeneratorAPI(req, res); return; }
@@ -261,8 +244,6 @@ const server = createServer(async (req, res) => {
   if (pathname.startsWith('/api/reports/')) { await handleReportsAPI(req, res); return; }
   if (pathname.startsWith('/api/strategic-intel/')) { await handleStrategicIntelAPI(req, res); return; }
   if (pathname.startsWith('/api/cyber-intel/')) { await handleCyberIntelAPI(req, res); return; }
-
-  // API маршруты (ПАРТИЯ 2)
   if (pathname.startsWith('/api/aviation/')) { await handleAviationAPI(req, res); return; }
   if (pathname.startsWith('/api/maritime/')) { await handleMaritimeAPI(req, res); return; }
   if (pathname.startsWith('/api/dark-ships/')) { await handleDarkShipsAPI(req, res); return; }
@@ -273,16 +254,13 @@ const server = createServer(async (req, res) => {
   if (pathname.startsWith('/api/health/')) { await handleHealthAPI(req, res); return; }
   if (pathname.startsWith('/api/weather/')) { await handleWeatherAPI(req, res); return; }
   if (pathname.startsWith('/api/space-monitor/')) { await handleSpaceMonitorAPI(req, res); return; }
-
-  // API маршруты (ПАРТИЯ 3)
   if (pathname.startsWith('/api/news-aggregator/')) { await handleNewsAggregatorAPI(req, res); return; }
   if (pathname.startsWith('/api/supply-chain/')) { await handleSupplyChainAPI(req, res); return; }
   if (pathname.startsWith('/api/monitor/')) { await handleMonitorAPI(req, res); return; }
   if (pathname.startsWith('/api/export/')) { await handleExportAPI(req, res); return; }
   if (pathname.startsWith('/api/help/')) { await handleHelpAPI(req, res); return; }
-
-  // API маршруты (МОДУЛЬ №53 — СТРАТЕГИЧЕСКИЙ СЛОЙ)
   if (pathname.startsWith('/api/strategic/')) { await handleStrategicAPI(req, res); return; }
+  if (pathname.startsWith('/api/prediction/')) { await handlePredictionAPI(req, res); return; }
 
   // Статические файлы
   const filePath = await findStaticFile(pathname);
@@ -307,11 +285,11 @@ const server = createServer(async (req, res) => {
 
 server.listen(PORT, () => {
   console.log(`========================================`);
-  console.log(`  🚀 Crucix Server запущен (с RSSL)`);
+  console.log(`  🚀 Crucix Server запущен`);
   console.log(`  📡 Порт: ${PORT}`);
   console.log(`  🌐 URL: http://localhost:${PORT}`);
   console.log(`========================================`);
-  console.log(`  📋 СТРАНИЦ (44):`);
+  console.log(`  📋 СТРАНИЦ (45):`);
   console.log(`  /  Главная`);
   console.log(`  /jarvis  Интерфейс`);
   console.log(`  /rss-feed  RSS лента`);
@@ -354,10 +332,11 @@ server.listen(PORT, () => {
   console.log(`  /monitor  Центр мониторинга ⭐`);
   console.log(`  /export  Экспорт данных ⭐`);
   console.log(`  /help  Справка ⭐`);
-  console.log(`  /strategic-layer  СТРАТЕГИЧЕСКИЙ СЛОЙ ⭐ НОВЫЙ!`);
+  console.log(`  /strategic-layer  Стратегический слой ⭐`);
+  console.log(`  /prediction-intel  ПРОГНОЗНЫЙ ИНТЕЛЛЕКТ ⭐ НОВЫЙ!`);
   console.log(`========================================`);
   console.log(`  🧠 AI-процессор: BASIC`);
-  console.log(`  🌟 Модулей: 53/53 (100%) ✅`);
+  console.log(`  🌟 Модулей: 54/54 (100%) ✅`);
   console.log(`========================================`);
 });
 

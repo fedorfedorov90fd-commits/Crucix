@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Прогнозный интеллект — Crucix</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: #0a0a1a;
+            color: #e0e0e0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 20px;
+            background: rgba(10, 10, 30, 0.95);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            flex-shrink: 0;
+            z-index: 100;
+            height: 48px;
+        }
+        .header h1 { font-size: 18px; font-weight: 700; color: #fff; }
+        .header h1 span { color: #44ccff; }
+        .header .nav-links {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .header .nav-links a {
+            color: #888;
+            text-decoration: none;
+            font-size: 13px;
+            padding: 4px 12px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        .header .nav-links a:hover { background: rgba(255,255,255,0.05); color: #e0e0e0; }
+        .header .nav-links a.home { color: #2196f3; }
+        .header .nav-links a.active { color: #44ccff; background: rgba(68,204,255,0.1); }
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 16px 20px;
+            overflow-y: auto;
+        }
+        .main-content .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #e8f0f8;
+            margin-bottom: 4px;
+        }
+        .main-content .page-subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .stat-card {
+            background: rgba(10,10,20,0.5);
+            border: 1px solid rgba(255,255,255,0.04);
+            border-radius: 8px;
+            padding: 12px 16px;
+            text-align: center;
+        }
+        .stat-card .label { font-size: 10px; text-transform: uppercase; color: #666; letter-spacing: 0.5px; }
+        .stat-card .value { font-size: 22px; font-weight: 700; color: #e8f0f8; margin-top: 2px; }
+        .stat-card .value.green { color: #4caf50; }
+        .stat-card .value.blue { color: #5bc0f8; }
+        .stat-card .value.orange { color: #f97316; }
+        .stat-card .value.red { color: #ef4444; }
+        .stat-card .value.yellow { color: #ffd700; }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .controls .btn {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .controls .btn:hover { transform: translateY(-1px); opacity: 0.9; }
+        .controls .btn-primary { background: #2196f3; color: #fff; }
+        .controls .btn-secondary { background: #444; color: #fff; }
+        .controls .filter-btn {
+            padding: 4px 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            background: transparent;
+            color: #888;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        .controls .filter-btn:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .controls .filter-btn.active { background: rgba(33,150,243,0.2); border-color: #2196f3; color: #2196f3; }
+        
+        .markets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 12px;
+            flex: 1;
+        }
+        .market-card {
+            background: rgba(10,10,20,0.5);
+            border: 1px solid rgba(255,255,255,0.04);
+            border-radius: 8px;
+            padding: 14px 16px;
+            transition: all 0.2s;
+        }
+        .market-card:hover { border-color: rgba(255,255,255,0.08); }
+        .market-card .name { font-weight: 600; color: #e8f0f8; font-size: 14px; }
+        .market-card .category { font-size: 11px; color: #666; margin-top: 2px; }
+        .market-card .probability-bar {
+            margin: 8px 0;
+            height: 6px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .market-card .probability-bar .fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+        .market-card .probability-bar .fill.high { background: linear-gradient(90deg, #f97316, #ef4444); }
+        .market-card .probability-bar .fill.medium { background: linear-gradient(90deg, #eab308, #f97316); }
+        .market-card .probability-bar .fill.low { background: linear-gradient(90deg, #22c55e, #eab308); }
+        .market-card .sources {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 8px;
+        }
+        .market-card .sources .source-tag {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.05);
+            color: #888;
+        }
+        .market-card .sources .source-tag .prob { color: #e8f0f8; font-weight: 600; }
+        .market-card .anomaly {
+            margin-top: 8px;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            background: rgba(239,68,68,0.1);
+            border-left: 3px solid #ef4444;
+            color: #ef4444;
+        }
+        .market-card .confidence {
+            font-size: 12px;
+            color: #888;
+            margin-top: 4px;
+        }
+        .market-card .confidence .high { color: #4caf50; }
+        .market-card .confidence .medium { color: #eab308; }
+        .market-card .confidence .low { color: #ef4444; }
+        
+        .btn-copy {
+            padding: 8px 16px;
+            background: rgba(33, 150, 243, 0.2);
+            border: 1px solid rgba(33, 150, 243, 0.3);
+            border-radius: 6px;
+            color: #2196f3;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-copy:hover { background: rgba(33, 150, 243, 0.3); }
+        
+        .notification {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            z-index: 100001;
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: notif-fade 2.5s forwards;
+        }
+        @keyframes notif-fade {
+            0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+            10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        }
+        
+        .loading {
+            padding: 40px;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 600px) {
+            .header { padding: 6px 12px; height: 42px; }
+            .header h1 { font-size: 15px; }
+            .header .nav-links a { font-size: 11px; padding: 2px 8px; }
+            .main-content { padding: 10px; }
+            .markets-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>🧠 <span>Прогнозный</span> интеллект (PI)</h1>
+        <div class="nav-links">
+            <a href="/jarvis" class="home">🏠 Главная</a>
+            <a href="/prediction-intel" class="active">🧠 Прогнозы</a>
+            <button class="btn-copy" id="copy-btn">📋 Копировать</button>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <h1 class="page-title">🧠 Прогнозный интеллект</h1>
+        <p class="page-subtitle">Агрегация прогнозов из Polymarket, Kalshi, PredictIt, Metaculus</p>
+
+        <div class="stats-grid" id="stats-grid">
+            <div class="stat-card">
+                <div class="label">Всего рынков</div>
+                <div class="value blue" id="stat-total">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Средняя вероятность</div>
+                <div class="value yellow" id="stat-avg">0%</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Источников</div>
+                <div class="value green" id="stat-sources">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Активных</div>
+                <div class="value orange" id="stat-active">0</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" id="btn-refresh">🔄 Обновить</button>
+            <span style="color:#666;font-size:12px;margin:0 4px;">|</span>
+            <button class="filter-btn active" data-filter="all">Все</button>
+            <button class="filter-btn" data-filter="geopolitics">🌍 Геополитика</button>
+            <button class="filter-btn" data-filter="economy">📊 Экономика</button>
+            <button class="filter-btn" data-filter="elections">🗳️ Выборы</button>
+            <button class="filter-btn" data-filter="technology">💻 Технологии</button>
+            <button class="filter-btn" data-filter="climate">🌤️ Климат</button>
+        </div>
+
+        <div class="markets-grid" id="markets-grid">
+            <div class="loading">⏳ Загрузка прогнозов...</div>
+        </div>
+    </div>
+
+    <script>
+        console.log('🧠 Прогнозный интеллект загружается...');
+        
+        let currentFilter = 'all';
+
+        // ============================================================
+        // 1. ЗАГРУЗКА ДАННЫХ
+        // ============================================================
+
+        async function loadData() {
+            try {
+                const [marketsRes, statsRes, accuracyRes] = await Promise.all([
+                    fetch('/api/prediction/markets'),
+                    fetch('/api/prediction/status'),
+                    fetch('/api/prediction/accuracy')
+                ]);
+
+                const markets = await marketsRes.json();
+                const stats = await statsRes.json();
+                const accuracy = await accuracyRes.json();
+
+                updateStats(stats.stats);
+                renderMarkets(markets.markets || []);
+
+            } catch (e) {
+                console.error('[PI] Ошибка загрузки:', e);
+                document.getElementById('markets-grid').innerHTML = '<div class="loading">❌ Ошибка загрузки данных</div>';
+            }
+        }
+
+        // ============================================================
+        // 2. ОБНОВЛЕНИЕ СТАТИСТИКИ
+        // ============================================================
+
+        function updateStats(stats) {
+            document.getElementById('stat-total').textContent = stats.total_markets || 0;
+            document.getElementById('stat-avg').textContent = (stats.average_probability || 0) + '%';
+            document.getElementById('stat-sources').textContent = stats.sources || 0;
+            document.getElementById('stat-active').textContent = stats.active_markets || 0;
+        }
+
+        // ============================================================
+        // 3. ОТОБРАЖЕНИЕ РЫНКОВ
+        // ============================================================
+
+        function renderMarkets(markets) {
+            const container = document.getElementById('markets-grid');
+            
+            let filtered = markets;
+            if (currentFilter !== 'all') {
+                filtered = markets.filter(m => m.category === currentFilter);
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="loading">📭 Нет рынков в этой категории</div>';
+                return;
+            }
+
+            let html = '';
+            for (const market of filtered) {
+                const prob = Math.round(market.probability * 100);
+                const probClass = prob > 70 ? 'high' : prob > 40 ? 'medium' : 'low';
+                const statusClass = market.status === 'active' ? '🟢' : '🔴';
+                
+                // Собираем источники
+                let sourcesHtml = '';
+                for (const [source, probSrc] of Object.entries(market.sources)) {
+                    const p = Math.round(probSrc * 100);
+                    sourcesHtml += `<span class="source-tag">${source}: <span class="prob">${p}%</span></span>`;
+                }
+
+                // Проверяем аномалии
+                let anomalyHtml = '';
+                const probs = Object.values(market.sources);
+                const mean = probs.reduce((a, b) => a + b, 0) / probs.length;
+                const std = Math.sqrt(probs.reduce((a, b) => a + (b - mean) ** 2, 0) / probs.length);
+                const threshold = 2 * std;
+                let hasAnomaly = false;
+                
+                for (const [source, probSrc] of Object.entries(market.sources)) {
+                    if (Math.abs(probSrc - mean) > threshold) {
+                        hasAnomaly = true;
+                        break;
+                    }
+                }
+
+                if (hasAnomaly) {
+                    anomalyHtml = `<div class="anomaly">⚠️ Обнаружено расхождение в прогнозах</div>`;
+                }
+
+                const categoryEmojis = {
+                    'geopolitics': '🌍',
+                    'economy': '📊',
+                    'elections': '🗳️',
+                    'technology': '💻',
+                    'climate': '🌤️'
+                };
+                const emoji = categoryEmojis[market.category] || '📌';
+
+                html += `
+                    <div class="market-card" data-id="${market.id}">
+                        <div class="name">${emoji} ${market.name}</div>
+                        <div class="category">${market.category} · ${market.region} ${statusClass}</div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+                            <span style="font-size:20px;font-weight:700;color:${prob > 70 ? '#ef4444' : prob > 40 ? '#eab308' : '#22c55e'};">${prob}%</span>
+                            <span style="font-size:12px;color:#888;">${market.resolution_date || '—'}</span>
+                        </div>
+                        <div class="probability-bar">
+                            <div class="fill ${probClass}" style="width:${prob}%;"></div>
+                        </div>
+                        <div class="sources">${sourcesHtml}</div>
+                        ${anomalyHtml}
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+        }
+
+        // ============================================================
+        // 4. ФИЛЬТРЫ
+        // ============================================================
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentFilter = this.dataset.filter;
+                loadData();
+            });
+        });
+
+        // ============================================================
+        // 5. КНОПКА ОБНОВЛЕНИЯ
+        // ============================================================
+
+        document.getElementById('btn-refresh').addEventListener('click', loadData);
+
+        // ============================================================
+        // 6. КОПИРОВАНИЕ
+        // ============================================================
+
+        document.getElementById('copy-btn').addEventListener('click', function() {
+            const text = `=== CRUCIX — ПРОГНОЗНЫЙ ИНТЕЛЛЕКТ ===
+Дата: ${new Date().toLocaleString()}
+
+--- СТАТИСТИКА ---
+Всего рынков: ${document.getElementById('stat-total').textContent}
+Средняя вероятность: ${document.getElementById('stat-avg').textContent}
+Источников: ${document.getElementById('stat-sources').textContent}
+Активных: ${document.getElementById('stat-active').textContent}
+
+--- ПРОГНОЗЫ ---
+${document.querySelector('.markets-grid')?.textContent || '—'}
+
+--- CRUCIX OSINT TERMINAL ---
+🌐 http://localhost:3117/prediction-intel`;
+
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification('✅ Данные скопированы');
+            }).catch(() => {
+                const area = document.createElement('textarea');
+                area.value = text;
+                document.body.appendChild(area);
+                area.select();
+                document.execCommand('copy');
+                document.body.removeChild(area);
+                showNotification('✅ Данные скопированы');
+            });
+        });
+
+        function showNotification(msg) {
+            document.querySelectorAll('.notification').forEach(el => el.remove());
+            const el = document.createElement('div');
+            el.className = 'notification';
+            el.textContent = msg;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 2500);
+        }
+
+        // ============================================================
+        // 7. ЗАПУСК
+        // ============================================================
+
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>

@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>P2P-обмен данными — Crucix</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a1a;
+      color: #e0e0e0;
+      min-height: 100vh;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 20px;
+      background: rgba(10, 10, 30, 0.95);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      z-index: 100;
+      height: 48px;
+    }
+    .header h1 { font-size: 18px; font-weight: 700; color: #fff; }
+    .header h1 span { color: #44ccff; }
+    .header .nav-links {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .header .nav-links a {
+      color: #888;
+      text-decoration: none;
+      font-size: 13px;
+      padding: 4px 12px;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    .header .nav-links a:hover { background: rgba(255,255,255,0.05); color: #e0e0e0; }
+    .header .nav-links a.home { color: #2196f3; }
+    .header .nav-links a.active { color: #44ccff; background: rgba(68,204,255,0.1); }
+    .btn-copy {
+      padding: 4px 12px;
+      background: rgba(33,150,243,0.2);
+      border: 1px solid rgba(33,150,243,0.3);
+      border-radius: 4px;
+      color: #2196f3;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    .btn-copy:hover { background: rgba(33,150,243,0.3); }
+
+    .main-content {
+      padding: 16px 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .page-title { font-size: 24px; font-weight: 700; color: #e8f0f8; margin-bottom: 4px; }
+    .page-subtitle { color: #666; font-size: 14px; margin-bottom: 16px; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .stat-card {
+      background: rgba(10,10,20,0.5);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 8px;
+      padding: 12px 16px;
+      text-align: center;
+    }
+    .stat-card .label { font-size: 10px; text-transform: uppercase; color: #666; letter-spacing: 0.5px; }
+    .stat-card .value { font-size: 22px; font-weight: 700; color: #e8f0f8; margin-top: 2px; }
+    .stat-card .value.green { color: #4caf50; }
+    .stat-card .value.blue { color: #5bc0f8; }
+    .stat-card .value.orange { color: #f97316; }
+    .stat-card .value.red { color: #ef4444; }
+    .stat-card .value.yellow { color: #ffd700; }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .btn {
+      padding: 6px 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    .btn:hover { transform: translateY(-1px); opacity: 0.9; }
+    .btn-primary { background: #2196f3; color: #fff; }
+    .btn-secondary { background: #444; color: #fff; }
+    .btn-success { background: #22c55e; color: #fff; }
+    .btn-danger { background: #ef4444; color: #fff; }
+    .btn-warning { background: #eab308; color: #fff; }
+    .status-label {
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      background: rgba(255,255,255,0.05);
+      color: #888;
+      margin-left: auto;
+    }
+
+    .grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .panel {
+      background: rgba(10,10,20,0.5);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .panel .title { font-size: 14px; font-weight: 600; color: #e8f0f8; margin-bottom: 12px; }
+
+    .peer-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+    .peer-item .name { color: #e8f0f8; }
+    .peer-item .status { font-size: 12px; }
+    .peer-item .status.online { color: #22c55e; }
+    .peer-item .status.offline { color: #ef4444; }
+    .peer-item .trust { font-size: 12px; color: #ffd700; }
+
+    .shared-item {
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+    .shared-item .title { font-weight: 600; color: #e8f0f8; }
+    .shared-item .meta { font-size: 11px; color: #888; margin-top: 4px; }
+    .shared-item .severity-critical { border-left: 3px solid #ef4444; padding-left: 10px; }
+    .shared-item .severity-high { border-left: 3px solid #f97316; padding-left: 10px; }
+    .shared-item .severity-medium { border-left: 3px solid #eab308; padding-left: 10px; }
+    .shared-item .severity-low { border-left: 3px solid #22c55e; padding-left: 10px; }
+    .shared-item .verified { color: #22c55e; font-size: 12px; }
+    .shared-item .unverified { color: #ef4444; font-size: 12px; }
+
+    .form-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .form-row input, .form-row select {
+      padding: 6px 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 4px;
+      color: #e0e0e0;
+      font-size: 12px;
+      flex: 1;
+      min-width: 100px;
+    }
+    .form-row input:focus, .form-row select:focus {
+      outline: none;
+      border-color: #2196f3;
+    }
+
+    .loading { padding: 20px; text-align: center; color: #666; font-size: 14px; }
+    .notification {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-size: 13px;
+      z-index: 100001;
+      border: 1px solid rgba(255,255,255,0.1);
+      animation: notif-fade 2.5s forwards;
+    }
+    @keyframes notif-fade {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+
+    @media (max-width: 768px) {
+      .grid-2col { grid-template-columns: 1fr; }
+      .header { padding: 6px 12px; height: 42px; }
+      .header h1 { font-size: 15px; }
+      .main-content { padding: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1>🌐 <span>P2P-обмен</span> данными</h1>
+    <div class="nav-links">
+      <a href="/jarvis" class="home">🏠 Главная</a>
+      <a href="/p2p" class="active">🌐 P2P</a>
+      <button class="btn-copy" id="copy-btn">📋 Копировать</button>
+    </div>
+  </header>
+
+  <div class="main-content">
+    <h1 class="page-title">🌐 Децентрализованный P2P-обмен данными</h1>
+    <p class="page-subtitle">Анонимный обмен предупреждениями и событиями между узлами сети Crucix</p>
+
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card">
+        <div class="label">Пиров</div>
+        <div class="value blue" id="stat-peers">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Онлайн</div>
+        <div class="value green" id="stat-online">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Записей</div>
+        <div class="value orange" id="stat-shared">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Верифицировано</div>
+        <div class="value yellow" id="stat-verified">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Средний рейтинг</div>
+        <div class="value green" id="stat-trust">0%</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-primary" id="btn-sync">🔄 Синхронизировать</button>
+      <button class="btn btn-secondary" id="btn-refresh">🔄 Обновить</button>
+      <span class="status-label" id="status-label">⏹ Готов</span>
+    </div>
+
+    <div class="grid-2col">
+      <div class="panel">
+        <div class="title">👥 Пиры сети</div>
+        <div id="peers-list"><div class="loading">Загрузка...</div></div>
+        <div class="form-row">
+          <input type="text" id="peer-name" placeholder="Имя пира" value="Crucix Peer">
+          <button class="btn btn-success" id="btn-add-peer">➕ Добавить</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="title">📊 Рейтинг доверия</div>
+        <div id="trust-list"><div class="loading">Загрузка...</div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="title">📋 Общий реестр данных</div>
+      <div class="form-row">
+        <input type="text" id="alert-title" placeholder="Заголовок">
+        <input type="text" id="alert-desc" placeholder="Описание">
+        <select id="alert-type">
+          <option value="general">Общее</option>
+          <option value="geopolitical">Геополитика</option>
+          <option value="economic">Экономика</option>
+          <option value="military">Военное</option>
+          <option value="climate">Климат</option>
+        </select>
+        <select id="alert-severity">
+          <option value="low">Низкий</option>
+          <option value="medium" selected>Средний</option>
+          <option value="high">Высокий</option>
+          <option value="critical">Критический</option>
+        </select>
+        <select id="alert-region">
+          <option value="global">Глобальный</option>
+          <option value="europe">Европа</option>
+          <option value="asia-pacific">Азия-Тихий</option>
+          <option value="middle-east">Ближний Восток</option>
+          <option value="africa">Африка</option>
+          <option value="americas">Америка</option>
+        </select>
+        <button class="btn btn-primary" id="btn-add-alert">➕ Добавить</button>
+      </div>
+      <div id="shared-list" style="margin-top:12px;max-height:300px;overflow-y:auto;">
+        <div class="loading">Загрузка...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    console.log('🌐 P2P-сеть загружается...');
+
+    async function loadData() {
+      await Promise.all([loadStats(), loadPeers(), loadShared(), loadTrust()]);
+    }
+
+    async function loadStats() {
+      try {
+        const res = await fetch('/api/p2p/status');
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('stat-peers').textContent = data.stats.total_peers || 0;
+          document.getElementById('stat-online').textContent = data.stats.online_peers || 0;
+          document.getElementById('stat-shared').textContent = data.stats.total_shared || 0;
+          document.getElementById('stat-verified').textContent = data.stats.verified || 0;
+          document.getElementById('stat-trust').textContent = Math.round(data.stats.trust_average || 0) + '%';
+        }
+      } catch (e) { console.error('[P2P] Ошибка загрузки статистики:', e); }
+    }
+
+    async function loadPeers() {
+      try {
+        const res = await fetch('/api/p2p/peers');
+        const data = await res.json();
+        if (data.success) {
+          const container = document.getElementById('peers-list');
+          let html = '';
+          for (const peer of data.peers) {
+            const statusClass = peer.status === 'online' ? 'online' : 'offline';
+            const statusText = peer.status === 'online' ? '🟢 Онлайн' : '🔴 Офлайн';
+            html += `
+              <div class="peer-item">
+                <span class="name">${peer.name || peer.id}</span>
+                <span class="status ${statusClass}">${statusText}</span>
+                <span class="trust">⭐ ${peer.trust_score || 50}%</span>
+              </div>
+            `;
+          }
+          container.innerHTML = html || '<div class="loading">Нет пиров</div>';
+        }
+      } catch (e) { console.error('[P2P] Ошибка загрузки пиров:', e); }
+    }
+
+    async function loadShared() {
+      try {
+        const res = await fetch('/api/p2p/shared');
+        const data = await res.json();
+        if (data.success) {
+          const container = document.getElementById('shared-list');
+          if (data.shared.length === 0) {
+            container.innerHTML = '<div class="loading">Нет записей в реестре</div>';
+            return;
+          }
+          let html = '';
+          for (const item of data.shared) {
+            const severityClass = item.severity === 'critical' ? 'severity-critical' :
+                                 item.severity === 'high' ? 'severity-high' :
+                                 item.severity === 'medium' ? 'severity-medium' : 'severity-low';
+            const verified = item.verified ? '✅ Верифицировано' : '⏳ Ожидает верификации';
+            const verClass = item.verified ? 'verified' : 'unverified';
+            html += `
+              <div class="shared-item ${severityClass}">
+                <div class="title">${item.title}</div>
+                <div class="meta">${item.type} · ${item.region} · ${item.source}</div>
+                <div class="meta">${item.description}</div>
+                <div class="meta"><span class="${verClass}">${verified}</span> (${item.verification_count || 0} верификаций)</div>
+              </div>
+            `;
+          }
+          container.innerHTML = html;
+        }
+      } catch (e) { console.error('[P2P] Ошибка загрузки записей:', e); }
+    }
+
+    async function loadTrust() {
+      try {
+        const res = await fetch('/api/p2p/trust');
+        const data = await res.json();
+        if (data.success) {
+          const container = document.getElementById('trust-list');
+          let html = '';
+          for (const [id, trust] of Object.entries(data.trust)) {
+            const level = trust.level === 'high' ? '🟢' : trust.level === 'medium' ? '🟡' : '🔴';
+            html += `
+              <div class="peer-item">
+                <span class="name">${trust.name || id}</span>
+                <span class="trust">${level} ${trust.score}%</span>
+                <span style="font-size:10px;color:#666;">+${trust.contributions} вкладов</span>
+              </div>
+            `;
+          }
+          container.innerHTML = html || '<div class="loading">Нет данных о доверии</div>';
+        }
+      } catch (e) { console.error('[P2P] Ошибка загрузки рейтингов:', e); }
+    }
+
+    async function syncNetwork() {
+      const btn = document.getElementById('btn-sync');
+      const label = document.getElementById('status-label');
+      btn.textContent = '⏳ Синхронизация...';
+      btn.disabled = true;
+      label.textContent = '⏳ Синхронизация...';
+      label.className = 'status-label';
+
+      try {
+        const res = await fetch('/api/p2p/sync', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          showNotification('✅ Синхронизация завершена!');
+          await loadData();
+        } else {
+          showNotification('❌ Ошибка синхронизации');
+        }
+      } catch (e) {
+        showNotification('❌ Ошибка: ' + e.message);
+      } finally {
+        btn.textContent = '🔄 Синхронизировать';
+        btn.disabled = false;
+        label.textContent = '⏹ Готов';
+        label.className = 'status-label';
+      }
+    }
+
+    async function addPeer() {
+      const input = document.getElementById('peer-name');
+      const name = input.value.trim();
+      if (!name) { showNotification('❌ Введите имя пира'); return; }
+
+      try {
+        const res = await fetch('/api/p2p/peers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showNotification('✅ Пир добавлен!');
+          input.value = 'Crucix Peer';
+          await loadData();
+        }
+      } catch (e) { showNotification('❌ Ошибка: ' + e.message); }
+    }
+
+    async function addAlert() {
+      const title = document.getElementById('alert-title').value.trim();
+      const desc = document.getElementById('alert-desc').value.trim();
+      const type = document.getElementById('alert-type').value;
+      const severity = document.getElementById('alert-severity').value;
+      const region = document.getElementById('alert-region').value;
+
+      if (!title || !desc) { showNotification('❌ Заполните заголовок и описание'); return; }
+
+      try {
+        const res = await fetch('/api/p2p/shared', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, description: desc, type, severity, region, peerId: 'local' })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showNotification('✅ Запись добавлена в реестр!');
+          document.getElementById('alert-title').value = '';
+          document.getElementById('alert-desc').value = '';
+          await loadData();
+        }
+      } catch (e) { showNotification('❌ Ошибка: ' + e.message); }
+    }
+
+    function showNotification(msg) {
+      document.querySelectorAll('.notification').forEach(el => el.remove());
+      const el = document.createElement('div');
+      el.className = 'notification';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2500);
+    }
+
+    document.getElementById('copy-btn').addEventListener('click', function() {
+      const text = `=== CRUCIX — P2P-ОБМЕН ДАННЫМИ ===
+Дата: ${new Date().toLocaleString()}
+
+--- СТАТИСТИКА ---
+Пиров: ${document.getElementById('stat-peers').textContent}
+Онлайн: ${document.getElementById('stat-online').textContent}
+Записей: ${document.getElementById('stat-shared').textContent}
+Верифицировано: ${document.getElementById('stat-verified').textContent}
+Средний рейтинг: ${document.getElementById('stat-trust').textContent}
+
+--- ПИРЫ ---
+${document.getElementById('peers-list').textContent}
+
+--- ОБЩИЙ РЕЕСТР ---
+${document.getElementById('shared-list').textContent}
+
+--- CRUCIX OSINT TERMINAL ---
+🌐 http://localhost:3117/p2p`;
+
+      navigator.clipboard.writeText(text).then(() => {
+        showNotification('✅ Данные скопированы');
+      }).catch(() => {
+        const area = document.createElement('textarea');
+        area.value = text;
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand('copy');
+        document.body.removeChild(area);
+        showNotification('✅ Данные скопированы');
+      });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('btn-sync').addEventListener('click', syncNetwork);
+      document.getElementById('btn-refresh').addEventListener('click', loadData);
+      document.getElementById('btn-add-peer').addEventListener('click', addPeer);
+      document.getElementById('btn-add-alert').addEventListener('click', addAlert);
+      loadData();
+    });
+  </script>
+</body>
+</html>
+
+    <!-- Новая секция: Внешние источники -->
+    <div class="panel" style="margin-top:16px;">
+      <div class="title">🌍 Внешние источники данных</div>
+      <div id="sources-list">
+        <div class="loading">Загрузка...</div>
+      </div>
+      <div class="form-row" style="margin-top:8px;">
+        <button class="btn btn-primary" id="btn-sync-external">🔄 Синхронизировать внешние</button>
+        <button class="btn btn-warning" id="btn-sync-all">🔄 Полная синхронизация</button>
+      </div>
+    </div>
+  <script>
+    // ... существующий код ...
+
+    async function loadSources() {
+      try {
+        const res = await fetch('/api/p2p/sources');
+        const data = await res.json();
+        if (data.success) {
+          const container = document.getElementById('sources-list');
+          let html = '';
+          for (const source of data.sources) {
+            const status = source.enabled ? '🟢 Включён' : '🔴 Выключен';
+            const lastSync = source.last_sync ? new Date(source.last_sync).toLocaleString() : 'Никогда';
+            html += `
+              <div class="peer-item">
+                <span class="name">${source.name}</span>
+                <span style="font-size:11px;color:#888;">${source.type} · ${lastSync}</span>
+                <span>${status}</span>
+                <button class="btn btn-secondary" style="font-size:10px;padding:2px 8px;" onclick="toggleSource('${source.id}')">Переключить</button>
+              </div>
+            `;
+          }
+          container.innerHTML = html || '<div class="loading">Нет источников</div>';
+        }
+      } catch (e) { console.error('[P2P] Ошибка загрузки источников:', e); }
+    }
+
+    async function toggleSource(id) {
+      try {
+        const res = await fetch(`/api/p2p/sources/toggle/${id}`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          showNotification('✅ Источник переключён');
+          await loadSources();
+        }
+      } catch (e) { showNotification('❌ Ошибка: ' + e.message); }
+    }
+
+    async function syncExternal() {
+      const btn = document.getElementById('btn-sync-external');
+      btn.textContent = '⏳ Синхронизация...';
+      btn.disabled = true;
+      try {
+        const res = await fetch('/api/p2p/sync/external', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          showNotification(`✅ Синхронизировано: ${data.result.total_updates} записей`);
+          await loadData();
+          await loadSources();
+        }
+      } catch (e) { showNotification('❌ Ошибка: ' + e.message); }
+      finally {
+        btn.textContent = '🔄 Синхронизировать внешние';
+        btn.disabled = false;
+      }
+    }
+
+    async function syncAll() {
+      const btn = document.getElementById('btn-sync-all');
+      btn.textContent = '⏳ Полная синхронизация...';
+      btn.disabled = true;
+      try {
+        const [peerRes, extRes] = await Promise.all([
+          fetch('/api/p2p/sync', { method: 'POST' }),
+          fetch('/api/p2p/sync/external', { method: 'POST' })
+        ]);
+        const peerData = await peerRes.json();
+        const extData = await extRes.json();
+        const total = (peerData.success ? peerData.result.total_updates : 0) + 
+                     (extData.success ? extData.result.total_updates : 0);
+        showNotification(`✅ Полная синхронизация: ${total} записей`);
+        await loadData();
+        await loadSources();
+      } catch (e) { showNotification('❌ Ошибка: ' + e.message); }
+      finally {
+        btn.textContent = '🔄 Полная синхронизация';
+        btn.disabled = false;
+      }
+    }
+
+    // Добавляем обработчики
+    document.getElementById('btn-sync-external').addEventListener('click', syncExternal);
+    document.getElementById('btn-sync-all').addEventListener('click', syncAll);
+
+    // Расширяем загрузку
+    const originalLoad = loadData;
+    loadData = async function() {
+      await originalLoad();
+      await loadSources();
+    };
+
+    // Обновляем копирование
+    const originalCopy = document.getElementById('copy-btn').click;
+    document.getElementById('copy-btn').addEventListener('click', function() {
+      const text = `=== CRUCIX — P2P-ОБМЕН ДАННЫМИ ===
+Дата: ${new Date().toLocaleString()}
+
+--- СТАТИСТИКА ---
+Пиров: ${document.getElementById('stat-peers').textContent}
+Онлайн: ${document.getElementById('stat-online').textContent}
+Записей: ${document.getElementById('stat-shared').textContent}
+Верифицировано: ${document.getElementById('stat-verified').textContent}
+Средний рейтинг: ${document.getElementById('stat-trust').textContent}
+
+--- ПИРЫ ---
+${document.getElementById('peers-list').textContent}
+
+--- ОБЩИЙ РЕЕСТР ---
+${document.getElementById('shared-list').textContent}
+
+--- ВНЕШНИЕ ИСТОЧНИКИ ---
+${document.getElementById('sources-list').textContent}
+
+--- CRUCIX OSINT TERMINAL ---
+🌐 http://localhost:3117/p2p`;
+
+      navigator.clipboard.writeText(text).then(() => {
+        showNotification('✅ Данные скопированы');
+      }).catch(() => {
+        const area = document.createElement('textarea');
+        area.value = text;
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand('copy');
+        document.body.removeChild(area);
+        showNotification('✅ Данные скопированы');
+      });
+    });
+
+    // Обновляем инициализацию
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('btn-sync').addEventListener('click', syncNetwork);
+      document.getElementById('btn-refresh').addEventListener('click', loadData);
+      document.getElementById('btn-add-peer').addEventListener('click', addPeer);
+      document.getElementById('btn-add-alert').addEventListener('click', addAlert);
+      loadData();
+    });
+  </script>

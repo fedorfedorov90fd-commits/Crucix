@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Прогнозная модель v2.0 — Crucix</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a1a;
+      color: #e0e0e0;
+      min-height: 100vh;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 20px;
+      background: rgba(10, 10, 30, 0.95);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      z-index: 100;
+      height: 48px;
+    }
+    .header h1 { font-size: 18px; font-weight: 700; color: #fff; }
+    .header h1 span { color: #44ccff; }
+    .header .nav-links {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .header .nav-links a {
+      color: #888;
+      text-decoration: none;
+      font-size: 13px;
+      padding: 4px 12px;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    .header .nav-links a:hover { background: rgba(255,255,255,0.05); color: #e0e0e0; }
+    .header .nav-links a.home { color: #2196f3; }
+    .header .nav-links a.active { color: #44ccff; background: rgba(68,204,255,0.1); }
+    .btn-copy {
+      padding: 4px 12px;
+      background: rgba(33,150,243,0.2);
+      border: 1px solid rgba(33,150,243,0.3);
+      border-radius: 4px;
+      color: #2196f3;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    .btn-copy:hover { background: rgba(33,150,243,0.3); }
+
+    .main-content {
+      padding: 16px 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .page-title { font-size: 24px; font-weight: 700; color: #e8f0f8; margin-bottom: 4px; }
+    .page-subtitle { color: #666; font-size: 14px; margin-bottom: 16px; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .stat-card {
+      background: rgba(10,10,20,0.5);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 8px;
+      padding: 12px 16px;
+      text-align: center;
+    }
+    .stat-card .label { font-size: 10px; text-transform: uppercase; color: #666; letter-spacing: 0.5px; }
+    .stat-card .value { font-size: 22px; font-weight: 700; color: #e8f0f8; margin-top: 2px; }
+    .stat-card .value.green { color: #4caf50; }
+    .stat-card .value.blue { color: #5bc0f8; }
+    .stat-card .value.orange { color: #f97316; }
+    .stat-card .value.red { color: #ef4444; }
+    .stat-card .value.yellow { color: #ffd700; }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .btn {
+      padding: 6px 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    .btn:hover { transform: translateY(-1px); opacity: 0.9; }
+    .btn-primary { background: #2196f3; color: #fff; }
+    .btn-secondary { background: #444; color: #fff; }
+    .btn-success { background: #22c55e; color: #fff; }
+    .btn-warning { background: #eab308; color: #fff; }
+    .status-label {
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      background: rgba(255,255,255,0.05);
+      color: #888;
+      margin-left: auto;
+    }
+
+    .grid-2col {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .panel {
+      background: rgba(10,10,20,0.5);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .panel .title { font-size: 14px; font-weight: 600; color: #e8f0f8; margin-bottom: 8px; }
+
+    .prediction-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 8px;
+    }
+    .prediction-item {
+      background: rgba(255,255,255,0.03);
+      border-radius: 6px;
+      padding: 10px;
+      text-align: center;
+      border-left: 3px solid #5bc0f8;
+    }
+    .prediction-item .target { font-size: 11px; color: #888; }
+    .prediction-item .prob { font-size: 22px; font-weight: 700; margin: 2px 0; }
+    .prediction-item .prob.high { color: #ef4444; }
+    .prediction-item .prob.medium { color: #eab308; }
+    .prediction-item .prob.low { color: #22c55e; }
+
+    .feature-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      font-size: 12px;
+    }
+    .feature-item .name { color: #888; }
+    .feature-item .importance { color: #ffd700; font-weight: 600; }
+    .feature-item .bar {
+      width: 60px;
+      height: 6px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 2px;
+    }
+    .feature-item .bar .fill {
+      height: 100%;
+      background: linear-gradient(90deg, #22c55e, #ffd700, #ef4444);
+      border-radius: 3px;
+      transition: width 0.5s ease;
+    }
+
+    .history-panel {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .history-item {
+      padding: 6px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+    }
+    .history-item .date { color: #666; }
+    .history-item .pred { color: #c8d0d8; }
+
+    .loading { padding: 20px; text-align: center; color: #666; font-size: 14px; }
+    .notification {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-size: 13px;
+      z-index: 100001;
+      border: 1px solid rgba(255,255,255,0.1);
+      animation: notif-fade 2.5s forwards;
+    }
+    @keyframes notif-fade {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+
+    @media (max-width: 768px) {
+      .grid-2col { grid-template-columns: 1fr; }
+      .header { padding: 6px 12px; height: 42px; }
+      .header h1 { font-size: 15px; }
+      .main-content { padding: 10px; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .prediction-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1>📊 <span>Прогнозная</span> модель v2.0</h1>
+    <div class="nav-links">
+      <a href="/jarvis" class="home">🏠 Главная</a>
+      <a href="/predictive" class="active">📊 ML</a>
+      <button class="btn-copy" id="copy-btn">📋 Копировать</button>
+    </div>
+  </header>
+
+  <div class="main-content">
+    <h1 class="page-title">📊 Прогнозная модель v2.0</h1>
+    <p class="page-subtitle">15+ признаков · 8 целей · Оптимизированные гиперпараметры</p>
+
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card">
+        <div class="label">Прогнозов</div>
+        <div class="value blue" id="stat-predictions">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Точность</div>
+        <div class="value green" id="stat-accuracy">0%</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Признаков</div>
+        <div class="value orange" id="stat-features">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Целей</div>
+        <div class="value yellow" id="stat-targets">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Данных</div>
+        <div class="value cyan" id="stat-data">0</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-primary" id="btn-train">🧠 Обучить модель</button>
+      <button class="btn btn-success" id="btn-predict">🔮 Сделать прогноз</button>
+      <button class="btn btn-secondary" id="btn-refresh">🔄 Обновить</button>
+      <span class="status-label" id="status-label">⏹ Готов</span>
+    </div>
+
+    <div class="grid-2col">
+      <div class="panel">
+        <div class="title">🔮 Текущий прогноз</div>
+        <div id="prediction-content">
+          <div class="loading">Нажмите "Сделать прогноз"</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="title">📊 Важность признаков</div>
+        <div id="importance-content">
+          <div class="loading">Нет данных</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="title">📜 История прогнозов</div>
+      <div class="history-panel" id="history-content">
+        <div class="loading">Загрузка...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    console.log('📊 Прогнозная модель v2.0 загружается...');
+
+    const targetNames = {
+      conflict_escalation: '⚔️ Эскалация конфликта',
+      economic_crisis: '📉 Экономический кризис',
+      political_change: '🏛️ Политические изменения',
+      natural_disaster: '🌊 Природная катастрофа',
+      market_crash: '💸 Обвал рынка',
+      cyber_attack: '💻 Кибератака',
+      military_escalation: '⚡ Военная эскалация',
+      diplomatic_breakthrough: '🤝 Дипломатический прорыв'
+    };
+
+    async function loadData() {
+      await Promise.all([loadStats(), loadLatest(), loadHistory(), loadImportance()]);
+    }
+
+    async function loadStats() {
+      try {
+        const res = await fetch('/api/predictive/status');
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('stat-predictions').textContent = data.stats.total_predictions || 0;
+          document.getElementById('stat-accuracy').textContent = (data.stats.accuracy || 0) + '%';
+          document.getElementById('stat-features').textContent = data.stats.features || 0;
+          document.getElementById('stat-targets').textContent = data.stats.targets || 0;
+          document.getElementById('stat-data').textContent = data.stats.training_data || 0;
+        }
+      } catch (e) { console.error('[Predictive] Ошибка загрузки статистики:', e); }
+    }
+
+    async function loadLatest() {
+      try {
+        const res = await fetch('/api/predictive/latest');
+        const data = await res.json();
+        if (data.success && data.prediction) {
+          renderPrediction(data.prediction);
+        }
+      } catch (e) { console.error('[Predictive] Ошибка загрузки прогноза:', e); }
+    }
+
+    async function loadHistory() {
+      try {
+        const res = await fetch('/api/predictive/history?limit=10');
+        const data = await res.json();
+        if (data.success) {
+          const container = document.getElementById('history-content');
+          if (data.history.length === 0) {
+            container.innerHTML = '<div class="loading">История пуста</div>';
+            return;
+          }
+          let html = '';
+          for (const item of data.history) {
+            const date = new Date(item.timestamp).toLocaleString();
+            const preds = item.prediction || {};
+            const summary = Object.entries(preds)
+              .filter(([k, v]) => v > 50)
+              .map(([k, v]) => `${targetNames[k] || k}: ${v}%`)
+              .join(', ') || 'Нет значимых прогнозов';
+            html += `
+              <div class="history-item">
+                <span class="date">${date}</span>
+                <span class="pred">${summary}</span>
+              </div>
+            `;
+          }
+          container.innerHTML = html;
+        }
+      } catch (e) { console.error('[Predictive] Ошибка загрузки истории:', e); }
+    }
+
+    async function loadImportance() {
+      try {
+        const res = await fetch('/api/predictive/status');
+        const data = await res.json();
+        if (data.success) {
+          const importance = data.stats.feature_importance || {};
+          const container = document.getElementById('importance-content');
+          if (Object.keys(importance).length === 0) {
+            container.innerHTML = '<div class="loading">Нет данных о важности признаков</div>';
+            return;
+          }
+          let html = '';
+          const sorted = Object.entries(importance).sort((a, b) => b[1] - a[1]);
+          for (const [key, value] of sorted) {
+            const pct = Math.round(value * 100);
+            html += `
+              <div class="feature-item">
+                <span class="name">${key.replace(/_/g, ' ')}</span>
+                <span>
+                  <div class="bar"><div class="fill" style="width:${pct}%;"></div></div>
+                  <span class="importance">${pct}%</span>
+                </span>
+              </div>
+            `;
+          }
+          container.innerHTML = html;
+        }
+      } catch (e) { console.error('[Predictive] Ошибка загрузки важности:', e); }
+    }
+
+    function renderPrediction(prediction) {
+      const container = document.getElementById('prediction-content');
+      const preds = prediction.prediction || {};
+      const confidence = prediction.confidence || 0;
+      const hp = prediction.hyperparameters || {};
+
+      let html = `
+        <div style="margin-bottom:8px;font-size:12px;color:#888;display:flex;justify-content:space-between;">
+          <span>Прогноз от ${new Date(prediction.timestamp).toLocaleString()}</span>
+          <span style="color:${confidence > 70 ? '#22c55e' : confidence > 40 ? '#eab308' : '#ef4444'};">
+            Уверенность: ${confidence}%
+          </span>
+        </div>
+        <div class="prediction-grid">
+      `;
+
+      for (const [key, value] of Object.entries(preds)) {
+        const prob = value;
+        const probClass = prob > 70 ? 'high' : prob > 40 ? 'medium' : 'low';
+        const displayName = targetNames[key] || key;
+        html += `
+          <div class="prediction-item">
+            <div class="target">${displayName}</div>
+            <div class="prob ${probClass}">${prob}%</div>
+          </div>
+        `;
+      }
+
+      html += '</div>';
+
+      // Гиперпараметры
+      html += `
+        <div style="margin-top:8px;padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:4px;font-size:11px;color:#666;">
+          <span>Learning rate: ${hp.learning_rate || 0.015} · Regularization: ${hp.regularization || 0.001} · Epochs: ${hp.epochs || 3}</span>
+        </div>
+      `;
+
+      container.innerHTML = html;
+    }
+
+    async function trainModel() {
+      const btn = document.getElementById('btn-train');
+      const label = document.getElementById('status-label');
+      btn.textContent = '⏳ Обучение...';
+      btn.disabled = true;
+      label.textContent = '⏳ Обучение v2.0...';
+      label.className = 'status-label';
+
+      try {
+        const res = await fetch('/api/predictive/train', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          showNotification(`✅ Модель обучена! Точность: ${data.result.accuracy}%`);
+          await loadData();
+        } else {
+          showNotification('❌ Ошибка обучения');
+        }
+      } catch (e) {
+        showNotification('❌ Ошибка: ' + e.message);
+      } finally {
+        btn.textContent = '🧠 Обучить модель';
+        btn.disabled = false;
+        label.textContent = '⏹ Готов';
+        label.className = 'status-label';
+      }
+    }
+
+    async function makePrediction() {
+      const btn = document.getElementById('btn-predict');
+      const label = document.getElementById('status-label');
+      btn.textContent = '⏳ Прогнозирование...';
+      btn.disabled = true;
+      label.textContent = '⏳ Генерация прогноза...';
+      label.className = 'status-label';
+
+      try {
+        const res = await fetch('/api/predictive/predict', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          renderPrediction(data.prediction);
+          await loadStats();
+          await loadHistory();
+          await loadImportance();
+          showNotification('✅ Прогноз сгенерирован!');
+        } else {
+          showNotification('❌ Ошибка прогнозирования');
+        }
+      } catch (e) {
+        showNotification('❌ Ошибка: ' + e.message);
+      } finally {
+        btn.textContent = '🔮 Сделать прогноз';
+        btn.disabled = false;
+        label.textContent = '⏹ Готов';
+        label.className = 'status-label';
+      }
+    }
+
+    function showNotification(msg) {
+      document.querySelectorAll('.notification').forEach(el => el.remove());
+      const el = document.createElement('div');
+      el.className = 'notification';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2500);
+    }
+
+    document.getElementById('copy-btn').addEventListener('click', function() {
+      const text = `=== CRUCIX — ПРОГНОЗНАЯ МОДЕЛЬ v2.0 ===
+Дата: ${new Date().toLocaleString()}
+
+--- СТАТИСТИКА ---
+Прогнозов: ${document.getElementById('stat-predictions').textContent}
+Точность: ${document.getElementById('stat-accuracy').textContent}
+Признаков: ${document.getElementById('stat-features').textContent}
+Целей: ${document.getElementById('stat-targets').textContent}
+Данных: ${document.getElementById('stat-data').textContent}
+
+--- ТЕКУЩИЙ ПРОГНОЗ ---
+${document.getElementById('prediction-content').textContent}
+
+--- ВАЖНОСТЬ ПРИЗНАКОВ ---
+${document.getElementById('importance-content').textContent}
+
+--- CRUCIX OSINT TERMINAL ---
+🌐 http://localhost:3117/predictive`;
+
+      navigator.clipboard.writeText(text).then(() => {
+        showNotification('✅ Данные скопированы');
+      }).catch(() => {
+        const area = document.createElement('textarea');
+        area.value = text;
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand('copy');
+        document.body.removeChild(area);
+        showNotification('✅ Данные скопированы');
+      });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('btn-train').addEventListener('click', trainModel);
+      document.getElementById('btn-predict').addEventListener('click', makePrediction);
+      document.getElementById('btn-refresh').addEventListener('click', loadData);
+      loadData();
+    });
+  </script>
+</body>
+</html>

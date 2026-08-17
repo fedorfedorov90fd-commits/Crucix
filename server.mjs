@@ -81,6 +81,7 @@ import { handleStrategicAPI } from './apis/sources/strategic-layer.mjs';
 import { handlePredictionAPI } from './apis/sources/prediction-intel.mjs';
 import { handleMASAAPI } from './apis/sources/masa.mjs';
 import { handleP2PAPI } from './apis/sources/p2p.mjs';
+import { handlePredictiveAPI } from './apis/sources/predictive.mjs';
 
 // ============================================================
 // 2. MIME-ТИПЫ
@@ -167,7 +168,8 @@ async function findStaticFile(pathname) {
     '/strategic-layer': 'strategic-layer.html',
     '/prediction-intel': 'prediction-intel.html',
     '/masa': 'masa.html',
-    '/p2p': 'p2p.html'
+    '/p2p': 'p2p.html',
+    '/predictive': 'predictive.html'
   };
 
   const cleanPath = pathname.replace('.html', '');
@@ -267,6 +269,7 @@ const server = createServer(async (req, res) => {
   if (pathname.startsWith('/api/prediction/')) { await handlePredictionAPI(req, res); return; }
   if (pathname.startsWith('/api/masa/')) { await handleMASAAPI(req, res); return; }
   if (pathname.startsWith('/api/p2p/')) { await handleP2PAPI(req, res); return; }
+  if (pathname.startsWith('/api/predictive/')) { await handlePredictiveAPI(req, res); return; }
 
   // Статические файлы
   const filePath = await findStaticFile(pathname);
@@ -295,7 +298,7 @@ server.listen(PORT, () => {
   console.log(`  📡 Порт: ${PORT}`);
   console.log(`  🌐 URL: http://localhost:${PORT}`);
   console.log(`========================================`);
-  console.log(`  📋 СТРАНИЦ (47):`);
+  console.log(`  📋 СТРАНИЦ (48):`);
   console.log(`  /  Главная`);
   console.log(`  /jarvis  Интерфейс`);
   console.log(`  /rss-feed  RSS лента`);
@@ -341,10 +344,11 @@ server.listen(PORT, () => {
   console.log(`  /strategic-layer  Стратегический слой ⭐`);
   console.log(`  /prediction-intel  Прогнозный интеллект ⭐`);
   console.log(`  /masa  Мульти-агентный анализ ⭐`);
-  console.log(`  /p2p  P2P-ОБМЕН ДАННЫМИ ⭐ НОВЫЙ!`);
+  console.log(`  /p2p  P2P-обмен данными ⭐`);
+  console.log(`  /predictive  ПРОГНОЗНАЯ МОДЕЛЬ ⭐ НОВЫЙ!`);
   console.log(`========================================`);
   console.log(`  🧠 AI-процессор: BASIC`);
-  console.log(`  🌟 Модулей: 56/56 (100%) ✅`);
+  console.log(`  🌟 Модулей: 58/58 (100%) ✅`);
   console.log(`========================================`);
 });
 

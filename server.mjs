@@ -83,6 +83,7 @@ import { handleMASAAPI } from './apis/sources/masa.mjs';
 import { handleP2PAPI } from './apis/sources/p2p.mjs';
 import { handlePredictiveAPI } from './apis/sources/predictive.mjs';
 import { handleDecisionAPI } from './apis/sources/decision.mjs';
+import { handleSocialAPI } from './apis/sources/social.mjs';
 
 // ============================================================
 // 2. MIME-ТИПЫ
@@ -171,7 +172,8 @@ async function findStaticFile(pathname) {
     '/masa': 'masa.html',
     '/p2p': 'p2p.html',
     '/predictive': 'predictive.html',
-    '/decision': 'decision.html'
+    '/decision': 'decision.html',
+    '/social': 'social.html'
   };
 
   const cleanPath = pathname.replace('.html', '');
@@ -273,6 +275,7 @@ const server = createServer(async (req, res) => {
   if (pathname.startsWith('/api/p2p/')) { await handleP2PAPI(req, res); return; }
   if (pathname.startsWith('/api/predictive/')) { await handlePredictiveAPI(req, res); return; }
   if (pathname.startsWith('/api/decision/')) { await handleDecisionAPI(req, res); return; }
+  if (pathname.startsWith('/api/social/')) { await handleSocialAPI(req, res); return; }
 
   // Статические файлы
   const filePath = await findStaticFile(pathname);
@@ -301,7 +304,7 @@ server.listen(PORT, () => {
   console.log(`  📡 Порт: ${PORT}`);
   console.log(`  🌐 URL: http://localhost:${PORT}`);
   console.log(`========================================`);
-  console.log(`  📋 СТРАНИЦ (49):`);
+  console.log(`  📋 СТРАНИЦ (50):`);
   console.log(`  /  Главная`);
   console.log(`  /jarvis  Интерфейс`);
   console.log(`  /rss-feed  RSS лента`);
@@ -349,10 +352,11 @@ server.listen(PORT, () => {
   console.log(`  /masa  Мульти-агентный анализ ⭐`);
   console.log(`  /p2p  P2P-обмен данными ⭐`);
   console.log(`  /predictive  Прогнозная модель ⭐`);
-  console.log(`  /decision  ДАШБОРД РЕШЕНИЙ ⭐ НОВЫЙ!`);
+  console.log(`  /decision  Дашборд решений ⭐`);
+  console.log(`  /social  АНАЛИЗ СОЦСЕТЕЙ ⭐ НОВЫЙ!`);
   console.log(`========================================`);
   console.log(`  🧠 AI-процессор: BASIC`);
-  console.log(`  🌟 Модулей: 59/59 (100%) ✅`);
+  console.log(`  🌟 Модулей: 61/61 (100%) ✅`);
   console.log(`========================================`);
 });
 

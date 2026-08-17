@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
 // ============================================================
-// SERVER.MJS — Главный сервер Crucix (ПАРТИЯ 3)
+// SERVER.MJS — Главный сервер Crucix
 // ============================================================
-// Добавлены инфраструктурные модули:
-// news-aggregator, supply-chain-monitor, monitor-api,
-// export-api, help-api
+// HTTP-сервер на порту 3117
+// Раздаёт статику из dashboard/public/
+// Обрабатывает API-запросы
 // ============================================================
 
 import { createServer } from 'http';
@@ -94,6 +94,12 @@ import { handleExportAPI } from './apis/sources/export-api.mjs';
 import { handleHelpAPI } from './apis/sources/help-api.mjs';
 
 // ============================================================
+// 1.4. ИМПОРТ МОДУЛЯ №53 — СТРАТЕГИЧЕСКИЙ СЛОЙ (RSSL)
+// ============================================================
+
+import { handleStrategicAPI } from './apis/sources/strategic-layer.mjs';
+
+// ============================================================
 // 2. MIME-ТИПЫ
 // ============================================================
 
@@ -160,7 +166,6 @@ async function findStaticFile(pathname) {
     '/automated-reports': 'automated-reports.html',
     '/strategic-intel': 'strategic-intel.html',
     '/cyber-intel': 'cyber-intel.html',
-    // Партия 2 — мониторинг
     '/aviation-monitor': 'aviation-monitor.html',
     '/maritime-monitor': 'maritime-monitor.html',
     '/dark-ships': 'dark-ships.html',
@@ -171,12 +176,12 @@ async function findStaticFile(pathname) {
     '/health-monitor': 'health-monitor.html',
     '/weather-monitor': 'weather-monitor.html',
     '/space-monitor': 'space-monitor.html',
-    // Партия 3 — инфраструктура
     '/news-aggregator': 'news-aggregator.html',
     '/supply-chain-monitor': 'supply-chain-monitor.html',
     '/monitor': 'monitor.html',
     '/export': 'export.html',
-    '/help': 'help.html'
+    '/help': 'help.html',
+    '/strategic-layer': 'strategic-layer.html'
   };
 
   const cleanPath = pathname.replace('.html', '');
@@ -269,12 +274,15 @@ const server = createServer(async (req, res) => {
   if (pathname.startsWith('/api/weather/')) { await handleWeatherAPI(req, res); return; }
   if (pathname.startsWith('/api/space-monitor/')) { await handleSpaceMonitorAPI(req, res); return; }
 
-  // API маршруты (ПАРТИЯ 3 — инфраструктура)
+  // API маршруты (ПАРТИЯ 3)
   if (pathname.startsWith('/api/news-aggregator/')) { await handleNewsAggregatorAPI(req, res); return; }
   if (pathname.startsWith('/api/supply-chain/')) { await handleSupplyChainAPI(req, res); return; }
   if (pathname.startsWith('/api/monitor/')) { await handleMonitorAPI(req, res); return; }
   if (pathname.startsWith('/api/export/')) { await handleExportAPI(req, res); return; }
   if (pathname.startsWith('/api/help/')) { await handleHelpAPI(req, res); return; }
+
+  // API маршруты (МОДУЛЬ №53 — СТРАТЕГИЧЕСКИЙ СЛОЙ)
+  if (pathname.startsWith('/api/strategic/')) { await handleStrategicAPI(req, res); return; }
 
   // Статические файлы
   const filePath = await findStaticFile(pathname);
@@ -299,11 +307,11 @@ const server = createServer(async (req, res) => {
 
 server.listen(PORT, () => {
   console.log(`========================================`);
-  console.log(`  🚀 Crucix Server запущен (ПАРТИЯ 3)`);
+  console.log(`  🚀 Crucix Server запущен (с RSSL)`);
   console.log(`  📡 Порт: ${PORT}`);
   console.log(`  🌐 URL: http://localhost:${PORT}`);
   console.log(`========================================`);
-  console.log(`  📋 ДОСТУПНЫЕ СТРАНИЦЫ (43):`);
+  console.log(`  📋 СТРАНИЦ (44):`);
   console.log(`  /  Главная`);
   console.log(`  /jarvis  Интерфейс`);
   console.log(`  /rss-feed  RSS лента`);
@@ -341,14 +349,15 @@ server.listen(PORT, () => {
   console.log(`  /health-monitor  Мониторинг здравоохранения ⭐`);
   console.log(`  /weather-monitor  Мониторинг погоды ⭐`);
   console.log(`  /space-monitor  Мониторинг космоса ⭐`);
-  console.log(`  /news-aggregator  Новостной агрегатор ⭐ НОВЫЙ!`);
-  console.log(`  /supply-chain-monitor  Цепи поставок ⭐ НОВЫЙ!`);
-  console.log(`  /monitor  Центр мониторинга ⭐ НОВЫЙ!`);
-  console.log(`  /export  Экспорт данных ⭐ НОВЫЙ!`);
-  console.log(`  /help  Справка ⭐ НОВЫЙ!`);
+  console.log(`  /news-aggregator  Новостной агрегатор ⭐`);
+  console.log(`  /supply-chain-monitor  Цепи поставок ⭐`);
+  console.log(`  /monitor  Центр мониторинга ⭐`);
+  console.log(`  /export  Экспорт данных ⭐`);
+  console.log(`  /help  Справка ⭐`);
+  console.log(`  /strategic-layer  СТРАТЕГИЧЕСКИЙ СЛОЙ ⭐ НОВЫЙ!`);
   console.log(`========================================`);
   console.log(`  🧠 AI-процессор: BASIC`);
-  console.log(`  🌟 Модулей: 52/52 (100%) ✅`);
+  console.log(`  🌟 Модулей: 53/53 (100%) ✅`);
   console.log(`========================================`);
 });
 

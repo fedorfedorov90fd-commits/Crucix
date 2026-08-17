@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Стратегический слой — Crucix</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: #0a0a1a;
+            color: #e0e0e0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 20px;
+            background: rgba(10, 10, 30, 0.95);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            flex-shrink: 0;
+            z-index: 100;
+            height: 48px;
+        }
+        .header h1 { font-size: 18px; font-weight: 700; color: #fff; }
+        .header h1 span { color: #44ccff; }
+        .header .lang-selector {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            background: rgba(255,255,255,0.08);
+            border-radius: 6px;
+            padding: 3px;
+            border: 1px solid rgba(255,255,255,0.12);
+        }
+        .header .lang-selector .lang-btn {
+            background: transparent;
+            border: none;
+            border-radius: 4px;
+            color: #888;
+            padding: 4px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+        .header .lang-selector .lang-btn:hover { 
+            background: rgba(255,255,255,0.1); 
+            color: #e0e0e0; 
+        }
+        .header .lang-selector .lang-btn.active {
+            background: rgba(33,150,243,0.3);
+            color: #fff;
+            box-shadow: 0 0 12px rgba(33,150,243,0.15);
+        }
+        .header .nav-links {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .header .nav-links a {
+            color: #888;
+            text-decoration: none;
+            font-size: 13px;
+            padding: 4px 12px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        .header .nav-links a:hover { background: rgba(255,255,255,0.05); color: #e0e0e0; }
+        .header .nav-links a.home { color: #2196f3; }
+        .header .nav-links a.rss { color: #f26522; }
+        .header .nav-links a.active { color: #44ccff; background: rgba(68,204,255,0.1); }
+        
+        .map-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        #map {
+            flex: 1;
+            width: 100%;
+            background: #0a0a1a;
+            min-height: 300px;
+        }
+        
+        .legend {
+            position: absolute;
+            bottom: 30px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(10, 10, 30, 0.92);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 12px;
+            color: #ccc;
+            backdrop-filter: blur(10px);
+            min-width: 160px;
+        }
+        .legend .title { font-weight: 600; color: #fff; margin-bottom: 6px; font-size: 13px; }
+        .legend .item { display: flex; align-items: center; gap: 8px; margin: 3px 0; }
+        .legend .color-box { width: 20px; height: 14px; border-radius: 3px; display: inline-block; border: 1px solid rgba(255,255,255,0.1); }
+        .legend .color-box.military { background: rgba(34,197,94,0.6); }
+        .legend .color-box.nuclear { background: rgba(239,68,68,0.7); }
+        .legend .color-box.cable { background: rgba(34,211,238,0.5); }
+        .legend .color-box.asset { background: rgba(249,115,22,0.5); }
+        
+        .stats {
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(10, 10, 30, 0.92);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 12px;
+            color: #ccc;
+            backdrop-filter: blur(10px);
+            min-width: 130px;
+        }
+        .stats .count { font-size: 24px; font-weight: 700; color: #44ccff; }
+        .stats .label { font-size: 11px; color: #888; }
+        
+        .btn-copy {
+            position: absolute;
+            top: 60px;
+            right: 180px;
+            z-index: 1000;
+            padding: 8px 16px;
+            background: rgba(33, 150, 243, 0.2);
+            border: 1px solid rgba(33, 150, 243, 0.3);
+            border-radius: 6px;
+            color: #2196f3;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+            backdrop-filter: blur(10px);
+        }
+        .btn-copy:hover { background: rgba(33, 150, 243, 0.3); border-color: #2196f3; }
+        .btn-copy.copied { background: rgba(76, 175, 80, 0.2); border-color: #4caf50; color: #4caf50; }
+        
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 999;
+            color: #666;
+            font-size: 16px;
+        }
+        
+        .ssi-panel {
+            position: absolute;
+            bottom: 150px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(10, 10, 30, 0.92);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px;
+            padding: 12px 16px;
+            backdrop-filter: blur(10px);
+            min-width: 150px;
+        }
+        .ssi-panel .ssi-title { font-size: 11px; color: #888; margin-bottom: 4px; }
+        .ssi-panel .ssi-bar { height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; }
+        .ssi-panel .ssi-fill { height: 100%; background: linear-gradient(90deg, #22c55e, #f97316, #ef4444); transition: width 1s ease; border-radius: 4px; }
+        .ssi-panel .ssi-value { font-size: 18px; font-weight: 700; margin-top: 4px; }
+        
+        .marker-popup .title { font-weight: 600; color: #fff; margin-bottom: 4px; }
+        .marker-popup .source { font-size: 11px; color: #888; margin-bottom: 4px; }
+        
+        .notification {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            z-index: 100001;
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: notif-fade 2.5s forwards;
+        }
+        @keyframes notif-fade {
+            0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+            10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        }
+        
+        @media (max-width: 600px) {
+            .header { padding: 6px 12px; height: 42px; }
+            .header h1 { font-size: 15px; }
+            .header .nav-links a { font-size: 11px; padding: 2px 8px; }
+            .legend { bottom: 10px; left: 10px; padding: 8px 12px; font-size: 11px; min-width: 120px; }
+            .stats { top: 52px; right: 10px; padding: 8px 12px; }
+            .stats .count { font-size: 18px; }
+            .btn-copy { top: 52px; right: 110px; font-size: 11px; padding: 4px 10px; }
+            .ssi-panel { bottom: 120px; right: 10px; padding: 8px 12px; min-width: 100px; }
+            .header .lang-selector .lang-btn { font-size: 10px; padding: 2px 6px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1 id="map-title">🎯 <span id="map-title-span">Стратегический</span> слой (RSSL)</h1>
+        <div class="nav-links">
+            <div class="lang-selector" id="lang-selector">
+                <button class="lang-btn active" data-lang="ru" onclick="setLanguage('ru')">🇷🇺 RU</button>
+                <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">🇬🇧 EN</button>
+            </div>
+            <a href="/jarvis" class="home" id="nav-home">🏠 Главная</a>
+            <a href="/rss-feed" class="rss" id="nav-rss">📰 Лента</a>
+            <a href="/strategic-layer" class="active" id="nav-map">🎯 Стратегия</a>
+        </div>
+    </header>
+
+    <div class="map-wrapper">
+        <div id="map">
+            <div class="loading" id="loading-text">Загрузка стратегического слоя...</div>
+        </div>
+
+        <button class="btn-copy" id="btn-copy" onclick="copyData()">📋 Копировать данные</button>
+
+        <div class="legend" id="legend">
+            <div class="title" id="legend-title">🎯 Стратегические объекты</div>
+            <div class="item"><span class="color-box military"></span> <span id="legend-military">Военные базы</span></div>
+            <div class="item"><span class="color-box nuclear"></span> <span id="legend-nuclear">☢️ Ядерные объекты</span></div>
+            <div class="item"><span class="color-box cable"></span> <span id="legend-cable">🌊 Подводные кабели</span></div>
+            <div class="item"><span class="color-box asset"></span> <span id="legend-asset">🛢️ Стратег. объекты</span></div>
+        </div>
+
+        <div class="stats" id="stats">
+            <div class="count" id="marker-count">0</div>
+            <div class="label" id="stats-label">стратегических объектов</div>
+        </div>
+
+        <div class="ssi-panel" id="ssi-panel">
+            <div class="ssi-title">📊 Индекс напряжённости</div>
+            <div class="ssi-bar"><div class="ssi-fill" id="ssi-fill" style="width: 40%;"></div></div>
+            <div class="ssi-value" id="ssi-label" style="color: #f97316;">40%</div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="/js/strategic-export.js"></script>
+    <script src="/js/strategic-help.js"></script>
+    <script>
+        console.log('🎯 Стратегический слой загружается...');
+        
+        let map;
+        let markers = [];
+        let allData = { bases: [], nuclear: [], cables: [], assets: [] };
+        let currentLang = localStorage.getItem('strat-lang') || 'ru';
+
+        // ======== ПЕРЕВОДЫ ========
+        const langData = {
+            ru: {
+                title: '🎯 Стратегический слой (RSSL)',
+                titleSpan: 'Стратегический',
+                home: '🏠 Главная',
+                rss: '📰 Лента',
+                map: '🎯 Стратегия',
+                legendTitle: '🎯 Стратегические объекты',
+                military: 'Военные базы',
+                nuclear: '☢️ Ядерные объекты',
+                cable: '🌊 Подводные кабели',
+                asset: '🛢️ Стратег. объекты',
+                statsLabel: 'стратегических объектов',
+                loading: 'Загрузка стратегического слоя...'
+            },
+            en: {
+                title: '🎯 Strategic Layer (RSSL)',
+                titleSpan: 'Strategic',
+                home: '🏠 Home',
+                rss: '📰 Feed',
+                map: '🎯 Strategy',
+                legendTitle: '🎯 Strategic Assets',
+                military: 'Military Bases',
+                nuclear: '☢️ Nuclear Sites',
+                cable: '🌊 Submarine Cables',
+                asset: '🛢️ Strategic Assets',
+                statsLabel: 'strategic objects',
+                loading: 'Loading strategic layer...'
+            }
+        };
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('strat-lang', lang);
+            document.querySelectorAll('.lang-selector .lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === lang);
+            });
+            updateLanguage();
+        }
+
+        function updateLanguage() {
+            const d = langData[currentLang];
+            if (!d) return;
+            document.getElementById('map-title-span').textContent = d.titleSpan;
+            document.getElementById('nav-home').textContent = d.home;
+            document.getElementById('nav-rss').textContent = d.rss;
+            document.getElementById('nav-map').textContent = d.map;
+            document.getElementById('legend-title').textContent = d.legendTitle;
+            document.getElementById('legend-military').textContent = d.military;
+            document.getElementById('legend-nuclear').textContent = d.nuclear;
+            document.getElementById('legend-cable').textContent = d.cable;
+            document.getElementById('legend-asset').textContent = d.asset;
+            document.getElementById('stats-label').textContent = d.statsLabel;
+            document.getElementById('loading-text').textContent = d.loading;
+        }
+
+        function showNotification(msg) {
+            document.querySelectorAll('.notification').forEach(el => el.remove());
+            const el = document.createElement('div');
+            el.className = 'notification';
+            el.textContent = msg;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 2500);
+        }
+
+        function initMap() {
+            console.log('🗺️ Инициализация карты...');
+            
+            map = L.map('map', {
+                center: [30, 20],
+                zoom: 2,
+                zoomControl: true,
+                attributionControl: false
+            });
+            
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }).addTo(map);
+            
+            document.getElementById('loading-text').style.display = 'none';
+            
+            console.log('📡 Загрузка стратегических данных...');
+            loadStrategicData();
+        }
+
+        // ============================================================
+        // ГЛАВНОЕ ИЗМЕНЕНИЕ: ВМЕСТО /api/geo/status и /api/geo/markers
+        // ИСПОЛЬЗУЕМ /api/strategic/bases, /api/strategic/nuclear и т.д.
+        // ============================================================
+        async function loadStrategicData() {
+            try {
+                const [basesRes, nuclearRes, cablesRes, assetsRes, ssiRes] = await Promise.all([
+                    fetch('/api/strategic/bases'),
+                    fetch('/api/strategic/nuclear'),
+                    fetch('/api/strategic/cables'),
+                    fetch('/api/strategic/assets'),
+                    fetch('/api/strategic/ssi')
+                ]);
+
+                const bases = await basesRes.json();
+                const nuclear = await nuclearRes.json();
+                const cables = await cablesRes.json();
+                const assets = await assetsRes.json();
+                const ssi = await ssiRes.json();
+
+                allData.bases = bases.bases || [];
+                allData.nuclear = nuclear.nuclear || [];
+                allData.cables = cables.cables || [];
+                allData.assets = assets.assets || [];
+
+                const total = allData.bases.length + allData.nuclear.length + allData.cables.length + allData.assets.length;
+                document.getElementById('marker-count').textContent = total;
+
+                const fill = document.getElementById('ssi-fill');
+                const label = document.getElementById('ssi-label');
+                const ssiValue = ssi.ssi || 40;
+                fill.style.width = ssiValue + '%';
+                label.textContent = ssiValue + '%';
+                label.style.color = ssiValue > 80 ? '#ef4444' : ssiValue > 60 ? '#f97316' : ssiValue > 40 ? '#ffd700' : '#22c55e';
+
+                console.log('📌 Загружено:', {
+                    bases: allData.bases.length,
+                    nuclear: allData.nuclear.length,
+                    cables: allData.cables.length,
+                    assets: allData.assets.length
+                });
+
+                addStrategicMarkers(allData);
+
+            } catch (e) {
+                console.error('❌ Ошибка загрузки:', e);
+                document.getElementById('loading-text').textContent = '❌ Ошибка загрузки данных';
+                document.getElementById('loading-text').style.display = 'block';
+            }
+        }
+
+        function addStrategicMarkers(data) {
+            // ===== 1. ВОЕННЫЕ БАЗЫ (зелёные) =====
+            for (const base of data.bases) {
+                if (!base.lat || !base.lon) continue;
+                const color = '#22c55e';
+                const icon = L.divIcon({
+                    className: 'custom-marker',
+                    html: `<div style="width:12px;height:12px;background:${color};border-radius:50%;border:2px solid rgba(255,255,255,0.4);box-shadow:0 0 20px ${color}60;cursor:pointer;"></div>`,
+                    iconSize: [12, 12],
+                    iconAnchor: [6, 6]
+                });
+                const marker = L.marker([base.lat, base.lon], { icon })
+                    .addTo(map)
+                    .bindPopup(`
+                        <div class="marker-popup">
+                            <div class="title">🏛️ ${base.name}</div>
+                            <div class="source">${base.country} · ${base.type}</div>
+                            <div style="font-size:12px;color:#888;">Личный состав: ${base.personnel || '—'} чел.</div>
+                        </div>
+                    `);
+                markers.push(marker);
+            }
+
+            // ===== 2. ЯДЕРНЫЕ ОБЪЕКТЫ (красные с пульсацией) =====
+            for (const nuke of data.nuclear) {
+                if (!nuke.lat || !nuke.lon) continue;
+                const color = nuke.status === 'damaged' ? '#ef4444' : '#ffd700';
+                const icon = L.divIcon({
+                    className: 'custom-marker',
+                    html: `<div style="width:16px;height:16px;background:${color};border-radius:50%;border:2px solid rgba(255,255,255,0.4);box-shadow:0 0 30px ${color}80;animation:pulse 2s infinite;cursor:pointer;"></div>`,
+                    iconSize: [16, 16],
+                    iconAnchor: [8, 8]
+                });
+                const marker = L.marker([nuke.lat, nuke.lon], { icon })
+                    .addTo(map)
+                    .bindPopup(`
+                        <div class="marker-popup">
+                            <div class="title">☢️ ${nuke.name}</div>
+                            <div class="source">${nuke.country} · ${nuke.status}</div>
+                            <div style="font-size:12px;color:#888;">Реакторы: ${nuke.reactors || '—'}</div>
+                        </div>
+                    `);
+                markers.push(marker);
+            }
+
+            // ===== 3. ПОДВОДНЫЕ КАБЕЛИ (синие линии) =====
+            for (const cable of data.cables) {
+                if (!cable.lat_start || !cable.lon_start || !cable.lat_end || !cable.lon_end) continue;
+                const color = cable.vulnerability === 'high' ? '#ef4444' : '#22d3ee';
+                const line = L.polyline([
+                    [cable.lat_start, cable.lon_start],
+                    [cable.lat_end, cable.lon_end]
+                ], {
+                    color: color,
+                    weight: 3,
+                    opacity: 0.7,
+                    dashArray: cable.vulnerability === 'high' ? '10,5' : null
+                }).addTo(map)
+                .bindPopup(`
+                    <div class="marker-popup">
+                        <div class="title">🌊 ${cable.name}</div>
+                        <div class="source">Длина: ${cable.length} км</div>
+                        <div style="font-size:12px;color:#888;">Пропускная способность: ${cable.capacity} Тбит/с</div>
+                    </div>
+                `);
+                markers.push(line);
+            }
+
+            // ===== 4. СТРАТЕГИЧЕСКИЕ ОБЪЕКТЫ (оранжевые) =====
+            for (const asset of data.assets) {
+                if (!asset.lat || !asset.lon) continue;
+                const color = asset.strategic_value === 'critical' ? '#ef4444' : '#f97316';
+                const icon = L.divIcon({
+                    className: 'custom-marker',
+                    html: `<div style="width:14px;height:14px;background:${color};border-radius:50%;border:2px solid rgba(255,255,255,0.4);box-shadow:0 0 25px ${color}60;cursor:pointer;"></div>`,
+                    iconSize: [14, 14],
+                    iconAnchor: [7, 7]
+                });
+                const marker = L.marker([asset.lat, asset.lon], { icon })
+                    .addTo(map)
+                    .bindPopup(`
+                        <div class="marker-popup">
+                            <div class="title">${asset.type === 'oil_terminal' ? '🛢️' : asset.type === 'gas_pipeline' ? '🔥' : asset.type === 'port' ? '⚓' : '🏗️'} ${asset.name}</div>
+                            <div class="source">${asset.country} · ${asset.type}</div>
+                            <div style="font-size:12px;color:#888;">Ценность: ${asset.strategic_value}</div>
+                        </div>
+                    `);
+                markers.push(marker);
+            }
+
+            if (markers.length > 0) {
+                try {
+                    const group = L.featureGroup(markers);
+                    map.fitBounds(group.getBounds().pad(0.2));
+                } catch (e) {
+                    map.setView([30, 20], 2);
+                }
+            }
+
+            console.log('✅ Добавлено маркеров:', markers.length);
+        }
+
+        // ======== КОПИРОВАНИЕ ДАННЫХ ========
+        function copyData() {
+            const total = allData.bases.length + allData.nuclear.length + allData.cables.length + allData.assets.length;
+            
+            let text = `=== CRUCIX — СТРАТЕГИЧЕСКИЙ СЛОЙ ===\n`;
+            text += `Дата: ${new Date().toLocaleString()}\n\n`;
+            text += `--- СТАТИСТИКА ---\n`;
+            text += `Военные базы: ${allData.bases.length}\n`;
+            text += `Ядерные объекты: ${allData.nuclear.length}\n`;
+            text += `Подводные кабели: ${allData.cables.length}\n`;
+            text += `Стратегические объекты: ${allData.assets.length}\n`;
+            text += `Всего объектов: ${total}\n`;
+            
+            const ssiLabel = document.getElementById('ssi-label');
+            text += `Индекс напряжённости: ${ssiLabel ? ssiLabel.textContent : '—'}\n\n`;
+            
+            if (allData.bases.length > 0) {
+                text += `--- ВОЕННЫЕ БАЗЫ (${allData.bases.length}) ---\n`;
+                for (const base of allData.bases) {
+                    text += `  ${base.name} (${base.country}) — ${base.type}, ${base.personnel || '—'} чел.\n`;
+                }
+                text += `\n`;
+            }
+            
+            if (allData.nuclear.length > 0) {
+                text += `--- ЯДЕРНЫЕ ОБЪЕКТЫ (${allData.nuclear.length}) ---\n`;
+                for (const nuke of allData.nuclear) {
+                    text += `  ☢️ ${nuke.name} (${nuke.country}) — ${nuke.status}, ${nuke.reactors || '—'} реакторов\n`;
+                }
+                text += `\n`;
+            }
+            
+            if (allData.cables.length > 0) {
+                text += `--- ПОДВОДНЫЕ КАБЕЛИ (${allData.cables.length}) ---\n`;
+                for (const cable of allData.cables) {
+                    text += `  🌊 ${cable.name} — ${cable.length} км, ${cable.capacity} Тбит/с\n`;
+                }
+                text += `\n`;
+            }
+            
+            if (allData.assets.length > 0) {
+                text += `--- СТРАТЕГИЧЕСКИЕ ОБЪЕКТЫ (${allData.assets.length}) ---\n`;
+                for (const asset of allData.assets) {
+                    text += `  ${asset.name} (${asset.country}) — ${asset.type}, ценность: ${asset.strategic_value}\n`;
+                }
+                text += `\n`;
+            }
+            
+            text += `--- CRUCIX OSINT TERMINAL ---\n`;
+            text += `🌐 http://localhost:3117/strategic-layer`;
+
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.getElementById('btn-copy');
+                btn.textContent = '✅ Скопировано!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = '📋 Копировать данные';
+                    btn.classList.remove('copied');
+                }, 3000);
+                showNotification('✅ Данные скопированы');
+            }).catch(() => {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                const btn = document.getElementById('btn-copy');
+                btn.textContent = '✅ Скопировано!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = '📋 Копировать данные';
+                    btn.classList.remove('copied');
+                }, 3000);
+                showNotification('✅ Данные скопированы');
+            });
+        }
+
+        // ======== СТИЛИ ДЛЯ ПУЛЬСАЦИИ ========
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0%, 100% { transform: scale(1); opacity: 1; }
+                50% { transform: scale(1.4); opacity: 0.7; }
+            }
+            .custom-marker {
+                background: transparent !important;
+                border: none !important;
+            }
+            .leaflet-popup-content-wrapper {
+                background: rgba(10,10,20,0.92) !important;
+                color: #c8d0d8 !important;
+                border-radius: 6px !important;
+                border: 1px solid rgba(255,255,255,0.1) !important;
+            }
+            .leaflet-popup-tip {
+                background: rgba(10,10,20,0.92) !important;
+            }
+            .leaflet-control-zoom {
+                border: 1px solid rgba(255,255,255,0.1) !important;
+            }
+            .leaflet-control-zoom a {
+                background: rgba(10,10,20,0.8) !important;
+                color: #c8d0d8 !important;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // ======== ЗАПУСК ========
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 DOM загружен, инициализация...');
+            
+            const savedLang = localStorage.getItem('strat-lang');
+            if (savedLang === 'en' || savedLang === 'ru') {
+                currentLang = savedLang;
+            }
+            
+            document.querySelectorAll('.lang-selector .lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === currentLang);
+            });
+            
+            updateLanguage();
+            initMap();
+            
+            console.log('✅ Инициализация завершена');
+        });
+    </script>
+</body>
+</html>

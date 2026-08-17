@@ -89,6 +89,7 @@ import { handleDeepfakeAPI } from './apis/sources/deepfake.mjs';
 import { handleDarkWebAPI } from './apis/sources/darkweb.mjs';
 import { handleAgentsAPI } from './apis/sources/agents.mjs';
 import { handleBlockchainAPI } from './apis/sources/blockchain.mjs';
+import { handleVoiceAPI } from './apis/sources/voice.mjs';
 
 // ============================================================
 // 2. MIME-ТИПЫ
@@ -183,7 +184,8 @@ async function findStaticFile(pathname) {
     '/deepfake': 'deepfake.html',
     '/darkweb': 'darkweb.html',
     '/agents': 'agents.html',
-    '/blockchain': 'blockchain.html'
+    '/blockchain': 'blockchain.html',
+    '/voice': 'voice.html'
   };
 
   const cleanPath = pathname.replace('.html', '');
@@ -291,6 +293,7 @@ const server = createServer(async (req, res) => {
   if (pathname.startsWith('/api/darkweb/')) { await handleDarkWebAPI(req, res); return; }
   if (pathname.startsWith('/api/agents/')) { await handleAgentsAPI(req, res); return; }
   if (pathname.startsWith('/api/blockchain/')) { await handleBlockchainAPI(req, res); return; }
+  if (pathname.startsWith('/api/voice/')) { await handleVoiceAPI(req, res); return; }
 
   // Статические файлы
   const filePath = await findStaticFile(pathname);
@@ -319,7 +322,7 @@ server.listen(PORT, () => {
   console.log(`  📡 Порт: ${PORT}`);
   console.log(`  🌐 URL: http://localhost:${PORT}`);
   console.log(`========================================`);
-  console.log(`  📋 СТРАНИЦ (55):`);
+  console.log(`  📋 СТРАНИЦ (56):`);
   console.log(`  /  Главная`);
   console.log(`  /jarvis  Интерфейс`);
   console.log(`  /rss-feed  RSS лента`);
@@ -373,10 +376,11 @@ server.listen(PORT, () => {
   console.log(`  /deepfake  Deepfake Detection ⭐`);
   console.log(`  /darkweb  Dark Web Monitor ⭐`);
   console.log(`  /agents  Автономные агенты ⭐`);
-  console.log(`  /blockchain  BLOCKCHAIN VERIFICATION ⭐ НОВЫЙ!`);
+  console.log(`  /blockchain  Blockchain Verification ⭐`);
+  console.log(`  /voice  VOICE INTELLIGENCE ⭐ НОВЫЙ!`);
   console.log(`========================================`);
   console.log(`  🧠 AI-процессор: BASIC`);
-  console.log(`  🌟 Модулей: 66/66 (100%) ✅`);
+  console.log(`  🌟 Модулей: 67/67 (100%) ✅`);
   console.log(`========================================`);
 });
 

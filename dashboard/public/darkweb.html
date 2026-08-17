@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dark Web Monitor — Crucix</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a1a;
+      color: #e0e0e0;
+      min-height: 100vh;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 20px;
+      background: rgba(10, 10, 30, 0.95);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      z-index: 100;
+      height: 48px;
+    }
+    .header h1 { font-size: 18px; font-weight: 700; color: #fff; }
+    .header h1 span { color: #44ccff; }
+    .header .nav-links {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .header .nav-links a {
+      color: #888;
+      text-decoration: none;
+      font-size: 13px;
+      padding: 4px 12px;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    .header .nav-links a:hover { background: rgba(255,255,255,0.05); color: #e0e0e0; }
+    .header .nav-links a.home { color: #2196f3; }
+    .header .nav-links a.active { color: #44ccff; background: rgba(68,204,255,0.1); }
+    .btn-copy {
+      padding: 4px 12px;
+      background: rgba(33,150,243,0.2);
+      border: 1px solid rgba(33,150,243,0.3);
+      border-radius: 4px;
+      color: #2196f3;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    .btn-copy:hover { background: rgba(33,150,243,0.3); }
+
+    .main-content {
+      padding: 16px 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .page-title { font-size: 24px; font-weight: 700; color: #e8f0f8; margin-bottom: 4px; }
+    .page-subtitle { color: #666; font-size: 14px; margin-bottom: 16px; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .stat-card {
+      background: rgba(10,10,20,0.5);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 8px;
+      padding: 12px 16px;
+      text-align: center;
+    }
+    .stat-card .label { font-size: 10px; text-transform: uppercase; color: #666; letter-spacing: 0.5px; }
+    .stat-card .value { font-size: 22px; font-weight: 700; color: #e8f0f8; margin-top: 2px; }
+    .stat-card .value.green { color: #4caf50; }
+    .stat-card .value.blue { color: #5bc0f8; }
+    .stat-card .value.orange { color: #f97316; }
+    .stat-card .value.red { color: #ef4444; }
+    .stat-card .value.purple { color: #a855f7; }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .btn {
+      padding: 6px 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    .btn:hover { transform: translateY(-1px); opacity: 0.9; }
+    .btn-primary { background: #2196f3; color: #fff; }
+    .btn-secondary { background: #444; color: #fff; }
+    .btn-danger { background: #ef4444; color: #fff; }
+    .btn-warning { background: #eab308; color: #fff; }
+    .status-label {
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      background: rgba(255,255,255,0.05);
+      color: #888;
+      margin-left: auto;
+    }
+
+    .grid-3col {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .panel {
+      background: rgba(10,10,20,0.5);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .panel .title { font-size: 14px; font-weight: 600; color: #e8f0f8; margin-bottom: 8px; }
+
+    .item {
+      padding: 8px 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      font-size: 12px;
+    }
+    .item .name { color: #e8f0f8; font-weight: 500; }
+    .item .meta { color: #888; font-size: 11px; }
+    .item .severity-critical { color: #ef4444; font-weight: 600; }
+    .item .severity-high { color: #f97316; font-weight: 600; }
+    .item .severity-medium { color: #eab308; font-weight: 600; }
+    .item .severity-low { color: #22c55e; font-weight: 600; }
+
+    .loading { padding: 20px; text-align: center; color: #666; font-size: 14px; }
+    .notification {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-size: 13px;
+      z-index: 100001;
+      border: 1px solid rgba(255,255,255,0.1);
+      animation: notif-fade 2.5s forwards;
+    }
+    @keyframes notif-fade {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+
+    @media (max-width: 768px) {
+      .grid-3col { grid-template-columns: 1fr; }
+      .header { padding: 6px 12px; height: 42px; }
+      .header h1 { font-size: 15px; }
+      .main-content { padding: 10px; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1>🌑 <span>Dark Web</span> Monitor</h1>
+    <div class="nav-links">
+      <a href="/jarvis" class="home">🏠 Главная</a>
+      <a href="/darkweb" class="active">🌑 Даркнет</a>
+      <button class="btn-copy" id="copy-btn">📋 Копировать</button>
+    </div>
+  </header>
+
+  <div class="main-content">
+    <h1 class="page-title">🌑 Dark Web Monitor</h1>
+    <p class="page-subtitle">Мониторинг даркнет-рынков, утечек данных и киберугроз</p>
+
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card">
+        <div class="label">Рынков</div>
+        <div class="value blue" id="stat-markets">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Утечек</div>
+        <div class="value red" id="stat-leaks">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Угроз</div>
+        <div class="value orange" id="stat-threats">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Уровень риска</div>
+        <div class="value purple" id="stat-risk">—</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-secondary" id="btn-refresh">🔄 Обновить</button>
+      <span class="status-label" id="status-label">⏹ Готов</span>
+    </div>
+
+    <div class="grid-3col">
+      <div class="panel">
+        <div class="title">🛒 Даркнет-рынки</div>
+        <div id="markets-content">
+          <div class="loading">Загрузка...</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="title">💧 Утечки данных</div>
+        <div id="leaks-content">
+          <div class="loading">Загрузка...</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="title">⚠️ Киберугрозы</div>
+        <div id="threats-content">
+          <div class="loading">Загрузка...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    console.log('🌑 Dark Web Monitor загружается...');
+
+    async function loadData() {
+      await Promise.all([loadStats(), loadMarkets(), loadLeaks(), loadThreats()]);
+    }
+
+    async function loadStats() {
+      try {
+        const res = await fetch('/api/darkweb/status');
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('stat-markets').textContent = data.stats.markets.total || 0;
+          document.getElementById('stat-leaks').textContent = data.stats.leaks.total || 0;
+          document.getElementById('stat-threats').textContent = data.stats.threats.total || 0;
+          document.getElementById('stat-risk').textContent = data.stats.risk_level?.toUpperCase() || '—';
+          
+          const riskEl = document.getElementById('stat-risk');
+          const riskLevel = data.stats.risk_level;
+          riskEl.style.color = riskLevel === 'critical' ? '#ef4444' :
+                               riskLevel === 'high' ? '#f97316' :
+                               riskLevel === 'medium' ? '#eab308' : '#22c55e';
+        }
+      } catch (e) { console.error('[DarkWeb] Ошибка загрузки статистики:', e); }
+    }
+
+    async function loadMarkets() {
+      try {
+        const res = await fetch('/api/darkweb/markets');
+        const data = await res.json();
+        if (data.success) {
+          const container = document.getElementById('markets-content');
+          let html = '';
+          for (const market of data.markets) {
+            const riskClass = market.risk === 'critical' ? 'severity-critical' :
+                             market.risk === 'high' ? 'severity-high' :
+                             market.risk === 'medium' ? 'severity-medium' : 'severity-low';
+            html += `
+              <div class="item">
+                <div class="name">${market.name}</div>
+                <div class="meta">${market.type} · ${market.listings} объявлений</div>
+                <div class="meta"><span class="${riskClass}">[${market.risk.toUpperCase()}]</span></div>
+              </div>
+            `;
+          }
+          container.innerHTML = html || '<div class="loading">Нет данных</div>';
+        }
+      } catch (e) { console.error('[DarkWeb] Ошибка загрузки рынков:', e); }
+    }
+
+    async function loadLeaks() {
+      try {
+        const res = await fetch('/api/darkweb/leaks');
+        const data = await res.json();
+        if (data.success) {
+          const container = document.getElementById('leaks-content');
+          let html = '';
+          for (const leak of data.leaks) {
+            const sevClass = leak.severity === 'critical' ? 'severity-critical' :
+                            leak.severity === 'high' ? 'severity-high' :
+                            leak.severity === 'medium' ? 'severity-medium' : 'severity-low';
+            html += `
+              <div class="item">
+                <div class="name">${leak.title}</div>
+                <div class="meta">${leak.source} · ${leak.records || 0} записей</div>
+                <div class="meta"><span class="${sevClass}">[${leak.severity.toUpperCase()}]</span></div>
+              </div>
+            `;
+          }
+          container.innerHTML = html || '<div class="loading">Нет данных</div>';
+        }
+      } catch (e) { console.error('[DarkWeb] Ошибка загрузки утечек:', e); }
+    }
+
+    async function loadThreats() {
+      try {
+        const res = await fetch('/api/darkweb/threats');
+        const data = await res.json();
+        if (data.success) {
+          const container = document.getElementById('threats-content');
+          let html = '';
+          for (const threat of data.threats) {
+            const sevClass = threat.severity === 'critical' ? 'severity-critical' :
+                            threat.severity === 'high' ? 'severity-high' :
+                            threat.severity === 'medium' ? 'severity-medium' : 'severity-low';
+            html += `
+              <div class="item">
+                <div class="name">${threat.name}</div>
+                <div class="meta">${threat.type} · ${threat.targets?.join(', ') || '—'}</div>
+                <div class="meta"><span class="${sevClass}">[${threat.severity.toUpperCase()}]</span></div>
+              </div>
+            `;
+          }
+          container.innerHTML = html || '<div class="loading">Нет данных</div>';
+        }
+      } catch (e) { console.error('[DarkWeb] Ошибка загрузки угроз:', e); }
+    }
+
+    function showNotification(msg) {
+      document.querySelectorAll('.notification').forEach(el => el.remove());
+      const el = document.createElement('div');
+      el.className = 'notification';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2500);
+    }
+
+    document.getElementById('copy-btn').addEventListener('click', function() {
+      const text = `=== CRUCIX — DARK WEB MONITOR ===
+Дата: ${new Date().toLocaleString()}
+
+--- СТАТИСТИКА ---
+Рынков: ${document.getElementById('stat-markets').textContent}
+Утечек: ${document.getElementById('stat-leaks').textContent}
+Угроз: ${document.getElementById('stat-threats').textContent}
+Уровень риска: ${document.getElementById('stat-risk').textContent}
+
+--- ДАРКНЕТ-РЫНКИ ---
+${document.getElementById('markets-content').textContent}
+
+--- УТЕЧКИ ДАННЫХ ---
+${document.getElementById('leaks-content').textContent}
+
+--- КИБЕРУГРОЗЫ ---
+${document.getElementById('threats-content').textContent}
+
+--- CRUCIX OSINT TERMINAL ---
+🌐 http://localhost:3117/darkweb`;
+
+      navigator.clipboard.writeText(text).then(() => {
+        showNotification('✅ Данные скопированы');
+      }).catch(() => {
+        const area = document.createElement('textarea');
+        area.value = text;
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand('copy');
+        document.body.removeChild(area);
+        showNotification('✅ Данные скопированы');
+      });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('btn-refresh').addEventListener('click', loadData);
+      loadData();
+    });
+  </script>
+</body>
+</html>

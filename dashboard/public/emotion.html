@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emotion AI — Crucix</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a1a;
+      color: #e0e0e0;
+      min-height: 100vh;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 20px;
+      background: rgba(10, 10, 30, 0.95);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      z-index: 100;
+      height: 48px;
+    }
+    .header h1 { font-size: 18px; font-weight: 700; color: #fff; }
+    .header h1 span { color: #44ccff; }
+    .header .nav-links {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .header .nav-links a {
+      color: #888;
+      text-decoration: none;
+      font-size: 13px;
+      padding: 4px 12px;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    .header .nav-links a:hover { background: rgba(255,255,255,0.05); color: #e0e0e0; }
+    .header .nav-links a.home { color: #2196f3; }
+    .header .nav-links a.active { color: #44ccff; background: rgba(68,204,255,0.1); }
+    .btn-copy {
+      padding: 4px 12px;
+      background: rgba(33,150,243,0.2);
+      border: 1px solid rgba(33,150,243,0.3);
+      border-radius: 4px;
+      color: #2196f3;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    .btn-copy:hover { background: rgba(33,150,243,0.3); }
+
+    .main-content {
+      padding: 16px 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .page-title { font-size: 24px; font-weight: 700; color: #e8f0f8; margin-bottom: 4px; }
+    .page-subtitle { color: #666; font-size: 14px; margin-bottom: 16px; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .stat-card {
+      background: rgba(10,10,20,0.5);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 8px;
+      padding: 12px 16px;
+      text-align: center;
+    }
+    .stat-card .label { font-size: 10px; text-transform: uppercase; color: #666; letter-spacing: 0.5px; }
+    .stat-card .value { font-size: 22px; font-weight: 700; color: #e8f0f8; margin-top: 2px; }
+    .stat-card .value.green { color: #4caf50; }
+    .stat-card .value.blue { color: #5bc0f8; }
+    .stat-card .value.orange { color: #f97316; }
+    .stat-card .value.purple { color: #a855f7; }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .btn {
+      padding: 6px 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    .btn:hover { transform: translateY(-1px); opacity: 0.9; }
+    .btn-primary { background: #2196f3; color: #fff; }
+    .btn-secondary { background: #444; color: #fff; }
+    .btn-success { background: #22c55e; color: #fff; }
+    .status-label {
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      background: rgba(255,255,255,0.05);
+      color: #888;
+      margin-left: auto;
+    }
+
+    .grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .panel {
+      background: rgba(10,10,20,0.5);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .panel .title { font-size: 14px; font-weight: 600; color: #e8f0f8; margin-bottom: 8px; }
+
+    .emotion-item {
+      padding: 8px 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      margin-bottom: 4px;
+      background: rgba(255,255,255,0.02);
+      border-radius: 4px;
+    }
+    .emotion-item .text { font-size: 13px; color: #c8d0d8; }
+    .emotion-item .meta { font-size: 11px; color: #666; }
+    .emotion-item .dominant { font-weight: 600; }
+    .emotion-item .dominant.joy { color: #ffd700; }
+    .emotion-item .dominant.sadness { color: #5b8def; }
+    .emotion-item .dominant.anger { color: #ef4444; }
+    .emotion-item .dominant.fear { color: #a855f7; }
+    .emotion-item .dominant.surprise { color: #f97316; }
+    .emotion-item .dominant.disgust { color: #22c55e; }
+    .emotion-item .dominant.trust { color: #06b6d4; }
+    .emotion-item .dominant.anticipation { color: #8b5cf6; }
+    .emotion-item .dominant.neutral { color: #888; }
+
+    .emotion-bar {
+      display: flex;
+      gap: 2px;
+      margin-top: 4px;
+      height: 6px;
+    }
+    .emotion-bar .bar {
+      flex: 1;
+      border-radius: 2px;
+      transition: width 0.5s ease;
+    }
+
+    .trend-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      font-size: 12px;
+    }
+    .trend-item .up { color: #22c55e; }
+    .trend-item .down { color: #ef4444; }
+
+    .form-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .form-row textarea {
+      padding: 6px 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 4px;
+      color: #e0e0e0;
+      font-size: 12px;
+      flex: 1;
+      min-width: 100px;
+      min-height: 60px;
+      font-family: monospace;
+    }
+    .form-row textarea:focus {
+      outline: none;
+      border-color: #a855f7;
+    }
+
+    .loading { padding: 20px; text-align: center; color: #666; font-size: 14px; }
+    .notification {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-size: 13px;
+      z-index: 100001;
+      border: 1px solid rgba(255,255,255,0.1);
+      animation: notif-fade 2.5s forwards;
+    }
+    @keyframes notif-fade {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+
+    @media (max-width: 768px) {
+      .grid-2col { grid-template-columns: 1fr; }
+      .header { padding: 6px 12px; height: 42px; }
+      .header h1 { font-size: 15px; }
+      .main-content { padding: 10px; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1>💖 <span>Emotion</span> AI</h1>
+    <div class="nav-links">
+      <a href="/jarvis" class="home">🏠 Главная</a>
+      <a href="/emotion" class="active">💖 Эмоции</a>
+      <button class="btn-copy" id="copy-btn">📋 Копировать</button>
+    </div>
+  </header>
+
+  <div class="main-content">
+    <h1 class="page-title">💖 Emotion AI</h1>
+    <p class="page-subtitle">Глубинный анализ эмоций в тексте — 8 базовых эмоций</p>
+
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card">
+        <div class="label">Текстов</div>
+        <div class="value blue" id="stat-texts">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Проанализировано</div>
+        <div class="value green" id="stat-analyzed">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Средняя валентность</div>
+        <div class="value purple" id="stat-valence">0%</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Эмоций</div>
+        <div class="value orange" id="stat-emotions">0</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-primary" id="btn-analyze">🔍 Анализировать все</button>
+      <button class="btn btn-secondary" id="btn-refresh">🔄 Обновить</button>
+      <span class="status-label" id="status-label">⏹ Готов</span>
+    </div>
+
+    <div class="grid-2col">
+      <div class="panel">
+        <div class="title">📝 Анализ текстов</div>
+        <div id="analyses-content">
+          <div class="loading">Загрузка...</div>
+        </div>
+        <div class="form-row">
+          <textarea id="new-text" placeholder="Введите текст для анализа эмоций..."></textarea>
+          <button class="btn btn-success" id="btn-add">➕ Анализировать</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="title">📈 Тренды эмоций</div>
+        <div id="trends-content">
+          <div class="loading">Загрузка...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    console.log('💖 Emotion AI загружается...');
+
+    const emotionIcons = {
+      joy: '😊',
+      sadness: '😢',
+      anger: '😡',
+      fear: '😨',
+      surprise: '😮',
+      disgust: '🤢',
+      trust: '🤝',
+      anticipation: '🔮',
+      neutral: '😐'
+    };
+
+    async function loadData() {
+      await Promise.all([loadStats(), loadAnalyses(), loadTrends()]);
+    }
+
+    async function loadStats() {
+      try {
+        const res = await fetch('/api/emotion/status');
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('stat-texts').textContent = data.stats.total_texts || 0;
+          document.getElementById('stat-analyzed').textContent = data.stats.analyzed || 0;
+          document.getElementById('stat-valence').textContent = (data.stats.avg_valence || 0) + '%';
+          document.getElementById('stat-emotions').textContent = data.stats.emotions || 0;
+        }
+      } catch (e) { console.error('[Emotion] Ошибка загрузки статистики:', e); }
+    }
+
+    async function loadAnalyses() {
+      try {
+        const res = await fetch('/api/emotion/analyses?limit=10');
+        const data = await res.json();
+        if (data.success) {
+          const container = document.getElementById('analyses-content');
+          if (data.analyses.length === 0) {
+            container.innerHTML = '<div class="loading">Нет текстов</div>';
+            return;
+          }
+          let html = '';
+          for (const item of data.analyses) {
+            const analysis = item.analysis || {};
+            const emotions = analysis.emotions || {};
+            const dominant = analysis.dominant || 'neutral';
+            const dominantClass = dominant;
+            const icon = emotionIcons[dominant] || '😐';
+            
+            const bars = Object.entries(emotions)
+              .filter(([key]) => key !== 'neutral')
+              .slice(0, 4)
+              .map(([key, value]) => {
+                const colors = {
+                  joy: '#ffd700', sadness: '#5b8def', anger: '#ef4444',
+                  fear: '#a855f7', surprise: '#f97316', disgust: '#22c55e',
+                  trust: '#06b6d4', anticipation: '#8b5cf6'
+                };
+                return `<div class="bar" style="background:${colors[key] || '#888'};width:${value}%;"></div>`;
+              }).join('');
+
+            html += `
+              <div class="emotion-item">
+                <div class="text">${item.text?.slice(0, 100)}${item.text?.length > 100 ? '...' : ''}</div>
+                <div class="meta">${item.source || 'unknown'} · <span class="dominant ${dominantClass}">${icon} ${dominant}</span> · ${analysis.confidence || 0}%</div>
+                <div class="emotion-bar">${bars}</div>
+              </div>
+            `;
+          }
+          container.innerHTML = html;
+        }
+      } catch (e) { console.error('[Emotion] Ошибка загрузки анализов:', e); }
+    }
+
+    async function loadTrends() {
+      try {
+        const res = await fetch('/api/emotion/trends');
+        const data = await res.json();
+        if (data.success) {
+          const container = document.getElementById('trends-content');
+          const trends = data.trends || {};
+          let html = '';
+          for (const [emotion, trend] of Object.entries(trends)) {
+            const icon = emotionIcons[emotion] || '❓';
+            const change = trend.change || 0;
+            const changeClass = change >= 0 ? 'up' : 'down';
+            const changeSymbol = change >= 0 ? '↑' : '↓';
+            html += `
+              <div class="trend-item">
+                <span>${icon} ${emotion}</span>
+                <span>${trend.current || 0}%</span>
+                <span class="${changeClass}">${changeSymbol} ${Math.abs(change)}%</span>
+              </div>
+            `;
+          }
+          container.innerHTML = html || '<div class="loading">Нет данных</div>';
+        }
+      } catch (e) { console.error('[Emotion] Ошибка загрузки трендов:', e); }
+    }
+
+    async function analyzeAll() {
+      const btn = document.getElementById('btn-analyze');
+      const label = document.getElementById('status-label');
+      btn.textContent = '⏳ Анализ...';
+      btn.disabled = true;
+      label.textContent = '⏳ Анализ эмоций...';
+      label.className = 'status-label';
+
+      try {
+        const res = await fetch('/api/emotion/analyze-all', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          showNotification(`✅ Проанализировано: ${data.result.analyzed}`);
+          await loadData();
+        }
+      } catch (e) {
+        showNotification('❌ Ошибка: ' + e.message);
+      } finally {
+        btn.textContent = '🔍 Анализировать все';
+        btn.disabled = false;
+        label.textContent = '⏹ Готов';
+        label.className = 'status-label';
+      }
+    }
+
+    async function analyzeText() {
+      const textarea = document.getElementById('new-text');
+      const text = textarea.value.trim();
+      if (!text) { showNotification('❌ Введите текст'); return; }
+
+      try {
+        const res = await fetch('/api/emotion/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showNotification('✅ Анализ завершён!');
+          await loadData();
+          textarea.value = '';
+        }
+      } catch (e) {
+        showNotification('❌ Ошибка: ' + e.message);
+      }
+    }
+
+    function showNotification(msg) {
+      document.querySelectorAll('.notification').forEach(el => el.remove());
+      const el = document.createElement('div');
+      el.className = 'notification';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2500);
+    }
+
+    document.getElementById('copy-btn').addEventListener('click', function() {
+      const text = `=== CRUCIX — EMOTION AI ===
+Дата: ${new Date().toLocaleString()}
+
+--- СТАТИСТИКА ---
+Текстов: ${document.getElementById('stat-texts').textContent}
+Проанализировано: ${document.getElementById('stat-analyzed').textContent}
+Средняя валентность: ${document.getElementById('stat-valence').textContent}
+Эмоций: ${document.getElementById('stat-emotions').textContent}
+
+--- АНАЛИЗ ---
+${document.getElementById('analyses-content').textContent}
+
+--- ТРЕНДЫ ---
+${document.getElementById('trends-content').textContent}
+
+--- CRUCIX OSINT TERMINAL ---
+🌐 http://localhost:3117/emotion`;
+
+      navigator.clipboard.writeText(text).then(() => {
+        showNotification('✅ Данные скопированы');
+      }).catch(() => {
+        const area = document.createElement('textarea');
+        area.value = text;
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand('copy');
+        document.body.removeChild(area);
+        showNotification('✅ Данные скопированы');
+      });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('btn-analyze').addEventListener('click', analyzeAll);
+      document.getElementById('btn-refresh').addEventListener('click', loadData);
+      document.getElementById('btn-add').addEventListener('click', analyzeText);
+      loadData();
+    });
+  </script>
+</body>
+</html>

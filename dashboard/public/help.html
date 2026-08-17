@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Справка — Crucix</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0f;
+      color: #c8d0d8;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; height: 60px;
+      background: rgba(10,10,20,0.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.04); z-index: 100;
+      display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; }
+    .topbar-status { font-size: 11px; color: #22c55e; }
+    .topbar-right { display: flex; align-items: center; gap: 6px; }
+    .topbar-btn {
+      height: 28px; padding: 0 12px; border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 4px; background: rgba(255,255,255,0.03); color: #888;
+      font-size: 11px; font-weight: 500; text-transform: uppercase;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .topbar-btn:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+    .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
+    .btn-home:hover { background: rgba(91,192,248,0.15); }
+    .btn-copy { color: #5bc0f8; border-color: rgba(91,192,248,0.15); background: rgba(91,192,248,0.06); }
+    .btn-copy:hover { background: rgba(91,192,248,0.15); }
+    .main-content { padding-top: 76px; max-width: 1000px; margin: 0 auto; padding: 76px 20px 40px; }
+    .page-title { font-size: 24px; font-weight: 700; color: #e8f0f8; margin-bottom: 8px; }
+    .page-subtitle { color: #666; font-size: 14px; margin-bottom: 20px; }
+    .help-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
+    .help-card {
+      background: rgba(10,10,20,0.5); border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 8px; padding: 14px 16px;
+      cursor: pointer; transition: all 0.2s;
+      text-decoration: none;
+      display: block;
+    }
+    .help-card:hover { border-color: rgba(255,255,255,0.12); transform: translateY(-2px); }
+    .help-card .icon { font-size: 20px; }
+    .help-card .name { font-size: 14px; font-weight: 600; color: #e8f0f8; margin: 4px 0; }
+    .help-card .desc { font-size: 11px; color: #666; }
+    .help-card .tag { font-size: 10px; color: #4caf50; background: rgba(76,175,80,0.12); padding: 1px 8px; border-radius: 10px; display: inline-block; margin-top: 4px; }
+    .notification {
+      position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.85); color: #fff; padding: 8px 20px;
+      border-radius: 6px; font-size: 13px; z-index: 100001;
+      border: 1px solid rgba(255,255,255,0.1);
+      animation: notif-fade 2.5s forwards;
+    }
+    @keyframes notif-fade {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+    @media (max-width:768px) { .help-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-brand">⚡ CRUCIX MONITOR</span>
+      <span class="topbar-status">СПРАВКА</span>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+      <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ</button>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <h1 class="page-title">📚 Справка по модулям</h1>
+    <p class="page-subtitle">Все модули Crucix с описанием и статусом</p>
+
+    <div class="help-grid">
+      <a class="help-card" href="/conflict-predictor">
+        <div class="icon">⚔️</div>
+        <div class="name">Прогнозирование конфликтов</div>
+        <div class="desc">AI-прогноз на основе ACLED и GDELT</div>
+        <span class="tag">✅ Активен</span>
+      </a>
+      <a class="help-card" href="/anomaly-detector">
+        <div class="icon">🔍</div>
+        <div class="name">Детектор аномалий</div>
+        <div class="desc">Обнаружение необычных изменений в данных</div>
+        <span class="tag">✅ Активен</span>
+      </a>
+      <a class="help-card" href="/scenario-generator">
+        <div class="icon">🎯</div>
+        <div class="name">Генератор сценариев</div>
+        <div class="desc">AI-генерация сценариев "что-если"</div>
+        <span class="tag">✅ Активен</span>
+      </a>
+      <a class="help-card" href="/early-warning">
+        <div class="icon">🚨</div>
+        <div class="name">Раннее предупреждение</div>
+        <div class="desc">Прогноз кризисов за 7-14 дней</div>
+        <span class="tag">✅ Активен</span>
+      </a>
+      <a class="help-card" href="/market-predictor">
+        <div class="icon">📊</div>
+        <div class="name">Рыночный прогноз</div>
+        <div class="desc">Прогнозирование реакции рынков</div>
+        <span class="tag">✅ Активен</span>
+      </a>
+      <a class="help-card" href="/semantic-analysis">
+        <div class="icon">🧠</div>
+        <div class="name">Семантический анализ</div>
+        <div class="desc">Глубинный смысловой анализ текстов</div>
+        <span class="tag">✅ Активен</span>
+      </a>
+      <a class="help-card" href="/automated-reports">
+        <div class="icon">📄</div>
+        <div class="name">Автоматические отчёты</div>
+        <div class="desc">Ежедневные дайджесты с AI-анализом</div>
+        <span class="tag">✅ Активен</span>
+      </a>
+      <a class="help-card" href="/strategic-intel">
+        <div class="icon">🏛️</div>
+        <div class="name">Стратегическая разведка</div>
+        <div class="desc">RAND, CSIS, ISW аналитика</div>
+        <span class="tag">✅ Активен</span>
+      </a>
+      <a class="help-card" href="/cyber-intel">
+        <div class="icon">🛡️</div>
+        <div class="name">Киберинтеллект</div>
+        <div class="desc">AlienVault OTX + AbuseIPDB</div>
+        <span class="tag">✅ Активен</span>
+      </a>
+      <a class="help-card" href="/aviation-monitor">
+        <div class="icon">✈️</div>
+        <div class="name">Мониторинг авиации</div>
+        <div class="desc">OpenSky + детектор аномалий</div>
+        <span class="tag">✅ Активен</span>
+      </a>
+      <a class="help-card" href="/maritime-monitor">
+        <div class="icon">🚢</div>
+        <div class="name">Морской мониторинг</div>
+        <div class="desc">AIS + детектор тёмных судов</div>
+        <span class="tag">✅ Активен</span>
+      </a>
+      <a class="help-card" href="/dark-ships">
+        <div class="icon">🌊</div>
+        <div class="name">Тёмные суда</div>
+        <div class="desc">Судна с выключенными транспондерами</div>
+        <span class="tag">✅ Активен</span>
+      </a>
+      <a class="help-card" href="/satellite-internet">
+        <div class="icon">🛰️</div>
+        <div class="name">Спутниковый интернет</div>
+        <div class="desc">Starlink, OneWeb, GPS</div>
+        <span class="tag">✅ Активен</span>
+      </a>
+      <a class="help-card" href="/energy-monitor">
+        <div class="icon">⛽</div>
+        <div class="name">Мониторинг энергетики</div>
+        <div class="desc">EIA + цены на нефть/газ</div>
+        <span class="tag">✅ Активен</span>
+      </a>
+      <a class="help-card" href="/trade-monitor">
+        <div class="icon">📊</div>
+        <div class="name">Мониторинг торговли</div>
+        <div class="desc">Comtrade + торговая статистика</div>
+        <span class="tag">✅ Активен</span>
+      </a>
+      <a class="help-card" href="/environment-monitor">
+        <div class="icon">🌍</div>
+        <div class="name">Мониторинг экологии</div>
+        <div class="desc">EPA + данные о загрязнении</div>
+        <span class="tag">✅ Активен</span>
+      </a>
+      <a class="help-card" href="/health-monitor">
+        <div class="icon">🏥</div>
+        <div class="name">Мониторинг здравоохранения</div>
+        <div class="desc">WHO + вспышки заболеваний</div>
+        <span class="tag">✅ Активен</span>
+      </a>
+      <a class="help-card" href="/weather-monitor">
+        <div class="icon">🌤️</div>
+        <div class="name">Мониторинг погоды</div>
+        <div class="desc">NOAA + погодные аномалии</div>
+        <span class="tag">✅ Активен</span>
+      </a>
+      <a class="help-card" href="/space-monitor">
+        <div class="icon">🚀</div>
+        <div class="name">Мониторинг космоса</div>
+        <div class="desc">Спутники, запуски, астероиды</div>
+        <span class="tag">✅ Активен</span>
+      </a>
+      <a class="help-card" href="/news-aggregator">
+        <div class="icon">📰</div>
+        <div class="name">Новостной агрегатор</div>
+        <div class="desc">ТАСС + другие источники</div>
+        <span class="tag">✅ Активен</span>
+      </a>
+      <a class="help-card" href="/supply-chain-monitor">
+        <div class="icon">📦</div>
+        <div class="name">Цепи поставок</div>
+        <div class="desc">GSCPI + логистика</div>
+        <span class="tag">✅ Активен</span>
+      </a>
+      <a class="help-card" href="/monitor">
+        <div class="icon">📊</div>
+        <div class="name">Центр мониторинга</div>
+        <div class="desc">Управление диагностикой</div>
+        <span class="tag">✅ Активен</span>
+      </a>
+      <a class="help-card" href="/export">
+        <div class="icon">📤</div>
+        <div class="name">Экспорт данных</div>
+        <div class="desc">JSON, CSV, HTML, PDF</div>
+        <span class="tag">✅ Активен</span>
+      </a>
+    </div>
+  </main>
+
+  <script>
+    function showNotification(msg) {
+      document.querySelectorAll('.notification').forEach(el => el.remove());
+      const el = document.createElement('div');
+      el.className = 'notification';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2500);
+    }
+    document.getElementById('copy-btn').addEventListener('click', function() {
+      const text = `=== CRUCIX — СПРАВКА ===\nДата: ${new Date().toLocaleString()}\n\nВсего модулей: 23\nВсе страницы: /help`;
+      navigator.clipboard.writeText(text).then(() => showNotification('✅ Данные скопированы'));
+    });
+  </script>
+</body>
+</html>

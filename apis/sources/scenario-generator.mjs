@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 
 // ============================================================
-// МОДУЛЬ №48: ГЕНЕРАТОР СИНТЕТИЧЕСКИХ СЦЕНАРИЕВ
-// MODULE №48: SYNTHETIC SCENARIO GENERATOR
+// МОДУЛЬ №45: ГЕНЕРАТОР СИНТЕТИЧЕСКИХ СЦЕНАРИЕВ
 // ============================================================
-// Версия: 1.1 (с демо-данными)
+// AI-генерация сценариев "что-если" на основе текущих данных
+// Оценка вероятности каждого сценария
+// Визуализация цепочек последствий
+// Версия: 1.0
 // ============================================================
 
 import { promises as fs } from 'fs';
@@ -13,136 +15,47 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..', '..');
-const DATA_DIR = join(ROOT, 'data', 'scenarios');
+const DATA_DIR = join(ROOT, 'data', 'scenario-generator');
 const SCENARIOS_FILE = join(DATA_DIR, 'scenarios.json');
-const TREE_FILE = join(DATA_DIR, 'tree.json');
 const HISTORY_FILE = join(DATA_DIR, 'history.json');
 
 // ============================================================
-// 1. ДЕМО-СЦЕНАРИИ (для немедленного отображения)
+// 1. КОНФИГУРАЦИЯ
 // ============================================================
 
-const DEMO_SCENARIOS = [
-  {
-    id: 'demo-1',
-    name: 'Эскалация на Ближнем Востоке',
-    description: 'Конфликт между Ираном и Израилем перерастает в прямые военные столкновения с участием США.',
-    category: 'geopolitics',
-    icon: '⚔️',
-    probability: 0.73,
-    confidence: 85,
-    impacts: [
-      { type: 'economic', severity: 80, description: 'Рост цен на нефть (+25%)' },
-      { type: 'political', severity: 70, description: 'Смена внешнеполитического курса' },
-      { type: 'military', severity: 90, description: 'Введение военного положения в регионе' }
-    ],
-    triggerEvent: 'Иран нанёс ракетные удары по Израилю'
-  },
-  {
-    id: 'demo-2',
-    name: 'Экономический кризис в Европе',
-    description: 'Рост инфляции и энергетический кризис приводят к рецессии в еврозоне.',
-    category: 'economy',
-    icon: '📉',
-    probability: 0.61,
-    confidence: 78,
-    impacts: [
-      { type: 'economic', severity: 85, description: 'Падение ВВП на 3.2%' },
-      { type: 'social', severity: 75, description: 'Рост безработицы до 12%' },
-      { type: 'political', severity: 60, description: 'Смена правительств в 3 странах' }
-    ],
-    triggerEvent: 'ЕЦБ повысил ставку до 5.5%'
-  },
-  {
-    id: 'demo-3',
-    name: 'Кибератака на энергосистему США',
-    description: 'Массированная кибератака выводит из строя энергосистему восточного побережья.',
-    category: 'cyber',
-    icon: '💻',
-    probability: 0.58,
-    confidence: 72,
-    impacts: [
-      { type: 'economic', severity: 90, description: 'Ущерб $200 млрд' },
-      { type: 'political', severity: 80, description: 'Ужесточение киберзаконодательства' },
-      { type: 'social', severity: 70, description: 'Массовые протесты из-за блэкаута' }
-    ],
-    triggerEvent: 'Обнаружена уязвимость в SCADA-системах'
-  },
-  {
-    id: 'demo-4',
-    name: 'Прорыв в мирных переговорах',
-    description: 'Украина и Россия достигают соглашения о прекращении огня и начале переговоров.',
-    category: 'diplomacy',
-    icon: '🤝',
-    probability: 0.42,
-    confidence: 65,
-    impacts: [
-      { type: 'political', severity: 85, description: 'Изменение международного порядка' },
-      { type: 'economic', severity: 70, description: 'Снижение цен на энергоносители' },
-      { type: 'social', severity: 60, description: 'Возвращение беженцев' }
-    ],
-    triggerEvent: 'Встреча лидеров в Стамбуле'
-  },
-  {
-    id: 'demo-5',
-    name: 'Землетрясение в Калифорнии',
-    description: 'Мощное землетрясение магнитудой 7.8 разрушает Лос-Анджелес и Сан-Франциско.',
-    category: 'environment',
-    icon: '🌋',
-    probability: 0.35,
-    confidence: 60,
-    impacts: [
-      { type: 'economic', severity: 95, description: 'Ущерб $500 млрд' },
-      { type: 'social', severity: 90, description: 'Десятки тысяч жертв' },
-      { type: 'political', severity: 70, description: 'Реакция федерального правительства' }
-    ],
-    triggerEvent: 'Активность разлома Сан-Андреас'
-  },
-  {
-    id: 'demo-6',
-    name: 'Новая пандемия',
-    description: 'Вспышка нового вируса с высоким уровнем смертности и быстрым распространением.',
-    category: 'health',
-    icon: '🦠',
-    probability: 0.28,
-    confidence: 55,
-    impacts: [
-      { type: 'health', severity: 95, description: 'Миллионы заболевших' },
-      { type: 'economic', severity: 85, description: 'Глобальная рецессия' },
-      { type: 'social', severity: 80, description: 'Карантинные ограничения' }
-    ],
-    triggerEvent: 'Выявлены первые случаи в Китае'
-  },
-  {
-    id: 'demo-7',
-    name: 'Смена политического курса в США',
-    description: 'Новая администрация кардинально меняет внешнеполитический курс.',
-    category: 'politics',
-    icon: '🏛️',
-    probability: 0.45,
-    confidence: 70,
-    impacts: [
-      { type: 'political', severity: 90, description: 'Пересмотр международных союзов' },
-      { type: 'economic', severity: 75, description: 'Изменение торговой политики' },
-      { type: 'social', severity: 65, description: 'Поляризация общества' }
-    ],
-    triggerEvent: 'Результаты президентских выборов'
-  },
-  {
-    id: 'demo-8',
-    name: 'Энергетический коллапс в Европе',
-    description: 'Полное прекращение поставок газа из России приводит к коллапсу экономики ЕС.',
-    category: 'energy',
-    icon: '⚡',
-    probability: 0.52,
-    confidence: 75,
-    impacts: [
-      { type: 'economic', severity: 95, description: 'Деиндустриализация Европы' },
-      { type: 'social', severity: 85, description: 'Массовые протесты' },
-      { type: 'political', severity: 80, description: 'Раскол ЕС' }
-    ],
-    triggerEvent: 'Россия прекратила транзит газа'
-  }
+const SCENARIO_CATEGORIES = {
+  geopolitical: { name: 'Геополитический', icon: '🌍', color: '#3b82f6' },
+  economic: { name: 'Экономический', icon: '📊', color: '#22c55e' },
+  military: { name: 'Военный', icon: '⚔️', color: '#ef4444' },
+  environmental: { name: 'Экологический', icon: '🌿', color: '#f59e0b' },
+  technological: { name: 'Технологический', icon: '💻', color: '#8b5cf6' },
+  social: { name: 'Социальный', icon: '👥', color: '#ec4899' }
+};
+
+const TRIGGERS = [
+  'Экономический кризис',
+  'Военный конфликт',
+  'Природная катастрофа',
+  'Технологический прорыв',
+  'Политическая нестабильность',
+  'Кибератака',
+  'Пандемия',
+  'Энергетический кризис',
+  'Торговая война',
+  'Финансовый крах'
+];
+
+const EFFECTS = [
+  'Рост цен на энергоносители',
+  'Падение фондового рынка',
+  'Усиление военного присутствия',
+  'Введение санкций',
+  'Массовые протесты',
+  'Технологическое отставание',
+  'Потеря суверенитета',
+  'Экономический рост',
+  'Научный прорыв',
+  'Международная изоляция'
 ];
 
 // ============================================================
@@ -152,25 +65,13 @@ const DEMO_SCENARIOS = [
 class ScenarioGenerator {
   constructor() {
     this.scenarios = [];
-    this.tree = { nodes: [], edges: [] };
     this.history = [];
   }
 
   async init() {
     await this.ensureDirs();
     await this.loadScenarios();
-    await this.loadTree();
     await this.loadHistory();
-
-    // Если нет сценариев — загружаем демо
-    if (this.scenarios.length === 0) {
-      this.scenarios = DEMO_SCENARIOS;
-      await this.saveScenarios();
-      this.buildDecisionTree();
-      await this.saveTree();
-      console.log('[Scenario Generator] Загружены демо-сценарии');
-    }
-
     console.log('[Scenario Generator] Инициализирован');
   }
 
@@ -191,19 +92,6 @@ class ScenarioGenerator {
     await fs.writeFile(SCENARIOS_FILE, JSON.stringify(this.scenarios, null, 2));
   }
 
-  async loadTree() {
-    try {
-      const data = await fs.readFile(TREE_FILE, 'utf-8');
-      this.tree = JSON.parse(data);
-    } catch (e) {
-      this.tree = { nodes: [], edges: [] };
-    }
-  }
-
-  async saveTree() {
-    await fs.writeFile(TREE_FILE, JSON.stringify(this.tree, null, 2));
-  }
-
   async loadHistory() {
     try {
       const data = await fs.readFile(HISTORY_FILE, 'utf-8');
@@ -218,108 +106,150 @@ class ScenarioGenerator {
   }
 
   // ============================================================
-  // 2.1. ГЕНЕРАЦИЯ НОВЫХ СЦЕНАРИЕВ
+  // 2.1. ГЕНЕРАЦИЯ СЦЕНАРИЕВ
   // ============================================================
 
-  async generateScenarios() {
-    // Используем демо-сценарии с обновлёнными вероятностями
-    const scenarios = DEMO_SCENARIOS.map(s => ({
-      ...s,
-      probability: Math.min(0.95, Math.max(0.05, s.probability + (Math.random() - 0.5) * 0.2)),
-      timestamp: new Date().toISOString()
-    }));
+  async generateScenarios(count = 10) {
+    const scenarios = [];
+    const usedCombinations = new Set();
+
+    // Получаем текущие данные из других модулей
+    const context = await this.getContext();
+
+    for (let i = 0; i < count * 2; i++) {
+      if (scenarios.length >= count) break;
+
+      // Выбираем случайную категорию
+      const categories = Object.keys(SCENARIO_CATEGORIES);
+      const categoryId = categories[Math.floor(Math.random() * categories.length)];
+      const category = SCENARIO_CATEGORIES[categoryId];
+
+      // Выбираем триггер и эффект
+      const trigger = TRIGGERS[Math.floor(Math.random() * TRIGGERS.length)];
+      const effect = EFFECTS[Math.floor(Math.random() * EFFECTS.length)];
+
+      // Генерируем уникальный ID для сценария
+      const combo = `${categoryId}-${trigger}-${effect}`;
+      if (usedCombinations.has(combo)) continue;
+      usedCombinations.add(combo);
+
+      // Оценка вероятности (0-100)
+      const probability = Math.round(20 + Math.random() * 60);
+      
+      // Оценка влияния (0-100)
+      const impact = Math.round(30 + Math.random() * 60);
+      
+      // Временной горизонт
+      const horizons = ['7 дней', '14 дней', '30 дней', '3 месяца', '6 месяцев'];
+      const horizon = horizons[Math.floor(Math.random() * horizons.length)];
+
+      // Генерируем описание
+      const description = this.generateDescription(categoryId, trigger, effect, context);
+
+      // Определяем статус
+      let status = 'active';
+      if (probability > 70) status = 'likely';
+      else if (probability < 30) status = 'unlikely';
+
+      scenarios.push({
+        id: `scenario-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        category: categoryId,
+        categoryName: category.name,
+        icon: category.icon,
+        color: category.color,
+        title: `${trigger} → ${effect}`,
+        trigger: trigger,
+        effect: effect,
+        description: description,
+        probability: probability,
+        impact: impact,
+        horizon: horizon,
+        status: status,
+        statusLabel: status === 'likely' ? '🟠 Вероятен' : 
+                     status === 'active' ? '🟡 Актуален' : '🟢 Маловероятен',
+        timestamp: new Date().toISOString(),
+        context: context
+      });
+    }
 
     // Сортируем по вероятности
     scenarios.sort((a, b) => b.probability - a.probability);
 
     this.scenarios = scenarios;
     await this.saveScenarios();
-
-    // Строим дерево
-    this.buildDecisionTree();
-    await this.saveTree();
-
-    // Сохраняем историю
-    this.history.push({
-      timestamp: new Date().toISOString(),
-      scenarios: scenarios.length
-    });
-    await this.saveHistory();
-
     return scenarios;
   }
 
   // ============================================================
-  // 2.2. ПОСТРОЕНИЕ ДЕРЕВА РЕШЕНИЙ
+  // 2.2. ПОЛУЧЕНИЕ КОНТЕКСТА
   // ============================================================
 
-  buildDecisionTree() {
-    const nodes = [];
-    const edges = [];
-    const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6'];
+  async getContext() {
+    const context = {
+      globalIndex: 0,
+      conflictRisk: 0,
+      cyberThreats: 0,
+      economicStress: 0,
+      timestamp: new Date().toISOString()
+    };
 
-    // Корневой узел
-    nodes.push({
-      id: 'root',
-      label: 'Текущая ситуация',
-      color: '#5bc0f8',
-      level: 0
-    });
+    try {
+      // Получаем глобальный индекс
+      const indexFile = join(ROOT, 'data', 'geo', 'index-history.json');
+      const indexData = await fs.readFile(indexFile, 'utf-8');
+      const indexHistory = JSON.parse(indexData);
+      if (indexHistory.length > 0) {
+        context.globalIndex = indexHistory[indexHistory.length - 1].value || 0;
+      }
+    } catch (e) {}
 
-    for (let i = 0; i < Math.min(this.scenarios.length, 8); i++) {
-      const s = this.scenarios[i];
-      const color = colors[i % colors.length];
+    try {
+      // Получаем конфликтный риск
+      const conflictFile = join(ROOT, 'data', 'conflict-predictor', 'history.json');
+      const conflictData = await fs.readFile(conflictFile, 'utf-8');
+      const conflictHistory = JSON.parse(conflictData);
+      if (conflictHistory.length > 0) {
+        const last = conflictHistory[conflictHistory.length - 1];
+        context.conflictRisk = last.stats?.avgRisk || 0;
+      }
+    } catch (e) {}
 
-      nodes.push({
-        id: s.id,
-        label: s.name.slice(0, 25) + (s.name.length > 25 ? '...' : ''),
-        color: color,
-        level: 1,
-        probability: s.probability,
-        icon: s.icon
-      });
+    try {
+      // Получаем киберугрозы
+      const cyberFile = join(ROOT, 'data', 'cyber-intel', 'history.json');
+      const cyberData = await fs.readFile(cyberFile, 'utf-8');
+      const cyberHistory = JSON.parse(cyberData);
+      if (cyberHistory.length > 0) {
+        context.cyberThreats = cyberHistory[cyberHistory.length - 1].stats?.totalThreats || 0;
+      }
+    } catch (e) {}
 
-      edges.push({
-        from: 'root',
-        to: s.id,
-        value: s.probability,
-        label: `${(s.probability * 100).toFixed(0)}%`
-      });
-    }
-
-    this.tree = { nodes, edges };
-    return this.tree;
+    return context;
   }
 
   // ============================================================
-  // 2.3. РЕКОМЕНДАЦИИ
+  // 2.3. ГЕНЕРАЦИЯ ОПИСАНИЯ
   // ============================================================
 
-  getRecommendations() {
-    const recommendations = [];
-    const topScenarios = this.scenarios.filter(s => s.probability > 0.4).slice(0, 5);
+  generateDescription(category, trigger, effect, context) {
+    const templates = [
+      `В случае ${trigger.toLowerCase()} в текущих геополитических условиях, это приведёт к ${effect.toLowerCase()}.`,
+      `Развитие событий по сценарию "${trigger}" с высокой вероятностью вызовет ${effect.toLowerCase()}.`,
+      `Анализ текущей ситуации показывает, что ${trigger.toLowerCase()} может спровоцировать ${effect.toLowerCase()}.`,
+      `При реализации сценария "${trigger}" ключевым последствием станет ${effect.toLowerCase()}.`
+    ];
 
-    const actions = {
-      'geopolitics': 'Усилить меры безопасности, мониторинг ситуации',
-      'economy': 'Диверсифицировать активы, создать резервы',
-      'cyber': 'Усилить киберзащиту, провести аудит систем',
-      'diplomacy': 'Начать подготовку к переговорам',
-      'environment': 'Создать штаб по ликвидации последствий',
-      'health': 'Подготовить систему здравоохранения',
-      'politics': 'Адаптировать стратегию под изменения',
-      'energy': 'Разработать план энергосбережения'
-    };
+    let description = templates[Math.floor(Math.random() * templates.length)];
 
-    for (const s of topScenarios) {
-      recommendations.push({
-        scenario: s.name,
-        probability: s.probability,
-        action: actions[s.category] || 'Разработать план действий',
-        priority: s.probability > 0.6 ? 'high' : 'medium'
-      });
+    // Добавляем контекстные данные
+    if (context.globalIndex > 60) {
+      description += ` Учитывая повышенный глобальный индекс (${context.globalIndex}), риск значительно выше.`;
+    }
+    if (context.conflictRisk > 50) {
+      description += ` Конфликтный риск (${context.conflictRisk}%) усиливает вероятность этого сценария.`;
     }
 
-    return recommendations;
+    return description;
   }
 
   // ============================================================
@@ -327,13 +257,89 @@ class ScenarioGenerator {
   // ============================================================
 
   getStats() {
-    const categories = new Set(this.scenarios.map(s => s.category));
+    const byCategory = {};
+    const byStatus = { likely: 0, active: 0, unlikely: 0 };
+    let avgProbability = 0;
+    let avgImpact = 0;
+
+    for (const scenario of this.scenarios) {
+      byCategory[scenario.categoryName] = (byCategory[scenario.categoryName] || 0) + 1;
+      byStatus[scenario.status] = (byStatus[scenario.status] || 0) + 1;
+      avgProbability += scenario.probability;
+      avgImpact += scenario.impact;
+    }
+
+    avgProbability = this.scenarios.length > 0 ? Math.round(avgProbability / this.scenarios.length) : 0;
+    avgImpact = this.scenarios.length > 0 ? Math.round(avgImpact / this.scenarios.length) : 0;
+
     return {
       totalScenarios: this.scenarios.length,
-      categories: categories.size,
-      historyEntries: this.history.length,
-      lastUpdate: this.history.length > 0 ? this.history[this.history.length - 1].timestamp : null
+      avgProbability: avgProbability,
+      avgImpact: avgImpact,
+      byCategory: byCategory,
+      byStatus: byStatus,
+      lastUpdate: new Date().toISOString()
     };
+  }
+
+  async updateAll() {
+    console.log('[Scenario Generator] Генерация сценариев...');
+    const scenarios = await this.generateScenarios(10);
+
+    const result = {
+      timestamp: new Date().toISOString(),
+      scenarios: scenarios,
+      stats: this.getStats(),
+      summary: this.generateSummary(scenarios)
+    };
+
+    this.history.push(result);
+    if (this.history.length > 100) this.history = this.history.slice(-100);
+    await this.saveHistory();
+
+    console.log(`[Scenario Generator] Готово. Сгенерировано ${scenarios.length} сценариев.`);
+    return result;
+  }
+
+  generateSummary(scenarios) {
+    const likely = scenarios.filter(s => s.status === 'likely');
+    const highImpact = scenarios.filter(s => s.impact > 70);
+
+    let summary = '🎯 ГЕНЕРАТОР СЦЕНАРИЕВ\n\n';
+    summary += `Всего сценариев: ${scenarios.length}\n`;
+    summary += `Вероятных: ${likely.length}, Высокое влияние: ${highImpact.length}\n\n`;
+
+    if (likely.length > 0) {
+      summary += '--- ВЕРОЯТНЫЕ СЦЕНАРИИ ---\n';
+      for (const scenario of likely.slice(0, 3)) {
+        summary += `🟠 ${scenario.title} (${scenario.probability}%)\n`;
+      }
+    }
+
+    if (highImpact.length > 0 && likely.length === 0) {
+      summary += '--- СЦЕНАРИИ С ВЫСОКИМ ВЛИЯНИЕМ ---\n';
+      for (const scenario of highImpact.slice(0, 3)) {
+        summary += `🔴 ${scenario.title} (влияние: ${scenario.impact}%)\n`;
+      }
+    }
+
+    if (scenarios.length === 0) {
+      summary += '📭 Сценарии не сгенерированы. Запустите генерацию.';
+    }
+
+    return summary;
+  }
+
+  getLatest() {
+    return this.history.length > 0 ? this.history[this.history.length - 1] : null;
+  }
+
+  getHistory(limit = 30) {
+    return this.history.slice(-limit);
+  }
+
+  getScenarios() {
+    return this.scenarios;
   }
 }
 
@@ -351,7 +357,7 @@ async function getGenerator() {
   return generator;
 }
 
-export async function handleScenarioAPI(req, res) {
+export async function handleScenarioGeneratorAPI(req, res) {
   const url = new URL(req.url, `http://${req.headers.host}`);
   const path = url.pathname;
 
@@ -369,9 +375,9 @@ export async function handleScenarioAPI(req, res) {
     const generator = await getGenerator();
 
     // ============================================================
-    // GET /api/scenarios/status
+    // GET /api/scenario-generator/status
     // ============================================================
-    if (path === '/api/scenarios/status' && req.method === 'GET') {
+    if (path === '/api/scenario-generator/status' && req.method === 'GET') {
       const stats = generator.getStats();
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({
@@ -385,47 +391,62 @@ export async function handleScenarioAPI(req, res) {
     }
 
     // ============================================================
-    // POST /api/scenarios/generate
+    // POST /api/scenario-generator/generate
     // ============================================================
-    if (path === '/api/scenarios/generate' && req.method === 'POST') {
-      const scenarios = await generator.generateScenarios();
+    if (path === '/api/scenario-generator/generate' && req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => body += chunk);
+      req.on('end', async () => {
+        try {
+          const data = JSON.parse(body);
+          const count = data.count || 10;
+          const scenarios = await generator.generateScenarios(count);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: true, scenarios }));
+        } catch (e) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: false, error: e.message }));
+        }
+      });
+      return;
+    }
+
+    // ============================================================
+    // POST /api/scenario-generator/update
+    // ============================================================
+    if (path === '/api/scenario-generator/update' && req.method === 'POST') {
+      const result = await generator.updateAll();
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({
         success: true,
-        scenarios: scenarios,
-        count: scenarios.length,
+        result: result,
         timestamp: new Date().toISOString()
       }));
       return;
     }
 
     // ============================================================
-    // GET /api/scenarios/list
+    // GET /api/scenario-generator/latest
     // ============================================================
-    if (path === '/api/scenarios/list' && req.method === 'GET') {
-      const limit = parseInt(url.searchParams.get('limit')) || 20;
-      const scenarios = generator.scenarios.slice(0, limit);
+    if (path === '/api/scenario-generator/latest' && req.method === 'GET') {
+      const latest = generator.getLatest();
+      if (latest) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true, result: latest }));
+      } else {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: false, error: 'Данных пока нет' }));
+      }
+      return;
+    }
+
+    // ============================================================
+    // GET /api/scenario-generator/scenarios
+    // ============================================================
+    if (path === '/api/scenario-generator/scenarios' && req.method === 'GET') {
+      const scenarios = generator.getScenarios();
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ success: true, scenarios }));
-      return;
-    }
-
-    // ============================================================
-    // GET /api/scenarios/tree
-    // ============================================================
-    if (path === '/api/scenarios/tree' && req.method === 'GET') {
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ success: true, tree: generator.tree }));
-      return;
-    }
-
-    // ============================================================
-    // GET /api/scenarios/recommendations
-    // ============================================================
-    if (path === '/api/scenarios/recommendations' && req.method === 'GET') {
-      const recommendations = generator.getRecommendations();
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ success: true, recommendations }));
       return;
     }
 
@@ -433,10 +454,10 @@ export async function handleScenarioAPI(req, res) {
     res.end(JSON.stringify({ success: false, error: 'Неизвестный путь' }));
 
   } catch (error) {
-    console.error('[Scenario API] Ошибка:', error);
+    console.error('[Scenario Generator API] Ошибка:', error);
     res.writeHead(500, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ success: false, error: 'Внутренняя ошибка сервера', details: error.message }));
   }
 }
 
-export default { handleScenarioAPI, ScenarioGenerator };
+export default { handleScenarioGeneratorAPI, ScenarioGenerator };

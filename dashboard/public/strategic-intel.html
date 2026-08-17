@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Стратегическая разведка — Crucix</title>
+  <link rel="stylesheet" href="/css/strategic-intel.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-brand">⚡ CRUCIX MONITOR</span>
+      <span class="topbar-status">СТРАТЕГИЧЕСКАЯ РАЗВЕДКА</span>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-time" id="topbar-date">Загрузка...</span>
+      <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+      <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ</button>
+      <button class="topbar-btn btn-grid" id="grid-toggle">📐 СЕТКА</button>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <h1 class="page-title">🏛️ Стратегическая разведка</h1>
+    <p class="page-subtitle">Аналитические отчёты RAND, CSIS, ISW и других центров</p>
+
+    <div class="stats-row" id="stats-row">
+      <div class="stat-item">
+        <div class="stat-label">Всего отчётов</div>
+        <div class="stat-value blue" id="stat-total">0</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Аналитических центров</div>
+        <div class="stat-value green" id="stat-thinktanks">0</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Приоритетных</div>
+        <div class="stat-value red" id="stat-high">0</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Последнее обновление</div>
+        <div class="stat-value" id="stat-last">—</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-primary" id="btn-update">🔄 Обновить данные</button>
+      <button class="btn btn-secondary" id="btn-refresh">🔄 Обновить</button>
+      <span class="status-label" id="status-label">⏹ Готов</span>
+    </div>
+
+    <div class="summary-panel" id="summary-panel">
+      <h3>📋 Резюме</h3>
+      <div id="summary-content" class="summary-content">
+        <div class="loading">Ожидание обновления...</div>
+      </div>
+    </div>
+
+    <div class="reports-grid" id="reports-grid">
+      <div class="loading">Загрузка отчётов...</div>
+    </div>
+  </main>
+
+  <div id="coordinate-grid"></div>
+  <div id="grid-coords">X: 0  Y: 0</div>
+
+  <script src="/js/strategic-intel.js"></script>
+</body>
+</html>

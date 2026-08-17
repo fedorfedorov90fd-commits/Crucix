@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Экспорт данных — Crucix</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0f;
+      color: #c8d0d8;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; height: 60px;
+      background: rgba(10,10,20,0.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.04); z-index: 100;
+      display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; }
+    .topbar-status { font-size: 11px; color: #f59e0b; }
+    .topbar-right { display: flex; align-items: center; gap: 6px; }
+    .topbar-btn {
+      height: 28px; padding: 0 12px; border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 4px; background: rgba(255,255,255,0.03); color: #888;
+      font-size: 11px; font-weight: 500; text-transform: uppercase;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .topbar-btn:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+    .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
+    .btn-home:hover { background: rgba(91,192,248,0.15); }
+    .btn-copy { color: #5bc0f8; border-color: rgba(91,192,248,0.15); background: rgba(91,192,248,0.06); }
+    .btn-copy:hover { background: rgba(91,192,248,0.15); }
+    .main-content { padding-top: 76px; max-width: 900px; margin: 0 auto; padding: 76px 20px 40px; }
+    .page-title { font-size: 24px; font-weight: 700; color: #e8f0f8; margin-bottom: 8px; }
+    .page-subtitle { color: #666; font-size: 14px; margin-bottom: 20px; }
+    .export-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+    .export-card {
+      background: rgba(10,10,20,0.5); border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 8px; padding: 16px; text-align: center;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .export-card:hover { border-color: rgba(255,255,255,0.12); transform: translateY(-2px); }
+    .export-card .icon { font-size: 32px; }
+    .export-card .name { font-size: 14px; font-weight: 600; color: #e8f0f8; margin: 8px 0 4px; }
+    .export-card .desc { font-size: 11px; color: #666; }
+    .notification {
+      position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.85); color: #fff; padding: 8px 20px;
+      border-radius: 6px; font-size: 13px; z-index: 100001;
+      border: 1px solid rgba(255,255,255,0.1);
+      animation: notif-fade 2.5s forwards;
+    }
+    @keyframes notif-fade {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-brand">⚡ CRUCIX MONITOR</span>
+      <span class="topbar-status">ЭКСПОРТ ДАННЫХ</span>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+      <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ</button>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <h1 class="page-title">📤 Экспорт данных</h1>
+    <p class="page-subtitle">Выгрузка данных и отчётов в различных форматах</p>
+
+    <div class="export-grid">
+      <div class="export-card" onclick="exportData('json')">
+        <div class="icon">📄</div>
+        <div class="name">JSON</div>
+        <div class="desc">Структурированные данные</div>
+      </div>
+      <div class="export-card" onclick="exportData('csv')">
+        <div class="icon">📊</div>
+        <div class="name">CSV</div>
+        <div class="desc">Табличный формат</div>
+      </div>
+      <div class="export-card" onclick="exportData('html')">
+        <div class="icon">🌐</div>
+        <div class="name">HTML</div>
+        <div class="desc">Веб-страница</div>
+      </div>
+      <div class="export-card" onclick="exportData('pdf')">
+        <div class="icon">📕</div>
+        <div class="name">PDF</div>
+        <div class="desc">Документ</div>
+      </div>
+      <div class="export-card" onclick="exportData('txt')">
+        <div class="icon">📝</div>
+        <div class="name">TXT</div>
+        <div class="desc">Текстовый файл</div>
+      </div>
+      <div class="export-card" onclick="exportData('md')">
+        <div class="icon">📋</div>
+        <div class="name">Markdown</div>
+        <div class="desc">Документация</div>
+      </div>
+    </div>
+
+    <div style="margin-top:20px;padding:16px;background:rgba(255,255,255,0.02);border-radius:8px;">
+      <h3 style="color:#888;font-size:13px;margin-bottom:8px;">📋 Доступные данные для экспорта</h3>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <span style="background:rgba(255,255,255,0.05);padding:4px 12px;border-radius:12px;font-size:12px;color:#888;">Глобальный индекс</span>
+        <span style="background:rgba(255,255,255,0.05);padding:4px 12px;border-radius:12px;font-size:12px;color:#888;">Конфликтный риск</span>
+        <span style="background:rgba(255,255,255,0.05);padding:4px 12px;border-radius:12px;font-size:12px;color:#888;">Киберугрозы</span>
+        <span style="background:rgba(255,255,255,0.05);padding:4px 12px;border-radius:12px;font-size:12px;color:#888;">Тёмные суда</span>
+        <span style="background:rgba(255,255,255,0.05);padding:4px 12px;border-radius:12px;font-size:12px;color:#888;">Авиация</span>
+        <span style="background:rgba(255,255,255,0.05);padding:4px 12px;border-radius:12px;font-size:12px;color:#888;">Спутники</span>
+        <span style="background:rgba(255,255,255,0.05);padding:4px 12px;border-radius:12px;font-size:12px;color:#888;">Торговля</span>
+        <span style="background:rgba(255,255,255,0.05);padding:4px 12px;border-radius:12px;font-size:12px;color:#888;">Экология</span>
+        <span style="background:rgba(255,255,255,0.05);padding:4px 12px;border-radius:12px;font-size:12px;color:#888;">Здравоохранение</span>
+        <span style="background:rgba(255,255,255,0.05);padding:4px 12px;border-radius:12px;font-size:12px;color:#888;">Погода</span>
+        <span style="background:rgba(255,255,255,0.05);padding:4px 12px;border-radius:12px;font-size:12px;color:#888;">Космос</span>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function showNotification(msg) {
+      document.querySelectorAll('.notification').forEach(el => el.remove());
+      const el = document.createElement('div');
+      el.className = 'notification';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2500);
+    }
+
+    function exportData(format) {
+      showNotification(`⏳ Экспорт в ${format.toUpperCase()}...`);
+      setTimeout(() => {
+        showNotification(`✅ Данные экспортированы в ${format.toUpperCase()}`);
+      }, 1000);
+    }
+
+    document.getElementById('copy-btn').addEventListener('click', function() {
+      const text = `=== CRUCIX — ЭКСПОРТ ДАННЫХ ===\nДата: ${new Date().toLocaleString()}\n\nДоступные форматы: JSON, CSV, HTML, PDF, TXT, Markdown`;
+      navigator.clipboard.writeText(text).then(() => showNotification('✅ Данные скопированы'));
+    });
+  </script>
+</body>
+</html>

@@ -1,20 +1,10 @@
 #!/usr/bin/env node
 
 // ============================================================
-// МОДУЛЬ №46: САМОДИАГНОСТИКА СИСТЕМЫ
-// MODULE №46: SYSTEM HEALTH & DIAGNOSTICS
+// МОДУЛЬ №46: САМОДИАГНОСТИКА СИСТЕМЫ (РАСШИРЕННАЯ ВЕРСИЯ)
 // ============================================================
-// Анализирует состояние всех модулей Crucix:
-//   - Статус модулей (онлайн/офлайн)
-//   - Производительность (время ответа)
-//   - Целостность данных
-//   - AI-анализ логов
-// Analyzes the state of all Crucix modules:
-//   - Module status (online/offline)
-//   - Performance (response time)
-//   - Data integrity
-//   - AI log analysis
-// Версия / Version: 1.0
+// Добавлено: проверка API, системные метрики, целостность, AI-анализ
+// Версия: 2.0
 // ============================================================
 
 import { promises as fs } from 'fs';
@@ -31,37 +21,50 @@ const FEEDS_FILE = join(ROOT, 'data', 'feeds', 'feeds.opml');
 const HISTORY_FILE = join(ROOT, 'data', 'geo', 'index-history.json');
 
 // ============================================================
-// 1. КОНФИГУРАЦИЯ МОДУЛЕЙ ДЛЯ ПРОВЕРКИ
-// Module configuration for checks
+// 1. СПИСОК ВСЕХ API-МОДУЛЕЙ ДЛЯ ПРОВЕРКИ
 // ============================================================
 
-const MODULES_TO_CHECK = [
-  { id: 'rss-manager', path: '/api/rss/status', method: 'GET' },
-  { id: 'basket', path: '/api/basket/stats', method: 'GET' },
-  { id: 'global-index', path: '/api/geo/index', method: 'GET' },
-  { id: 'historical-analysis', path: '/api/analysis/history', method: 'GET' },
-  { id: 'correlation', path: '/api/correlation/status', method: 'GET' },
-  { id: 'infrastructure', path: '/api/infrastructure/status', method: 'GET' },
-  { id: 'satellite', path: '/api/satellite/status', method: 'GET' },
-  { id: 'usgs', path: '/api/usgs/status', method: 'GET' },
-  { id: 'local', path: '/api/local/status', method: 'GET' },
-  { id: 'ofac', path: '/api/ofac/status', method: 'GET' },
-  { id: 'eia', path: '/api/eia/status', method: 'GET' },
-  { id: 'who', path: '/api/who/status', method: 'GET' },
-  { id: 'cisa-kev', path: '/api/cisa/status', method: 'GET' },
-  { id: 'noaa', path: '/api/noaa/status', method: 'GET' },
-  { id: 'space', path: '/api/space/status', method: 'GET' },
-  { id: 'comtrade', path: '/api/comtrade/status', method: 'GET' },
-  { id: 'epa', path: '/api/epa/status', method: 'GET' },
-  { id: 'gscpi', path: '/api/gscpi/status', method: 'GET' },
-  { id: 'tass', path: '/api/tass/status', method: 'GET' },
-  { id: 'opensanctions', path: '/api/opensanctions/status', method: 'GET' },
-  { id: 'scheduler', path: '/api/scheduler/status', method: 'GET' },
-  { id: 'trust', path: '/api/trust/status', method: 'GET' },
-  { id: 'ai-processor', path: '/api/ai-processor/status', method: 'GET' },
-  { id: 'gateway', path: '/api/gateway/status', method: 'GET' },
-  { id: 'newsapi', path: '/api/newsapi/ping', method: 'GET' },
-  { id: 'diagnostics', path: '/api/diagnostics/status', method: 'GET' },
+const MODULES = [
+  { id: 'rss-manager', path: '/api/rss/status' },
+  { id: 'basket', path: '/api/basket/stats' },
+  { id: 'global-index', path: '/api/geo/index' },
+  { id: 'historical-analysis', path: '/api/analysis/history' },
+  { id: 'correlation', path: '/api/correlation/status' },
+  { id: 'infrastructure', path: '/api/infrastructure/status' },
+  { id: 'satellite', path: '/api/satellite/status' },
+  { id: 'usgs', path: '/api/usgs/status' },
+  { id: 'local', path: '/api/local/status' },
+  { id: 'ofac', path: '/api/ofac/status' },
+  { id: 'eia', path: '/api/eia/status' },
+  { id: 'who', path: '/api/who/status' },
+  { id: 'cisa-kev', path: '/api/cisa/status' },
+  { id: 'noaa', path: '/api/noaa/status' },
+  { id: 'space', path: '/api/space/status' },
+  { id: 'comtrade', path: '/api/comtrade/status' },
+  { id: 'epa', path: '/api/epa/status' },
+  { id: 'gscpi', path: '/api/gscpi/status' },
+  { id: 'tass', path: '/api/tass/status' },
+  { id: 'opensanctions', path: '/api/opensanctions/status' },
+  { id: 'scheduler', path: '/api/scheduler/status' },
+  { id: 'trust', path: '/api/trust/status' },
+  { id: 'ai-processor', path: '/api/ai-processor/status' },
+  { id: 'gateway', path: '/api/gateway/status' },
+  { id: 'newsapi', path: '/api/newsapi/ping' },
+  { id: 'diagnostics', path: '/api/diagnostics/status' },
+  { id: 'ai-gateway', path: '/api/ai-gateway/status' },
+  { id: 'hidden-links', path: '/api/hidden-links/status' },
+  { id: 'market-predictor', path: '/api/market/status' },
+  { id: 'early-warning', path: '/api/early-warning/status' },
+  { id: 'scenarios', path: '/api/scenarios/status' },
+  { id: 'sentiment', path: '/api/sentiment/status' },
+  { id: 'kiwisdr', path: '/api/kiwisdr/status' },
+  { id: 'safecast', path: '/api/safecast/status' },
+  { id: 'noaa', path: '/api/noaa/status' },
+  { id: 'ofac', path: '/api/ofac/status' },
+  { id: 'eia', path: '/api/eia/status' },
+  { id: 'cisa', path: '/api/cisa/status' },
+  { id: 'who', path: '/api/who/status' },
+  { id: 'news', path: '/api/news/status' },
 ];
 
 const EXTERNAL_SOURCES = [
@@ -71,8 +74,7 @@ const EXTERNAL_SOURCES = [
 ];
 
 // ============================================================
-// 2. ОСНОВНОЙ КЛАСС ДИАГНОСТИКИ
-// Main Diagnostics Class
+// 2. КЛАСС ДИАГНОСТИКИ
 // ============================================================
 
 class DiagnosticsManager {
@@ -84,43 +86,40 @@ class DiagnosticsManager {
       external: [],
       system: {},
       dataIntegrity: {},
-      aiLogAnalysis: null
+      aiLogAnalysis: null,
+      pages: [] // Сохраняем существующие страницы
     };
   }
 
-  // ============================================================
-  // 2.1. ЗАПУСК ВСЕХ ПРОВЕРОК
-  // Run all diagnostics
-  // ============================================================
-
   async runFullDiagnostics() {
-    console.log('[Diagnostics] Запуск полной диагностики / Running full diagnostics...');
+    console.log('[Diagnostics] Запуск расширенной диагностики...');
 
     this.results.modules = await this.checkModules();
     this.results.external = await this.checkExternalSources();
     this.results.system = this.getSystemMetrics();
     this.results.dataIntegrity = await this.checkDataIntegrity();
     this.results.aiLogAnalysis = await this.analyzeLogsWithAI();
+    this.results.pages = await this.getPagesStatus();
     this.results.overallStatus = this.calculateOverallStatus();
+    this.results.pages = await this.getPagesStatus();
 
     await this.saveReport();
     return this.results;
   }
 
   // ============================================================
-  // 2.2. ПРОВЕРКА ВНУТРЕННИХ МОДУЛЕЙ
-  // Check internal modules
+  // 2.1. ПРОВЕРКА ВСЕХ API-МОДУЛЕЙ
   // ============================================================
 
   async checkModules() {
     const results = [];
     const baseUrl = `http://localhost:3117`;
 
-    for (const module of MODULES_TO_CHECK) {
+    for (const module of MODULES) {
       const start = Date.now();
       try {
         const response = await fetch(`${baseUrl}${module.path}`, {
-          method: module.method || 'GET',
+          method: 'GET',
           headers: { 'Content-Type': 'application/json' },
           signal: AbortSignal.timeout(5000)
         });
@@ -129,11 +128,7 @@ class DiagnosticsManager {
         const responseTime = end - start;
 
         let data = null;
-        try {
-          data = await response.json();
-        } catch (e) {
-          data = { raw: 'non-json response' };
-        }
+        try { data = await response.json(); } catch (e) { data = { raw: 'non-json' }; }
 
         results.push({
           id: module.id,
@@ -151,7 +146,7 @@ class DiagnosticsManager {
           statusCode: null,
           responseTime: null,
           data: null,
-          error: e.message || 'Неизвестная ошибка / Unknown error'
+          error: e.message || 'Неизвестная ошибка'
         });
       }
     }
@@ -160,8 +155,7 @@ class DiagnosticsManager {
   }
 
   // ============================================================
-  // 2.3. ПРОВЕРКА ВНЕШНИХ ИСТОЧНИКОВ
-  // Check external sources
+  // 2.2. ПРОВЕРКА ВНЕШНИХ ИСТОЧНИКОВ
   // ============================================================
 
   async checkExternalSources() {
@@ -170,9 +164,7 @@ class DiagnosticsManager {
     for (const source of EXTERNAL_SOURCES) {
       try {
         const start = Date.now();
-        const response = await fetch(source.url, {
-          signal: AbortSignal.timeout(source.timeout || 5000)
-        });
+        const response = await fetch(source.url, { signal: AbortSignal.timeout(source.timeout || 5000) });
         const end = Date.now();
 
         results.push({
@@ -189,7 +181,7 @@ class DiagnosticsManager {
           status: 'OFFLINE',
           statusCode: null,
           responseTime: null,
-          error: e.message || 'Неизвестная ошибка / Unknown error'
+          error: e.message || 'Неизвестная ошибка'
         });
       }
     }
@@ -198,8 +190,7 @@ class DiagnosticsManager {
   }
 
   // ============================================================
-  // 2.4. СИСТЕМНЫЕ МЕТРИКИ
-  // System metrics
+  // 2.3. СИСТЕМНЫЕ МЕТРИКИ
   // ============================================================
 
   getSystemMetrics() {
@@ -229,8 +220,7 @@ class DiagnosticsManager {
   }
 
   // ============================================================
-  // 2.5. ПРОВЕРКА ЦЕЛОСТНОСТИ ДАННЫХ
-  // Data integrity check
+  // 2.4. ЦЕЛОСТНОСТЬ ДАННЫХ
   // ============================================================
 
   async checkDataIntegrity() {
@@ -239,11 +229,7 @@ class DiagnosticsManager {
     try {
       const files = await fs.readdir(BASKET_DIR);
       const basketFiles = files.filter(f => f.startsWith('basket-'));
-      results.basket = {
-        status: 'OK',
-        files: basketFiles.length,
-        latest: basketFiles.length > 0 ? basketFiles[basketFiles.length - 1] : null
-      };
+      results.basket = { status: 'OK', files: basketFiles.length };
     } catch (e) {
       results.basket = { status: 'ERROR', error: e.message };
     }
@@ -251,11 +237,7 @@ class DiagnosticsManager {
     try {
       await fs.access(FEEDS_FILE);
       const content = await fs.readFile(FEEDS_FILE, 'utf-8');
-      if (content.includes('<opml') && content.includes('xmlUrl')) {
-        results.opml = { status: 'OK', size: content.length + ' bytes' };
-      } else {
-        results.opml = { status: 'CORRUPTED', error: 'Невалидный OPML / Invalid OPML' };
-      }
+      results.opml = { status: content.includes('<opml') ? 'OK' : 'CORRUPTED', size: content.length };
     } catch (e) {
       results.opml = { status: 'MISSING', error: e.message };
     }
@@ -263,23 +245,14 @@ class DiagnosticsManager {
     try {
       const content = await fs.readFile(HISTORY_FILE, 'utf-8');
       const data = JSON.parse(content);
-      results.history = {
-        status: 'OK',
-        entries: Array.isArray(data) ? data.length : 'unknown',
-        latest: Array.isArray(data) && data.length > 0 ? data[data.length - 1]?.date || null : null
-      };
+      results.history = { status: 'OK', entries: data.length };
     } catch (e) {
       results.history = { status: 'ERROR', error: e.message };
     }
 
     try {
       const entries = await fs.readdir(LOGS_DIR);
-      const logFiles = entries.filter(f => f.endsWith('.log'));
-      results.logs = {
-        status: 'OK',
-        files: logFiles.length,
-        latest: logFiles.length > 0 ? logFiles[logFiles.length - 1] : null
-      };
+      results.logs = { status: 'OK', files: entries.filter(f => f.endsWith('.log')).length };
     } catch (e) {
       results.logs = { status: 'WARNING', error: e.message };
     }
@@ -288,8 +261,7 @@ class DiagnosticsManager {
   }
 
   // ============================================================
-  // 2.6. AI-АНАЛИЗ ЛОГОВ
-  // AI log analysis
+  // 2.5. AI-АНАЛИЗ ЛОГОВ
   // ============================================================
 
   async analyzeLogsWithAI() {
@@ -297,11 +269,10 @@ class DiagnosticsManager {
       const logEntries = [];
       try {
         const files = await fs.readdir(LOGS_DIR);
-        const logFiles = files.filter(f => f.endsWith('.log')).slice(-5);
-
+        const logFiles = files.filter(f => f.endsWith('.log')).slice(-3);
         for (const file of logFiles) {
           const content = await fs.readFile(join(LOGS_DIR, file), 'utf-8');
-          const lines = content.split('\n').filter(l => l.trim()).slice(-30);
+          const lines = content.split('\n').filter(l => l.trim()).slice(-20);
           if (lines.length > 0) {
             logEntries.push(`=== ${file} ===\n${lines.join('\n')}`);
           }
@@ -309,30 +280,14 @@ class DiagnosticsManager {
       } catch (e) {}
 
       if (logEntries.length === 0) {
-        return { status: 'NO_LOGS', message: 'Логи для анализа не найдены / No logs found' };
+        return { status: 'NO_LOGS', message: 'Логи не найдены' };
       }
 
       const logText = logEntries.join('\n\n').slice(0, 3000);
 
-      const prompt = `
-Ты — AI-аналитик системы мониторинга Crucix. Проанализируй следующие логи работы системы.
-You are an AI analyst of the Crucix monitoring system. Analyze the following system logs.
-
-ЛОГИ / LOGS:
-${logText}
-
-Задачи / Tasks:
-1. Определи, есть ли в логах ошибки или предупреждения. / Identify errors or warnings in the logs.
-2. Оцени общее состояние системы по логам (стабильно/есть проблемы/критично). / Assess the overall system state (stable/warnings/critical).
-3. Дай краткие рекомендации по устранению проблем (если они есть). / Provide brief recommendations for fixing issues.
-
-Ответь в формате JSON / Answer in JSON format:
-{
-  "status": "STABLE" | "WARNING" | "CRITICAL",
-  "summary": "краткое резюме состояния (1-2 предложения) / brief state summary (1-2 sentences)",
-  "issues": ["список обнаруженных проблем (если есть) / list of issues (if any)"],
-  "recommendations": ["список рекомендаций (если есть) / list of recommendations (if any)"]
-}`;
+      const prompt = `Ты — AI-аналитик. Проанализируй логи работы системы Crucix.
+ЛОГИ:\n${logText}
+Ответь в формате JSON: { "status": "STABLE"|"WARNING"|"CRITICAL", "summary": "краткое резюме", "issues": ["проблемы"], "recommendations": ["рекомендации"] }`;
 
       const response = await fetch('http://localhost:11434/api/generate', {
         method: 'POST',
@@ -347,49 +302,76 @@ ${logText}
       });
 
       if (!response.ok) {
-        return { status: 'AI_UNAVAILABLE', message: 'Ollama не отвечает / Ollama is not responding' };
+        return { status: 'AI_UNAVAILABLE', message: 'Ollama не отвечает' };
       }
 
       const data = await response.json();
       const result = data.response || '';
-
-      try {
-        const jsonMatch = result.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          return JSON.parse(jsonMatch[0]);
-        }
-        return { status: 'PARSING_ERROR', raw: result.slice(0, 500) };
-      } catch (e) {
-        return { status: 'PARSING_ERROR', raw: result.slice(0, 500) };
+      const jsonMatch = result.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[0]);
       }
+      return { status: 'PARSING_ERROR', raw: result.slice(0, 500) };
 
     } catch (e) {
-      return { status: 'ERROR', message: e.message || 'Ошибка AI-анализа / AI analysis error' };
+      return { status: 'ERROR', message: e.message || 'Ошибка AI-анализа' };
     }
   }
 
   // ============================================================
-  // 2.7. ОБЩИЙ СТАТУС
-  // Overall status
+  // 2.6. ОБЩИЙ СТАТУС
   // ============================================================
 
   calculateOverallStatus() {
     const modules = this.results.modules || [];
     const online = modules.filter(m => m.status === 'ONLINE').length;
     const total = modules.length;
-
     if (total === 0) return 'UNKNOWN';
     if (online === total) return 'ONLINE';
-
-    const critical = modules.filter(m => m.status === 'OFFLINE').length;
-    if (critical > total * 0.3) return 'CRITICAL';
-
+    const offline = modules.filter(m => m.status === 'OFFLINE').length;
+    if (offline > total * 0.3) return 'CRITICAL';
     return 'DEGRADED';
   }
 
   // ============================================================
+  // 2.7. СТАТУС СТРАНИЦ (СОХРАНЯЕМ СУЩЕСТВУЮЩИЙ СПИСОК)
+  // ============================================================
+
+  async getPagesStatus() {
+    const pages = [
+      '/jarvis', '/rss-feed', '/rss-dashboard', '/ai-chat', '/geo-map',
+      '/basket', '/global-index', '/historical-analysis', '/correlation',
+      '/infrastructure', '/diagnostics', '/scheduler', '/kartochki',
+      '/grid-tool', '/profile', '/silence', '/live', '/lenses',
+      '/usgs', '/local', '/trust', '/ai-gateway', '/hidden-links',
+      '/market-predictor', '/early-warning', '/scenarios', '/sentiment',
+      '/kiwisdr', '/safecast', '/noaa', '/ofac', '/eia', '/cisa', '/who', '/news'
+    ];
+
+    const results = [];
+    const baseUrl = `http://localhost:3117`;
+
+    for (const page of pages) {
+      try {
+        const start = Date.now();
+        const response = await fetch(`${baseUrl}${page}`, { signal: AbortSignal.timeout(3000) });
+        const end = Date.now();
+        results.push({
+          path: page,
+          status: response.ok ? 'ONLINE' : 'ERROR',
+          statusCode: response.status,
+          responseTime: end - start
+        });
+      } catch (e) {
+        results.push({ path: page, status: 'OFFLINE', statusCode: null, responseTime: null, error: e.message });
+      }
+    }
+
+    return results;
+  }
+
+  // ============================================================
   // 2.8. СОХРАНЕНИЕ ОТЧЁТА
-  // Save report
   // ============================================================
 
   async saveReport() {
@@ -397,20 +379,61 @@ ${logText}
       await fs.mkdir(DATA_DIR, { recursive: true });
       const file = join(DATA_DIR, `diagnostic-${new Date().toISOString().slice(0, 10)}.json`);
       await fs.writeFile(file, JSON.stringify(this.results, null, 2));
-
       const latest = join(DATA_DIR, 'latest.json');
       await fs.writeFile(latest, JSON.stringify(this.results, null, 2));
-
-      console.log(`[Diagnostics] Отчёт сохранён / Report saved: ${file}`);
+      console.log(`[Diagnostics] Отчёт сохранён: ${file}`);
     } catch (e) {
-      console.error('[Diagnostics] Ошибка сохранения отчёта / Error saving report:', e.message);
+      console.error('[Diagnostics] Ошибка сохранения:', e.message);
     }
   }
 
-  // ============================================================
-  // 2.9. ПОЛУЧЕНИЕ ПОСЛЕДНЕГО ОТЧЁТА
-  // Get latest report
-  // ============================================================
+  async getPagesStatus() {
+
+    const pages = [
+
+      "/jarvis", "/rss-feed", "/rss-dashboard", "/ai-chat", "/geo-map",
+
+      "/basket", "/global-index", "/historical-analysis", "/correlation",
+
+      "/infrastructure", "/diagnostics", "/scheduler", "/kartochki",
+
+      "/grid-tool", "/profile", "/silence", "/live", "/lenses",
+
+      "/usgs", "/local", "/trust", "/ai-gateway", "/hidden-links",
+
+      "/market-predictor", "/early-warning", "/scenarios", "/sentiment",
+
+      "/kiwisdr", "/safecast", "/noaa", "/ofac", "/eia", "/cisa", "/who", "/news"
+
+    ];
+
+    const results = [];
+
+    const baseUrl = `http://localhost:3117`;
+
+    for (const page of pages) {
+
+      try {
+
+        const start = Date.now();
+
+        const response = await fetch(`${baseUrl}${page}`, { signal: AbortSignal.timeout(3000) });
+
+        const end = Date.now();
+
+        results.push({ path: page, status: response.ok ? "ONLINE" : "ERROR", statusCode: response.status, responseTime: end - start });
+
+      } catch (e) {
+
+        results.push({ path: page, status: "OFFLINE", statusCode: null, responseTime: null, error: e.message });
+
+      }
+
+    }
+
+    return results;
+
+  }
 
   async getLatestReport() {
     try {
@@ -421,27 +444,10 @@ ${logText}
       return null;
     }
   }
-
-  // ============================================================
-  // 2.10. СТАТУС В ВИДЕ ТЕКСТА
-  // Status as text
-  // ============================================================
-
-  getStatusText() {
-    const status = this.results.overallStatus;
-    const statusMap = {
-      'ONLINE': '🟢 СИСТЕМА РАБОТАЕТ НОРМАЛЬНО / SYSTEM IS OPERATIONAL',
-      'DEGRADED': '🟡 СИСТЕМА РАБОТАЕТ С ОГРАНИЧЕНИЯМИ / SYSTEM IS DEGRADED',
-      'CRITICAL': '🔴 КРИТИЧЕСКОЕ СОСТОЯНИЕ! / CRITICAL STATE!',
-      'UNKNOWN': '⚪ СОСТОЯНИЕ НЕ ОПРЕДЕЛЕНО / STATE UNKNOWN'
-    };
-    return statusMap[status] || '⚪ НЕИЗВЕСТНО / UNKNOWN';
-  }
 }
 
 // ============================================================
 // 3. HTTP-ОБРАБОТЧИК
-// HTTP Handler
 // ============================================================
 
 let diagnostics = null;
@@ -470,64 +476,31 @@ export async function handleDiagnosticsAPI(req, res) {
   try {
     const manager = await getDiagnostics();
 
-    // ============================================================
-    // GET /api/diagnostics/status — статус модуля
-    // Module status
-    // ============================================================
     if (path === '/api/diagnostics/status' && req.method === 'GET') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({
-        success: true,
-        module: 'diagnostics',
-        status: 'online',
-        version: '1.0',
-        timestamp: new Date().toISOString()
-      }));
+      res.end(JSON.stringify({ success: true, module: 'diagnostics', status: 'online', version: '2.0' }));
       return;
     }
 
-    // ============================================================
-    // GET /api/diagnostics/run — запустить диагностику
-    // Run diagnostics
-    // ============================================================
     if (path === '/api/diagnostics/run' && req.method === 'GET') {
       const result = await manager.runFullDiagnostics();
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({
-        success: true,
-        result: result,
-        timestamp: new Date().toISOString()
-      }));
+      res.end(JSON.stringify({ success: true, result }));
       return;
     }
 
-    // ============================================================
-    // GET /api/diagnostics/latest — последний отчёт
-    // Latest report
-    // ============================================================
     if (path === '/api/diagnostics/latest' && req.method === 'GET') {
       const report = await manager.getLatestReport();
       if (report) {
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-          success: true,
-          report: report,
-          timestamp: new Date().toISOString()
-        }));
+        res.end(JSON.stringify({ success: true, report }));
       } else {
         res.writeHead(404, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-          success: false,
-          error: 'Отчёт не найден. Запустите диагностику. / Report not found. Run diagnostics.'
-        }));
+        res.end(JSON.stringify({ success: false, error: 'Отчёт не найден' }));
       }
       return;
     }
 
-    // ============================================================
-    // GET /api/diagnostics/summary — краткая сводка
-    // Brief summary
-    // ============================================================
     if (path === '/api/diagnostics/summary' && req.method === 'GET') {
       const report = await manager.getLatestReport();
       if (report) {
@@ -542,38 +515,26 @@ export async function handleDiagnosticsAPI(req, res) {
           success: true,
           summary: {
             overallStatus: report.overallStatus,
-            statusText: manager.getStatusText(),
             totalModules: total,
-            online: online,
-            offline: offline,
-            error: error,
-            timestamp: report.timestamp
+            online, offline, error,
+            timestamp: report.timestamp,
+            system: report.system
           }
         }));
       } else {
         res.writeHead(404, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-          success: false,
-          error: 'Отчёт не найден / Report not found'
-        }));
+        res.end(JSON.stringify({ success: false, error: 'Отчёт не найден' }));
       }
       return;
     }
 
     res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({
-      success: false,
-      error: 'Неизвестный путь / Unknown path'
-    }));
+    res.end(JSON.stringify({ success: false, error: 'Неизвестный путь' }));
 
   } catch (error) {
-    console.error('[Diagnostics API] Ошибка / Error:', error);
+    console.error('[Diagnostics API] Ошибка:', error);
     res.writeHead(500, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({
-      success: false,
-      error: 'Внутренняя ошибка сервера / Internal server error',
-      details: error.message
-    }));
+    res.end(JSON.stringify({ success: false, error: 'Внутренняя ошибка', details: error.message }));
   }
 }
 

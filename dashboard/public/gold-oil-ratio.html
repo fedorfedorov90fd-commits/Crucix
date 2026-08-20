@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gold/Oil Ratio — Crucix</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0f;
+      color: #c8d0d8;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ===== ВЕРХНЯЯ ПАНЕЛЬ ===== */
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: rgba(10, 10, 20, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+    }
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .topbar-brand {
+      font-size: 14px;
+      font-weight: 700;
+      color: #5bc0f8;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-shadow: 0 0 20px rgba(91, 192, 248, 0.15);
+    }
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .topbar-btn {
+      height: 28px;
+      padding: 0 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.03);
+      color: #888;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .topbar-btn:hover {
+      background: rgba(255, 255, 255, 0.06);
+      transform: translateY(-1px);
+    }
+    .btn-home { color: #5bc0f8; border-color: rgba(91, 192, 248, 0.2); background: rgba(91, 192, 248, 0.06); }
+    .btn-home:hover { background: rgba(91, 192, 248, 0.15); }
+    .btn-copy { color: #5bc0f8; border-color: rgba(91, 192, 248, 0.15); background: rgba(91, 192, 248, 0.06); }
+    .btn-copy:hover { background: rgba(91, 192, 248, 0.15); }
+    .btn-copy.copied { background: rgba(76, 175, 80, 0.2); border-color: #4caf50; color: #4caf50; }
+    .btn-rss { color: #f26522; border-color: rgba(242, 101, 34, 0.2); background: rgba(242, 101, 34, 0.06); }
+    .btn-rss:hover { background: rgba(242, 101, 34, 0.15); }
+
+    .lang-switch {
+      display: flex;
+      gap: 2px;
+      padding: 2px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .lang-btn {
+      padding: 2px 8px;
+      border: none;
+      background: transparent;
+      color: #666;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 3px;
+      transition: all 0.2s;
+    }
+    .lang-btn:hover { color: #888; background: rgba(255, 255, 255, 0.05); }
+    .lang-btn.active { color: #5bc0f8; background: rgba(91, 192, 248, 0.1); }
+
+    /* ===== ОСНОВНОЙ КОНТЕНТ ===== */
+    .main-content {
+      padding-top: 76px;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding-left: 20px;
+      padding-right: 20px;
+      padding-bottom: 40px;
+      min-height: calc(100vh - 76px);
+    }
+
+    /* ===== ЗАГОЛОВОК СТРАНИЦЫ ===== */
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    .page-title {
+      font-size: 28px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .page-subtitle {
+      font-size: 14px;
+      color: #9ca3af;
+    }
+    .risk-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 20px;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 14px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .risk-badge .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.2); }
+    }
+
+    /* ===== СТАТИСТИКА ===== */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    .stat-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 16px;
+      padding: 20px;
+    }
+    .stat-card .label { font-size: 12px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-card .number { font-size: 32px; font-weight: 800; }
+    .stat-card .number.gold { background: linear-gradient(135deg, #fbbf24, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .stat-card .number.oil { background: linear-gradient(135deg, #6b7280, #374151); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .stat-card .number.ratio { background: linear-gradient(135deg, #f472b6, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .stat-card .number.avg { background: linear-gradient(135deg, #fff, #9ca3af); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .stat-card .change { font-size: 14px; font-weight: 600; margin-top: 5px; }
+    .stat-card .change.up { color: #22c55e; }
+    .stat-card .change.down { color: #ef4444; }
+    .stat-card .meta { font-size: 12px; color: #6b7280; margin-top: 5px; }
+
+    /* ===== ГРАФИК ===== */
+    .chart-wrapper {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 30px;
+    }
+    .chart-wrapper h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: #e5e7eb;
+    }
+    .chart-container { position: relative; height: 450px; }
+
+    /* ===== УРОВНИ РИСКА ===== */
+    .levels-wrapper {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 16px;
+      padding: 25px;
+    }
+    .levels-wrapper h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #9ca3af;
+    }
+    .levels-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 10px;
+    }
+    .level-item {
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.05);
+      text-align: center;
+      font-size: 13px;
+      transition: all 0.3s;
+    }
+    .level-item.active {
+      border-width: 2px;
+      transform: scale(1.02);
+    }
+    .level-item .level-value {
+      font-weight: 700;
+      font-size: 18px;
+      display: block;
+    }
+    .level-item .level-label {
+      color: #9ca3af;
+    }
+    .update-time {
+      font-size: 12px;
+      color: #6b7280;
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    /* ===== УВЕДОМЛЕНИЯ ===== */
+    .notification {
+      position: fixed;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.85);
+      color: #ffffff;
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-size: 13px;
+      z-index: 100001;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      animation: notif-fade 2.5s forwards;
+    }
+    @keyframes notif-fade {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+
+    /* ===== АДАПТИВНОСТЬ ===== */
+    @media (max-width: 1024px) {
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .levels-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 768px) {
+      .topbar { padding: 0 12px; height: 52px; }
+      .topbar-brand { font-size: 12px; }
+      .topbar-btn { font-size: 10px; padding: 0 8px; height: 24px; }
+      .main-content { padding-top: 68px; padding-left: 12px; padding-right: 12px; }
+      .page-title { font-size: 20px; }
+    }
+    @media (max-width: 600px) {
+      .stats-grid { grid-template-columns: 1fr; }
+      .levels-grid { grid-template-columns: 1fr; }
+      .chart-container { height: 300px; }
+      .page-title { font-size: 18px; }
+    }
+    @media (max-width: 480px) {
+      .topbar { padding: 0 8px; height: 46px; }
+      .topbar-brand { font-size: 10px; letter-spacing: 1px; }
+      .topbar-btn { font-size: 9px; padding: 0 6px; height: 20px; }
+      .lang-btn { font-size: 9px; padding: 1px 5px; }
+      .main-content { padding-top: 62px; padding-left: 8px; padding-right: 8px; }
+      .page-title { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== ВЕРХНЯЯ ПАНЕЛЬ ===== -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-brand">⚡ CRUCIX MONITOR</span>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+      <button class="topbar-btn btn-copy" id="copy-btn" title="Копировать все данные страницы">📋 КОПИРОВАТЬ</button>
+      <button class="topbar-btn btn-rss" onclick="window.location.href='/registry'">📡 РЕЕСТР</button>
+      <div class="lang-switch">
+        <button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
+        <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== ОСНОВНОЙ КОНТЕНТ ===== -->
+  <main class="main-content">
+
+    <!-- HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">🏛️ Gold/Oil Ratio</h1>
+        <span class="page-subtitle">Геополитический индикатор риска</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+        <span class="update-time" id="updateTime">⏳ Загрузка...</span>
+        <div class="risk-badge" id="riskBadge">
+          <span class="dot" id="riskDot" style="background:#6b7280;"></span>
+          <span id="riskValue" style="font-size:20px;">--</span>
+          <span id="riskLabel">Загрузка...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card">
+        <div class="label">💰 Золото (унция)</div>
+        <div class="number gold" id="goldPrice">--</div>
+        <div class="change" id="goldChange">--</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">🛢️ Нефть WTI</div>
+        <div class="number oil" id="oilPrice">--</div>
+        <div class="change" id="oilChange">--</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">📊 Gold/Oil Ratio</div>
+        <div class="number ratio" id="currentRatio">--</div>
+        <div class="change" id="ratioChange">--</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">📈 Среднее за 2 года</div>
+        <div class="number avg" id="avgRatio">--</div>
+        <div class="meta">мин: <span id="minRatio">--</span> | макс: <span id="maxRatio">--</span></div>
+      </div>
+    </div>
+
+    <!-- CHART -->
+    <div class="chart-wrapper">
+      <h2>Динамика индекса Золото/Нефть</h2>
+      <div class="chart-container">
+        <canvas id="mainChart"></canvas>
+      </div>
+    </div>
+
+    <!-- LEVELS -->
+    <div class="levels-wrapper">
+      <h3>🎯 Уровни геополитического риска</h3>
+      <div class="levels-grid" id="levelsGrid">
+        <div class="level-item" data-level="low">
+          <span class="level-value" style="color:#3b82f6;">0–15</span>
+          <span class="level-label">Низкий риск</span>
+        </div>
+        <div class="level-item active" data-level="normal">
+          <span class="level-value" style="color:#22c55e;">15–25</span>
+          <span class="level-label">Нормальный</span>
+        </div>
+        <div class="level-item" data-level="high">
+          <span class="level-value" style="color:#f59e0b;">25–35</span>
+          <span class="level-label">Повышенный риск</span>
+        </div>
+        <div class="level-item" data-level="critical">
+          <span class="level-value" style="color:#ef4444;">35+</span>
+          <span class="level-label">КРИТИЧЕСКИЙ</span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // ============================================================
+    // 1. ПЕРЕКЛЮЧАТЕЛЬ ЯЗЫКА
+    // ============================================================
+    let currentLang = localStorage.getItem('crucix-lang') || 'ru';
+
+    function switchLang(lang) {
+      currentLang = lang;
+      localStorage.setItem('crucix-lang', lang);
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+      });
+      showNotification('🌐 Язык: ' + lang.toUpperCase());
+    }
+
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.lang === currentLang);
+    });
+
+    // ============================================================
+    // 2. КОПИРОВАНИЕ
+    // ============================================================
+    document.getElementById('copy-btn').addEventListener('click', function() {
+      copyAllData();
+    });
+
+    function copyAllData() {
+      const timestamp = new Date().toLocaleString();
+      const pageTitle = document.querySelector('.page-title')?.textContent || document.title || 'Без заголовка';
+
+      const allElements = document.querySelectorAll('*');
+      let elementsReport = [];
+      let elementIndex = 0;
+      const excludeIds = ['copy-btn', 'notification'];
+
+      allElements.forEach(el => {
+        if (excludeIds.includes(el.id)) return;
+        if (el.tagName === 'SCRIPT' || el.tagName === 'STYLE') return;
+        if (el.tagName === 'HTML' || el.tagName === 'BODY') return;
+
+        const rect = el.getBoundingClientRect();
+        const computed = window.getComputedStyle(el);
+
+        if (rect.width === 0 && rect.height === 0) return;
+        if (computed.display === 'none') return;
+
+        let textContent = '';
+        for (const node of el.childNodes) {
+          if (node.nodeType === Node.TEXT_NODE) {
+            textContent += node.textContent.trim();
+          }
+        }
+        if (!textContent && el.textContent) {
+          textContent = el.textContent.trim().slice(0, 200);
+        }
+        if (!textContent && !el.id && !el.className) return;
+
+        let selector = el.tagName.toLowerCase();
+        if (el.id) selector += '#' + el.id;
+        if (el.className && typeof el.className === 'string') {
+          const classes = el.className.split(' ').filter(c => c).join('.');
+          if (classes) selector += '.' + classes;
+        }
+
+        const coords = {
+          x: Math.round(rect.left + window.pageXOffset),
+          y: Math.round(rect.top + window.pageYOffset),
+          width: Math.round(rect.width),
+          height: Math.round(rect.height),
+          viewX: Math.round(rect.left),
+          viewY: Math.round(rect.top)
+        };
+
+        const styles = {
+          color: computed.color,
+          backgroundColor: computed.backgroundColor,
+          fontFamily: computed.fontFamily,
+          fontSize: computed.fontSize,
+          fontWeight: computed.fontWeight,
+          fontStyle: computed.fontStyle,
+          textAlign: computed.textAlign,
+          lineHeight: computed.lineHeight,
+          letterSpacing: computed.letterSpacing,
+          padding: computed.padding,
+          margin: computed.margin,
+          border: computed.border,
+          borderRadius: computed.borderRadius,
+          boxShadow: computed.boxShadow,
+          display: computed.display,
+          position: computed.position,
+          top: computed.top,
+          left: computed.left,
+          width: computed.width,
+          height: computed.height,
+          opacity: computed.opacity,
+          zIndex: computed.zIndex,
+          transform: computed.transform,
+          transition: computed.transition
+        };
+
+        elementsReport.push({
+          index: ++elementIndex,
+          selector: selector,
+          tag: el.tagName.toLowerCase(),
+          id: el.id || null,
+          classes: el.className || null,
+          text: textContent || null,
+          coords: coords,
+          styles: styles
+        });
+      });
+
+      let report = '=== CRUCIX — ПОЛНЫЙ СНАПШОТ СТРАНИЦЫ ===\n';
+      report += 'Дата: ' + timestamp + '\n';
+      report += 'URL: ' + window.location.href + '\n';
+      report += 'Размер окна: ' + window.innerWidth + '×' + window.innerHeight + '\n';
+      report += 'Всего элементов: ' + elementsReport.length + '\n\n';
+
+      report += '--- ЗАГОЛОВОК ---\n' + pageTitle + '\n\n';
+      report += '--- ВСЕ ЭЛЕМЕНТЫ (' + elementsReport.length + ' шт.) ---\n';
+
+      for (const el of elementsReport) {
+        report += '\n[' + el.index + '] ' + el.selector + '\n';
+        report += '  Текст: ' + (el.text || '—') + '\n';
+        report += '  Координаты: X=' + el.coords.x + ' Y=' + el.coords.y + ' (ширина=' + el.coords.width + ' высота=' + el.coords.height + ')\n';
+        report += '  Цвет: ' + (el.styles.color || '—') + '\n';
+        report += '  Фон: ' + (el.styles.backgroundColor || '—') + '\n';
+        report += '  Шрифт: ' + (el.styles.fontFamily || '—') + ' размер=' + (el.styles.fontSize || '—') + ' вес=' + (el.styles.fontWeight || '—') + '\n';
+        report += '  Отступы: ' + (el.styles.padding || '—') + '\n';
+        report += '  Граница: ' + (el.styles.border || '—') + '\n';
+        report += '  Скругление: ' + (el.styles.borderRadius || '—') + '\n';
+        report += '  Тень: ' + (el.styles.boxShadow || '—') + '\n';
+        report += '  Display: ' + (el.styles.display || '—') + '\n';
+        report += '  Position: ' + (el.styles.position || '—') + ' top=' + (el.styles.top || '—') + ' left=' + (el.styles.left || '—') + '\n';
+        report += '  Размер: ' + (el.styles.width || '—') + '×' + (el.styles.height || '—') + '\n';
+        report += '  Прозрачность: ' + (el.styles.opacity || '—') + '\n';
+        report += '  Z-индекс: ' + (el.styles.zIndex || '—') + '\n';
+        report += '  Transform: ' + (el.styles.transform || '—') + '\n';
+      }
+
+      report += '\n--- CRUCIX OSINT TERMINAL ---\n';
+      report += '🌐 ' + (window.location.origin || window.location.href);
+
+      navigator.clipboard.writeText(report).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = '✅ Скопировано!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = '📋 КОПИРОВАТЬ';
+          btn.classList.remove('copied');
+        }, 3000);
+        showNotification('✅ Скопировано ' + elementsReport.length + ' элементов');
+      }).catch(() => {
+        const textarea = document.createElement('textarea');
+        textarea.value = report;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = '✅ Скопировано!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = '📋 КОПИРОВАТЬ';
+          btn.classList.remove('copied');
+        }, 3000);
+        showNotification('✅ Скопировано ' + elementsReport.length + ' элементов');
+      });
+    }
+
+    function showNotification(msg) {
+      document.querySelectorAll('.notification').forEach(el => el.remove());
+      const el = document.createElement('div');
+      el.className = 'notification';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2500);
+    }
+
+    // ============================================================
+    // 3. ЗАГРУЗКА ДАННЫХ
+    // ============================================================
+    let chartInstance = null;
+
+    async function loadData() {
+      try {
+        const response = await fetch('/api/gold-oil-ratio');
+        if (!response.ok) throw new Error('Данные не найдены');
+        const data = await response.json();
+
+        document.getElementById('goldPrice').textContent = '$' + data.metrics.goldPrice.toFixed(2);
+        document.getElementById('oilPrice').textContent = '$' + data.metrics.oilPrice.toFixed(2);
+        document.getElementById('currentRatio').textContent = data.currentRatio.toFixed(4);
+        document.getElementById('avgRatio').textContent = data.avgRatio.toFixed(4);
+        document.getElementById('minRatio').textContent = data.minRatio.toFixed(4);
+        document.getElementById('maxRatio').textContent = data.maxRatio.toFixed(4);
+
+        const change7d = data.metrics.ratioChange7d;
+        const ratioChange = document.getElementById('ratioChange');
+        ratioChange.textContent = (change7d > 0 ? '↑' : '↓') + ' ' + Math.abs(change7d).toFixed(2) + '% за 7 дней';
+        ratioChange.className = 'change ' + (change7d > 0 ? 'up' : 'down');
+
+        const badge = document.getElementById('riskBadge');
+        badge.style.borderColor = data.riskColor;
+        document.getElementById('riskDot').style.background = data.riskColor;
+        document.getElementById('riskValue').textContent = data.currentRatio.toFixed(2);
+        document.getElementById('riskValue').style.color = data.riskColor;
+        document.getElementById('riskLabel').textContent = data.riskDesc;
+        document.getElementById('riskLabel').style.color = data.riskColor;
+
+        document.querySelectorAll('.level-item').forEach(el => {
+          el.classList.remove('active');
+          if (el.dataset.level === data.riskLevel) el.classList.add('active');
+        });
+
+        const date = new Date(data.timestamp);
+        document.getElementById('updateTime').textContent = '🔄 Обновлено: ' + date.toLocaleString('ru-RU');
+
+        updateChart(data.history);
+        setTimeout(loadData, 300000);
+      } catch (error) {
+        console.error('Ошибка:', error);
+        document.getElementById('statsGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#ef4444;">❌ ' + error.message + '</div>';
+      }
+    }
+
+    function updateChart(history) {
+      const ctx = document.getElementById('mainChart').getContext('2d');
+      if (chartInstance) chartInstance.destroy();
+
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: history.map(d => d.date),
+          datasets: [
+            {
+              label: 'Золото ($)',
+              data: history.map(d => d.gold),
+              borderColor: '#fbbf24',
+              borderWidth: 2,
+              pointRadius: 0,
+              yAxisID: 'y1'
+            },
+            {
+              label: 'Нефть ($)',
+              data: history.map(d => d.oil),
+              borderColor: '#6b7280',
+              borderWidth: 2,
+              pointRadius: 0,
+              yAxisID: 'y1'
+            },
+            {
+              label: 'Ratio',
+              data: history.map(d => d.ratio),
+              borderColor: '#ec4899',
+              borderWidth: 3,
+              pointRadius: 0,
+              yAxisID: 'y2'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              ticks: { color: '#6b7280' }
+            },
+            y1: {
+              position: 'left',
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              ticks: { color: '#6b7280', callback: v => '$' + v }
+            },
+            y2: {
+              position: 'right',
+              grid: { display: false },
+              ticks: { color: '#ec4899' }
+            }
+          }
+        }
+      });
+    }
+
+    // ============================================================
+    // 4. ИНИЦИАЛИЗАЦИЯ
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', function() {
+      const savedLang = localStorage.getItem('crucix-lang') || 'ru';
+      switchLang(savedLang);
+      loadData();
+    });
+  </script>
+</body>
+</html>

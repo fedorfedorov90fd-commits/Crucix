@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Сканер страниц — Crucix</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0f;
+      color: #c8d0d8;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: rgba(10, 10, 20, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+    }
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .topbar-brand {
+      font-size: 14px;
+      font-weight: 700;
+      color: #5bc0f8;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-shadow: 0 0 20px rgba(91, 192, 248, 0.15);
+    }
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .topbar-btn {
+      height: 28px;
+      padding: 0 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.03);
+      color: #888;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .topbar-btn:hover {
+      background: rgba(255, 255, 255, 0.06);
+      transform: translateY(-1px);
+    }
+    .btn-home { color: #5bc0f8; border-color: rgba(91, 192, 248, 0.2); background: rgba(91, 192, 248, 0.06); }
+    .btn-home:hover { background: rgba(91, 192, 248, 0.15); }
+    .btn-copy { color: #5bc0f8; border-color: rgba(91, 192, 248, 0.15); background: rgba(91, 192, 248, 0.06); }
+    .btn-copy:hover { background: rgba(91, 192, 248, 0.15); }
+    .btn-copy.copied { background: rgba(76, 175, 80, 0.2); border-color: #4caf50; color: #4caf50; }
+    .btn-rss { color: #f26522; border-color: rgba(242, 101, 34, 0.2); background: rgba(242, 101, 34, 0.06); }
+    .btn-rss:hover { background: rgba(242, 101, 34, 0.15); }
+
+    .lang-switch {
+      display: flex;
+      gap: 2px;
+      padding: 2px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .lang-btn {
+      padding: 2px 8px;
+      border: none;
+      background: transparent;
+      color: #666;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 3px;
+      transition: all 0.2s;
+    }
+    .lang-btn:hover { color: #888; background: rgba(255, 255, 255, 0.05); }
+    .lang-btn.active { color: #5bc0f8; background: rgba(91, 192, 248, 0.1); }
+
+    .main-content {
+      padding-top: 76px;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding-left: 20px;
+      padding-right: 20px;
+      padding-bottom: 40px;
+      min-height: calc(100vh - 76px);
+    }
+    .page-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #e8f0f8;
+      letter-spacing: -0.5px;
+      margin-bottom: 4px;
+      text-shadow: 0 0 30px rgba(91, 192, 248, 0.05);
+    }
+    .page-subtitle {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    .stats-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .stat-item {
+      background: rgba(10, 10, 20, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      border-radius: 6px;
+      padding: 6px 14px;
+      min-width: 80px;
+    }
+    .stat-item .stat-label {
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      color: #666;
+      letter-spacing: 0.5px;
+    }
+    .stat-item .stat-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: #5bc0f8;
+      margin-top: 2px;
+    }
+
+    .scan-btn {
+      background: #5bc0f8;
+      color: #0a0a0f;
+      border: none;
+      padding: 10px 28px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-bottom: 20px;
+    }
+    .scan-btn:hover { opacity: 0.8; transform: translateY(-2px); }
+    .scan-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .table-wrap {
+      background: rgba(10, 10, 20, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th {
+      background: rgba(10, 10, 20, 0.8);
+      text-align: left;
+      padding: 10px 14px;
+      color: #8899aa;
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    td {
+      padding: 8px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+    }
+    tr:hover td { background: rgba(255, 255, 255, 0.02); }
+    .highlight { background: rgba(255, 215, 0, 0.06); }
+    .status-online { color: #4caf50; }
+    .status-offline { color: #f44336; }
+    .desc-cell { color: #888; font-size: 12px; max-width: 300px; }
+
+    .empty-state {
+      text-align: center;
+      color: #555;
+      padding: 40px 20px;
+    }
+    .empty-state .big-icon { font-size: 48px; margin-bottom: 12px; }
+
+    .notification {
+      position: fixed;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.85);
+      color: #ffffff;
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-size: 13px;
+      z-index: 100001;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      animation: notif-fade 2.5s forwards;
+    }
+    @keyframes notif-fade {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+
+    .footer {
+      margin-top: 30px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      display: flex;
+      justify-content: space-between;
+      color: #444;
+      font-size: 12px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .footer a { color: #5bc0f8; text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 768px) {
+      .topbar { padding: 0 12px; height: 52px; flex-wrap: wrap; gap: 4px; }
+      .topbar-brand { font-size: 12px; }
+      .topbar-btn { font-size: 10px; padding: 0 8px; height: 24px; }
+      .main-content { padding-top: 68px; padding-left: 12px; padding-right: 12px; }
+      .page-title { font-size: 18px; }
+    }
+    @media (max-width: 480px) {
+      .topbar { padding: 0 8px; height: 46px; }
+      .topbar-brand { font-size: 10px; letter-spacing: 1px; }
+      .topbar-btn { font-size: 9px; padding: 0 6px; height: 20px; }
+      .lang-btn { font-size: 9px; padding: 1px 5px; }
+      .main-content { padding-top: 62px; padding-left: 8px; padding-right: 8px; }
+      .page-title { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== ВЕРХНЯЯ ПАНЕЛЬ ===== -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-brand">⚡ CRUCIX MONITOR</span>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+      <button class="topbar-btn btn-copy" id="copy-btn" title="Копировать все данные страницы">📋 КОПИРОВАТЬ</button>
+      <button class="topbar-btn btn-rss" onclick="window.location.href='/rss-feed'">📡 Список страниц</button>
+      <div class="lang-switch">
+        <button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
+        <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== ОСНОВНОЙ КОНТЕНТ ===== -->
+  <main class="main-content">
+    <h1 class="page-title">📂 Сканер страниц Crucix</h1>
+    <p class="page-subtitle">Сканирует папку dashboard/public/ и показывает все HTML-страницы</p>
+
+    <div class="stats-row">
+      <div class="stat-item"><div class="stat-label">Всего страниц</div><div class="stat-value" id="totalCount">0</div></div>
+      <div class="stat-item"><div class="stat-label">Новых</div><div class="stat-value" id="newCount">0</div></div>
+      <div class="stat-item"><div class="stat-label">Язык</div><div class="stat-value" id="currentLang" style="font-size:14px;">ru</div></div>
+      <div class="stat-item"><div class="stat-label">Обновлено</div><div class="stat-value" id="lastUpdate" style="font-size:14px;">—</div></div>
+    </div>
+
+    <button class="scan-btn" id="scanBtn" onclick="scanPages()">🔄 Сканировать сейчас</button>
+
+    <div class="table-wrap" id="result">
+      <div class="empty-state"><div class="big-icon">📂</div>Нажмите "Сканировать сейчас"</div>
+    </div>
+
+    <div class="footer">
+      <span>🔄 Обновлено: <span id="lastUpdateFooter">—</span></span>
+      <span>
+        <a href="/jarvis">JARVIS</a> &bull;
+        <a href="/rss-feed">RSS</a> &bull;
+        <a href="/diagnostics">Диагностика</a>
+      </span>
+    </div>
+  </main>
+
+  <script>
+    // ============================================================
+    // 1. ПЕРЕКЛЮЧАТЕЛЬ ЯЗЫКА
+    // ============================================================
+    let currentLang = localStorage.getItem('crucix-lang') || 'ru';
+
+    function switchLang(lang) {
+      currentLang = lang;
+      localStorage.setItem('crucix-lang', lang);
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+      });
+      document.getElementById('currentLang').textContent = lang;
+      showNotification('🌐 Язык: ' + lang.toUpperCase());
+      scanPages();
+    }
+
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.lang === currentLang);
+    });
+
+    // ============================================================
+    // 2. КОПИРОВАНИЕ
+    // ============================================================
+    document.getElementById('copy-btn').addEventListener('click', function() {
+      const report = document.querySelector('.table-wrap')?.textContent || 'Нет данных';
+      navigator.clipboard.writeText(report).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = '✅ Скопировано!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = '📋 КОПИРОВАТЬ';
+          btn.classList.remove('copied');
+        }, 3000);
+        showNotification('✅ Данные скопированы');
+      });
+    });
+
+    function showNotification(msg) {
+      document.querySelectorAll('.notification').forEach(el => el.remove());
+      const el = document.createElement('div');
+      el.className = 'notification';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2500);
+    }
+
+    // ============================================================
+    // 3. СКАНИРОВАНИЕ
+    // ============================================================
+    async function scanPages() {
+      const btn = document.getElementById('scanBtn');
+      btn.textContent = '⏳ Сканирование...';
+      btn.disabled = true;
+
+      try {
+        const resp = await fetch('/api/scan-pages?lang=' + currentLang);
+        const data = await resp.json();
+
+        document.getElementById('totalCount').textContent = data.total || 0;
+        document.getElementById('newCount').textContent = data.new || 0;
+        document.getElementById('lastUpdate').textContent = new Date().toLocaleString();
+        document.getElementById('lastUpdateFooter').textContent = new Date().toLocaleString();
+
+        renderTable(data.pages || []);
+      } catch (e) {
+        document.getElementById('result').innerHTML = '<div class="empty-state"><div class="big-icon">❌</div>Ошибка: ' + e.message + '</div>';
+      }
+
+      btn.textContent = '🔄 Сканировать сейчас';
+      btn.disabled = false;
+    }
+
+    function renderTable(pages) {
+      const container = document.getElementById('result');
+      if (!pages || pages.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="big-icon">😕</div>Страницы не найдены</div>';
+        return;
+      }
+
+      let html = `<table>
+        <tr><th>#</th><th>Файл</th><th>URL</th><th>Статус</th><th>Описание</th></tr>`;
+      pages.forEach((p, i) => {
+        const statusClass = p.status === 'online' ? 'status-online' : 'status-offline';
+        const rowClass = p.isNew ? 'highlight' : '';
+        const desc = p.description || '—';
+        html += `<tr class="${rowClass}">
+          <td>${p.number || i + 1}</td>
+          <td>${p.file}</td>
+          <td><a href="${p.url}" target="_blank" style="color:#5bc0f8">${p.url}</a></td>
+          <td class="${statusClass}">${p.status === 'online' ? '✅ Онлайн' : '❌ Офлайн'}</td>
+          <td class="desc-cell">${desc.substring(0, 150)}${desc.length > 150 ? '...' : ''}</td>
+        </tr>`;
+      });
+      html += '</table>';
+      container.innerHTML = html;
+    }
+
+    // Автоматическое сканирование при загрузке
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('currentLang').textContent = currentLang;
+      scanPages();
+    });
+  </script>
+</body>
+</html>
+  <script>
+    // ===== ПОЛНАЯ ФУНКЦИЯ КОПИРОВАНИЯ ИЗ ШАБЛОНА =====
+    document.getElementById('copy-btn').addEventListener('click', function() {
+      copyAllData();
+    });
+
+    function copyAllData() {
+      const timestamp = new Date().toLocaleString();
+      const pageTitle = document.querySelector('.page-title')?.textContent || document.title || 'Сканер страниц';
+
+      const allElements = document.querySelectorAll('*');
+      let elementsReport = [];
+      let elementIndex = 0;
+      const excludeIds = ['copy-btn', 'notification'];
+
+      allElements.forEach(el => {
+        if (excludeIds.includes(el.id)) return;
+        if (el.tagName === 'SCRIPT' || el.tagName === 'STYLE') return;
+        if (el.tagName === 'HTML' || el.tagName === 'BODY') return;
+
+        const rect = el.getBoundingClientRect();
+        const computed = window.getComputedStyle(el);
+
+        if (rect.width === 0 && rect.height === 0) return;
+        if (computed.display === 'none') return;
+
+        let textContent = '';
+        for (const node of el.childNodes) {
+          if (node.nodeType === Node.TEXT_NODE) {
+            textContent += node.textContent.trim();
+          }
+        }
+        if (!textContent && el.textContent) {
+          textContent = el.textContent.trim().slice(0, 200);
+        }
+        if (!textContent && !el.id && !el.className) return;
+
+        let selector = el.tagName.toLowerCase();
+        if (el.id) selector += '#' + el.id;
+        if (el.className && typeof el.className === 'string') {
+          const classes = el.className.split(' ').filter(c => c).join('.');
+          if (classes) selector += '.' + classes;
+        }
+
+        const rect2 = el.getBoundingClientRect();
+        const coords = {
+          x: Math.round(rect2.left + window.pageXOffset),
+          y: Math.round(rect2.top + window.pageYOffset),
+          width: Math.round(rect2.width),
+          height: Math.round(rect2.height),
+          viewX: Math.round(rect2.left),
+          viewY: Math.round(rect2.top)
+        };
+
+        const styles = {
+          color: computed.color,
+          backgroundColor: computed.backgroundColor,
+          fontFamily: computed.fontFamily,
+          fontSize: computed.fontSize,
+          fontWeight: computed.fontWeight,
+          fontStyle: computed.fontStyle,
+          textAlign: computed.textAlign,
+          lineHeight: computed.lineHeight,
+          letterSpacing: computed.letterSpacing,
+          padding: computed.padding,
+          margin: computed.margin,
+          border: computed.border,
+          borderRadius: computed.borderRadius,
+          boxShadow: computed.boxShadow,
+          display: computed.display,
+          position: computed.position,
+          top: computed.top,
+          left: computed.left,
+          width: computed.width,
+          height: computed.height,
+          opacity: computed.opacity,
+          zIndex: computed.zIndex,
+          transform: computed.transform,
+          transition: computed.transition
+        };
+
+        elementsReport.push({
+          index: ++elementIndex,
+          selector: selector,
+          tag: el.tagName.toLowerCase(),
+          id: el.id || null,
+          classes: el.className || null,
+          text: textContent || null,
+          coords: coords,
+          styles: styles
+        });
+      });
+
+      const allButtons = document.querySelectorAll('.topbar-btn, .lang-btn, .btn-copy');
+      const buttonPositions = [];
+      allButtons.forEach(btn => {
+        const rect = btn.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          buttonPositions.push({
+            text: btn.textContent.trim().slice(0, 30),
+            x: Math.round(rect.left + rect.width / 2),
+            y: Math.round(rect.top + rect.height / 2),
+            width: Math.round(rect.width),
+            height: Math.round(rect.height)
+          });
+        }
+      });
+
+      const distances = [];
+      for (let i = 0; i < buttonPositions.length; i++) {
+        for (let j = i + 1; j < buttonPositions.length; j++) {
+          const dx = buttonPositions[i].x - buttonPositions[j].x;
+          const dy = buttonPositions[i].y - buttonPositions[j].y;
+          const distance = Math.round(Math.sqrt(dx * dx + dy * dy));
+          distances.push({
+            from: buttonPositions[i].text,
+            to: buttonPositions[j].text,
+            distance: distance,
+            dx: dx,
+            dy: dy
+          });
+        }
+      }
+
+      let report = `=== CRUCIX — ПОЛНЫЙ СНАПШОТ СТРАНИЦЫ ===\n`;
+      report += `Дата: ${timestamp}\n`;
+      report += `URL: ${window.location.href}\n`;
+      report += `Размер окна: ${window.innerWidth}×${window.innerHeight}\n`;
+      report += `Всего элементов: ${elementsReport.length}\n`;
+      report += `Кнопок: ${allButtons.length}\n\n`;
+      report += `--- ЗАГОЛОВОК ---\n${pageTitle}\n\n`;
+      report += `--- ВСЕ ЭЛЕМЕНТЫ (${elementsReport.length} шт.) ---\n`;
+      for (const el of elementsReport) {
+        report += `\n[${el.index}] ${el.selector}\n`;
+        report += `  Текст: ${el.text || '—'}\n`;
+        report += `  Координаты: X=${el.coords.x} Y=${el.coords.y} (ширина=${el.coords.width} высота=${el.coords.height})\n`;
+        report += `  Цвет: ${el.styles.color || '—'}\n`;
+        report += `  Фон: ${el.styles.backgroundColor || '—'}\n`;
+        report += `  Шрифт: ${el.styles.fontFamily || '—'} размер=${el.styles.fontSize || '—'} вес=${el.styles.fontWeight || '—'}\n`;
+        report += `  Отступы: ${el.styles.padding || '—'}\n`;
+        report += `  Граница: ${el.styles.border || '—'}\n`;
+        report += `  Скругление: ${el.styles.borderRadius || '—'}\n`;
+        report += `  Тень: ${el.styles.boxShadow || '—'}\n`;
+        report += `  Display: ${el.styles.display || '—'}\n`;
+        report += `  Position: ${el.styles.position || '—'} top=${el.styles.top || '—'} left=${el.styles.left || '—'}\n`;
+        report += `  Размер: ${el.styles.width || '—'}×${el.styles.height || '—'}\n`;
+        report += `  Прозрачность: ${el.styles.opacity || '—'}\n`;
+        report += `  Z-индекс: ${el.styles.zIndex || '—'}\n`;
+        report += `  Transform: ${el.styles.transform || '—'}\n`;
+      }
+
+      if (distances.length > 0) {
+        report += `\n--- ДИСТАНЦИИ МЕЖДУ КНОПКАМИ (${distances.length}) ---\n`;
+        for (const d of distances) {
+          report += `  ${d.from} → ${d.to}: ${d.distance}px (dx=${d.dx} dy=${d.dy})\n`;
+        }
+      }
+
+      report += `\n--- CRUCIX OSINT TERMINAL ---\n`;
+      report += `🌐 ${window.location.origin || window.location.href}`;
+
+      navigator.clipboard.writeText(report).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = '✅ Скопировано!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = '📋 КОПИРОВАТЬ';
+          btn.classList.remove('copied');
+        }, 3000);
+        showNotification(`✅ Скопировано ${elementsReport.length} элементов`);
+      }).catch(() => {
+        const textarea = document.createElement('textarea');
+        textarea.value = report;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = '✅ Скопировано!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = '📋 КОПИРОВАТЬ';
+          btn.classList.remove('copied');
+        }, 3000);
+        showNotification(`✅ Скопировано ${elementsReport.length} элементов`);
+      });
+    }
+
+    function showNotification(msg) {
+      document.querySelectorAll('.notification').forEach(el => el.remove());
+      const el = document.createElement('div');
+      el.className = 'notification';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2500);
+    }
+  </script>

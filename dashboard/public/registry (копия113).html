@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Реестр страниц — Crucix</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0f;
+      color: #c8d0d8;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; height: 60px;
+      background: rgba(10,10,20,0.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.04); z-index: 100;
+      display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; }
+    .topbar-right { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .topbar-btn {
+      height: 28px; padding: 0 12px; border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 4px; background: rgba(255,255,255,0.03); color: #888;
+      font-size: 11px; font-weight: 500; text-transform: uppercase;
+      cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 4px;
+    }
+    .topbar-btn:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+    .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
+    .btn-home:hover { background: rgba(91,192,248,0.15); }
+    .btn-copy { color: #5bc0f8; border-color: rgba(91,192,248,0.15); background: rgba(91,192,248,0.06); }
+    .btn-copy:hover { background: rgba(91,192,248,0.15); }
+    .btn-registry { color: #ffd700; border-color: rgba(255,215,0,0.2); background: rgba(255,215,0,0.06); }
+    .btn-registry:hover { background: rgba(255,215,0,0.15); }
+    .btn-check { color: #4caf50; border-color: rgba(76,175,80,0.2); background: rgba(76,175,80,0.06); }
+    .btn-check:hover { background: rgba(76,175,80,0.15); }
+    .lang-switch {
+      display: flex; gap: 2px; padding: 2px;
+      background: rgba(255,255,255,0.03); border-radius: 4px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .lang-btn {
+      padding: 2px 8px; border: none; background: transparent; color: #666;
+      font-size: 11px; font-weight: 500; cursor: pointer; border-radius: 3px;
+      transition: all 0.2s;
+    }
+    .lang-btn:hover { color: #888; background: rgba(255,255,255,0.05); }
+    .lang-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.1); }
+    .main-content {
+      padding-top: 76px; max-width: 1400px; margin: 0 auto;
+      padding-left: 20px; padding-right: 20px; padding-bottom: 40px;
+      min-height: calc(100vh - 76px);
+    }
+    .page-title { font-size: 24px; font-weight: 700; color: #e8f0f8; letter-spacing: -0.5px; margin-bottom: 4px; }
+    .page-subtitle { color: #666; font-size: 14px; margin-bottom: 16px; }
+    .legend-bar {
+      display: flex; flex-wrap: wrap; gap: 20px;
+      padding: 10px 16px; background: rgba(255,255,255,0.03);
+      border-radius: 6px; margin-bottom: 16px;
+      font-size: 12px; color: #888;
+    }
+    .legend-bar .item { display: flex; align-items: center; gap: 6px; }
+    .legend-bar .color-dot { width: 14px; height: 14px; border-radius: 4px; display: inline-block; }
+    .legend-bar .color-dot.green { background: #4caf50; }
+    .legend-bar .color-dot.red { background: #f44336; }
+    .legend-bar .color-dot.api { background: #4caf50; opacity: 0.7; }
+    .legend-bar .color-dot.script { background: #d4b87a; opacity: 0.7; }
+    .legend-bar .color-dot.collector { background: #f59e0b; opacity: 0.7; }
+    .stats-bar {
+      display: flex; flex-wrap: wrap; gap: 16px;
+      padding: 12px 16px; background: rgba(255,255,255,0.03);
+      border-radius: 6px; margin-bottom: 16px;
+    }
+    .stats-bar .stat { font-size: 13px; color: #888; }
+    .stats-bar .stat strong { font-weight: 600; }
+    .stats-bar .stat.online strong { color: #4caf50; }
+    .stats-bar .stat.offline strong { color: #f44336; }
+    .stats-bar .stat.data strong { color: #5bc0f8; }
+    .registry-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .registry-table th {
+      text-align: left; padding: 10px 8px 6px 8px; font-weight: 600;
+      color: #8898a8; border-bottom: 1px solid rgba(255,255,255,0.06);
+      letter-spacing: 0.3px; font-size: 12px; text-transform: uppercase;
+      position: sticky; top: 60px; background: #0a0a0f; z-index: 10;
+    }
+    .registry-table td { padding: 6px 8px; border-bottom: 1px solid rgba(255,255,255,0.03); vertical-align: middle; }
+    .registry-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .col-id { width: 50px; text-align: center; font-weight: 700; font-size: 14px; }
+    .col-status { width: 40px; text-align: center; font-size: 16px; }
+    .col-data { width: 40px; text-align: center; font-size: 16px; }
+    .col-name { color: #e8f0f8; }
+    .col-url { color: #5bc0f8; word-break: break-all; font-size: 12px; }
+    .col-url a { color: #5bc0f8; text-decoration: none; }
+    .col-url a:hover { text-decoration: underline; }
+    .col-desc { color: #a0b0c0; font-size: 12px; }
+    .col-check { width: 80px; text-align: center; font-size: 11px; color: #666; }
+
+    /* ЦВЕТА ДЛЯ РАЗНЫХ ТИПОВ */
+    .tag-page { color: #e8f0f8; }
+    .tag-api { color: #6bc87a; }
+    .tag-script { color: #d4b87a; }
+    .tag-collector { color: #f59e0b; }
+
+    .status-connected .col-id { color: #4caf50; }
+    .status-disconnected .col-id { color: #f44336; }
+    .status-checking .col-id { color: #ffd700; }
+
+    /* СЕКЦИИ */
+    .section-divider {
+      margin: 32px 0 16px 0; font-size: 16px; font-weight: 600;
+      color: #c8d0d8; letter-spacing: 0.5px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding-bottom: 8px;
+    }
+    .section-divider .count { font-size: 13px; color: #666; font-weight: 400; }
+
+    .notification {
+      position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.85); color: #fff; padding: 8px 20px;
+      border-radius: 6px; font-size: 13px; z-index: 100001;
+      border: 1px solid rgba(255,255,255,0.1);
+      animation: notif-fade 2.5s forwards;
+    }
+    @keyframes notif-fade {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+    .loading-text { padding: 20px; text-align: center; color: #666; font-size: 14px; }
+    @media (max-width: 768px) {
+      .topbar { padding: 0 12px; height: 52px; }
+      .topbar-brand { font-size: 12px; }
+      .topbar-btn { font-size: 10px; padding: 0 8px; height: 24px; }
+      .main-content { padding-top: 68px; padding-left: 12px; padding-right: 12px; }
+      .page-title { font-size: 18px; }
+      .registry-table td, .registry-table th { padding: 4px 6px; font-size: 12px; }
+      .col-id { width: 35px; font-size: 12px; }
+      .col-desc { display: none; }
+      .col-check { display: none; }
+      .registry-table th .col-desc { display: none; }
+      .registry-table th .col-check { display: none; }
+    }
+    @media (max-width: 480px) {
+      .topbar { padding: 0 8px; height: 46px; }
+      .topbar-brand { font-size: 10px; letter-spacing: 1px; }
+      .topbar-btn { font-size: 9px; padding: 0 6px; height: 20px; }
+      .lang-btn { font-size: 9px; padding: 1px 5px; }
+      .main-content { padding-top: 62px; padding-left: 8px; padding-right: 8px; }
+      .page-title { font-size: 16px; }
+      .registry-table td, .registry-table th { padding: 3px 4px; font-size: 11px; }
+      .col-id { width: 28px; font-size: 11px; }
+      .col-url { font-size: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-brand">⚡ CRUCIX MONITOR</span>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← ГЛАВНАЯ</button>
+      <button class="topbar-btn btn-check" id="btn-check" onclick="checkAllPages()">🔄 ПРОВЕРИТЬ</button>
+      <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ</button>
+      <button class="topbar-btn btn-registry" onclick="window.location.href='/registry'">📋 РЕЕСТР</button>
+      <div class="lang-switch">
+        <button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
+        <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+      </div>
+    </div>
+  </header>
+  <main class="main-content">
+    <h1 class="page-title">📋 Реестр страниц и модулей</h1>
+    <p class="page-subtitle">Цвет номера = подключена/не подключена, Галочка = данные собираются</p>
+
+    <div class="legend-bar">
+      <span class="item"><span class="color-dot green"></span> Номер зелёный → страница подключена</span>
+      <span class="item"><span class="color-dot red"></span> Номер красный → страница НЕ подключена</span>
+      <span class="item"><span class="color-dot api"></span> API Only (зелёный текст)</span>
+      <span class="item"><span class="color-dot script"></span> Скрипты (жёлто-оранжевый)</span>
+      <span class="item"><span class="color-dot collector"></span> Сборщики (оранжевый)</span>
+      <span class="item">✅ → данные собираются</span>
+      <span class="item">❌ → данных нет</span>
+    </div>
+
+    <div class="stats-bar" id="stats-bar">
+      <span class="stat checking">⏳ Проверка: <strong id="stat-checking">0</strong></span>
+      <span class="stat online">🟢 Подключено: <strong id="stat-online">0</strong></span>
+      <span class="stat offline">🔴 Не подключено: <strong id="stat-offline">0</strong></span>
+      <span class="stat data">📊 Собирают данные: <strong id="stat-data">0</strong></span>
+      <span class="stat">📋 Всего: <strong id="stat-total">0</strong></span>
+    </div>
+
+    <!-- ===== СТРАНИЦЫ (113) ===== -->
+    <div class="section-divider">📄 Страницы интерфейса</div>
+    <table class="registry-table" id="registry">
+      <thead>
+        <tr>
+          <th class="col-id">#</th>
+          <th class="col-status">Стр</th>
+          <th class="col-data">Дан</th>
+          <th class="col-name">Инструмент</th>
+          <th class="col-url">Адрес</th>
+          <th class="col-desc">Описание</th>
+          <th class="col-check">API</th>
+        </tr>
+      </thead>
+      <tbody id="registry-body">
+        <tr><td colspan="7" class="loading-text">⏳ Загрузка реестра...</td></tr>
+      </tbody>
+    </table>
+
+    <!-- ===== API МОДУЛИ (80) ===== -->
+    <div class="section-divider">📦 Модули без страниц (API Only) — <span style="color:#6bc87a;">80 шт.</span></div>
+    <table class="registry-table" id="api-table">
+      <thead>
+        <tr>
+          <th class="col-id">#</th>
+          <th class="col-status"></th>
+          <th class="col-data"></th>
+          <th class="col-name">Модуль</th>
+          <th class="col-url">API-путь</th>
+          <th class="col-desc">Назначение</th>
+          <th class="col-check"></th>
+        </tr>
+      </thead>
+      <tbody id="api-body">
+        <tr><td colspan="7" class="loading-text">⏳ Загрузка API-модулей...</td></tr>
+      </tbody>
+    </table>
+
+    <!-- ===== СБОРЩИКИ (13) ===== -->
+    <div class="section-divider">📡 Сборщики данных — <span style="color:#f59e0b;">13 шт.</span></div>
+    <table class="registry-table" id="collector-table">
+      <thead>
+        <tr>
+          <th class="col-id">#</th>
+          <th class="col-status"></th>
+          <th class="col-data"></th>
+          <th class="col-name">Сборщик</th>
+          <th class="col-url">Источник</th>
+          <th class="col-desc">Назначение</th>
+          <th class="col-check"></th>
+        </tr>
+      </thead>
+      <tbody id="collector-body">
+        <tr><td colspan="7" class="loading-text">⏳ Загрузка сборщиков...</td></tr>
+      </tbody>
+    </table>
+
+    <!-- ===== СКРИПТЫ (5) ===== -->
+    <div class="section-divider">⚙️ Скрипты и утилиты — <span style="color:#d4b87a;">5 шт.</span></div>
+    <table class="registry-table" id="script-table">
+      <thead>
+        <tr>
+          <th class="col-id">#</th>
+          <th class="col-status"></th>
+          <th class="col-data"></th>
+          <th class="col-name">Скрипт</th>
+          <th class="col-url">Путь</th>
+          <th class="col-desc">Назначение</th>
+          <th class="col-check"></th>
+        </tr>
+      </thead>
+      <tbody id="script-body">
+        <tr><td colspan="7" class="loading-text">⏳ Загрузка скриптов...</td></tr>
+      </tbody>
+    </table>
+
+  </main>
+  <script>
+    // ============================================================
+    // ДАННЫЕ — 113 СТРАНИЦ
+    // ============================================================
+    var pages = [
+      { id: 1, name: "ACLED (конфликты)", url: "http://localhost:3117/acled", api: "/api/acled/status", desc: "Данные о конфликтах ACLED" },
+      { id: 2, name: "AI анализатор новостей", url: "http://localhost:3117/ai-news-analyzer", api: "/api/ai-news-analyzer/status", desc: "Анализ новостей AI" },
+      { id: 3, name: "AI Gateway", url: "http://localhost:3117/ai-gateway", api: "/api/ai-gateway/status", desc: "Шлюз для AI-сервисов" },
+      { id: 4, name: "AI Gateway (старый)", url: "http://localhost:3117/gateway", api: "/api/gateway/status", desc: "Устаревший AI-шлюз" },
+      { id: 5, name: "AI фильтр", url: "http://localhost:3117/ai-filter", api: "/api/ai-filter/status", desc: "Фильтрация контента AI" },
+      { id: 6, name: "AI чат", url: "http://localhost:3117/ai-chat", api: "/api/ai/chat/status", desc: "Чат с искусственным интеллектом" },
+      { id: 7, name: "Анализ событий", url: "http://localhost:3117/analysis-events-api", api: "/api/analysis/events/status", desc: "API анализа событий" },
+      { id: 8, name: "Анализ соцсетей", url: "http://localhost:3117/social", api: "/api/social/status", desc: "Мониторинг социальных сетей" },
+      { id: 9, name: "Аналитические центры", url: "http://localhost:3117/thinktanks", api: "/api/thinktanks/status", desc: "Данные аналитических центров" },
+      { id: 10, name: "Аномалии", url: "http://localhost:3117/anomaly-detector", api: "/api/anomaly-detector/status", desc: "Детектор аномалий" },
+      { id: 11, name: "Авиация API", url: "http://localhost:3117/aviation-api", api: "/api/aviation/status", desc: "API авиационных данных" },
+      { id: 12, name: "Автономные агенты", url: "http://localhost:3117/agents", api: "/api/agents/status", desc: "Управление агентами" },
+      { id: 13, name: "Автоматические отчёты", url: "http://localhost:3117/automated-reports", api: "/api/reports/status", desc: "Генерация отчётов" },
+      { id: 14, name: "Блокчейн", url: "http://localhost:3117/blockchain", api: "/api/blockchain/status", desc: "Данные блокчейн-сетей" },
+      { id: 15, name: "BLS (труд)", url: "http://localhost:3117/bls", api: "/api/bls/status", desc: "Статистика труда BLS" },
+      { id: 16, name: "Визуализация", url: "http://localhost:3117/visualization", api: "/api/visualization/status", desc: "Инструменты визуализации" },
+      { id: 17, name: "Военная авиация", url: "http://localhost:3117/aviation", api: "/api/aviation/status", desc: "Мониторинг авиации" },
+      { id: 18, name: "Все страницы", url: "http://localhost:3117/kartochki", api: null, desc: "Обзор всех страниц" },
+      { id: 19, name: "Генератор сценариев", url: "http://localhost:3117/scenario-generator", api: "/api/scenario-generator/status", desc: "Генерация сценариев" },
+      { id: 20, name: "Геополитическая карта", url: "http://localhost:3117/geo-map", api: "/api/geo/status", desc: "Интерактивная карта" },
+      { id: 21, name: "Глобальный индекс", url: "http://localhost:3117/global-index", api: "/api/geo/index", desc: "Глобальный индекс рисков" },
+      { id: 22, name: "Голос", url: "http://localhost:3117/voice", api: "/api/voice/status", desc: "Голосовой интерфейс" },
+      { id: 23, name: "Горизонтальный", url: "http://localhost:3117/horizontal", api: null, desc: "Горизонтальный дашборд" },
+      { id: 24, name: "Дашборд решений", url: "http://localhost:3117/decision", api: "/api/decision/status", desc: "Панель решений" },
+      { id: 25, name: "Даркнет", url: "http://localhost:3117/darkweb", api: "/api/darkweb/status", desc: "Мониторинг даркнета" },
+      { id: 26, name: "Детектор тишины", url: "http://localhost:3117/silence", api: "/api/silence/status", desc: "Детектор тишины" },
+      { id: 27, name: "Диагностика", url: "http://localhost:3117/diagnostics", api: "/api/diagnostics/status", desc: "Системная диагностика" },
+      { id: 28, name: "Диагностика инвентаризация", url: "http://localhost:3117/diagnostics-inventory", api: null, desc: "Инвентаризация" },
+      { id: 29, name: "Диагностика фоновая", url: "http://localhost:3117/diagnostics-background", api: null, desc: "Фоновая диагностика" },
+      { id: 30, name: "Доверие к источникам", url: "http://localhost:3117/trust", api: "/api/trust/status", desc: "Оценка доверия" },
+      { id: 31, name: "EIA (энергетика)", url: "http://localhost:3117/eia", api: "/api/eia/status", desc: "Данные энергетики" },
+      { id: 32, name: "Emotion AI", url: "http://localhost:3117/emotion", api: "/api/emotion/status", desc: "Анализ эмоций" },
+      { id: 33, name: "Экономика", url: "http://localhost:3117/economy", api: "/api/economy/status", desc: "Экономические индикаторы" },
+      { id: 34, name: "Землетрясения", url: "http://localhost:3117/usgs", api: "/api/usgs/status", desc: "Данные землетрясений" },
+      { id: 35, name: "Здравоохранение", url: "http://localhost:3117/who", api: "/api/who/status", desc: "Данные ВОЗ" },
+      { id: 36, name: "Инфраструктура", url: "http://localhost:3117/infrastructure", api: "/api/infrastructure/status", desc: "Мониторинг инфраструктуры" },
+      { id: 37, name: "Инфраструктура прогноз", url: "http://localhost:3117/infrastructure-predict", api: null, desc: "Прогноз инфраструктуры" },
+      { id: 38, name: "Инфраструктура корабли", url: "http://localhost:3117/infrastructure-ships", api: null, desc: "Инфраструктура судоходства" },
+      { id: 39, name: "Квантовый", url: "http://localhost:3117/quantum", api: "/api/quantum/status", desc: "Квантовые вычисления" },
+      { id: 40, name: "Кибер", url: "http://localhost:3117/cyber", api: "/api/cyber/status", desc: "Кибербезопасность" },
+      { id: 41, name: "Киберугрозы", url: "http://localhost:3117/cyber-threats", api: "/api/cyber-threats/status", desc: "Мониторинг киберугроз" },
+      { id: 42, name: "Киберинтеллект", url: "http://localhost:3117/cyber-intel", api: "/api/cyber-intel/status", desc: "Киберразведка" },
+      { id: 43, name: "KiwiSDR (радио)", url: "http://localhost:3117/kiwisdr", api: "/api/kiwisdr/status", desc: "Радиомониторинг" },
+      { id: 44, name: "Корзина данных", url: "http://localhost:3117/basket", api: "/api/basket/stats", desc: "Корзина данных" },
+      { id: 45, name: "Кросс-корреляция", url: "http://localhost:3117/correlation", api: "/api/correlation/status", desc: "Кросс-корреляция" },
+      { id: 46, name: "Лента новостей", url: "http://localhost:3117/live", api: "/api/live/stats", desc: "Лента новостей в реальном времени" },
+      { id: 47, name: "LLM анализатор", url: "http://localhost:3117/llm-analyzer", api: "/api/llm-analyzer/status", desc: "Анализ текстов LLM" },
+      { id: 48, name: "Локальный мониторинг", url: "http://localhost:3117/local", api: "/api/local/status", desc: "Локальный сбор данных" },
+      { id: 49, name: "MASA", url: "http://localhost:3117/masa", api: "/api/masa/status", desc: "MASA аналитика" },
+      { id: 50, name: "Морской мониторинг", url: "http://localhost:3117/maritime-monitor", api: "/api/maritime/status", desc: "Морской мониторинг" },
+      { id: 51, name: "Морской трекинг", url: "http://localhost:3117/shipping", api: "/api/shipping/status", desc: "Отслеживание судов" },
+      { id: 52, name: "Мониторинг", url: "http://localhost:3117/monitor", api: "/api/monitor/status", desc: "Центральный мониторинг" },
+      { id: 53, name: "Мониторинг авиации", url: "http://localhost:3117/aviation-monitor", api: "/api/aviation-monitor/status", desc: "Мониторинг авиации" },
+      { id: 54, name: "Мониторинг космоса", url: "http://localhost:3117/space-monitor", api: "/api/space-monitor/status", desc: "Космический мониторинг" },
+      { id: 55, name: "Мониторинг погоды", url: "http://localhost:3117/weather-monitor", api: "/api/weather/status", desc: "Мониторинг погоды" },
+      { id: 56, name: "Мониторинг торговли", url: "http://localhost:3117/trade-monitor", api: "/api/trade/status", desc: "Мониторинг торговли" },
+      { id: 57, name: "Мониторинг экологии", url: "http://localhost:3117/environment-monitor", api: "/api/environment/status", desc: "Экологический мониторинг" },
+      { id: 58, name: "Мониторинг энергетики", url: "http://localhost:3117/energy-monitor", api: "/api/energy/status", desc: "Мониторинг энергетики" },
+      { id: 59, name: "Мониторинг здравоохранения", url: "http://localhost:3117/health-monitor", api: "/api/health/status", desc: "Мониторинг здравоохранения" },
+      { id: 60, name: "Новости", url: "http://localhost:3117/news", api: "/api/news/stats", desc: "Новостной портал" },
+      { id: 61, name: "Новостной агрегатор", url: "http://localhost:3117/news-aggregator", api: "/api/news-aggregator/status", desc: "Агрегатор новостей" },
+      { id: 62, name: "NOAA (погода)", url: "http://localhost:3117/noaa", api: "/api/noaa/status", desc: "Погодные данные NOAA" },
+      { id: 63, name: "NLP API", url: "http://localhost:3117/nlp-api", api: "/api/nlp/status", desc: "API обработки естественного языка" },
+      { id: 64, name: "OFAC (санкции)", url: "http://localhost:3117/ofac", api: "/api/ofac/status", desc: "Санкционные списки OFAC" },
+      { id: 65, name: "OpenSky (авиация)", url: "http://localhost:3117/opensky", api: "/api/opensky/status", desc: "Данные авиации OpenSky" },
+      { id: 66, name: "P2P-обмен", url: "http://localhost:3117/p2p", api: "/api/p2p/status", desc: "P2P обмен данными" },
+      { id: 67, name: "Планировщик задач", url: "http://localhost:3117/scheduler", api: "/api/scheduler/status", desc: "Планировщик задач" },
+      { id: 68, name: "Предиктивный", url: "http://localhost:3117/predictive", api: "/api/predictive/status", desc: "Предиктивная аналитика" },
+      { id: 69, name: "Прогнозная модель", url: "http://localhost:3117/predictive-model", api: null, desc: "Прогнозная модель" },
+      { id: 70, name: "Прогнозирование", url: "http://localhost:3117/prediction-intel", api: "/api/prediction-intel/status", desc: "Прогнозирование событий" },
+      { id: 71, name: "Прогнозирование конфликтов", url: "http://localhost:3117/conflict-predictor", api: "/api/conflict/status", desc: "Прогноз конфликтов" },
+      { id: 72, name: "Профиль", url: "http://localhost:3117/profile", api: "/api/profile/status", desc: "Профиль пользователя" },
+      { id: 73, name: "Раннее предупреждение", url: "http://localhost:3117/early-warning", api: "/api/early-warning/status", desc: "Система раннего предупреждения" },
+      { id: 74, name: "RAG поиск", url: "http://localhost:3117/rag", api: "/api/rag/status", desc: "Поиск с RAG" },
+      { id: 75, name: "Рыночный прогноз", url: "http://localhost:3117/market-predictor", api: "/api/market/status", desc: "Прогноз рынка" },
+      { id: 76, name: "RSS лента", url: "http://localhost:3117/rss-feed", api: "/api/rss/stats", desc: "RSS лента" },
+      { id: 77, name: "RSS управление", url: "http://localhost:3117/rss-dashboard", api: "/api/rss/stats", desc: "Управление RSS" },
+      { id: 78, name: "Safecast (радиация)", url: "http://localhost:3117/safecast", api: "/api/safecast/status", desc: "Данные радиации" },
+      { id: 79, name: "Санкции", url: "http://localhost:3117/ofac", api: "/api/ofac/status", desc: "Санкционные списки" },
+      { id: 80, name: "Семантический анализ", url: "http://localhost:3117/semantic-analysis", api: "/api/semantic/status", desc: "Семантический анализ" },
+      { id: 81, name: "Сетка", url: "http://localhost:3117/grid-tool", api: null, desc: "Инструмент сетки" },
+      { id: 82, name: "Система", url: "http://localhost:3117/system", api: "/api/system/status", desc: "Системная информация" },
+      { id: 83, name: "Скрытые связи", url: "http://localhost:3117/hidden-links", api: "/api/hidden-links/status", desc: "Выявление скрытых связей" },
+      { id: 84, name: "Спутниковый API", url: "http://localhost:3117/satellite-api", api: "/api/satellite/status", desc: "API спутниковых данных" },
+      { id: 85, name: "Спутниковый интернет", url: "http://localhost:3117/satellite-internet", api: "/api/satellite-internet/status", desc: "Мониторинг спутникового интернета" },
+      { id: 86, name: "Спутниковый мониторинг", url: "http://localhost:3117/satellite", api: "/api/satellite/status", desc: "Спутниковый мониторинг" },
+      { id: 87, name: "Стратегическая разведка", url: "http://localhost:3117/strategic-intel", api: "/api/strategic-intel/status", desc: "Стратегическая разведка" },
+      { id: 88, name: "Стратегический слой", url: "http://localhost:3117/strategic-layer", api: "/api/strategic-layer/status", desc: "Стратегический слой" },
+      { id: 89, name: "Тематические линзы", url: "http://localhost:3117/lenses", api: "/api/lenses/status", desc: "Тематические линзы" },
+      { id: 90, name: "Тональность", url: "http://localhost:3117/sentiment", api: "/api/sentiment/status", desc: "Анализ тональности" },
+      { id: 91, name: "Тёмные корабли", url: "http://localhost:3117/dark-ships", api: "/api/dark-ships/status", desc: "Мониторинг тёмных кораблей" },
+      { id: 92, name: "Управление", url: "http://localhost:3117/admin", api: "/api/admin/status", desc: "Администрирование" },
+      { id: 93, name: "Файловый пикер", url: "http://localhost:3117/file-picker", api: null, desc: "Выбор файлов" },
+      { id: 94, name: "FIRMS (пожары)", url: "http://localhost:3117/firms", api: "/api/firms/status", desc: "Данные пожаров FIRMS" },
+      { id: 95, name: "FRED (экономика)", url: "http://localhost:3117/fred", api: "/api/fred/status", desc: "Экономические данные FRED" },
+      { id: 96, name: "GDELT", url: "http://localhost:3117/gdelt", api: "/api/gdelt/status", desc: "Глобальный мониторинг GDELT" },
+      { id: 97, name: "GDELT curl", url: "http://localhost:3117/gdelt-curl", api: null, desc: "GDELT через curl" },
+      { id: 98, name: "GDELT v1", url: "http://localhost:3117/gdelt-v1", api: null, desc: "GDELT версия 1" },
+      { id: 99, name: "Исторический анализ", url: "http://localhost:3117/historical-analysis", api: "/api/analysis/history", desc: "Исторический анализ" },
+      { id: 100, name: "Интерфейс JARVIS", url: "http://localhost:3117/jarvis", api: "/api/jarvis/status", desc: "Интерфейс JARVIS" },
+      { id: 101, name: "Инструменты", url: "http://localhost:3117/tools", api: null, desc: "Набор инструментов" },
+      { id: 102, name: "Справка", url: "http://localhost:3117/help", api: "/api/help/status", desc: "Справка по системе" },
+      { id: 103, name: "Экспорт данных", url: "http://localhost:3117/export", api: "/api/export/status", desc: "Экспорт данных" },
+      { id: 104, name: "Энергетика", url: "http://localhost:3117/eia", api: "/api/eia/status", desc: "Энергетические данные" },
+      { id: 105, name: "США", url: "http://localhost:3117/us", api: "/api/us/status", desc: "Данные по США" },
+      { id: 106, name: "MASA-агенты", url: "http://localhost:3117/masa-agents", api: "/api/masa-agents/status", desc: "Агенты MASA" },
+      { id: 107, name: "GDELT конфликты", url: "http://localhost:3117/gdelt-conflict", api: null, desc: "Конфликтные данные GDELT" },
+      { id: 108, name: "CISA (киберугрозы)", url: "http://localhost:3117/cisa", api: "/api/cisa/status", desc: "Киберугрозы CISA" },
+      { id: 109, name: "Предсказательная модель", url: "http://localhost:3117/prediction", api: "/api/prediction/status", desc: "Предсказательная модель" },
+      { id: 110, name: "Безопасность", url: "http://localhost:3117/security", api: "/api/security/status", desc: "Безопасность системы" },
+      { id: 111, name: "Реестр страниц", url: "http://localhost:3117/registry", api: null, desc: "Реестр всех страниц и модулей" },
+      { id: 112, name: "Ships (суда)", url: "http://localhost:3117/ships", api: "/api/ships/status", desc: "Данные о судах" },
+      { id: 113, name: "Gold/Oil Ratio", url: "http://localhost:3117/gold-oil-ratio", api: "/api/gold-oil-ratio/status", desc: "Соотношение золото/нефть" }
+    ];
+
+    // ============================================================
+    // API МОДУЛИ (80)
+    // ============================================================
+    var apiModules = [
+      { id: 1, name: "rss-manager", url: "/api/rss", desc: "Управление RSS лентами" },
+      { id: 2, name: "basket-api", url: "/api/basket", desc: "Корзина данных (API)" },
+      { id: 3, name: "newsapi", url: "/api/newsapi", desc: "NewsAPI прокси" },
+      { id: 4, name: "global-index-api", url: "/api/global-index", desc: "Глобальный индекс (API)" },
+      { id: 5, name: "ofac-api", url: "/api/ofac", desc: "OFAC санкции (API)" },
+      { id: 6, name: "eia-api", url: "/api/eia", desc: "EIA энергетика (API)" },
+      { id: 7, name: "who-api", url: "/api/who", desc: "WHO здравоохранение (API)" },
+      { id: 8, name: "cisa-api", url: "/api/cisa", desc: "CISA киберугрозы (API)" },
+      { id: 9, name: "noaa-api", url: "/api/noaa", desc: "NOAA погода (API)" },
+      { id: 10, name: "space-api", url: "/api/space", desc: "Космический мониторинг (API)" },
+      { id: 11, name: "comtrade-api", url: "/api/comtrade", desc: "Торговая статистика (API)" },
+      { id: 12, name: "epa-api", url: "/api/epa", desc: "Экология (API)" },
+      { id: 13, name: "gscpi-api", url: "/api/gscpi", desc: "Цепи поставок (API)" },
+      { id: 14, name: "tass-api", url: "/api/tass", desc: "ТАСС новости (API)" },
+      { id: 15, name: "opensanctions-api", url: "/api/opensanctions", desc: "Санкционные списки (API)" },
+      { id: 16, name: "usgs-api", url: "/api/usgs", desc: "Землетрясения (API)" },
+      { id: 17, name: "local-api", url: "/api/local", desc: "Локальный сбор (API)" },
+      { id: 18, name: "scheduler-api", url: "/api/scheduler", desc: "Планировщик задач (API)" },
+      { id: 19, name: "trust-api", url: "/api/trust", desc: "Доверие к источникам (API)" },
+      { id: 20, name: "diagnostics-api", url: "/api/diagnostics", desc: "Диагностика (API)" },
+      { id: 21, name: "ai-gateway-api", url: "/api/ai-gateway", desc: "AI Gateway (API)" },
+      { id: 22, name: "ai-processor", url: "/api/ai-processor", desc: "AI процессор" },
+      { id: 23, name: "hidden-links-api", url: "/api/hidden-links", desc: "Скрытые связи (API)" },
+      { id: 24, name: "market-api", url: "/api/market", desc: "Рыночный прогноз (API)" },
+      { id: 25, name: "early-warning-api", url: "/api/early-warning", desc: "Раннее предупреждение (API)" },
+      { id: 26, name: "conflict-api", url: "/api/conflict", desc: "Прогнозирование конфликтов (API)" },
+      { id: 27, name: "anomaly-detector-api", url: "/api/anomaly", desc: "Детектор аномалий (API)" },
+      { id: 28, name: "scenario-gen-api", url: "/api/scenario", desc: "Генератор сценариев (API)" },
+      { id: 29, name: "semantic-api", url: "/api/semantic", desc: "Семантический анализ (API)" },
+      { id: 30, name: "reports-api", url: "/api/reports", desc: "Автоматические отчёты (API)" },
+      { id: 31, name: "strategic-intel-api", url: "/api/strategic-intel", desc: "Стратегическая разведка (API)" },
+      { id: 32, name: "cyber-intel-api", url: "/api/cyber-intel", desc: "Киберинтеллект (API)" },
+      { id: 33, name: "aviation-api", url: "/api/aviation", desc: "Авиация (API)" },
+      { id: 34, name: "maritime-api", url: "/api/maritime", desc: "Морской мониторинг (API)" },
+      { id: 35, name: "dark-ships-api", url: "/api/dark-ships", desc: "Тёмные корабли (API)" },
+      { id: 36, name: "satellite-internet-api", url: "/api/satellite-internet", desc: "Спутниковый интернет (API)" },
+      { id: 37, name: "energy-api", url: "/api/energy", desc: "Энергетика (API)" },
+      { id: 38, name: "trade-api", url: "/api/trade", desc: "Торговля (API)" },
+      { id: 39, name: "environment-api", url: "/api/environment", desc: "Экология (API)" },
+      { id: 40, name: "health-api", url: "/api/health", desc: "Здравоохранение (API)" },
+      { id: 41, name: "weather-api", url: "/api/weather", desc: "Погода (API)" },
+      { id: 42, name: "space-monitor-api", url: "/api/space-monitor", desc: "Космос (API)" },
+      { id: 43, name: "news-aggregator-api", url: "/api/news-aggregator", desc: "Новостной агрегатор (API)" },
+      { id: 44, name: "supply-chain-api", url: "/api/supply-chain", desc: "Цепи поставок (API)" },
+      { id: 45, name: "monitor-api", url: "/api/monitor", desc: "Центр мониторинга (API)" },
+      { id: 46, name: "export-api", url: "/api/export", desc: "Экспорт данных (API)" },
+      { id: 47, name: "help-api", url: "/api/help", desc: "Справка (API)" },
+      { id: 48, name: "strategic-layer-api", url: "/api/strategic-layer", desc: "Стратегический слой (API)" },
+      { id: 49, name: "prediction-intel-api", url: "/api/prediction-intel", desc: "Прогнозирование (API)" },
+      { id: 50, name: "masa-api", url: "/api/masa", desc: "MASA (API)" },
+      { id: 51, name: "p2p-api", url: "/api/p2p", desc: "P2P-обмен (API)" },
+      { id: 52, name: "predictive-api", url: "/api/predictive", desc: "Предиктивный (API)" },
+      { id: 53, name: "decision-api", url: "/api/decision", desc: "Дашборд решений (API)" },
+      { id: 54, name: "social-api", url: "/api/social", desc: "Социальный (API)" },
+      { id: 55, name: "quantum-api", url: "/api/quantum", desc: "Квантовый (API)" },
+      { id: 56, name: "deepfake-api", url: "/api/deepfake", desc: "Deepfake (API)" },
+      { id: 57, name: "darkweb-api", url: "/api/darkweb", desc: "Даркнет (API)" },
+      { id: 58, name: "agents-api", url: "/api/agents", desc: "Агенты (API)" },
+      { id: 59, name: "blockchain-api", url: "/api/blockchain", desc: "Блокчейн (API)" },
+      { id: 60, name: "voice-api", url: "/api/voice", desc: "Голос (API)" },
+      { id: 61, name: "emotion-api", url: "/api/emotion", desc: "Эмоции (API)" },
+      { id: 62, name: "cyber-threats-api", url: "/api/cyber-threats", desc: "Киберугрозы (API)" },
+      { id: 63, name: "cyber-api", url: "/api/cyber", desc: "Кибер (API)" },
+      { id: 64, name: "acled-api", url: "/api/acled", desc: "ACLED (API)" },
+      { id: 65, name: "bls-api", url: "/api/bls", desc: "BLS (API)" },
+      { id: 66, name: "firms-api", url: "/api/firms", desc: "FIRMS (API)" },
+      { id: 67, name: "fred-api", url: "/api/fred", desc: "FRED (API)" },
+      { id: 68, name: "gdelt-api", url: "/api/gdelt", desc: "GDELT (API)" },
+      { id: 69, name: "ships-api", url: "/api/ships", desc: "Корабли (API)" },
+      { id: 70, name: "sentiment-analyzer-api", url: "/api/sentiment", desc: "Анализ тональности (API)" },
+      { id: 71, name: "satellite-api", url: "/api/satellite", desc: "Спутниковый API" },
+      { id: 72, name: "safecast-api", url: "/api/safecast", desc: "Safecast (API)" },
+      { id: 73, name: "opensky-api", url: "/api/opensky", desc: "OpenSky (API)" },
+      { id: 74, name: "nlp-api", url: "/api/nlp", desc: "NLP API" },
+      { id: 75, name: "llm-analyzer-api", url: "/api/llm-analyzer", desc: "LLM анализатор (API)" },
+      { id: 76, name: "kiwisdr-api", url: "/api/kiwisdr", desc: "KiwiSDR (API)" },
+      { id: 77, name: "safecast-api", url: "/api/safecast", desc: "Радиация Safecast (API)" },
+      { id: 78, name: "firms-api", url: "/api/firms", desc: "Пожары FIRMS (API)" },
+      { id: 79, name: "opensky-api", url: "/api/opensky", desc: "Авиация OpenSky (API)" },
+      { id: 80, name: "ships-api", url: "/api/ships", desc: "Суда Ships (API)" }
+    ];
+
+    // ============================================================
+    // СБОРЩИКИ (13)
+    // ============================================================
+    var collectors = [
+      { id: 1, name: "collect-acled.mjs", url: "ACLED", desc: "Сбор данных о конфликтах ACLED" },
+      { id: 2, name: "collect-fred.mjs", url: "FRED", desc: "Сбор экономических данных FRED" },
+      { id: 3, name: "collect-yahoo.mjs", url: "Yahoo Finance", desc: "Сбор рыночных данных Yahoo Finance" },
+      { id: 4, name: "collect-russian-sources.mjs", url: "Сайты, RSS", desc: "Сбор российских источников" },
+      { id: 5, name: "collect-ria.mjs", url: "РИА Новости", desc: "Сбор новостей РИА" },
+      { id: 6, name: "collect-openmeteo.mjs", url: "Open-Meteo", desc: "Сбор погоды Open-Meteo" },
+      { id: 7, name: "collect-frostbyte.mjs", url: "Frostbyte", desc: "Сбор криптоцен Frostbyte" },
+      { id: 8, name: "collect-rss-extra.mjs", url: "RSS", desc: "Сбор RSS-новостей (BBC, Al Jazeera)" },
+      { id: 9, name: "collect-safecast.mjs", url: "Safecast", desc: "Сбор данных радиации Safecast" },
+      { id: 10, name: "collect-opensky.mjs", url: "OpenSky", desc: "Сбор авиационных данных OpenSky" },
+      { id: 11, name: "collect-ships.mjs", url: "Ships", desc: "Сбор данных о судах Ships" },
+      { id: 12, name: "collect-ofac.mjs", url: "OFAC", desc: "Сбор санкционных данных OFAC" },
+      { id: 13, name: "collect-firms.mjs", url: "FIRMS", desc: "Сбор данных о пожарах FIRMS" }
+    ];
+
+    // ============================================================
+    // СКРИПТЫ (5)
+    // ============================================================
+    var scripts = [
+      { id: 1, name: "check-pages.mjs", url: "scripts/check-pages.mjs", desc: "Проверка доступности страниц" },
+      { id: 2, name: "generate-module-docs.sh", url: "scripts/generate-module-docs.sh", desc: "Генерация документации" },
+      { id: 3, name: "server.mjs", url: "server.mjs", desc: "Главный сервер" },
+      { id: 4, name: "diagnostics-inventory", url: "/diagnostics-inventory", desc: "Инвентаризация проекта" },
+      { id: 5, name: "diagnostics-background", url: "/diagnostics-background", desc: "Фоновый мониторинг сессии" }
+    ];
+
+    // ============================================================
+    // СОСТОЯНИЕ
+    // ============================================================
+    var pageStatus = {};
+    var pageData = {};
+    var isChecking = false;
+
+    // ============================================================
+    // ПРОВЕРКА СТРАНИЦ
+    // ============================================================
+    function checkAllPages() {
+      if (isChecking) return;
+      isChecking = true;
+      var btn = document.getElementById('btn-check');
+      btn.textContent = '⏳ ПРОВЕРКА...';
+      btn.disabled = true;
+
+      var total = pages.length;
+      var checked = 0;
+      var connected = 0;
+      var disconnected = 0;
+      var hasData = 0;
+
+      function checkNext() {
+        if (checked >= total) {
+          isChecking = false;
+          btn.textContent = '🔄 ПРОВЕРИТЬ';
+          btn.disabled = false;
+          document.getElementById('stat-checking').textContent = 0;
+          showNotification('✅ Проверка завершена! Подключено: ' + connected + ', Данные: ' + hasData);
+          return;
+        }
+
+        var item = pages[checked];
+        var idx = checked + 1;
+
+        var xhrPage = new XMLHttpRequest();
+        xhrPage.open('HEAD', item.url, true);
+        xhrPage.timeout = 2000;
+        xhrPage.onload = function() {
+          var isConnected = (xhrPage.status === 200 || xhrPage.status === 304);
+          if (isConnected) connected++; else disconnected++;
+          pageStatus[item.id] = isConnected ? 'connected' : 'disconnected';
+
+          checkData(item, isConnected, idx);
+        };
+        xhrPage.onerror = function() {
+          disconnected++;
+          pageStatus[item.id] = 'disconnected';
+          checkData(item, false, idx);
+        };
+        xhrPage.ontimeout = function() {
+          disconnected++;
+          pageStatus[item.id] = 'disconnected';
+          checkData(item, false, idx);
+        };
+        xhrPage.send();
+
+        function checkData(item, isConnected, idx) {
+          if (item.api) {
+            var xhrData = new XMLHttpRequest();
+            xhrData.open('GET', item.api, true);
+            xhrData.timeout = 3000;
+            xhrData.onload = function() {
+              var hasDataFlag = false;
+              if (xhrData.status === 200) {
+                try {
+                  var json = JSON.parse(xhrData.responseText);
+                  if (json && (json.total !== undefined || json.stats || json.data || json.success)) {
+                    hasDataFlag = true;
+                  }
+                } catch(e) {}
+              }
+              if (hasDataFlag) hasData++;
+              pageData[item.id] = hasDataFlag;
+              updateRow(item.id, isConnected, hasDataFlag);
+              checked++;
+              updateStats(connected, disconnected, hasData);
+              setTimeout(checkNext, 20);
+            };
+            xhrData.onerror = function() {
+              pageData[item.id] = false;
+              updateRow(item.id, isConnected, false);
+              checked++;
+              updateStats(connected, disconnected, hasData);
+              setTimeout(checkNext, 20);
+            };
+            xhrData.ontimeout = function() {
+              pageData[item.id] = false;
+              updateRow(item.id, isConnected, false);
+              checked++;
+              updateStats(connected, disconnected, hasData);
+              setTimeout(checkNext, 20);
+            };
+            xhrData.send();
+          } else {
+            pageData[item.id] = null;
+            updateRow(item.id, isConnected, null);
+            checked++;
+            updateStats(connected, disconnected, hasData);
+            setTimeout(checkNext, 20);
+          }
+        }
+      }
+
+      function updateRow(id, isConnected, hasData) {
+        var row = document.querySelector('[data-id="' + id + '"]');
+        if (row) {
+          var cls = isConnected ? 'status-connected' : 'status-disconnected';
+          row.className = 'status-row ' + cls;
+          var idCell = row.querySelector('.col-id');
+          if (idCell) idCell.style.color = isConnected ? '#4caf50' : '#f44336';
+          var statusCell = row.querySelector('.col-status');
+          if (statusCell) {
+            statusCell.textContent = isConnected ? '🟢' : '🔴';
+            statusCell.style.color = isConnected ? '#4caf50' : '#f44336';
+          }
+          var dataCell = row.querySelector('.col-data');
+          if (dataCell) {
+            if (hasData === null) { dataCell.textContent = '—'; dataCell.style.color = '#666'; }
+            else if (hasData) { dataCell.textContent = '✅'; dataCell.style.color = '#4caf50'; }
+            else { dataCell.textContent = '❌'; dataCell.style.color = '#f44336'; }
+          }
+        }
+      }
+
+      function updateStats(conn, disc, data) {
+        document.getElementById('stat-online').textContent = conn;
+        document.getElementById('stat-offline').textContent = disc;
+        document.getElementById('stat-data').textContent = data;
+        document.getElementById('stat-checking').textContent = total - (conn + disc);
+      }
+
+      checkNext();
+    }
+
+    // ============================================================
+    // ОТРИСОВКА ТАБЛИЦ
+    // ============================================================
+    function renderPages() {
+      var tbody = document.getElementById('registry-body');
+      var html = '';
+      for (var i = 0; i < pages.length; i++) {
+        var p = pages[i];
+        var status = pageStatus[p.id] || 'checking';
+        var hasData = pageData[p.id];
+        var idColor = status === 'connected' ? '#4caf50' : status === 'disconnected' ? '#f44336' : '#ffd700';
+        var statusIcon = status === 'connected' ? '🟢' : status === 'disconnected' ? '🔴' : '⏳';
+        var dataIcon = hasData === null ? '—' : hasData ? '✅' : '❌';
+        var dataColor = hasData === null ? '#666' : hasData ? '#4caf50' : '#f44336';
+        html += '<tr class="status-row status-' + status + '" data-id="' + p.id + '">';
+        html += '<td class="col-id" style="color:' + idColor + '">' + p.id + '</td>';
+        html += '<td class="col-status" style="color:' + idColor + '">' + statusIcon + '</td>';
+        html += '<td class="col-data" style="color:' + dataColor + '">' + dataIcon + '</td>';
+        html += '<td class="col-name"><span class="tag-page">' + p.name + '</span></td>';
+        html += '<td class="col-url"><a href="' + p.url + '" target="_blank">' + p.url + '</a></td>';
+        html += '<td class="col-desc">' + p.desc + '</td>';
+        html += '<td class="col-check">' + (p.api ? '📡' : '—') + '</td>';
+        html += '</tr>';
+      }
+      tbody.innerHTML = html;
+    }
+
+    function renderApiModules() {
+      var tbody = document.getElementById('api-body');
+      var html = '';
+      for (var i = 0; i < apiModules.length; i++) {
+        var m = apiModules[i];
+        var fullUrl = 'http://localhost:3117' + m.url;
+        html += '<tr>';
+        html += '<td class="col-id" style="color:#6bc87a;">' + m.id + '</td>';
+        html += '<td class="col-status"></td>';
+        html += '<td class="col-data"></td>';
+        html += '<td class="col-name"><span class="tag-api">' + m.name + '</span></td>';
+        html += '<td class="col-url"><a href="' + fullUrl + '" target="_blank">' + fullUrl + '</a></td>';
+        html += '<td class="col-desc" style="color:#6bc87a;">' + m.desc + '</td>';
+        html += '<td class="col-check">📦</td>';
+        html += '</tr>';
+      }
+      tbody.innerHTML = html;
+    }
+
+    function renderCollectors() {
+      var tbody = document.getElementById('collector-body');
+      var html = '';
+      for (var i = 0; i < collectors.length; i++) {
+        var c = collectors[i];
+        html += '<tr>';
+        html += '<td class="col-id" style="color:#f59e0b;">' + c.id + '</td>';
+        html += '<td class="col-status"></td>';
+        html += '<td class="col-data"></td>';
+        html += '<td class="col-name"><span class="tag-collector">' + c.name + '</span></td>';
+        html += '<td class="col-url" style="color:#f59e0b;">' + c.url + '</td>';
+        html += '<td class="col-desc" style="color:#f59e0b;">' + c.desc + '</td>';
+        html += '<td class="col-check">📡</td>';
+        html += '</tr>';
+      }
+      tbody.innerHTML = html;
+    }
+
+    function renderScripts() {
+      var tbody = document.getElementById('script-body');
+      var html = '';
+      for (var i = 0; i < scripts.length; i++) {
+        var s = scripts[i];
+        html += '<tr>';
+        html += '<td class="col-id" style="color:#d4b87a;">' + s.id + '</td>';
+        html += '<td class="col-status"></td>';
+        html += '<td class="col-data"></td>';
+        html += '<td class="col-name"><span class="tag-script">' + s.name + '</span></td>';
+        html += '<td class="col-url" style="color:#d4b87a;">' + s.url + '</td>';
+        html += '<td class="col-desc" style="color:#d4b87a;">' + s.desc + '</td>';
+        html += '<td class="col-check">⚙️</td>';
+        html += '</tr>';
+      }
+      tbody.innerHTML = html;
+    }
+
+    function updateStats() {
+      var total = pages.length;
+      var connected = 0, disconnected = 0, hasData = 0;
+      for (var key in pageStatus) {
+        if (pageStatus[key] === 'connected') connected++;
+        else if (pageStatus[key] === 'disconnected') disconnected++;
+      }
+      for (var key2 in pageData) {
+        if (pageData[key2] === true) hasData++;
+      }
+      document.getElementById('stat-total').textContent = total;
+      document.getElementById('stat-online').textContent = connected;
+      document.getElementById('stat-offline').textContent = disconnected;
+      document.getElementById('stat-data').textContent = hasData;
+      document.getElementById('stat-checking').textContent = 0;
+    }
+
+    // ============================================================
+    // ЯЗЫК
+    // ============================================================
+    var currentLang = localStorage.getItem('crucix-lang') || 'ru';
+    function switchLang(lang) {
+      currentLang = lang;
+      localStorage.setItem('crucix-lang', lang);
+      var btns = document.querySelectorAll('.lang-btn');
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].classList.toggle('active', btns[i].dataset.lang === lang);
+      }
+    }
+    var btns = document.querySelectorAll('.lang-btn');
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].classList.toggle('active', btns[i].dataset.lang === currentLang);
+    }
+
+    // ============================================================
+    // КОПИРОВАНИЕ
+    // ============================================================
+    document.getElementById('copy-btn').addEventListener('click', function() {
+      var timestamp = new Date().toLocaleString();
+      var report = '=== CRUCIX — РЕЕСТР СТРАНИЦ И МОДУЛЕЙ ===\n';
+      report += 'Дата: ' + timestamp + '\nURL: ' + window.location.href + '\n\n';
+      var connected = 0, disconnected = 0, hasData = 0;
+      for (var key in pageStatus) {
+        if (pageStatus[key] === 'connected') connected++;
+        else if (pageStatus[key] === 'disconnected') disconnected++;
+      }
+      for (var key2 in pageData) {
+        if (pageData[key2] === true) hasData++;
+      }
+      report += 'Статус: 🟢 Подключено ' + connected + ', 🔴 Не подключено ' + disconnected + ', 📊 Данные ' + hasData + '\n\n';
+      report += '--- СТРАНИЦЫ (' + pages.length + ') ---\n';
+      for (var i = 0; i < pages.length; i++) {
+        var p = pages[i];
+        var status = pageStatus[p.id] || 'unknown';
+        var data = pageData[p.id];
+        var icon = status === 'connected' ? '🟢' : '🔴';
+        var dataIcon = data === true ? '✅' : data === false ? '❌' : '—';
+        report += icon + ' ' + dataIcon + ' [' + p.id + '] ' + p.name + ' → ' + p.url + ' | ' + p.desc + '\n';
+      }
+      report += '\n--- API МОДУЛИ (' + apiModules.length + ') ---\n';
+      for (var j = 0; j < apiModules.length; j++) {
+        var m = apiModules[j];
+        report += '📦 [' + m.id + '] ' + m.name + ' → http://localhost:3117' + m.url + ' | ' + m.desc + '\n';
+      }
+      report += '\n--- СБОРЩИКИ (' + collectors.length + ') ---\n';
+      for (var k = 0; k < collectors.length; k++) {
+        var c = collectors[k];
+        report += '📡 [' + c.id + '] ' + c.name + ' → ' + c.url + ' | ' + c.desc + '\n';
+      }
+      report += '\n--- СКРИПТЫ (' + scripts.length + ') ---\n';
+      for (var l = 0; l < scripts.length; l++) {
+        var s = scripts[l];
+        report += '⚙️ [' + s.id + '] ' + s.name + ' → ' + s.url + ' | ' + s.desc + '\n';
+      }
+      report += '\n--- CRUCIX OSINT TERMINAL ---\n🌐 ' + window.location.origin;
+
+      navigator.clipboard.writeText(report).then(function() {
+        var btn = document.getElementById('copy-btn');
+        btn.textContent = '✅ Скопировано!';
+        setTimeout(function() { btn.textContent = '📋 КОПИРОВАТЬ'; }, 3000);
+        showNotification('✅ Реестр скопирован');
+      }).catch(function() {
+        var textarea = document.createElement('textarea');
+        textarea.value = report;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        var btn = document.getElementById('copy-btn');
+        btn.textContent = '✅ Скопировано!';
+        setTimeout(function() { btn.textContent = '📋 КОПИРОВАТЬ'; }, 3000);
+        showNotification('✅ Реестр скопирован');
+      });
+    });
+
+    function showNotification(msg) {
+      var els = document.querySelectorAll('.notification');
+      for (var i = 0; i < els.length; i++) els[i].remove();
+      var el = document.createElement('div');
+      el.className = 'notification';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(function() { el.remove(); }, 2500);
+    }
+
+    // ============================================================
+    // ИНИЦИАЛИЗАЦИЯ
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', function() {
+      var savedLang = localStorage.getItem('crucix-lang') || 'ru';
+      switchLang(savedLang);
+      renderPages();
+      renderApiModules();
+      renderCollectors();
+      renderScripts();
+      updateStats();
+      setTimeout(checkAllPages, 800);
+    });
+  </script>
+</body>
+</html>

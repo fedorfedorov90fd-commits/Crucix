@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Стратегический слой — Crucix</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -209,48 +209,33 @@
             .header .lang-selector .lang-btn { font-size: 10px; padding: 2px 6px; }
         }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <header class="header">
-        <h1 id="map-title">🎯 <span id="map-title-span">Стратегический</span> слой (RSSL)</h1>
-        <div class="nav-links">
-            <div class="lang-selector" id="lang-selector">
-                <button class="lang-btn active" data-lang="ru" onclick="setLanguage('ru')">🇷🇺 RU</button>
-                <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">🇬🇧 EN</button>
-            </div>
-            <a href="/jarvis" class="home" id="nav-home">🏠 Главная</a>
-            <a href="/rss-feed" class="rss" id="nav-rss">📰 Лента</a>
-            <a href="/strategic-layer" class="active" id="nav-map">🎯 Стратегия</a>
+      <h1 id="map-title">🎯 <span id="map-title-span">Название страницы<br>
+        </span></h1>
+      <div class="nav-links">
+        <div class="lang-selector" id="lang-selector"> <button class="lang-btn active"
+            data-lang="ru" onclick="setLanguage('ru')">🇷🇺 RU</button> <button
+            class="lang-btn" data-lang="en" onclick="setLanguage('en')">🇬🇧 EN</button>
         </div>
+        <a href="/jarvis" class="home" id="nav-home">🏠 на Главную</a> <a href="/rss-feed"
+          class="rss" id="nav-rss">📰Список страниц</a> <a href="/strategic-layer"
+          class="active" id="nav-map">Help</a> </div>
     </header>
-
-    <div class="map-wrapper">
-        <div id="map">
-            <div class="loading" id="loading-text">Загрузка стратегического слоя...</div>
+    <div class="map-wrapper"><br>
+      <div id="map"> </div>
+      <button class="btn-copy" id="btn-copy" onclick="copyData()">📋 Копировать
+        данные</button>
+      <div class="legend" id="legend">
+        <div class="title" id="legend-title"><br>
         </div>
-
-        <button class="btn-copy" id="btn-copy" onclick="copyData()">📋 Копировать данные</button>
-
-        <div class="legend" id="legend">
-            <div class="title" id="legend-title">🎯 Стратегические объекты</div>
-            <div class="item"><span class="color-box military"></span> <span id="legend-military">Военные базы</span></div>
-            <div class="item"><span class="color-box nuclear"></span> <span id="legend-nuclear">☢️ Ядерные объекты</span></div>
-            <div class="item"><span class="color-box cable"></span> <span id="legend-cable">🌊 Подводные кабели</span></div>
-            <div class="item"><span class="color-box asset"></span> <span id="legend-asset">🛢️ Стратег. объекты</span></div>
-        </div>
-
-        <div class="stats" id="stats">
-            <div class="count" id="marker-count">0</div>
-            <div class="label" id="stats-label">стратегических объектов</div>
-        </div>
-
-        <div class="ssi-panel" id="ssi-panel">
-            <div class="ssi-title">📊 Индекс напряжённости</div>
-            <div class="ssi-bar"><div class="ssi-fill" id="ssi-fill" style="width: 40%;"></div></div>
-            <div class="ssi-value" id="ssi-label" style="color: #f97316;">40%</div>
-        </div>
+      </div>
+      <div class="stats" id="stats"><br>
+      </div>
+      <div class="ssi-panel" id="ssi-panel"><br>
+      </div>
     </div>
-
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="/js/strategic-export.js"></script>
     <script src="/js/strategic-help.js"></script>
@@ -628,5 +613,5 @@
             console.log('✅ Инициализация завершена');
         });
     </script>
-</body>
+  </body>
 </html>

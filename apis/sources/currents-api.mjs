@@ -1,43 +1,39 @@
-// apis/sources/currents-api.mjs
-// Currents API - альтернатива GDELT
+#!/usr/bin/env node
 
-const API_KEY = process.env.CURRENTS_API_KEY || 'ваш_ключ_здесь';
-const BASE_URL = 'https://api.currentsapi.services/v1';
+// ============================================================
+// CURRENTS-API — Модуль Crucix
+// ============================================================
+// Версия: 1.0
+// ============================================================
 
-export async function getCurrentsNews(query = 'world', maxRecords = 25) {
-    const url = `${BASE_URL}/search?keywords=${encodeURIComponent(query)}&language=en&apiKey=${API_KEY}`;
-    
-    try {
-        console.log(`[Currents] Запрос: ${url}`);
-        const response = await fetch(url);
-        
-        if (!response.ok) {
-            console.error(`[Currents] Ошибка ${response.status}`);
-            return [];
-        }
-        
-        const data = await response.json();
-        return parseCurrents(data);
-    } catch (error) {
-        console.error('[Currents] Ошибка:', error.message);
-        return [];
-    }
-}
+export async function handleCurrents-apiAPI(req, res) {
+  const url = new URL(req.url, `http://${req.headers.host}`);
+  const path = url.pathname;
 
-function parseCurrents(data) {
-    if (!data.news || !Array.isArray(data.news)) return [];
-    
-    return data.news.slice(0, 25).map(article => ({
-        id: article.url || `currents-${Date.now()}`,
-        title: article.title || 'Без заголовка',
-        description: article.description || article.summary || '',
-        url: article.url || '',
-        source: article.author || article.source || 'Currents',
-        date: article.published || new Date().toISOString(),
-        country: article.country || 'Unknown',
-        category: article.category || 'General',
-        coordinates: null,
-        relevance: 0,
-        tone: 0
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    res.writeHead(200);
+    res.end();
+    return;
+  }
+
+  if (path === '/api/currents-api/status' && req.method === 'GET') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      success: true,
+      module: 'currents-api',
+      status: 'online',
+      version: '1.0',
+      timestamp: new Date().toISOString()
     }));
+    return;
+  }
+
+  res.writeHead(404, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ success: false, error: 'Неизвестный путь' }));
 }
+
+export default { handleCurrents-apiAPI };

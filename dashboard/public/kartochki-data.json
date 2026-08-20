@@ -1,0 +1,968 @@
+{
+  "modules": [
+    {
+      "id": "anomaly-detector",
+      "name": "Anomaly detector",
+      "url": "/anomaly-detector",
+      "icon": "⚠️",
+      "category": "Аналитика",
+      "description": "Детектор аномалий в потоках данных.",
+      "usage": "Отслеживайте аномалии."
+    },
+    {
+      "id": "correlation",
+      "name": "Correlation",
+      "url": "/correlation",
+      "icon": "🔗",
+      "category": "Аналитика",
+      "description": "Выявление корреляций между событиями.",
+      "usage": "Выберите параметры."
+    },
+    {
+      "id": "early-warning",
+      "name": "Early warning",
+      "url": "/early-warning",
+      "icon": "🚨",
+      "category": "Аналитика",
+      "description": "Обнаружение ранних признаков кризисов за 7-14 дней.",
+      "usage": "Следите за картой рисков."
+    },
+    {
+      "id": "global-index",
+      "name": "Global index",
+      "url": "/global-index",
+      "icon": "📊",
+      "category": "Аналитика",
+      "description": "Интегральный показатель глобальной напряжённости (0-100).",
+      "usage": "Следите за динамикой индекса."
+    },
+    {
+      "id": "historical-analysis",
+      "name": "Historical analysis",
+      "url": "/historical-analysis",
+      "icon": "📈",
+      "category": "Аналитика",
+      "description": "Анализ исторических данных и трендов.",
+      "usage": "Выберите период для анализа."
+    },
+    {
+      "id": "prediction-intel",
+      "name": "Prediction intel",
+      "url": "/prediction-intel",
+      "icon": "🔮",
+      "category": "Аналитика",
+      "description": "Интеллектуальное прогнозирование событий.",
+      "usage": "Анализируйте прогнозы."
+    },
+    {
+      "id": "predictive",
+      "name": "Predictive",
+      "url": "/predictive",
+      "icon": "📊",
+      "category": "Аналитика",
+      "description": "Предиктивная аналитика на основе ML-моделей.",
+      "usage": "Настройте параметры."
+    },
+    {
+      "id": "silence",
+      "name": "Silence",
+      "url": "/silence",
+      "icon": "🔇",
+      "category": "Аналитика",
+      "description": "Мониторинг информационных пробелов и зон молчания.",
+      "usage": "Следите за регионами с тишиной."
+    },
+    {
+      "id": "strategic-intel",
+      "name": "Strategic intel",
+      "url": "/strategic-intel",
+      "icon": "🎯",
+      "category": "Аналитика",
+      "description": "Сводные аналитические отчёты по стратегическим регионам.",
+      "usage": "Анализируйте регионы."
+    },
+    {
+      "id": "strategic-layer",
+      "name": "Strategic layer",
+      "url": "/strategic-layer",
+      "icon": "🗺️",
+      "category": "Аналитика",
+      "description": "Расширенный слой для геополитической карты.",
+      "usage": "Включайте слой для анализа."
+    },
+    {
+      "id": "trust",
+      "name": "Trust",
+      "url": "/trust",
+      "icon": "🛡️",
+      "category": "Аналитика",
+      "description": "Оценка достоверности источников данных.",
+      "usage": "Просматривайте рейтинг источников."
+    },
+    {
+      "id": "cyber",
+      "name": "Cyber",
+      "url": "/cyber",
+      "icon": "💻",
+      "category": "Безопасность",
+      "description": "Общий дашборд кибербезопасности.",
+      "usage": "Отслеживайте угрозы."
+    },
+    {
+      "id": "cyber-intel",
+      "name": "Cyber intel",
+      "url": "/cyber-intel",
+      "icon": "🕵️",
+      "category": "Безопасность",
+      "description": "Разведывательная информация по кибератакам и группировкам.",
+      "usage": "Анализируйте угрозы."
+    },
+    {
+      "id": "cyber-threats",
+      "name": "Cyber threats",
+      "url": "/cyber-threats",
+      "icon": "🔒",
+      "category": "Безопасность",
+      "description": "Актуальные киберугрозы и уязвимости из CISA KEV.",
+      "usage": "Отслеживайте уязвимости."
+    },
+    {
+      "id": "darkweb",
+      "name": "Darkweb",
+      "url": "/darkweb",
+      "icon": "🌑",
+      "category": "Безопасность",
+      "description": "Мониторинг даркнета (Tor, I2P).",
+      "usage": "Отслеживайте активность."
+    },
+    {
+      "id": "geo-map",
+      "name": "Geo map",
+      "url": "/geo-map",
+      "icon": "🌍",
+      "category": "Главные",
+      "description": "Интерактивная карта мира с подсветкой стран по уровню напряжённости.",
+      "usage": "Клик для анализа стран."
+    },
+    {
+      "id": "jarvis",
+      "name": "Jarvis",
+      "url": "/jarvis",
+      "icon": "🤖",
+      "category": "Главные",
+      "description": "Центральная панель управления Crucix с 3D-глобусом и панелями данных.",
+      "usage": "Быстрый обзор глобальной ситуации."
+    },
+    {
+      "id": "jarviskart",
+      "name": "Jarviskart",
+      "url": "/jarviskart",
+      "icon": "🗂️",
+      "category": "Главные",
+      "description": "Альтернативная версия главного интерфейса с карточками.",
+      "usage": "Используйте для быстрого перехода."
+    },
+    {
+      "id": "basket",
+      "name": "Basket",
+      "url": "/basket",
+      "icon": "📦",
+      "category": "Данные",
+      "description": "Центральное хранилище всех собранных данных.",
+      "usage": "Просматривайте собранные данные."
+    },
+    {
+      "id": "export",
+      "name": "Export",
+      "url": "/export",
+      "icon": "📤",
+      "category": "Инструменты",
+      "description": "Экспорт данных в JSON, CSV, PDF.",
+      "usage": "Выберите данные и формат."
+    },
+    {
+      "id": "file-picker",
+      "name": "File picker",
+      "url": "/file-picker",
+      "icon": "📁",
+      "category": "Инструменты",
+      "description": "Выбор файлов для загрузки в систему.",
+      "usage": "Загружайте файлы."
+    },
+    {
+      "id": "grid-tool",
+      "name": "Grid tool",
+      "url": "/grid-tool",
+      "icon": "📐",
+      "category": "Инструменты",
+      "description": "Инструмент координатной сетки (Ctrl+Shift+G).",
+      "usage": "Ctrl+Shift+G для включения."
+    },
+    {
+      "id": "decision",
+      "name": "Decision",
+      "url": "/decision",
+      "icon": "📋",
+      "category": "Интерфейс",
+      "description": "Панель принятия решений на основе аналитики.",
+      "usage": "Используйте для решений."
+    },
+    {
+      "id": "kartochki",
+      "name": "Kartochki",
+      "url": "/kartochki",
+      "icon": "🗂️",
+      "category": "Интерфейс",
+      "description": "Навигационная карта всех страниц проекта.",
+      "usage": "Клик для перехода."
+    },
+    {
+      "id": "lenses",
+      "name": "Lenses",
+      "url": "/lenses",
+      "icon": "🔍",
+      "category": "Интерфейс",
+      "description": "Переключаемые линзы для фильтрации данных по темам.",
+      "usage": "Клик по линзе для фильтра."
+    },
+    {
+      "id": "acled",
+      "name": "Acled",
+      "url": "/acled",
+      "icon": "⚔️",
+      "category": "Конфликты",
+      "description": "Данные о вооружённых конфликтах и протестах от ACLED.",
+      "usage": "Следите за конфликтами."
+    },
+    {
+      "id": "quantum",
+      "name": "Quantum",
+      "url": "/quantum",
+      "icon": "⚛️",
+      "category": "Космос",
+      "description": "Симуляция квантовых вычислений.",
+      "usage": "Экспериментируйте."
+    },
+    {
+      "id": "satellite",
+      "name": "Satellite",
+      "url": "/satellite",
+      "icon": "🛰️",
+      "category": "Космос",
+      "description": "Отслеживание спутников на орбите.",
+      "usage": "Следите за спутниковыми группировками."
+    },
+    {
+      "id": "satellite-internet",
+      "name": "Satellite internet",
+      "url": "/satellite-internet",
+      "icon": "📡",
+      "category": "Космос",
+      "description": "Отображение группировок спутников Starlink, OneWeb.",
+      "usage": "Анализируйте покрытие."
+    },
+    {
+      "id": "space-monitor",
+      "name": "Space monitor",
+      "url": "/space-monitor",
+      "icon": "🛸",
+      "category": "Космос",
+      "description": "Дашборд космической обстановки.",
+      "usage": "Отслеживайте космос."
+    },
+    {
+      "id": "aviation",
+      "name": "Aviation",
+      "url": "/aviation",
+      "icon": "🛩️",
+      "category": "Мониторинг",
+      "description": "Отображение военных и гражданских воздушных судов на карте.",
+      "usage": "Отслеживайте военные борта."
+    },
+    {
+      "id": "aviation-monitor",
+      "name": "Aviation monitor",
+      "url": "/aviation-monitor",
+      "icon": "🛩️",
+      "category": "Мониторинг",
+      "description": "Отслеживание воздушного трафика в реальном времени.",
+      "usage": "Следите за полётами."
+    },
+    {
+      "id": "blockchain",
+      "name": "Blockchain",
+      "url": "/blockchain",
+      "icon": "⛓️",
+      "category": "Мониторинг",
+      "description": "Мониторинг блокчейн-транзакций и криптовалют.",
+      "usage": "Следите за транзакциями."
+    },
+    {
+      "id": "cisa",
+      "name": "Cisa",
+      "url": "/cisa",
+      "icon": "🔒",
+      "category": "Мониторинг",
+      "description": "Данные кибербезопасности от CISA.",
+      "usage": "Фильтруйте по уровню угрозы."
+    },
+    {
+      "id": "dark-ships",
+      "name": "Dark ships",
+      "url": "/dark-ships",
+      "icon": "🚢",
+      "category": "Мониторинг",
+      "description": "Выявление судов с отключённым AIS.",
+      "usage": "Отслеживайте подозрительные суда."
+    },
+    {
+      "id": "eia",
+      "name": "Eia",
+      "url": "/eia",
+      "icon": "⚡",
+      "category": "Мониторинг",
+      "description": "Энергетические данные от EIA: цены на нефть, газ, уголь.",
+      "usage": "Выберите энергоноситель."
+    },
+    {
+      "id": "energy-monitor",
+      "name": "Energy monitor",
+      "url": "/energy-monitor",
+      "icon": "⚡",
+      "category": "Мониторинг",
+      "description": "Визуализация энергетических потоков.",
+      "usage": "Анализируйте энергетику."
+    },
+    {
+      "id": "environment-monitor",
+      "name": "Environment monitor",
+      "url": "/environment-monitor",
+      "icon": "🌿",
+      "category": "Мониторинг",
+      "description": "Отображение уровня загрязнений и экологических данных.",
+      "usage": "Отслеживайте экологию."
+    },
+    {
+      "id": "firms",
+      "name": "Firms",
+      "url": "/firms",
+      "icon": "🔥",
+      "category": "Мониторинг",
+      "description": "Данные о пожарах со спутников от NASA FIRMS.",
+      "usage": "Отслеживайте активные пожары."
+    },
+    {
+      "id": "health-monitor",
+      "name": "Health monitor",
+      "url": "/health-monitor",
+      "icon": "🏥",
+      "category": "Мониторинг",
+      "description": "Мониторинг систем здравоохранения и эпидемий.",
+      "usage": "Отслеживайте эпидемии."
+    },
+    {
+      "id": "infrastructure",
+      "name": "Infrastructure",
+      "url": "/infrastructure",
+      "icon": "🏗️",
+      "category": "Мониторинг",
+      "description": "Визуализация критической инфраструктуры на карте.",
+      "usage": "Клик для деталей объектов."
+    },
+    {
+      "id": "kiwisdr",
+      "name": "Kiwisdr",
+      "url": "/kiwisdr",
+      "icon": "📻",
+      "category": "Мониторинг",
+      "description": "Интеграция с глобальной сетью KiwiSDR-приёмников.",
+      "usage": "Выберите приёмник."
+    },
+    {
+      "id": "maritime-monitor",
+      "name": "Maritime monitor",
+      "url": "/maritime-monitor",
+      "icon": "🚢",
+      "category": "Мониторинг",
+      "description": "Отображение позиций судов в реальном времени.",
+      "usage": "Следите за судоходством."
+    },
+    {
+      "id": "noaa",
+      "name": "Noaa",
+      "url": "/noaa",
+      "icon": "🌤️",
+      "category": "Мониторинг",
+      "description": "Погодные данные от NOAA: температура, осадки, штормы.",
+      "usage": "Выберите регион для погоды."
+    },
+    {
+      "id": "ofac",
+      "name": "Ofac",
+      "url": "/ofac",
+      "icon": "🚫",
+      "category": "Мониторинг",
+      "description": "Данные санкционных списков OFAC (США).",
+      "usage": "Ищите по имени или организации."
+    },
+    {
+      "id": "opensky",
+      "name": "Opensky",
+      "url": "/opensky",
+      "icon": "✈️",
+      "category": "Мониторинг",
+      "description": "Визуализация данных от OpenSky Network (ADS-B).",
+      "usage": "Следите за трафиком."
+    },
+    {
+      "id": "safecast",
+      "name": "Safecast",
+      "url": "/safecast",
+      "icon": "☢️",
+      "category": "Мониторинг",
+      "description": "Данные о радиационном фоне от проекта Safecast.",
+      "usage": "Клик по маркеру для уровня радиации."
+    },
+    {
+      "id": "shipping",
+      "name": "Shipping",
+      "url": "/shipping",
+      "icon": "⛵",
+      "category": "Мониторинг",
+      "description": "Трекинг гражданских судов с использованием AIS-данных.",
+      "usage": "Отслеживайте маршруты."
+    },
+    {
+      "id": "ships",
+      "name": "Ships",
+      "url": "/ships",
+      "icon": "🚢",
+      "category": "Мониторинг",
+      "description": "Отслеживание морских судов в реальном времени (AIS).",
+      "usage": "Следите за судоходством."
+    },
+    {
+      "id": "social",
+      "name": "Social",
+      "url": "/social",
+      "icon": "📱",
+      "category": "Мониторинг",
+      "description": "Мониторинг социальных сетей (Twitter, Telegram, Reddit).",
+      "usage": "Настройте ключевые слова."
+    },
+    {
+      "id": "trade-monitor",
+      "name": "Trade monitor",
+      "url": "/trade-monitor",
+      "icon": "📊",
+      "category": "Мониторинг",
+      "description": "Анализ международной торговли.",
+      "usage": "Анализируйте торговлю."
+    },
+    {
+      "id": "usgs",
+      "name": "Usgs",
+      "url": "/usgs",
+      "icon": "🌋",
+      "category": "Мониторинг",
+      "description": "Данные о землетрясениях от Геологической службы США.",
+      "usage": "Фильтруйте по магнитуде."
+    },
+    {
+      "id": "weather-monitor",
+      "name": "Weather monitor",
+      "url": "/weather-monitor",
+      "icon": "🌤️",
+      "category": "Мониторинг",
+      "description": "Погодные данные в реальном времени.",
+      "usage": "Следите за погодой."
+    },
+    {
+      "id": "who",
+      "name": "Who",
+      "url": "/who",
+      "icon": "🏥",
+      "category": "Мониторинг",
+      "description": "Данные здравоохранения от ВОЗ.",
+      "usage": "Выберите заболевание."
+    },
+    {
+      "id": "gdelt",
+      "name": "Gdelt",
+      "url": "/gdelt",
+      "icon": "🌐",
+      "category": "Новости",
+      "description": "Глобальная база данных событий GDELT.",
+      "usage": "Отслеживайте глобальные тренды."
+    },
+    {
+      "id": "live",
+      "name": "Live",
+      "url": "/live",
+      "icon": "📺",
+      "category": "Новости",
+      "description": "Поток новостей в реальном времени.",
+      "usage": "Следите за новостями."
+    },
+    {
+      "id": "news",
+      "name": "News",
+      "url": "/news",
+      "icon": "📰",
+      "category": "Новости",
+      "description": "Агрегатор новостей с базовой фильтрацией.",
+      "usage": "Просматривайте новости."
+    },
+    {
+      "id": "news-aggregator",
+      "name": "News aggregator",
+      "url": "/news-aggregator",
+      "icon": "📡",
+      "category": "Новости",
+      "description": "Расширенный агрегатор новостей с фильтрами.",
+      "usage": "Настройте фильтры."
+    },
+    {
+      "id": "rss-dashboard",
+      "name": "Rss dashboard",
+      "url": "/rss-dashboard",
+      "icon": "📡",
+      "category": "Новости",
+      "description": "Панель управления RSS-подписками. Добавление и удаление источников.",
+      "usage": "Добавляйте и удаляйте источники."
+    },
+    {
+      "id": "rss-feed",
+      "name": "Rss feed",
+      "url": "/rss-feed",
+      "icon": "📰",
+      "category": "Новости",
+      "description": "Поток новостей из 400+ RSS-источников с 11 региональными фильтрами.",
+      "usage": "Выберите регион для фильтрации."
+    },
+    {
+      "id": "1jarvis",
+      "name": "1jarvis",
+      "url": "/1jarvis",
+      "icon": "📄",
+      "category": "Прочее",
+      "description": "Модуль 1jarvis для мониторинга и анализа.",
+      "usage": "Используйте для мониторинга."
+    },
+    {
+      "id": "2jarvis",
+      "name": "2jarvis",
+      "url": "/2jarvis",
+      "icon": "📄",
+      "category": "Прочее",
+      "description": "Модуль 2jarvis для мониторинга и анализа.",
+      "usage": "Используйте для мониторинга."
+    },
+    {
+      "id": "automated-reports",
+      "name": "Automated reports",
+      "url": "/automated-reports",
+      "icon": "📄",
+      "category": "Прочее",
+      "description": "Генерация автоматических отчётов по расписанию.",
+      "usage": "Настройте отчёты."
+    },
+    {
+      "id": "conflict-predictor",
+      "name": "Conflict predictor",
+      "url": "/conflict-predictor",
+      "icon": "📄",
+      "category": "Прочее",
+      "description": "Модуль conflict-predictor для мониторинга и анализа.",
+      "usage": "Используйте для мониторинга."
+    },
+    {
+      "id": "crucix-dashboard",
+      "name": "Crucix dashboard",
+      "url": "/crucix-dashboard",
+      "icon": "📄",
+      "category": "Прочее",
+      "description": "Модуль crucix-dashboard для мониторинга и анализа.",
+      "usage": "Используйте для мониторинга."
+    },
+    {
+      "id": "deepfake",
+      "name": "Deepfake",
+      "url": "/deepfake",
+      "icon": "📄",
+      "category": "Прочее",
+      "description": "Модуль deepfake для мониторинга и анализа.",
+      "usage": "Используйте для мониторинга."
+    },
+    {
+      "id": "index",
+      "name": "Index",
+      "url": "/index",
+      "icon": "📄",
+      "category": "Прочее",
+      "description": "Модуль index для мониторинга и анализа.",
+      "usage": "Используйте для мониторинга."
+    },
+    {
+      "id": "jarvis (копия)",
+      "name": "Jarvis (копия)",
+      "url": "/jarvis (копия)",
+      "icon": "📄",
+      "category": "Прочее",
+      "description": "Модуль jarvis (копия) для мониторинга и анализа.",
+      "usage": "Используйте для мониторинга."
+    },
+    {
+      "id": "jarvis (панель в 2 ряда",
+      "name": "Jarvis (панель в 2 ряда",
+      "url": "/jarvis (панель в 2 ряда",
+      "icon": "📄",
+      "category": "Прочее",
+      "description": "Модуль jarvis (панель в 2 ряда для мониторинга и анализа.",
+      "usage": "Используйте для мониторинга."
+    },
+    {
+      "id": "jarvis-custom",
+      "name": "Jarvis custom",
+      "url": "/jarvis-custom",
+      "icon": "📄",
+      "category": "Прочее",
+      "description": "Модуль jarvis-custom для мониторинга и анализа.",
+      "usage": "Используйте для мониторинга."
+    },
+    {
+      "id": "jarvis-original",
+      "name": "Jarvis original",
+      "url": "/jarvis-original",
+      "icon": "📄",
+      "category": "Прочее",
+      "description": "Модуль jarvis-original для мониторинга и анализа.",
+      "usage": "Используйте для мониторинга."
+    },
+    {
+      "id": "loading",
+      "name": "Loading",
+      "url": "/loading",
+      "icon": "📄",
+      "category": "Прочее",
+      "description": "Модуль loading для мониторинга и анализа.",
+      "usage": "Используйте для мониторинга."
+    },
+    {
+      "id": "masa",
+      "name": "Masa",
+      "url": "/masa",
+      "icon": "🤖",
+      "category": "Прочее",
+      "description": "MASA — Multi-Agent System Architecture.",
+      "usage": "Используйте мультиагентный анализ."
+    },
+    {
+      "id": "NEW_PAGE",
+      "name": "NEW_PAGE",
+      "url": "/NEW_PAGE",
+      "icon": "📄",
+      "category": "Прочее",
+      "description": "Модуль NEW_PAGE для мониторинга и анализа.",
+      "usage": "Используйте для мониторинга."
+    },
+    {
+      "id": "nlp",
+      "name": "Nlp",
+      "url": "/nlp",
+      "icon": "📄",
+      "category": "Прочее",
+      "description": "Модуль nlp для мониторинга и анализа.",
+      "usage": "Используйте для мониторинга."
+    },
+    {
+      "id": "ollama-chat",
+      "name": "Ollama chat",
+      "url": "/ollama-chat",
+      "icon": "📄",
+      "category": "Прочее",
+      "description": "Модуль ollama-chat для мониторинга и анализа.",
+      "usage": "Используйте для мониторинга."
+    },
+    {
+      "id": "p2p",
+      "name": "P2p",
+      "url": "/p2p",
+      "icon": "🔄",
+      "category": "Прочее",
+      "description": "P2P-обмен данными между узлами Crucix.",
+      "usage": "Обменивайтесь данными."
+    },
+    {
+      "id": "registry (копия113)",
+      "name": "Registry (копия113)",
+      "url": "/registry (копия113)",
+      "icon": "📄",
+      "category": "Прочее",
+      "description": "Модуль registry (копия113) для мониторинга и анализа.",
+      "usage": "Используйте для мониторинга."
+    },
+    {
+      "id": "registry-v2",
+      "name": "Registry v2",
+      "url": "/registry-v2",
+      "icon": "📄",
+      "category": "Прочее",
+      "description": "Модуль registry-v2 для мониторинга и анализа.",
+      "usage": "Используйте для мониторинга."
+    },
+    {
+      "id": "rss-feed (копия)",
+      "name": "Rss feed (копия)",
+      "url": "/rss-feed (копия)",
+      "icon": "📄",
+      "category": "Прочее",
+      "description": "Модуль rss-feed (копия) для мониторинга и анализа.",
+      "usage": "Используйте для мониторинга."
+    },
+    {
+      "id": "scenarios",
+      "name": "Scenarios",
+      "url": "/scenarios",
+      "icon": "📄",
+      "category": "Прочее",
+      "description": "Модуль scenarios для мониторинга и анализа.",
+      "usage": "Используйте для мониторинга."
+    },
+    {
+      "id": "strategic-intel (копия)",
+      "name": "Strategic intel (копия)",
+      "url": "/strategic-intel (копия)",
+      "icon": "📄",
+      "category": "Прочее",
+      "description": "Модуль strategic-intel (копия) для мониторинга и анализа.",
+      "usage": "Используйте для мониторинга."
+    },
+    {
+      "id": "strategic-layer (копия)",
+      "name": "Strategic layer (копия)",
+      "url": "/strategic-layer (копия)",
+      "icon": "📄",
+      "category": "Прочее",
+      "description": "Модуль strategic-layer (копия) для мониторинга и анализа.",
+      "usage": "Используйте для мониторинга."
+    },
+    {
+      "id": "supply-chain-monitor",
+      "name": "Supply chain monitor",
+      "url": "/supply-chain-monitor",
+      "icon": "📄",
+      "category": "Прочее",
+      "description": "Модуль supply-chain-monitor для мониторинга и анализа.",
+      "usage": "Используйте для мониторинга."
+    },
+    {
+      "id": "thinktanks",
+      "name": "Thinktanks",
+      "url": "/thinktanks",
+      "icon": "🏛️",
+      "category": "Прочее",
+      "description": "Агрегация публикаций аналитических центров.",
+      "usage": "Анализируйте публикации."
+    },
+    {
+      "id": "agents",
+      "name": "Agents",
+      "url": "/agents",
+      "icon": "🤖",
+      "category": "Система",
+      "description": "Управление автономными агентами сбора данных.",
+      "usage": "Настройте агентов."
+    },
+    {
+      "id": "diagnostics",
+      "name": "Diagnostics",
+      "url": "/diagnostics",
+      "icon": "🩺",
+      "category": "Система",
+      "description": "Центр управления проектом. Проверяет статус всех модулей.",
+      "usage": "Проверяйте состояние системы."
+    },
+    {
+      "id": "help",
+      "name": "Help",
+      "url": "/help",
+      "icon": "❓",
+      "category": "Система",
+      "description": "Встроенная система справки и документации.",
+      "usage": "Используйте поиск для информации."
+    },
+    {
+      "id": "local",
+      "name": "Local",
+      "url": "/local",
+      "icon": "📍",
+      "category": "Система",
+      "description": "Мониторинг локальной сети и состояния сервера.",
+      "usage": "Отслеживайте локальное состояние."
+    },
+    {
+      "id": "monitor",
+      "name": "Monitor",
+      "url": "/monitor",
+      "icon": "📊",
+      "category": "Система",
+      "description": "Центральный дашборд мониторинга всех систем.",
+      "usage": "Отслеживайте состояние."
+    },
+    {
+      "id": "profile",
+      "name": "Profile",
+      "url": "/profile",
+      "icon": "👤",
+      "category": "Система",
+      "description": "Профиль пользователя и настройки.",
+      "usage": "Настройте предпочтения."
+    },
+    {
+      "id": "registry",
+      "name": "Registry",
+      "url": "/registry",
+      "icon": "📋",
+      "category": "Система",
+      "description": "Технический реестр всех страниц и модулей.",
+      "usage": "Используйте для поиска."
+    },
+    {
+      "id": "scheduler",
+      "name": "Scheduler",
+      "url": "/scheduler",
+      "icon": "⏰",
+      "category": "Система",
+      "description": "Управление расписанием сборщиков данных.",
+      "usage": "Настройте частоту запуска сборщиков."
+    },
+    {
+      "id": "gold-oil-ratio",
+      "name": "Gold oil ratio",
+      "url": "/gold-oil-ratio",
+      "icon": "📊",
+      "category": "Финансы",
+      "description": "Соотношение цен на золото и нефть — индикатор геополитического риска.",
+      "usage": "Индикатор геополитических рисков."
+    },
+    {
+      "id": "market-predictor",
+      "name": "Market predictor",
+      "url": "/market-predictor",
+      "icon": "📉",
+      "category": "Финансы",
+      "description": "Прогнозирование реакции финансовых рынков.",
+      "usage": "Выберите актив для прогноза."
+    },
+    {
+      "id": "economy",
+      "name": "Economy",
+      "url": "/economy",
+      "icon": "💰",
+      "category": "Экономика",
+      "description": "Сводный дашборд макроэкономических индикаторов.",
+      "usage": "Следите за показателями."
+    },
+    {
+      "id": "fred",
+      "name": "Fred",
+      "url": "/fred",
+      "icon": "📊",
+      "category": "Экономика",
+      "description": "Данные Федерального резерва США.",
+      "usage": "Анализируйте экономику США."
+    },
+    {
+      "id": "ai-chat",
+      "name": "Ai chat",
+      "url": "/ai-chat",
+      "icon": "🧠",
+      "category": "AI",
+      "description": "Чат с локальным AI на базе Ollama (deepseek-r1:1.5b).",
+      "usage": "Задайте вопрос в поле ввода."
+    },
+    {
+      "id": "ai-gateway",
+      "name": "Ai gateway",
+      "url": "/ai-gateway",
+      "icon": "🤖",
+      "category": "AI",
+      "description": "Универсальный шлюз для AI-моделей (Ollama, OpenAI, HuggingFace).",
+      "usage": "Используйте для мониторинга."
+    },
+    {
+      "id": "emotion",
+      "name": "Emotion",
+      "url": "/emotion",
+      "icon": "😊",
+      "category": "AI",
+      "description": "Распознавание эмоций в текстах.",
+      "usage": "Анализируйте эмоции."
+    },
+    {
+      "id": "gateway",
+      "name": "Gateway",
+      "url": "/gateway",
+      "icon": "🤖",
+      "category": "AI",
+      "description": "Предыдущая версия AI-шлюза.",
+      "usage": "Для совместимости."
+    },
+    {
+      "id": "hidden-links",
+      "name": "Hidden links",
+      "url": "/hidden-links",
+      "icon": "🕸️",
+      "category": "AI",
+      "description": "Выявление неочевидных связей между событиями.",
+      "usage": "Выберите период для анализа."
+    },
+    {
+      "id": "rag",
+      "name": "Rag",
+      "url": "/rag",
+      "icon": "📚",
+      "category": "AI",
+      "description": "Векторный поиск по базе знаний (RAG).",
+      "usage": "Задайте вопрос."
+    },
+    {
+      "id": "scenario-generator",
+      "name": "Scenario generator",
+      "url": "/scenario-generator",
+      "icon": "🧪",
+      "category": "AI",
+      "description": "Моделирование гипотетических сценариев.",
+      "usage": "Измените параметры сценария."
+    },
+    {
+      "id": "semantic-analysis",
+      "name": "Semantic analysis",
+      "url": "/semantic-analysis",
+      "icon": "🔍",
+      "category": "AI",
+      "description": "Семантический анализ текстов.",
+      "usage": "Анализируйте семантику."
+    },
+    {
+      "id": "sentiment",
+      "name": "Sentiment",
+      "url": "/sentiment",
+      "icon": "😊",
+      "category": "AI",
+      "description": "Анализ тональности новостей.",
+      "usage": "Выберите регион для анализа."
+    },
+    {
+      "id": "voice",
+      "name": "Voice",
+      "url": "/voice",
+      "icon": "🎤",
+      "category": "AI",
+      "description": "Голосовой интерфейс для управления системой.",
+      "usage": "Используйте голос."
+    }
+  ],
+  "total": 107
+}

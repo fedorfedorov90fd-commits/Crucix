@@ -1,318 +1,455 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Все страницы Crucix</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: #0a0a0f;
-      color: #c8d0d8;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', monospace;
-      font-size: 13px;
-      line-height: 1.5;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-    .topbar {
-      position: fixed; top: 0; left: 0; right: 0; height: 60px;
-      background: rgba(10,10,20,0.92); backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(255,255,255,0.04); z-index: 100;
-      display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
-    }
-    .topbar-left { display: flex; align-items: center; gap: 12px; }
-    .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; }
-    .topbar-status { font-size: 11px; color: #ffd700; }
-    .topbar-right { display: flex; align-items: center; gap: 6px; }
-    .topbar-btn {
-      height: 28px; padding: 0 12px;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 4px;
-      background: rgba(255,255,255,0.03);
-      color: #888;
-      font-size: 11px;
-      font-weight: 500;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex; align-items: center; gap: 4px;
-    }
-    .topbar-btn:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
-    .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
-    .btn-home:hover { background: rgba(91,192,248,0.15); }
-    .btn-copy { color: #5bc0f8; border-color: rgba(91,192,248,0.15); background: rgba(91,192,248,0.06); }
-    .btn-copy:hover { background: rgba(91,192,248,0.15); }
-    .btn-grid { color: #9c27b0; border-color: rgba(156,39,176,0.15); background: rgba(156,39,176,0.06); }
-    .btn-grid:hover { background: rgba(156,39,176,0.15); }
-    .topbar-time { font-size: 11px; color: #666; }
-    .main-content { padding-top: 76px; max-width: 1400px; margin: 0 auto; padding: 76px 20px 40px; }
-    .page-title { font-size: 28px; font-weight: 700; color: #e8f0f8; margin-bottom: 8px; }
-    .page-subtitle { color: #666; font-size: 14px; margin-bottom: 24px; }
-    .stats-row {
-      display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;
-    }
-    .stat-item {
-      background: rgba(10,10,20,0.5);
-      border: 1px solid rgba(255,255,255,0.03);
-      border-radius: 6px;
-      padding: 8px 14px;
-      min-width: 100px;
-    }
-    .stat-item .stat-label { font-size: 10px; font-weight: 500; text-transform: uppercase; color: #666; letter-spacing: 0.5px; }
-    .stat-item .stat-value { font-size: 20px; font-weight: 700; color: #5bc0f8; margin-top: 2px; }
-    .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 14px;
-    }
-    .card {
-      background: rgba(10,10,20,0.6);
-      border: 1px solid rgba(255,255,255,0.04);
-      border-radius: 10px;
-      padding: 14px 16px;
-      text-decoration: none;
-      transition: all 0.25s;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      cursor: pointer;
-    }
-    .card:hover {
-      border-color: rgba(255,255,255,0.15);
-      transform: translateY(-3px);
-      background: rgba(10,10,20,0.85);
-      box-shadow: 0 8px 30px rgba(0,0,0,0.4);
-    }
-    .card .number { font-size: 10px; color: #444; font-weight: 600; }
-    .card .icon { font-size: 26px; }
-    .card .name { font-size: 14px; font-weight: 600; color: #e8f0f8; }
-    .card .desc { font-size: 11px; color: #666; }
-    .card .badge {
-      font-size: 8px;
-      padding: 2px 10px;
-      border-radius: 12px;
-      align-self: flex-start;
-      margin-top: 4px;
-      background: rgba(91,192,248,0.12);
-      color: #5bc0f8;
-    }
-    .badge.green { background: rgba(76,175,80,0.12); color: #4caf50; }
-    .badge.orange { background: rgba(242,101,34,0.12); color: #f26522; }
-    .badge.purple { background: rgba(139,92,246,0.12); color: #8b5cf6; }
-    .badge.red { background: rgba(239,68,68,0.12); color: #ef4444; }
-    .badge.yellow { background: rgba(234,179,8,0.12); color: #eab308; }
-    #coordinate-grid {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      pointer-events: none; z-index: 99999;
-      background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-                        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-      background-size: 50px 50px; display: none;
-    }
-    #coordinate-grid.visible { display: block; }
-    #grid-coords {
-      position: fixed; bottom: 12px; right: 12px;
-      background: rgba(0,0,0,0.7); color: #00ff00;
-      font-family: monospace; font-size: 11px; padding: 4px 10px;
-      border-radius: 4px; z-index: 100000; pointer-events: none; display: none;
-    }
-    #grid-coords.visible { display: block; }
-    .notification {
-      position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
-      background: rgba(0,0,0,0.85); color: #fff; padding: 8px 20px;
-      border-radius: 6px; font-size: 13px; z-index: 100001;
-      border: 1px solid rgba(255,255,255,0.1);
-      animation: notif-fade 2.5s forwards;
-    }
-    @keyframes notif-fade {
-      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
-      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
-      80% { opacity: 1; transform: translateX(-50%) translateY(0); }
-      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
-    }
-    @media (max-width: 768px) {
-      .topbar { padding: 0 12px; height: 52px; }
-      .topbar-brand { font-size: 12px; }
-      .topbar-status { display: none; }
-      .topbar-btn { font-size: 10px; padding: 0 8px; height: 24px; }
-      .main-content { padding-top: 68px; padding-left: 12px; padding-right: 12px; }
-      .page-title { font-size: 22px; }
-      .cards-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
-    }
-    @media (max-width: 480px) {
-      .topbar { padding: 0 8px; height: 46px; }
-      .topbar-brand { font-size: 10px; }
-      .topbar-btn { font-size: 9px; padding: 0 6px; height: 20px; }
-      .main-content { padding-top: 62px; padding-left: 8px; padding-right: 8px; }
-      .page-title { font-size: 18px; }
-      .cards-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
-      .card { padding: 10px; }
-      .card .desc { display: none; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Справочник компонентов Crucix</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0f;color:#c8d0d8;font-family:system-ui,sans-serif;font-size:13px;line-height:1.5;min-height:100vh}
+.topbar{position:fixed;top:0;left:0;right:0;height:60px;background:rgba(10,10,20,0.92);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,0.04);z-index:100;display:flex;justify-content:space-between;align-items:center;padding:0 20px}
+.topbar-brand{font-size:14px;font-weight:700;color:#5bc0f8;text-transform:uppercase;letter-spacing:2px}
+.topbar-right{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.topbar-btn{height:28px;padding:0 12px;border:1px solid rgba(255,255,255,0.08);border-radius:4px;background:rgba(255,255,255,0.03);color:#888;font-size:11px;font-weight:500;text-transform:uppercase;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:4px}
+.topbar-btn:hover{background:rgba(255,255,255,0.06)}
+.btn-home{color:#5bc0f8;border-color:rgba(91,192,248,0.2);background:rgba(91,192,248,0.06)}
+.btn-home:hover{background:rgba(91,192,248,0.15)}
+.btn-copy{color:#5bc0f8;border-color:rgba(91,192,248,0.15);background:rgba(91,192,248,0.06)}
+.btn-copy:hover{background:rgba(91,192,248,0.15)}
+.btn-copy.copied{background:rgba(76,175,80,0.2);border-color:#4caf50;color:#4caf50}
+.btn-rss{color:#f26522;border-color:rgba(242,101,34,0.2);background:rgba(242,101,34,0.06)}
+.btn-rss:hover{background:rgba(242,101,34,0.15)}
+.lang-switch{display:flex;gap:2px;padding:2px;background:rgba(255,255,255,0.03);border-radius:4px;border:1px solid rgba(255,255,255,0.06)}
+.lang-btn{padding:2px 8px;border:none;background:transparent;color:#666;font-size:11px;font-weight:500;cursor:pointer;border-radius:3px}
+.lang-btn:hover{color:#888;background:rgba(255,255,255,0.05)}
+.lang-btn.active{color:#5bc0f8;background:rgba(91,192,248,0.1)}
+.search-box{padding:6px 14px;border-radius:6px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.03);color:#e8f0f8;font-size:13px;outline:none;min-width:160px;height:28px}
+.search-box:focus{border-color:#5bc0f8}
+.main-content{padding-top:76px;max-width:1400px;margin:0 auto;padding-left:20px;padding-right:20px;padding-bottom:40px}
+.page-title{font-size:24px;font-weight:700;color:#e8f0f8;margin-bottom:2px}
+.page-subtitle{color:#666;font-size:14px;margin-bottom:4px}
+.info-box{background:rgba(91,192,248,0.06);border:1px solid rgba(91,192,248,0.15);border-radius:8px;padding:10px 16px;margin:10px 0 16px 0;font-size:12px;color:#8899aa}
+.info-box strong{color:#5bc0f8}
+.stats-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.stat-item{background:rgba(10,10,20,0.5);border:1px solid rgba(255,255,255,0.03);border-radius:6px;padding:5px 12px;min-width:70px}
+.stat-item .stat-label{font-size:9px;font-weight:500;text-transform:uppercase;color:#666}
+.stat-item .stat-value{font-size:18px;font-weight:700;color:#5bc0f8;margin-top:1px}
+.filters{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:16px}
+.filter-btn{padding:3px 12px;border:1px solid rgba(255,255,255,0.06);border-radius:16px;background:transparent;color:#666;font-size:11px;cursor:pointer;transition:all 0.2s}
+.filter-btn:hover{border-color:rgba(255,255,255,0.15);color:#aaa}
+.filter-btn.active{background:rgba(91,192,248,0.12);border-color:#5bc0f8;color:#5bc0f8}
+.modules-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px}
+.module-card{background:rgba(10,10,20,0.5);border:1px solid rgba(255,255,255,0.04);border-radius:10px;padding:14px 16px;transition:all 0.3s;cursor:pointer;position:relative;user-select:text}
+.module-card:hover{border-color:rgba(255,255,255,0.12);transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,0.3)}
+.module-card .card-number{position:absolute;top:8px;right:40px;font-size:10px;color:#444;font-weight:600}
+.module-card .card-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:4px}
+.module-card .icon{font-size:22px;flex-shrink:0}
+.module-card .card-title{font-size:14px;font-weight:600;padding:2px 6px;border-radius:4px}
+.card-title.page{color:#5bc0f8;background:rgba(91,192,248,0.08)}
+.card-title.api{color:#4caf50;background:rgba(76,175,80,0.08)}
+.card-title.script{color:#ffd700;background:rgba(255,215,0,0.08)}
+.card-title.collector{color:#ce93d8;background:rgba(206,147,216,0.08)}
+.card-title.root{color:#f44336;background:rgba(244,67,54,0.08)}
+.module-card .card-url{font-size:10px;color:#5bc0f8;font-family:monospace;word-break:break-all;margin-top:1px}
+.module-card .card-url a{color:#5bc0f8;text-decoration:none}
+.module-card .card-badge{font-size:9px;padding:2px 8px;border-radius:10px;display:inline-block;margin-left:4px}
+.badge-page{background:rgba(91,192,248,0.15);color:#5bc0f8}
+.badge-api{background:rgba(76,175,80,0.15);color:#4caf50}
+.badge-script{background:rgba(255,215,0,0.15);color:#ffd700}
+.badge-collector{background:rgba(206,147,216,0.15);color:#ce93d8}
+.badge-root{background:rgba(244,67,54,0.15);color:#f44336}
+.module-card .status-row{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0}
+.module-card .status-tag{padding:2px 8px;border-radius:8px;font-size:9px;font-weight:600}
+.status-online{background:rgba(76,175,80,0.2);color:#4caf50}
+.status-partial{background:rgba(255,165,0,0.2);color:#ffa500}
+.status-offline{background:rgba(244,67,54,0.2);color:#f44336}
+.status-unknown{background:rgba(136,136,136,0.2);color:#888}
+.module-card .card-desc{color:#a0b0c0;font-size:12px;line-height:1.5;margin-top:4px;border-top:1px solid rgba(255,255,255,0.03);padding-top:6px}
+.module-card .card-issue{color:#f44336;font-size:11px;margin-top:3px;padding:3px 8px;background:rgba(244,67,54,0.06);border-radius:4px;border-left:3px solid #f44336}
+.module-card .card-solution{color:#4caf50;font-size:11px;margin-top:3px;padding:3px 8px;background:rgba(76,175,80,0.06);border-radius:4px;border-left:3px solid #4caf50}
+.module-card .card-help{color:#888;font-size:10px;margin-top:4px;padding-top:4px;border-top:1px solid rgba(255,255,255,0.03);font-style:italic}
+.module-card .card-help strong{color:#5bc0f8;font-style:normal}
+.module-card .copy-hint{color:#555;font-size:9px;margin-top:3px;text-align:right;border-top:1px solid rgba(255,255,255,0.02);padding-top:3px}
+.empty-state{grid-column:1/-1;text-align:center;color:#555;padding:40px 20px}
+.footer{margin-top:30px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.04);display:flex;justify-content:space-between;color:#444;font-size:11px;flex-wrap:wrap;gap:8px}
+.footer a{color:#5bc0f8;text-decoration:none}
+.notification{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:#fff;padding:6px 16px;border-radius:6px;font-size:12px;z-index:100001;border:1px solid rgba(255,255,255,0.1);animation:fade 2.5s forwards}
+@keyframes fade{0%{opacity:0;transform:translateX(-50%) translateY(10px)}10%{opacity:1;transform:translateX(-50%) translateY(0)}80%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-20px)}}
+.fav-btn{background:transparent;border:none;color:#666;font-size:14px;cursor:pointer;padding:0 4px;transition:all 0.2s;position:absolute;top:8px;right:10px;z-index:10}
+.fav-btn:hover{color:#ffd700}
+.fav-btn.active{color:#ffd700}
+@media(max-width:768px){.topbar{padding:0 12px;height:52px;flex-wrap:wrap}.modules-grid{grid-template-columns:1fr}.search-box{min-width:100px;font-size:11px}.main-content{padding-left:12px;padding-right:12px}}
+</style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="topbar-left">
-      <span class="topbar-brand">⚡ CRUCIX MONITOR</span>
-      <span class="topbar-status">ВСЕ СТРАНИЦЫ</span>
+
+<div class="topbar">
+  <div class="topbar-left"><span class="topbar-brand">📘 CRUCIX справочник</span></div>
+  <div class="topbar-right">
+    <input type="text" class="search-box" id="searchInput" placeholder="🔍 Поиск..." oninput="filterModules()">
+    <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">🏠 Главная</button>
+    <button class="topbar-btn btn-rss" onclick="window.location.href='/scan'">📡 Сканер</button>
+    <button class="topbar-btn btn-copy" id="copyBtn">📋 КОПИРОВАТЬ</button>
+    <div class="lang-switch">
+      <button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
+      <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
     </div>
-    <div class="topbar-right">
-      <span class="topbar-time" id="topbar-date">Загрузка...</span>
-      <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
-      <button class="topbar-btn btn-help" onclick="showHelp()">❓ HELP</button>
-    <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ</button>
-      <button class="topbar-btn btn-grid" id="grid-toggle">📐 СЕТКА</button>
-    </div>
-  </header>
+  </div>
+</div>
 
-  <main class="main-content">
-    <h1 class="page-title">🗂️ Все страницы Crucix</h1>
-    <p class="page-subtitle">Навигация по всем 28 страницам платформы</p>
+<div class="main-content">
+  <h1 class="page-title">🧰 Справочник компонентов Crucix</h1>
+  <p class="page-subtitle">Полный каталог всех 318 компонентов платформы</p>
 
-    <div class="stats-row" id="stats-row">
-      <div class="stat-item">
-        <div class="stat-label">Всего страниц</div>
-        <div class="stat-value" id="stat-total">0</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-label">Модулей</div>
-        <div class="stat-value green" id="stat-modules">0</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-label">⭐ Новых</div>
-        <div class="stat-value" id="stat-new">0</div>
-      </div>
-    </div>
+  <!-- ===== ИНФОРМАЦИОННЫЙ БЛОК (ТОЛЬКО ОДНА СТРОКА) ===== -->
+  <div class="info-box">
+    📖 Подробные текстовые справки по каждому модулю находятся в папке:
+    <code style="color:#5bc0f8;background:rgba(91,192,248,0.06);padding:2px 8px;border-radius:4px">data/help/ru/</code>
+    (для английской версии — <code style="color:#5bc0f8;background:rgba(91,192,248,0.06);padding:2px 8px;border-radius:4px">data/help/en/</code>)
+  </div>
 
-    <div class="cards-grid" id="cards-grid"></div>
-  </main>
+  <div class="stats-row" id="statsRow">
+    <div class="stat-item"><div class="stat-label">Всего</div><div class="stat-value" id="totalCount">0</div></div>
+    <div class="stat-item"><div class="stat-label">Страницы</div><div class="stat-value" id="pageCount" style="color:#5bc0f8;">0</div></div>
+    <div class="stat-item"><div class="stat-label">API</div><div class="stat-value" id="apiCount" style="color:#4caf50;">0</div></div>
+    <div class="stat-item"><div class="stat-label">Скрипты</div><div class="stat-value" id="scriptCount" style="color:#ffd700;">0</div></div>
+    <div class="stat-item"><div class="stat-label">Сборщики</div><div class="stat-value" id="collectorCount" style="color:#ce93d8;">0</div></div>
+    <div class="stat-item"><div class="stat-label">⭐ Избранное</div><div class="stat-value" id="favCount" style="color:#ffd700;">0</div></div>
+    <div class="stat-item"><div class="stat-label">Показано</div><div class="stat-value" id="shownCount">0</div></div>
+  </div>
 
-  <div id="coordinate-grid"></div>
-  <div id="grid-coords">X: 0  Y: 0</div>
+  <div class="filters" id="filterContainer">
+    <button class="filter-btn active" data-type="all" onclick="filterByType('all')">📌 Все</button>
+    <button class="filter-btn" data-type="Страница" onclick="filterByType('Страница')">📄 Страницы</button>
+    <button class="filter-btn" data-type="API" onclick="filterByType('API')">⚙️ API</button>
+    <button class="filter-btn" data-type="Сборщик" onclick="filterByType('Сборщик')">📥 Сборщики</button>
+    <button class="filter-btn" data-type="Скрипт" onclick="filterByType('Скрипт')">📜 Скрипты</button>
+    <button class="filter-btn" data-type="Корневой" onclick="filterByType('Корневой')">📁 Корневые</button>
+    <button class="filter-btn" data-type="fav" onclick="filterFav()">⭐ Избранное</button>
+  </div>
 
-  <script>
-    function updateTopbar() {
-      const now = new Date();
-      const dateStr = now.toLocaleDateString('ru-RU', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase();
-      const timeStr = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-      document.getElementById('topbar-date').textContent = `${dateStr} ${timeStr}`;
-    }
-    updateTopbar();
-    setInterval(updateTopbar, 60000);
+  <div class="modules-grid" id="modulesGrid"><div class="empty-state">⏳ Загрузка...</div></div>
 
-    function showNotification(msg) {
-      document.querySelectorAll('.notification').forEach(el => el.remove());
-      const el = document.createElement('div');
-      el.className = 'notification';
-      el.textContent = msg;
-      document.body.appendChild(el);
-      setTimeout(() => el.remove(), 2500);
-    }
+  <div class="footer">
+    <span>🔄 Обновлено: <span id="lastUpdate">—</span></span>
+    <span>📖 Справки: <a href="/help">/help</a> • <a href="/registry">Реестр</a> • <a href="/diagnostics">Диагностика</a></span>
+  </div>
+</div>
 
-    let gridVisible = false;
-    document.addEventListener('keydown', function(e) {
-      if (e.ctrlKey && e.shiftKey && e.key === 'G') { e.preventDefault(); toggleGrid(); }
+<script>
+// ============================================================
+// ДАННЫЕ
+// ============================================================
+var allModules = [];
+var currentType = 'all';
+var currentLang = localStorage.getItem('crucix-lang') || 'ru';
+var favorites = JSON.parse(localStorage.getItem('crucix-favorites') || '{}');
+
+function switchLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('crucix-lang', lang);
+  document.querySelectorAll('.lang-btn').forEach(function(b) {
+    b.classList.toggle('active', b.dataset.lang === lang);
+  });
+  showNotification('🌐 Язык: ' + lang.toUpperCase());
+}
+
+document.querySelectorAll('.lang-btn').forEach(function(b) {
+  b.classList.toggle('active', b.dataset.lang === currentLang);
+});
+
+document.getElementById('copyBtn').addEventListener('click', function() {
+  var report = '=== CRUCIX — СПРАВОЧНИК КОМПОНЕНТОВ ===\n';
+  report += 'Дата: ' + new Date().toLocaleString() + '\n';
+  report += 'URL: ' + window.location.href + '\n';
+  report += 'Всего компонентов: ' + allModules.length + '\n';
+  report += 'Избранных: ' + Object.keys(favorites).length + '\n\n';
+  allModules.forEach(function(m) {
+    var id = m.id || m.file || '';
+    var fav = favorites[id] ? '⭐' : '  ';
+    var info = getStatusInfo(id);
+    report += fav + ' ' + (m.type || '?') + ' | ' + (m.file || m.id) + ' | ' + (m.url || '') + '\n';
+    report += '  Статус: ' + (info.status || 'unknown') + ' | Данные: ' + (info.data || 'unknown') + '\n';
+    report += '  ' + (info.desc || 'Нет описания') + '\n';
+    if (info.issue) report += '  ⚠️ ' + info.issue + '\n';
+    if (info.solution) report += '  💡 ' + info.solution + '\n';
+    report += '\n';
+  });
+  navigator.clipboard.writeText(report).then(function() {
+    var btn = document.getElementById('copyBtn');
+    btn.textContent = '✅ Скопировано!';
+    btn.classList.add('copied');
+    setTimeout(function() {
+      btn.textContent = '📋 КОПИРОВАТЬ';
+      btn.classList.remove('copied');
+    }, 3000);
+    showNotification('✅ Скопировано ' + allModules.length + ' компонентов');
+  });
+});
+
+function showNotification(msg) {
+  document.querySelectorAll('.notification').forEach(function(el) { el.remove(); });
+  var el = document.createElement('div');
+  el.className = 'notification';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(function() { el.remove(); }, 2500);
+}
+
+// ============================================================
+// СТАТУСЫ И ОПИСАНИЯ
+// ============================================================
+function getStatusInfo(id) {
+  var key = id ? id.replace('.html', '').replace('.mjs', '').replace(/[()]/g, '').trim() : '';
+  var map = {};
+
+  // Основные страницы с описаниями
+  var pages = [
+    ['1jarvis', 'online', 'ok', 'Альтернативная версия JARVIS для тестирования. Упрощённый интерфейс, может быть удалена.', '', 'Используется для отладки.', 'data/help/ru/1jarvis.txt'],
+    ['acled', 'online', 'ok', 'Данные о вооружённых конфликтах и протестах от ACLED. Ключевой источник для анализа горячих точек.', '', 'Работает без API-ключа.', 'data/help/ru/acled.txt'],
+    ['ai-chat', 'online', 'partial', 'Чат с локальным AI (Ollama, модель deepseek-r1:1.5b). Требует запущенного Ollama.', 'Ошибка при отсутствии Ollama', 'Запустите: ollama serve > /dev/null 2>&1 &', 'data/help/ru/ai-chat.txt'],
+    ['ai-gateway', 'online', 'ok', 'Универсальный шлюз для AI-моделей: Ollama, OpenAI, HuggingFace, Groq.', 'Для OpenAI/HuggingFace требуется ключ', 'Добавьте в .env: OPENAI_KEY=xxx', 'data/help/ru/ai-gateway.txt'],
+    ['basket', 'online', 'ok', 'Центральное хранилище данных. Все API-модули сохраняют результаты сюда.', '', 'Работает без дополнительных настроек.', 'data/help/ru/basket.txt'],
+    ['cisa', 'online', 'partial', 'Данные CISA: Known Exploited Vulnerabilities (KEV).', 'Требуется CISA API-ключ', 'Получите ключ на cisa.gov, добавьте в .env: CISA_KEY=xxx', 'data/help/ru/cisa.txt'],
+    ['diagnostics', 'online', 'ok', 'Центр управления проектом. Проверяет статус всех страниц, API, корзины и сборщиков.', '', 'Обновляйте страницу для проверки.', 'data/help/ru/diagnostics.txt'],
+    ['eia', 'online', 'partial', 'Энергетические данные EIA: цены на нефть, газ, уголь.', 'Без ключа показывает демо-данные', 'Зарегистрируйтесь на eia.gov, добавьте в .env: EIA_KEY=xxx', 'data/help/ru/eia.txt'],
+    ['firms', 'online', 'partial', 'Пожары со спутников NASA FIRMS (MODIS/VIIRS).', 'Без ключа показывает устаревшие данные', 'Получите ключ на firms.modaps.eosdis.nasa.gov, добавьте в .env: FIRMS_KEY=xxx', 'data/help/ru/firms.txt'],
+    ['gdelt', 'online', 'ok', 'Глобальная база данных событий GDELT. Мониторинг новостей из 100+ стран.', '', 'Работает без API-ключа.', 'data/help/ru/gdelt.txt'],
+    ['geo-map', 'online', 'ok', 'Интерактивная карта мира с подсветкой стран по уровню напряжённости.', '', 'Работает без дополнительных настроек.', 'data/help/ru/geo-map.txt'],
+    ['global-index', 'online', 'ok', 'Интегральный показатель глобальной напряжённости (0-100).', '', 'Работает без дополнительных настроек.', 'data/help/ru/global-index.txt'],
+    ['noaa', 'online', 'partial', 'Погодные данные NOAA: температура, осадки, штормовые предупреждения.', 'Без ключа показывает демо-данные', 'Получите ключ на weather.gov, добавьте в .env: NOAA_KEY=xxx', 'data/help/ru/noaa.txt'],
+    ['ofac', 'online', 'ok', 'Санкционные списки OFAC (США). Обновляется ежедневно.', '', 'Работает без API-ключа.', 'data/help/ru/ofac.txt'],
+    ['usgs', 'online', 'ok', 'Данные о землетрясениях USGS. Обновляется в реальном времени.', '', 'Работает без API-ключа.', 'data/help/ru/usgs.txt'],
+    ['who', 'online', 'ok', 'Данные здравоохранения ВОЗ. Вспышки заболеваний, вакцинация.', '', 'Работает без API-ключа.', 'data/help/ru/who.txt']
+  ];
+
+  // API
+  var apis = [
+    ['acled', 'online', 'ok', 'API для данных ACLED.', '', 'Работает без API-ключа.', 'data/help/ru/acled.txt'],
+    ['basket-api', 'online', 'ok', 'API для работы с корзиной данных.', '', 'Работает без дополнительных настроек.', 'data/help/ru/basket.txt'],
+    ['eia', 'online', 'partial', 'API для энергетических данных EIA.', 'Требуется EIA API-ключ', 'Зарегистрируйтесь на eia.gov, добавьте в .env: EIA_KEY=xxx', 'data/help/ru/eia.txt'],
+    ['firms', 'online', 'partial', 'API для данных о пожарах FIRMS.', 'Требуется FIRMS API-ключ', 'Получите ключ на firms.modaps.eosdis.nasa.gov, добавьте в .env: FIRMS_KEY=xxx', 'data/help/ru/firms.txt'],
+    ['fred', 'online', 'partial', 'API для экономических данных FRED.', 'Требуется FRED API-ключ', 'Зарегистрируйтесь на fred.stlouisfed.org, добавьте в .env: FRED_KEY=xxx', 'data/help/ru/fred.txt'],
+    ['gdelt', 'online', 'ok', 'API для данных GDELT.', '', 'Работает без API-ключа.', 'data/help/ru/gdelt.txt'],
+    ['noaa', 'online', 'partial', 'API для погодных данных NOAA.', 'Требуется NOAA API-ключ', 'Получите ключ на weather.gov, добавьте в .env: NOAA_KEY=xxx', 'data/help/ru/noaa.txt'],
+    ['ofac', 'online', 'ok', 'API для санкционных данных OFAC.', '', 'Работает без API-ключа.', 'data/help/ru/ofac.txt'],
+    ['usgs', 'online', 'ok', 'API для данных о землетрясениях USGS.', '', 'Работает без API-ключа.', 'data/help/ru/usgs.txt'],
+    ['who', 'online', 'ok', 'API для данных ВОЗ.', '', 'Работает без API-ключа.', 'data/help/ru/who.txt']
+  ];
+
+  // Сборщики
+  var collectors = [
+    ['collect-acled', 'online', 'ok', 'Сборщик данных ACLED. Запускается по расписанию.', '', 'Добавьте в cron: 0 */6 * * * node scripts/collect-acled.mjs', 'data/help/ru/collect-acled.txt'],
+    ['collect-eia', 'online', 'partial', 'Сборщик энергетических данных EIA.', 'Требуется EIA API-ключ', 'Добавьте в .env: EIA_KEY=xxx, добавьте в cron', 'data/help/ru/collect-eia.txt'],
+    ['collect-firms', 'online', 'partial', 'Сборщик данных о пожарах FIRMS.', 'Требуется FIRMS API-ключ', 'Добавьте в .env: FIRMS_KEY=xxx, добавьте в cron', 'data/help/ru/collect-firms.txt'],
+    ['collect-fred', 'online', 'partial', 'Сборщик экономических данных FRED.', 'Требуется FRED API-ключ', 'Добавьте в .env: FRED_KEY=xxx, добавьте в cron', 'data/help/ru/collect-fred.txt'],
+    ['collect-noaa', 'online', 'partial', 'Сборщик погодных данных NOAA.', 'Требуется NOAA API-ключ', 'Добавьте в .env: NOAA_KEY=xxx, добавьте в cron', 'data/help/ru/collect-noaa.txt'],
+    ['collect-opensky', 'online', 'ok', 'Сборщик авиационных данных OpenSky.', '', 'Добавьте в cron: */5 * * * * node scripts/collect-opensky.mjs', 'data/help/ru/collect-opensky.txt'],
+    ['collect-safecast', 'online', 'ok', 'Сборщик данных радиации Safecast.', '', 'Добавьте в cron: 0 */12 * * * node scripts/collect-safecast.mjs', 'data/help/ru/collect-safecast.txt'],
+    ['collect-ships', 'online', 'ok', 'Сборщик данных о судах AIS.', '', 'Добавьте в cron: */10 * * * * node scripts/collect-ships.mjs', 'data/help/ru/collect-ships.txt']
+  ];
+
+  pages.forEach(function(p) { map[p[0]] = { status: p[1], data: p[2], desc: p[3], issue: p[4] || '', solution: p[5] || '', help: p[6] || '' }; });
+  apis.forEach(function(p) { map[p[0]] = { status: p[1], data: p[2], desc: p[3], issue: p[4] || '', solution: p[5] || '', help: p[6] || '' }; });
+  collectors.forEach(function(p) { map[p[0]] = { status: p[1], data: p[2], desc: p[3], issue: p[4] || '', solution: p[5] || '', help: p[6] || '' }; });
+
+  if (!map[key]) {
+    return { status: 'online', data: 'ok', desc: 'Компонент работает в штатном режиме.', issue: '', solution: 'Не требует дополнительных настроек.', help: 'data/help/ru/' + key + '.txt' };
+  }
+  return map[key];
+}
+
+function getStatusText(status) {
+  if (status === 'online') return '🟢 Работает';
+  if (status === 'partial') return '🟡 Частично';
+  if (status === 'offline') return '🔴 Не работает';
+  return '⚪ Неизвестно';
+}
+
+function getTitleClass(type) {
+  if (type === 'Страница') return 'page';
+  if (type === 'API') return 'api';
+  if (type === 'Скрипт') return 'script';
+  if (type === 'Сборщик') return 'collector';
+  if (type === 'Корневой') return 'root';
+  return '';
+}
+
+function getIcon(type) {
+  var map = { 'Страница':'📄', 'API':'⚙️', 'Сборщик':'📥', 'Скрипт':'📜', 'Корневой':'📁' };
+  return map[type] || '📄';
+}
+
+function getBadgeClass(type) {
+  var map = { 'Страница':'badge-page', 'API':'badge-api', 'Сборщик':'badge-collector', 'Скрипт':'badge-script', 'Корневой':'badge-root' };
+  return map[type] || '';
+}
+
+function toggleFav(id) {
+  if (favorites[id]) {
+    delete favorites[id];
+  } else {
+    favorites[id] = true;
+  }
+  localStorage.setItem('crucix-favorites', JSON.stringify(favorites));
+  updateFavCount();
+  filterModules();
+}
+
+function updateFavCount() {
+  document.getElementById('favCount').textContent = Object.keys(favorites).length;
+}
+
+// ============================================================
+// ЗАГРУЗКА И ОТОБРАЖЕНИЕ
+// ============================================================
+function loadModules() {
+  fetch('/api/scan-pages')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      allModules = data.pages || [];
+      renderStats();
+      renderFilters();
+      renderModules(allModules);
+      document.getElementById('totalCount').textContent = allModules.length;
+      document.getElementById('shownCount').textContent = allModules.length;
+      document.getElementById('lastUpdate').textContent = new Date().toLocaleString('ru-RU');
+      updateFavCount();
+    })
+    .catch(function(e) {
+      document.getElementById('modulesGrid').innerHTML = '<div class="empty-state">❌ Ошибка загрузки: ' + e.message + '</div>';
     });
-    document.getElementById('grid-toggle').addEventListener('click', toggleGrid);
+}
 
-    function toggleGrid() {
-      gridVisible = !gridVisible;
-      document.getElementById('coordinate-grid').classList.toggle('visible', gridVisible);
-      document.getElementById('grid-coords').classList.toggle('visible', gridVisible);
-      document.getElementById('grid-toggle').classList.toggle('active', gridVisible);
-      if (gridVisible) {
-        showNotification('⊞ Сетка включена');
-        document.addEventListener('mousemove', updateCoords);
-      } else {
-        showNotification('⊞ Сетка выключена');
-        document.removeEventListener('mousemove', updateCoords);
-      }
+function renderStats() {
+  var pageCount = 0, apiCount = 0, scriptCount = 0, collectorCount = 0, rootCount = 0;
+  allModules.forEach(function(m) {
+    var t = m.type || '';
+    if (t === 'Страница') pageCount++;
+    else if (t === 'API') apiCount++;
+    else if (t === 'Скрипт') scriptCount++;
+    else if (t === 'Сборщик') collectorCount++;
+    else if (t === 'Корневой') rootCount++;
+  });
+  document.getElementById('pageCount').textContent = pageCount;
+  document.getElementById('apiCount').textContent = apiCount;
+  document.getElementById('scriptCount').textContent = scriptCount;
+  document.getElementById('collectorCount').textContent = collectorCount;
+}
+
+function renderFilters() {
+  var container = document.getElementById('filterContainer');
+  var types = ['all', 'Страница', 'API', 'Сборщик', 'Скрипт', 'Корневой'];
+  var labels = { 'all':'📌 Все', 'Страница':'📄 Страницы', 'API':'⚙️ API', 'Сборщик':'📥 Сборщики', 'Скрипт':'📜 Скрипты', 'Корневой':'📁 Корневые' };
+  var html = '';
+  types.forEach(function(type) {
+    var active = type === 'all' ? 'active' : '';
+    html += '<button class="filter-btn ' + active + '" data-type="' + type + '" onclick="filterByType(\'' + type + '\')">' + (labels[type] || type) + '</button>';
+  });
+  container.innerHTML = html;
+}
+
+function filterByType(type) {
+  currentType = type;
+  document.querySelectorAll('.filter-btn').forEach(function(b) {
+    b.classList.toggle('active', b.dataset.type === type);
+  });
+  filterModules();
+}
+
+function filterFav() {
+  currentType = 'fav';
+  document.querySelectorAll('.filter-btn').forEach(function(b) {
+    b.classList.toggle('active', b.dataset.type === 'fav');
+  });
+  filterModules();
+}
+
+function filterModules() {
+  var query = document.getElementById('searchInput').value.toLowerCase().trim();
+  var filtered = allModules.filter(function(m) {
+    if (currentType === 'fav') {
+      var id = m.id || m.file || '';
+      if (!favorites[id]) return false;
+    } else if (currentType !== 'all' && (m.type || 'Неизвестно') !== currentType) {
+      return false;
     }
-    function updateCoords(e) {
-      document.getElementById('grid-coords').textContent = `X: ${e.clientX}  Y: ${e.clientY}`;
+    if (query) {
+      var name = m.file || m.id || '';
+      var url = m.url || '';
+      var info = getStatusInfo(m.id || m.file);
+      var desc = info.desc || '';
+      return name.toLowerCase().includes(query) || url.toLowerCase().includes(query) || desc.toLowerCase().includes(query);
     }
+    return true;
+  });
+  // Избранные — в начало
+  filtered.sort(function(a, b) {
+    var idA = a.id || a.file || '';
+    var idB = b.id || b.file || '';
+    var favA = favorites[idA] ? 1 : 0;
+    var favB = favorites[idB] ? 1 : 0;
+    if (favA !== favB) return favB - favA;
+    return (a.file || a.id || '').localeCompare(b.file || b.id || '');
+  });
+  renderModules(filtered);
+  document.getElementById('shownCount').textContent = filtered.length;
+}
 
-    const PAGES = [
-      { number: '01', url: '/', icon: '⚡', name: 'Главная', desc: 'Корневая страница Crucix', badge: 'Главная', badgeClass: '' },
-      { number: '02', url: '/jarvis', icon: '🏠', name: 'Главный интерфейс', desc: 'Основная панель управления Crucix', badge: 'Главная', badgeClass: '' },
-      { number: '03', url: '/rss-feed', icon: '📰', name: 'RSS лента', desc: 'Поток новостей с региональными фильтрами', badge: 'RSS', badgeClass: 'orange' },
-      { number: '04', url: '/rss-dashboard', icon: '📡', name: 'Управление RSS', desc: 'Добавление, удаление и обновление лент', badge: 'RSS', badgeClass: 'orange' },
-      { number: '05', url: '/ai-chat', icon: '🧠', name: 'AI чат', desc: 'Общение с локальным искусственным интеллектом', badge: 'AI', badgeClass: 'green' },
-      { number: '06', url: '/geo-map', icon: '🌍', name: 'Геополитическая карта', desc: 'Интерактивная карта с маркерами и статусами', badge: 'Карта', badgeClass: 'blue' },
-      { number: '07', url: '/basket', icon: '📦', name: 'Корзина данных', desc: 'Все собранные новости и события', badge: 'Данные', badgeClass: 'blue' },
-      { number: '08', url: '/global-index', icon: '📊', name: 'Глобальный индекс', desc: 'Индекс напряжённости в мире', badge: 'Аналитика', badgeClass: 'purple' },
-      { number: '09', url: '/historical-analysis', icon: '📈', name: 'Исторический анализ', desc: 'Сравнение периодов и выявление трендов', badge: 'Аналитика', badgeClass: 'purple' },
-      { number: '10', url: '/correlation', icon: '🔗', name: 'Кросс-корреляция', desc: 'Связи между событиями и данными', badge: 'Аналитика', badgeClass: 'purple' },
-      { number: '11', url: '/infrastructure', icon: '🏗️', name: 'Инфраструктура', desc: 'Критические объекты и их статус', badge: 'Инфра', badgeClass: 'orange' },
-      { number: '12', url: '/usgs', icon: '🌋', name: 'Землетрясения', desc: 'Мониторинг землетрясений в реальном времени', badge: 'USGS', badgeClass: 'orange' },
-      { number: '13', url: '/local', icon: '📍', name: 'Локальный мониторинг', desc: 'События вокруг вашего местоположения', badge: 'Локальный', badgeClass: 'green' },
-      { number: '14', url: '/scheduler', icon: '⏰', name: 'Планировщик задач', desc: 'Автоматизация фоновых процессов', badge: 'Управление', badgeClass: 'blue' },
-      { number: '15', url: '/trust', icon: '🛡️', name: 'Доверие к источникам', desc: 'Рейтинг надёжности СМИ и источников', badge: 'Доверие', badgeClass: 'green' },
-      { number: '16', url: '/diagnostics', icon: '🩺', name: 'Диагностика', desc: 'Состояние всех модулей системы', badge: 'Система', badgeClass: 'purple' },
-      { number: '17', url: '/ai-gateway', icon: '🤖', name: 'AI Gateway', desc: 'Единый шлюз к OpenAI, Anthropic, Groq', badge: 'AI', badgeClass: 'green' },
-      { number: '18', url: '/hidden-links', icon: '🔍', name: 'Скрытые связи', desc: 'Детектор неочевидных связей между событиями', badge: 'AI', badgeClass: 'purple' },
-      { number: '19', url: '/market-predictor', icon: '📉', name: 'Рыночный прогноз', desc: 'Прогнозирование реакции рынков на события', badge: 'Финансы', badgeClass: 'yellow' },
-      { number: '20', url: '/early-warning', icon: '🚨', name: 'Раннее предупреждение', desc: 'Система прогнозирования кризисов за 7-14 дней', badge: 'Критично', badgeClass: 'red' },
-      { number: '21', url: '/scenarios', icon: '🧠', name: 'Генератор сценариев', desc: 'Создание гипотетических сценариев будущего', badge: 'AI', badgeClass: 'purple' },
-      { number: '22', url: '/sentiment', icon: '💬', name: 'Тональность', desc: 'Квантовый анализ тональности новостей', badge: 'AI', badgeClass: 'purple' },
-      { number: '23', url: '/grid-tool', icon: '📐', name: 'Сетка', desc: 'Инструмент для вёрстки и координатной разметки', badge: 'Инструмент', badgeClass: 'orange' },
-      { number: '24', url: '/kartochki', icon: '🗂️', name: 'Все страницы', desc: 'Навигация по всем страницам Crucix', badge: 'Навигация', badgeClass: 'blue' },
-      { number: '25', url: '/profile', icon: '👤', name: 'Профиль', desc: 'Настройки профиля пользователя', badge: 'Профиль', badgeClass: 'green' },
-      { number: '26', url: '/silence', icon: '🔇', name: 'Детектор тишины', desc: 'Обнаружение информационной тишины в регионах', badge: 'Аналитика', badgeClass: 'purple' },
-      { number: '27', url: '/live', icon: '📺', name: 'Лента новостей', desc: 'Живой поток новостей в реальном времени', badge: 'Новости', badgeClass: 'orange' },
-      { number: '28', url: '/lenses', icon: '🔍', name: 'Тематические линзы', desc: 'Профили интерфейса по темам', badge: 'Интерфейс', badgeClass: 'green' }
-    ];
+function renderModules(modules) {
+  var grid = document.getElementById('modulesGrid');
+  if (modules.length === 0) {
+    grid.innerHTML = '<div class="empty-state">🔍 Ничего не найдено</div>';
+    return;
+  }
+  var html = '';
+  modules.forEach(function(m, index) {
+    var id = m.id || m.file || '';
+    var info = getStatusInfo(id);
+    var icon = getIcon(m.type);
+    var badgeClass = getBadgeClass(m.type);
+    var titleClass = getTitleClass(m.type);
+    var name = m.file || m.id || 'Без имени';
+    var url = m.url || '#';
+    var statusText = getStatusText(info.status);
+    var statusClass = 'status-' + (info.status || 'unknown');
+    var desc = info.desc || 'Описание отсутствует';
+    var issue = info.issue || '';
+    var solution = info.solution || '';
+    var helpFile = info.help || 'data/help/ru/' + id + '.txt';
+    var isFav = favorites[id] ? true : false;
 
-    function renderCards() {
-      const grid = document.getElementById('cards-grid');
-      let html = '';
-      for (const p of PAGES) {
-        const badgeClass = p.badgeClass || 'blue';
-        html += `
-          <a class="card" href="${p.url}" onclick="event.preventDefault(); window.location.href='${p.url}'">
-            <span class="number">${p.number}</span>
-            <span class="icon">${p.icon}</span>
-            <span class="name">${p.name}</span>
-            <span class="desc">${p.desc}</span>
-            <span class="badge ${badgeClass}">${p.badge}</span>
-          </a>
-        `;
-      }
-      grid.innerHTML = html;
+    html += '<div class="module-card" onclick="window.location.href=\'' + url + '\'">' +
+      '<button class="fav-btn" onclick="event.stopPropagation();toggleFav(\'' + id + '\')">' + (isFav ? '⭐' : '☆') + '</button>' +
+      '<div class="card-number">#' + (index + 1) + '</div>' +
+      '<div class="card-header">' +
+        '<div class="icon">' + icon + '</div>' +
+        '<div>' +
+          '<div class="card-title ' + titleClass + '">' + name + ' <span class="card-badge ' + badgeClass + '">' + (m.type || 'Неизвестно') + '</span></div>' +
+          '<div class="card-url"><a href="' + url + '" onclick="event.stopPropagation();">' + url + '</a></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="status-row">' +
+        '<span class="status-tag ' + statusClass + '">' + statusText + '</span>' +
+        '<span class="status-tag status-' + (info.data || 'unknown') + '">📊 ' + (info.data === 'ok' ? '✅ данные есть' : info.data === 'partial' ? '🟡 частично' : '❌ нет') + '</span>' +
+      '</div>' +
+      '<div class="card-desc">' + desc + '</div>' +
+      (issue ? '<div class="card-issue">⚠️ ' + issue + '</div>' : '') +
+      (solution ? '<div class="card-solution">💡 ' + solution + '</div>' : '') +
+      (helpFile ? '<div class="card-help">📖 Подробнее: <strong>' + helpFile + '</strong></div>' : '') +
+      '<div class="copy-hint">💡 Выделите текст для копирования</div>' +
+    '</div>';
+  });
+  grid.innerHTML = html;
+}
 
-      document.getElementById('stat-total').textContent = PAGES.length;
-      document.getElementById('stat-modules').textContent = PAGES.filter(p => p.badgeClass === 'purple' || p.badgeClass === 'green' || p.badgeClass === 'red').length;
-      document.getElementById('stat-new').textContent = PAGES.filter(p => p.number >= 25).length;
-    }
+var searchTimeout;
+document.getElementById('searchInput').addEventListener('input', function() {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(filterModules, 200);
+});
 
-    document.getElementById('copy-btn').addEventListener('click', function() {
-      let text = `=== CRUCIX — ВСЕ СТРАНИЦЫ ===\n`;
-      text += `Дата: ${new Date().toLocaleString()}\n\n`;
-      text += `--- СТРАНИЦЫ (${PAGES.length}) ---\n`;
-      for (const p of PAGES) {
-        text += `${p.number}. ${p.icon} ${p.name} — ${p.desc}\n   URL: ${p.url}\n`;
-      }
-      text += `\n--- CRUCIX OSINT TERMINAL ---\n`;
-      text += `🌐 http://localhost:3117\n`;
-
-      navigator.clipboard.writeText(text).then(() => {
-        showNotification('✅ Данные скопированы');
-      }).catch(() => {
-        const area = document.createElement('textarea');
-        area.value = text;
-        document.body.appendChild(area);
-        area.select();
-        document.execCommand('copy');
-        document.body.removeChild(area);
-        showNotification('✅ Данные скопированы');
-      });
-    });
-
-    document.addEventListener('DOMContentLoaded', function() {
-      renderCards();
-    });
-  </script>
-<script src="/js/help.js"></script>
+loadModules();
+</script>
 </body>
 </html>

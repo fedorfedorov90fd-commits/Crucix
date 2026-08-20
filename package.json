@@ -4,6 +4,7 @@
   "description": "Local intelligence engine - 27 OSINT sources, live dashboard, public demo at crucix.live, auto-refresh, optional LLM layer.",
   "type": "module",
   "scripts": {
+    "collect:gold-oil": "node scripts/collect-gold-oil-ratio.mjs",
     "start": "node server.mjs",
     "dev": "node --trace-warnings server.mjs",
     "sweep": "node apis/briefing.mjs",
@@ -29,6 +30,7 @@
     "npm": ">=10"
   },
   "dependencies": {
+    "axios": "^1.19.0",
     "compression": "^1.8.1",
     "cors": "^2.8.6",
     "d3": "^7.9.0",

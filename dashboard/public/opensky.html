@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Мониторинг авиации OpenSky — Crucix</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0f;
+      color: #c8d0d8;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; height: 60px;
+      background: rgba(10,10,20,0.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.04); z-index: 100;
+      display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; }
+    .topbar-status { font-size: 11px; color: #44ccff; }
+    .topbar-right { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .topbar-btn {
+      height: 28px; padding: 0 12px; border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 4px; background: rgba(255,255,255,0.03); color: #888;
+      font-size: 11px; font-weight: 500; text-transform: uppercase;
+      cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 4px;
+    }
+    .topbar-btn:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+    .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
+    .btn-home:hover { background: rgba(91,192,248,0.15); }
+    .btn-copy { color: #5bc0f8; border-color: rgba(91,192,248,0.15); background: rgba(91,192,248,0.06); }
+    .btn-copy:hover { background: rgba(91,192,248,0.15); }
+    .btn-copy.copied { background: rgba(76,175,80,0.2); border-color: #4caf50; color: #4caf50; }
+    .btn-registry { color: #ffd700; border-color: rgba(255,215,0,0.2); background: rgba(255,215,0,0.06); }
+    .btn-registry:hover { background: rgba(255,215,0,0.15); }
+    .lang-switch {
+      display: flex; gap: 2px; padding: 2px;
+      background: rgba(255,255,255,0.03); border-radius: 4px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .lang-btn {
+      padding: 2px 8px; border: none; background: transparent; color: #666;
+      font-size: 11px; font-weight: 500; cursor: pointer; border-radius: 3px;
+      transition: all 0.2s;
+    }
+    .lang-btn:hover { color: #888; background: rgba(255,255,255,0.05); }
+    .lang-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.1); }
+    .map-container {
+      padding-top: 60px;
+      height: 100vh;
+      width: 100%;
+      position: relative;
+    }
+    #map {
+      height: 100%;
+      width: 100%;
+      background: #0a0a0f;
+    }
+    .stats {
+      position: absolute;
+      top: 80px;
+      right: 20px;
+      z-index: 1000;
+      background: rgba(10,10,30,0.92);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 12px 16px;
+      backdrop-filter: blur(10px);
+      min-width: 130px;
+      color: #ccc;
+      text-align: center;
+    }
+    .stats .count { font-size: 28px; font-weight: 700; color: #44ccff; }
+    .stats .label { font-size: 11px; color: #888; }
+    .stats .airports { font-size: 14px; color: #ffd700; margin-top: 4px; }
+    .legend {
+      position: absolute;
+      bottom: 30px;
+      left: 20px;
+      z-index: 1000;
+      background: rgba(10,10,30,0.92);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 12px;
+      backdrop-filter: blur(10px);
+      color: #ccc;
+      min-width: 140px;
+    }
+    .legend .title { font-weight: 600; color: #fff; margin-bottom: 6px; font-size: 13px; }
+    .legend .item { display: flex; align-items: center; gap: 8px; margin: 3px 0; }
+    .legend .color-box { width: 20px; height: 14px; border-radius: 3px; display: inline-block; border: 1px solid rgba(255,255,255,0.1); }
+    .legend .color-box.low { background: #22c55e; }
+    .legend .color-box.medium { background: #f59e0b; }
+    .legend .color-box.high { background: #ef4444; }
+    .notification {
+      position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.85); color: #fff; padding: 8px 20px;
+      border-radius: 6px; font-size: 13px; z-index: 100001;
+      border: 1px solid rgba(255,255,255,0.1);
+      animation: notif-fade 2.5s forwards;
+    }
+    @keyframes notif-fade {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+    .loading-overlay {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(10,10,15,0.8); z-index: 999;
+      display: flex; justify-content: center; align-items: center;
+      flex-direction: column; gap: 16px;
+    }
+    .loading-overlay .spinner {
+      width: 48px; height: 48px;
+      border: 4px solid rgba(255,255,255,0.1);
+      border-top-color: #44ccff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-overlay .text { color: #888; font-size: 14px; letter-spacing: 1px; }
+    .leaflet-popup-content-wrapper {
+      background: rgba(10,10,20,0.92) !important;
+      color: #c8d0d8 !important;
+      border-radius: 6px !important;
+      border: 1px solid rgba(255,255,255,0.1) !important;
+    }
+    .leaflet-popup-tip { background: rgba(10,10,20,0.92) !important; }
+    .leaflet-control-zoom { border: 1px solid rgba(255,255,255,0.1) !important; }
+    .leaflet-control-zoom a { background: rgba(10,10,20,0.8) !important; color: #c8d0d8 !important; }
+    @media (max-width: 768px) {
+      .topbar { padding: 0 12px; height: 52px; }
+      .topbar-brand { font-size: 12px; }
+      .topbar-status { display: none; }
+      .topbar-btn { font-size: 10px; padding: 0 8px; height: 24px; }
+      .map-container { padding-top: 68px; }
+      .stats { top: 72px; right: 10px; padding: 8px 12px; min-width: 100px; }
+      .stats .count { font-size: 20px; }
+      .legend { bottom: 10px; left: 10px; padding: 8px 12px; font-size: 11px; min-width: 100px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-brand">⚡ CRUCIX</span>
+      <span class="topbar-status">✈️ МОНИТОРИНГ АВИАЦИИ</span>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← ГЛАВНАЯ</button>
+      <button class="topbar-btn btn-copy" id="copy-btn" onclick="copyAllData()">📋 КОПИРОВАТЬ</button>
+      <button class="topbar-btn btn-registry" onclick="window.location.href='/registry'">📋 РЕЕСТР</button>
+      <div class="lang-switch">
+        <button class="lang-btn active" data-lang="ru" onclick="setLanguage('ru')">RU</button>
+        <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="map-container" id="map-container">
+    <div id="map"></div>
+    <div class="loading-overlay" id="loading-overlay">
+      <div class="spinner"></div>
+      <div class="text">ЗАГРУЗКА ДАННЫХ...</div>
+    </div>
+
+    <div class="legend" id="legend">
+      <div class="title">✈️ Загрузка аэропортов</div>
+      <div class="item"><span class="color-box low"></span> Низкая (&lt; 5 рейсов)</div>
+      <div class="item"><span class="color-box medium"></span> Средняя (5-15)</div>
+      <div class="item"><span class="color-box high"></span> Высокая (> 15)</div>
+    </div>
+
+    <div class="stats" id="stats">
+      <div class="count" id="flight-count">0</div>
+      <div class="label">всего рейсов</div>
+      <div class="airports" id="airport-label">—</div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    let map = null;
+    let markers = [];
+    let data = null;
+
+    function initMap() {
+      map = L.map('map', {
+        center: [30, 20],
+        zoom: 2.5,
+        zoomControl: true,
+        minZoom: 1.5,
+        maxZoom: 10
+      });
+
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '© OpenStreetMap, © CartoDB',
+        maxZoom: 19,
+        opacity: 0.9
+      }).addTo(map);
+
+      loadData();
+    }
+
+    async function loadData() {
+      try {
+        const response = await fetch('/api/opensky/data');
+        const result = await response.json();
+
+        if (result.success && result.data) {
+          data = result.data;
+          renderAirports(data);
+          const totalFlights = data.airports.reduce((sum, a) => sum + (a.flights_count || 0), 0);
+          document.getElementById('flight-count').textContent = totalFlights;
+          document.getElementById('airport-label').textContent = `${data.total} аэропортов`;
+          document.getElementById('loading-overlay').style.display = 'none';
+          setTimeout(() => { if (map) map.invalidateSize(); }, 500);
+        } else {
+          document.getElementById('loading-overlay').innerHTML = '<div class="text" style="color:#ef4444;">❌ НЕТ ДАННЫХ</div>';
+        }
+      } catch (e) {
+        console.error('[OpenSky] Ошибка:', e);
+        document.getElementById('loading-overlay').innerHTML = '<div class="text" style="color:#ef4444;">❌ ОШИБКА ЗАГРУЗКИ</div>';
+      }
+    }
+
+    function renderAirports(data) {
+      if (!map) return;
+
+      const airports = data.airports || [];
+
+      for (const airport of airports) {
+        if (!airport.lat || !airport.lng) continue;
+
+        const count = airport.flights_count || 0;
+        const level = count > 15 ? 'high' : count > 5 ? 'medium' : 'low';
+        const color = level === 'high' ? '#ef4444' : level === 'medium' ? '#f59e0b' : '#22c55e';
+        const size = level === 'high' ? 22 : level === 'medium' ? 18 : 14;
+
+        const icon = L.divIcon({
+          className: 'airport-marker',
+          html: `
+            <div style="position:relative;width:${size}px;height:${size}px;">
+              <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:${color};border-radius:50%;border:2px solid rgba(255,255,255,0.3);box-shadow:0 0 20px ${color}60;"></div>
+              <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:10px;color:#fff;font-weight:700;">${count}</div>
+            </div>
+          `,
+          iconSize: [size, size],
+          iconAnchor: [size/2, size/2]
+        });
+
+        const marker = L.marker([airport.lat, airport.lng], { icon })
+          .addTo(map)
+          .bindPopup(`
+            <div style="padding:4px 0;">
+              <strong style="color:#e8f0f8;font-size:14px;">${airport.airport}</strong><br>
+              <span style="color:${color};font-weight:600;">${airport.flights_count} рейсов</span>
+              <div style="color:#666;font-size:11px;margin-top:3px;">Код: ${airport.code || '—'}</div>
+            </div>
+          `);
+
+        markers.push(marker);
+      }
+    }
+
+    function setLanguage(lang) {
+      localStorage.setItem('crucix-lang', lang);
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+      });
+    }
+
+    function copyAllData() {
+      if (!data) {
+        showNotification('❌ Нет данных для копирования');
+        return;
+      }
+
+      const timestamp = new Date().toLocaleString();
+      let report = '=== CRUCIX — МОНИТОРИНГ АВИАЦИИ ===\n';
+      report += 'Дата: ' + timestamp + '\n';
+      report += 'URL: ' + window.location.href + '\n\n';
+      report += '--- СТАТИСТИКА ---\n';
+      report += 'Аэропортов: ' + (data.total || 0) + '\n';
+      const totalFlights = data.airports.reduce((sum, a) => sum + (a.flights_count || 0), 0);
+      report += 'Всего рейсов: ' + totalFlights + '\n\n';
+      report += '--- АЭРОПОРТЫ ---\n';
+
+      for (const a of (data.airports || [])) {
+        report += `  ${a.airport}: ${a.flights_count} рейсов\n`;
+      }
+
+      report += '\n--- CRUCIX OSINT TERMINAL ---\n';
+      report += '🌐 ' + window.location.origin + '/opensky';
+
+      navigator.clipboard.writeText(report).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = '✅ Скопировано!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = '📋 КОПИРОВАТЬ';
+          btn.classList.remove('copied');
+        }, 3000);
+        showNotification('✅ Данные скопированы');
+      }).catch(() => {
+        const textarea = document.createElement('textarea');
+        textarea.value = report;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = '✅ Скопировано!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = '📋 КОПИРОВАТЬ';
+          btn.classList.remove('copied');
+        }, 3000);
+        showNotification('✅ Данные скопированы');
+      });
+    }
+
+    function showNotification(msg) {
+      document.querySelectorAll('.notification').forEach(el => el.remove());
+      const el = document.createElement('div');
+      el.className = 'notification';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2500);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const savedLang = localStorage.getItem('crucix-lang') || 'ru';
+      setLanguage(savedLang);
+      if (typeof L !== 'undefined') initMap();
+    });
+  </script>
+</body>
+</html>

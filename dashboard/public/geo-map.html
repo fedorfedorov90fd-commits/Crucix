@@ -1,825 +1,1074 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Геополитическая карта — Crucix</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-            background: #0a0a1a;
-            color: #e0e0e0;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 20px;
-            background: rgba(10, 10, 30, 0.95);
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-            flex-shrink: 0;
-            z-index: 100;
-            height: 48px;
-        }
-        .header h1 { font-size: 18px; font-weight: 700; color: #fff; }
-        .header h1 span { color: #44ccff; }
-        .header .lang-selector {
-            display: flex;
-            gap: 4px;
-            align-items: center;
-            background: rgba(255,255,255,0.08);
-            border-radius: 6px;
-            padding: 3px;
-            border: 1px solid rgba(255,255,255,0.12);
-        }
-        .header .lang-selector .lang-btn {
-            background: transparent;
-            border: none;
-            border-radius: 4px;
-            color: #888;
-            padding: 4px 12px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-weight: 600;
-        }
-        .header .lang-selector .lang-btn:hover { 
-            background: rgba(255,255,255,0.1); 
-            color: #e0e0e0; 
-        }
-        .header .lang-selector .lang-btn.active {
-            background: rgba(33,150,243,0.3);
-            color: #fff;
-            box-shadow: 0 0 12px rgba(33,150,243,0.15);
-        }
-        .header .nav-links {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        .header .nav-links a {
-            color: #888;
-            text-decoration: none;
-            font-size: 13px;
-            padding: 4px 12px;
-            border-radius: 4px;
-            transition: all 0.2s;
-        }
-        .header .nav-links a:hover { background: rgba(255,255,255,0.05); color: #e0e0e0; }
-        .header .nav-links a.home { color: #2196f3; }
-        .header .nav-links a.rss { color: #f26522; }
-        .header .nav-links a.active { color: #44ccff; background: rgba(68,204,255,0.1); }
-        
-        .map-wrapper {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-        #map {
-            flex: 1;
-            width: 100%;
-            background: #0a0a1a;
-            min-height: 300px;
-        }
-        
-        .legend {
-            position: absolute;
-            bottom: 30px;
-            left: 20px;
-            z-index: 1000;
-            background: rgba(10, 10, 30, 0.92);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 8px;
-            padding: 12px 16px;
-            font-size: 12px;
-            color: #ccc;
-            backdrop-filter: blur(10px);
-            min-width: 160px;
-        }
-        .legend .title { font-weight: 600; color: #fff; margin-bottom: 6px; font-size: 13px; }
-        .legend .item { display: flex; align-items: center; gap: 8px; margin: 3px 0; }
-        .legend .color-box { width: 20px; height: 14px; border-radius: 3px; display: inline-block; border: 1px solid rgba(255,255,255,0.1); }
-        .legend .color-box.critical { background: rgba(239,68,68,0.7); }
-        .legend .color-box.high { background: rgba(249,115,22,0.6); }
-        .legend .color-box.medium { background: rgba(234,179,8,0.5); }
-        .legend .color-box.normal { background: rgba(34,197,94,0.3); }
-        
-        .stats {
-            position: absolute;
-            top: 60px;
-            right: 20px;
-            z-index: 1000;
-            background: rgba(10, 10, 30, 0.92);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 8px;
-            padding: 12px 16px;
-            font-size: 12px;
-            color: #ccc;
-            backdrop-filter: blur(10px);
-            min-width: 130px;
-        }
-        .stats .count { font-size: 24px; font-weight: 700; color: #44ccff; }
-        .stats .label { font-size: 11px; color: #888; }
-        
-        .btn-copy {
-            position: absolute;
-            top: 60px;
-            right: 180px;
-            z-index: 1000;
-            padding: 8px 16px;
-            background: rgba(33, 150, 243, 0.2);
-            border: 1px solid rgba(33, 150, 243, 0.3);
-            border-radius: 6px;
-            color: #2196f3;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            transition: all 0.2s;
-            backdrop-filter: blur(10px);
-        }
-        .btn-copy:hover { background: rgba(33, 150, 243, 0.3); border-color: #2196f3; }
-        .btn-copy.copied { background: rgba(76, 175, 80, 0.2); border-color: #4caf50; color: #4caf50; }
-        
-        .loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 999;
-            color: #666;
-            font-size: 16px;
-        }
-        
-        .marker-popup .title { font-weight: 600; color: #fff; margin-bottom: 4px; }
-        .marker-popup .source { font-size: 11px; color: #888; margin-bottom: 4px; }
-        .marker-popup .summary { font-size: 12px; color: #aaa; line-height: 1.4; max-height: 60px; overflow: hidden; }
-        .marker-popup .score { display: inline-block; padding: 1px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; margin-top: 4px; }
-        .marker-popup .score.critical { background: #ef4444; color: #fff; }
-        .marker-popup .score.important { background: #f97316; color: #fff; }
-        .marker-popup .score.normal { background: #22c55e; color: #fff; }
-        .marker-popup .read-more { display: inline-block; margin-top: 6px; color: #44ccff; text-decoration: none; font-size: 12px; }
-        .marker-popup .read-more:hover { text-decoration: underline; }
-        
-        .country-status { font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 4px; display: inline-block; }
-        .country-status.critical { background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; }
-        .country-status.high { background: rgba(249,115,22,0.2); color: #f97316; border: 1px solid #f97316; }
-        .country-status.medium { background: rgba(234,179,8,0.2); color: #eab308; border: 1px solid #eab308; }
-        .country-status.normal { background: rgba(34,197,94,0.2); color: #22c55e; border: 1px solid #22c55e; }
-        
-        .country-polygon {
-            stroke-width: 2;
-            stroke-opacity: 0.8;
-            fill-opacity: 0.45;
-        }
-        .country-polygon:hover {
-            fill-opacity: 0.65;
-            stroke-width: 3;
-        }
-        
-        .country-label {
-            font-size: 14px;
-            font-weight: 400;
-            color: #ffffff !important;
-            text-shadow: 
-                0 0 4px rgba(0,0,0,0.95),
-                0 0 8px rgba(0,0,0,0.9),
-                0 0 16px rgba(0,0,0,0.8),
-                0 0 32px rgba(0,0,0,0.6);
-            pointer-events: none;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-            letter-spacing: 0.3px;
-            background: rgba(0,0,0,0.12);
-            padding: 2px 10px;
-            border-radius: 4px;
-            border: 1px solid rgba(255,255,255,0.06);
-        }
-        
-        @media (max-width: 600px) {
-            .header { padding: 6px 12px; height: 42px; }
-            .header h1 { font-size: 15px; }
-            .header .nav-links a { font-size: 11px; padding: 2px 8px; }
-            .legend { bottom: 10px; left: 10px; padding: 8px 12px; font-size: 11px; min-width: 120px; }
-            .stats { top: 52px; right: 10px; padding: 8px 12px; }
-            .stats .count { font-size: 18px; }
-            .btn-copy { top: 52px; right: 110px; font-size: 11px; padding: 4px 10px; }
-            .country-label { font-size: 11px; padding: 1px 6px; }
-            .header .lang-selector .lang-btn { font-size: 10px; padding: 2px 6px; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Геополитическая карта — Crucix</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet.heat.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet.heat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="/js/layer-control.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0f;
+      color: #c8d0d8;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0;
+      background: rgba(10,10,20,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      z-index: 100;
+      padding: 0 20px;
+    }
+    .topbar-main {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 60px;
+      gap: 8px;
+    }
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .topbar-brand {
+      font-size: 14px;
+      font-weight: 700;
+      color: #5bc0f8;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    .topbar-status {
+      font-size: 11px;
+      color: #ffd700;
+    }
+    .topbar-divider {
+      color: #444;
+      font-size: 14px;
+      margin: 0 4px;
+    }
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .topbar-bottom {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 0 8px 0;
+      border-top: 1px solid rgba(255,255,255,0.04);
+      flex-wrap: wrap;
+      min-height: 40px;
+    }
+    .topbar-bottom-label {
+      color: #666;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-right: 6px;
+    }
+    .topbar-btn {
+      height: 28px;
+      padding: 0 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 4px;
+      background: rgba(255,255,255,0.03);
+      color: #888;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .topbar-btn:hover {
+      background: rgba(255,255,255,0.06);
+      transform: translateY(-1px);
+    }
+    .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
+    .btn-home:hover { background: rgba(91,192,248,0.15); }
+    .btn-copy { color: #5bc0f8; border-color: rgba(91,192,248,0.15); background: rgba(91,192,248,0.06); }
+    .btn-copy:hover { background: rgba(91,192,248,0.15); }
+    .btn-copy.copied { background: rgba(76,175,80,0.2); border-color: #4caf50; color: #4caf50; }
+    .btn-registry { color: #ffd700; border-color: rgba(255,215,0,0.2); background: rgba(255,215,0,0.06); }
+    .btn-registry:hover { background: rgba(255,215,0,0.15); }
+    .btn-help { color: #a78bfa; border-color: rgba(167,139,250,0.2); background: rgba(167,139,250,0.06); }
+    .btn-help:hover { background: rgba(167,139,250,0.15); }
+    .btn-heat { color: #44ccff; border-color: rgba(68,204,255,0.15); background: rgba(68,204,255,0.06); }
+    .btn-heat:hover { background: rgba(68,204,255,0.15); }
+    .btn-heat.active { background: rgba(68,204,255,0.2); border-color: #44ccff; }
+    .btn-timeline { color: #ff6b6b; border-color: rgba(255,107,107,0.15); background: rgba(255,107,107,0.06); }
+    .btn-timeline:hover { background: rgba(255,107,107,0.15); }
+    .btn-timeline.active { background: rgba(255,107,107,0.2); border-color: #ff6b6b; }
+    .btn-pdf { color: #ec4899; border-color: rgba(236,72,153,0.15); background: rgba(236,72,153,0.06); }
+    .btn-pdf:hover { background: rgba(236,72,153,0.15); }
+    .layer-btn {
+      height: 26px;
+      padding: 0 12px;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 4px;
+      background: rgba(255,255,255,0.03);
+      color: #888;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .layer-btn:hover {
+      background: rgba(255,255,255,0.06);
+      transform: translateY(-1px);
+    }
+    .layer-btn.active {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.2);
+    }
+    .lang-switch {
+      display: flex;
+      gap: 2px;
+      padding: 2px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 4px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .lang-btn {
+      padding: 2px 8px;
+      border: none;
+      background: transparent;
+      color: #666;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 3px;
+      transition: all 0.2s;
+    }
+    .lang-btn:hover { color: #888; background: rgba(255,255,255,0.05); }
+    .lang-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.1); }
+    .map-container {
+      padding-top: 110px;
+      height: 100vh;
+      width: 100%;
+      position: relative;
+    }
+    #map {
+      height: 100%;
+      width: 100%;
+      background: #0a0a0f;
+    }
+    .legend {
+      position: absolute;
+      bottom: 30px;
+      left: 20px;
+      z-index: 1000;
+      background: rgba(10,10,30,0.92);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 12px;
+      backdrop-filter: blur(10px);
+      color: #ccc;
+      min-width: 140px;
+    }
+    .legend .title { font-weight: 600; color: #fff; margin-bottom: 6px; font-size: 13px; }
+    .legend .item { display: flex; align-items: center; gap: 8px; margin: 3px 0; }
+    .legend .color-box { width: 20px; height: 14px; border-radius: 3px; display: inline-block; border: 1px solid rgba(255,255,255,0.1); }
+    .legend .color-box.critical { background: #ef4444; }
+    .legend .color-box.pre-war { background: #f97316; }
+    .legend .color-box.high { background: #f59e0b; }
+    .legend .color-box.medium { background: #eab308; }
+    .legend .color-box.low { background: #22c55e; }
+    .legend .color-box.inactive { background: #3a3a4a; }
+    .legend .color-box.marker { background: #3b82f6; border-radius: 50%; width: 12px; height: 12px; }
+    .legend .color-box.heat { background: linear-gradient(90deg, #22c55e, #f59e0b, #ef4444); border-radius: 3px; }
+    .stats {
+      position: absolute;
+      top: 80px;
+      right: 20px;
+      z-index: 1000;
+      background: rgba(10,10,30,0.92);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 12px 16px;
+      backdrop-filter: blur(10px);
+      min-width: 130px;
+      color: #ccc;
+      text-align: center;
+    }
+    .stats .count { font-size: 28px; font-weight: 700; color: #44ccff; }
+    .stats .label { font-size: 11px; color: #888; }
+    .stats .countries-count { font-size: 14px; color: #ffd700; margin-top: 4px; }
+    .ssi-panel {
+      position: absolute;
+      bottom: 150px;
+      right: 20px;
+      z-index: 1000;
+      background: rgba(10,10,30,0.92);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 12px 16px;
+      backdrop-filter: blur(10px);
+      min-width: 150px;
+    }
+    .ssi-panel .ssi-title { font-size: 11px; color: #888; margin-bottom: 4px; }
+    .ssi-panel .ssi-bar { height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; }
+    .ssi-panel .ssi-fill { height: 100%; background: linear-gradient(90deg, #22c55e, #eab308, #f59e0b, #f97316, #ef4444); transition: width 1s ease; border-radius: 4px; width: 0%; }
+    .ssi-panel .ssi-value { font-size: 18px; font-weight: 700; margin-top: 4px; }
+    .timeline-panel {
+      position: absolute;
+      bottom: 200px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      background: rgba(10,10,30,0.92);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 8px 16px;
+      backdrop-filter: blur(10px);
+      min-width: 300px;
+      display: none;
+      color: #ccc;
+    }
+    .timeline-panel.active { display: block; }
+    .timeline-panel .timeline-title { font-size: 11px; color: #888; margin-bottom: 4px; text-align: center; }
+    .timeline-panel .timeline-track { display: flex; gap: 2px; height: 20px; align-items: flex-end; padding: 2px 0; }
+    .timeline-panel .timeline-bar { flex: 1; min-height: 2px; border-radius: 2px; transition: height 0.5s ease; }
+    .timeline-panel .timeline-date { font-size: 10px; color: #666; text-align: center; margin-top: 4px; }
+    .notification {
+      position: fixed;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-size: 13px;
+      z-index: 100001;
+      border: 1px solid rgba(255,255,255,0.1);
+      animation: notif-fade 2.5s forwards;
+    }
+    @keyframes notif-fade {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+    .loading-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(10,10,15,0.8);
+      z-index: 999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .loading-overlay .spinner {
+      width: 48px; height: 48px;
+      border: 4px solid rgba(255,255,255,0.1);
+      border-top-color: #5bc0f8;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-overlay .text { color: #888; font-size: 14px; letter-spacing: 1px; }
+    .leaflet-popup-content-wrapper {
+      background: rgba(10,10,20,0.92) !important;
+      color: #c8d0d8 !important;
+      border-radius: 6px !important;
+      border: 1px solid rgba(255,255,255,0.1) !important;
+    }
+    .leaflet-popup-tip { background: rgba(10,10,20,0.92) !important; }
+    .leaflet-control-zoom { border: 1px solid rgba(255,255,255,0.1) !important; }
+    .leaflet-control-zoom a { background: rgba(10,10,20,0.8) !important; color: #c8d0d8 !important; }
+    .country-boundary {
+      stroke: #ffffff !important;
+      stroke-width: 1.2px !important;
+      stroke-opacity: 0.7 !important;
+      transition: all 0.3s;
+    }
+    .country-boundary:hover {
+      fill-opacity: 0.8 !important;
+      stroke-width: 2.5px !important;
+      stroke-opacity: 1 !important;
+    }
+    .country-label {
+      color: #e0e8f0;
+      font-size: 10px;
+      font-weight: 500;
+      text-shadow: 0 0 12px rgba(0,0,0,0.95), 0 0 6px rgba(0,0,0,0.9), 0 0 3px rgba(0,0,0,0.8);
+      pointer-events: none;
+      white-space: nowrap;
+      letter-spacing: 0.5px;
+    }
+    .country-label-russia {
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 700;
+      text-shadow: 0 0 15px rgba(0,0,0,0.95), 0 0 8px rgba(0,0,0,0.9), 0 0 4px rgba(0,0,0,0.8);
+      letter-spacing: 0.6px;
+    }
+    .country-label-inactive {
+      color: #8899aa;
+      font-size: 9px;
+      font-weight: 400;
+      text-shadow: 0 0 8px rgba(0,0,0,0.9);
+      opacity: 0.85;
+    }
+    @media (max-width: 1200px) {
+      .topbar { padding: 0 12px; }
+      .topbar-main { height: 50px; flex-wrap: wrap; gap: 4px; }
+      .topbar-btn { font-size: 10px; padding: 0 8px; height: 24px; }
+      .topbar-bottom { padding: 4px 0 6px 0; }
+      .layer-btn { font-size: 10px; padding: 0 8px; height: 22px; }
+      .map-container { padding-top: 100px; }
+    }
+    @media (max-width: 768px) {
+      .topbar { padding: 0 8px; }
+      .topbar-main { height: 44px; gap: 4px; }
+      .topbar-brand { font-size: 11px; letter-spacing: 1px; }
+      .topbar-status { font-size: 9px; }
+      .topbar-divider { display: none; }
+      .topbar-btn { font-size: 8px; padding: 0 5px; height: 20px; }
+      .topbar-bottom { padding: 3px 0 5px 0; }
+      .layer-btn { font-size: 8px; padding: 0 5px; height: 18px; }
+      .map-container { padding-top: 90px; }
+      .stats { top: 60px; right: 10px; padding: 8px 12px; min-width: 100px; }
+      .stats .count { font-size: 20px; }
+      .legend { bottom: 10px; left: 10px; padding: 8px 12px; font-size: 10px; min-width: 100px; }
+      .ssi-panel { bottom: 110px; right: 10px; padding: 8px 12px; min-width: 100px; }
+      .timeline-panel { bottom: 150px; min-width: 200px; }
+    }
+  </style>
 </head>
 <body>
-    <header class="header">
-        <h1 id="map-title">📡 <span id="map-title-span">Геополитическая</span> карта</h1>
-        <div class="nav-links">
-            <div class="lang-selector" id="lang-selector">
-                <button class="lang-btn active" data-lang="ru" onclick="setLanguage('ru')">🇷🇺 RU</button>
-                <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">🇬🇧 EN</button>
-            </div>
-            <a href="/jarvis" class="home" id="nav-home">🏠 Главная</a>
-            <a href="/rss-feed" class="rss" id="nav-rss">📰 Лента</a>
-            <a href="/geo-map" class="active" id="nav-map">🌍 Карта</a>
+  <header class="topbar">
+    <div class="topbar-main">
+      <div class="topbar-left">
+        <span class="topbar-brand">⚡ CRUCIX</span>
+        <span class="topbar-status">Геополитическая карта</span>
+        <span class="topbar-divider">|</span>
+        <button class="topbar-btn btn-heat" id="btn-heat" onclick="toggleHeat()">🌡️ Тепловые карты</button>
+        <button class="topbar-btn btn-timeline" id="btn-timeline" onclick="toggleTimeline()">📅 Временная шкала</button>
+        <button class="topbar-btn btn-pdf" onclick="exportPDF()">📄 Копир в PDF</button>
+      </div>
+      <div class="topbar-right">
+        <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← ГЛАВНАЯ</button>
+        <button class="topbar-btn btn-copy" id="copy-btn" onclick="copyAllData()">📋 КОПИРОВАТЬ</button>
+        <button class="topbar-btn btn-registry" onclick="window.location.href='/registry'">📋 РЕЕСТР</button>
+        <button class="topbar-btn btn-help" onclick="window.location.href='/help'">❓ HELP</button>
+        <div class="lang-switch">
+          <button class="lang-btn active" data-lang="ru" onclick="setLanguage('ru')">RU</button>
+          <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">EN</button>
         </div>
-    </header>
+      </div>
+    </div>
+    <div class="topbar-bottom" id="layer-controls">
+      <span class="topbar-bottom-label">🎯 Слои:</span>
+    </div>
+  </header>
 
-    <div class="map-wrapper">
-        <div id="map">
-            <div class="loading" id="loading-text">Загрузка карты...</div>
-        </div>
-
-        <button class="btn-copy" id="btn-copy" onclick="copyData()">📋 Копировать данные</button>
-
-        <div class="legend" id="legend">
-            <div class="title" id="legend-title">📊 Статус стран</div>
-            <div class="item"><span class="color-box critical"></span> <span id="legend-critical">Критический (война)</span></div>
-            <div class="item"><span class="color-box high"></span> <span id="legend-high">Высокий (подготовка)</span></div>
-            <div class="item"><span class="color-box medium"></span> <span id="legend-medium">Средний (напряжение)</span></div>
-            <div class="item"><span class="color-box normal"></span> <span id="legend-normal">Нормальный</span></div>
-            <div class="item" style="margin-top:6px;border-top:1px solid rgba(255,255,255,0.06);padding-top:6px;">
-                <span style="color:#888;">●</span> <span id="legend-markers">Маркеры новостей</span>
-            </div>
-        </div>
-
-        <div class="stats" id="stats">
-            <div class="count" id="marker-count">0</div>
-            <div class="label" id="stats-label">новостей на карте</div>
-        </div>
+  <div class="map-container" id="map-container">
+    <div id="map"></div>
+    <div class="loading-overlay" id="loading-overlay">
+      <div class="spinner"></div>
+      <div class="text">ЗАГРУЗКА КАРТЫ...</div>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        console.log('🌍 Геополитическая карта загружается...');
+    <div class="legend" id="legend">
+      <div class="title">🎯 Статусы стран</div>
+      <div class="item"><span class="color-box critical"></span> Критический</div>
+      <div class="item"><span class="color-box pre-war"></span> Предвоенный</div>
+      <div class="item"><span class="color-box high"></span> Высокий</div>
+      <div class="item"><span class="color-box medium"></span> Средний</div>
+      <div class="item"><span class="color-box low"></span> Нормальный</div>
+      <div class="item"><span class="color-box inactive"></span> Нет данных</div>
+      <div class="item"><span class="color-box marker"></span> События</div>
+      <div class="item"><span class="color-box heat"></span> Тепловая карта</div>
+    </div>
+
+    <div class="stats" id="stats">
+      <div class="count" id="marker-count">0</div>
+      <div class="label" id="stats-label">событий</div>
+      <div class="countries-count" id="countries-count">🌍 0 стран</div>
+    </div>
+
+    <div class="ssi-panel" id="ssi-panel">
+      <div class="ssi-title" id="ssi-title">📊 Индекс напряжённости</div>
+      <div class="ssi-bar"><div class="ssi-fill" id="ssi-fill"></div></div>
+      <div class="ssi-value" id="ssi-label">0%</div>
+    </div>
+
+    <div class="timeline-panel" id="timeline-panel">
+      <div class="timeline-title" id="timeline-title">📅 Хронология событий</div>
+      <div class="timeline-track" id="timeline-track"></div>
+      <div class="timeline-date" id="timeline-date">—</div>
+    </div>
+  </div>
+
+  <script>
+    let map = null;
+    let countryData = {};
+    let markerData = [];
+    let currentLang = localStorage.getItem('crucix-lang') || 'ru';
+    let geoJsonLayer = null;
+    let labelsLayer = null;
+    let heatLayer = null;
+    let heatEnabled = false;
+    let timelineEnabled = false;
+
+    // ПОЛУЧАЕМ ПАРАМЕТР СЛОЯ ИЗ URL
+    const layerParam = new URLSearchParams(window.location.search).get('layer') || 'all';
+    console.log('[Geo Map] Слой из URL:', layerParam);
+
+    const STATUS_COLORS = {
+      critical: '#ef4444',
+      'pre-war': '#f97316',
+      high: '#f59e0b',
+      medium: '#eab308',
+      low: '#22c55e'
+    };
+
+    const INACTIVE_COLORS = ['#3a3a4a', '#454555', '#3f3f4f', '#4a4a5a', '#353545'];
+
+    const COUNTRY_NAME_MAP = {
+      'Russia': 'Россия',
+      'Ukraine': 'Украина',
+      'Iran': 'Иран',
+      'North Korea': 'Северная Корея',
+      'Israel': 'Израиль',
+      'Syria': 'Сирия',
+      'Yemen': 'Йемен',
+      'Palestine': 'Палестина',
+      'Sudan': 'Судан',
+      'Armenia': 'Армения',
+      'Azerbaijan': 'Азербайджан',
+      'Lithuania': 'Литва',
+      'Latvia': 'Латвия',
+      'Estonia': 'Эстония',
+      'Poland': 'Польша',
+      'Japan': 'Япония',
+      'South Korea': 'Южная Корея',
+      'Pakistan': 'Пакистан',
+      'Afghanistan': 'Афганистан',
+      'Iraq': 'Ирак',
+      'Lebanon': 'Ливан',
+      'Myanmar': 'Мьянма',
+      'Ethiopia': 'Эфиопия',
+      'Somalia': 'Сомали',
+      'Venezuela': 'Венесуэла',
+      'Colombia': 'Колумбия',
+      'United States': 'США',
+      'United Kingdom': 'Великобритания',
+      'France': 'Франция',
+      'Germany': 'Германия',
+      'China': 'Китай',
+      'India': 'Индия',
+      'Turkey': 'Турция',
+      'Saudi Arabia': 'Саудовская Аравия',
+      'Egypt': 'Египет'
+    };
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('crucix-lang', lang);
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+      });
+    }
+
+    function initMap() {
+      map = L.map('map', {
+        center: [30, 20],
+        zoom: 2.5,
+        zoomControl: true,
+        minZoom: 1.5,
+        maxZoom: 10
+      });
+
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '© OpenStreetMap, © CartoDB',
+        maxZoom: 19,
+        opacity: 0.9
+      }).addTo(map);
+
+      loadData();
+    }
+
+    async function loadData() {
+      try {
+        const [markersRes, statusRes] = await Promise.all([
+          fetch('/api/geo/markers'),
+          fetch('/api/geo/status')
+        ]);
+
+        const markersData = await markersRes.json();
+        const statusData = await statusRes.json();
+
+        if (statusData.success && statusData.status && statusData.status.countries) {
+          countryData = statusData.status.countries;
+          document.getElementById('countries-count').textContent = '🌍 ' + Object.keys(countryData).length + ' стран';
+        }
+
+        if (markersData.success && markersData.markers) {
+          // ФИЛЬТРУЕМ МАРКЕРЫ ПО СЛОЮ
+          let filteredMarkers = markersData.markers;
+          if (layerParam !== 'all') {
+            filteredMarkers = markersData.markers.filter(m => m.layer === layerParam);
+            console.log('[Geo Map] Отфильтровано маркеров:', filteredMarkers.length, 'из', markersData.markers.length);
+          }
+          markerData = filteredMarkers;
+          document.getElementById('marker-count').textContent = markerData.length;
+        }
+
+        calculateSSI();
+        await loadCountryBoundaries();
+        addMarkers();
+
+        document.getElementById('loading-overlay').style.display = 'none';
         
-        let map;
-        let markers = [];
-        let allData = { markers: [], countries: [] };
-        let countryLabels = [];
-        let currentLang = localStorage.getItem('geo-lang') || 'ru';
+        // Инициализация управления слоями
+        if (window.layerControl && window.layerControl.initLayerControl) {
+          window.layerControl.initLayerControl(map, markerData);
+        }
+        
+        setTimeout(() => { if (map) map.invalidateSize(); }, 500);
+      } catch (e) {
+        console.error('[Geo Map] Ошибка:', e);
+        document.getElementById('loading-overlay').innerHTML = '<div class="text" style="color:#ef4444;">❌ ОШИБКА</div>';
+      }
+    }
 
-        // ======== ПЕРЕВОДЫ ========
-        const langData = {
-            ru: {
-                title: '📡 Геополитическая карта',
-                titleSpan: 'Геополитическая',
-                home: '🏠 Главная',
-                rss: '📰 Лента',
-                map: '🌍 Карта',
-                legendTitle: '📊 Статус стран',
-                critical: 'Критический (война)',
-                high: 'Высокий (подготовка)',
-                medium: 'Средний (напряжение)',
-                normal: 'Нормальный',
-                markers: 'Маркеры новостей',
-                statsLabel: 'новостей на карте',
-                loading: 'Загрузка карты...'
+    async function loadCountryBoundaries() {
+      try {
+        const response = await fetch('https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson');
+        const data = await response.json();
+
+        if (data && data.features) {
+          let inactiveIndex = 0;
+
+          geoJsonLayer = L.geoJSON(data, {
+            style: function(feature) {
+              const nameEn = feature.properties?.name || feature.properties?.NAME || '';
+              const nameRu = COUNTRY_NAME_MAP[nameEn] || nameEn;
+              let isActive = false;
+              let fillColor = '#2a3a4a';
+              let fillOpacity = 0.4;
+
+              for (const [id, country] of Object.entries(countryData)) {
+                if (country.name === nameRu || country.name === nameEn) {
+                  isActive = true;
+                  const status = country.status;
+                  if (status === 'critical') {
+                    fillColor = '#ef444477';
+                  } else if (status === 'pre-war') {
+                    fillColor = '#f9731677';
+                  } else if (status === 'high') {
+                    fillColor = '#f59e0b77';
+                  } else if (status === 'medium') {
+                    fillColor = '#eab30877';
+                  } else {
+                    fillColor = '#22c55e77';
+                  }
+                  fillOpacity = 0.55;
+                  break;
+                }
+              }
+
+              if (!isActive) {
+                fillColor = INACTIVE_COLORS[inactiveIndex % INACTIVE_COLORS.length];
+                inactiveIndex++;
+                fillOpacity = 0.35;
+              }
+
+              return {
+                fillColor: fillColor,
+                fillOpacity: fillOpacity,
+                color: '#ffffff',
+                weight: 1.2,
+                opacity: 0.7,
+                className: 'country-boundary'
+              };
             },
-            en: {
-                title: '📡 Geopolitical Map',
-                titleSpan: 'Geopolitical',
-                home: '🏠 Home',
-                rss: '📰 Feed',
-                map: '🌍 Map',
-                legendTitle: '📊 Country Status',
-                critical: 'Critical (war)',
-                high: 'High (preparation)',
-                medium: 'Medium (tension)',
-                normal: 'Normal',
-                markers: 'News markers',
-                statsLabel: 'news on map',
-                loading: 'Loading map...'
-            }
-        };
+            onEachFeature: function(feature, layer) {
+              const nameEn = feature.properties?.name || feature.properties?.NAME || '';
+              const nameRu = COUNTRY_NAME_MAP[nameEn] || nameEn;
+              let statusText = 'Нет данных';
+              let color = '#22c55e';
+              let isActive = false;
 
-        function setLanguage(lang) {
-            console.log('🔤 Переключение языка на:', lang);
-            console.log('📌 Текущий язык был:', currentLang);
-            
-            currentLang = lang;
-            localStorage.setItem('geo-lang', lang);
-            
-            // Обновляем активную кнопку
-            document.querySelectorAll('.lang-selector .lang-btn').forEach(btn => {
-                const isActive = btn.dataset.lang === lang;
-                btn.classList.toggle('active', isActive);
-                console.log('   Кнопка', btn.dataset.lang, isActive ? '→ АКТИВНА' : '→ неактивна');
-            });
-            
-            updateLanguage();
-            console.log('✅ Язык обновлён на:', lang);
-        }
-
-        function updateLanguage() {
-            const d = langData[currentLang];
-            if (!d) {
-                console.error('❌ Нет данных для языка:', currentLang);
-                return;
-            }
-            
-            console.log('📝 Обновление текстов на:', currentLang);
-            
-            document.getElementById('map-title-span').textContent = d.titleSpan;
-            document.getElementById('nav-home').textContent = d.home;
-            document.getElementById('nav-rss').textContent = d.rss;
-            document.getElementById('nav-map').textContent = d.map;
-            document.getElementById('legend-title').textContent = d.legendTitle;
-            document.getElementById('legend-critical').textContent = d.critical;
-            document.getElementById('legend-high').textContent = d.high;
-            document.getElementById('legend-medium').textContent = d.medium;
-            document.getElementById('legend-normal').textContent = d.normal;
-            document.getElementById('legend-markers').textContent = d.markers;
-            document.getElementById('stats-label').textContent = d.statsLabel;
-            document.getElementById('loading-text').textContent = d.loading;
-            
-            console.log('✅ Тексты обновлены');
-        }
-
-        function initMap() {
-            console.log('🗺️ Инициализация карты...');
-            
-            map = L.map('map', {
-                center: [20, 0],
-                zoom: 2,
-                zoomControl: true,
-                attributionControl: false
-            });
-            
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            }).addTo(map);
-            
-            document.getElementById('loading-text').style.display = 'none';
-            
-            console.log('📡 Загрузка статусов стран...');
-            loadCountryStatus();
-            console.log('📡 Загрузка маркеров...');
-            loadMarkers();
-        }
-
-        function getStatusColor(status) {
-            const colors = {
-                'critical': '#ef4444',
-                'high': '#f97316',
-                'medium': '#eab308',
-                'normal': '#22c55e'
-            };
-            return colors[status] || '#666';
-        }
-
-        function getStatusFillOpacity(status) {
-            const opacities = {
-                'critical': 0.50,
-                'high': 0.40,
-                'medium': 0.30,
-                'normal': 0.15
-            };
-            return opacities[status] || 0.1;
-        }
-
-        async function loadCountryStatus() {
-            try {
-                const response = await fetch('/api/geo/status');
-                const data = await response.json();
-                if (data.success && data.countries) {
-                    allData.countries = data.countries;
-                    console.log('🌍 Загружено стран:', data.countries.length);
-                    drawCountryPolygons(data.countries);
+              for (const [id, country] of Object.entries(countryData)) {
+                if (country.name === nameRu || country.name === nameEn) {
+                  isActive = true;
+                  const status = country.status;
+                  if (status === 'critical') {
+                    color = '#ef4444';
+                    statusText = '🔴 Критический';
+                  } else if (status === 'pre-war') {
+                    color = '#f97316';
+                    statusText = '🟠 Предвоенный';
+                  } else if (status === 'high') {
+                    color = '#f59e0b';
+                    statusText = '🟠 Высокий';
+                  } else if (status === 'medium') {
+                    color = '#eab308';
+                    statusText = '🟡 Средний';
+                  } else {
+                    color = '#22c55e';
+                    statusText = '🟢 Нормальный';
+                  }
+                  break;
                 }
-            } catch (e) {
-                console.error('❌ Ошибка загрузки статусов стран:', e);
+              }
+
+              layer.bindPopup(`
+                <div style="padding:4px 0;">
+                  <strong style="color:#e8f0f8;font-size:15px;">${nameRu}</strong><br>
+                  <span style="color:${color};font-weight:600;font-size:13px;">${statusText}</span>
+                </div>
+              `);
+
+              layer.on('mouseover', function(e) {
+                this.setStyle({ weight: 2.5, opacity: 1, fillOpacity: 0.7 });
+                this.openPopup();
+              });
+              layer.on('mouseout', function(e) {
+                this.setStyle({ weight: 1.2, opacity: 0.7, fillOpacity: 0.5 });
+                this.closePopup();
+              });
             }
+          }).addTo(map);
+
+          addCountryLabels(data);
+
+          try {
+            const bounds = geoJsonLayer.getBounds();
+            if (bounds.isValid()) map.fitBounds(bounds.pad(0.08));
+          } catch(e) { map.setView([30, 20], 2.5); }
+        }
+      } catch (e) {
+        console.warn('[Geo Map] Ошибка загрузки границ:', e);
+        showCountryCircles();
+      }
+    }
+
+    function addCountryLabels(geoData) {
+      if (!geoData || !geoData.features) return;
+
+      labelsLayer = L.layerGroup().addTo(map);
+
+      for (const feature of geoData.features) {
+        const nameEn = feature.properties?.name || feature.properties?.NAME || '';
+        const nameRu = COUNTRY_NAME_MAP[nameEn] || nameEn;
+
+        if (!nameRu || nameRu.length < 2) continue;
+
+        let isActive = false;
+        for (const [id, country] of Object.entries(countryData)) {
+          if (country.name === nameRu || country.name === nameEn) {
+            isActive = true;
+            break;
+          }
         }
 
-        function drawCountryPolygons(countries) {
-            console.log('🗺️ Рисование полигонов стран...');
-            
-            fetch('https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson')
-                .then(response => response.json())
-                .then(data => {
-                    const statusMap = {};
-                    const colorMap = {};
-                    const nameMap = {};
-                    
-                    for (const c of countries) {
-                        const countryIds = {
-                            'russia': ['RUS', 'Russia', 'Россия', 'Russian Federation'],
-                            'ukraine': ['UKR', 'Ukraine', 'Украина'],
-                            'iran': ['IRN', 'Iran', 'Иран'],
-                            'north-korea': ['PRK', 'North Korea', 'Северная Корея'],
-                            'israel': ['ISR', 'Israel', 'Израиль'],
-                            'turkey': ['TUR', 'Turkey', 'Турция'],
-                            'japan': ['JPN', 'Japan', 'Япония'],
-                            'us': ['USA', 'United States', 'США'],
-                            'uk': ['GBR', 'United Kingdom', 'Великобритания'],
-                            'china': ['CHN', 'China', 'Китай'],
-                            'india': ['IND', 'India', 'Индия'],
-                            'france': ['FRA', 'France', 'Франция'],
-                            'germany': ['DEU', 'Germany', 'Германия'],
-                            'south-korea': ['KOR', 'South Korea', 'Южная Корея'],
-                            'syria': ['SYR', 'Syria', 'Сирия'],
-                            'yemen': ['YEM', 'Yemen', 'Йемен'],
-                            'palestine': ['PSE', 'Palestine', 'Палестина'],
-                            'sudan': ['SDN', 'Sudan', 'Судан'],
-                            'armenia': ['ARM', 'Armenia', 'Армения'],
-                            'azerbaijan': ['AZE', 'Azerbaijan', 'Азербайджан'],
-                            'poland': ['POL', 'Poland', 'Польша'],
-                            'colombia': ['COL', 'Colombia', 'Колумбия'],
-                            'ethiopia': ['ETH', 'Ethiopia', 'Эфиопия'],
-                            'somalia': ['SOM', 'Somalia', 'Сомали'],
-                            'pakistan': ['PAK', 'Pakistan', 'Пакистан'],
-                            'mexico': ['MEX', 'Mexico', 'Мексика'],
-                            'myanmar': ['MMR', 'Myanmar', 'Мьянма'],
-                            'afghanistan': ['AFG', 'Afghanistan', 'Афганистан'],
-                            'iraq': ['IRQ', 'Iraq', 'Ирак'],
-                            'lebanon': ['LBN', 'Lebanon', 'Ливан'],
-                            'libya': ['LBY', 'Libya', 'Ливия'],
-                            'mali': ['MLI', 'Mali', 'Мали'],
-                            'niger': ['NER', 'Niger', 'Нигер'],
-                            'congo': ['COD', 'Congo', 'Конго'],
-                            'car': ['CAF', 'CAR', 'ЦАР'],
-                            'belarus': ['BLR', 'Belarus', 'Беларусь'],
-                            'serbia': ['SRB', 'Serbia', 'Сербия'],
-                            'georgia': ['GEO', 'Georgia', 'Грузия'],
-                            'moldova': ['MDA', 'Moldova', 'Молдова'],
-                            'kazakhstan': ['KAZ', 'Kazakhstan', 'Казахстан'],
-                            'kyrgyzstan': ['KGZ', 'Kyrgyzstan', 'Кыргызстан'],
-                            'tajikistan': ['TJK', 'Tajikistan', 'Таджикистан'],
-                            'turkmenistan': ['TKM', 'Turkmenistan', 'Туркменистан'],
-                            'uzbekistan': ['UZB', 'Uzbekistan', 'Узбекистан'],
-                            'mongolia': ['MNG', 'Mongolia', 'Монголия'],
-                            'nepal': ['NPL', 'Nepal', 'Непал'],
-                            'bangladesh': ['BGD', 'Bangladesh', 'Бангладеш'],
-                            'sri-lanka': ['LKA', 'Sri Lanka', 'Шри-Ланка'],
-                            'cambodia': ['KHM', 'Cambodia', 'Камбоджа'],
-                            'laos': ['LAO', 'Laos', 'Лаос'],
-                            'philippines': ['PHL', 'Philippines', 'Филиппины'],
-                            'indonesia': ['IDN', 'Indonesia', 'Индонезия'],
-                            'malaysia': ['MYS', 'Malaysia', 'Малайзия'],
-                            'thailand': ['THA', 'Thailand', 'Таиланд'],
-                            'vietnam': ['VNM', 'Vietnam', 'Вьетнам'],
-                            'egypt': ['EGY', 'Egypt', 'Египет'],
-                            'algeria': ['DZA', 'Algeria', 'Алжир'],
-                            'morocco': ['MAR', 'Morocco', 'Марокко'],
-                            'tunisia': ['TUN', 'Tunisia', 'Тунис'],
-                            'mauritania': ['MRT', 'Mauritania', 'Мавритания'],
-                            'senegal': ['SEN', 'Senegal', 'Сенегал'],
-                            'guinea': ['GIN', 'Guinea', 'Гвинея'],
-                            'burkina': ['BFA', 'Burkina Faso', 'Буркина-Фасо'],
-                            'benin': ['BEN', 'Benin', 'Бенин'],
-                            'togo': ['TGO', 'Togo', 'Того'],
-                            'ghana': ['GHA', 'Ghana', 'Гана'],
-                            'liberia': ['LBR', 'Liberia', 'Либерия'],
-                            'sierra-leone': ['SLE', 'Sierra Leone', 'Сьерра-Леоне'],
-                            'chad': ['TCD', 'Chad', 'Чад'],
-                            'cameroon': ['CMR', 'Cameroon', 'Камерун'],
-                            'nigeria': ['NGA', 'Nigeria', 'Нигерия'],
-                            'angola': ['AGO', 'Angola', 'Ангола'],
-                            'mozambique': ['MOZ', 'Mozambique', 'Мозамбик'],
-                            'zimbabwe': ['ZWE', 'Zimbabwe', 'Зимбабве'],
-                            'zambia': ['ZMB', 'Zambia', 'Замбия'],
-                            'malawi': ['MWI', 'Malawi', 'Малави'],
-                            'madagascar': ['MDG', 'Madagascar', 'Мадагаскар'],
-                            'kenya': ['KEN', 'Kenya', 'Кения'],
-                            'tanzania': ['TZA', 'Tanzania', 'Танзания'],
-                            'uganda': ['UGA', 'Uganda', 'Уганда'],
-                            'rwanda': ['RWA', 'Rwanda', 'Руанда'],
-                            'burundi': ['BDI', 'Burundi', 'Бурунди'],
-                            'djibouti': ['DJI', 'Djibouti', 'Джибути'],
-                            'eritrea': ['ERI', 'Eritrea', 'Эритрея'],
-                            'south-africa': ['ZAF', 'South Africa', 'Южная Африка'],
-                            'namibia': ['NAM', 'Namibia', 'Намибия'],
-                            'botswana': ['BWA', 'Botswana', 'Ботсвана'],
-                            'lesotho': ['LSO', 'Lesotho', 'Лесото'],
-                            'eswatini': ['SWZ', 'Eswatini', 'Эсватини'],
-                            'mauritius': ['MUS', 'Mauritius', 'Маврикий'],
-                            'comoros': ['COM', 'Comoros', 'Коморы'],
-                            'bahrain': ['BHR', 'Bahrain', 'Бахрейн'],
-                            'kuwait': ['KWT', 'Kuwait', 'Кувейт'],
-                            'oman': ['OMN', 'Oman', 'Оман'],
-                            'qatar': ['QAT', 'Qatar', 'Катар'],
-                            'uae': ['ARE', 'UAE', 'ОАЭ'],
-                            'jordan': ['JOR', 'Jordan', 'Иордания'],
-                            'saudi': ['SAU', 'Saudi Arabia', 'Саудовская Аравия'],
-                            'brazil': ['BRA', 'Brazil', 'Бразилия'],
-                            'argentina': ['ARG', 'Argentina', 'Аргентина'],
-                            'chile': ['CHL', 'Chile', 'Чили'],
-                            'peru': ['PER', 'Peru', 'Перу'],
-                            'ecuador': ['ECU', 'Ecuador', 'Эквадор'],
-                            'bolivia': ['BOL', 'Bolivia', 'Боливия'],
-                            'paraguay': ['PRY', 'Paraguay', 'Парагвай'],
-                            'uruguay': ['URY', 'Uruguay', 'Уругвай'],
-                            'venezuela': ['VEN', 'Venezuela', 'Венесуэла'],
-                            'cuba': ['CUB', 'Cuba', 'Куба'],
-                            'haiti': ['HTI', 'Haiti', 'Гаити'],
-                            'dominican': ['DOM', 'Dominican Republic', 'Доминикана'],
-                            'costa-rica': ['CRI', 'Costa Rica', 'Коста-Рика'],
-                            'guatemala': ['GTM', 'Guatemala', 'Гватемала'],
-                            'honduras': ['HND', 'Honduras', 'Гондурас'],
-                            'nicaragua': ['NIC', 'Nicaragua', 'Никарагуа'],
-                            'el-salvador': ['SLV', 'El Salvador', 'Сальвадор'],
-                            'panama': ['PAN', 'Panama', 'Панама'],
-                            'belize': ['BLZ', 'Belize', 'Белиз'],
-                            'guyana': ['GUY', 'Guyana', 'Гайана'],
-                            'suriname': ['SUR', 'Suriname', 'Суринам'],
-                            'trinidad': ['TTO', 'Trinidad', 'Тринидад'],
-                            'jamaica': ['JAM', 'Jamaica', 'Ямайка'],
-                            'bahamas': ['BHS', 'Bahamas', 'Багамы'],
-                            'barbados': ['BRB', 'Barbados', 'Барбадос'],
-                            'italy': ['ITA', 'Italy', 'Италия'],
-                            'spain': ['ESP', 'Spain', 'Испания'],
-                            'portugal': ['PRT', 'Portugal', 'Португалия'],
-                            'netherlands': ['NLD', 'Netherlands', 'Нидерланды'],
-                            'belgium': ['BEL', 'Belgium', 'Бельгия'],
-                            'luxembourg': ['LUX', 'Luxembourg', 'Люксембург'],
-                            'switzerland': ['CHE', 'Switzerland', 'Швейцария'],
-                            'austria': ['AUT', 'Austria', 'Австрия'],
-                            'sweden': ['SWE', 'Sweden', 'Швеция'],
-                            'norway': ['NOR', 'Norway', 'Норвегия'],
-                            'denmark': ['DNK', 'Denmark', 'Дания'],
-                            'finland': ['FIN', 'Finland', 'Финляндия'],
-                            'iceland': ['ISL', 'Iceland', 'Исландия'],
-                            'ireland': ['IRL', 'Ireland', 'Ирландия'],
-                            'greece': ['GRC', 'Greece', 'Греция'],
-                            'bulgaria': ['BGR', 'Bulgaria', 'Болгария'],
-                            'romania': ['ROU', 'Romania', 'Румыния'],
-                            'hungary': ['HUN', 'Hungary', 'Венгрия'],
-                            'czech': ['CZE', 'Czechia', 'Чехия'],
-                            'slovakia': ['SVK', 'Slovakia', 'Словакия'],
-                            'slovenia': ['SVN', 'Slovenia', 'Словения'],
-                            'croatia': ['HRV', 'Croatia', 'Хорватия'],
-                            'montenegro': ['MNE', 'Montenegro', 'Черногория'],
-                            'albania': ['ALB', 'Albania', 'Албания'],
-                            'north-macedonia': ['MKD', 'North Macedonia', 'Северная Македония'],
-                            'lithuania': ['LTU', 'Lithuania', 'Литва'],
-                            'latvia': ['LVA', 'Latvia', 'Латвия'],
-                            'estonia': ['EST', 'Estonia', 'Эстония'],
-                            'cyprus': ['CYP', 'Cyprus', 'Кипр'],
-                            'malta': ['MLT', 'Malta', 'Мальта'],
-                            'australia': ['AUS', 'Australia', 'Австралия'],
-                            'new-zealand': ['NZL', 'New Zealand', 'Новая Зеландия'],
-                            'singapore': ['SGP', 'Singapore', 'Сингапур'],
-                            'brunei': ['BRN', 'Brunei', 'Бруней'],
-                            'taiwan': ['TWN', 'Taiwan', 'Тайвань'],
-                            'papua': ['PNG', 'Papua New Guinea', 'Папуа'],
-                            'fiji': ['FJI', 'Fiji', 'Фиджи'],
-                            'solomon': ['SLB', 'Solomon Islands', 'Соломоны'],
-                            'vanuatu': ['VUT', 'Vanuatu', 'Вануату'],
-                            'maldives': ['MDV', 'Maldives', 'Мальдивы'],
-                            'cape-verde': ['CPV', 'Cape Verde', 'Кабо-Верде']
-                        };
-                        
-                        const ids = countryIds[c.id] || [c.id, c.name];
-                        for (const id of ids) {
-                            statusMap[id] = c.status;
-                            colorMap[id] = c.color || getStatusColor(c.status);
-                            nameMap[id] = c.name;
-                        }
-                    }
-                    
-                    for (const feature of data.features) {
-                        const countryName = feature.properties.name || '';
-                        const countryId = feature.properties.iso_a3 || feature.properties.id || '';
-                        
-                        let status = null;
-                        let color = '#666';
-                        let displayName = countryName;
-                        
-                        for (const [key, value] of Object.entries(statusMap)) {
-                            if (countryName.includes(key) || key.includes(countryName) || 
-                                countryId === key || countryId === value) {
-                                status = value;
-                                color = colorMap[key] || getStatusColor(value);
-                                displayName = nameMap[key] || countryName;
-                                break;
-                            }
-                        }
-                        
-                        if (status) {
-                            const fillColor = getStatusColor(status);
-                            const fillOpacity = getStatusFillOpacity(status);
-                            
-                            const polygon = L.geoJSON(feature, {
-                                style: {
-                                    color: fillColor,
-                                    weight: 2,
-                                    opacity: 0.8,
-                                    fillColor: fillColor,
-                                    fillOpacity: fillOpacity,
-                                    className: 'country-polygon'
-                                },
-                                onEachFeature: function(feature, layer) {
-                                    const statusText = status === 'critical' ? '🔴 ВОЙНА' :
-                                                     status === 'high' ? '🟡 ПОДГОТОВКА' :
-                                                     status === 'medium' ? '🟠 НАПРЯЖЕНИЕ' : '🟢 НОРМАЛЬНО';
-                                    
-                                    layer.bindPopup(`
-                                        <div style="font-size:14px;min-width:200px;">
-                                            <div style="font-weight:700;color:#fff;font-size:18px;border-bottom:2px solid ${fillColor};padding-bottom:6px;">
-                                                ${displayName}
-                                            </div>
-                                            <div style="margin-top:8px;">
-                                                <div class="country-status ${status}" style="font-size:14px;padding:4px 14px;">${statusText}</div>
-                                                <div style="font-size:12px;color:#888;margin-top:6px;">
-                                                    Уровень напряжённости: <span style="color:${fillColor};font-weight:600;">${status}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    `, { maxWidth: 280 });
-                                    
-                                    layer.on('mouseover', function() {
-                                        this.setStyle({
-                                            fillOpacity: Math.min(fillOpacity + 0.2, 0.8),
-                                            weight: 3
-                                        });
-                                    });
-                                    layer.on('mouseout', function() {
-                                        this.setStyle({
-                                            fillOpacity: fillOpacity,
-                                            weight: 2
-                                        });
-                                    });
-                                    
-                                    const center = layer.getBounds().getCenter();
-                                    if (center.lat && center.lng) {
-                                        const label = L.marker([center.lat, center.lng], {
-                                            icon: L.divIcon({
-                                                className: 'country-label',
-                                                html: `<div class="country-label">${displayName}</div>`,
-                                                iconSize: [0, 0],
-                                                iconAnchor: [0, 0]
-                                            })
-                                        }).addTo(map);
-                                        countryLabels.push(label);
-                                    }
-                                }
-                            }).addTo(map);
-                        }
-                    }
-                    
-                    setTimeout(function() {
-                        const label = L.marker([61.5, 105.0], {
-                            icon: L.divIcon({
-                                className: 'country-label',
-                                html: `<div class="country-label">Россия</div>`,
-                                iconSize: [0, 0],
-                                iconAnchor: [0, 0]
-                            })
-                        }).addTo(map);
-                        countryLabels.push(label);
-                        console.log('🇷🇺 Явно добавлена подпись для России');
-                    }, 1000);
-                    
-                    console.log('🌍 Нанесены полигоны и подписи для стран');
-                })
-                .catch(e => {
-                    console.error('❌ Ошибка загрузки GeoJSON:', e);
-                    drawFallbackCircles(countries);
-                });
+        if (nameRu === 'Россия') isActive = true;
+
+        let center = null;
+        if (feature.properties?.center) {
+          center = feature.properties.center;
+        } else if (feature.geometry && feature.geometry.type === 'Polygon') {
+          const coords = feature.geometry.coordinates[0];
+          if (coords && coords.length > 0) {
+            let lat = 0, lng = 0;
+            let count = 0;
+            for (const c of coords) {
+              if (c && c.length >= 2) {
+                lat += c[1];
+                lng += c[0];
+                count++;
+              }
+            }
+            if (count > 0) {
+              center = { lat: lat / count, lng: lng / count };
+            }
+          }
         }
 
-        function drawFallbackCircles(countries) {
-            for (const country of countries) {
-                const color = country.color || '#666';
-                const statusText = country.status === 'critical' ? '🔴 ВОЙНА' :
-                                  country.status === 'high' ? '🟡 ПОДГОТОВКА' :
-                                  country.status === 'medium' ? '🟠 НАПРЯЖЕНИЕ' : '🟢 НОРМАЛЬНО';
-                
-                const icon = L.divIcon({
-                    className: 'country-marker',
-                    html: `
-                        <div style="width:40px;height:40px;background:${color}60;border-radius:50%;border:3px solid ${color};box-shadow:0 0 40px ${color}80;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;font-weight:700;text-shadow:0 0 8px rgba(0,0,0,0.9);">
-                            ${country.name ? country.name.charAt(0) : '?'}
-                        </div>
-                    `,
-                    iconSize: [40, 40],
-                    iconAnchor: [20, 20]
-                });
-                
-                L.marker([country.lat, country.lng], { icon })
-                    .addTo(map)
-                    .bindPopup(`
-                        <div style="font-size:14px;min-width:180px;">
-                            <div style="font-weight:700;color:#fff;font-size:18px;">${country.name}</div>
-                            <div class="country-status ${country.status}" style="font-size:14px;padding:4px 14px;margin-top:6px;">${statusText}</div>
-                        </div>
-                    `, { maxWidth: 280 });
-            }
-        }
+        if (center && center.lat && center.lng) {
+          let labelClass = 'country-label';
+          let labelText = nameRu;
 
-        async function loadMarkers() {
-            try {
-                const response = await fetch('/api/geo/markers?minScore=0');
-                const data = await response.json();
-                if (data.success && data.markers) {
-                    allData.markers = data.markers;
-                    document.getElementById('marker-count').textContent = data.markers.length;
-                    console.log('📌 Загружено маркеров:', data.markers.length);
-                    addMarkers(data.markers);
-                }
-            } catch (e) {
-                console.error('❌ Ошибка загрузки маркеров:', e);
-            }
-        }
+          if (nameRu === 'Россия') {
+            labelClass = 'country-label-russia';
+          } else if (!isActive) {
+            labelClass = 'country-label-inactive';
+          }
 
-        function addMarkers(markersData) {
-            for (const item of markersData) {
-                const color = item.color || '#44ccff';
-                const icon = L.divIcon({
-                    className: 'custom-marker',
-                    html: `
-                        <div style="width:14px;height:14px;background:${color};border-radius:50%;border:2px solid rgba(255,255,255,0.5);box-shadow:0 0 20px ${color}80;cursor:pointer;"></div>
-                    `,
-                    iconSize: [14, 14],
-                    iconAnchor: [7, 7]
-                });
-                
-                const marker = L.marker([item.lat, item.lng], { icon })
-                    .addTo(map)
-                    .bindPopup(`
-                        <div class="marker-popup" style="min-width:200px;">
-                            <div class="title" style="font-size:16px;">${item.title || 'Новость'}</div>
-                            <div class="source">📰 ${item.source || 'Источник'} · ${item.countryName || ''}</div>
-                            <div class="summary" style="margin-top:4px;">${(item.summary || '').replace(/<[^>]*>/g, '').slice(0, 150)}${(item.summary || '').length > 150 ? '...' : ''}</div>
-                            <div style="margin-top:6px;display:flex;gap:8px;align-items:center;">
-                                <span class="score ${item.scoreClass || 'normal'}">${item.score || '?'}</span>
-                                <span style="font-size:11px;color:#888;">важность</span>
-                            </div>
-                            <a href="${item.url || '#'}" target="_blank" class="read-more" style="display:inline-block;margin-top:8px;color:#44ccff;text-decoration:none;font-size:12px;">🔗 Читать полностью →</a>
-                        </div>
-                    `, { maxWidth: 320 });
-                
-                markers.push(marker);
-            }
-            
-            if (markers.length > 0) {
-                try {
-                    const group = L.featureGroup(markers);
-                    map.fitBounds(group.getBounds().pad(0.2));
-                } catch (e) {
-                    map.setView([20, 0], 2);
-                }
-            }
+          const label = L.marker([center.lat, center.lng], {
+            icon: L.divIcon({
+              className: labelClass,
+              html: `<span class="${labelClass}">${labelText}</span>`,
+              iconSize: [0, 0],
+              iconAnchor: [0, 0]
+            })
+          }).addTo(labelsLayer);
         }
+      }
+    }
 
-        function copyData() {
-            const data = {
-                timestamp: new Date().toISOString(),
-                markers: allData.markers,
-                countries: allData.countries,
-                total_markers: allData.markers.length,
-                total_countries: allData.countries.length
-            };
-            
-            const json = JSON.stringify(data, null, 2);
-            
-            navigator.clipboard.writeText(json).then(() => {
-                const btn = document.getElementById('btn-copy');
-                btn.textContent = '✅ Скопировано!';
-                btn.classList.add('copied');
-                setTimeout(() => {
-                    btn.textContent = '📋 Копировать данные';
-                    btn.classList.remove('copied');
-                }, 3000);
-            }).catch(() => {
-                const textarea = document.createElement('textarea');
-                textarea.value = json;
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
-                alert('✅ Данные скопированы в буфер обмена!');
-            });
-        }
+    function showCountryCircles() {
+      for (const [id, data] of Object.entries(countryData)) {
+        if (!data.lat || !data.lng) continue;
+        const color = STATUS_COLORS[data.status] || '#6b7280';
+        L.circle([data.lat, data.lng], {
+          radius: 150000,
+          color: '#ffffff',
+          fillColor: color,
+          fillOpacity: 0.5,
+          weight: 1.5,
+          opacity: 0.8
+        }).addTo(map).bindPopup(`<strong>${data.name}</strong><br>${data.status}`);
+      }
+    }
 
-        // ======== ИНИЦИАЛИЗАЦИЯ ========
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 DOM загружен, инициализация...');
-            
-            const savedLang = localStorage.getItem('geo-lang');
-            if (savedLang === 'en' || savedLang === 'ru') {
-                currentLang = savedLang;
-                console.log('📌 Восстановлен язык из localStorage:', currentLang);
-            } else {
-                console.log('📌 Язык по умолчанию: ru');
-            }
-            
-            document.querySelectorAll('.lang-selector .lang-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.lang === currentLang);
-                console.log('   Кнопка', btn.dataset.lang, btn.classList.contains('active') ? '→ АКТИВНА' : '→ неактивна');
-            });
-            
-            updateLanguage();
-            initMap();
-            
-            console.log('✅ Инициализация завершена');
-            console.log('🔤 Для проверки языка введи в консоли: currentLang');
+    function addMarkers() {
+      if (window._markersLayer) {
+        map.removeLayer(window._markersLayer);
+      }
+
+      const markersLayer = L.layerGroup().addTo(map);
+      window._markersLayer = markersLayer;
+
+      for (const item of markerData) {
+        if (!item.lat || !item.lng) continue;
+        const color = STATUS_COLORS[item.status] || '#3b82f6';
+        const size = item.status === 'critical' ? 16 : item.status === 'pre-war' ? 14 : item.status === 'high' ? 13 : 11;
+
+        const icon = L.divIcon({
+          className: 'event-marker',
+          html: `
+            <div style="position:relative;width:${size}px;height:${size}px;">
+              <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:${color};border-radius:50%;border:2px solid rgba(255,255,255,0.5);box-shadow:0 0 20px ${color}80;animation:pulse 2s infinite;"></div>
+              <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:${size/3.5}px;height:${size/3.5}px;background:#fff;border-radius:50%;opacity:0.6;"></div>
+            </div>
+            <style>@keyframes pulse { 0%,100% { transform: scale(1); opacity:1; } 50% { transform: scale(1.25); opacity:0.7; } }</style>
+          `,
+          iconSize: [size, size],
+          iconAnchor: [size/2, size/2]
         });
-    </script>
-<script src="/js/export.js"></script>
-<script src="/js/help.js"></script>
+
+        L.marker([item.lat, item.lng], { icon })
+          .addTo(markersLayer)
+          .bindPopup(`
+            <div style="padding:4px 0;">
+              <strong style="color:#e8f0f8;font-size:14px;">${item.name}</strong><br>
+              <span style="color:${color};font-weight:600;">${item.status.toUpperCase()}</span>
+              <div style="color:#666;font-size:10px;margin-top:3px;">${item.type || '—'}</div>
+            </div>
+          `);
+      }
+    }
+
+    // Обновление маркеров из layer-control.js
+    window.updateMapMarkers = function(markers) {
+      if (window._markersLayer) {
+        map.removeLayer(window._markersLayer);
+      }
+
+      const markersLayer = L.layerGroup().addTo(map);
+      window._markersLayer = markersLayer;
+
+      for (const item of markers) {
+        if (!item.lat || !item.lng) continue;
+        const color = STATUS_COLORS[item.status] || '#3b82f6';
+        const size = item.status === 'critical' ? 16 : item.status === 'pre-war' ? 14 : item.status === 'high' ? 13 : 11;
+
+        const icon = L.divIcon({
+          className: 'event-marker',
+          html: `
+            <div style="position:relative;width:${size}px;height:${size}px;">
+              <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:${color};border-radius:50%;border:2px solid rgba(255,255,255,0.5);box-shadow:0 0 20px ${color}80;animation:pulse 2s infinite;"></div>
+              <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:${size/3.5}px;height:${size/3.5}px;background:#fff;border-radius:50%;opacity:0.6;"></div>
+            </div>
+            <style>@keyframes pulse { 0%,100% { transform: scale(1); opacity:1; } 50% { transform: scale(1.25); opacity:0.7; } }</style>
+          `,
+          iconSize: [size, size],
+          iconAnchor: [size/2, size/2]
+        });
+
+        L.marker([item.lat, item.lng], { icon })
+          .addTo(markersLayer)
+          .bindPopup(`
+            <div style="padding:4px 0;">
+              <strong style="color:#e8f0f8;font-size:14px;">${item.name}</strong><br>
+              <span style="color:${color};font-weight:600;">${item.status.toUpperCase()}</span>
+              <div style="color:#666;font-size:10px;margin-top:3px;">${item.type || '—'}</div>
+            </div>
+          `);
+      }
+    };
+
+    function toggleHeat() {
+      heatEnabled = !heatEnabled;
+      document.getElementById('btn-heat').classList.toggle('active', heatEnabled);
+
+      if (heatLayer) {
+        map.removeLayer(heatLayer);
+        heatLayer = null;
+      }
+
+      if (heatEnabled && markerData.length > 0) {
+        const heatData = markerData.map(m => [m.lat, m.lng, 1.0]);
+        heatLayer = L.heatLayer(heatData, {
+          radius: 30,
+          blur: 20,
+          maxZoom: 10,
+          minOpacity: 0.3,
+          gradient: {
+            0.0: '#22c55e',
+            0.3: '#eab308',
+            0.6: '#f97316',
+            0.9: '#ef4444'
+          }
+        }).addTo(map);
+        showNotification('🌡️ Тепловая карта включена');
+      } else if (!heatEnabled) {
+        showNotification('🌡️ Тепловая карта выключена');
+      } else {
+        showNotification('❌ Нет данных для тепловой карты');
+      }
+    }
+
+    function toggleTimeline() {
+      timelineEnabled = !timelineEnabled;
+      document.getElementById('btn-timeline').classList.toggle('active', timelineEnabled);
+      const panel = document.getElementById('timeline-panel');
+
+      if (timelineEnabled) {
+        panel.classList.add('active');
+        buildTimeline();
+        showNotification('📅 Временная шкала включена');
+      } else {
+        panel.classList.remove('active');
+        showNotification('📅 Временная шкала выключена');
+      }
+    }
+
+    function buildTimeline() {
+      const track = document.getElementById('timeline-track');
+      const dateLabel = document.getElementById('timeline-date');
+
+      if (markerData.length === 0) {
+        track.innerHTML = '<div style="color:#555;font-size:11px;text-align:center;padding:8px;">Нет данных</div>';
+        dateLabel.textContent = '—';
+        return;
+      }
+
+      const grouped = {};
+      const today = new Date();
+      for (const m of markerData) {
+        const date = new Date(m.timestamp || today);
+        const key = date.toLocaleDateString('ru-RU');
+        if (!grouped[key]) grouped[key] = [];
+        grouped[key].push(m);
+      }
+
+      const keys = Object.keys(grouped).sort();
+      if (keys.length === 0) {
+        track.innerHTML = '<div style="color:#555;font-size:11px;text-align:center;padding:8px;">Нет данных</div>';
+        dateLabel.textContent = '—';
+        return;
+      }
+
+      let maxCount = 0;
+      for (const key of keys) {
+        if (grouped[key].length > maxCount) maxCount = grouped[key].length;
+      }
+
+      let html = '';
+      for (const key of keys) {
+        const count = grouped[key].length;
+        const height = maxCount > 0 ? Math.max(4, (count / maxCount) * 20) : 4;
+        const color = count > 5 ? '#ef4444' : count > 3 ? '#f97316' : count > 1 ? '#eab308' : '#22c55e';
+        html += `<div class="timeline-bar" style="height:${height}px;background:${color};" title="${key}: ${count} событий"></div>`;
+      }
+
+      track.innerHTML = html;
+      dateLabel.textContent = keys.length > 0 ? `${keys[0]} — ${keys[keys.length-1]}` : '—';
+    }
+
+    function exportPDF() {
+      const btn = document.querySelector('.btn-pdf');
+      btn.textContent = '⏳';
+      btn.disabled = true;
+      showNotification('⏳ Создание PDF...');
+
+      const container = document.getElementById('map-container');
+      const legend = document.querySelector('.legend');
+      const stats = document.querySelector('.stats');
+      const ssi = document.querySelector('.ssi-panel');
+      const timeline = document.getElementById('timeline-panel');
+
+      if (legend) legend.style.display = 'none';
+      if (stats) stats.style.display = 'none';
+      if (ssi) ssi.style.display = 'none';
+      if (timeline) timeline.style.display = 'none';
+
+      setTimeout(() => {
+        html2canvas(container, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#0a1a2a'
+        }).then(canvas => {
+          if (legend) legend.style.display = 'block';
+          if (stats) stats.style.display = 'block';
+          if (ssi) ssi.style.display = 'block';
+          if (timeline && timelineEnabled) timeline.style.display = 'block';
+
+          const link = document.createElement('a');
+          link.download = `Crucix_GeoMap_${new Date().toISOString().slice(0,10)}.png`;
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+
+          btn.textContent = '📄 Копир в PDF';
+          btn.disabled = false;
+          showNotification('✅ PDF экспортирован!');
+        }).catch(err => {
+          console.error('[PDF] Ошибка:', err);
+          if (legend) legend.style.display = 'block';
+          if (stats) stats.style.display = 'block';
+          if (ssi) ssi.style.display = 'block';
+          if (timeline && timelineEnabled) timeline.style.display = 'block';
+          btn.textContent = '📄 Копир в PDF';
+          btn.disabled = false;
+          showNotification('❌ Ошибка экспорта PDF');
+        });
+      }, 500);
+    }
+
+    function calculateSSI() {
+      const total = Object.keys(countryData).length;
+      if (total === 0) { return; }
+
+      let score = 0;
+      for (const [id, data] of Object.entries(countryData)) {
+        if (data.status === 'critical') score += 100;
+        else if (data.status === 'pre-war') score += 80;
+        else if (data.status === 'high') score += 70;
+        else if (data.status === 'medium') score += 40;
+        else if (data.status === 'low') score += 10;
+      }
+      const clamped = Math.min(Math.max(Math.round(score / total), 0), 100);
+      document.getElementById('ssi-fill').style.width = clamped + '%';
+      document.getElementById('ssi-label').textContent = clamped + '%';
+      document.getElementById('ssi-label').style.color = clamped > 80 ? '#ef4444' : clamped > 60 ? '#f97316' : clamped > 40 ? '#eab308' : '#22c55e';
+    }
+
+    function copyAllData() {
+      const timestamp = new Date().toLocaleString();
+      let report = '=== CRUCIX — ГЕОПОЛИТИЧЕСКАЯ КАРТА ===\n';
+      report += 'Дата: ' + timestamp + '\n';
+      report += 'URL: ' + window.location.href + '\n\n';
+      report += '--- СТАТИСТИКА ---\n';
+      report += 'Стран: ' + Object.keys(countryData).length + '\n';
+      report += 'Событий: ' + markerData.length + '\n\n';
+      report += '--- СТРАНЫ ПО СТАТУСАМ ---\n';
+      const critical = [], preWar = [], high = [], medium = [], low = [];
+      for (const [id, data] of Object.entries(countryData)) {
+        if (data.status === 'critical') critical.push(data.name);
+        else if (data.status === 'pre-war') preWar.push(data.name);
+        else if (data.status === 'high') high.push(data.name);
+        else if (data.status === 'medium') medium.push(data.name);
+        else if (data.status === 'low') low.push(data.name);
+      }
+      report += '🔴 Критический (' + critical.length + '): ' + critical.join(', ') + '\n';
+      report += '🟠 Предвоенный (' + preWar.length + '): ' + preWar.join(', ') + '\n';
+      report += '🟠 Высокий (' + high.length + '): ' + high.join(', ') + '\n';
+      report += '🟡 Средний (' + medium.length + '): ' + medium.join(', ') + '\n';
+      report += '🟢 Нормальный (' + low.length + '): ' + low.join(', ') + '\n\n';
+      report += '--- ИНДЕКС НАПРЯЖЁННОСТИ ---\n';
+      report += 'SSI: ' + document.getElementById('ssi-label').textContent + '\n\n';
+      report += '--- МАРКЕРЫ СОБЫТИЙ ---\n';
+      for (const m of markerData) {
+        report += '  ' + m.name + ' (' + m.status + ') — ' + m.lat + ', ' + m.lng + '\n';
+      }
+      report += '\n--- КООРДИНАТЫ КАРТЫ ---\n';
+      if (map) {
+        const center = map.getCenter();
+        const zoom = map.getZoom();
+        report += 'Центр: ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + '\n';
+        report += 'Масштаб: ' + zoom + '\n';
+        const bounds = map.getBounds();
+        report += 'Границы: ' + bounds.getSouthWest().lat.toFixed(4) + ', ' + bounds.getSouthWest().lng.toFixed(4) + ' — ' + bounds.getNorthEast().lat.toFixed(4) + ', ' + bounds.getNorthEast().lng.toFixed(4) + '\n';
+      }
+      report += '\n--- CRUCIX OSINT TERMINAL ---\n';
+      report += '🌐 ' + window.location.origin + '/geo-map';
+
+      navigator.clipboard.writeText(report).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = '✅ Скопировано!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = '📋 КОПИРОВАТЬ';
+          btn.classList.remove('copied');
+        }, 3000);
+        showNotification('✅ Данные скопированы');
+      }).catch(() => {
+        const textarea = document.createElement('textarea');
+        textarea.value = report;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = '✅ Скопировано!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = '📋 КОПИРОВАТЬ';
+          btn.classList.remove('copied');
+        }, 3000);
+        showNotification('✅ Данные скопированы');
+      });
+    }
+
+    function showNotification(msg) {
+      document.querySelectorAll('.notification').forEach(el => el.remove());
+      const el = document.createElement('div');
+      el.className = 'notification';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2500);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const savedLang = localStorage.getItem('crucix-lang') || 'ru';
+      setLanguage(savedLang);
+
+      if (typeof L !== 'undefined') {
+        initMap();
+      } else {
+        document.getElementById('loading-overlay').innerHTML = '<div class="text" style="color:#ef4444;">❌ ОШИБКА: Leaflet не загружен</div>';
+      }
+    });
+  </script>
 </body>
 </html>

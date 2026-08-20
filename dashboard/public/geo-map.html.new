@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Геополитическая карта — Crucix</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0f;
+      color: #c8d0d8;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; height: 60px;
+      background: rgba(10,10,20,0.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.04); z-index: 100;
+      display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; }
+    .topbar-status { font-size: 11px; color: #ffd700; }
+    .topbar-right { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .topbar-btn {
+      height: 28px; padding: 0 12px; border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 4px; background: rgba(255,255,255,0.03); color: #888;
+      font-size: 11px; font-weight: 500; text-transform: uppercase;
+      cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 4px;
+    }
+    .topbar-btn:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+    .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
+    .btn-home:hover { background: rgba(91,192,248,0.15); }
+    .btn-copy { color: #5bc0f8; border-color: rgba(91,192,248,0.15); background: rgba(91,192,248,0.06); }
+    .btn-copy:hover { background: rgba(91,192,248,0.15); }
+    .btn-copy.copied { background: rgba(76,175,80,0.2); border-color: #4caf50; color: #4caf50; }
+    .btn-registry { color: #ffd700; border-color: rgba(255,215,0,0.2); background: rgba(255,215,0,0.06); }
+    .btn-registry:hover { background: rgba(255,215,0,0.15); }
+    .map-container {
+      padding-top: 60px;
+      height: 100vh;
+      width: 100%;
+      position: relative;
+    }
+    #map {
+      height: 100%;
+      width: 100%;
+      background: #0a0a0f;
+    }
+    .legend {
+      position: absolute;
+      bottom: 30px;
+      left: 20px;
+      z-index: 1000;
+      background: rgba(10,10,30,0.92);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 12px;
+      backdrop-filter: blur(10px);
+      color: #ccc;
+      min-width: 140px;
+    }
+    .legend .title { font-weight: 600; color: #fff; margin-bottom: 6px; font-size: 13px; }
+    .legend .item { display: flex; align-items: center; gap: 8px; margin: 3px 0; }
+    .legend .color-box { width: 20px; height: 14px; border-radius: 3px; display: inline-block; border: 1px solid rgba(255,255,255,0.1); }
+    .legend .color-box.critical { background: #ef4444; }
+    .legend .color-box.high { background: #f97316; }
+    .legend .color-box.medium { background: #eab308; }
+    .legend .color-box.low { background: #22c55e; }
+    .legend .color-box.marker { background: #3b82f6; border-radius: 50%; width: 12px; height: 12px; }
+    .stats {
+      position: absolute;
+      top: 80px;
+      right: 20px;
+      z-index: 1000;
+      background: rgba(10,10,30,0.92);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 12px 16px;
+      backdrop-filter: blur(10px);
+      min-width: 130px;
+      color: #ccc;
+      text-align: center;
+    }
+    .stats .count { font-size: 28px; font-weight: 700; color: #44ccff; }
+    .stats .label { font-size: 11px; color: #888; }
+    .stats .countries-count { font-size: 14px; color: #ffd700; margin-top: 4px; }
+    .notification {
+      position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.85); color: #fff; padding: 8px 20px;
+      border-radius: 6px; font-size: 13px; z-index: 100001;
+      border: 1px solid rgba(255,255,255,0.1);
+      animation: notif-fade 2.5s forwards;
+    }
+    @keyframes notif-fade {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+    .loading-overlay {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(10,10,15,0.8); z-index: 999;
+      display: flex; justify-content: center; align-items: center;
+      flex-direction: column; gap: 16px;
+    }
+    .loading-overlay .spinner {
+      width: 48px; height: 48px;
+      border: 4px solid rgba(255,255,255,0.1);
+      border-top-color: #5bc0f8;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-overlay .text { color: #888; font-size: 14px; letter-spacing: 1px; }
+    .leaflet-popup-content-wrapper {
+      background: rgba(10,10,20,0.92) !important;
+      color: #c8d0d8 !important;
+      border-radius: 6px !important;
+      border: 1px solid rgba(255,255,255,0.1) !important;
+    }
+    .leaflet-popup-tip { background: rgba(10,10,20,0.92) !important; }
+    .leaflet-control-zoom { border: 1px solid rgba(255,255,255,0.1) !important; }
+    .leaflet-control-zoom a { background: rgba(10,10,20,0.8) !important; color: #c8d0d8 !important; }
+    @media (max-width: 768px) {
+      .topbar { padding: 0 12px; height: 52px; }
+      .topbar-brand { font-size: 12px; }
+      .topbar-status { display: none; }
+      .topbar-btn { font-size: 10px; padding: 0 8px; height: 24px; }
+      .stats { top: 72px; right: 10px; padding: 8px 12px; min-width: 100px; }
+      .stats .count { font-size: 20px; }
+      .legend { bottom: 10px; left: 10px; padding: 8px 12px; font-size: 11px; min-width: 100px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-brand">⚡ CRUCIX MONITOR</span>
+      <span class="topbar-status">ГЕОПОЛИТИЧЕСКАЯ КАРТА</span>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← ГЛАВНАЯ</button>
+      <button class="topbar-btn btn-copy" id="copy-btn" onclick="copyAllData()">📋 КОПИРОВАТЬ</button>
+      <button class="topbar-btn btn-registry" onclick="window.location.href='/registry'">📋 РЕЕСТР</button>
+    </div>
+  </header>
+
+  <div class="map-container">
+    <div id="map"></div>
+    <div class="loading-overlay" id="loading-overlay">
+      <div class="spinner"></div>
+      <div class="text">ЗАГРУЗКА КАРТЫ...</div>
+    </div>
+    <div class="legend">
+      <div class="title">🎯 Статусы стран</div>
+      <div class="item"><span class="color-box critical"></span> Критический</div>
+      <div class="item"><span class="color-box high"></span> Высокий</div>
+      <div class="item"><span class="color-box medium"></span> Средний</div>
+      <div class="item"><span class="color-box low"></span> Нормальный</div>
+      <div class="item" style="margin-top:4px;border-top:1px solid rgba(255,255,255,0.05);padding-top:4px;">
+        <span class="color-box marker"></span> События
+      </div>
+    </div>
+    <div class="stats" id="stats">
+      <div class="count" id="marker-count">0</div>
+      <div class="label">событий</div>
+      <div class="countries-count" id="countries-count">🌍 0 стран</div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    // 1. ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
+    // ============================================================
+    let map = null;
+    let allLayers = [];
+    let markersLayer = null;
+    let countriesLayer = null;
+    let countryData = {};
+    let markerData = [];
+
+    // ============================================================
+    // 2. ЦВЕТА СТАТУСОВ
+    // ============================================================
+    const STATUS_COLORS = {
+      critical: '#ef4444',
+      high: '#f97316',
+      medium: '#eab308',
+      low: '#22c55e'
+    };
+
+    const STATUS_OPACITY = {
+      critical: 0.7,
+      high: 0.6,
+      medium: 0.5,
+      low: 0.4
+    };
+
+    // ============================================================
+    // 3. ИНИЦИАЛИЗАЦИЯ КАРТЫ
+    // ============================================================
+    function initMap() {
+      map = L.map('map', {
+        center: [30, 20],
+        zoom: 2,
+        zoomControl: true,
+        minZoom: 1.5,
+        maxZoom: 10
+      });
+
+      // Тёмный слой
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '© OpenStreetMap, © CartoDB',
+        maxZoom: 19
+      }).addTo(map);
+
+      // Загружаем данные
+      loadData();
+    }
+
+    // ============================================================
+    // 4. ЗАГРУЗКА ДАННЫХ
+    // ============================================================
+    async function loadData() {
+      try {
+        const [markersRes, statusRes] = await Promise.all([
+          fetch('/api/geo/markers'),
+          fetch('/api/geo/status')
+        ]);
+
+        const markersData = await markersRes.json();
+        const statusData = await statusRes.json();
+
+        if (statusData.success && statusData.status && statusData.status.countries) {
+          countryData = statusData.status.countries;
+          document.getElementById('countries-count').textContent = '🌍 ' + Object.keys(countryData).length + ' стран';
+        }
+
+        if (markersData.success && markersData.markers) {
+          markerData = markersData.markers;
+          document.getElementById('marker-count').textContent = markerData.length;
+        }
+
+        // Строим карту
+        buildMap();
+
+        // Скрываем загрузку
+        document.getElementById('loading-overlay').style.display = 'none';
+
+        setTimeout(() => {
+          if (map) map.invalidateSize();
+        }, 500);
+
+      } catch (e) {
+        console.error('[Geo Map] Ошибка загрузки:', e);
+        document.getElementById('loading-overlay').innerHTML = '<div class="text" style="color:#ef4444;">❌ ОШИБКА ЗАГРУЗКИ</div>';
+      }
+    }
+
+    // ============================================================
+    // 5. ПОСТРОЕНИЕ КАРТЫ
+    // ============================================================
+    function buildMap() {
+      if (!map) return;
+
+      // Удаляем старые слои
+      if (countriesLayer) { map.removeLayer(countriesLayer); countriesLayer = null; }
+      if (markersLayer) { map.removeLayer(markersLayer); markersLayer = null; }
+
+      // Создаём слой для стран
+      countriesLayer = L.layerGroup().addTo(map);
+
+      // Добавляем страны (круги с цветами)
+      for (const [id, data] of Object.entries(countryData)) {
+        if (!data.lat || !data.lng) continue;
+        const color = STATUS_COLORS[data.status] || '#6b7280';
+        const opacity = STATUS_OPACITY[data.status] || 0.5;
+        const radius = data.status === 'critical' ? 14 : data.status === 'high' ? 11 : 8;
+
+        // Круг для страны
+        const circle = L.circle([data.lat, data.lng], {
+          radius: radius * 10000,
+          color: color,
+          fillColor: color,
+          fillOpacity: opacity,
+          weight: 1.5,
+          opacity: 0.8,
+          className: 'country-circle'
+        }).addTo(countriesLayer);
+
+        // Подпись страны (только для важных)
+        if (data.status === 'critical' || data.status === 'high') {
+          L.marker([data.lat, data.lng + 0.5], {
+            icon: L.divIcon({
+              className: 'country-label',
+              html: `<div style="color:#8898a8;font-size:9px;font-weight:600;text-shadow:0 0 8px rgba(0,0,0,0.9);pointer-events:none;white-space:nowrap;letter-spacing:0.3px;">${data.name}</div>`,
+              iconSize: [0, 0],
+              iconAnchor: [0, 0]
+            })
+          }).addTo(countriesLayer);
+        }
+
+        // Всплывающая подсказка
+        circle.bindPopup(`
+          <div style="padding:4px 0;">
+            <strong style="color:#e8f0f8;font-size:14px;">${data.name}</strong><br>
+            <span style="color:#${color.replace('#', '')};font-weight:600;">${data.status.toUpperCase()}</span>
+            <div style="color:#666;font-size:11px;margin-top:4px;">Координаты: ${data.lat.toFixed(2)}, ${data.lng.toFixed(2)}</div>
+          </div>
+        `);
+      }
+
+      // Создаём слой для маркеров событий
+      markersLayer = L.layerGroup().addTo(map);
+
+      for (const item of markerData) {
+        if (!item.lat || !item.lng) continue;
+        const color = STATUS_COLORS[item.status] || '#3b82f6';
+        const size = item.status === 'critical' ? 18 : item.status === 'high' ? 15 : 12;
+
+        // Маркер с пульсацией
+        const icon = L.divIcon({
+          className: 'event-marker',
+          html: `
+            <div style="position:relative;width:${size}px;height:${size}px;">
+              <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:${color};border-radius:50%;border:2px solid rgba(255,255,255,0.3);box-shadow:0 0 20px ${color}80;animation:pulse 2s infinite;"></div>
+              <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:${size/3}px;height:${size/3}px;background:#fff;border-radius:50%;opacity:0.6;"></div>
+            </div>
+            <style>
+              @keyframes pulse {
+                0%, 100% { transform: scale(1); opacity: 1; }
+                50% { transform: scale(1.2); opacity: 0.7; }
+              }
+            </style>
+          `,
+          iconSize: [size, size],
+          iconAnchor: [size/2, size/2]
+        });
+
+        const marker = L.marker([item.lat, item.lng], { icon })
+          .addTo(markersLayer)
+          .bindPopup(`
+            <div style="padding:4px 0;">
+              <strong style="color:#e8f0f8;font-size:14px;">${item.name}</strong><br>
+              <span style="color:#${color.replace('#', '')};font-weight:600;">${item.status.toUpperCase()}</span>
+              <div style="color:#666;font-size:11px;margin-top:4px;">Тип: ${item.type || '—'}</div>
+              <div style="color:#666;font-size:11px;">Координаты: ${item.lat.toFixed(2)}, ${item.lng.toFixed(2)}</div>
+            </div>
+          `);
+
+        allLayers.push(marker);
+      }
+
+      // Добавляем стиль для пульсации
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.2); opacity: 0.7; }
+        }
+      `;
+      document.head.appendChild(style);
+
+      // Адаптируем карту под все объекты
+      if (countriesLayer.getLayers().length > 0) {
+        try {
+          const bounds = countriesLayer.getBounds();
+          if (bounds.isValid()) {
+            map.fitBounds(bounds.pad(0.15));
+          }
+        } catch (e) {
+          map.setView([30, 20], 2);
+        }
+      } else {
+        map.setView([30, 20], 2);
+      }
+
+      console.log('[Geo Map] Построено:', {
+        countries: Object.keys(countryData).length,
+        markers: markerData.length
+      });
+    }
+
+    // ============================================================
+    // 6. КНОПКА КОПИРОВАНИЯ
+    // ============================================================
+    function copyAllData() {
+      const timestamp = new Date().toLocaleString();
+      let report = '=== CRUCIX — ГЕОПОЛИТИЧЕСКАЯ КАРТА ===\n';
+      report += 'Дата: ' + timestamp + '\n';
+      report += 'URL: ' + window.location.href + '\n\n';
+
+      report += '--- СТАТИСТИКА ---\n';
+      report += 'Стран: ' + Object.keys(countryData).length + '\n';
+      report += 'Событий: ' + markerData.length + '\n\n';
+
+      report += '--- СТРАНЫ ПО СТАТУСАМ ---\n';
+      const critical = [], high = [], medium = [], low = [];
+      for (const [id, data] of Object.entries(countryData)) {
+        if (data.status === 'critical') critical.push(data.name);
+        else if (data.status === 'high') high.push(data.name);
+        else if (data.status === 'medium') medium.push(data.name);
+        else if (data.status === 'low') low.push(data.name);
+      }
+      report += '🔴 Критический (' + critical.length + '): ' + critical.join(', ') + '\n';
+      report += '🟠 Высокий (' + high.length + '): ' + high.join(', ') + '\n';
+      report += '🟡 Средний (' + medium.length + '): ' + medium.join(', ') + '\n';
+      report += '🟢 Нормальный (' + low.length + '): ' + low.join(', ') + '\n\n';
+
+      report += '--- МАРКЕРЫ СОБЫТИЙ ---\n';
+      for (const m of markerData) {
+        report += '  ' + m.name + ' (' + m.status + ') — ' + m.lat + ', ' + m.lng + '\n';
+      }
+
+      report += '\n--- CRUCIX OSINT TERMINAL ---\n';
+      report += '🌐 ' + window.location.origin + '/geo-map';
+
+      navigator.clipboard.writeText(report).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = '✅ Скопировано!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = '📋 КОПИРОВАТЬ';
+          btn.classList.remove('copied');
+        }, 3000);
+        showNotification('✅ Данные скопированы');
+      }).catch(() => {
+        const textarea = document.createElement('textarea');
+        textarea.value = report;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = '✅ Скопировано!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = '📋 КОПИРОВАТЬ';
+          btn.classList.remove('copied');
+        }, 3000);
+        showNotification('✅ Данные скопированы');
+      });
+    }
+
+    function showNotification(msg) {
+      document.querySelectorAll('.notification').forEach(el => el.remove());
+      const el = document.createElement('div');
+      el.className = 'notification';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2500);
+    }
+
+    // ============================================================
+    // 7. ЗАПУСК
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', function() {
+      // Проверяем, что Leaflet загрузился
+      if (typeof L !== 'undefined') {
+        initMap();
+      } else {
+        console.error('[Geo Map] Leaflet не загружен');
+        document.getElementById('loading-overlay').innerHTML = '<div class="text" style="color:#ef4444;">❌ ОШИБКА: Leaflet не загружен</div>';
+      }
+    });
+  </script>
+</body>
+</html>

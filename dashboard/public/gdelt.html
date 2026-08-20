@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GDELT — Crucix</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', monospace;
+      background: #0a0a0f;
+      color: #c8d0d8;
+      min-height: 100vh;
+    }
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; height: 60px;
+      background: rgba(10,10,20,0.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.04); z-index: 100;
+      display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
+    }
+    .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; }
+    .topbar-status { font-size: 11px; color: #a855f7; }
+    .topbar-btn {
+      height: 28px; padding: 0 12px; border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 4px; background: rgba(255,255,255,0.03); color: #888;
+      font-size: 11px; font-weight: 500; cursor: pointer; transition: all 0.2s;
+    }
+    .topbar-btn:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+    .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
+    .btn-home:hover { background: rgba(91,192,248,0.15); }
+    .main-content { padding-top: 76px; max-width: 1200px; margin: 0 auto; padding: 76px 20px 40px; }
+    .page-title { font-size: 24px; font-weight: 700; color: #e8f0f8; margin-bottom: 8px; }
+    .page-subtitle { color: #666; font-size: 14px; margin-bottom: 20px; }
+    .stats-row { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+    .stat-item { background: rgba(10,10,20,0.5); border: 1px solid rgba(255,255,255,0.03); border-radius: 6px; padding: 8px 14px; min-width: 120px; }
+    .stat-item .stat-label { font-size: 10px; font-weight: 500; text-transform: uppercase; color: #666; letter-spacing: 0.5px; }
+    .stat-item .stat-value { font-size: 16px; font-weight: 600; color: #e8f0f8; margin-top: 2px; }
+    .stat-value.purple { color: #a855f7; }
+    .stat-value.blue { color: #5bc0f8; }
+    .panel { background: rgba(10,10,20,0.5); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+    .panel .title { font-size: 14px; font-weight: 600; color: #e8f0f8; margin-bottom: 8px; }
+    .data-view { font-family: monospace; font-size: 12px; color: #c8d0d8; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 4px; white-space: pre-wrap; overflow-x: auto; }
+    .loading { padding: 20px; text-align: center; color: #666; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-brand">⚡ CRUCIX MONITOR</span>
+      <span class="topbar-status">GDELT — НОВОСТИ</span>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <h1 class="page-title">🌍 GDELT — Глобальные новости</h1>
+    <p class="page-subtitle">Global Database of Events, Language, and Tone</p>
+
+    <div class="stats-row" id="stats-row">
+      <div class="stat-item"><div class="stat-label">Событий</div><div class="stat-value blue" id="stat-events">—</div></div>
+      <div class="stat-item"><div class="stat-label">Стран</div><div class="stat-value purple" id="stat-countries">—</div></div>
+      <div class="stat-item"><div class="stat-label">Обновлено</div><div class="stat-value" id="stat-updated">—</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="title">📊 Данные</div>
+      <div id="data-content"><div class="loading">Загрузка данных...</div></div>
+    </div>
+  </main>
+
+  <script>
+    async function loadData() {
+      try {
+        const res = await fetch('/api/gdelt/data');
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('stat-events').textContent = data.data?.events || '—';
+          document.getElementById('stat-countries').textContent = data.data?.countries || '—';
+          document.getElementById('stat-updated').textContent = data.data?.updated || '—';
+          document.getElementById('data-content').innerHTML = `<pre class="data-view">${JSON.stringify(data, null, 2)}</pre>`;
+        } else {
+          document.getElementById('data-content').innerHTML = `<div class="loading">⚠️ ${data.error || 'Ошибка загрузки'}</div>`;
+        }
+      } catch (e) {
+        document.getElementById('data-content').innerHTML = `<div class="loading">⚠️ Ошибка: ${e.message}</div>`;
+      }
+    }
+    document.addEventListener('DOMContentLoaded', loadData);
+  </script>
+</body>
+</html>

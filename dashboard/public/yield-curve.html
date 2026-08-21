@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Золото/Нефть — Crucix</title>
+    <title>Кривая доходности — Crucix</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -26,7 +26,7 @@
             padding: 0 20px;
         }
         .topbar-left { display: flex; align-items: center; gap: 12px; }
-        .topbar-brand { font-size: 14px; font-weight: 700; color: #fbbf24; text-transform: uppercase; letter-spacing: 2px; }
+        .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; }
         .topbar-right { display: flex; align-items: center; gap: 6px; }
         .topbar-btn {
             height: 28px; padding: 0 12px; border: 1px solid rgba(255,255,255,0.08);
@@ -35,10 +35,10 @@
             transition: all 0.2s;
         }
         .topbar-btn:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
-        .btn-home { color: #fbbf24; border-color: rgba(251,191,36,0.2); background: rgba(251,191,36,0.06); }
-        .btn-home:hover { background: rgba(251,191,36,0.15); }
-        .btn-copy { color: #fbbf24; border-color: rgba(251,191,36,0.15); background: rgba(251,191,36,0.06); }
-        .btn-copy:hover { background: rgba(251,191,36,0.15); }
+        .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
+        .btn-home:hover { background: rgba(91,192,248,0.15); }
+        .btn-copy { color: #5bc0f8; border-color: rgba(91,192,248,0.15); background: rgba(91,192,248,0.06); }
+        .btn-copy:hover { background: rgba(91,192,248,0.15); }
         .btn-copy.copied { background: rgba(76,175,80,0.2); border-color: #4caf50; color: #4caf50; }
         .lang-switch {
             display: flex; gap: 2px; padding: 2px;
@@ -51,7 +51,7 @@
             border-radius: 3px; transition: all 0.2s;
         }
         .lang-btn:hover { color: #888; background: rgba(255,255,255,0.05); }
-        .lang-btn.active { color: #fbbf24; background: rgba(251,191,36,0.1); }
+        .lang-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.1); }
         .main-content {
             padding-top: 76px;
             max-width: 1400px;
@@ -76,7 +76,7 @@
             border: 1px solid rgba(74,222,128,0.2);
         }
         .page-subtitle { color: #8899aa; font-size: 14px; margin-bottom: 24px; }
-        .ratio-display {
+        .yield-display {
             background: rgba(255,255,255,0.02);
             border: 1px solid rgba(255,255,255,0.05);
             border-radius: 12px;
@@ -84,12 +84,12 @@
             text-align: center;
             margin-bottom: 24px;
         }
-        .ratio-value {
+        .yield-spread {
             font-size: 56px;
             font-weight: 700;
         }
-        .ratio-label { font-size: 16px; color: #8899aa; margin-top: 4px; }
-        .ratio-status {
+        .yield-label { font-size: 16px; color: #8899aa; margin-top: 4px; }
+        .yield-status {
             font-size: 18px;
             font-weight: 600;
             margin-top: 8px;
@@ -97,15 +97,15 @@
             border-radius: 20px;
             display: inline-block;
         }
-        .ratio-details {
+        .yield-details {
             display: flex;
             justify-content: center;
             gap: 40px;
             margin-top: 12px;
             font-size: 14px;
         }
-        .ratio-details span { color: #8899aa; }
-        .ratio-details strong { color: #e0e0e0; }
+        .yield-details span { color: #8899aa; }
+        .yield-details strong { color: #e0e0e0; }
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -134,19 +134,39 @@
             min-height: 200px;
             color: #4a5a6a;
         }
+        .notification {
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            z-index: 100001;
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: notif-fade 2.5s forwards;
+        }
+        @keyframes notif-fade {
+            0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+            10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        }
         @media (max-width: 768px) {
             .topbar { padding: 0 12px; height: 52px; }
             .main-content { padding-top: 68px; padding-left: 12px; padding-right: 12px; }
             .page-title { font-size: 20px; }
-            .ratio-value { font-size: 36px; }
-            .ratio-details { flex-direction: column; gap: 8px; }
+            .yield-spread { font-size: 36px; }
+            .yield-details { flex-direction: column; gap: 8px; }
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
 <body>
 <header class="topbar">
-    <div class="topbar-left"><span class="topbar-brand">💰 ЗОЛОТО/НЕФТЬ</span></div>
+    <div class="topbar-left"><span class="topbar-brand">📉 КРИВАЯ ДОХОДНОСТИ</span></div>
     <div class="topbar-right">
         <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
         <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ</button>
@@ -159,30 +179,30 @@
 </header>
 <main class="main-content">
     <div class="page-title">
-        💰 Золото / Нефть (WTI)
+        📉 Кривая доходности
         <span class="badge" id="statusBadge">🟢 ONLINE</span>
     </div>
-    <div class="page-subtitle">Исторический индикатор геополитического риска</div>
+    <div class="page-subtitle">Разница между доходностью 10-летних и 2-летних облигаций — классический индикатор рецессии</div>
 
-    <div class="ratio-display">
-        <div class="ratio-value" id="ratioValue">—</div>
-        <div class="ratio-label">Соотношение цен на золото и нефть</div>
-        <div class="ratio-status" id="ratioStatus">Загрузка...</div>
-        <div class="ratio-details">
-            <span>Золото: <strong id="goldPrice">—</strong> $/унц</span>
-            <span>Нефть WTI: <strong id="oilPrice">—</strong> $/барр</span>
+    <div class="yield-display">
+        <div class="yield-spread" id="spreadValue">—</div>
+        <div class="yield-label">Разница 10-летних и 2-летних облигаций</div>
+        <div class="yield-status" id="yieldStatus">Загрузка...</div>
+        <div class="yield-details">
+            <span>2-летние: <strong id="rate2y">—</strong>%</span>
+            <span>10-летние: <strong id="rate10y">—</strong>%</span>
         </div>
     </div>
 
     <div class="stats-grid" id="statsGrid">
         <div class="stat-card"><div class="label">Записей</div><div class="value" id="totalCount">—</div></div>
-        <div class="stat-card"><div class="label">Минимум</div><div class="value" id="minRatio">—</div></div>
-        <div class="stat-card"><div class="label">Максимум</div><div class="value" id="maxRatio">—</div></div>
-        <div class="stat-card"><div class="label">Среднее</div><div class="value" id="avgRatio">—</div></div>
+        <div class="stat-card"><div class="label">Минимум</div><div class="value" id="minSpread">—</div></div>
+        <div class="stat-card"><div class="label">Максимум</div><div class="value" id="maxSpread">—</div></div>
+        <div class="stat-card"><div class="label">Среднее</div><div class="value" id="avgSpread">—</div></div>
     </div>
 
     <div class="chart-container">
-        <div class="chart-placeholder" id="chartPlaceholder">📊 График соотношения загружается...</div>
+        <div class="chart-placeholder" id="chartPlaceholder">📊 График разницы доходностей загружается...</div>
     </div>
 </main>
 <script>
@@ -193,11 +213,19 @@ function switchLang(lang) {
     document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.lang === lang);
     });
+    showNotification(`🌐 Язык: ${lang.toUpperCase()}`);
 }
 document.querySelectorAll('.lang-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.lang === currentLang);
 });
-
+function showNotification(msg) {
+    document.querySelectorAll('.notification').forEach(el => el.remove());
+    const el = document.createElement('div');
+    el.className = 'notification';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2500);
+}
 document.getElementById('copy-btn').addEventListener('click', function() {
     const text = document.body.innerText;
     navigator.clipboard.writeText(text).then(() => {
@@ -207,79 +235,84 @@ document.getElementById('copy-btn').addEventListener('click', function() {
             this.textContent = '📋 КОПИРОВАТЬ';
             this.classList.remove('copied');
         }, 3000);
+        showNotification('✅ Данные скопированы');
+    }).catch(() => {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        this.textContent = '✅ Скопировано!';
+        setTimeout(() => { this.textContent = '📋 КОПИРОВАТЬ'; }, 3000);
     });
 });
-
 async function loadData() {
     try {
-        const res = await fetch('/api/gold-oil-ratio/');
+        const res = await fetch('/api/yield-curve/');
         const data = await res.json();
-        return data.data || data;
+        return data.data || [];
     } catch (e) {
-        console.error('[GOLD-OIL] Ошибка:', e);
-        return null;
+        console.error('[YIELD] Ошибка:', e);
+        return [];
     }
 }
-
-function render(data) {
-    if (!data || !data.currentRatio) {
-        document.getElementById('ratioValue').textContent = '—';
-        document.getElementById('ratioStatus').textContent = 'Нет данных';
+function renderYield(data) {
+    if (data.length === 0) {
+        document.getElementById('spreadValue').textContent = '—';
+        document.getElementById('yieldStatus').textContent = 'Нет данных';
         return;
     }
-
-    const ratio = data.currentRatio;
-    document.getElementById('ratioValue').textContent = ratio.toFixed(2);
-    document.getElementById('goldPrice').textContent = data.metrics?.gold?.toFixed(2) || '—';
-    document.getElementById('oilPrice').textContent = data.metrics?.oil?.toFixed(2) || '—';
+    const last = data[data.length - 1];
+    const spread = last.spread;
+    document.getElementById('spreadValue').textContent = spread.toFixed(2) + '%';
+    document.getElementById('rate2y').textContent = last.rate2y.toFixed(2);
+    document.getElementById('rate10y').textContent = last.rate10y.toFixed(2);
 
     let status, color;
-    if (ratio > 25) {
-        status = '🔴 ВЫСОКИЙ РИСК (война)';
+    if (spread < 0) {
+        status = '🔴 ИНВЕРСИЯ (рецессия)';
         color = '#ef4444';
-    } else if (ratio > 20) {
-        status = '🟡 СРЕДНИЙ РИСК';
+    } else if (spread < 0.5) {
+        status = '🟡 ПРЕДУПРЕЖДЕНИЕ';
         color = '#f59e0b';
     } else {
         status = '🟢 НОРМАЛЬНО';
         color = '#4ade80';
     }
 
-    const statusEl = document.getElementById('ratioStatus');
+    const statusEl = document.getElementById('yieldStatus');
     statusEl.textContent = status;
     statusEl.style.background = color + '22';
     statusEl.style.color = color;
     statusEl.style.border = '1px solid ' + color + '33';
 
-    const history = data.history || [];
-    if (history.length > 0) {
-        const ratios = history.map(d => d.ratio);
-        const min = Math.min(...ratios);
-        const max = Math.max(...ratios);
-        const avg = ratios.reduce((a,b) => a + b, 0) / ratios.length;
-        document.getElementById('totalCount').textContent = history.length;
-        document.getElementById('minRatio').textContent = min.toFixed(2);
-        document.getElementById('maxRatio').textContent = max.toFixed(2);
-        document.getElementById('avgRatio').textContent = avg.toFixed(2);
-        renderChart(history);
-    }
-}
+    const spreads = data.map(d => d.spread);
+    const min = Math.min(...spreads);
+    const max = Math.max(...spreads);
+    const avg = spreads.reduce((a,b) => a + b, 0) / spreads.length;
 
-function renderChart(history) {
+    document.getElementById('totalCount').textContent = data.length;
+    document.getElementById('minSpread').textContent = min.toFixed(2) + '%';
+    document.getElementById('maxSpread').textContent = max.toFixed(2) + '%';
+    document.getElementById('avgSpread').textContent = avg.toFixed(2) + '%';
+
+    renderChart(data);
+}
+function renderChart(data) {
     const container = document.getElementById('chartPlaceholder');
-    if (history.length < 2) {
+    if (data.length < 2) {
         container.innerHTML = '📊 Недостаточно данных для графика';
         return;
     }
-
-    const values = history.map(d => d.ratio);
+    const values = data.map(d => d.spread);
     const maxVal = Math.max(...values) * 1.1 || 1;
-    const minVal = Math.min(...values) * 0.9 || 0;
+    const minVal = Math.min(...values) * 0.9 || -1;
     const range = maxVal - minVal || 1;
 
-    let bars = history.map((d, i) => {
-        const height = ((d.ratio - minVal) / range) * 150 + 20;
-        const color = d.ratio > 25 ? '#ef4444' : d.ratio > 20 ? '#f59e0b' : '#4ade80';
+    let bars = data.map((d, i) => {
+        const height = ((d.spread - minVal) / range) * 150 + 20;
+        const color = d.spread < 0 ? '#ef4444' : d.spread < 0.5 ? '#f59e0b' : '#4ade80';
         return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;">
             <div style="width:100%;height:${height}px;background:${color};border-radius:3px 3px 0 0;min-height:4px;"></div>
             <div style="font-size:9px;color:#4a5a6a;margin-top:4px;transform:rotate(-45deg);white-space:nowrap;">${d.date.slice(5)}</div>
@@ -291,17 +324,15 @@ function renderChart(history) {
             ${bars}
         </div>
         <div style="display:flex;justify-content:space-between;font-size:10px;color:#4a5a6a;padding:0 4px;">
-            <span>${history[0].date}</span>
-            <span>${history[history.length-1].date}</span>
+            <span>${data[0].date}</span>
+            <span>${data[data.length-1].date}</span>
         </div>
     `;
 }
-
 async function update() {
     const data = await loadData();
-    render(data);
+    renderYield(data);
 }
-
 update();
 setInterval(update, 60000);
 </script>

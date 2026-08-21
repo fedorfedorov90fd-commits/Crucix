@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Конфликты — Crucix</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0f;
+      color: #c8d0d8;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: rgba(10, 10, 20, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; }
+    .topbar-right { display: flex; align-items: center; gap: 6px; }
+    .topbar-btn {
+      height: 28px; padding: 0 12px; border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 4px; background: rgba(255,255,255,0.03); color: #888;
+      font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;
+      cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 4px;
+    }
+    .topbar-btn:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+    .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
+    .btn-home:hover { background: rgba(91,192,248,0.15); }
+    .btn-copy { color: #5bc0f8; border-color: rgba(91,192,248,0.15); background: rgba(91,192,248,0.06); }
+    .btn-copy:hover { background: rgba(91,192,248,0.15); }
+    .btn-rss { color: #f26522; border-color: rgba(242,101,34,0.2); background: rgba(242,101,34,0.06); }
+    .btn-rss:hover { background: rgba(242,101,34,0.15); }
+
+    .lang-switch { display: flex; gap: 2px; padding: 2px; background: rgba(255,255,255,0.03); border-radius: 4px; border: 1px solid rgba(255,255,255,0.06); }
+    .lang-btn { padding: 2px 8px; border: none; background: transparent; color: #666; font-size: 11px; font-weight: 500; cursor: pointer; border-radius: 3px; transition: all 0.2s; }
+    .lang-btn:hover { color: #888; background: rgba(255,255,255,0.05); }
+    .lang-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.1); }
+
+    .main-content { padding-top: 76px; max-width: 1400px; margin: 0 auto; padding-left: 20px; padding-right: 20px; padding-bottom: 40px; min-height: calc(100vh - 76px); }
+    .page-title { font-size: 24px; font-weight: 700; color: #e8f0f8; margin-bottom: 20px; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 14px 18px;
+    }
+    .stat-card .label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-card .value { font-size: 22px; font-weight: 700; color: #e8f0f8; margin-top: 4px; }
+
+    .table-wrap {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      overflow: auto;
+      margin-bottom: 20px;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th {
+      text-align: left;
+      padding: 10px 14px;
+      color: #666;
+      font-weight: 500;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      position: sticky;
+      top: 0;
+      background: #0a0a0f;
+    }
+    td { padding: 8px 14px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    .text-right { text-align: right; }
+    .text-center { text-align: center; }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-active { background: rgba(244,67,54,0.15); color: #ef5350; }
+    .badge-ceasefire { background: rgba(255,193,7,0.15); color: #ffd54f; }
+    .badge-resolved { background: rgba(76,175,80,0.15); color: #66bb6a; }
+    .badge-unknown { background: rgba(255,255,255,0.05); color: #666; }
+
+    .source-tag {
+      display: inline-block;
+      padding: 1px 8px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: 600;
+      background: rgba(91,192,248,0.1);
+      color: #5bc0f8;
+      margin-right: 4px;
+    }
+    .source-tag.acled { background: rgba(244,67,54,0.1); color: #ef5350; }
+    .source-tag.ucdp { background: rgba(255,193,7,0.1); color: #ffd54f; }
+
+    .notification {
+      position: fixed;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-size: 13px;
+      z-index: 100001;
+      border: 1px solid rgba(255,255,255,0.1);
+      animation: notif-fade 2.5s forwards;
+    }
+    @keyframes notif-fade {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+
+    .tab-bar {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding-bottom: 12px;
+    }
+    .tab-btn {
+      padding: 8px 20px;
+      border: none;
+      background: transparent;
+      color: #666;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    .tab-btn:hover { color: #c8d0d8; background: rgba(255,255,255,0.03); }
+    .tab-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.08); }
+
+    @media (max-width: 768px) {
+      .topbar { padding: 0 12px; height: 52px; }
+      .topbar-btn { font-size: 10px; padding: 0 8px; height: 24px; }
+      .main-content { padding-top: 68px; padding-left: 12px; padding-right: 12px; }
+      .page-title { font-size: 18px; }
+      .stat-card .value { font-size: 18px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-brand">⚡ CRUCIX MONITOR</span>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+      <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ</button>
+      <button class="topbar-btn btn-rss" onclick="window.location.href='/kartochki'">📡 Список страниц</button>
+      <div class="lang-switch">
+        <button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
+        <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <h1 class="page-title">⚔️ Мониторинг конфликтов</h1>
+
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card"><div class="label">Активные конфликты</div><div class="value" id="activeCount">—</div></div>
+      <div class="stat-card"><div class="label">Всего событий</div><div class="value" id="totalEvents">—</div></div>
+      <div class="stat-card"><div class="label">Источников</div><div class="value" id="sourceCount">2</div></div>
+      <div class="stat-card"><div class="label">Обновлено</div><div class="value" id="lastUpdate" style="font-size:14px;">—</div></div>
+    </div>
+
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="all" onclick="switchTab('all')">📋 Все</button>
+      <button class="tab-btn" data-tab="acled" onclick="switchTab('acled')">🔴 ACLED</button>
+      <button class="tab-btn" data-tab="ucdp" onclick="switchTab('ucdp')">🟡 UCDP</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Регион</th>
+            <th>Тип конфликта</th>
+            <th>Статус</th>
+            <th>Год</th>
+            <th>Источник</th>
+          </tr>
+        </thead>
+        <tbody id="conflictTable">
+          <tr><td colspan="5" class="text-center" style="color:#666;padding:20px;">Загрузка данных...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="font-size:11px; color:#444; text-align:center; border-top:1px solid rgba(255,255,255,0.04); padding-top:12px;">
+      Данные из UCDP (Uppsala Conflict Data Program) и ACLED (Armed Conflict Location & Event Data)
+    </div>
+  </main>
+
+  <script>
+    let currentLang = localStorage.getItem('crucix-lang') || 'ru';
+    let currentTab = 'all';
+    let allConflicts = [];
+
+    function switchLang(lang) {
+      currentLang = lang;
+      localStorage.setItem('crucix-lang', lang);
+      document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+      showNotification(`🌐 Язык: ${lang.toUpperCase()}`);
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+      renderTable();
+    }
+
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === currentLang));
+
+    function showNotification(msg) {
+      document.querySelectorAll('.notification').forEach(e => e.remove());
+      const el = document.createElement('div');
+      el.className = 'notification';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2500);
+    }
+
+    document.getElementById('copy-btn').addEventListener('click', function() {
+      const text = document.querySelector('table').textContent;
+      navigator.clipboard.writeText(`Конфликты\n${text}`).then(() => {
+        this.textContent = '✅ Скопировано!';
+        setTimeout(() => { this.textContent = '📋 КОПИРОВАТЬ'; }, 3000);
+        showNotification('✅ Скопировано');
+      });
+    });
+
+    function getStatusBadge(status) {
+      const map = {
+        'active': '<span class="badge badge-active">🔴 Активный</span>',
+        'ceasefire': '<span class="badge badge-ceasefire">🟡 Перемирие</span>',
+        'resolved': '<span class="badge badge-resolved">🟢 Завершён</span>',
+        'ongoing': '<span class="badge badge-active">🔴 Активный</span>',
+      };
+      return map[status?.toLowerCase()] || '<span class="badge badge-unknown">⚪ Неизвестно</span>';
+    }
+
+    function getSourceTag(source) {
+      const map = {
+        'ACLED': '<span class="source-tag acled">ACLED</span>',
+        'UCDP': '<span class="source-tag ucdp">UCDP</span>',
+      };
+      return map[source] || `<span class="source-tag">${source}</span>`;
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('conflictTable');
+      let filtered = allConflicts;
+
+      if (currentTab === 'acled') {
+        filtered = allConflicts.filter(c => c.source === 'ACLED');
+      } else if (currentTab === 'ucdp') {
+        filtered = allConflicts.filter(c => c.source === 'UCDP');
+      }
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center" style="color:#666;padding:20px;">Нет данных для отображения</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = '';
+      filtered.forEach(c => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${c.region || 'Unknown'}</strong></td>
+          <td>${c.type || 'Armed conflict'}</td>
+          <td>${getStatusBadge(c.status)}</td>
+          <td class="text-center">${c.year || '—'}</td>
+          <td>${getSourceTag(c.source)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function loadData() {
+      const conflicts = [];
+
+      // === 1. ЗАГРУЗКА UCDP ===
+      try {
+        const response = await fetch('/api/basket/ucdp-latest.json');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.conflicts && Array.isArray(data.conflicts)) {
+            data.conflicts.forEach(c => {
+              conflicts.push({
+                region: c.region || c.country || 'Unknown',
+                type: c.type || 'Armed conflict',
+                status: c.status || 'active',
+                year: c.year || 2024,
+                source: 'UCDP'
+              });
+            });
+          }
+        }
+      } catch (e) {
+        console.log('[Conflicts] UCDP data not available');
+      }
+
+      // === 2. ЗАГРУЗКА ACLED ===
+      try {
+        const response = await fetch('/api/basket/acled-latest.json');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.events && Array.isArray(data.events)) {
+            data.events.slice(0, 30).forEach(e => {
+              conflicts.push({
+                region: e.region || e.country || e.location || 'Unknown',
+                type: e.event_type || e.type || 'Conflict',
+                status: e.status || 'ongoing',
+                year: e.year || new Date(e.event_date)?.getFullYear() || 2024,
+                source: 'ACLED'
+              });
+            });
+          }
+        }
+      } catch (e) {
+        console.log('[Conflicts] ACLED data not available');
+      }
+
+      // === 3. ДЕМО-ДАННЫЕ (если ничего не загрузилось) ===
+      if (conflicts.length === 0) {
+        const demoConflicts = [
+          { region: 'Украина', type: 'Вооружённый конфликт', status: 'active', year: 2024, source: 'UCDP' },
+          { region: 'Сирия', type: 'Гражданская война', status: 'active', year: 2024, source: 'UCDP' },
+          { region: 'Йемен', type: 'Вооружённый конфликт', status: 'ceasefire', year: 2024, source: 'UCDP' },
+          { region: 'Судан', type: 'Вооружённый конфликт', status: 'active', year: 2024, source: 'UCDP' },
+          { region: 'Мьянма', type: 'Вооружённый конфликт', status: 'active', year: 2024, source: 'UCDP' },
+          { region: 'Газа', type: 'Вооружённый конфликт', status: 'active', year: 2024, source: 'UCDP' },
+          { region: 'Эфиопия', type: 'Вооружённый конфликт', status: 'ceasefire', year: 2024, source: 'UCDP' },
+          { region: 'Демократическая Республика Конго', type: 'Вооружённый конфликт', status: 'active', year: 2024, source: 'ACLED' },
+          { region: 'Мали', type: 'Повстанческий конфликт', status: 'active', year: 2024, source: 'ACLED' },
+          { region: 'Сомали', type: 'Вооружённый конфликт', status: 'active', year: 2024, source: 'ACLED' },
+          { region: 'Мозамбик', type: 'Повстанческий конфликт', status: 'ongoing', year: 2024, source: 'ACLED' },
+          { region: 'Нигерия', type: 'Этнический конфликт', status: 'ongoing', year: 2024, source: 'ACLED' },
+        ];
+        demoConflicts.forEach(c => conflicts.push(c));
+      }
+
+      allConflicts = conflicts;
+
+      // Статистика
+      const active = conflicts.filter(c => c.status === 'active' || c.status === 'ongoing');
+      document.getElementById('activeCount').textContent = active.length;
+      document.getElementById('totalEvents').textContent = conflicts.length;
+      document.getElementById('lastUpdate').textContent = new Date().toLocaleString();
+
+      renderTable();
+    }
+
+    loadData();
+  </script>
+</body>
+</html>

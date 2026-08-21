@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Командный центр — Crucix</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a1a;
+            color: #e0e0e0;
+            font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+        }
+        .topbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 60px;
+            background: rgba(10,10,20,0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        .topbar-left { display: flex; align-items: center; gap: 12px; }
+        .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; }
+        .topbar-right { display: flex; align-items: center; gap: 6px; }
+        .topbar-btn {
+            height: 28px; padding: 0 12px; border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 4px; background: rgba(255,255,255,0.03); color: #888;
+            font-size: 11px; font-weight: 500; text-transform: uppercase; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .topbar-btn:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+        .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
+        .btn-home:hover { background: rgba(91,192,248,0.15); }
+        .btn-copy { color: #5bc0f8; border-color: rgba(91,192,248,0.15); background: rgba(91,192,248,0.06); }
+        .btn-copy:hover { background: rgba(91,192,248,0.15); }
+        .btn-copy.copied { background: rgba(76,175,80,0.2); border-color: #4caf50; color: #4caf50; }
+        .lang-switch {
+            display: flex; gap: 2px; padding: 2px;
+            background: rgba(255,255,255,0.03); border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .lang-btn {
+            padding: 2px 8px; border: none; background: transparent;
+            color: #666; font-size: 11px; font-weight: 500; cursor: pointer;
+            border-radius: 3px; transition: all 0.2s;
+        }
+        .lang-btn:hover { color: #888; background: rgba(255,255,255,0.05); }
+        .lang-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.1); }
+        .main-content {
+            padding-top: 76px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
+            padding-bottom: 40px;
+        }
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #e8f0f8;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .page-title .badge {
+            font-size: 12px; font-weight: 400;
+            background: rgba(74,222,128,0.15); color: #4ade80;
+            padding: 2px 12px; border-radius: 20px;
+            border: 1px solid rgba(74,222,128,0.2);
+        }
+        .page-subtitle { color: #8899aa; font-size: 14px; margin-bottom: 24px; }
+        .global-index {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .global-index .value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #f59e0b;
+        }
+        .global-index .label { font-size: 14px; color: #8899aa; }
+        .global-index .status {
+            font-size: 14px;
+            font-weight: 600;
+            padding: 4px 16px;
+            border-radius: 20px;
+        }
+        .global-index .stats { display: flex; gap: 24px; font-size: 14px; color: #8899aa; }
+        .global-index .stats strong { color: #e0e0e0; }
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .card:hover {
+            background: rgba(255,255,255,0.04);
+            transform: translateY(-2px);
+            border-color: rgba(255,255,255,0.1);
+        }
+        .card .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .card .header .icon { font-size: 20px; }
+        .card .header .name { font-size: 13px; font-weight: 600; color: #c0d0e0; }
+        .card .header .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .card .main-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 4px 0;
+        }
+        .card .sub-info {
+            font-size: 12px;
+            color: #8899aa;
+        }
+        .card .sub-info span { margin-right: 12px; }
+        .charts-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .chart-box {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 16px;
+            min-height: 180px;
+        }
+        .chart-box .title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #8899aa;
+            margin-bottom: 8px;
+        }
+        .chart-box .chart-placeholder {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            height: 140px;
+            gap: 2px;
+            padding: 4px 0;
+        }
+        .chart-box .chart-placeholder .bar {
+            flex: 1;
+            border-radius: 2px 2px 0 0;
+            min-width: 4px;
+            min-height: 4px;
+            transition: all 0.3s;
+        }
+        .chart-box .labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            color: #4a5a6a;
+            margin-top: 4px;
+        }
+        .feed {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 16px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .feed .title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #8899aa;
+            margin-bottom: 8px;
+        }
+        .feed-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            font-size: 13px;
+        }
+        .feed-item .source {
+            font-weight: 600;
+            font-size: 11px;
+            padding: 1px 8px;
+            border-radius: 4px;
+            min-width: 60px;
+            text-align: center;
+        }
+        .feed-item .msg { flex: 1; color: #c0d0e0; }
+        .feed-item .time { font-size: 11px; color: #4a5a6a; }
+        .bg-critical { background: #ef4444; }
+        .bg-high { background: #f59e0b; }
+        .bg-medium { background: #fbbf24; }
+        .bg-low { background: #4ade80; }
+        .bg-online { background: #4ade80; }
+        .bg-offline { background: #ef4444; }
+        .text-critical { color: #ef4444; }
+        .text-high { color: #f59e0b; }
+        .text-medium { color: #fbbf24; }
+        .text-low { color: #4ade80; }
+        .source-notam { background: rgba(239,68,68,0.2); color: #ef4444; }
+        .source-gps { background: rgba(245,158,11,0.2); color: #f59e0b; }
+        .source-trends { background: rgba(91,192,248,0.2); color: #5bc0f8; }
+        .source-vix { background: rgba(239,68,68,0.2); color: #ef4444; }
+        .source-yield { background: rgba(74,222,128,0.2); color: #4ade80; }
+        .source-goldoil { background: rgba(251,191,36,0.2); color: #fbbf24; }
+
+        @media (max-width: 1024px) {
+            .cards-grid { grid-template-columns: repeat(2, 1fr); }
+            .charts-row { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 640px) {
+            .cards-grid { grid-template-columns: 1fr; }
+            .global-index { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .global-index .stats { flex-wrap: wrap; gap: 8px; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="topbar">
+    <div class="topbar-left"><span class="topbar-brand">🎯 КОМАНДНЫЙ ЦЕНТР</span></div>
+    <div class="topbar-right">
+        <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+        <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ</button>
+        <button class="topbar-btn" onclick="window.location.href='/rss-feed'">📡 СПИСОК СТРАНИЦ</button>
+        <div class="lang-switch">
+            <button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
+            <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+        </div>
+    </div>
+</header>
+
+<main class="main-content">
+    <div class="page-title">
+        🎯 Командный центр
+        <span class="badge" id="statusBadge">🟢 ONLINE</span>
+    </div>
+    <div class="page-subtitle">6 ключевых индикаторов в реальном времени</div>
+
+    <div class="global-index">
+        <div>
+            <div class="label">🌍 Глобальный индекс напряженности</div>
+            <div class="value" id="globalIndex">—</div>
+        </div>
+        <div class="stats">
+            <span>🟢 Нормально: <strong id="normalCount">0</strong></span>
+            <span>🟡 Средний: <strong id="mediumCount">0</strong></span>
+            <span>🟠 Высокий: <strong id="highCount">0</strong></span>
+            <span>🔴 Критический: <strong id="criticalCount">0</strong></span>
+        </div>
+        <div>
+            <span class="status" id="globalStatus">—</span>
+        </div>
+    </div>
+
+    <div class="cards-grid">
+        <div class="card" onclick="window.location.href='/notam-monitor'">
+            <div class="header">
+                <span class="icon">🛩️</span>
+                <span class="name">NOTAM</span>
+                <span class="status-dot bg-online" id="notamDot"></span>
+            </div>
+            <div class="main-value" id="notamTotal">—</div>
+            <div class="sub-info">
+                <span>🔴 Крит: <strong id="notamCritical">0</strong></span>
+                <span>🟠 Выс: <strong id="notamHigh">0</strong></span>
+            </div>
+        </div>
+
+        <div class="card" onclick="window.location.href='/gps-jamming'">
+            <div class="header">
+                <span class="icon">📡</span>
+                <span class="name">GPS-глушение</span>
+                <span class="status-dot bg-online" id="gpsDot"></span>
+            </div>
+            <div class="main-value" id="gpsTotal">—</div>
+            <div class="sub-info">
+                <span>🔴 Крит: <strong id="gpsCritical">0</strong></span>
+                <span>🟠 Выс: <strong id="gpsHigh">0</strong></span>
+            </div>
+        </div>
+
+        <div class="card" onclick="window.location.href='/google-trends'">
+            <div class="header">
+                <span class="icon">📊</span>
+                <span class="name">Google Trends</span>
+                <span class="status-dot bg-online" id="trendsDot"></span>
+            </div>
+            <div class="main-value" id="trendsTotal">—</div>
+            <div class="sub-info">
+                <span>🔴 Крит: <strong id="trendsCritical">0</strong></span>
+                <span>🟠 Выс: <strong id="trendsHigh">0</strong></span>
+            </div>
+        </div>
+
+        <div class="card" onclick="window.location.href='/vix'">
+            <div class="header">
+                <span class="icon">📈</span>
+                <span class="name">VIX (страх)</span>
+                <span class="status-dot bg-online" id="vixDot"></span>
+            </div>
+            <div class="main-value" id="vixValue">—</div>
+            <div class="sub-info">
+                <span id="vixStatus">—</span>
+            </div>
+        </div>
+
+        <div class="card" onclick="window.location.href='/yield-curve'">
+            <div class="header">
+                <span class="icon">📉</span>
+                <span class="name">Кривая доходности</span>
+                <span class="status-dot bg-online" id="yieldDot"></span>
+            </div>
+            <div class="main-value" id="yieldSpread">—</div>
+            <div class="sub-info">
+                <span id="yieldStatus">—</span>
+            </div>
+        </div>
+
+        <div class="card" onclick="window.location.href='/gold-oil-ratio'">
+            <div class="header">
+                <span class="icon">💰</span>
+                <span class="name">Золото/Нефть</span>
+                <span class="status-dot bg-online" id="goldOilDot"></span>
+            </div>
+            <div class="main-value" id="goldOilRatio">—</div>
+            <div class="sub-info">
+                <span id="goldOilStatus">—</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="charts-row">
+        <div class="chart-box">
+            <div class="title">📉 Кривая доходности (10Y-2Y)</div>
+            <div class="chart-placeholder" id="yieldChart"></div>
+            <div class="labels" id="yieldLabels"></div>
+        </div>
+        <div class="chart-box">
+            <div class="title">📈 Индекс VIX (30 дней)</div>
+            <div class="chart-placeholder" id="vixChart"></div>
+            <div class="labels" id="vixLabels"></div>
+        </div>
+    </div>
+
+    <div class="feed">
+        <div class="title">📋 Поток событий</div>
+        <div id="feedList"></div>
+    </div>
+</main>
+
+<script>
+let currentLang = localStorage.getItem('crucix-lang') || 'ru';
+function switchLang(lang) {
+    currentLang = lang;
+    localStorage.setItem('crucix-lang', lang);
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+    });
+}
+document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === currentLang);
+});
+
+async function fetchData(url) {
+    try {
+        const res = await fetch(url);
+        const data = await res.json();
+        return data.data || [];
+    } catch { return []; }
+}
+
+function getSeverityCount(data, severity) {
+    return data.filter(d => d.severity === severity || d.intensity === severity).length;
+}
+
+async function fetchGoldOil() {
+    try {
+        const res = await fetch('/api/gold-oil-ratio/');
+        const data = await res.json();
+        return data.data || data;
+    } catch { return null; }
+}
+
+async function updateDashboard() {
+    const [notam, gps, trends, vixData, yieldData] = await Promise.all([
+        fetchData('/api/notam/'),
+        fetchData('/api/gps-jamming/'),
+        fetchData('/api/google-trends/'),
+        fetchData('/api/vix/'),
+        fetchData('/api/yield-curve/')
+    ]);
+
+    const goldOilData = await fetchGoldOil();
+
+    // NOTAM
+    document.getElementById('notamTotal').textContent = notam.length;
+    document.getElementById('notamCritical').textContent = getSeverityCount(notam, 'critical');
+    document.getElementById('notamHigh').textContent = getSeverityCount(notam, 'high');
+    document.getElementById('notamDot').className = 'status-dot ' + (notam.length > 0 ? 'bg-online' : 'bg-offline');
+
+    // GPS
+    document.getElementById('gpsTotal').textContent = gps.length;
+    document.getElementById('gpsCritical').textContent = getSeverityCount(gps, 'critical');
+    document.getElementById('gpsHigh').textContent = getSeverityCount(gps, 'high');
+    document.getElementById('gpsDot').className = 'status-dot ' + (gps.length > 0 ? 'bg-online' : 'bg-offline');
+
+    // Trends
+    document.getElementById('trendsTotal').textContent = trends.length;
+    document.getElementById('trendsCritical').textContent = getSeverityCount(trends, 'critical');
+    document.getElementById('trendsHigh').textContent = getSeverityCount(trends, 'high');
+    document.getElementById('trendsDot').className = 'status-dot ' + (trends.length > 0 ? 'bg-online' : 'bg-offline');
+
+    // VIX
+    const lastVix = vixData.length > 0 ? vixData[vixData.length - 1] : null;
+    if (lastVix) {
+        document.getElementById('vixValue').textContent = lastVix.value.toFixed(2);
+        const vixStatus = document.getElementById('vixStatus');
+        if (lastVix.value > 30) {
+            vixStatus.textContent = '🔴 ВЫСОКИЙ СТРАХ';
+            vixStatus.style.color = '#ef4444';
+        } else if (lastVix.value > 20) {
+            vixStatus.textContent = '🟡 СРЕДНИЙ СТРАХ';
+            vixStatus.style.color = '#f59e0b';
+        } else {
+            vixStatus.textContent = '🟢 НОРМАЛЬНО';
+            vixStatus.style.color = '#4ade80';
+        }
+    }
+    document.getElementById('vixDot').className = 'status-dot ' + (vixData.length > 0 ? 'bg-online' : 'bg-offline');
+
+    // Yield
+    const lastYield = yieldData.length > 0 ? yieldData[yieldData.length - 1] : null;
+    if (lastYield) {
+        document.getElementById('yieldSpread').textContent = lastYield.spread.toFixed(2) + '%';
+        const yieldStatus = document.getElementById('yieldStatus');
+        if (lastYield.spread < 0) {
+            yieldStatus.textContent = '🔴 ИНВЕРСИЯ';
+            yieldStatus.style.color = '#ef4444';
+        } else if (lastYield.spread < 0.5) {
+            yieldStatus.textContent = '🟡 ПРЕДУПРЕЖДЕНИЕ';
+            yieldStatus.style.color = '#f59e0b';
+        } else {
+            yieldStatus.textContent = '🟢 НОРМАЛЬНО';
+            yieldStatus.style.color = '#4ade80';
+        }
+    }
+    document.getElementById('yieldDot').className = 'status-dot ' + (yieldData.length > 0 ? 'bg-online' : 'bg-offline');
+
+    // Gold/Oil
+    if (goldOilData && goldOilData.currentRatio) {
+        document.getElementById('goldOilRatio').textContent = goldOilData.currentRatio.toFixed(2);
+        const goldOilStatus = document.getElementById('goldOilStatus');
+        if (goldOilData.currentRatio > 25) {
+            goldOilStatus.textContent = '🔴 ВЫСОКИЙ РИСК';
+            goldOilStatus.style.color = '#ef4444';
+        } else if (goldOilData.currentRatio > 20) {
+            goldOilStatus.textContent = '🟡 СРЕДНИЙ РИСК';
+            goldOilStatus.style.color = '#f59e0b';
+        } else {
+            goldOilStatus.textContent = '🟢 НОРМАЛЬНО';
+            goldOilStatus.style.color = '#4ade80';
+        }
+    }
+    document.getElementById('goldOilDot').className = 'status-dot ' + (goldOilData ? 'bg-online' : 'bg-offline');
+
+    // Глобальный индекс
+    const totalCritical = getSeverityCount(notam, 'critical') + getSeverityCount(gps, 'critical') + getSeverityCount(trends, 'critical');
+    const totalHigh = getSeverityCount(notam, 'high') + getSeverityCount(gps, 'high') + getSeverityCount(trends, 'high');
+    const totalMedium = getSeverityCount(notam, 'medium') + getSeverityCount(gps, 'medium') + getSeverityCount(trends, 'medium');
+
+    document.getElementById('criticalCount').textContent = totalCritical;
+    document.getElementById('highCount').textContent = totalHigh;
+    document.getElementById('mediumCount').textContent = totalMedium;
+    document.getElementById('normalCount').textContent = notam.length + gps.length + trends.length - totalCritical - totalHigh - totalMedium;
+
+    const totalEvents = notam.length + gps.length + trends.length;
+    const index = totalEvents > 0 ? Math.round((totalCritical * 70 + totalHigh * 40 + totalMedium * 20) / totalEvents) : 0;
+    document.getElementById('globalIndex').textContent = index;
+
+    const globalStatus = document.getElementById('globalStatus');
+    if (lastYield) {
+        if (lastYield.spread < 0) {
+            globalStatus.textContent = '🔴 ИНВЕРСИЯ (рецессия)';
+            globalStatus.style.background = 'rgba(239,68,68,0.15)';
+            globalStatus.style.color = '#ef4444';
+        } else if (lastYield.spread < 0.5) {
+            globalStatus.textContent = '🟡 ПРЕДУПРЕЖДЕНИЕ';
+            globalStatus.style.background = 'rgba(245,158,11,0.15)';
+            globalStatus.style.color = '#f59e0b';
+        } else {
+            globalStatus.textContent = '🟢 НОРМАЛЬНО';
+            globalStatus.style.background = 'rgba(74,222,128,0.15)';
+            globalStatus.style.color = '#4ade80';
+        }
+    }
+
+    renderChart('yieldChart', 'yieldLabels', yieldData, 'spread', '#4ade80', '#ef4444');
+    renderChart('vixChart', 'vixLabels', vixData, 'value', '#5bc0f8', '#ef4444');
+    renderFeed(notam, gps, trends, vixData, yieldData, goldOilData);
+}
+
+function renderChart(containerId, labelsId, data, key, colorGood, colorBad) {
+    const container = document.getElementById(containerId);
+    const labelsContainer = document.getElementById(labelsId);
+
+    if (!data || data.length < 2) {
+        container.innerHTML = '<span style="color:#4a5a6a;font-size:13px;">Недостаточно данных</span>';
+        labelsContainer.innerHTML = '';
+        return;
+    }
+
+    const values = data.map(d => d[key]);
+    const maxVal = Math.max(...values) * 1.1 || 1;
+    const minVal = Math.min(...values) * 0.9 || 0;
+    const range = maxVal - minVal || 1;
+
+    container.innerHTML = data.map(d => {
+        const height = ((d[key] - minVal) / range) * 130 + 10;
+        const color = d[key] < 0 ? colorBad : colorGood;
+        return `<div class="bar" style="height:${height}px;background:${color};"></div>`;
+    }).join('');
+
+    const step = Math.max(1, Math.floor(data.length / 6));
+    labelsContainer.innerHTML = data.map((d, i) => {
+        if (i % step === 0 || i === data.length - 1) {
+            return `<span>${d.date.slice(5)}</span>`;
+        }
+        return `<span></span>`;
+    }).join('');
+}
+
+function renderFeed(notam, gps, trends, vixData, yieldData, goldOilData) {
+    const feed = document.getElementById('feedList');
+    const events = [];
+
+    for (const n of notam.slice(0, 2)) {
+        events.push({
+            source: 'NOTAM',
+            sourceClass: 'source-notam',
+            msg: `${n.region}: ${n.label || n.severity}`,
+            time: n.start ? new Date(n.start).toLocaleTimeString('ru-RU') : ''
+        });
+    }
+    for (const n of gps.slice(0, 2)) {
+        events.push({
+            source: 'GPS',
+            sourceClass: 'source-gps',
+            msg: `${n.region}: ${n.label || n.intensity}`,
+            time: n.start ? new Date(n.start).toLocaleTimeString('ru-RU') : ''
+        });
+    }
+    for (const n of trends.slice(0, 2)) {
+        events.push({
+            source: 'TRENDS',
+            sourceClass: 'source-trends',
+            msg: `${n.region}: "${n.keyword}" рост ${n.change}%`,
+            time: n.start ? new Date(n.start).toLocaleTimeString('ru-RU') : ''
+        });
+    }
+
+    if (vixData.length > 0) {
+        const last = vixData[vixData.length - 1];
+        events.push({
+            source: 'VIX',
+            sourceClass: 'source-vix',
+            msg: `Индекс страха: ${last.value.toFixed(2)} (${last.value > 30 ? '🔴 кризис' : last.value > 20 ? '🟡 тревога' : '🟢 спокойствие'})`,
+            time: last.date || ''
+        });
+    }
+
+    if (yieldData.length > 0) {
+        const last = yieldData[yieldData.length - 1];
+        events.push({
+            source: 'YIELD',
+            sourceClass: 'source-yield',
+            msg: `Спред 10Y-2Y: ${last.spread.toFixed(2)}% (${last.spread < 0 ? '🔴 инверсия' : last.spread < 0.5 ? '🟡 предупреждение' : '🟢 нормально'})`,
+            time: last.date || ''
+        });
+    }
+
+    if (goldOilData && goldOilData.currentRatio) {
+        events.push({
+            source: 'GOLD/OIL',
+            sourceClass: 'source-goldoil',
+            msg: `Соотношение: ${goldOilData.currentRatio.toFixed(2)} (${goldOilData.currentRatio > 25 ? '🔴 высокий риск' : goldOilData.currentRatio > 20 ? '🟡 средний риск' : '🟢 нормально'})`,
+            time: goldOilData.timestamp ? new Date(goldOilData.timestamp).toLocaleTimeString('ru-RU') : ''
+        });
+    }
+
+    events.sort((a, b) => b.time.localeCompare(a.time));
+
+    feed.innerHTML = events.map(e => `
+        <div class="feed-item">
+            <span class="source ${e.sourceClass}">${e.source}</span>
+            <span class="msg">${e.msg}</span>
+            <span class="time">${e.time}</span>
+        </div>
+    `).join('');
+}
+
+updateDashboard();
+setInterval(updateDashboard, 30000);
+
+document.getElementById('copy-btn').addEventListener('click', function() {
+    const text = document.body.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+        this.textContent = '✅ Скопировано!';
+        this.classList.add('copied');
+        setTimeout(() => {
+            this.textContent = '📋 КОПИРОВАТЬ';
+            this.classList.remove('copied');
+        }, 3000);
+    });
+});
+</script>
+</body>
+</html>

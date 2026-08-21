@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPS-глушение — Crucix</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a1a;
+            color: #e0e0e0;
+            font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+        }
+        .topbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(10,10,20,0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        .topbar-left { display: flex; align-items: center; gap: 12px; }
+        .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; }
+        .topbar-right { display: flex; align-items: center; gap: 6px; }
+        .topbar-btn {
+            height: 28px; padding: 0 12px; border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 4px; background: rgba(255,255,255,0.03); color: #888;
+            font-size: 11px; font-weight: 500; text-transform: uppercase; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .topbar-btn:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+        .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
+        .btn-home:hover { background: rgba(91,192,248,0.15); }
+        .btn-copy { color: #5bc0f8; border-color: rgba(91,192,248,0.15); background: rgba(91,192,248,0.06); }
+        .btn-copy:hover { background: rgba(91,192,248,0.15); }
+        .btn-copy.copied { background: rgba(76,175,80,0.2); border-color: #4caf50; color: #4caf50; }
+
+        .lang-switch {
+            display: flex; gap: 2px; padding: 2px;
+            background: rgba(255,255,255,0.03); border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .lang-btn {
+            padding: 2px 8px; border: none; background: transparent;
+            color: #666; font-size: 11px; font-weight: 500; cursor: pointer;
+            border-radius: 3px; transition: all 0.2s;
+        }
+        .lang-btn:hover { color: #888; background: rgba(255,255,255,0.05); }
+        .lang-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.1); }
+
+        .main-content {
+            padding-top: 76px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
+            padding-bottom: 40px;
+        }
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #e8f0f8;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .page-title .badge {
+            font-size: 12px; font-weight: 400;
+            background: rgba(74,222,128,0.15); color: #4ade80;
+            padding: 2px 12px; border-radius: 20px;
+            border: 1px solid rgba(74,222,128,0.2);
+        }
+        .page-subtitle { color: #8899aa; font-size: 14px; margin-bottom: 24px; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 8px;
+            padding: 14px 16px;
+        }
+        .stat-card .label { font-size: 11px; color: #8899aa; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-card .value { font-size: 22px; font-weight: 700; margin-top: 4px; }
+
+        .map-container {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+            min-height: 300px;
+        }
+        .map-placeholder {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            min-height: 300px; color: #4a5a6a;
+            background: radial-gradient(ellipse at center, rgba(255,255,255,0.02), transparent);
+            border-radius: 8px;
+        }
+        .map-placeholder .icon { font-size: 64px; margin-bottom: 16px; opacity: 0.3; }
+        .map-placeholder .text { font-size: 16px; }
+
+        .jamming-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px;
+        }
+        .jamming-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 8px;
+            padding: 14px 16px;
+            transition: all 0.2s;
+        }
+        .jamming-card:hover {
+            background: rgba(255,255,255,0.04);
+            transform: translateY(-2px);
+        }
+        .jamming-card .region {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .jamming-card .severity-label {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 10px;
+            border-radius: 12px;
+        }
+        .jamming-card .info {
+            font-size: 13px;
+            color: #8899aa;
+            margin-top: 8px;
+        }
+        .jamming-card .info span { display: block; margin-top: 4px; }
+
+        .notification {
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            z-index: 100001;
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: notif-fade 2.5s forwards;
+        }
+        @keyframes notif-fade {
+            0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+            10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        }
+
+        @media (max-width: 768px) {
+            .topbar { padding: 0 12px; height: 52px; }
+            .main-content { padding-top: 68px; padding-left: 12px; padding-right: 12px; }
+            .page-title { font-size: 20px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .jamming-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 480px) {
+            .topbar { padding: 0 8px; height: 46px; }
+            .topbar-brand { font-size: 10px; }
+            .main-content { padding-top: 62px; padding-left: 8px; padding-right: 8px; }
+            .page-title { font-size: 18px; }
+            .stats-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
+            .stat-card { padding: 10px 12px; }
+            .stat-card .value { font-size: 18px; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="topbar">
+    <div class="topbar-left">
+        <span class="topbar-brand">📡 GPS JAMMING</span>
+    </div>
+    <div class="topbar-right">
+        <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+        <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ</button>
+        <button class="topbar-btn" onclick="window.location.href='/rss-feed'">📡 СПИСОК СТРАНИЦ</button>
+        <div class="lang-switch">
+            <button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
+            <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+        </div>
+    </div>
+</header>
+
+<main class="main-content">
+    <div class="page-title">
+        📡 Детектор GPS-глушения
+        <span class="badge" id="statusBadge">🟢 ONLINE</span>
+    </div>
+    <div class="page-subtitle">Мониторинг исчезновения GPS-сигналов — ранний индикатор военных операций</div>
+
+    <div class="stats-grid" id="statsGrid">
+        <div class="stat-card"><div class="label">Зон глушения</div><div class="value" id="totalCount">—</div></div>
+        <div class="stat-card"><div class="label">Активные</div><div class="value" id="activeCount" style="color:#ef4444;">—</div></div>
+        <div class="stat-card"><div class="label">Критические</div><div class="value" id="criticalCount" style="color:#ef4444;">—</div></div>
+        <div class="stat-card"><div class="label">Высокий риск</div><div class="value" id="highCount" style="color:#f59e0b;">—</div></div>
+    </div>
+
+    <div class="map-container">
+        <div class="map-placeholder" id="mapPlaceholder">
+            <div class="icon">🗺️</div>
+            <div class="text">Карта GPS-глушения загружается...</div>
+        </div>
+    </div>
+
+    <h2 style="font-size:18px;font-weight:600;margin-bottom:12px;">📋 Зоны глушения</h2>
+    <div class="jamming-grid" id="jammingList">
+        <div style="text-align:center;color:#4a5a6a;padding:20px;grid-column:1/-1;">Загрузка данных...</div>
+    </div>
+</main>
+
+<script>
+let currentLang = localStorage.getItem('crucix-lang') || 'ru';
+
+function switchLang(lang) {
+    currentLang = lang;
+    localStorage.setItem('crucix-lang', lang);
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+    });
+    showNotification(`🌐 Язык: ${lang.toUpperCase()}`);
+}
+
+document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === currentLang);
+});
+
+function showNotification(msg) {
+    document.querySelectorAll('.notification').forEach(el => el.remove());
+    const el = document.createElement('div');
+    el.className = 'notification';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2500);
+}
+
+document.getElementById('copy-btn').addEventListener('click', function() {
+    const text = document.body.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+        this.textContent = '✅ Скопировано!';
+        this.classList.add('copied');
+        setTimeout(() => {
+            this.textContent = '📋 КОПИРОВАТЬ';
+            this.classList.remove('copied');
+        }, 3000);
+        showNotification('✅ Данные скопированы');
+    }).catch(() => {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        this.textContent = '✅ Скопировано!';
+        setTimeout(() => {
+            this.textContent = '📋 КОПИРОВАТЬ';
+        }, 3000);
+    });
+});
+
+async function loadData() {
+    try {
+        const res = await fetch('/api/gps-jamming/');
+        const data = await res.json();
+        return data.data || [];
+    } catch (e) {
+        console.error('[GPS] Ошибка:', e);
+        return [];
+    }
+}
+
+function renderStats(data) {
+    const total = data.length;
+    const active = data.filter(d => new Date(d.end) > new Date());
+    const critical = data.filter(d => d.intensity === 'critical');
+    const high = data.filter(d => d.intensity === 'high');
+
+    document.getElementById('totalCount').textContent = total;
+    document.getElementById('activeCount').textContent = active.length;
+    document.getElementById('criticalCount').textContent = critical.length;
+    document.getElementById('highCount').textContent = high.length;
+}
+
+function renderList(data) {
+    const grid = document.getElementById('jammingList');
+    if (data.length === 0) {
+        grid.innerHTML = `<div style="text-align:center;color:#4a5a6a;padding:30px;grid-column:1/-1;">Нет данных о глушении</div>`;
+        return;
+    }
+
+    const intensityLabels = {
+        critical: { label: '🔴 КРИТИЧЕСКИЙ', color: '#ef4444' },
+        high: { label: '🟠 ВЫСОКИЙ', color: '#f59e0b' },
+        medium: { label: '🟡 СРЕДНИЙ', color: '#fbbf24' },
+        low: { label: '🟢 НОРМАЛЬНЫЙ', color: '#4ade80' }
+    };
+
+    grid.innerHTML = data.map(d => {
+        const info = intensityLabels[d.intensity] || intensityLabels.low;
+        const start = new Date(d.start).toLocaleDateString('ru-RU');
+        const end = new Date(d.end).toLocaleDateString('ru-RU');
+        return `
+            <div class="jamming-card">
+                <div class="region">
+                    <span>${d.region}</span>
+                    <span class="severity-label" style="background:${info.color}22;color:${info.color};border:1px solid ${info.color}33;">
+                        ${info.label}
+                    </span>
+                </div>
+                <div class="info">
+                    <span>📍 Координаты: ${d.lat.toFixed(2)}, ${d.lon.toFixed(2)}</span>
+                    <span>📡 Радиус: ${Math.round(d.radius)} км</span>
+                    <span>✈️ Самолётов затронуто: ${d.aircraftAffected || '—'}</span>
+                    <span>📅 ${start} → ${end}</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function renderMap(data) {
+    const container = document.getElementById('mapPlaceholder');
+    if (data.length === 0) {
+        container.innerHTML = `<div class="icon">🗺️</div><div class="text">Нет активных зон глушения</div>`;
+        return;
+    }
+    const intensityColors = { critical: '#ef4444', high: '#f59e0b', medium: '#fbbf24', low: '#4ade80' };
+    let html = `<div style="display:flex;flex-wrap:wrap;gap:6px;width:100%;justify-content:center;">`;
+    for (const d of data) {
+        const color = intensityColors[d.intensity] || '#4ade80';
+        html += `
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);border-radius:6px;padding:8px 12px;text-align:center;width:140px;">
+                <div style="font-weight:600;font-size:13px;">${d.region}</div>
+                <div style="font-size:11px;color:${color};">${d.label || d.intensity}</div>
+            </div>
+        `;
+    }
+    html += `</div>`;
+    container.innerHTML = html;
+}
+
+async function update() {
+    const data = await loadData();
+    renderStats(data);
+    renderList(data);
+    renderMap(data);
+}
+
+update();
+setInterval(update, 60000);
+</script>
+</body>
+</html>

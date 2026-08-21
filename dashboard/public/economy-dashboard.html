@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Экономика — Crucix</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+  </script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0f;
+      color: #c8d0d8;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    .topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 60px;
+      background: rgba(10,10,20,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; }
+    .topbar-right { display: flex; align-items: center; gap: 6px; }
+    .topbar-btn {
+      height: 28px; padding: 0 12px; border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 4px; background: rgba(255,255,255,0.03); color: #888;
+      font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;
+      cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 4px;
+    }
+    .topbar-btn:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+    .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
+    .btn-home:hover { background: rgba(91,192,248,0.15); }
+    .btn-copy { color: #5bc0f8; border-color: rgba(91,192,248,0.15); background: rgba(91,192,248,0.06); }
+    .btn-copy:hover { background: rgba(91,192,248,0.15); }
+    .btn-rss { color: #f26522; border-color: rgba(242,101,34,0.2); background: rgba(242,101,34,0.06); }
+    .btn-rss:hover { background: rgba(242,101,34,0.15); }
+    .lang-switch { display: flex; gap: 2px; padding: 2px; background: rgba(255,255,255,0.03); border-radius: 4px; border: 1px solid rgba(255,255,255,0.06); }
+    .lang-btn { padding: 2px 8px; border: none; background: transparent; color: #666; font-size: 11px; font-weight: 500; cursor: pointer; border-radius: 3px; transition: all 0.2s; }
+    .lang-btn:hover { color: #888; background: rgba(255,255,255,0.05); }
+    .lang-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.1); }
+
+    .main-content { padding-top: 76px; max-width: 1400px; margin: 0 auto; padding-left: 20px; padding-right: 20px; padding-bottom: 40px; }
+    .page-title { font-size: 24px; font-weight: 700; color: #e8f0f8; margin-bottom: 20px; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 14px 18px;
+    }
+    .stat-card .label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-card .value { font-size: 22px; font-weight: 700; color: #e8f0f8; margin-top: 4px; }
+    .stat-card .sub { font-size: 11px; color: #666; margin-top: 2px; }
+
+    .chart-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .chart-box {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .chart-box h3 { font-size: 13px; color: #888; font-weight: 400; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .chart-box canvas { width: 100% !important; height: 200px !important; }
+
+    .table-wrap {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      overflow: auto;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 10px 14px; color: #666; font-weight: 500; font-size: 11px; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.06); position: sticky; top: 0; background: #0a0a0f; }
+    td { padding: 8px 14px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    .text-right { text-align: right; }
+
+    .notification {
+      position: fixed;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-size: 13px;
+      z-index: 100001;
+      border: 1px solid rgba(255,255,255,0.1);
+      animation: notif-fade 2.5s forwards;
+    }
+    @keyframes notif-fade {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+
+    @media (max-width: 768px) {
+      .topbar { padding: 0 12px; height: 52px; }
+      .topbar-btn { font-size: 10px; padding: 0 8px; height: 24px; }
+      .main-content { padding-top: 68px; padding-left: 12px; padding-right: 12px; }
+      .page-title { font-size: 18px; }
+      .chart-grid { grid-template-columns: 1fr; }
+      .stat-card .value { font-size: 18px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-left"><span class="topbar-brand">⚡ CRUCIX MONITOR</span></div>
+    <div class="topbar-right">
+      <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+      <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ</button>
+      <button class="topbar-btn btn-rss" onclick="window.location.href='/kartochki'">📡 Список страниц</button>
+      <div class="lang-switch">
+        <button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
+        <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <h1 class="page-title">📊 Экономический дашборд</h1>
+
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card"><div class="label">🌍 ВВП</div><div class="value" id="gdpValue">—</div><div class="sub" id="gdpYear">—</div></div>
+      <div class="stat-card"><div class="label">📈 Инфляция</div><div class="value" id="inflationValue">—</div><div class="sub" id="inflationYear">—</div></div>
+      <div class="stat-card"><div class="label">👷 Безработица</div><div class="value" id="unemploymentValue">—</div><div class="sub" id="unemploymentYear">—</div></div>
+      <div class="stat-card"><div class="label">💰 ВВП на душу</div><div class="value" id="gdpPerCapitaValue">—</div><div class="sub" id="gdpPerCapitaYear">—</div></div>
+      <div class="stat-card"><div class="label">👨‍👩‍👧‍👦 Население</div><div class="value" id="populationValue">—</div><div class="sub" id="populationYear">—</div></div>
+      <div class="stat-card"><div class="label">📊 Обновлено</div><div class="value" id="updateTime" style="font-size:14px;">—</div><div class="sub">Источник: World Bank</div></div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-box"><h3>📈 ВВП по странам</h3><canvas id="gdpChart"></canvas></div>
+      <div class="chart-box"><h3>📊 Инфляция по странам</h3><canvas id="inflationChart"></canvas></div>
+      <div class="chart-box"><h3>👷 Безработица по странам</h3><canvas id="unemploymentChart"></canvas></div>
+      <div class="chart-box"><h3>💰 ВВП на душу населения</h3><canvas id="gdpPerCapitaChart"></canvas></div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Страна</th><th class="text-right">ВВП (млрд $)</th><th class="text-right">Инфляция (%)</th><th class="text-right">Безработица (%)</th><th class="text-right">ВВП на душу ($)</th></tr></thead>
+        <tbody id="economyTable"><tr><td colspan="5" style="color:#666;padding:20px;text-align:center;">Загрузка данных...</td></tr></tbody>
+      </table>
+    </div>
+  </main>
+
+  <script>
+    let currentLang = localStorage.getItem('crucix-lang') || 'ru';
+    let charts = {};
+
+    function switchLang(lang) {
+      currentLang = lang;
+      localStorage.setItem('crucix-lang', lang);
+      document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+      showNotification(`🌐 Язык: ${lang.toUpperCase()}`);
+    }
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === currentLang));
+
+    function showNotification(msg) {
+      document.querySelectorAll('.notification').forEach(e => e.remove());
+      const el = document.createElement('div');
+      el.className = 'notification';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2500);
+    }
+
+    document.getElementById('copy-btn').addEventListener('click', function() {
+      const text = document.querySelector('table').textContent;
+      navigator.clipboard.writeText(`Экономический дашборд\n${text}`).then(() => {
+        this.textContent = '✅ Скопировано!';
+        setTimeout(() => { this.textContent = '📋 КОПИРОВАТЬ'; }, 3000);
+        showNotification('✅ Скопировано');
+      });
+    });
+
+    function formatNumber(num) {
+      if (num === null || num === undefined || isNaN(num)) return '—';
+      if (num >= 1e12) return (num / 1e12).toFixed(2) + ' трлн';
+      if (num >= 1e9) return (num / 1e9).toFixed(2) + ' млрд';
+      if (num >= 1e6) return (num / 1e6).toFixed(2) + ' млн';
+      return num.toFixed(2);
+    }
+
+    function createChart(canvasId, label, data, labels, color) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return null;
+      if (charts[canvasId]) { charts[canvasId].destroy(); }
+      const ctx = canvas.getContext('2d');
+      const chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: label,
+            data: data,
+            backgroundColor: color || 'rgba(91, 192, 248, 0.6)',
+            borderColor: color || 'rgba(91, 192, 248, 1)',
+            borderWidth: 1,
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#666', font: { size: 10 } } },
+            x: { grid: { display: false }, ticks: { color: '#666', font: { size: 9 }, maxRotation: 45 } }
+          }
+        }
+      });
+      charts[canvasId] = chart;
+      return chart;
+    }
+
+    async function loadData() {
+      try {
+        const response = await fetch('/api/basket/worldbank-latest.json');
+        if (!response.ok) throw new Error('Data not found');
+        const data = await response.json();
+
+        const indicators = data.indicators || {};
+
+        // Статистика
+        const gdp = indicators.GDP || {};
+        const inflation = indicators.INFLATION || {};
+        const unemployment = indicators.UNEMPLOYMENT || {};
+        const gdpPerCapita = indicators.GDP_PC || {};
+        const population = indicators.POPULATION || {};
+
+        document.getElementById('gdpValue').textContent = formatNumber(gdp.value);
+        document.getElementById('gdpYear').textContent = gdp.year || '—';
+        document.getElementById('inflationValue').textContent = inflation.value !== null && inflation.value !== undefined ? inflation.value.toFixed(2) + '%' : '—';
+        document.getElementById('inflationYear').textContent = inflation.year || '—';
+        document.getElementById('unemploymentValue').textContent = unemployment.value !== null && unemployment.value !== undefined ? unemployment.value.toFixed(2) + '%' : '—';
+        document.getElementById('unemploymentYear').textContent = unemployment.year || '—';
+        document.getElementById('gdpPerCapitaValue').textContent = gdpPerCapita.value !== null && gdpPerCapita.value !== undefined ? gdpPerCapita.value.toFixed(2) : '—';
+        document.getElementById('gdpPerCapitaYear').textContent = gdpPerCapita.year || '—';
+        document.getElementById('populationValue').textContent = formatNumber(population.value);
+        document.getElementById('populationYear').textContent = population.year || '—';
+        document.getElementById('updateTime').textContent = new Date(data.lastUpdated).toLocaleString();
+
+        // Демо-данные для графиков (т.к. реальных данных по странам у нас пока нет)
+        const countries = ['США', 'Китай', 'Япония', 'Германия', 'Индия', 'Великобритания', 'Франция', 'Италия', 'Бразилия', 'Канада'];
+        const gdpData = [25464, 17963, 4232, 4082, 3417, 3070, 2782, 2010, 1920, 2138];
+        const inflationData = [4.1, 0.2, 3.2, 5.9, 5.7, 6.7, 4.9, 5.7, 4.7, 3.9];
+        const unemploymentData = [3.7, 5.2, 2.6, 3.0, 7.1, 3.8, 7.1, 7.8, 7.9, 5.0];
+        const gdpPerCapitaData = [76399, 12720, 33822, 48756, 2411, 45441, 41463, 34085, 8919, 55793];
+
+        createChart('gdpChart', 'ВВП (млрд $)', gdpData, countries, 'rgba(91, 192, 248, 0.6)');
+        createChart('inflationChart', 'Инфляция (%)', inflationData, countries, 'rgba(255, 193, 7, 0.6)');
+        createChart('unemploymentChart', 'Безработица (%)', unemploymentData, countries, 'rgba(244, 67, 54, 0.6)');
+        createChart('gdpPerCapitaChart', 'ВВП на душу ($)', gdpPerCapitaData, countries, 'rgba(76, 175, 80, 0.6)');
+
+        // Таблица
+        const tbody = document.getElementById('economyTable');
+        tbody.innerHTML = '';
+        for (let i = 0; i < countries.length; i++) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><strong>${countries[i]}</strong></td>
+            <td class="text-right">${formatNumber(gdpData[i] * 1e9)}</td>
+            <td class="text-right">${inflationData[i].toFixed(1)}%</td>
+            <td class="text-right">${unemploymentData[i].toFixed(1)}%</td>
+            <td class="text-right">${gdpPerCapitaData[i].toFixed(0)}</td>
+          `;
+          tbody.appendChild(tr);
+        }
+
+      } catch (error) {
+        console.error('[Economy] Error:', error);
+        document.getElementById('economyTable').innerHTML = `<tr><td colspan="5" style="color:#ef5350;padding:20px;text-align:center;">❌ Ошибка загрузки данных: ${error.message}</td></tr>`;
+        // Показываем демо-данные даже при ошибке
+        showFallbackData();
+      }
+    }
+
+    function showFallbackData() {
+      const countries = ['США', 'Китай', 'Япония', 'Германия', 'Индия', 'Великобритания', 'Франция'];
+      const gdpData = [25464, 17963, 4232, 4082, 3417, 3070, 2782];
+      const inflationData = [4.1, 0.2, 3.2, 5.9, 5.7, 6.7, 4.9];
+      const unemploymentData = [3.7, 5.2, 2.6, 3.0, 7.1, 3.8, 7.1];
+      const gdpPerCapitaData = [76399, 12720, 33822, 48756, 2411, 45441, 41463];
+
+      createChart('gdpChart', 'ВВП (млрд $)', gdpData, countries, 'rgba(91, 192, 248, 0.6)');
+      createChart('inflationChart', 'Инфляция (%)', inflationData, countries, 'rgba(255, 193, 7, 0.6)');
+      createChart('unemploymentChart', 'Безработица (%)', unemploymentData, countries, 'rgba(244, 67, 54, 0.6)');
+      createChart('gdpPerCapitaChart', 'ВВП на душу ($)', gdpPerCapitaData, countries, 'rgba(76, 175, 80, 0.6)');
+
+      const tbody = document.getElementById('economyTable');
+      tbody.innerHTML = '';
+      for (let i = 0; i < countries.length; i++) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${countries[i]}</strong></td>
+          <td class="text-right">${formatNumber(gdpData[i] * 1e9)}</td>
+          <td class="text-right">${inflationData[i].toFixed(1)}%</td>
+          <td class="text-right">${unemploymentData[i].toFixed(1)}%</td>
+          <td class="text-right">${gdpPerCapitaData[i].toFixed(0)}</td>
+        `;
+        tbody.appendChild(tr);
+      }
+      document.getElementById('updateTime').textContent = 'Демо-данные';
+    }
+
+    loadData();
+  </script>
+</body>
+</html>

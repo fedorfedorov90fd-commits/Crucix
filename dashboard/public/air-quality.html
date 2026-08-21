@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Качество воздуха — Crucix</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0f;
+      color: #c8d0d8;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    .topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 60px;
+      background: rgba(10,10,20,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; }
+    .topbar-right { display: flex; align-items: center; gap: 6px; }
+    .topbar-btn {
+      height: 28px; padding: 0 12px; border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 4px; background: rgba(255,255,255,0.03); color: #888;
+      font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;
+      cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 4px;
+    }
+    .topbar-btn:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+    .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
+    .btn-home:hover { background: rgba(91,192,248,0.15); }
+    .btn-copy { color: #5bc0f8; border-color: rgba(91,192,248,0.15); background: rgba(91,192,248,0.06); }
+    .btn-copy:hover { background: rgba(91,192,248,0.15); }
+    .btn-rss { color: #f26522; border-color: rgba(242,101,34,0.2); background: rgba(242,101,34,0.06); }
+    .btn-rss:hover { background: rgba(242,101,34,0.15); }
+    .lang-switch { display: flex; gap: 2px; padding: 2px; background: rgba(255,255,255,0.03); border-radius: 4px; border: 1px solid rgba(255,255,255,0.06); }
+    .lang-btn { padding: 2px 8px; border: none; background: transparent; color: #666; font-size: 11px; font-weight: 500; cursor: pointer; border-radius: 3px; transition: all 0.2s; }
+    .lang-btn:hover { color: #888; background: rgba(255,255,255,0.05); }
+    .lang-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.1); }
+
+    .main-content { padding-top: 76px; max-width: 1400px; margin: 0 auto; padding-left: 20px; padding-right: 20px; padding-bottom: 40px; }
+    .page-title { font-size: 24px; font-weight: 700; color: #e8f0f8; margin-bottom: 20px; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 14px 18px;
+    }
+    .stat-card .label { font-size: 11px; color: #666; text-transform: uppercase; }
+    .stat-card .value { font-size: 22px; font-weight: 700; color: #e8f0f8; }
+
+    .table-wrap {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      overflow: auto;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 10px 14px; color: #666; font-weight: 500; font-size: 11px; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    td { padding: 8px 14px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    .text-right { text-align: right; }
+    .text-center { text-align: center; }
+
+    .badge-good { color: #66bb6a; }
+    .badge-moderate { color: #ffd54f; }
+    .badge-unhealthy { color: #ef5350; }
+    .badge-hazardous { color: #d32f2f; font-weight: 700; }
+
+    .notification {
+      position: fixed;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-size: 13px;
+      z-index: 100001;
+      border: 1px solid rgba(255,255,255,0.1);
+      animation: notif-fade 2.5s forwards;
+    }
+    @keyframes notif-fade {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-brand">⚡ CRUCIX MONITOR</span>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+      <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ</button>
+      <button class="topbar-btn btn-rss" onclick="window.location.href='/kartochki'">📡 Список страниц</button>
+      <div class="lang-switch">
+        <button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
+        <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <h1 class="page-title">🌫️ Качество воздуха</h1>
+
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card"><div class="label">Всего измерений</div><div class="value" id="totalRecords">—</div></div>
+      <div class="stat-card"><div class="label">Городов</div><div class="value" id="totalCities">—</div></div>
+      <div class="stat-card"><div class="label">Обновлено</div><div class="value" id="lastUpdate" style="font-size:14px;">—</div></div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Город</th>
+            <th>Страна</th>
+            <th>Параметр</th>
+            <th class="text-right">Значение</th>
+            <th>Единица</th>
+            <th>Статус</th>
+          </tr>
+        </thead>
+        <tbody id="airTable">
+          <tr><td colspan="6" class="text-center" style="color:#666;padding:20px;">Загрузка данных...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <script>
+    let currentLang = localStorage.getItem('crucix-lang') || 'ru';
+    function switchLang(lang) {
+      currentLang = lang;
+      localStorage.setItem('crucix-lang', lang);
+      document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+      showNotification(`🌐 Язык: ${lang.toUpperCase()}`);
+    }
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === currentLang));
+
+    function showNotification(msg) {
+      document.querySelectorAll('.notification').forEach(e => e.remove());
+      const el = document.createElement('div');
+      el.className = 'notification';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2500);
+    }
+
+    document.getElementById('copy-btn').addEventListener('click', function() {
+      const text = document.querySelector('table').textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        this.textContent = '✅ Скопировано!';
+        setTimeout(() => { this.textContent = '📋 КОПИРОВАТЬ'; }, 3000);
+        showNotification('✅ Скопировано');
+      });
+    });
+
+    function getStatus(value, parameter) {
+      if (parameter === 'pm25') {
+        if (value < 12) return { text: 'Хорошо', cls: 'badge-good' };
+        if (value < 35) return { text: 'Умеренно', cls: 'badge-moderate' };
+        if (value < 55) return { text: 'Опасно', cls: 'badge-unhealthy' };
+        return { text: 'Критично', cls: 'badge-hazardous' };
+      }
+      if (parameter === 'pm10') {
+        if (value < 50) return { text: 'Хорошо', cls: 'badge-good' };
+        if (value < 150) return { text: 'Умеренно', cls: 'badge-moderate' };
+        return { text: 'Опасно', cls: 'badge-unhealthy' };
+      }
+      return { text: '—', cls: '' };
+    }
+
+    async function loadData() {
+      try {
+        const response = await fetch('/api/basket/openaq-latest.json');
+        if (!response.ok) throw new Error('Data not found');
+        const data = await response.json();
+
+        const measurements = data.measurements || [];
+        const cities = new Set(measurements.map(m => m.city));
+
+        document.getElementById('totalRecords').textContent = measurements.length;
+        document.getElementById('totalCities').textContent = cities.size;
+        document.getElementById('lastUpdate').textContent = new Date(data.lastUpdated).toLocaleString();
+
+        const tbody = document.getElementById('airTable');
+        tbody.innerHTML = '';
+        measurements.slice(0, 50).forEach(m => {
+          const status = getStatus(m.value, m.parameter);
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><strong>${m.city || 'Unknown'}</strong></td>
+            <td>${m.country || '—'}</td>
+            <td>${m.parameter || '—'}</td>
+            <td class="text-right">${m.value !== undefined ? m.value.toFixed(1) : '—'}</td>
+            <td>${m.unit || '—'}</td>
+            <td><span class="${status.cls}">${status.text}</span></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (e) {
+        document.getElementById('airTable').innerHTML = `<tr><td colspan="6" class="text-center" style="color:#ef5350;padding:20px;">❌ Ошибка загрузки данных</td></tr>`;
+      }
+    }
+
+    loadData();
+  </script>
+</body>
+</html>

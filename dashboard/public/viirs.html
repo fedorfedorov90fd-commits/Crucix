@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Ночные огни — Crucix</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{background:#0a0a1a;color:#e0e0e0;font-family:-apple-system,'Segoe UI',system-ui,sans-serif;min-height:100vh}
+.topbar{position:fixed;top:0;left:0;right:0;height:60px;background:rgba(10,10,20,0.95);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,0.05);z-index:100;display:flex;justify-content:space-between;align-items:center;padding:0 20px}
+.topbar-left{display:flex;align-items:center;gap:12px}.topbar-brand{font-size:14px;font-weight:700;color:#fbbf24;text-transform:uppercase;letter-spacing:2px}
+.topbar-right{display:flex;align-items:center;gap:6px}.topbar-btn{height:28px;padding:0 12px;border:1px solid rgba(255,255,255,0.08);border-radius:4px;background:rgba(255,255,255,0.03);color:#888;font-size:11px;font-weight:500;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.topbar-btn:hover{background:rgba(255,255,255,0.06);transform:translateY(-1px)}
+.btn-home{color:#fbbf24;border-color:rgba(251,191,36,0.2);background:rgba(251,191,36,0.06)}
+.btn-home:hover{background:rgba(251,191,36,0.15)}
+.btn-copy{color:#fbbf24;border-color:rgba(251,191,36,0.15);background:rgba(251,191,36,0.06)}
+.btn-copy:hover{background:rgba(251,191,36,0.15)}
+.lang-switch{display:flex;gap:2px;padding:2px;background:rgba(255,255,255,0.03);border-radius:4px;border:1px solid rgba(255,255,255,0.06)}
+.lang-btn{padding:2px 8px;border:none;background:transparent;color:#666;font-size:11px;font-weight:500;cursor:pointer;border-radius:3px}
+.lang-btn:hover{color:#888;background:rgba(255,255,255,0.05)}
+.lang-btn.active{color:#fbbf24;background:rgba(251,191,36,0.1)}
+.main-content{padding-top:76px;max-width:1400px;margin:0 auto;padding-left:20px;padding-right:20px;padding-bottom:40px}
+.page-title{font-size:28px;font-weight:700;color:#e8f0f8;margin-bottom:8px;display:flex;align-items:center;gap:12px}
+.page-title .badge{font-size:12px;font-weight:400;background:rgba(74,222,128,0.15);color:#4ade80;padding:2px 12px;border-radius:20px;border:1px solid rgba(74,222,128,0.2)}
+.page-subtitle{color:#8899aa;font-size:14px;margin-bottom:24px}
+.viirs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-bottom:24px}
+.viirs-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:16px}
+.viirs-card .region{font-size:16px;font-weight:600}
+.viirs-card .value{font-size:24px;font-weight:700;margin:8px 0}
+.viirs-card .info{font-size:13px;color:#8899aa}
+.chart-container{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:16px;min-height:200px}
+.chart-placeholder{display:flex;align-items:center;justify-content:center;min-height:200px;color:#4a5a6a}
+@media(max-width:768px){.topbar{padding:0 12px;height:52px}.main-content{padding-top:68px;padding-left:12px;padding-right:12px}.page-title{font-size:20px}}
+</style></head>
+<body>
+<header class="topbar">
+    <div class="topbar-left"><span class="topbar-brand">🌃 НОЧНЫЕ ОГНИ</span></div>
+    <div class="topbar-right">
+        <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+        <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ</button>
+        <button class="topbar-btn" onclick="window.location.href='/rss-feed'">📡 СПИСОК СТРАНИЦ</button>
+        <div class="lang-switch"><button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button><button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button></div>
+    </div>
+</header>
+<main class="main-content">
+    <div class="page-title">🌃 Ночные огни (VIIRS) <span class="badge" id="statusBadge">🟢 ONLINE</span></div>
+    <div class="page-subtitle">Спутниковые данные яркости ночных огней — индикатор экономической активности</div>
+    <div class="viirs-grid" id="viirsGrid"><div style="text-align:center;color:#4a5a6a;padding:20px;grid-column:1/-1;">Загрузка...</div></div>
+    <div class="chart-container"><div class="chart-placeholder" id="chartPlaceholder">📊 График загружается...</div></div>
+</main>
+<script>
+let currentLang=localStorage.getItem('crucix-lang')||'ru';
+function switchLang(lang){currentLang=lang;localStorage.setItem('crucix-lang',lang);document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active',b.dataset.lang===lang));}
+document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active',b.dataset.lang===currentLang));
+document.getElementById('copy-btn').addEventListener('click',function(){const t=document.body.innerText;navigator.clipboard.writeText(t).then(()=>{this.textContent='✅ Скопировано!';this.classList.add('copied');setTimeout(()=>{this.textContent='📋 КОПИРОВАТЬ';this.classList.remove('copied');},3000);});});
+async function loadData(){try{const r=await fetch('/api/viirs/');const d=await r.json();return d.data||[];}catch(e){return[];}}
+function render(data){const grid=document.getElementById('viirsGrid');if(!data||data.length===0){grid.innerHTML='<div style="text-align:center;color:#4a5a6a;padding:20px;grid-column:1/-1;">Нет данных</div>';return;}
+const regions=[...new Set(data.map(d=>d.region))];grid.innerHTML=regions.map(reg=>{const items=data.filter(d=>d.region===reg);const last=items[items.length-1];const avg=items.reduce((a,b)=>a+b.brightness,0)/items.length;const color=last.brightness>60?'#4ade80':last.brightness>40?'#fbbf24':'#ef4444';return `<div class="viirs-card"><div class="region">${reg}</div><div class="value" style="color:${color}">${last.brightness.toFixed(1)}%</div><div class="info">Среднее: ${avg.toFixed(1)}% | Записей: ${items.length}</div></div>`;}).join('');
+renderChart(data);}
+function renderChart(data){const c=document.getElementById('chartPlaceholder');if(data.length<2){c.innerHTML='📊 Недостаточно данных';return;}
+const regions=[...new Set(data.map(d=>d.region))];const region=regions[0]||'';
+const items=data.filter(d=>d.region===region).slice(-30);if(items.length<2){c.innerHTML='📊 Недостаточно данных для графика';return;}
+const vals=items.map(d=>d.brightness);const maxV=Math.max(...vals)*1.1||1;const minV=Math.min(...vals)*0.9||0;const range=maxV-minV||1;
+c.innerHTML=`<div style="font-size:12px;color:#8899aa;margin-bottom:8px;">📊 ${region} — динамика яркости</div><div style="display:flex;height:150px;gap:2px;align-items:flex-end;padding:4px 0;width:100%;overflow-x:auto;">${items.map(d=>{const h=((d.brightness-minV)/range)*130+10;return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;"><div style="width:100%;height:${h}px;background:#fbbf24;border-radius:2px 2px 0 0;min-height:4px;"></div></div>`;}).join('')}</div><div style="display:flex;justify-content:space-between;font-size:9px;color:#4a5a6a;padding:0 4px;"><span>${items[0].date}</span><span>${items[items.length-1].date}</span></div>`;}
+async function update(){const d=await loadData();render(d);}
+update();setInterval(update,60000);
+</script></body></html>

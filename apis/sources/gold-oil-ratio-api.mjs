@@ -1,39 +1,55 @@
 // ============================================================
 // GOLD-OIL-RATIO-API.MJS — API для индекса Золото/Нефть
 // ============================================================
-
 import { promises as fs } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const DATA_PATH = join(__dirname, '..', '..', 'data', 'indicators', 'gold-oil-ratio.json');
+const BASKET_PATH = join(__dirname, '..', '..', 'data', 'basket', 'gold-oil.json');
+
+async function loadData() {
+    try {
+        const content = await fs.readFile(BASKET_PATH, 'utf8');
+        return JSON.parse(content);
+    } catch (err) {
+        console.warn('[GoldOil] ⚠️ Нет данных в корзине');
+        return [];
+    }
+}
 
 export async function handleGoldOilRatioAPI(req, res) {
     const url = new URL(req.url, `http://${req.headers.host}`);
     const pathname = url.pathname;
 
-    try {
-        // Читаем файл
-        const rawData = await fs.readFile(DATA_PATH, 'utf8');
-        const data = JSON.parse(rawData);
+    console.log(`[GoldOil] Запрос: ${pathname}`);
 
-        // Отвечаем
+    // Все данные
+    if (pathname === '/api/gold-oil-ratio/' || pathname === '/api/gold-oil-ratio') {
+        const data = await loadData();
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
             success: true,
             data: data,
-            timestamp: new Date().toISOString()
+            count: data.length,
+            lastUpdate: data.length > 0 ? data[data.length-1].date : null
         }));
-    } catch (error) {
-        console.error('[Gold/Oil] Ошибка:', error.message);
+        return;
+    }
+
+    // Статус
+    if (pathname === '/api/gold-oil-ratio/status') {
+        const data = await loadData();
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
-            success: false,
-            error: error.message,
-            data: null
+            success: true,
+            status: data.length > 0 ? 'online' : 'no_data',
+            count: data.length
         }));
+        return;
     }
-}
 
-export default { handleGoldOilRatioAPI };
+    // 404
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ success: false, error: 'Unknown endpoint' }));
+}

@@ -1,9 +1,10 @@
+// S&P 500 / VIX RATIO API (Risk Appetite)
 import { promises as fs } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const BASKET_PATH = join(__dirname, '..', '..', 'data', 'basket', 'yield-curve.json');
+const BASKET_PATH = join(__dirname, '..', '..', 'data', 'basket', 'sp500-vix.json');
 
 async function loadData() {
     try {
@@ -12,26 +13,21 @@ async function loadData() {
     } catch { return []; }
 }
 
-export async function handleYieldCurveAPI(req, res) {
+export async function handleSP500VIXAPI(req, res) {
     const url = new URL(req.url, `http://${req.headers.host}`);
     const pathname = url.pathname;
 
-    if (pathname === '/api/yield-curve/' || pathname === '/api/yield-curve') {
+    if (pathname === '/api/sp500-vix/' || pathname === '/api/sp500-vix') {
         const data = await loadData();
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ success: true, data, count: data.length }));
         return;
     }
 
-    if (pathname === '/api/yield-curve/status') {
+    if (pathname === '/api/sp500-vix/status') {
         const data = await loadData();
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-            success: true,
-            status: 'online',
-            count: data.length,
-            lastUpdate: data.length > 0 ? data[data.length-1].date : null
-        }));
+        res.end(JSON.stringify({ success: true, status: 'online', count: data.length }));
         return;
     }
 

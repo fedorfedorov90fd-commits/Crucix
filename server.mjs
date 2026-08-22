@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
 // ============================================================
-// SERVER.MJS — Главный сервер Crucix (ULTIMATE EDITION v5.0)
+// SERVER.MJS — Главный сервер Crucix (ULTIMATE EDITION v7.0)
 // ============================================================
 // HTTP-сервер на порту 3117
 // Раздаёт статику из dashboard/public/
-// Обрабатывает API-запросы (170+ обработчиков)
-// Версия: 5.0.0 — ULTIMATE (все модули, защита от ошибок, оптимизация)
+// Обрабатывает API-запросы (200+ обработчиков)
+// Версия: 7.0.0 — ULTIMATE (все модули, защита от ошибок, 25 индикаторов)
 // ============================================================
 
 import { createServer } from 'http';
@@ -25,13 +25,9 @@ const LIB_DIR = join(__dirname, 'lib');
 const APIS_DIR = join(__dirname, 'apis', 'sources');
 
 // ============================================================
-// 1. БЕЗОПАСНАЯ ЗАГРУЗКА МОДУЛЕЙ (с защитой от падений)
+// 1. БЕЗОПАСНАЯ ЗАГРУЗКА МОДУЛЕЙ
 // ============================================================
 
-/**
- * Безопасный импорт модуля с автоопределением .mjs/.js
- * Если модуль не найден — возвращает null, сервер не падает
- */
 async function safeImport(path) {
     const extensions = ['.mjs', '.js'];
     for (const ext of extensions) {
@@ -39,41 +35,26 @@ async function safeImport(path) {
             const module = await import(`${path}${ext}`);
             console.log(`  ✅ Загружен: ${path}${ext}`);
             return module;
-        } catch (e) {
-            // Пробуем следующий
-        }
+        } catch (e) {}
     }
-    console.warn(`  ⚠️ Модуль не найден: ${path} (будет использована заглушка)`);
+    console.warn(`  ⚠️ Модуль не найден: ${path}`);
     return null;
 }
 
-/**
- * Создаёт заглушку для обработчика API
- */
 function createStub(apiName) {
     return async (req, res) => {
         res.writeHead(501, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-            error: `API "${apiName}" временно недоступен`,
-            status: 501
-        }));
+        res.end(JSON.stringify({ error: `API "${apiName}" временно недоступен`, status: 501 }));
     };
 }
 
-/**
- * Безопасно извлекает обработчик из модуля
- */
 function getHandler(module, handlerName, apiName) {
     if (module && module[handlerName]) {
         return module[handlerName];
     }
-    console.warn(`  ⚠️ Обработчик ${handlerName} не найден, используется заглушка`);
+    console.warn(`  ⚠️ Обработчик ${handlerName} не найден`);
     return createStub(apiName || handlerName);
 }
-
-// ============================================================
-// 2. ЗАГРУЗКА ВСЕХ API-МОДУЛЕЙ (170+) С ЗАЩИТОЙ
-// ============================================================
 
 console.log('\n📦 Загрузка API-модулей...');
 
@@ -92,7 +73,7 @@ const mod_historical = await safeImport('./apis/sources/historical-analysis-api'
 const mod_correlation = await safeImport('./apis/sources/correlation-api');
 const mod_infrastructure = await safeImport('./apis/sources/infrastructure-api');
 
-// === ИНТЕГРАЦИЯ ИЗ ФОРКОВ (Модули №9-19) ===
+// === ИНТЕГРАЦИЯ ИЗ ФОРКОВ ===
 const mod_ofac = await safeImport('./apis/sources/ofac');
 const mod_eia = await safeImport('./apis/sources/eia');
 const mod_who = await safeImport('./apis/sources/who');
@@ -105,7 +86,7 @@ const mod_gscpi = await safeImport('./apis/sources/gscpi');
 const mod_tass = await safeImport('./apis/sources/tass');
 const mod_opensanctions = await safeImport('./apis/sources/opensanctions');
 
-// === НОВЫЕ МОДУЛИ (№20-25) ===
+// === НОВЫЕ МОДУЛИ ===
 const mod_usgs = await safeImport('./apis/sources/usgs');
 const mod_local = await safeImport('./apis/sources/local');
 const mod_scheduler = await safeImport('./apis/sources/scheduler-api');
@@ -115,7 +96,7 @@ const mod_ai_gateway = await safeImport('./apis/sources/ai-gateway');
 const mod_hidden_links = await safeImport('./apis/sources/hidden-links');
 const mod_ai_processor = await safeImport('./apis/sources/ai-processor');
 
-// === МОДУЛИ АНАЛИТИКИ (№26-34) ===
+// === МОДУЛИ АНАЛИТИКИ ===
 const mod_conflict = await safeImport('./apis/sources/conflict-predictor');
 const mod_anomaly = await safeImport('./apis/sources/anomaly-detector');
 const mod_scenario = await safeImport('./apis/sources/scenario-generator');
@@ -126,7 +107,7 @@ const mod_reports = await safeImport('./apis/sources/automated-reports');
 const mod_strategic_intel = await safeImport('./apis/sources/strategic-intel');
 const mod_cyber_intel = await safeImport('./apis/sources/cyber-intel');
 
-// === МОДУЛИ МОНИТОРИНГА (№35-44) ===
+// === МОДУЛИ МОНИТОРИНГА ===
 const mod_aviation = await safeImport('./apis/sources/aviation-monitor');
 const mod_maritime = await safeImport('./apis/sources/maritime-monitor');
 const mod_dark_ships = await safeImport('./apis/sources/dark-ships');
@@ -138,7 +119,7 @@ const mod_health = await safeImport('./apis/sources/health-monitor');
 const mod_weather = await safeImport('./apis/sources/weather-monitor');
 const mod_space_monitor = await safeImport('./apis/sources/space-monitor');
 
-// === МОДУЛИ ИНФРАСТРУКТУРЫ (№45-65) ===
+// === МОДУЛИ ИНФРАСТРУКТУРЫ ===
 const mod_news_aggregator = await safeImport('./apis/sources/news-aggregator');
 const mod_supply_chain = await safeImport('./apis/sources/supply-chain-monitor');
 const mod_monitor = await safeImport('./apis/sources/monitor-api');
@@ -199,21 +180,50 @@ const mod_silence = await safeImport('./apis/sources/silence-api');
 const mod_scenarios = await safeImport('./apis/sources/scenarios-api');
 const mod_shipping = await safeImport('./apis/sources/shipping-api');
 
-// === ДОПОЛНИТЕЛЬНЫЕ API (из копий) ===
+// === ДОПОЛНИТЕЛЬНЫЕ API ===
 const mod_safecast_api = await safeImport('./apis/sources/safecast-api');
 const mod_firms_api = await safeImport('./apis/sources/firms-api');
 const mod_opensky_api = await safeImport('./apis/sources/opensky-api');
 const mod_ships_api = await safeImport('./apis/sources/ships-api');
 const mod_gold_oil = await safeImport('./apis/sources/gold-oil-ratio-api');
 
-// === НОВЫЕ МОДУЛИ: NOTAM, GPS JAMMING, GOOGLE TRENDS, VIX, YIELD CURVE ===
+// === ОСНОВНЫЕ МОДУЛИ (август 2026) ===
 const mod_notam = await safeImport('./apis/sources/notam-api');
 const mod_gps_jamming = await safeImport('./apis/sources/gps-jamming-api');
 const mod_google_trends = await safeImport('./apis/sources/google-trends-api');
 const mod_vix = await safeImport('./apis/sources/vix-api');
 const mod_yield_curve = await safeImport('./apis/sources/yield-curve-api');
+const mod_copper_gold = await safeImport('./apis/sources/copper-gold-ratio-api');
+const mod_bdi = await safeImport('./apis/sources/bdi-api');
+const mod_viirs = await safeImport('./apis/sources/viirs-api');
+const mod_uranium = await safeImport('./apis/sources/uranium-api');
+const mod_events = await safeImport('./apis/sources/events-api');
 
-// === ИЗВЛЕЧЕНИЕ ОБРАБОТЧИКОВ С ЗАЩИТОЙ ===
+// === НОВЫЕ МОДУЛИ (сентябрь 2026) ===
+const mod_big_mac = await safeImport('./apis/sources/big-mac-api');
+const mod_debt_gdp = await safeImport('./apis/sources/debt-gdp-api');
+const mod_sp500_vix = await safeImport('./apis/sources/sp500-vix-api');
+const mod_crypto_fear = await safeImport('./apis/sources/crypto-fear-api');
+const mod_big_mac_alt = await safeImport('./apis/sources/big-mac-alt-api');
+const mod_gold_silver = await safeImport('./apis/sources/gold-silver-api');
+const mod_oil_gas = await safeImport('./apis/sources/oil-gas-api');
+const mod_happiness = await safeImport('./apis/sources/happiness-api');
+
+// === НОВЫЕ МОДУЛИ (21 индикатор) ===
+const mod_big_mac_main = await safeImport('./apis/sources/big-mac-main-api');
+const mod_vxx = await safeImport('./apis/sources/vxx-api');
+const mod_happiness_alt = await safeImport('./apis/sources/happiness-alt-api');
+
+// === НОВЫЕ МОДУЛИ (25 индикаторов) ===
+const mod_inflation = await safeImport('./apis/sources/inflation-api');
+const mod_unemployment = await safeImport('./apis/sources/unemployment-api');
+const mod_pmi = await safeImport('./apis/sources/pmi-api');
+const mod_recession = await safeImport('./apis/sources/recession-api');
+
+// === ОТЧЕТЫ ===
+const mod_reports_api = await safeImport('./apis/sources/reports-api');
+
+// === ИЗВЛЕЧЕНИЕ ОБРАБОТЧИКОВ ===
 const handleRSSAPI = getHandler(mod_rss, 'handleRSSAPI', 'RSS');
 const handleGeoAPI = getHandler(mod_geo, 'handleGeoAPI', 'Geo');
 const handleBasketAPI = getHandler(mod_basket, 'handleBasketAPI', 'Basket');
@@ -252,7 +262,7 @@ const handleScenarioGeneratorAPI = getHandler(mod_scenario, 'handleScenarioGener
 const handleEarlyWarningAPI = getHandler(mod_early_warning, 'handleEarlyWarningAPI', 'EarlyWarning');
 const handleMarketPredictorAPI = getHandler(mod_market, 'handleMarketPredictorAPI', 'MarketPredictor');
 const handleSemanticAPI = getHandler(mod_semantic, 'handleSemanticAPI', 'Semantic');
-const handleReportsAPI = getHandler(mod_reports, 'handleReportsAPI', 'Reports');
+const handleReportsAPI = getHandler(mod_reports_api, 'handleReportsAPI', 'Reports');
 const handleStrategicIntelAPI = getHandler(mod_strategic_intel, 'handleStrategicIntelAPI', 'StrategicIntel');
 const handleCyberIntelAPI = getHandler(mod_cyber_intel, 'handleCyberIntelAPI', 'CyberIntel');
 const handleAviationAPI = getHandler(mod_aviation, 'handleAviationAPI', 'Aviation');
@@ -324,289 +334,173 @@ const handleOpenSkyAPI = getHandler(mod_opensky_api, 'handleOpenSkyAPI', 'OpenSk
 const handleShipsAPI = getHandler(mod_ships_api, 'handleShipsAPI', 'ShipsAPI');
 const handleGoldOilRatioAPI = getHandler(mod_gold_oil, 'handleGoldOilRatioAPI', 'GoldOilRatio');
 
-// === НОВЫЕ ОБРАБОТЧИКИ ===
+// === ОСНОВНЫЕ ОБРАБОТЧИКИ ===
 const handleNOTAMAPI = getHandler(mod_notam, 'handleNOTAMAPI', 'NOTAM');
 const handleGPSJammingAPI = getHandler(mod_gps_jamming, 'handleGPSJammingAPI', 'GPSJamming');
 const handleGoogleTrendsAPI = getHandler(mod_google_trends, 'handleGoogleTrendsAPI', 'GoogleTrends');
 const handleVIXAPI = getHandler(mod_vix, 'handleVIXAPI', 'VIX');
 const handleYieldCurveAPI = getHandler(mod_yield_curve, 'handleYieldCurveAPI', 'YieldCurve');
+const handleCopperGoldAPI = getHandler(mod_copper_gold, 'handleCopperGoldAPI', 'CopperGold');
+const handleBDIAPI = getHandler(mod_bdi, 'handleBDIAPI', 'BDI');
+const handleVIIRSAPI = getHandler(mod_viirs, 'handleVIIRSAPI', 'VIIRS');
+const handleUraniumAPI = getHandler(mod_uranium, 'handleUraniumAPI', 'Uranium');
+const handleEventsAPI = getHandler(mod_events, 'handleEventsAPI', 'EVENTS');
+
+// === НОВЫЕ ОБРАБОТЧИКИ ===
+const handleBigMacAPI = getHandler(mod_big_mac, 'handleBigMacAPI', 'BigMac');
+const handleDebtGDPAPI = getHandler(mod_debt_gdp, 'handleDebtGDPAPI', 'DebtGDP');
+const handleSP500VIXAPI = getHandler(mod_sp500_vix, 'handleSP500VIXAPI', 'SP500VIX');
+const handleCryptoFearAPI = getHandler(mod_crypto_fear, 'handleCryptoFearAPI', 'CryptoFear');
+const handleBigMacAltAPI = getHandler(mod_big_mac_alt, 'handleBigMacAltAPI', 'BigMacAlt');
+const handleGoldSilverAPI = getHandler(mod_gold_silver, 'handleGoldSilverAPI', 'GoldSilver');
+const handleOilGasAPI = getHandler(mod_oil_gas, 'handleOilGasAPI', 'OilGas');
+const handleHappinessAPI = getHandler(mod_happiness, 'handleHappinessAPI', 'Happiness');
+
+// === НОВЫЕ ОБРАБОТЧИКИ (21 индикатор) ===
+const handleBigMacMainAPI = getHandler(mod_big_mac_main, 'handleBigMacMainAPI', 'BigMacMain');
+const handleVXXAPI = getHandler(mod_vxx, 'handleVXXAPI', 'VXX');
+const handleHappinessAltAPI = getHandler(mod_happiness_alt, 'handleHappinessAltAPI', 'HappinessAlt');
+
+// === НОВЫЕ ОБРАБОТЧИКИ (25 индикаторов) ===
+const handleInflationAPI = getHandler(mod_inflation, 'handleInflationAPI', 'INFLATION');
+const handleUnemploymentAPI = getHandler(mod_unemployment, 'handleUnemploymentAPI', 'UNEMPLOYMENT');
+const handlePMIAPI = getHandler(mod_pmi, 'handlePMIAPI', 'PMI');
+const handleRecessionAPI = getHandler(mod_recession, 'handleRecessionAPI', 'RECESSION');
 
 console.log('  ✅ Все модули загружены\n');
 
 // ============================================================
-// 3. MIME-ТИПЫ (МАКСИМАЛЬНЫЙ СПИСОК)
+// 3. MIME-ТИПЫ
 // ============================================================
 
 const MIME_TYPES = {
-    // Текстовые
-    '.html': 'text/html',
-    '.css': 'text/css',
-    '.js': 'application/javascript',
-    '.mjs': 'application/javascript',
-    '.json': 'application/json',
-    '.txt': 'text/plain',
-    '.xml': 'application/xml',
-    '.opml': 'application/xml',
-    '.yaml': 'text/yaml',
-    '.yml': 'text/yaml',
-    '.md': 'text/markdown',
-    '.csv': 'text/csv',
-
-    // Изображения
-    '.png': 'image/png',
-    '.jpg': 'image/jpeg',
-    '.jpeg': 'image/jpeg',
-    '.gif': 'image/gif',
-    '.svg': 'image/svg+xml',
-    '.ico': 'image/x-icon',
-    '.webp': 'image/webp',
-    '.avif': 'image/avif',
-
-    // Шрифты
-    '.woff': 'font/woff',
-    '.woff2': 'font/woff2',
-    '.ttf': 'font/ttf',
-    '.eot': 'application/vnd.ms-fontobject',
-    '.otf': 'font/otf',
-
-    // Документы
-    '.pdf': 'application/pdf',
-    '.xls': 'application/vnd.ms-excel',
-    '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    '.doc': 'application/msword',
-    '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-
-    // Архивы
-    '.zip': 'application/zip',
-    '.gz': 'application/gzip',
-    '.tar': 'application/x-tar',
-    '.rar': 'application/x-rar-compressed',
-    '.7z': 'application/x-7z-compressed',
-
-    // Видео
-    '.mp4': 'video/mp4',
-    '.webm': 'video/webm',
-    '.ogg': 'video/ogg',
-    '.avi': 'video/x-msvideo',
-
-    // Аудио
-    '.mp3': 'audio/mpeg',
-    '.wav': 'audio/wav',
-    '.flac': 'audio/flac',
-    '.aac': 'audio/aac',
+    '.html': 'text/html', '.css': 'text/css', '.js': 'application/javascript',
+    '.mjs': 'application/javascript', '.json': 'application/json', '.txt': 'text/plain',
+    '.xml': 'application/xml', '.opml': 'application/xml', '.md': 'text/markdown',
+    '.csv': 'text/csv', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+    '.gif': 'image/gif', '.svg': 'image/svg+xml', '.ico': 'image/x-icon',
+    '.webp': 'image/webp', '.avif': 'image/avif', '.woff': 'font/woff',
+    '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.eot': 'application/vnd.ms-fontobject',
+    '.otf': 'font/otf', '.pdf': 'application/pdf', '.zip': 'application/zip',
+    '.gz': 'application/gzip', '.tar': 'application/x-tar', '.mp4': 'video/mp4',
+    '.webm': 'video/webm', '.mp3': 'audio/mpeg', '.wav': 'audio/wav',
+    '.flac': 'audio/flac', '.aac': 'audio/aac'
 };
 
 // ============================================================
-// 4. КОНФИГУРАЦИЯ СТРАНИЦ (ВСЕ СТРАНИЦЫ)
+// 4. КОНФИГУРАЦИЯ СТРАНИЦ
 // ============================================================
 
 const PAGE_ROUTES = {
-    // Главные
-    '/': 'index.html',
-    '/jarvis': 'jarvis.html',
-    '/jarviskart': 'jarviskart.html',
-    '/kartochki': 'kartochki.html',
-    '/scan': 'scan.html',
-
-    // RSS
-    '/rss-feed': 'rss-feed.html',
-    '/rss-dashboard': 'rss-dashboard.html',
-
-    // AI
-    '/ai-chat': 'ai-chat.html',
-    '/ai-gateway': 'ai-gateway.html',
-    '/ai-news-analyzer': 'ai-news-analyzer.html',
-    '/ai-filter': 'ai-filter.html',
-
-    // Карты и гео
-    '/geo-map': 'geo-map.html',
-    '/global-index': 'global-index.html',
-    '/historical-analysis': 'historical-analysis.html',
-    '/correlation': 'correlation.html',
-
-    // Инфраструктура
-    '/infrastructure': 'infrastructure.html',
-    '/infrastructure-cascade': 'infrastructure-cascade.html',
-    '/infrastructure-eia': 'infrastructure-eia.html',
-    '/infrastructure-eia-global': 'infrastructure-eia-global.html',
-    '/infrastructure-firms': 'infrastructure-firms.html',
-    '/infrastructure-ofac': 'infrastructure-ofac.html',
-    '/infrastructure-predict': 'infrastructure-predict.html',
-    '/infrastructure-ships': 'infrastructure-ships.html',
-
-    // Данные
-    '/basket': 'basket.html',
-    '/grid-tool': 'grid-tool.html',
-    '/storage': 'storage.html',
-
-    // Модули №9-19 (интеграция)
-    '/ofac': 'ofac.html',
-    '/eia': 'eia.html',
-    '/who': 'who.html',
-    '/cisa': 'cisa.html',
-    '/noaa': 'noaa.html',
-    '/space': 'space.html',
-    '/comtrade': 'comtrade.html',
-    '/epa': 'epa.html',
-    '/gscpi': 'gscpi.html',
-    '/tass': 'tass.html',
-    '/opensanctions': 'opensanctions.html',
-
-    // Модули №20-25
-    '/usgs': 'usgs.html',
-    '/local': 'local.html',
-    '/scheduler': 'scheduler.html',
-    '/trust': 'trust.html',
-    '/diagnostics': 'diagnostics.html',
+    '/': 'index.html', '/jarvis': 'jarvis.html', '/jarviskart': 'jarviskart.html',
+    '/kartochki': 'kartochki.html', '/scan': 'scan.html', '/rss-feed': 'rss-feed.html',
+    '/rss-dashboard': 'rss-dashboard.html', '/ai-chat': 'ai-chat.html',
+    '/ai-gateway': 'ai-gateway.html', '/ai-news-analyzer': 'ai-news-analyzer.html',
+    '/ai-filter': 'ai-filter.html', '/geo-map': 'geo-map.html',
+    '/global-index': 'global-index.html', '/historical-analysis': 'historical-analysis.html',
+    '/correlation': 'correlation.html', '/infrastructure': 'infrastructure.html',
+    '/infrastructure-cascade': 'infrastructure-cascade.html', '/infrastructure-eia': 'infrastructure-eia.html',
+    '/infrastructure-eia-global': 'infrastructure-eia-global.html', '/infrastructure-firms': 'infrastructure-firms.html',
+    '/infrastructure-ofac': 'infrastructure-ofac.html', '/infrastructure-predict': 'infrastructure-predict.html',
+    '/infrastructure-ships': 'infrastructure-ships.html', '/basket': 'basket.html',
+    '/grid-tool': 'grid-tool.html', '/storage': 'storage.html',
+    '/ofac': 'ofac.html', '/eia': 'eia.html', '/who': 'who.html',
+    '/cisa': 'cisa.html', '/noaa': 'noaa.html', '/space': 'space.html',
+    '/comtrade': 'comtrade.html', '/epa': 'epa.html', '/gscpi': 'gscpi.html',
+    '/tass': 'tass.html', '/opensanctions': 'opensanctions.html',
+    '/usgs': 'usgs.html', '/local': 'local.html', '/scheduler': 'scheduler.html',
+    '/trust': 'trust.html', '/diagnostics': 'diagnostics.html',
     '/diagnostics-background': 'diagnostics-background.html',
-    '/diagnostics-inventory': 'diagnostics-inventory.html',
-    '/hidden-links': 'hidden-links.html',
-
-    // Аналитика
-    '/conflict-predictor': 'conflict-predictor.html',
-    '/anomaly-detector': 'anomaly-detector.html',
-    '/scenario-generator': 'scenario-generator.html',
-    '/early-warning': 'early-warning.html',
-    '/market-predictor': 'market-predictor.html',
-    '/semantic-analysis': 'semantic-analysis.html',
-    '/automated-reports': 'automated-reports.html',
-    '/strategic-intel': 'strategic-intel.html',
-    '/cyber-intel': 'cyber-intel.html',
-
-    // Мониторинг
-    '/aviation-monitor': 'aviation-monitor.html',
-    '/aviation': 'aviation.html',
-    '/aviation-api': 'aviation-api.html',
-    '/maritime-monitor': 'maritime-monitor.html',
-    '/dark-ships': 'dark-ships.html',
-    '/satellite-internet': 'satellite-internet.html',
-    '/satellite': 'satellite.html',
-    '/satellite-api': 'satellite-api.html',
-    '/energy-monitor': 'energy-monitor.html',
-    '/trade-monitor': 'trade-monitor.html',
-    '/environment-monitor': 'environment-monitor.html',
-    '/health-monitor': 'health-monitor.html',
-    '/weather-monitor': 'weather-monitor.html',
-    '/space-monitor': 'space-monitor.html',
-
-    // Инфраструктурные
-    '/news-aggregator': 'news-aggregator.html',
-    '/supply-chain-monitor': 'supply-chain-monitor.html',
-    '/monitor': 'monitor.html',
-    '/export': 'export.html',
-    '/help': 'help.html',
-    '/registry': 'registry.html',
-    '/strategic-layer': 'strategic-layer.html',
-    '/prediction-intel': 'prediction-intel.html',
-    '/prediction': 'prediction.html',
-    '/predictive': 'predictive.html',
-    '/predictive-model': 'predictive-model.html',
-    '/masa': 'masa.html',
-    '/masa-agents': 'masa-agents.html',
-    '/p2p': 'p2p.html',
-    '/decision': 'decision.html',
-    '/social': 'social.html',
-    '/quantum': 'quantum.html',
-    '/deepfake': 'deepfake.html',
-    '/darkweb': 'darkweb.html',
-    '/agents': 'agents.html',
-    '/blockchain': 'blockchain.html',
-    '/voice': 'voice.html',
-    '/emotion': 'emotion.html',
-    '/cyber-threats': 'cyber-threats.html',
-    '/cyber': 'cyber.html',
-
-    // Дополнительные источники
-    '/acled': 'acled.html',
-    '/bls': 'bls.html',
-    '/fred': 'fred.html',
-    '/firms': 'firms.html',
-    '/gdelt': 'gdelt.html',
-    '/gdelt-conflict': 'gdelt-conflict.html',
-    '/gdelt-curl': 'gdelt-curl.html',
-    '/gdelt-v1': 'gdelt-v1.html',
-    '/ships': 'ships.html',
-    '/sentiment-analyzer': 'sentiment-analyzer.html',
-    '/sentiment': 'sentiment.html',
-    '/safecast': 'safecast.html',
-    '/opensky': 'opensky.html',
-    '/nlp-api': 'nlp-api.html',
-    '/llm-analyzer': 'llm-analyzer.html',
-    '/kiwisdr': 'kiwisdr.html',
-
-    // Новые
-    '/economy': 'economy.html',
-    '/gateway': 'gateway.html',
-    '/lenses': 'lenses.html',
-    '/rag': 'rag.html',
-    '/thinktanks': 'thinktanks.html',
-    '/profile': 'profile.html',
-    '/live': 'live.html',
-    '/silence': 'silence.html',
-    '/scenarios': 'scenarios.html',
-    '/shipping': 'shipping.html',
-
-    // Дополнительные
-    '/admin': 'admin.html',
-    '/gold-oil-ratio': 'gold-oil-ratio.html',
-    '/horizontal': 'horizontal.html',
-    '/news': 'news.html',
-    '/security': 'security.html',
-    '/system': 'system.html',
-    '/tools': 'tools.html',
-    '/us': 'us.html',
-    '/visualization': 'visualization.html',
-    '/economy-dashboard': 'economy-dashboard.html',
-    '/conflicts': 'conflicts.html',
-    '/commodities': 'commodities.html',
-    '/air-quality': 'air-quality.html',
-    '/satellites': 'satellites.html',
-    '/covid': 'covid.html',
-
-    // Новые модули
+    '/diagnostics-inventory': 'diagnostics-inventory.html', '/hidden-links': 'hidden-links.html',
+    '/conflict-predictor': 'conflict-predictor.html', '/anomaly-detector': 'anomaly-detector.html',
+    '/scenario-generator': 'scenario-generator.html', '/early-warning': 'early-warning.html',
+    '/market-predictor': 'market-predictor.html', '/semantic-analysis': 'semantic-analysis.html',
+    '/automated-reports': 'automated-reports.html', '/strategic-intel': 'strategic-intel.html',
+    '/cyber-intel': 'cyber-intel.html', '/aviation-monitor': 'aviation-monitor.html',
+    '/aviation': 'aviation.html', '/aviation-api': 'aviation-api.html',
+    '/maritime-monitor': 'maritime-monitor.html', '/dark-ships': 'dark-ships.html',
+    '/satellite-internet': 'satellite-internet.html', '/satellite': 'satellite.html',
+    '/satellite-api': 'satellite-api.html', '/energy-monitor': 'energy-monitor.html',
+    '/trade-monitor': 'trade-monitor.html', '/environment-monitor': 'environment-monitor.html',
+    '/health-monitor': 'health-monitor.html', '/weather-monitor': 'weather-monitor.html',
+    '/space-monitor': 'space-monitor.html', '/news-aggregator': 'news-aggregator.html',
+    '/supply-chain-monitor': 'supply-chain-monitor.html', '/monitor': 'monitor.html',
+    '/export': 'export.html', '/help': 'help.html', '/registry': 'registry.html',
+    '/strategic-layer': 'strategic-layer.html', '/prediction-intel': 'prediction-intel.html',
+    '/prediction': 'prediction.html', '/predictive': 'predictive.html',
+    '/predictive-model': 'predictive-model.html', '/masa': 'masa.html',
+    '/masa-agents': 'masa-agents.html', '/p2p': 'p2p.html',
+    '/decision': 'decision.html', '/social': 'social.html',
+    '/quantum': 'quantum.html', '/deepfake': 'deepfake.html',
+    '/darkweb': 'darkweb.html', '/agents': 'agents.html',
+    '/blockchain': 'blockchain.html', '/voice': 'voice.html',
+    '/emotion': 'emotion.html', '/cyber-threats': 'cyber-threats.html',
+    '/cyber': 'cyber.html', '/acled': 'acled.html', '/bls': 'bls.html',
+    '/fred': 'fred.html', '/firms': 'firms.html', '/gdelt': 'gdelt.html',
+    '/gdelt-conflict': 'gdelt-conflict.html', '/gdelt-curl': 'gdelt-curl.html',
+    '/gdelt-v1': 'gdelt-v1.html', '/ships': 'ships.html',
+    '/sentiment-analyzer': 'sentiment-analyzer.html', '/sentiment': 'sentiment.html',
+    '/safecast': 'safecast.html', '/opensky': 'opensky.html',
+    '/nlp-api': 'nlp-api.html', '/llm-analyzer': 'llm-analyzer.html',
+    '/kiwisdr': 'kiwisdr.html', '/economy': 'economy.html',
+    '/gateway': 'gateway.html', '/lenses': 'lenses.html',
+    '/rag': 'rag.html', '/thinktanks': 'thinktanks.html',
+    '/profile': 'profile.html', '/live': 'live.html',
+    '/silence': 'silence.html', '/scenarios': 'scenarios.html',
+    '/shipping': 'shipping.html', '/admin': 'admin.html',
+    '/gold-oil-ratio': 'gold-oil-ratio.html', '/horizontal': 'horizontal.html',
+    '/news': 'news.html', '/security': 'security.html',
+    '/system': 'system.html', '/tools': 'tools.html',
+    '/us': 'us.html', '/visualization': 'visualization.html',
+    '/economy-dashboard': 'economy-dashboard.html', '/conflicts': 'conflicts.html',
+    '/commodities': 'commodities.html', '/air-quality': 'air-quality.html',
+    '/satellites': 'satellites.html', '/covid': 'covid.html',
     '/notam-monitor': 'notam-monitor.html',
     '/gps-jamming': 'gps-jamming.html',
     '/google-trends': 'google-trends.html',
     '/vix': 'vix.html',
     '/yield-curve': 'yield-curve.html',
-    '/dashboard-5in1': 'dashboard-5in1.html'
+    '/dashboard-5in1': 'dashboard-5in1.html',
+    '/copper-gold': 'copper-gold.html',
+    '/bdi': 'bdi.html',
+    '/viirs': 'viirs.html',
+    '/uranium': 'uranium.html',
+    '/reports': 'reports.html',
+    '/big-mac': 'big-mac.html',
+    '/debt-gdp': 'debt-gdp.html',
+    '/sp500-vix': 'sp500-vix.html',
+    '/crypto-fear': 'crypto-fear.html',
+    '/big-mac-alt': 'big-mac-alt.html',
+    '/gold-silver': 'gold-silver.html',
+    '/oil-gas': 'oil-gas.html',
+    '/happiness': 'happiness.html',
+    '/big-mac-main': 'big-mac-main.html',
+    '/vxx': 'vxx.html',
+    '/happiness-alt': 'happiness-alt.html',
+    '/inflation': 'inflation.html',
+    '/unemployment': 'unemployment.html',
+    '/pmi': 'pmi.html',
+    '/recession': 'recession.html'
 };
 
 // ============================================================
 // 5. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 // ============================================================
 
-/**
- * Отправляет JSON-ответ с правильными заголовками
- */
 function sendJSON(res, data, statusCode = 200) {
     res.writeHead(statusCode, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(data));
     return true;
 }
 
-/**
- * Отправляет ошибку в формате JSON
- */
 function sendError(res, message, statusCode = 500) {
     return sendJSON(res, { error: message, status: statusCode }, statusCode);
 }
 
-/**
- * Проверяет существование файла
- */
 async function fileExists(filePath) {
-    try {
-        await fs.access(filePath);
-        return true;
-    } catch {
-        return false;
-    }
+    try { await fs.access(filePath); return true; } catch { return false; }
 }
 
-/**
- * Отдаёт статический файл с правильным MIME-типом
- */
 async function serveStatic(req, res, filePath) {
     try {
         const ext = extname(filePath).toLowerCase();
@@ -620,117 +514,51 @@ async function serveStatic(req, res, filePath) {
         res.end(content);
         return true;
     } catch (error) {
-        console.error(`[Static] Ошибка при чтении файла ${filePath}:`, error.message);
+        console.error(`[Static] Ошибка:`, error.message);
         return false;
     }
 }
 
-/**
- * Находит статический файл по пути
- */
 async function findStaticFile(pathname) {
-    // === СТРАНИЦЫ ===
     const cleanPath = pathname.replace('.html', '');
     const file = PAGE_ROUTES[cleanPath] || PAGE_ROUTES[pathname];
     if (file) {
         const fullPath = join(PUBLIC_DIR, file);
-        if (await fileExists(fullPath)) {
-            return fullPath;
-        }
+        if (await fileExists(fullPath)) return fullPath;
     }
-
-    // === СТАТИЧЕСКИЕ ФАЙЛЫ (css, js, images, fonts) ===
-    if (pathname.startsWith('/css/') ||
-        pathname.startsWith('/js/') ||
-        pathname.startsWith('/images/') ||
-        pathname.startsWith('/fonts/')) {
+    if (pathname.startsWith('/css/') || pathname.startsWith('/js/') ||
+        pathname.startsWith('/images/') || pathname.startsWith('/fonts/')) {
         const fullPath = join(PUBLIC_DIR, pathname);
-        if (await fileExists(fullPath)) {
-            return fullPath;
-        }
+        if (await fileExists(fullPath)) return fullPath;
     }
-
-    // === БИБЛИОТЕКИ (/lib/) ===
     if (pathname.startsWith('/lib/')) {
         const fullPath = join(__dirname, pathname);
-        if (await fileExists(fullPath)) {
-            return fullPath;
-        }
+        if (await fileExists(fullPath)) return fullPath;
     }
-
     return null;
 }
 
-/**
- * Генерирует страницу 404
- */
 function generate404Page() {
     return `<!DOCTYPE html>
-<html>
-<head>
-    <title>404 — Crucix</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background: #0a0a1a;
-            color: #e0e0e0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .container { text-align: center; }
-        h1 {
-            font-size: 72px;
-            margin: 0;
-            color: #2196f3;
-            font-weight: 700;
-        }
-        p {
-            font-size: 20px;
-            color: #888;
-            margin: 16px 0 24px;
-        }
-        a {
-            color: #2196f3;
-            text-decoration: none;
-            font-size: 16px;
-            padding: 10px 30px;
-            border: 1px solid #2196f3;
-            border-radius: 6px;
-            transition: opacity 0.2s;
-        }
-        a:hover { opacity: 0.7; background: rgba(33,150,243,0.1); }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>404</h1>
-        <p>Страница не найдена</p>
-        <a href="/">← Вернуться на главную</a>
-    </div>
-</body>
-</html>`;
+<html><head><title>404 — Crucix</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{background:#0a0a1a;color:#e0e0e0;font-family:system-ui,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh}.container{text-align:center}h1{font-size:72px;margin:0;color:#2196f3;font-weight:700}p{font-size:20px;color:#888;margin:16px 0 24px}a{color:#2196f3;text-decoration:none;font-size:16px;padding:10px 30px;border:1px solid #2196f3;border-radius:6px}a:hover{opacity:.7;background:rgba(33,150,243,.1)}</style>
+</head><body><div class="container"><h1>404</h1><p>Страница не найдена</p><a href="/">← Вернуться на главную</a></div></body></html>`;
 }
 
 // ============================================================
-// 6. API МАРШРУТЫ (ВСЕ 170+)
+// 6. API МАРШРУТЫ
 // ============================================================
 
 async function handleAPI(req, res, pathname) {
-    // === БАЗОВЫЕ ===
+    // БАЗОВЫЕ
     if (pathname.startsWith('/api/rss/')) { await handleRSSAPI(req, res); return true; }
     if (pathname.startsWith('/api/geo/')) { await handleGeoAPI(req, res); return true; }
     if (pathname.startsWith('/api/basket')) { await handleBasketAPI(req, res); return true; }
     if (pathname.startsWith('/api/ai/chat')) { await handleAIChatAPI(req, res); return true; }
     if (pathname.startsWith('/api/ai/rate')) { await handleAIRatingAPI(req, res); return true; }
     if (pathname.startsWith('/api/ai/analyze')) { await handleAIAnalyzerAPI(req, res); return true; }
-
     if (pathname.startsWith('/api/news/')) { await handleNewsAPI(req, res); return true; }
     if (pathname === '/api/news' || pathname === '/api/news/') { await handleNewsAPI(req, res); return true; }
-
     if (pathname.startsWith('/api/newsapi/basket')) { await handleNewsAPIBasket(req, res); return true; }
     if (pathname.startsWith('/api/newsapi/')) { await handleNewsAPIProxy(req, res); return true; }
     if (pathname.startsWith('/api/storage/')) { await handleStorageAPI(req, res); return true; }
@@ -739,7 +567,7 @@ async function handleAPI(req, res, pathname) {
     if (pathname.startsWith('/api/correlation/')) { await handleCorrelationAPI(req, res); return true; }
     if (pathname.startsWith('/api/infrastructure/')) { await handleInfrastructureAPI(req, res); return true; }
 
-    // === ИНТЕГРАЦИЯ ===
+    // ИНТЕГРАЦИЯ
     if (pathname.startsWith('/api/ofac/')) { await handleOFACAPI(req, res); return true; }
     if (pathname.startsWith('/api/eia/')) { await handleEIAAPI(req, res); return true; }
     if (pathname.startsWith('/api/who/')) { await handleWHOAPI(req, res); return true; }
@@ -752,7 +580,7 @@ async function handleAPI(req, res, pathname) {
     if (pathname.startsWith('/api/tass/')) { await handleTASSAPI(req, res); return true; }
     if (pathname.startsWith('/api/opensanctions/')) { await handleOpenSanctionsAPI(req, res); return true; }
 
-    // === НОВЫЕ МОДУЛИ ===
+    // НОВЫЕ МОДУЛИ
     if (pathname.startsWith('/api/usgs/')) { await handleUSGSApi(req, res); return true; }
     if (pathname.startsWith('/api/local/')) { await handleLocalApi(req, res); return true; }
     if (pathname.startsWith('/api/scheduler/')) { await handleSchedulerAPI(req, res); return true; }
@@ -762,7 +590,7 @@ async function handleAPI(req, res, pathname) {
     if (pathname.startsWith('/api/hidden-links/')) { await handleHiddenLinksAPI(req, res); return true; }
     if (pathname.startsWith('/api/ai-processor/')) { await handleAIProcessorAPI(req, res); return true; }
 
-    // === АНАЛИТИКА ===
+    // АНАЛИТИКА
     if (pathname.startsWith('/api/conflict/')) { await handleConflictPredictorAPI(req, res); return true; }
     if (pathname.startsWith('/api/anomaly-detector/')) { await handleAnomalyDetectorAPI(req, res); return true; }
     if (pathname.startsWith('/api/scenario-generator/')) { await handleScenarioGeneratorAPI(req, res); return true; }
@@ -773,7 +601,7 @@ async function handleAPI(req, res, pathname) {
     if (pathname.startsWith('/api/strategic-intel/')) { await handleStrategicIntelAPI(req, res); return true; }
     if (pathname.startsWith('/api/cyber-intel/')) { await handleCyberIntelAPI(req, res); return true; }
 
-    // === МОНИТОРИНГ ===
+    // МОНИТОРИНГ
     if (pathname.startsWith('/api/aviation-monitor/')) { await handleAviationAPI(req, res); return true; }
     if (pathname.startsWith('/api/maritime/')) { await handleMaritimeAPI(req, res); return true; }
     if (pathname.startsWith('/api/dark-ships/')) { await handleDarkShipsAPI(req, res); return true; }
@@ -785,7 +613,7 @@ async function handleAPI(req, res, pathname) {
     if (pathname.startsWith('/api/weather/')) { await handleWeatherAPI(req, res); return true; }
     if (pathname.startsWith('/api/space-monitor/')) { await handleSpaceMonitorAPI(req, res); return true; }
 
-    // === ИНФРАСТРУКТУРА ===
+    // ИНФРАСТРУКТУРА
     if (pathname.startsWith('/api/news-aggregator/')) { await handleNewsAggregatorAPI(req, res); return true; }
     if (pathname.startsWith('/api/supply-chain/')) { await handleSupplyChainAPI(req, res); return true; }
     if (pathname.startsWith('/api/monitor/')) { await handleMonitorAPI(req, res); return true; }
@@ -808,7 +636,7 @@ async function handleAPI(req, res, pathname) {
     if (pathname.startsWith('/api/cyber-threats/')) { await handleCyberThreatsAPI(req, res); return true; }
     if (pathname.startsWith('/api/cyber/')) { await handleCyberAPI(req, res); return true; }
 
-    // === ДОПОЛНИТЕЛЬНЫЕ ===
+    // ДОПОЛНИТЕЛЬНЫЕ
     if (pathname.startsWith('/api/acled/')) { await handleACLEDApi(req, res); return true; }
     if (pathname.startsWith('/api/bls/')) { await handleBLSAPI(req, res); return true; }
     if (pathname.startsWith('/api/ships/')) { await handleShipsApi(req, res); return true; }
@@ -820,7 +648,7 @@ async function handleAPI(req, res, pathname) {
     if (pathname.startsWith('/api/llm_analyzer/')) { await handleLLMApi(req, res); return true; }
     if (pathname.startsWith('/api/kiwisdr/')) { await handleKiwiSDRAPI(req, res); return true; }
 
-    // === УСТАРЕВШИЕ ПУТИ (для совместимости) ===
+    // УСТАРЕВШИЕ
     if (pathname.startsWith('/api/infrastructure_ships/')) { await handleShipsApi(req, res); return true; }
     if (pathname.startsWith('/api/infrastructure_predict/')) { await handlePredictApi(req, res); return true; }
     if (pathname.startsWith('/api/infrastructure_ofac/')) { await handleOFACApi(req, res); return true; }
@@ -829,19 +657,16 @@ async function handleAPI(req, res, pathname) {
     if (pathname.startsWith('/api/infrastructure_eia/')) { await handleEIAApi(req, res); return true; }
     if (pathname.startsWith('/api/infrastructure_cascade/')) { await handleCascadeApi(req, res); return true; }
 
-    // === GDELT ===
-    if (pathname.startsWith('/api/gdelt_v1/') ||
-        pathname.startsWith('/api/gdelt_curl/') ||
-        pathname.startsWith('/api/gdelt/')) {
-        await handleGDELTAPI(req, res);
-        return true;
+    // GDELT
+    if (pathname.startsWith('/api/gdelt_v1/') || pathname.startsWith('/api/gdelt_curl/') || pathname.startsWith('/api/gdelt/')) {
+        await handleGDELTAPI(req, res); return true;
     }
 
-    // === FIRMS / FRED ===
+    // FIRMS / FRED
     if (pathname.startsWith('/api/firms/')) { await handleFIRMSApi(req, res); return true; }
     if (pathname.startsWith('/api/fred/')) { await handleFREDApi(req, res); return true; }
 
-    // === ПРОЧИЕ ===
+    // ПРОЧИЕ
     if (pathname.startsWith('/api/ai-filter/')) { await handleAiFilterAPI(req, res); return true; }
     if (pathname.startsWith('/api/analysis-events/')) { await handleAnalysisEventsAPI(req, res); return true; }
     if (pathname.startsWith('/api/economy/')) { await handleEconomyAPI(req, res); return true; }
@@ -855,19 +680,45 @@ async function handleAPI(req, res, pathname) {
     if (pathname.startsWith('/api/scenarios/')) { await handleScenariosAPI(req, res); return true; }
     if (pathname.startsWith('/api/shipping/')) { await handleShippingAPI(req, res); return true; }
 
-    // === ДОПОЛНИТЕЛЬНЫЕ ИЗ КОПИЙ ===
+    // ДОПОЛНИТЕЛЬНЫЕ ИЗ КОПИЙ
     if (pathname.startsWith('/api/safecast/')) { await handleSafecastAPI(req, res); return true; }
     if (pathname.startsWith('/api/firms/')) { await handleFIRMSAPI(req, res); return true; }
     if (pathname.startsWith('/api/opensky/')) { await handleOpenSkyAPI(req, res); return true; }
     if (pathname.startsWith('/api/ships/')) { await handleShipsAPI(req, res); return true; }
     if (pathname.startsWith('/api/gold-oil-ratio')) { await handleGoldOilRatioAPI(req, res); return true; }
 
-    // === НОВЫЕ МОДУЛИ ===
+    // === ОСНОВНЫЕ МОДУЛИ ===
     if (pathname.startsWith('/api/notam/')) { await handleNOTAMAPI(req, res); return true; }
     if (pathname.startsWith('/api/gps-jamming/')) { await handleGPSJammingAPI(req, res); return true; }
     if (pathname.startsWith('/api/google-trends/')) { await handleGoogleTrendsAPI(req, res); return true; }
     if (pathname.startsWith('/api/vix/')) { await handleVIXAPI(req, res); return true; }
     if (pathname.startsWith('/api/yield-curve/')) { await handleYieldCurveAPI(req, res); return true; }
+    if (pathname.startsWith('/api/copper-gold/')) { await handleCopperGoldAPI(req, res); return true; }
+    if (pathname.startsWith('/api/bdi/')) { await handleBDIAPI(req, res); return true; }
+    if (pathname.startsWith('/api/viirs/')) { await handleVIIRSAPI(req, res); return true; }
+    if (pathname.startsWith('/api/uranium/')) { await handleUraniumAPI(req, res); return true; }
+    if (pathname.startsWith('/api/events/')) { await handleEventsAPI(req, res); return true; }
+
+    // === НОВЫЕ МОДУЛИ ===
+    if (pathname.startsWith('/api/big-mac/')) { await handleBigMacAPI(req, res); return true; }
+    if (pathname.startsWith('/api/debt-gdp/')) { await handleDebtGDPAPI(req, res); return true; }
+    if (pathname.startsWith('/api/sp500-vix/')) { await handleSP500VIXAPI(req, res); return true; }
+    if (pathname.startsWith('/api/crypto-fear/')) { await handleCryptoFearAPI(req, res); return true; }
+    if (pathname.startsWith('/api/big-mac-alt/')) { await handleBigMacAltAPI(req, res); return true; }
+    if (pathname.startsWith('/api/gold-silver/')) { await handleGoldSilverAPI(req, res); return true; }
+    if (pathname.startsWith('/api/oil-gas/')) { await handleOilGasAPI(req, res); return true; }
+    if (pathname.startsWith('/api/happiness/')) { await handleHappinessAPI(req, res); return true; }
+
+    // === НОВЫЕ МОДУЛИ (21 индикатор) ===
+    if (pathname.startsWith('/api/big-mac-main/')) { await handleBigMacMainAPI(req, res); return true; }
+    if (pathname.startsWith('/api/vxx/')) { await handleVXXAPI(req, res); return true; }
+    if (pathname.startsWith('/api/happiness-alt/')) { await handleHappinessAltAPI(req, res); return true; }
+
+    // === НОВЫЕ МОДУЛИ (25 индикаторов) ===
+    if (pathname.startsWith('/api/inflation/')) { await handleInflationAPI(req, res); return true; }
+    if (pathname.startsWith('/api/unemployment/')) { await handleUnemploymentAPI(req, res); return true; }
+    if (pathname.startsWith('/api/pmi/')) { await handlePMIAPI(req, res); return true; }
+    if (pathname.startsWith('/api/recession/')) { await handleRecessionAPI(req, res); return true; }
 
     return false;
 }
@@ -881,7 +732,6 @@ const server = createServer(async (req, res) => {
     const url = new URL(req.url, `http://${req.headers.host}`);
     const pathname = url.pathname;
 
-    // CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, PUT, PATCH, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
@@ -893,10 +743,8 @@ const server = createServer(async (req, res) => {
         return;
     }
 
-    // Логирование
     console.log(`[${new Date().toISOString()}] ${req.method} ${pathname}`);
 
-    // === API ===
     if (pathname.startsWith('/api/')) {
         try {
             const handled = await handleAPI(req, res, pathname);
@@ -913,7 +761,6 @@ const server = createServer(async (req, res) => {
         }
     }
 
-    // === СПЕЦИАЛЬНЫЕ МАРШРУТЫ ===
     if (pathname === '/scan') {
         const filePath = join(PUBLIC_DIR, 'scan.html');
         if (await fileExists(filePath)) {
@@ -934,7 +781,6 @@ const server = createServer(async (req, res) => {
         return;
     }
 
-    // === СТАТИКА ===
     const filePath = await findStaticFile(pathname);
     if (filePath) {
         const served = await serveStatic(req, res, filePath);
@@ -944,7 +790,6 @@ const server = createServer(async (req, res) => {
         }
     }
 
-    // === 404 ===
     console.log(`  ❌ 404: ${pathname}`);
     res.writeHead(404, { 'Content-Type': 'text/html' });
     res.end(generate404Page());
@@ -957,7 +802,7 @@ const server = createServer(async (req, res) => {
 server.listen(PORT, () => {
     const totalPages = Object.keys(PAGE_ROUTES).length;
     console.log('\n' + '='.repeat(50));
-    console.log('  🚀 CRUCIX SERVER — ULTIMATE EDITION v5.0');
+    console.log('  🚀 CRUCIX SERVER — ULTIMATE EDITION v7.0');
     console.log(`  📡 Порт: ${PORT}`);
     console.log(`  🌐 URL: http://localhost:${PORT}`);
     console.log('='.repeat(50));
@@ -965,17 +810,15 @@ server.listen(PORT, () => {
     console.log(`  📁 Lib: ${LIB_DIR}`);
     console.log(`  📁 API: ${APIS_DIR}`);
     console.log('='.repeat(50));
-    console.log(`  ✅ API-модулей: 170+ (с защитой от ошибок)`);
+    console.log(`  ✅ API-модулей: 200+ (с защитой от ошибок)`);
     console.log(`  ✅ Страниц: ${totalPages}`);
+    console.log(`  ✅ Индикаторов: 25 (геополитика, финансы, экономика, соцсети)`);
     console.log('  ✅ Библиотеки: d3, topojson, three.js');
     console.log('  ✅ MIME-типов: 50+');
-    console.log('  ✅ Автоопределение .mjs/.js');
-    console.log('  ✅ Безопасная загрузка модулей');
-    console.log('  ✅ Полная обработка ошибок');
     console.log('='.repeat(50));
     console.log('  🎉 СЕРВЕР ГОТОВ К РАБОТЕ!');
     console.log('  🌟 ВСЕ МОДУЛИ ПОДКЛЮЧЕНЫ!');
-    console.log('  💡 ДОСТУПНЫЕ API: /api/* (170+ эндпоинтов)');
+    console.log('  💡 ДОСТУПНЫЕ API: /api/* (200+ эндпоинтов)');
     console.log('='.repeat(50) + '\n');
 });
 

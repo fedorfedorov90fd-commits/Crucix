@@ -2,7 +2,7 @@
 // ============================================================
 // COLLECT-NOTAM.MJS — Сборщик NOTAM (РЕАЛЬНЫЙ)
 // ============================================================
-// Источник: ICAO / Eurocontrol (бесплатный парсинг)
+// Источник: Eurocontrol (бесплатный RSS)
 // Сохраняет в: data/basket/notam.json
 // ============================================================
 
@@ -14,16 +14,13 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const BASKET_DIR = join(__dirname, '..', 'data', 'basket');
 const BASKET_PATH = join(BASKET_DIR, 'notam.json');
 
-// Ключевые регионы
 const REGIONS = [
     { name: 'Восточная Европа', lat: 50, lon: 30 },
     { name: 'Ближний Восток', lat: 30, lon: 45 },
     { name: 'Южно-Китайское море', lat: 15, lon: 115 },
     { name: 'Балтийское море', lat: 58, lon: 20 },
     { name: 'Черное море', lat: 43, lon: 35 },
-    { name: 'Персидский залив', lat: 27, lon: 52 },
-    { name: 'Средиземное море', lat: 35, lon: 25 },
-    { name: 'Курильские острова', lat: 46, lon: 152 }
+    { name: 'Персидский залив', lat: 27, lon: 52 }
 ];
 
 async function loadExisting() {
@@ -39,55 +36,36 @@ async function fetchNOTAM() {
 
     for (const region of REGIONS) {
         try {
-            // Eurocontrol NOTAM (бесплатный RSS)
             const url = `https://www.eurocontrol.int/rss/notam/${Math.round(region.lat)}/${Math.round(region.lon)}/500`;
             const response = await fetch(url);
-
-            if (!response.ok) {
-                console.log(`[NOTAM] ⚠️ ${region.name} не отвечает`);
-                continue;
-            }
-
+            if (!response.ok) continue;
             const xml = await response.text();
-            
-            // Ищем NOTAM в RSS
             const items = xml.match(/<item>.*?<\/item>/gs) || [];
-            
-            for (const item of items.slice(0, 3)) {
+            for (const item of items.slice(0, 2)) {
                 const titleMatch = item.match(/<title>(.*?)<\/title>/);
                 const descMatch = item.match(/<description>(.*?)<\/description>/);
-                
                 if (!titleMatch) continue;
-                
                 const title = titleMatch[1] || '';
                 const desc = descMatch ? descMatch[1] : '';
-
-                // Определяем уровень опасности
                 let severity = 'low';
-                if (title.includes('MIL') || title.includes('WAR') || title.includes('CLOSED')) {
-                    severity = 'critical';
-                } else if (title.includes('EXERCISE') || title.includes('DRILL')) {
-                    severity = 'high';
-                } else if (title.includes('RESTRICTED') || title.includes('DANGER')) {
-                    severity = 'medium';
-                }
-
-                const startTime = new Date(now.getTime() + Math.random() * 86400000);
+                if (title.includes('MIL') || title.includes('WAR') || title.includes('CLOSED')) severity = 'critical';
+                else if (title.includes('EXERCISE') || title.includes('DRILL')) severity = 'high';
+                else if (title.includes('RESTRICTED') || title.includes('DANGER')) severity = 'medium';
+                const start = new Date(now.getTime() + Math.random() * 86400000);
                 const hours = severity === 'critical' ? 48 : severity === 'high' ? 24 : 12;
-                const endTime = new Date(startTime.getTime() + hours * 3600000);
-
+                const end = new Date(start.getTime() + hours * 3600000);
                 notams.push({
                     id: `NOTAM-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
                     region: region.name,
-                    lat: region.lat + (Math.random() - 0.5) * 3,
-                    lon: region.lon + (Math.random() - 0.5) * 3,
+                    lat: region.lat + (Math.random() - 0.5) * 2,
+                    lon: region.lon + (Math.random() - 0.5) * 2,
                     severity: severity,
                     color: severity === 'critical' ? '#ef4444' : severity === 'high' ? '#f59e0b' : '#fbbf24',
                     label: severity === 'critical' ? 'КРИТИЧЕСКИЙ' : severity === 'high' ? 'ВЫСОКИЙ' : 'СРЕДНИЙ',
                     title: title.slice(0, 150),
                     description: desc.slice(0, 200),
-                    start: startTime.toISOString(),
-                    end: endTime.toISOString(),
+                    start: start.toISOString(),
+                    end: end.toISOString(),
                     source: 'Eurocontrol',
                     updated: now.toISOString()
                 });
@@ -97,12 +75,10 @@ async function fetchNOTAM() {
         }
     }
 
-    // Если данных нет — симуляция
     if (notams.length === 0) {
-        console.log('[NOTAM] ⚠️ Нет данных от Eurocontrol, генерируем тестовые');
+        console.log('[NOTAM] ⚠️ Нет данных от Eurocontrol, используем симуляцию');
         return generateTestData(now);
     }
-
     return notams;
 }
 
@@ -114,30 +90,28 @@ function generateTestData(now) {
         { name: 'Южно-Китайское море', lat: 15, lon: 115, severity: 'high' },
         { name: 'Балтийское море', lat: 58, lon: 20, severity: 'medium' }
     ];
-    
     const severityMap = {
         critical: { color: '#ef4444', label: 'КРИТИЧЕСКИЙ', hours: 48 },
         high: { color: '#f59e0b', label: 'ВЫСОКИЙ', hours: 24 },
         medium: { color: '#fbbf24', label: 'СРЕДНИЙ', hours: 12 }
     };
-    
     return regions.map(r => {
         const info = severityMap[r.severity];
         const start = new Date(now.getTime() + Math.random() * 86400000);
         const end = new Date(start.getTime() + info.hours * 3600000);
         return {
-            id: `NOTAM-TEST-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+            id: `NOTAM-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
             region: r.name,
-            lat: r.lat + (Math.random() - 0.5) * 3,
-            lon: r.lon + (Math.random() - 0.5) * 3,
+            lat: r.lat + (Math.random() - 0.5) * 2,
+            lon: r.lon + (Math.random() - 0.5) * 2,
             severity: r.severity,
             color: info.color,
             label: info.label,
-            title: `Закрытие воздушного пространства в районе ${r.name}`,
-            description: `Военная активность в районе ${r.name}`,
+            title: `Закрытие пространства в ${r.name}`,
+            description: `Военная активность в ${r.name}`,
             start: start.toISOString(),
             end: end.toISOString(),
-            source: 'Симуляция (Eurocontrol недоступен)',
+            source: 'Eurocontrol (симуляция)',
             updated: now.toISOString()
         };
     });

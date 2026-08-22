@@ -103,10 +103,6 @@
         }
         .global-index .stats { display: flex; gap: 24px; font-size: 14px; color: #8899aa; }
         .global-index .stats strong { color: #e0e0e0; }
-        .global-index .stats .num-normal { color: #4ade80; }
-        .global-index .stats .num-medium { color: #fbbf24; }
-        .global-index .stats .num-high { color: #f59e0b; }
-        .global-index .stats .num-critical { color: #ef4444; }
 
         .cards-grid {
             display: grid;
@@ -380,10 +376,10 @@
             <div class="value" id="globalIndex">—</div>
         </div>
         <div class="stats">
-            <span>🟢 Нормально: <strong id="normalCount" class="num-normal">0</strong></span>
-            <span>🟡 Средний: <strong id="mediumCount" class="num-medium">0</strong></span>
-            <span>🟠 Высокий: <strong id="highCount" class="num-high">0</strong></span>
-            <span>🔴 Критический: <strong id="criticalCount" class="num-critical">0</strong></span>
+            <span>🟢 Нормально: <strong id="normalCount">0</strong></span>
+            <span>🟡 Средний: <strong id="mediumCount">0</strong></span>
+            <span>🟠 Высокий: <strong id="highCount">0</strong></span>
+            <span>🔴 Критический: <strong id="criticalCount">0</strong></span>
         </div>
         <div>
             <span class="status" id="globalStatus">🟢 НОРМАЛЬНО</span>

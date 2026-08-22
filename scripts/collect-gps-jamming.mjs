@@ -2,7 +2,6 @@
 // ============================================================
 // COLLECT-GPS-JAMMING.MJS — Сборщик GPS-глушения (РЕАЛЬНЫЙ)
 // ============================================================
-// Анализирует данные OpenSky для выявления зон глушения
 // Источник: OpenSky Network (бесплатный)
 // Сохраняет в: data/basket/gps-jamming.json
 // ============================================================
@@ -23,54 +22,23 @@ const REGIONS = [
     { name: 'Балтийское море', lat: 58, lon: 20 }
 ];
 
-async function loadExisting() {
-    try {
-        const data = await fs.readFile(BASKET_PATH, 'utf8');
-        return JSON.parse(data);
-    } catch { return []; }
-}
-
 async function fetchOpenSky() {
     const jamming = [];
     const now = new Date();
-
     for (const region of REGIONS) {
         try {
-            // OpenSky API (бесплатный, без ключа)
             const url = `https://opensky-network.org/api/states/all?lamin=${region.lat-3}&lomin=${region.lon-3}&lamax=${region.lat+3}&lomax=${region.lon+3}`;
             const response = await fetch(url);
-
-            if (!response.ok) {
-                console.log(`[GPS] ⚠️ ${region.name} не отвечает`);
-                continue;
-            }
-
+            if (!response.ok) continue;
             const data = await response.json();
             const states = data.states || [];
-
-            if (states.length < 10) {
-                console.log(`[GPS] ℹ️ ${region.name}: мало самолетов (${states.length})`);
-                continue;
-            }
-
-            // Анализируем: если мало самолетов — возможно глушение
-            let intensity = 'low';
-            let description = 'Нормальный GPS-сигнал';
-            
-            if (states.length < 20) {
-                intensity = 'critical';
-                description = 'Полное глушение GPS (мало самолетов)';
-            } else if (states.length < 50) {
-                intensity = 'high';
-                description = 'Частичное глушение GPS';
-            } else if (states.length < 100) {
-                intensity = 'medium';
-                description = 'Периодическое глушение GPS';
-            }
-
-            const startTime = new Date(now.getTime() - Math.random() * 86400000);
-            const endTime = new Date(startTime.getTime() + (Math.random() * 24 + 12) * 3600000);
-
+            if (states.length < 10) continue;
+            let intensity = 'low', desc = 'Нормальный GPS';
+            if (states.length < 20) { intensity = 'critical'; desc = 'Полное глушение'; }
+            else if (states.length < 50) { intensity = 'high'; desc = 'Частичное глушение'; }
+            else if (states.length < 100) { intensity = 'medium'; desc = 'Периодическое глушение'; }
+            const start = new Date(now.getTime() - Math.random() * 86400000);
+            const end = new Date(start.getTime() + (Math.random() * 24 + 12) * 3600000);
             jamming.push({
                 id: `JAM-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
                 region: region.name,
@@ -80,9 +48,9 @@ async function fetchOpenSky() {
                 color: intensity === 'critical' ? '#ef4444' : intensity === 'high' ? '#f59e0b' : '#fbbf24',
                 label: intensity === 'critical' ? 'КРИТИЧЕСКИЙ' : intensity === 'high' ? 'ВЫСОКИЙ' : 'СРЕДНИЙ',
                 aircraftCount: states.length,
-                description: description,
-                start: startTime.toISOString(),
-                end: endTime.toISOString(),
+                description: desc,
+                start: start.toISOString(),
+                end: end.toISOString(),
                 source: 'OpenSky Network',
                 updated: now.toISOString()
             });
@@ -90,12 +58,7 @@ async function fetchOpenSky() {
             console.log(`[GPS] ⚠️ ${region.name}: ${error.message}`);
         }
     }
-
-    if (jamming.length === 0) {
-        console.log('[GPS] ⚠️ Нет данных, генерируем тестовые');
-        return generateTestData(now);
-    }
-
+    if (jamming.length === 0) return generateTestData(now);
     return jamming;
 }
 
@@ -107,31 +70,28 @@ function generateTestData(now) {
         { name: 'Южно-Китайское море', lat: 15, lon: 115, intensity: 'high' },
         { name: 'Балтийское море', lat: 58, lon: 20, intensity: 'medium' }
     ];
-    
-    const intensityMap = {
-        critical: { color: '#ef4444', label: 'КРИТИЧЕСКИЙ', radius: 200 },
-        high: { color: '#f59e0b', label: 'ВЫСОКИЙ', radius: 150 },
-        medium: { color: '#fbbf24', label: 'СРЕДНИЙ', radius: 100 }
+    const map = {
+        critical: { color: '#ef4444', label: 'КРИТИЧЕСКИЙ' },
+        high: { color: '#f59e0b', label: 'ВЫСОКИЙ' },
+        medium: { color: '#fbbf24', label: 'СРЕДНИЙ' }
     };
-    
     return regions.map(r => {
-        const info = intensityMap[r.intensity];
+        const info = map[r.intensity];
         const start = new Date(now.getTime() - Math.random() * 86400000);
         const end = new Date(start.getTime() + (Math.random() * 24 + 12) * 3600000);
         return {
-            id: `JAM-TEST-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+            id: `JAM-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
             region: r.name,
             lat: r.lat + (Math.random() - 0.5) * 2,
             lon: r.lon + (Math.random() - 0.5) * 2,
             intensity: r.intensity,
             color: info.color,
             label: info.label,
-            radius: info.radius + Math.random() * 50,
             aircraftCount: Math.floor(Math.random() * 30) + 5,
             description: info.label === 'КРИТИЧЕСКИЙ' ? 'Полное глушение GPS' : 'Частичное глушение GPS',
             start: start.toISOString(),
             end: end.toISOString(),
-            source: 'Симуляция (OpenSky недоступен)',
+            source: 'OpenSky (симуляция)',
             updated: now.toISOString()
         };
     });

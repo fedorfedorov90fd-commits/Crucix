@@ -3,7 +3,7 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const BASKET_PATH = join(__dirname, '..', '..', 'data', 'basket', 'yield-curve.json');
+const BASKET_PATH = join(__dirname, '..', '..', 'data', 'basket', 'inflation.json');
 
 async function loadData() {
     try {
@@ -12,18 +12,18 @@ async function loadData() {
     } catch { return []; }
 }
 
-export async function handleYieldCurveAPI(req, res) {
+export async function handleInflationAPI(req, res) {
     const url = new URL(req.url, `http://${req.headers.host}`);
     const pathname = url.pathname;
 
-    if (pathname === '/api/yield-curve/' || pathname === '/api/yield-curve') {
+    if (pathname === '/api/inflation/' || pathname === '/api/inflation') {
         const data = await loadData();
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ success: true, data, count: data.length }));
         return;
     }
 
-    if (pathname === '/api/yield-curve/status') {
+    if (pathname === '/api/inflation/status') {
         const data = await loadData();
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({

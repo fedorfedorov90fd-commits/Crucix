@@ -1,510 +1,301 @@
-================================================================================
-CRUCIX — COMPLETE REGISTRY OF ALL PROJECT ELEMENTS (ENGLISH)
-================================================================================
-Version: 2.3.0
-Updated: 2026-08-21
-Status: ✅ FULLY OPERATIONAL
-================================================================================
+CRUCIX — COMPLETE PROJECT CATALOG (ENGLISH)
+Version: 2.3.0 | Updated: August 22, 2026
 
-================================================================================
-1. PROJECT STATISTICS
-================================================================================
-Category                      | Count
-------------------------------+------------
-UI Pages                      | 120+
-API Modules (without UI)      | 80+
-Data Collectors               | 28+
-Scripts & Utilities           | 5+
-External Data Sources         | 30+
-TOTAL                         | 260+
+📊 PROJECT STATISTICS
+Metric	Count
+Interface Pages	145+
+API Modules	105+
+Data Collectors	45+
+External Sources	38+
+Scripts & Utilities	5+
+TOTAL	338+
+🆕 AUGUST 2026 NEW FEATURES — 25 INDICATORS
+All new indicators are marked with ⭐ and have their own dedicated pages:
 
-================================================================================
-2. COMPLETE LIST OF UI PAGES (120+)
-================================================================================
+#	Indicator	Page	Description
+1	NOTAM Monitoring	/notam-monitor	Airspace closures
+2	GPS Jamming	/gps-jamming	Satellite signal loss
+3	Google Trends	/google-trends	Global search queries
+4	VIX Index	/vix	Market fear index
+5	Yield Curve	/yield-curve	10Y-2Y spread, recession predictor
+6	Gold/Oil Ratio	/gold-oil-ratio	Geopolitical risk indicator
+7	Copper/Gold	/copper-gold	Recession indicator
+8	BDI	/bdi	Baltic Dry Index (trade activity)
+9	Night Lights (VIIRS)	/viirs	Economic activity from space
+10	Uranium	/uranium	National nuclear ambitions
+11	Big Mac	/big-mac	Currency purchasing power
+12	GDP/Debt	/debt-gdp	National financial stability
+13	S&P/VIX	/sp500-vix	Investor risk appetite
+14	Crypto Fear	/crypto-fear	Crypto market sentiment
+15	Oil/Gas	/oil-gas	Energy policy dynamics
+16	Gold/Silver	/gold-silver	Market fear indicator
+17	Happiness Index	/happiness	National happiness levels
+18	Big Mac Alt	/big-mac-alt	Alternative Big Mac index
+19	Big Mac (Main)	/big-mac-main	Main Big Mac index
+20	VXX	/vxx	Fear hedging instrument
+21	Happiness Alt	/happiness-alt	Alternative happiness index
+22	Inflation	/inflation	Price growth in economy
+23	Unemployment	/unemployment	Labor market conditions
+24	PMI	/pmi	Business activity
+25	Recession	/recession	Crisis probability
+📌 Analytics Dashboard: /dashboard-5in1 — all 25 indicators on one page with charts and forecasts.
 
-2.1. MAIN & GENERAL
-────────────────────────────────────────────────────────────────────────────────
-/               - Main page
-/jarvis         - JARVIS interface (main control panel)
-/jarviskart     - Module cards
-/kartochki      - All pages (navigation map)
-/scan           - Page scanner (availability check)
-/registry       - Registry of all pages and modules
-/monitor        - Monitoring center
-/diagnostics    - System diagnostics
-/diagnostics-background - Background diagnostics
-/diagnostics-inventory  - Project inventory
+🧭 PROJECT NAVIGATION
+1. MAIN PAGES
+Page	Purpose
+/	Home page
+/jarvis	JARVIS — main control panel
+/jarviskart	Cards view of all modules
+/kartochki	Project navigation map
+/registry	Registry of all pages and modules
+/monitor	System monitoring center
+/diagnostics	System diagnostics
+/scan	Page availability scanner
+2. NEWS & RSS
+Page	Purpose
+/rss-feed	RSS feed from 400+ sources
+/rss-dashboard	RSS subscription management
+/live	Real-time news feed
+/news	News aggregator
+/news-aggregator	Advanced news aggregator
+/gdelt	Global Database of Events (GDELT)
+/gdelt-conflict	GDELT — conflicts
+/gdelt-v1	GDELT version 1
+3. GEOPOLITICS & MAPS
+Page	Purpose
+/geo-map	Interactive geopolitical map
+/global-index	Global tension index
+/strategic-intel	Strategic intelligence
+/strategic-layer	Strategic map layer
+/conflict-predictor	Conflict forecasting
+/historical-analysis	Historical event analysis
+/correlation	Cross-correlation of data
+/hidden-links	Hidden connections between events
+/silence	Information silence detector
+/thinktanks	Think tank monitoring
+/acled	ACLED — armed conflict data
+4. MILITARY MONITORING
+Page	Purpose
+/aviation	Military aviation monitoring
+/aviation-monitor	Advanced aviation monitoring
+/opensky	OpenSky — ADS-B aircraft data
+/notam-monitor	⭐ Airspace closures
+/gps-jamming	⭐ GPS jamming detection
+/anomaly-detector	Anomaly detector
+5. MARITIME MONITORING
+Page	Purpose
+/maritime-monitor	Maritime transport monitoring
+/shipping	Vessel tracking
+/dark-ships	Dark ships (no AIS signal)
+/ships	All vessel data
+/infrastructure-ships	Infrastructure & shipping
+6. SPACE & SATELLITES
+Page	Purpose
+/satellite	Satellite monitoring
+/space-monitor	Space monitoring
+/satellite-internet	Starlink, OneWeb
+/satellites	Advanced satellite dashboard
+/space	Space dashboard
+7. ECONOMICS & FINANCE
+Main Pages
 
-────────────────────────────────────────────────────────────────────────────────
-2.2. RSS & NEWS
-────────────────────────────────────────────────────────────────────────────────
-/rss-feed       - RSS feed (400+ sources)
-/rss-dashboard  - RSS management (add/remove)
-/live           - Live news feed
-/news           - News aggregator
-/news-aggregator - Advanced news aggregator
-/gdelt          - GDELT (global event database)
-/gdelt-conflict - GDELT conflicts
-/gdelt-curl     - GDELT via curl
-/gdelt-v1       - GDELT version 1
+Page	Purpose
+/economy	Macroeconomic indicators
+/economy-dashboard	Economic dashboard
+/fred	FRED — U.S. Federal Reserve data
+/bls	BLS — Labor statistics
+/eia	EIA — Energy data
+/ofac	OFAC — Sanctions lists
+/market-predictor	Market forecasting
+/trade-monitor	Trade monitoring
+/energy-monitor	Energy monitoring
+/commodities	Commodity markets
+/conflicts	Conflicts & economics
+⭐ 25 New Economic Indicators
 
-────────────────────────────────────────────────────────────────────────────────
-2.3. GEOPOLITICS & MAPS
-────────────────────────────────────────────────────────────────────────────────
-/geo-map                - Geopolitical map
-/global-index           - Global tension index
-/strategic-intel        - Strategic intelligence
-/strategic-layer        - Strategic map layer
-/conflict-predictor     - Conflict prediction
-/historical-analysis    - Historical analysis
-/correlation            - Cross-correlation
-/hidden-links           - Hidden links
-/silence                - Silence detector
-/thinktanks             - Think tanks
-/acled                  - ACLED (conflicts)
-
-────────────────────────────────────────────────────────────────────────────────
-2.4. MILITARY MONITORING
-────────────────────────────────────────────────────────────────────────────────
-/aviation           - Military aviation
-/aviation-monitor   - Aviation monitoring (advanced)
-/aviation-api       - Aviation test interface
-/opensky            - OpenSky (ADS-B data)
-/notam-monitor      - ⭐ NOTAM monitor (airspace closure)
-/gps-jamming        - ⭐ GPS jamming (signal loss)
-/anomaly-detector   - Anomaly detector
-
-────────────────────────────────────────────────────────────────────────────────
-2.5. MARITIME MONITORING
-────────────────────────────────────────────────────────────────────────────────
-/maritime-monitor   - Maritime monitoring
-/shipping           - Shipping tracking
-/dark-ships         - Dark ships (no AIS)
-/ships              - Ships data
-/infrastructure-ships - Infrastructure & ships
-
-────────────────────────────────────────────────────────────────────────────────
-2.6. SPACE & SATELLITES
-────────────────────────────────────────────────────────────────────────────────
-/satellite          - Satellite monitoring
-/satellite-api      - Satellite API
-/space-monitor      - Space monitoring
-/satellite-internet - Satellite internet (Starlink, OneWeb)
-/satellites         - Satellites (advanced dashboard)
-/space              - Space
-
-────────────────────────────────────────────────────────────────────────────────
-2.7. ECONOMY & FINANCE
-────────────────────────────────────────────────────────────────────────────────
-/economy            - Economy (macro indicators)
-/economy-dashboard  - Economy dashboard
-/fred               - FRED (US Federal Reserve)
-/bls                - BLS (labor statistics)
-/eia                - EIA (energy)
-/ofac               - OFAC (sanctions)
-/market-predictor   - Market predictor
-/trade-monitor      - Trade monitoring
-/energy-monitor     - Energy monitoring
-/vix                - ⭐ VIX index (fear index)
-/yield-curve        - ⭐ Yield curve (10Y-2Y)
-/gold-oil-ratio     - ⭐ Gold/Oil ratio (geopolitical risk)
-/commodities        - Commodities
-/conflicts          - Conflicts & economy
-
-────────────────────────────────────────────────────────────────────────────────
-2.8. ECOLOGY & WEATHER
-────────────────────────────────────────────────────────────────────────────────
-/environment-monitor - Environment monitoring
-/weather-monitor    - Weather monitoring
-/noaa               - NOAA (weather & ocean)
-/usgs               - USGS (earthquakes)
-/firms              - FIRMS (fires from satellites)
-/safecast           - Safecast (radiation)
-/air-quality        - Air quality
-
-────────────────────────────────────────────────────────────────────────────────
-2.9. CYBERSECURITY
-────────────────────────────────────────────────────────────────────────────────
-/cyber              - Cyber (general dashboard)
-/cyber-threats      - Cyber threats
-/cyber-intel        - Cyber intelligence
-/cisa               - CISA (vulnerabilities)
-/darkweb            - Darkweb
-/deepfake           - Deepfake detector
-/security           - Security
-
-────────────────────────────────────────────────────────────────────────────────
-2.10. AI & ANALYTICS
-────────────────────────────────────────────────────────────────────────────────
-/ai-chat            - AI chat (Ollama)
-/ai-gateway         - AI Gateway
-/ai-news-analyzer   - AI news analyzer
-/ai-filter          - AI filter
-/semantic-analysis  - Semantic analysis
-/sentiment          - Sentiment analysis
-/sentiment-analyzer - Sentiment analyzer
-/google-trends      - ⭐ Google Trends (search queries)
-/llm-analyzer       - LLM analyzer
-/nlp-api            - NLP API
-/emotion            - Emotion recognition
-/voice              - Voice interface
-/rag                - RAG search (vector)
-
-────────────────────────────────────────────────────────────────────────────────
-2.11. INFRASTRUCTURE
-────────────────────────────────────────────────────────────────────────────────
-/infrastructure         - Critical infrastructure
-/infrastructure-predict - Infrastructure forecast
-/infrastructure-cascade - Cascade analysis
-/infrastructure-eia    - EIA infrastructure
-/infrastructure-eia-global - Global EIA
-/infrastructure-firms  - FIRMS infrastructure
-/infrastructure-ofac   - OFAC infrastructure
-/supply-chain-monitor   - Supply chain monitor
-
-────────────────────────────────────────────────────────────────────────────────
-2.12. SPECIAL TOOLS
-────────────────────────────────────────────────────────────────────────────────
-/basket             - Data basket
-/grid-tool          - Grid tool
-/storage            - Storage
-/scheduler          - Task scheduler
-/trust              - Source trust
-/export             - Data export
-/help               - Help
-/dashboard-5in1     - ⭐ Command center (6 indicators)
-/early-warning      - Early warning
-/scenario-generator - Scenario generator
-/scenarios          - Scenarios
-/automated-reports  - Automated reports
-/decision           - Decision dashboard
-/tools              - Tools
-
-────────────────────────────────────────────────────────────────────────────────
-2.13. SOCIAL MEDIA
-────────────────────────────────────────────────────────────────────────────────
-/social             - Social media analysis
-/telegram           - Telegram (integration)
-/reddit             - Reddit (integration)
-
-────────────────────────────────────────────────────────────────────────────────
-2.14. ADDITIONAL
-────────────────────────────────────────────────────────────────────────────────
-/agents             - Autonomous agents
-/blockchain         - Blockchain
-/quantum            - Quantum computing
-/p2p                - P2P data exchange
-/lenses             - Thematic lenses
-/profile            - User profile
-/admin              - Administration
-/system             - System information
-/us                 - US (summary dashboard)
-/visualization      - Visualization
-/horizontal         - Horizontal dashboard
-/gateway            - Gateway
-/kiwisdr            - KiwiSDR (radio monitoring)
-/opensanctions      - OpenSanctions (sanctions)
-/tass               - TASS (news)
-/gscpi              - GSCPI (supply chains)
-/epa                - EPA (ecology)
-/comtrade           - Comtrade (trade)
-/space              - Space
-/noaa               - NOAA (weather)
-/cisa               - CISA (cyber)
-/who                - WHO (health)
-/eia                - EIA (energy)
-/ofac               - OFAC (sanctions)
-/usgs               - USGS (earthquakes)
-/local              - Local monitoring
-/fred               - FRED (economy)
-/firms              - FIRMS (fires)
-/gdelt              - GDELT (news)
-/ships              - Ships
-/safecast           - Safecast (radiation)
-/opensky            - OpenSky (aviation)
-/nlp-api            - NLP API
-/llm-analyzer       - LLM analyzer
-/kiwisdr            - KiwiSDR (radio)
-/economy            - Economy
-/gold-oil-ratio     - Gold/Oil
-/notam-monitor      - NOTAM
-/gps-jamming        - GPS jamming
-/google-trends      - Google Trends
-/vix                - VIX
-/yield-curve        - Yield curve
-
-================================================================================
-3. COMPLETE LIST OF API MODULES (80+)
-================================================================================
-
-3.1. COLLECTION & AGGREGATION
-────────────────────────────────────────────────────────────────────────────────
-rss-manager-api          - RSS management (CRUD)
-basket-api               - Data basket (central storage)
-basket-reader-api        - ⭐ Basket data reader
-newsapi                  - NewsAPI proxy (80 000+ sources)
-news-api                 - Internal news
-newsapi-basket-integration - NewsAPI basket integration
-storage-api              - Storage management
-
-────────────────────────────────────────────────────────────────────────────────
-3.2. GEOPOLITICS
-────────────────────────────────────────────────────────────────────────────────
-global-index-api         - Global tension index
-geo-markers-api          - Geodata and markers
-historical-analysis-api  - Historical analysis
-correlation-api          - Cross-correlation
-conflict-predictor-api   - Conflict prediction
-strategic-intel-api      - Strategic intelligence
-strategic-layer-api      - Strategic layer
-hidden-links-api         - Hidden links
-geopolitical-reports-api - Geopolitical reports
-
-────────────────────────────────────────────────────────────────────────────────
-3.3. MILITARY & AVIATION
-────────────────────────────────────────────────────────────────────────────────
-aviation-api             - Aviation data
-aviation-monitor-api     - Aviation monitoring
-opensky-api              - OpenSky (ADS-B)
-notam-api                - ⭐ NOTAM (airspace closure)
-gps-jamming-api          - ⭐ GPS jamming
-
-────────────────────────────────────────────────────────────────────────────────
-3.4. MARITIME
-────────────────────────────────────────────────────────────────────────────────
-maritime-api             - Maritime monitoring
-ships-api                - Ships data
-dark-ships-api           - Dark ships
-shipping-api             - Shipping
-
-────────────────────────────────────────────────────────────────────────────────
-3.5. SPACE
-────────────────────────────────────────────────────────────────────────────────
-space-api                - Space monitoring
-space-monitor-api        - Space monitoring
-satellite-api            - Satellite API
-satellite-internet-api   - Satellite internet
-
-────────────────────────────────────────────────────────────────────────────────
-3.6. ECONOMY & FINANCE
-────────────────────────────────────────────────────────────────────────────────
-fred-api                 - FRED (economic data)
-bls-api                  - BLS (labor statistics)
-eia-api                  - EIA (energy)
-ofac-api                 - OFAC (sanctions)
-comtrade-api             - Comtrade (trade)
-treasury-api             - US Treasury
-usaspending-api          - US government spending
-economy-api              - Economic indicators
-market-predictor-api     - Market predictor
-vix-api                  - ⭐ VIX index
-yield-curve-api          - ⭐ Yield curve
-gold-oil-ratio-api       - ⭐ Gold/Oil ratio
-
-────────────────────────────────────────────────────────────────────────────────
-3.7. ECOLOGY & WEATHER
-────────────────────────────────────────────────────────────────────────────────
-noaa-api                 - NOAA (weather)
-usgs-api                 - USGS (earthquakes)
-epa-api                  - EPA (ecology)
-firms-api                - FIRMS (fires)
-safecast-api             - Safecast (radiation)
-weather-api              - Weather monitoring
-environment-api          - Environment monitoring
-
-────────────────────────────────────────────────────────────────────────────────
-3.8. CYBERSECURITY
-────────────────────────────────────────────────────────────────────────────────
-cisa-api                 - CISA KEV (vulnerabilities)
-cyber-api                - Cybersecurity
-cyber-intel-api          - Cyber intelligence
-cyber-threats-api        - Cyber threats
-darkweb-api              - Darkweb
-deepfake-api             - Deepfake detector
-
-────────────────────────────────────────────────────────────────────────────────
-3.9. AI & PROCESSING
-────────────────────────────────────────────────────────────────────────────────
-ai-chat-api              - AI chat (Ollama)
-ai-gateway-api           - AI Gateway
-ai-news-rating-api       - AI news rating
-ai-processor-api         - AI processor
-ai-filter-api            - AI filter
-llm-analyzer-api         - LLM analyzer
-nlp-api                  - NLP processing
-sentiment-analyzer-api   - Sentiment analysis
-semantic-analysis-api    - Semantic analysis
-rag-api                  - RAG search
-google-trends-api        - ⭐ Google Trends
-
-────────────────────────────────────────────────────────────────────────────────
-3.10. INFRASTRUCTURE
-────────────────────────────────────────────────────────────────────────────────
-infrastructure-api       - Critical infrastructure
-supply-chain-api         - Supply chains
-monitor-api              - Monitoring center
-scheduler-api            - Task scheduler
-diagnostics-api          - Diagnostics
-trust-api                - Source trust
-export-api               - Data export
-help-api                 - Help
-
-────────────────────────────────────────────────────────────────────────────────
-3.11. SPECIAL
-────────────────────────────────────────────────────────────────────────────────
-anomaly-detector-api     - Anomaly detector
-early-warning-api        - Early warning
-scenario-generator-api   - Scenario generator
-scenarios-api            - Scenarios
-automated-reports-api    - Automated reports
-decision-api             - Decision dashboard
-social-api               - Social media
-agents-api               - Autonomous agents
-blockchain-api           - Blockchain
-quantum-api              - Quantum computing
-p2p-api                  - P2P exchange
-voice-api                - Voice interface
-emotion-api              - Emotion recognition
-lenses-api               - Thematic lenses
-user-api                 - Users
-live-api                 - Live feed
-silence-api              - Silence detector
-
-────────────────────────────────────────────────────────────────────────────────
-3.12. ADDITIONAL SOURCES
-────────────────────────────────────────────────────────────────────────────────
-acled-api                - ACLED (conflicts)
-bls-api                  - BLS (labor)
-firms-api                - FIRMS (fires)
-fred-api                 - FRED (economy)
-gdelt-api                - GDELT (news)
-ships-api                - Ships
-sentiment-analyzer-api   - Sentiment analysis
-satellite-api            - Satellites
-safecast-api             - Safecast (radiation)
-opensky-api              - OpenSky (aviation)
-nlp-api                  - NLP API
-llm-analyzer-api         - LLM analyzer
-kiwisdr-api              - KiwiSDR (radio)
-
-================================================================================
-4. COMPLETE LIST OF DATA COLLECTORS (28+)
-================================================================================
-#   Collector                    | Purpose
----+-----------------------------+-------------------------------------------
-1  collect-notam.mjs            | ⭐ NOTAM (airspace closure)
-2  collect-notam.mjs.sim        | ⭐ NOTAM (simulation)
-3  collect-gps-jamming.mjs      | ⭐ GPS jamming
-4  collect-gps-jamming.mjs.sim  | ⭐ GPS jamming (simulation)
-5  collect-google-trends.mjs    | ⭐ Google Trends
-6  collect-google-trends.mjs.sim| ⭐ Google Trends (simulation)
-7  collect-vix.mjs              | ⭐ VIX index
-8  collect-vix.mjs.sim          | ⭐ VIX index (simulation)
-9  collect-yield-curve.mjs      | ⭐ Yield curve
-10 collect-yield-curve.mjs.sim  | ⭐ Yield curve (simulation)
-11 collect-gold-oil-ratio.mjs   | ⭐ Gold/Oil ratio
-12 collect-acled.mjs            | ACLED conflicts
-13 collect-fred.mjs             | FRED economic data
-14 collect-yahoo.mjs            | Yahoo Finance market data
-15 collect-russian-sources.mjs  | Russian sources
-16 collect-ria.mjs              | RIA Novosti news
-17 collect-openmeteo.mjs        | Open-Meteo weather
-18 collect-frostbyte.mjs        | Frostbyte crypto prices
-19 collect-rss-extra.mjs        | RSS news (BBC, Al Jazeera)
-20 collect-safecast.mjs         | Safecast radiation
-21 collect-opensky.mjs          | OpenSky aviation
-22 collect-ships.mjs            | Ships data
-23 collect-ofac.mjs             | OFAC sanctions
-24 collect-firms.mjs            | FIRMS fires
-25 collect-comtrade.mjs         | UN Comtrade trade data
-26 collect-covid.mjs            | COVID-19 data
-27 collect-gdelt.mjs            | GDELT events
-28 collect-celestrak.mjs        | Celestrak space objects
-29 collect-coingecko.mjs        | CoinGecko crypto
-30 collect-openaq.mjs           | OpenAQ air quality
-31 collect-worldbank.mjs        | World Bank data
-32 collect-trading-economics.mjs| Trading economics indicators
-33 collect-ucdp.mjs             | UCDP conflicts
-34 collect-global-price.mjs     | Global prices
-35 collect-rest-countries.mjs   | Countries data
-36 collect-space-track.mjs      | Space tracking
-37 collect-newsapi.mjs          | NewsAPI
-
-================================================================================
-5. SCRIPTS & UTILITIES
-================================================================================
-#   Script                      | Purpose
----+-----------------------------+-------------------------------------------
-1  server.mjs                   | Main server (entry point)
-2  check-pages.mjs              | Page availability check
-3  generate-module-docs.sh      | Module documentation generation
-4  diagnostics-inventory        | Project inventory
-5  diagnostics-background       | Background session monitoring
-
-================================================================================
-6. NEW MODULES (AUGUST 2026)
-================================================================================
-#   Module                      | Status
----+-----------------------------+-------------------------------------------
-1  NOTAM monitor                | ✅ OPERATIONAL
-2  GPS jamming                  | ✅ OPERATIONAL
-3  Google Trends                | ✅ OPERATIONAL
-4  VIX index                    | ✅ OPERATIONAL
-5  Yield curve                  | ✅ OPERATIONAL
-6  Gold/Oil ratio               | ✅ OPERATIONAL
-7  Command center (6-in-1)      | ✅ OPERATIONAL
-
-================================================================================
-7. EXTERNAL DATA SOURCES (30+)
-================================================================================
-ACLED        - Armed conflicts and protests
-GDELT        - Global news events
-NewsAPI      - 80 000+ news sources
-TASS         - Russian news
-RIA Novosti  - Russian news
-RSS (400+)   - News feeds
-OpenSky      - ADS-B data (aircraft)
-FIRMS (NASA) - Fires from satellites
-KiwiSDR      - Radio frequency monitoring
-AIS          - Vessel positions
-Celestrak    - Satellite orbits
-Starlink     - Satellite internet
-FRED         - Economic data (inflation, GDP)
-BLS          - US labor statistics
-EIA          - Oil, gas, coal prices
-OFAC         - US sanctions lists
-Yahoo Finance - Stocks, indices, commodities
-Comtrade (UN) - International trade
-Frostbyte    - Cryptocurrencies
-NOAA         - Weather, hurricanes, ocean
-USGS         - Earthquakes
-EPA          - Air quality, emissions
-Safecast     - Radiation background
-Open-Meteo   - Weather (NOAA alternative)
-CISA KEV     - Known exploited vulnerabilities
-Telegram     - Channel monitoring
-WHO          - Epidemics, vaccination
-GSCPI        - Global supply chain index
-Google Trends - Search queries
-Eurocontrol  - NOTAM data
-
-================================================================================
-8. PROJECT STRUCTURE
-================================================================================
+Page	Indicator
+/vix	VIX — Fear index
+/yield-curve	Yield curve
+/gold-oil-ratio	Gold/Oil ratio
+/copper-gold	Copper/Gold
+/bdi	BDI — Baltic Dry Index
+/uranium	Uranium price
+/big-mac	Big Mac index
+/debt-gdp	GDP/Debt ratio
+/sp500-vix	S&P/VIX
+/crypto-fear	Crypto fear
+/oil-gas	Oil/Gas
+/gold-silver	Gold/Silver
+/inflation	Inflation
+/unemployment	Unemployment
+/pmi	PMI — Business activity
+/recession	Recession probability
+8. ENVIRONMENT & WEATHER
+Page	Purpose
+/environment-monitor	Environmental monitoring
+/weather-monitor	Weather monitoring
+/noaa	NOAA — Weather & oceans
+/usgs	USGS — Earthquakes
+/firms	FIRMS — Satellite fire detection
+/safecast	Radiation monitoring
+/viirs	⭐ Night lights from space
+/air-quality	Air quality
+9. CYBERSECURITY
+Page	Purpose
+/cyber	General cyber threat dashboard
+/cyber-threats	Cyber threats
+/cyber-intel	Cyber intelligence
+/cisa	CISA — Known vulnerabilities
+/darkweb	Dark Web monitoring
+/deepfake	Deepfake detector
+/security	General security
+10. AI & ANALYTICS
+Page	Purpose
+/ai-chat	AI Chat (Ollama)
+/ai-gateway	AI Gateway
+/ai-news-analyzer	AI news analysis
+/ai-filter	Intelligent filter
+/semantic-analysis	Semantic analysis
+/sentiment	Sentiment analysis
+/sentiment-analyzer	Advanced sentiment analyzer
+/google-trends	⭐ Google Trends
+/llm-analyzer	LLM analyzer
+/nlp-api	NLP API
+/emotion	Emotion recognition
+/voice	Voice interface
+/rag	Vector search (RAG)
+/happiness	⭐ Happiness index
+/happiness-alt	⭐ Happiness (alternative)
+11. INFRASTRUCTURE
+Page	Purpose
+/infrastructure	Critical infrastructure
+/infrastructure-predict	Infrastructure forecasting
+/infrastructure-cascade	Cascade analysis
+/infrastructure-eia	EIA infrastructure
+/infrastructure-eia-global	Global EIA infrastructure
+/infrastructure-firms	FIRMS infrastructure
+/infrastructure-ofac	OFAC infrastructure
+/supply-chain-monitor	Supply chain monitoring
+12. SPECIAL TOOLS
+Page	Purpose
+/basket	Data basket
+/grid-tool	Coordinate grid
+/storage	Data storage
+/scheduler	Task scheduler
+/trust	Source trust assessment
+/export	Data export
+/help	Help documentation
+/dashboard-5in1	⭐ Analytics dashboard (25 indicators)
+/early-warning	Early warning system
+/scenario-generator	Scenario generator
+/scenarios	Development scenarios
+/automated-reports	Automated reports
+/decision	Decision dashboard
+/tools	All tools
+13. SOCIAL MEDIA
+Page	Purpose
+/social	Social media analysis
+/telegram	Telegram integration
+/reddit	Reddit integration
+🔌 EXTERNAL DATA SOURCES (38+)
+News & Information
+Source	Provides
+GDELT	Global news events
+NewsAPI	80,000+ news sources
+RSS (400+)	News feeds
+TASS	Russian news
+RIA Novosti	Russian news
+Military & Intelligence
+Source	Provides
+OpenSky	ADS-B aircraft data
+Eurocontrol	NOTAM — airspace closures
+AIS	Real-time vessel positions
+Satellite & Space
+Source	Provides
+FIRMS (NASA)	Satellite fire detection
+NASA (VIIRS)	Night lights
+Celestrak	Satellite orbits
+Starlink	Satellite internet data
+Economic
+Source	Provides
+FRED	Inflation, GDP, unemployment
+BLS	U.S. labor statistics
+EIA	Oil, gas, coal prices
+Yahoo Finance	Stocks, indices, commodities
+Comtrade (UN)	International trade
+IMF	GDP/Debt by country
+World Bank	Alternative Big Mac index
+S&P Global	PMI, S&P/VIX
+CBOE	VIX, VXX
+Baltic Exchange	BDI — shipping index
+The Economist	Big Mac index
+UxC	Uranium price
+Cryptocurrency
+Source	Provides
+CoinMarketCap	Crypto fear index
+Frostbyte	Crypto prices
+Environmental
+Source	Provides
+NOAA	Weather, hurricanes, oceans
+USGS	Earthquakes
+EPA	Air quality, emissions
+Safecast	Radiation monitoring
+Open-Meteo	Weather (NOAA alternative)
+Cybersecurity
+Source	Provides
+CISA KEV	Known exploited vulnerabilities
+Social & Other
+Source	Provides
+Telegram	Channel monitoring
+Google Trends	Search queries
+WHO	Epidemics, vaccination
+GSCPI	Global supply chain pressure index
+ACLED	Armed conflicts & protests
+KiwiSDR	Radio frequency monitoring
+🏗️ PROJECT STRUCTURE
+text
 Crucix/
-├── apis/sources/          # API modules (80+)
-├── dashboard/public/      # HTML pages (120+)
-├── data/basket/           # Data basket (JSON storage)
-├── scripts/               # Collectors (28+) and scripts
+├── apis/sources/          # API modules (105+)
+├── dashboard/public/      # HTML pages (145+)
+├── data/basket/           # Data basket (JSON)
+├── scripts/               # Collectors (45+) & scripts
 ├── lib/                   # Libraries (d3, three.js, topojson)
 ├── locales/               # Language files (RU/EN)
-├── docs/help/             # Module help
-├── logs/                  # Server logs
-├── backups/               # Backups
+├── docs/help/             # Module help documentation
+├── logs/                  # Operation logs
+├── backups/               # Backup copies
 ├── server.mjs             # Main server
 ├── package.json           # Node.js dependencies
 └── README.md              # Project description
+📈 KEY FEATURES
+Analytics Dashboard /dashboard-5in1
+✅ 25 indicators on a single page
+✅ Each card links to a detailed page
+✅ Dynamic charts and forecasts
+✅ Color-coded statistics
+✅ Cards open in new tabs
+✅ "REGISTRY" button in top bar
 
-================================================================================
-END OF REGISTRY
-================================================================================
+System Capabilities
+Capability	Description
+Data Collection	45+ collectors from 38+ sources
+Storage	Centralized data basket (JSON)
+Analytics	Cross-correlation, forecasting
+Visualization	Maps, charts, 3D scenes
+AI Processing	Semantic analysis, sentiment, RAG
+Monitoring	Real-time: aviation, maritime, space
+Security	Cyber threats, vulnerabilities, Dark Web
+Export	Data in any format
+🚀 QUICK START
+Start the server:
+
+bash
+node server.mjs
+Home page: http://localhost:3000/
+Analytics dashboard: http://localhost:3000/dashboard-5in1
+Page scanner: http://localhost:3000/scan
+Project registry: http://localhost:3000/registry
+
+📅 Updated: August 22, 2026
+📌 Version: 2.3.0
+✅ Status: FULLY OPERATIONAL

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Отчеты — Crucix</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a1a;
+            color: #e0e0e0;
+            font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+        }
+        .topbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 60px;
+            background: rgba(10,10,20,0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        .topbar-left { display: flex; align-items: center; gap: 12px; }
+        .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; }
+        .topbar-right { display: flex; align-items: center; gap: 6px; }
+        .topbar-btn {
+            height: 28px; padding: 0 12px; border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 4px; background: rgba(255,255,255,0.03); color: #888;
+            font-size: 11px; font-weight: 500; text-transform: uppercase; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .topbar-btn:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+        .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
+        .btn-home:hover { background: rgba(91,192,248,0.15); }
+        .btn-copy { color: #5bc0f8; border-color: rgba(91,192,248,0.15); background: rgba(91,192,248,0.06); }
+        .btn-copy:hover { background: rgba(91,192,248,0.15); }
+        .btn-refresh { color: #4ade80; border-color: rgba(74,222,128,0.2); background: rgba(74,222,128,0.06); }
+        .btn-refresh:hover { background: rgba(74,222,128,0.15); }
+        .lang-switch {
+            display: flex; gap: 2px; padding: 2px;
+            background: rgba(255,255,255,0.03); border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .lang-btn {
+            padding: 2px 8px; border: none; background: transparent;
+            color: #666; font-size: 11px; font-weight: 500; cursor: pointer;
+            border-radius: 3px; transition: all 0.2s;
+        }
+        .lang-btn:hover { color: #888; background: rgba(255,255,255,0.05); }
+        .lang-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.1); }
+        .main-content {
+            padding-top: 76px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
+            padding-bottom: 40px;
+        }
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #e8f0f8;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .page-title .badge {
+            font-size: 12px; font-weight: 400;
+            background: rgba(74,222,128,0.15); color: #4ade80;
+            padding: 2px 12px; border-radius: 20px;
+            border: 1px solid rgba(74,222,128,0.2);
+        }
+        .page-subtitle { color: #8899aa; font-size: 14px; margin-bottom: 24px; }
+
+        .report-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 16px;
+            transition: all 0.2s;
+        }
+        .report-card:hover {
+            background: rgba(255,255,255,0.04);
+            border-color: rgba(255,255,255,0.1);
+        }
+        .report-card .date {
+            font-size: 18px;
+            font-weight: 600;
+            color: #5bc0f8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .report-card .summary {
+            display: flex;
+            gap: 20px;
+            margin: 12px 0;
+            flex-wrap: wrap;
+        }
+        .report-card .summary .badge {
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .badge-critical { background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+        .badge-warning { background: rgba(245,158,11,0.2); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+        .badge-normal { background: rgba(74,222,128,0.2); color: #4ade80; border: 1px solid rgba(74,222,128,0.3); }
+
+        .report-card .indicators {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 8px;
+            margin-top: 12px;
+            font-size: 13px;
+        }
+        .report-card .indicators .ind {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 12px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 6px;
+            align-items: center;
+        }
+        .report-card .indicators .ind .label { color: #8899aa; font-size: 12px; }
+        .report-card .indicators .ind .value { font-weight: 600; font-size: 14px; }
+
+        .report-list { display: flex; flex-direction: column; gap: 12px; }
+        .no-reports { text-align: center; color: #4a5a6a; padding: 40px; font-size: 16px; }
+        .no-reports .btn-generate {
+            margin-top: 16px;
+            padding: 10px 30px;
+            border: none;
+            border-radius: 8px;
+            background: #4ade80;
+            color: #0a0a1a;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .no-reports .btn-generate:hover { transform: scale(1.05); background: #22c55e; }
+        .notification {
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            z-index: 100001;
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: notif-fade 2.5s forwards;
+        }
+        @keyframes notif-fade {
+            0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+            10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        }
+        .btn-copy.copied { background: rgba(76,175,80,0.2); border-color: #4caf50; color: #4caf50; }
+    </style>
+</head>
+<body>
+
+<header class="topbar">
+    <div class="topbar-left"><span class="topbar-brand">📄 ОТЧЕТЫ</span></div>
+    <div class="topbar-right">
+        <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+        <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ</button>
+        <button class="topbar-btn btn-refresh" onclick="location.reload()">🔄 ОБНОВИТЬ</button>
+        <button class="topbar-btn" onclick="window.location.href='/rss-feed'">📡 СПИСОК СТРАНИЦ</button>
+        <div class="lang-switch">
+            <button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
+            <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+        </div>
+    </div>
+</header>
+
+<main class="main-content">
+    <div class="page-title">
+        📄 Ежедневные отчеты
+        <span class="badge" id="statusBadge">🟢 ONLINE</span>
+    </div>
+    <div class="page-subtitle">Дайджест всех индикаторов за каждый день</div>
+
+    <div id="reportsList" class="report-list">
+        <div class="no-reports">⏳ Загрузка отчетов...</div>
+    </div>
+</main>
+
+<script>
+let currentLang = localStorage.getItem('crucix-lang') || 'ru';
+function switchLang(lang) {
+    currentLang = lang;
+    localStorage.setItem('crucix-lang', lang);
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+    });
+}
+document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === currentLang);
+});
+
+function showNotification(msg) {
+    document.querySelectorAll('.notification').forEach(el => el.remove());
+    const el = document.createElement('div');
+    el.className = 'notification';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2500);
+}
+
+document.getElementById('copy-btn').addEventListener('click', function() {
+    const text = document.body.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+        this.textContent = '✅ Скопировано!';
+        this.classList.add('copied');
+        setTimeout(() => {
+            this.textContent = '📋 КОПИРОВАТЬ';
+            this.classList.remove('copied');
+        }, 3000);
+        showNotification('✅ Данные скопированы');
+    });
+});
+
+async function loadReports() {
+    try {
+        const res = await fetch('/api/reports/list');
+        const data = await res.json();
+        return data.reports || [];
+    } catch (e) {
+        console.error('[REPORTS] Ошибка:', e);
+        return [];
+    }
+}
+
+async function loadReportContent(filename) {
+    try {
+        const res = await fetch(`/api/reports/${filename}`);
+        const data = await res.json();
+        return data;
+    } catch (e) {
+        console.error('[REPORT] Ошибка:', e);
+        return null;
+    }
+}
+
+function renderReports(reports) {
+    const container = document.getElementById('reportsList');
+    if (!reports || reports.length === 0) {
+        container.innerHTML = `
+            <div class="no-reports">
+                📭 Нет отчетов
+                <br>
+                <button class="btn-generate" onclick="generateReport()">🔄 Создать первый отчет</button>
+                <br>
+                <span style="font-size:12px;color:#4a5a6a;display:block;margin-top:8px;">Или в терминале: node scripts/collect-daily-report.mjs</span>
+            </div>
+        `;
+        return;
+    }
+
+    Promise.all(reports.map(async (report) => {
+        const data = await loadReportContent(report.filename);
+        return { ...report, data };
+    })).then(fullReports => {
+        container.innerHTML = fullReports.map(({ filename, date, summary, data }) => {
+            const critical = summary?.total_critical || 0;
+            const warning = summary?.total_warning || 0;
+            const normal = summary?.total_normal || 0;
+
+            const ind = data?.indicators || {};
+            const items = [
+                { label: 'VIX', key: 'vix', suffix: '' },
+                { label: 'Кривая дох.', key: 'yield_curve', suffix: '%' },
+                { label: 'Золото/Нефть', key: 'gold_oil', suffix: '' },
+                { label: 'Медь/Золото', key: 'copper_gold', suffix: '' },
+                { label: 'BDI', key: 'bdi', suffix: '' },
+                { label: 'VIIRS', key: 'viirs', suffix: '%' },
+                { label: 'Уран', key: 'uranium', suffix: '$' }
+            ];
+
+            const colors = { critical: '#ef4444', warning: '#f59e0b', normal: '#4ade80' };
+
+            return `
+                <div class="report-card">
+                    <div class="date">
+                        <span>📅 ${date}</span>
+                        <span style="font-size:13px;color:#4a5a6a;">${data?.timestamp ? new Date(data.timestamp).toLocaleTimeString('ru-RU') : ''}</span>
+                    </div>
+                    <div class="summary">
+                        <span class="badge badge-critical">🔴 Критических: ${critical}</span>
+                        <span class="badge badge-warning">🟡 Предупреждений: ${warning}</span>
+                        <span class="badge badge-normal">🟢 Нормальных: ${normal}</span>
+                    </div>
+                    <div class="indicators">
+                        ${items.map(item => {
+                            const value = ind[item.key]?.current;
+                            const status = ind[item.key]?.status?.status || 'normal';
+                            const color = colors[status] || '#e0e0e0';
+                            const displayValue = value !== null && value !== undefined ? value.toFixed(2) : '—';
+                            return `
+                                <div class="ind">
+                                    <span class="label">${item.label}</span>
+                                    <span class="value" style="color:${color}">
+                                        ${displayValue}${item.suffix}
+                                        ${status !== 'normal' ? ' ' + (ind[item.key]?.status?.label || '') : ''}
+                                    </span>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    });
+}
+
+async function update() {
+    const reports = await loadReports();
+    renderReports(reports);
+}
+
+update();
+setInterval(update, 30000);
+</script>
+</body>
+</html>

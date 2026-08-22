@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Индикатор — Crucix</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0f;
+      color: #c8d0d8;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    .topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 60px;
+      background: rgba(10, 10, 20, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; }
+    .topbar-right { display: flex; align-items: center; gap: 6px; }
+    .topbar-btn {
+      height: 28px; padding: 0 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 4px;
+      background: rgba(255,255,255,0.03);
+      color: #888;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .topbar-btn:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+    .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
+    .btn-home:hover { background: rgba(91,192,248,0.15); }
+    .btn-copy { color: #5bc0f8; border-color: rgba(91,192,248,0.15); background: rgba(91,192,248,0.06); }
+    .btn-copy:hover { background: rgba(91,192,248,0.15); }
+    .btn-copy.copied { background: rgba(76,175,80,0.2); border-color: #4caf50; color: #4caf50; }
+    .btn-rss { color: #f26522; border-color: rgba(242,101,34,0.2); background: rgba(242,101,34,0.06); }
+    .btn-rss:hover { background: rgba(242,101,34,0.15); }
+    .lang-switch {
+      display: flex; gap: 2px; padding: 2px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 4px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .lang-btn {
+      padding: 2px 8px; border: none; background: transparent;
+      color: #666; font-size: 11px; font-weight: 500;
+      cursor: pointer; border-radius: 3px; transition: all 0.2s;
+    }
+    .lang-btn:hover { color: #888; background: rgba(255,255,255,0.05); }
+    .lang-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.1); }
+    .main-content {
+      padding-top: 76px;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding-left: 20px;
+      padding-right: 20px;
+      padding-bottom: 40px;
+    }
+    .page-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #e8f0f8;
+      margin-bottom: 20px;
+    }
+    .ratio-display {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .ratio-value { font-size: 48px; font-weight: 700; }
+    .ratio-label { font-size: 16px; color: #8899aa; margin-top: 4px; }
+    .ratio-status { font-size: 18px; font-weight: 600; margin-top: 8px; padding: 4px 16px; border-radius: 20px; display: inline-block; }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .stat-card .label { font-size: 11px; color: #8899aa; text-transform: uppercase; }
+    .stat-card .value { font-size: 22px; font-weight: 700; margin-top: 4px; }
+    .chart-container {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 16px;
+      min-height: 200px;
+    }
+    .chart-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 200px;
+      color: #4a5a6a;
+    }
+    .notification {
+      position: fixed;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-size: 13px;
+      z-index: 100001;
+      border: 1px solid rgba(255,255,255,0.1);
+      animation: notif-fade 2.5s forwards;
+    }
+    @keyframes notif-fade {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+    .source-info {
+      font-size: 12px;
+      color: #4a5a6a;
+      margin-top: 4px;
+    }
+    @media (max-width: 768px) {
+      .topbar { padding: 0 12px; height: 52px; }
+      .main-content { padding-top: 68px; padding-left: 12px; padding-right: 12px; }
+      .page-title { font-size: 18px; }
+      .ratio-value { font-size: 32px; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-left"><span class="topbar-brand">⚡ CRUCIX MONITOR</span></div>
+  <div class="topbar-right">
+    <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+    <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ</button>
+    <button class="topbar-btn btn-rss" onclick="window.location.href='/rss-feed'">📡 Список страниц</button>
+    <div class="lang-switch">
+      <button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
+      <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+    </div>
+  </div>
+</header>
+
+<main class="main-content">
+  <div class="page-title" id="pageTitle">📊 Индикатор</div>
+  <div class="ratio-display">
+    <div class="ratio-value" id="ratioValue">—</div>
+    <div class="ratio-label" id="ratioLabel">Значение</div>
+    <div class="ratio-status" id="ratioStatus">Загрузка...</div>
+    <div class="source-info" id="sourceInfo">Источник: FRED</div>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="label">Записей</div><div class="value" id="totalCount">—</div></div>
+    <div class="stat-card"><div class="label">Минимум</div><div class="value" id="minValue">—</div></div>
+    <div class="stat-card"><div class="label">Максимум</div><div class="value" id="maxValue">—</div></div>
+    <div class="stat-card"><div class="label">Среднее</div><div class="value" id="avgValue">—</div></div>
+  </div>
+  <div class="chart-container">
+    <div class="chart-placeholder" id="chartPlaceholder">📊 График загружается...</div>
+  </div>
+</main>
+
+<script>
+let currentLang = localStorage.getItem('crucix-lang') || 'ru';
+function switchLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('crucix-lang', lang);
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === lang);
+  });
+}
+document.querySelectorAll('.lang-btn').forEach(btn => {
+  btn.classList.toggle('active', btn.dataset.lang === currentLang);
+});
+
+document.getElementById('copy-btn').addEventListener('click', function() {
+  const text = document.body.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    this.textContent = '✅ Скопировано!';
+    this.classList.add('copied');
+    setTimeout(() => {
+      this.textContent = '📋 КОПИРОВАТЬ';
+      this.classList.remove('copied');
+    }, 3000);
+  }).catch(() => {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    this.textContent = '✅ Скопировано!';
+    setTimeout(() => {
+      this.textContent = '📋 КОПИРОВАТЬ';
+    }, 3000);
+  });
+});
+
+// Определяем API по URL
+const pageMap = {
+  'oil-gas': { api: '/api/oil-gas/', label: 'Нефть/Газ', source: 'FRED (WTI / Henry Hub)', key: 'ratio', color: '#5bc0f8' },
+  'gold-silver': { api: '/api/gold-silver/', label: 'Золото/Серебро', source: 'FRED (LBMA)', key: 'ratio', color: '#fbbf24' },
+  'big-mac-alt': { api: '/api/big-mac-alt/', label: 'Биг-Мак (альт.)', source: 'The Economist', key: 'value', color: '#4ade80' }
+};
+
+const pageId = window.location.pathname.replace('/', '').replace('.html', '') || 'oil-gas';
+const config = pageMap[pageId] || pageMap['oil-gas'];
+
+document.getElementById('pageTitle').textContent = `📊 ${config.label}`;
+document.getElementById('ratioLabel').textContent = config.label;
+document.getElementById('sourceInfo').textContent = `Источник: ${config.source}`;
+
+async function loadData() {
+  try {
+    const res = await fetch(config.api);
+    const data = await res.json();
+    return data.data || [];
+  } catch (e) {
+    console.error('[LOAD] Ошибка:', e);
+    return [];
+  }
+}
+
+function render(data) {
+  if (!data || data.length === 0) {
+    document.getElementById('ratioValue').textContent = '—';
+    document.getElementById('ratioStatus').textContent = 'Нет данных';
+    return;
+  }
+
+  const last = data[data.length - 1];
+  const value = last[config.key] || last.value || 0;
+  document.getElementById('ratioValue').textContent = value.toFixed(2);
+  document.getElementById('totalCount').textContent = data.length;
+
+  const vals = data.map(d => d[config.key] || d.value || 0);
+  const min = Math.min(...vals);
+  const max = Math.max(...vals);
+  const avg = vals.reduce((a,b) => a + b, 0) / vals.length;
+  document.getElementById('minValue').textContent = min.toFixed(2);
+  document.getElementById('maxValue').textContent = max.toFixed(2);
+  document.getElementById('avgValue').textContent = avg.toFixed(2);
+
+  const statusEl = document.getElementById('ratioStatus');
+  statusEl.textContent = '🟢 НОРМАЛЬНО';
+  statusEl.style.background = 'rgba(74,222,128,0.15)';
+  statusEl.style.color = '#4ade80';
+  statusEl.style.border = '1px solid rgba(74,222,128,0.3)';
+
+  renderChart(data);
+}
+
+function renderChart(data) {
+  const c = document.getElementById('chartPlaceholder');
+  if (data.length < 2) {
+    c.innerHTML = '📊 Недостаточно данных для графика';
+    return;
+  }
+  const vals = data.map(d => d[config.key] || d.value || 0);
+  const maxV = Math.max(...vals) * 1.1 || 1;
+  const minV = Math.min(...vals) * 0.9 || 0;
+  const range = maxV - minV || 1;
+
+  c.innerHTML = `
+    <div style="display:flex;height:150px;gap:2px;align-items:flex-end;padding:4px 0;width:100%;overflow-x:auto;">
+      ${data.map(d => {
+        const val = d[config.key] || d.value || 0;
+        const h = ((val - minV) / range) * 130 + 10;
+        return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;">
+          <div style="width:100%;height:${h}px;background:${config.color};border-radius:2px 2px 0 0;min-height:4px;"></div>
+          <div style="font-size:8px;color:#4a5a6a;margin-top:2px;transform:rotate(-45deg);">${d.date.slice(5)}</div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:9px;color:#4a5a6a;padding:0 4px;">
+      <span>${data[0].date}</span>
+      <span>${data[data.length-1].date}</span>
+    </div>
+  `;
+}
+
+async function update() {
+  const data = await loadData();
+  render(data);
+}
+
+update();
+setInterval(update, 60000);
+</script>
+</body>
+</html>

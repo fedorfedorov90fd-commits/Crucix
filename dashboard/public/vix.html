@@ -3,103 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIX — Crucix</title>
+    <title>VIX — индекс страха — Crucix</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background: #0a0a1a;
-            color: #e0e0e0;
-            font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+            background: #0a0a0f;
+            color: #c8d0d8;
+            font-family: -apple-system, 'Segoe UI', monospace;
             min-height: 100vh;
         }
         .topbar {
-            position: fixed;
-            top: 0; left: 0; right: 0;
+            position: fixed; top: 0; left: 0; right: 0;
             height: 60px;
-            background: rgba(10,10,20,0.95);
+            background: rgba(10,10,20,0.92);
             backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.04);
             z-index: 100;
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 0 20px;
         }
-        .topbar-left { display: flex; align-items: center; gap: 12px; }
         .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; }
         .topbar-right { display: flex; align-items: center; gap: 6px; }
         .topbar-btn {
-            height: 28px; padding: 0 12px; border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 4px; background: rgba(255,255,255,0.03); color: #888;
-            font-size: 11px; font-weight: 500; text-transform: uppercase; cursor: pointer;
+            height: 28px; padding: 0 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 4px;
+            background: rgba(255,255,255,0.03);
+            color: #888;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
             transition: all 0.2s;
         }
         .topbar-btn:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
         .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
-        .btn-home:hover { background: rgba(91,192,248,0.15); }
         .btn-copy { color: #5bc0f8; border-color: rgba(91,192,248,0.15); background: rgba(91,192,248,0.06); }
-        .btn-copy:hover { background: rgba(91,192,248,0.15); }
-        .btn-copy.copied { background: rgba(76,175,80,0.2); border-color: #4caf50; color: #4caf50; }
         .lang-switch {
             display: flex; gap: 2px; padding: 2px;
-            background: rgba(255,255,255,0.03); border-radius: 4px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 4px;
             border: 1px solid rgba(255,255,255,0.06);
         }
         .lang-btn {
             padding: 2px 8px; border: none; background: transparent;
             color: #666; font-size: 11px; font-weight: 500; cursor: pointer;
-            border-radius: 3px; transition: all 0.2s;
+            border-radius: 3px;
         }
-        .lang-btn:hover { color: #888; background: rgba(255,255,255,0.05); }
         .lang-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.1); }
         .main-content {
             padding-top: 76px;
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
             padding-left: 20px;
             padding-right: 20px;
             padding-bottom: 40px;
         }
-        .page-title {
-            font-size: 28px;
-            font-weight: 700;
-            color: #e8f0f8;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .page-title .badge {
-            font-size: 12px; font-weight: 400;
-            background: rgba(74,222,128,0.15); color: #4ade80;
-            padding: 2px 12px; border-radius: 20px;
-            border: 1px solid rgba(74,222,128,0.2);
-        }
-        .page-subtitle { color: #8899aa; font-size: 14px; margin-bottom: 24px; }
-        .vix-display {
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 12px;
-            padding: 24px;
-            text-align: center;
-            margin-bottom: 24px;
-        }
-        .vix-value {
-            font-size: 64px;
-            font-weight: 700;
-        }
-        .vix-label { font-size: 16px; color: #8899aa; margin-top: 4px; }
-        .vix-status {
-            font-size: 18px;
-            font-weight: 600;
-            margin-top: 8px;
-            padding: 4px 16px;
-            border-radius: 20px;
-            display: inline-block;
-        }
+        .page-title { font-size: 24px; font-weight: 700; color: #e8f0f8; margin-bottom: 20px; }
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             gap: 12px;
             margin-bottom: 24px;
         }
@@ -109,21 +73,34 @@
             border-radius: 8px;
             padding: 14px 16px;
         }
-        .stat-card .label { font-size: 11px; color: #8899aa; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-card .label { font-size: 11px; color: #8899aa; text-transform: uppercase; }
         .stat-card .value { font-size: 22px; font-weight: 700; margin-top: 4px; }
         .chart-container {
             background: rgba(255,255,255,0.02);
             border: 1px solid rgba(255,255,255,0.05);
             border-radius: 12px;
             padding: 16px;
-            min-height: 200px;
+            min-height: 300px;
         }
-        .chart-placeholder {
+        .chart-container .title { font-size: 13px; font-weight: 600; color: #8899aa; margin-bottom: 12px; }
+        .chart-bars {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 200px;
+            align-items: flex-end;
+            height: 200px;
+            gap: 2px;
+        }
+        .chart-bars .bar {
+            flex: 1;
+            border-radius: 2px 2px 0 0;
+            min-height: 4px;
+            transition: all 0.3s;
+        }
+        .chart-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
             color: #4a5a6a;
+            margin-top: 4px;
         }
         .notification {
             position: fixed;
@@ -142,25 +119,18 @@
         @keyframes notif-fade {
             0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
             10% { opacity: 1; transform: translateX(-50%) translateY(0); }
-            80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            80% { opacity: 1; }
             100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
-        }
-        @media (max-width: 768px) {
-            .topbar { padding: 0 12px; height: 52px; }
-            .main-content { padding-top: 68px; padding-left: 12px; padding-right: 12px; }
-            .page-title { font-size: 20px; }
-            .vix-value { font-size: 40px; }
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
 <body>
 <header class="topbar">
-    <div class="topbar-left"><span class="topbar-brand">📈 VIX INDEX</span></div>
+    <div class="topbar-left"><span class="topbar-brand">📈 VIX RATIO</span></div>
     <div class="topbar-right">
         <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
         <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ</button>
-        <button class="topbar-btn" onclick="window.location.href='/rss-feed'">📡 СПИСОК СТРАНИЦ</button>
+        <button class="topbar-btn" onclick="window.location.href='/rss-feed'">📡 Список страниц</button>
         <div class="lang-switch">
             <button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
             <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
@@ -168,27 +138,17 @@
     </div>
 </header>
 <main class="main-content">
-    <div class="page-title">
-        📈 Индекс VIX (страх)
-        <span class="badge" id="statusBadge">🟢 ONLINE</span>
-    </div>
-    <div class="page-subtitle">Индекс волатильности CBOE — «индекс страха» рынка</div>
-    
-    <div class="vix-display">
-        <div class="vix-value" id="vixValue">—</div>
-        <div class="vix-label">Текущее значение VIX</div>
-        <div class="vix-status" id="vixStatus">Загрузка...</div>
-    </div>
-    
+    <div class="page-title">📈 VIX — индекс страха — финансовый индикатор</div>
     <div class="stats-grid" id="statsGrid">
-        <div class="stat-card"><div class="label">Записей</div><div class="value" id="totalCount">—</div></div>
-        <div class="stat-card"><div class="label">Минимум</div><div class="value" id="minValue">—</div></div>
-        <div class="stat-card"><div class="label">Максимум</div><div class="value" id="maxValue">—</div></div>
-        <div class="stat-card"><div class="label">Среднее</div><div class="value" id="avgValue">—</div></div>
+        <div class="stat-card"><div class="label">Текущий Ratio</div><div class="value" id="currentRatio">—</div></div>
+        <div class="stat-card"><div class="label">Нефть WTI</div><div class="value" id="currentOil" style="color:#f59e0b;">—</div></div>
+        <div class="stat-card"><div class="label">Газ Henry Hub</div><div class="value" id="currentGas" style="color:#5bc0f8;">—</div></div>
+        <div class="stat-card"><div class="label">Данных</div><div class="value" id="dataCount">—</div></div>
     </div>
-    
     <div class="chart-container">
-        <div class="chart-placeholder" id="chartPlaceholder">📊 График VIX загружается...</div>
+        <div class="title">📈 Динамика индекса (30 дней)</div>
+        <div class="chart-bars" id="chartBars"></div>
+        <div class="chart-labels" id="chartLabels"></div>
     </div>
 </main>
 <script>
@@ -196,118 +156,78 @@ let currentLang = localStorage.getItem('crucix-lang') || 'ru';
 function switchLang(lang) {
     currentLang = lang;
     localStorage.setItem('crucix-lang', lang);
-    document.querySelectorAll('.lang-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.lang === lang);
-    });
-    showNotification(`🌐 Язык: ${lang.toUpperCase()}`);
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
 }
-document.querySelectorAll('.lang-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.lang === currentLang);
-});
+document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === currentLang));
+
 function showNotification(msg) {
     document.querySelectorAll('.notification').forEach(el => el.remove());
-    const el = document.createElement('div');
-    el.className = 'notification';
-    el.textContent = msg;
+    const el = document.createElement('div'); el.className = 'notification'; el.textContent = msg;
     document.body.appendChild(el);
     setTimeout(() => el.remove(), 2500);
 }
+
 document.getElementById('copy-btn').addEventListener('click', function() {
     const text = document.body.innerText;
     navigator.clipboard.writeText(text).then(() => {
         this.textContent = '✅ Скопировано!';
-        this.classList.add('copied');
-        setTimeout(() => {
-            this.textContent = '📋 КОПИРОВАТЬ';
-            this.classList.remove('copied');
-        }, 3000);
-        showNotification('✅ Данные скопированы');
+        setTimeout(() => { this.textContent = '📋 КОПИРОВАТЬ'; }, 3000);
     }).catch(() => {
-        const textarea = document.createElement('textarea');
-        textarea.value = text;
-        document.body.appendChild(textarea);
-        textarea.select();
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
         document.execCommand('copy');
-        document.body.removeChild(textarea);
+        document.body.removeChild(ta);
         this.textContent = '✅ Скопировано!';
         setTimeout(() => { this.textContent = '📋 КОПИРОВАТЬ'; }, 3000);
     });
 });
+
 async function loadData() {
     try {
         const res = await fetch('/api/vix/');
-        const data = await res.json();
-        return data.data || [];
-    } catch (e) {
-        console.error('[VIX] Ошибка:', e);
-        return [];
-    }
+        const json = await res.json();
+        return json.data || [];
+    } catch { return []; }
 }
-function renderVIX(data) {
-    if (data.length === 0) {
-        document.getElementById('vixValue').textContent = '—';
-        document.getElementById('vixStatus').textContent = 'Нет данных';
+
+function render(data) {
+    if (!data || data.length === 0) {
+        document.getElementById('currentRatio').textContent = '—';
+        document.getElementById('currentOil').textContent = '—';
+        document.getElementById('currentGas').textContent = '—';
+        document.getElementById('dataCount').textContent = '0';
+        document.getElementById('chartBars').innerHTML = '<div style="color:#4a5a6a;padding:20px;">Нет данных</div>';
         return;
     }
     const last = data[data.length - 1];
-    const value = last.value;
-    document.getElementById('vixValue').textContent = value.toFixed(2);
-    
-    let status, color;
-    if (value > 30) { status = '🔴 ВЫСОКИЙ СТРАХ (кризис)'; color = '#ef4444'; }
-    else if (value > 20) { status = '🟡 СРЕДНИЙ СТРАХ'; color = '#f59e0b'; }
-    else { status = '🟢 НОРМАЛЬНЫЙ (спокойствие)'; color = '#4ade80'; }
-    
-    const statusEl = document.getElementById('vixStatus');
-    statusEl.textContent = status;
-    statusEl.style.background = color + '22';
-    statusEl.style.color = color;
-    statusEl.style.border = '1px solid ' + color + '33';
-    
-    const values = data.map(d => d.value);
-    const min = Math.min(...values);
-    const max = Math.max(...values);
-    const avg = values.reduce((a,b) => a + b, 0) / values.length;
-    
-    document.getElementById('totalCount').textContent = data.length;
-    document.getElementById('minValue').textContent = min.toFixed(2);
-    document.getElementById('maxValue').textContent = max.toFixed(2);
-    document.getElementById('avgValue').textContent = avg.toFixed(2);
-    
-    renderChart(data);
-}
-function renderChart(data) {
-    const container = document.getElementById('chartPlaceholder');
-    if (data.length < 2) {
-        container.innerHTML = '📊 Недостаточно данных для графика';
-        return;
-    }
-    const maxVal = Math.max(...data.map(d => d.value)) * 1.1;
-    const minVal = Math.min(...data.map(d => d.value)) * 0.9;
-    const range = maxVal - minVal || 1;
-    
-    let bars = data.map((d, i) => {
-        const height = ((d.value - minVal) / range) * 150 + 20;
-        const color = d.value > 30 ? '#ef4444' : d.value > 20 ? '#f59e0b' : '#4ade80';
-        return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;">
-            <div style="width:100%;height:${height}px;background:${color};border-radius:3px 3px 0 0;min-height:4px;"></div>
-            <div style="font-size:9px;color:#4a5a6a;margin-top:4px;transform:rotate(-45deg);white-space:nowrap;">${d.date.slice(5)}</div>
-        </div>`;
+    document.getElementById('currentRatio').textContent = last.ratio.toFixed(2);
+    document.getElementById('currentOil').textContent = '$' + last.oil.toFixed(2);
+    document.getElementById('currentGas').textContent = '$' + last.gas.toFixed(2);
+    document.getElementById('dataCount').textContent = data.length;
+
+    const maxVal = Math.max(...data.map(d => d.ratio)) * 1.2 || 1;
+    const bars = document.getElementById('chartBars');
+    bars.innerHTML = data.map(d => {
+        const h = Math.max((d.ratio / maxVal) * 180, 4);
+        const color = d.ratio > 20 ? '#ef4444' : d.ratio > 15 ? '#f59e0b' : '#4ade80';
+        return `<div class="bar" style="height:${h}px;background:${color};"></div>`;
     }).join('');
-    
-    container.innerHTML = `
-        <div style="display:flex;height:200px;gap:2px;align-items:flex-end;padding:8px 4px;width:100%;overflow-x:auto;">
-            ${bars}
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:10px;color:#4a5a6a;padding:0 4px;">
-            <span>${data[0].date}</span>
-            <span>${data[data.length-1].date}</span>
-        </div>
-    `;
+
+    const labels = document.getElementById('chartLabels');
+    const step = Math.max(1, Math.floor(data.length / 6));
+    labels.innerHTML = data.map((d, i) => {
+        if (i % step === 0 || i === data.length - 1) {
+            return `<span>${d.date.slice(5)}</span>`;
+        }
+        return `<span></span>`;
+    }).join('');
 }
+
 async function update() {
     const data = await loadData();
-    renderVIX(data);
+    render(data);
 }
 update();
 setInterval(update, 60000);

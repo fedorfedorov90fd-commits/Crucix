@@ -1,36 +1,38 @@
+// ============================================================
+// EVENTS-API.MJS — API для потока событий
+// ============================================================
 import { promises as fs } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const BASKET_PATH = join(__dirname, '..', '..', 'data', 'basket', 'yield-curve.json');
+const BASKET_PATH = join(__dirname, '..', '..', 'data', 'basket', 'events.json');
 
-async function loadData() {
+async function loadEvents() {
     try {
         const data = await fs.readFile(BASKET_PATH, 'utf8');
         return JSON.parse(data);
     } catch { return []; }
 }
 
-export async function handleYieldCurveAPI(req, res) {
+export async function handleEventsAPI(req, res) {
     const url = new URL(req.url, `http://${req.headers.host}`);
     const pathname = url.pathname;
 
-    if (pathname === '/api/yield-curve/' || pathname === '/api/yield-curve') {
-        const data = await loadData();
+    if (pathname === '/api/events/' || pathname === '/api/events') {
+        const events = await loadEvents();
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ success: true, data, count: data.length }));
+        res.end(JSON.stringify({ success: true, data: events, count: events.length }));
         return;
     }
 
-    if (pathname === '/api/yield-curve/status') {
-        const data = await loadData();
+    if (pathname === '/api/events/status') {
+        const events = await loadEvents();
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
             success: true,
             status: 'online',
-            count: data.length,
-            lastUpdate: data.length > 0 ? data[data.length-1].date : null
+            count: events.length
         }));
         return;
     }

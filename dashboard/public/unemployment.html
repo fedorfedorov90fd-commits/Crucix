@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Unemployment — Crucix</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a1a;
+            color: #e0e0e0;
+            font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+        }
+        .topbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 60px;
+            background: rgba(10,10,20,0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        .topbar-left { display: flex; align-items: center; gap: 12px; }
+        .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; }
+        .topbar-right { display: flex; align-items: center; gap: 6px; }
+        .topbar-btn {
+            height: 28px; padding: 0 12px; border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 4px; background: rgba(255,255,255,0.03); color: #888;
+            font-size: 11px; font-weight: 500; text-transform: uppercase; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .topbar-btn:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+        .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
+        .btn-home:hover { background: rgba(91,192,248,0.15); }
+        .btn-copy { color: #5bc0f8; border-color: rgba(91,192,248,0.15); background: rgba(91,192,248,0.06); }
+        .btn-copy:hover { background: rgba(91,192,248,0.15); }
+        .btn-copy.copied { background: rgba(76,175,80,0.2); border-color: #4caf50; color: #4caf50; }
+        .lang-switch {
+            display: flex; gap: 2px; padding: 2px;
+            background: rgba(255,255,255,0.03); border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .lang-btn {
+            padding: 2px 8px; border: none; background: transparent;
+            color: #666; font-size: 11px; font-weight: 500; cursor: pointer;
+            border-radius: 3px; transition: all 0.2s;
+        }
+        .lang-btn:hover { color: #888; background: rgba(255,255,255,0.05); }
+        .lang-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.1); }
+        .main-content {
+            padding-top: 76px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
+            padding-bottom: 40px;
+        }
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #e8f0f8;
+            margin-bottom: 8px;
+        }
+        .page-subtitle {
+            color: #8899aa;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .info-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 16px 20px;
+        }
+        .info-card .label {
+            font-size: 11px;
+            color: #4a5a6a;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .info-card .value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+        .info-card .source {
+            font-size: 12px;
+            color: #4a5a6a;
+            margin-top: 4px;
+        }
+        .chart-container {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 16px;
+            min-height: 300px;
+        }
+        .chart-container .title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #8899aa;
+            margin-bottom: 12px;
+        }
+        .chart-bars {
+            display: flex;
+            align-items: flex-end;
+            height: 200px;
+            gap: 2px;
+        }
+        .chart-bars .bar {
+            flex: 1;
+            border-radius: 2px 2px 0 0;
+            min-height: 4px;
+            transition: all 0.3s;
+        }
+        .chart-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            color: #4a5a6a;
+            margin-top: 4px;
+        }
+        .feed {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 16px;
+            margin-top: 24px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .feed .title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #8899aa;
+            margin-bottom: 8px;
+        }
+        .feed-item {
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            font-size: 13px;
+            color: #c0d0e0;
+        }
+        .feed-item .time {
+            color: #4a5a6a;
+            font-size: 11px;
+            float: right;
+        }
+        .notification {
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            z-index: 100001;
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: notif-fade 2.5s forwards;
+        }
+        @keyframes notif-fade {
+            0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+            10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            80% { opacity: 1; }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        }
+        @media (max-width: 768px) {
+            .info-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="topbar">
+    <div class="topbar-left"><span class="topbar-brand">📊 Unemployment</span></div>
+    <div class="topbar-right">
+        <button class="topbar-btn btn-home" onclick="window.location.href='/dashboard-5in1'">← КОМАНДНЫЙ ЦЕНТР</button>
+        <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ</button>
+        <button class="topbar-btn" onclick="window.location.href='/rss-feed'">📡 СПИСОК СТРАНИЦ</button>
+        <div class="lang-switch">
+            <button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
+            <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+        </div>
+    </div>
+</header>
+
+<main class="main-content">
+    <div class="page-title">📊 Unemployment</div>
+    <div class="page-subtitle">[ОПИСАНИЕ ИНДИКАТОРА]</div>
+
+    <div class="info-grid">
+        <div class="info-card">
+            <div class="label">Текущее значение</div>
+            <div class="value" id="currentValue">—</div>
+        </div>
+        <div class="info-card">
+            <div class="label">Изменение (24ч)</div>
+            <div class="value" id="changeValue" style="color:#4ade80;">—</div>
+        </div>
+        <div class="info-card">
+            <div class="label">Статус</div>
+            <div class="value" id="statusValue" style="color:#f59e0b;">—</div>
+        </div>
+        <div class="info-card">
+            <div class="label">Источник данных</div>
+            <div class="value" id="sourceValue" style="font-size:18px;">[ИСТОЧНИК]</div>
+            <div class="source">Обновлено: <span id="updateTime">—</span></div>
+        </div>
+    </div>
+
+    <div class="chart-container">
+        <div class="title">📈 Динамика (30 дней)</div>
+        <div class="chart-bars" id="chartBars"></div>
+        <div class="chart-labels" id="chartLabels"></div>
+    </div>
+
+    <div class="feed">
+        <div class="title">📋 События</div>
+        <div id="eventsList"></div>
+    </div>
+</main>
+
+<script>
+// ============================================================
+// 1. ПЕРЕКЛЮЧАТЕЛЬ ЯЗЫКА
+// ============================================================
+let currentLang = localStorage.getItem('crucix-lang') || 'ru';
+function switchLang(lang) {
+    currentLang = lang;
+    localStorage.setItem('crucix-lang', lang);
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+    });
+    showNotification('🌐 Язык: ' + lang.toUpperCase());
+}
+document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === currentLang);
+});
+
+// ============================================================
+// 2. КНОПКА КОПИРОВАТЬ (НЕИЗМЕННАЯ)
+// ============================================================
+document.getElementById('copy-btn').addEventListener('click', function() {
+    const text = document.body.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+        this.textContent = '✅ Скопировано!';
+        this.classList.add('copied');
+        setTimeout(() => {
+            this.textContent = '📋 КОПИРОВАТЬ';
+            this.classList.remove('copied');
+        }, 3000);
+        showNotification('✅ Скопировано');
+    }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        this.textContent = '✅ Скопировано!';
+        this.classList.add('copied');
+        setTimeout(() => {
+            this.textContent = '📋 КОПИРОВАТЬ';
+            this.classList.remove('copied');
+        }, 3000);
+        showNotification('✅ Скопировано');
+    });
+});
+
+function showNotification(msg) {
+    document.querySelectorAll('.notification').forEach(el => el.remove());
+    const el = document.createElement('div');
+    el.className = 'notification';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2500);
+}
+
+// ============================================================
+// 3. ЗАГРУЗКА ДАННЫХ (ЗАМЕНИТЬ ПОД КОНКРЕТНЫЙ ИНДИКАТОР)
+// ============================================================
+async function loadData() {
+    try {
+        const res = await fetch('/api/unemployment/');
+        const json = await res.json();
+        const data = json.data || [];
+        if (data.length > 0) {
+            const last = data[data.length - 1];
+            document.getElementById('currentValue').textContent = last.value || last.price || last.ratio || last.score || '—';
+            document.getElementById('updateTime').textContent = new Date().toLocaleString('ru-RU');
+        }
+        renderChart(data);
+    } catch (e) {
+        console.error('Ошибка загрузки:', e);
+    }
+}
+
+function renderChart(data) {
+    const container = document.getElementById('chartBars');
+    const labelsContainer = document.getElementById('chartLabels');
+    if (!data || data.length < 2) {
+        container.innerHTML = '<span style="color:#4a5a6a;font-size:13px;">Недостаточно данных</span>';
+        labelsContainer.innerHTML = '';
+        return;
+    }
+    const key = data[0].value !== undefined ? 'value' :
+                data[0].price !== undefined ? 'price' :
+                data[0].ratio !== undefined ? 'ratio' :
+                data[0].score !== undefined ? 'score' : 'value';
+    const values = data.map(d => d[key]);
+    const maxVal = Math.max(...values) * 1.1 || 1;
+    const minVal = Math.min(...values) * 0.9 || 0;
+    const range = maxVal - minVal || 1;
+
+    container.innerHTML = data.map(d => {
+        const h = ((d[key] - minVal) / range) * 180 + 10;
+        const color = d[key] > 0 ? '#4ade80' : '#ef4444';
+        return `<div class="bar" style="height:${h}px;background:${color};"></div>`;
+    }).join('');
+
+    const step = Math.max(1, Math.floor(data.length / 6));
+    labelsContainer.innerHTML = data.map((d, i) => {
+        if (i % step === 0 || i === data.length - 1) {
+            return `<span>${d.date.slice(5)}</span>`;
+        }
+        return `<span></span>`;
+    }).join('');
+}
+
+loadData();
+setInterval(loadData, 60000);
+</script>
+</body>
+</html>

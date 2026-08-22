@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Счастье Alt — Crucix</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a1a;
+            color: #e0e0e0;
+            font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+        }
+        .topbar {
+            position: fixed; top: 0; left: 0; right: 0;
+            height: 60px;
+            background: rgba(10,10,20,0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        .topbar-left { display: flex; align-items: center; gap: 12px; }
+        .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; }
+        .topbar-right { display: flex; align-items: center; gap: 6px; }
+        .topbar-btn {
+            height: 28px; padding: 0 12px; border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 4px; background: rgba(255,255,255,0.03); color: #888;
+            font-size: 11px; font-weight: 500; text-transform: uppercase;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .topbar-btn:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+        .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
+        .btn-home:hover { background: rgba(91,192,248,0.15); }
+        .btn-copy { color: #5bc0f8; border-color: rgba(91,192,248,0.15); background: rgba(91,192,248,0.06); }
+        .btn-copy.copied { background: rgba(76,175,80,0.2); border-color: #4caf50; color: #4caf50; }
+        .lang-switch {
+            display: flex; gap: 2px; padding: 2px;
+            background: rgba(255,255,255,0.03); border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .lang-btn {
+            padding: 2px 8px; border: none; background: transparent;
+            color: #666; font-size: 11px; font-weight: 500;
+            cursor: pointer; border-radius: 3px; transition: all 0.2s;
+        }
+        .lang-btn:hover { color: #888; background: rgba(255,255,255,0.05); }
+        .lang-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.1); }
+        .main-content {
+            padding-top: 76px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
+            padding-bottom: 40px;
+        }
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #e8f0f8;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .page-subtitle {
+            color: #8899aa;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+        .back-link {
+            color: #5bc0f8;
+            text-decoration: none;
+            font-size: 14px;
+            display: inline-block;
+            margin-bottom: 16px;
+        }
+        .back-link:hover { text-decoration: underline; }
+        .info-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .info-card .label {
+            font-size: 12px;
+            color: #8899aa;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .info-card .value {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 4px 0;
+        }
+        .info-card .sub {
+            font-size: 14px;
+            color: #8899aa;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .info-item {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 8px;
+            padding: 16px;
+        }
+        .info-item .label {
+            font-size: 11px;
+            color: #8899aa;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .info-item .value {
+            font-size: 18px;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+        .info-item .desc {
+            font-size: 13px;
+            color: #8899aa;
+            margin-top: 4px;
+        }
+        .description-box {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .description-box h3 {
+            font-size: 14px;
+            color: #8899aa;
+            margin-bottom: 8px;
+        }
+        .description-box p {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #c0d0e0;
+        }
+        .chart-container {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 16px;
+            min-height: 250px;
+            margin-bottom: 16px;
+        }
+        .chart-container .title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #8899aa;
+            margin-bottom: 12px;
+        }
+        .chart-bars {
+            display: flex;
+            align-items: flex-end;
+            height: 180px;
+            gap: 2px;
+            padding: 4px 0;
+        }
+        .chart-bars .bar {
+            flex: 1;
+            border-radius: 2px 2px 0 0;
+            min-height: 4px;
+            transition: all 0.3s;
+        }
+        .chart-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            color: #4a5a6a;
+            margin-top: 4px;
+        }
+        .source-box {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .source-box .src { color: #5bc0f8; font-size: 13px; }
+        .source-box .updated { color: #4a5a6a; font-size: 12px; }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .status-badge.critical { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
+        .status-badge.high { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.2); }
+        .status-badge.medium { background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.2); }
+        .status-badge.normal { background: rgba(74,222,128,0.15); color: #4ade80; border: 1px solid rgba(74,222,128,0.2); }
+        .notification {
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            z-index: 100001;
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: notif-fade 2.5s forwards;
+        }
+        @keyframes notif-fade {
+            0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+            10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            80% { opacity: 1; }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        }
+        @media (max-width: 768px) {
+            .topbar { padding: 0 12px; height: 52px; }
+            .topbar-brand { font-size: 12px; }
+            .topbar-btn { font-size: 10px; padding: 0 8px; height: 24px; }
+            .main-content { padding-top: 68px; padding-left: 12px; padding-right: 12px; }
+            .page-title { font-size: 20px; }
+            .info-grid { grid-template-columns: 1fr; }
+            .info-card .value { font-size: 24px; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="topbar">
+    <div class="topbar-left"><span class="topbar-brand">😊 Счастье Alt</span></div>
+    <div class="topbar-right">
+        <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+        <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ</button>
+        <button class="topbar-btn" onclick="window.location.href='/dashboard-5in1'">📊 КОМАНДНЫЙ ЦЕНТР</button>
+        <div class="lang-switch">
+            <button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
+            <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+        </div>
+    </div>
+</header>
+
+<main class="main-content">
+    <a href="/dashboard-5in1" class="back-link">← Назад к командному центру</a>
+
+    <div class="page-title">
+        😊 Счастье Alt
+        <span class="status-badge" id="statusBadge">🟢 НОРМАЛЬНО</span>
+    </div>
+    <div class="page-subtitle">Альтернативный индекс счастья от ВОЗ</div>
+
+    <div class="info-card">
+        <div class="label">Текущий индекс</div>
+        <div class="value" id="currentValue">—</div>
+        <div class="sub" id="changeInfo">—</div>
+    </div>
+
+    <div class="info-grid">
+        <div class="info-item">
+            <div class="label">📊 Индикатор</div>
+            <div class="value">Счастье Alt</div>
+            <div class="desc">Альтернативный индекс счастья</div>
+        </div>
+        <div class="info-item">
+            <div class="label">📌 Источник</div>
+            <div class="value">WHO</div>
+            <div class="desc">Всемирная организация здравоохранения</div>
+        </div>
+        <div class="info-item">
+            <div class="label">🎯 Применение</div>
+            <div class="value">Социальный анализ</div>
+            <div class="desc">Оценка качества жизни</div>
+        </div>
+        <div class="info-item">
+            <div class="label">🔄 Обновление</div>
+            <div class="value" id="lastUpdate">—</div>
+            <div class="desc">Ежегодно</div>
+        </div>
+    </div>
+
+    <div class="description-box">
+        <h3>📖 Что это за показатель?</h3>
+        <p>Альтернативный индекс счастья от ВОЗ — это модифицированная версия индекса счастья, учитывающая дополнительные факторы качества жизни.</p>
+        <p style="margin-top:8px;"><strong>Применение:</strong> Социальный анализ, оценка качества жизни.</p>
+        <p style="margin-top:8px;color:#8899aa;font-size:13px;"><strong>Для кого:</strong> Социологи, исследователи, аналитики.</p>
+    </div>
+
+    <div class="chart-container">
+        <div class="title">📈 Динамика индекса (30 дней)</div>
+        <div class="chart-bars" id="chartBars"></div>
+        <div class="chart-labels" id="chartLabels"></div>
+    </div>
+
+    <div class="source-box">
+        <span class="src">📌 Источник: WHO</span>
+        <span class="updated" id="updateTime">🔄 Обновлено: —</span>
+    </div>
+</main>
+
+<script>
+let currentLang = localStorage.getItem('crucix-lang') || 'ru';
+function switchLang(lang) {
+    currentLang = lang;
+    localStorage.setItem('crucix-lang', lang);
+    document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.lang === lang));
+}
+document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.lang === currentLang));
+
+function showNotification(msg) {
+    document.querySelectorAll('.notification').forEach(el => el.remove());
+    const el = document.createElement('div');
+    el.className = 'notification';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2500);
+}
+
+document.getElementById('copy-btn').addEventListener('click', function() {
+    const text = document.body.innerText + '\n\n--- CRUCIX OSINT TERMINAL ---\n🌐 ' + window.location.href;
+    navigator.clipboard.writeText(text).then(() => {
+        this.textContent = '✅ Скопировано!';
+        this.classList.add('copied');
+        setTimeout(() => { this.textContent = '📋 КОПИРОВАТЬ'; this.classList.remove('copied'); }, 3000);
+        showNotification('✅ Данные скопированы');
+    }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        this.textContent = '✅ Скопировано!';
+        setTimeout(() => { this.textContent = '📋 КОПИРОВАТЬ'; }, 3000);
+    });
+});
+
+async function loadData() {
+    try {
+        const resp = await fetch('/api/happiness-alt/');
+        const json = await resp.json();
+        const data = json.data || [];
+        if (data.length === 0) { document.getElementById('currentValue').textContent = '—'; return; }
+        const last = data[data.length - 1];
+        document.getElementById('currentValue').textContent = last.score || '—';
+        document.getElementById('lastUpdate').textContent = last.date || '—';
+        document.getElementById('updateTime').textContent = '🔄 Обновлено: ' + (last.date || '—');
+        if (data.length > 1) {
+            const prev = data[data.length - 2];
+            if (prev.score !== undefined) {
+                const diff = last.score - prev.score;
+                const pct = prev.score !== 0 ? (diff / Math.abs(prev.score) * 100) : 0;
+                document.getElementById('changeInfo').textContent = (diff > 0 ? '+' : '') + diff.toFixed(2) + ' (' + (pct > 0 ? '+' : '') + pct.toFixed(1) + '%)';
+            }
+        }
+        const badge = document.getElementById('statusBadge');
+        if (last.score > 6) { badge.textContent = '🟢 ВЫСОКИЙ'; badge.className = 'status-badge normal'; }
+        else if (last.score > 4) { badge.textContent = '🟡 СРЕДНИЙ'; badge.className = 'status-badge high'; }
+        else { badge.textContent = '🔴 НИЗКИЙ'; badge.className = 'status-badge critical'; }
+        renderChart(data);
+    } catch (e) { console.error('Ошибка:', e); }
+}
+
+function renderChart(data) {
+    const container = document.getElementById('chartBars');
+    const labelsContainer = document.getElementById('chartLabels');
+    if (!data || data.length < 2) { container.innerHTML = '<span style="color:#4a5a6a;">Недостаточно данных</span>'; return; }
+    const values = data.map(d => d.score);
+    const maxVal = Math.max(...values) * 1.1 || 1;
+    const minVal = Math.min(...values) * 0.9 || 0;
+    const range = maxVal - minVal || 1;
+    container.innerHTML = data.map(d => {
+        const height = ((d.score - minVal) / range) * 160 + 10;
+        const color = d.score > 6 ? '#4ade80' : d.score > 4 ? '#f59e0b' : '#ef4444';
+        return `<div class="bar" style="height:${height}px;background:${color};"></div>`;
+    }).join('');
+    const step = Math.max(1, Math.floor(data.length / 6));
+    labelsContainer.innerHTML = data.map((d, i) => (i % step === 0 || i === data.length - 1) ? `<span>${d.date.slice(5)}</span>` : `<span></span>`).join('');
+}
+
+loadData();
+setInterval(loadData, 60000);
+</script>
+</body>
+</html>

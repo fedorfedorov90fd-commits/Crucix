@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Уран — Crucix</title>
+    <style>*{margin:0;padding:0;box-sizing:border-box}body{background:#0a0a1a;color:#e0e0e0;font-family:-apple-system,'Segoe UI',system-ui,sans-serif;min-height:100vh}
+    .topbar{position:fixed;top:0;left:0;right:0;height:60px;background:rgba(10,10,20,0.95);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,0.05);z-index:100;display:flex;justify-content:space-between;align-items:center;padding:0 20px}
+    .topbar-left{display:flex;align-items:center;gap:12px}.topbar-brand{font-size:14px;font-weight:700;color:#4ade80;text-transform:uppercase;letter-spacing:2px}
+    .topbar-right{display:flex;align-items:center;gap:6px}.topbar-btn{height:28px;padding:0 12px;border:1px solid rgba(255,255,255,0.08);border-radius:4px;background:rgba(255,255,255,0.03);color:#888;font-size:11px;font-weight:500;text-transform:uppercase;cursor:pointer;transition:all .2s}
+    .topbar-btn:hover{background:rgba(255,255,255,0.06);transform:translateY(-1px)}
+    .btn-home{color:#4ade80;border-color:rgba(74,222,128,0.2);background:rgba(74,222,128,0.06)}
+    .btn-home:hover{background:rgba(74,222,128,0.15)}
+    .btn-copy{color:#4ade80;border-color:rgba(74,222,128,0.15);background:rgba(74,222,128,0.06)}
+    .btn-copy:hover{background:rgba(74,222,128,0.15)}
+    .lang-switch{display:flex;gap:2px;padding:2px;background:rgba(255,255,255,0.03);border-radius:4px;border:1px solid rgba(255,255,255,0.06)}
+    .lang-btn{padding:2px 8px;border:none;background:transparent;color:#666;font-size:11px;font-weight:500;cursor:pointer;border-radius:3px}
+    .lang-btn:hover{color:#888;background:rgba(255,255,255,0.05)}
+    .lang-btn.active{color:#4ade80;background:rgba(74,222,128,0.1)}
+    .main-content{padding-top:76px;max-width:1400px;margin:0 auto;padding-left:20px;padding-right:20px;padding-bottom:40px}
+    .page-title{font-size:28px;font-weight:700;color:#e8f0f8;margin-bottom:8px;display:flex;align-items:center;gap:12px}
+    .page-title .badge{font-size:12px;font-weight:400;background:rgba(74,222,128,0.15);color:#4ade80;padding:2px 12px;border-radius:20px;border:1px solid rgba(74,222,128,0.2)}
+    .page-subtitle{color:#8899aa;font-size:14px;margin-bottom:24px}
+    .uranium-display{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:24px;text-align:center;margin-bottom:24px}
+    .uranium-value{font-size:56px;font-weight:700}
+    .uranium-label{font-size:16px;color:#8899aa;margin-top:4px}
+    .uranium-status{font-size:18px;font-weight:600;margin-top:8px;padding:4px 16px;border-radius:20px;display:inline-block}
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px}
+    .stat-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:14px 16px}
+    .stat-card .label{font-size:11px;color:#8899aa;text-transform:uppercase;letter-spacing:.5px}
+    .stat-card .value{font-size:22px;font-weight:700;margin-top:4px}
+    .chart-container{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:16px;min-height:200px}
+    .chart-placeholder{display:flex;align-items:center;justify-content:center;min-height:200px;color:#4a5a6a}
+    @media(max-width:768px){.topbar{padding:0 12px;height:52px}.main-content{padding-top:68px;padding-left:12px;padding-right:12px}.page-title{font-size:20px}.uranium-value{font-size:36px}.stats-grid{grid-template-columns:repeat(2,1fr)}}
+</style></head>
+<body>
+<header class="topbar">
+    <div class="topbar-left"><span class="topbar-brand">☢️ УРАН</span></div>
+    <div class="topbar-right">
+        <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+        <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ</button>
+        <button class="topbar-btn" onclick="window.location.href='/rss-feed'">📡 СПИСОК СТРАНИЦ</button>
+        <div class="lang-switch"><button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button><button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button></div>
+    </div>
+</header>
+<main class="main-content">
+    <div class="page-title">☢️ Цена урана <span class="badge" id="statusBadge">🟢 ONLINE</span></div>
+    <div class="page-subtitle">Цена на уран — индикатор ядерных амбиций и энергетической политики</div>
+    <div class="uranium-display">
+        <div class="uranium-value" id="uraniumValue">—</div>
+        <div class="uranium-label">Цена урана ($/фунт)</div>
+        <div class="uranium-status" id="uraniumStatus">Загрузка...</div>
+    </div>
+    <div class="stats-grid">
+        <div class="stat-card"><div class="label">Записей</div><div class="value" id="totalCount">—</div></div>
+        <div class="stat-card"><div class="label">Минимум</div><div class="value" id="minValue">—</div></div>
+        <div class="stat-card"><div class="label">Максимум</div><div class="value" id="maxValue">—</div></div>
+        <div class="stat-card"><div class="label">Среднее</div><div class="value" id="avgValue">—</div></div>
+    </div>
+    <div class="chart-container"><div class="chart-placeholder" id="chartPlaceholder">📊 График загружается...</div></div>
+</main>
+<script>
+let currentLang=localStorage.getItem('crucix-lang')||'ru';
+function switchLang(lang){currentLang=lang;localStorage.setItem('crucix-lang',lang);document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active',b.dataset.lang===lang));}
+document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active',b.dataset.lang===currentLang));
+document.getElementById('copy-btn').addEventListener('click',function(){const t=document.body.innerText;navigator.clipboard.writeText(t).then(()=>{this.textContent='✅ Скопировано!';this.classList.add('copied');setTimeout(()=>{this.textContent='📋 КОПИРОВАТЬ';this.classList.remove('copied');},3000);});});
+async function loadData(){try{const r=await fetch('/api/uranium/');const d=await r.json();return d.data||[];}catch(e){return[];}}
+function render(data){if(!data||data.length===0){document.getElementById('uraniumValue').textContent='—';document.getElementById('uraniumStatus').textContent='Нет данных';return;}
+const last=data[data.length-1];const val=last.price||0;document.getElementById('uraniumValue').textContent=val.toFixed(2);
+let status,color;if(val>70){status='🔴 ВЫСОКИЙ СПРОС (ядерные амбиции)';color='#ef4444';}else if(val>50){status='🟡 СРЕДНИЙ СПРОС';color='#f59e0b';}else{status='🟢 НОРМАЛЬНО';color='#4ade80';}
+const s=document.getElementById('uraniumStatus');s.textContent=status;s.style.background=color+'22';s.style.color=color;s.style.border='1px solid '+color+'33';
+const vals=data.map(d=>d.price);const min=Math.min(...vals);const max=Math.max(...vals);const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
+document.getElementById('totalCount').textContent=data.length;document.getElementById('minValue').textContent=min.toFixed(2);document.getElementById('maxValue').textContent=max.toFixed(2);document.getElementById('avgValue').textContent=avg.toFixed(2);
+renderChart(data);}
+function renderChart(data){const c=document.getElementById('chartPlaceholder');if(data.length<2){c.innerHTML='📊 Недостаточно данных';return;}
+const vals=data.map(d=>d.price);const maxV=Math.max(...vals)*1.1||1;const minV=Math.min(...vals)*0.9||0;const range=maxV-minV||1;
+c.innerHTML=data.map((d,i)=>{const h=((d.price-minV)/range)*150+20;return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;"><div style="width:100%;height:${h}px;background:#4ade80;border-radius:3px 3px 0 0;min-height:4px;"></div><div style="font-size:9px;color:#4a5a6a;margin-top:4px;transform:rotate(-45deg);white-space:nowrap;">${d.date.slice(5)}</div></div>`;}).join('');
+c.innerHTML+=`<div style="display:flex;justify-content:space-between;font-size:10px;color:#4a5a6a;padding:0 4px;margin-top:8px;"><span>${data[0].date}</span><span>${data[data.length-1].date}</span></div>`;}
+async function update(){const d=await loadData();render(d);}
+update();setInterval(update,60000);
+</script></body></html>

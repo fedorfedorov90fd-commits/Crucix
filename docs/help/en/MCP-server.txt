@@ -1,0 +1,82 @@
+============================================================
+MCP SERVER (Model Context Protocol)
+============================================================
+Version: 1.0.0
+Port: 3150
+Status: ✅ RUNNING
+
+DESCRIPTION
+-----------
+MCP-compatible server for connecting AI agents (Claude, Cursor)
+to Crucix data. Allows agents to directly query data through
+a unified protocol.
+
+FEATURES
+--------
+- 7 built-in tools for AI agents
+- Country risk assessment
+- Global AI briefing
+- Market data
+- Conflict events
+- Chokepoint status
+- Aviation data
+- Maritime activity
+
+API ENDPOINTS
+-------------
+GET    /mcp/tools                - List available tools
+POST   /mcp/call                 - Call a tool
+
+AVAILABLE TOOLS
+---------------
+get_country_risk      - Country risk and resilience index
+get_world_brief       - Global AI briefing
+get_market_data       - Market data (stocks, commodities, crypto)
+get_conflict_events   - Conflict events by country
+get_chokepoint_status - Maritime chokepoint status
+get_aviation_status   - Aviation data
+get_maritime_activity - Maritime activity (AIS)
+
+EXAMPLES
+--------
+# List tools
+curl http://localhost:3150/mcp/tools
+
+# Country risk
+curl -X POST http://localhost:3150/mcp/call \
+  -H "Content-Type: application/json" \
+  -d '{"tool": "get_country_risk", "arguments": {"country": "IR"}}'
+
+# Global briefing
+curl -X POST http://localhost:3150/mcp/call \
+  -H "Content-Type: application/json" \
+  -d '{"tool": "get_world_brief", "arguments": {}}'
+
+# Market data
+curl -X POST http://localhost:3150/mcp/call \
+  -H "Content-Type: application/json" \
+  -d '{"tool": "get_market_data", "arguments": {"asset_class": "all"}}'
+
+CONNECTING TO CLAUDE DESKTOP
+----------------------------
+Add to claude_desktop_config.json:
+
+{
+  "mcpServers": {
+    "crucix": {
+      "url": "http://localhost:3150/mcp"
+    }
+  }
+}
+
+DEPENDENCIES
+------------
+- Node.js v22+
+- RAG module (port 3120) for briefing
+
+INSTALLATION
+------------
+cd /home/ta8_/Рабочий стол/Crucix/crucix-extensions/mcp-server
+npm install
+node index.mjs
+============================================================

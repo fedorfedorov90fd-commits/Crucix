@@ -1,0 +1,106 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: crucix-daily-benchmark
+  namespace: crucix
+spec:
+  schedule: "0 3 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: benchmark
+              image: crucix-core:3.0.0
+              command:
+                - node
+                - benchmark/suite.mjs
+                - vix
+              envFrom:
+                - configMapRef:
+                    name: crucix-config
+              volumeMounts:
+                - name: runs
+                  mountPath: /app/runs
+              resources:
+                requests:
+                  cpu: "1"
+                  memory: "1Gi"
+                limits:
+                  cpu: "2"
+                  memory: "2Gi"
+          volumes:
+            - name: runs
+              persistentVolumeClaim:
+                claimName: crucix-runs-pvc
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: crucix-auto-resolve
+  namespace: crucix
+spec:
+  schedule: "*/30 * * * *"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: resolve
+              image: crucix-core:3.0.0
+              command:
+                - node
+                - -e
+                - |
+                  import('./apis/predict/engine.mjs').then(m => {
+                    const engine = new m.PredictionEngine();
+                    return engine.autoResolve();
+                  }).then(r => console.log('Resolved:', r));
+              envFrom:
+                - configMapRef:
+                    name: crucix-config
+              volumeMounts:
+                - name: runs
+                  mountPath: /app/runs
+          volumes:
+            - name: runs
+              persistentVolumeClaim:
+                claimName: crucix-runs-pvc
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: crucix-federated-round
+  namespace: crucix
+spec:
+  schedule: "*/15 * * * *"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: federated
+              image: crucix-core:3.0.0
+              command:
+                - node
+                - apis/predict/federated/fl_node.mjs
+                - worker
+                - "3120"
+              envFrom:
+                - configMapRef:
+                    name: crucix-config
+              volumeMounts:
+                - name: runs
+                  mountPath: /app/runs
+          volumes:
+            - name: runs
+              persistentVolumeClaim:
+                claimName: crucix-runs-pvc

@@ -1,0 +1,1012 @@
+{
+  "_meta": {
+    "id": "route-explorer",
+    "category": "flow",
+    "version": "1.0.0",
+    "schema_version": "1.0.0",
+    "sources": [
+      "infrastructure/objects"
+    ],
+    "calculator": "RouteExplorer",
+    "updated_at": "2026-09-12T15:02:20.871Z",
+    "period": "latest",
+    "duration_ms": 5,
+    "checksum": "12153057e07c4b88",
+    "stats": {
+      "ports": 26,
+      "chokepoints": 15,
+      "routes": 3
+    },
+    "description": "Анализ альтернативных морских маршрутов с учётом чокпоинтов."
+  },
+  "data": {
+    "ports": [
+      {
+        "id": "port-shanghai",
+        "name": "Порт Шанхай",
+        "lat": 31.2304,
+        "lng": 121.4737
+      },
+      {
+        "id": "port-singapore",
+        "name": "Порт Сингапур",
+        "lat": 1.2644,
+        "lng": 103.8223
+      },
+      {
+        "id": "port-ningbo",
+        "name": "Порт Нинбо-Чжоушань",
+        "lat": 29.8683,
+        "lng": 121.544
+      },
+      {
+        "id": "port-shenzhen",
+        "name": "Порт Шэньчжэнь",
+        "lat": 22.5431,
+        "lng": 114.0579
+      },
+      {
+        "id": "port-busan",
+        "name": "Порт Пусан",
+        "lat": 35.1028,
+        "lng": 129.0403
+      },
+      {
+        "id": "port-rotterdam",
+        "name": "Порт Роттердам",
+        "lat": 51.9491,
+        "lng": 4.1407
+      },
+      {
+        "id": "port-antwerp",
+        "name": "Порт Антверпен-Брюгге",
+        "lat": 51.2604,
+        "lng": 4.3861
+      },
+      {
+        "id": "port-hamburg",
+        "name": "Порт Гамбург",
+        "lat": 53.5461,
+        "lng": 9.9745
+      },
+      {
+        "id": "port-la",
+        "name": "Порт Лос-Анджелес",
+        "lat": 33.7395,
+        "lng": -118.261
+      },
+      {
+        "id": "port-longbeach",
+        "name": "Порт Лонг-Бич",
+        "lat": 33.7542,
+        "lng": -118.2165
+      },
+      {
+        "id": "port-newyork",
+        "name": "Порт Нью-Йорк/Нью-Джерси",
+        "lat": 40.6696,
+        "lng": -74.1206
+      },
+      {
+        "id": "port-jebel-ali",
+        "name": "Порт Джебель-Али (Дубай)",
+        "lat": 25.0166,
+        "lng": 55.0617
+      },
+      {
+        "id": "port-kaohsiung",
+        "name": "Порт Гаосюн",
+        "lat": 22.6167,
+        "lng": 120.2833
+      },
+      {
+        "id": "port-piraeus",
+        "name": "Порт Пирей",
+        "lat": 37.945,
+        "lng": 23.6437
+      },
+      {
+        "id": "port-valencia",
+        "name": "Порт Валенсия",
+        "lat": 39.4489,
+        "lng": -0.3155
+      },
+      {
+        "id": "port-algeciras",
+        "name": "Порт Альхесирас",
+        "lat": 36.1326,
+        "lng": -5.4418
+      },
+      {
+        "id": "port-durban",
+        "name": "Порт Дурбан",
+        "lat": -29.8681,
+        "lng": 31.0257
+      },
+      {
+        "id": "port-lagos",
+        "name": "Порт Лагос (Апапа)",
+        "lat": 6.45,
+        "lng": 3.3667
+      },
+      {
+        "id": "port-mumbai",
+        "name": "Порт Мумбаи (JNPT)",
+        "lat": 18.95,
+        "lng": 72.95
+      },
+      {
+        "id": "port-colombo",
+        "name": "Порт Коломбо",
+        "lat": 6.95,
+        "lng": 79.85
+      },
+      {
+        "id": "port-klang",
+        "name": "Порт Кланг",
+        "lat": 3,
+        "lng": 101.4
+      },
+      {
+        "id": "port-tanjung-pelepas",
+        "name": "Порт Танджунг-Пелепас",
+        "lat": 1.3625,
+        "lng": 103.5489
+      },
+      {
+        "id": "port-santos",
+        "name": "Порт Сантос",
+        "lat": -23.9608,
+        "lng": -46.3339
+      },
+      {
+        "id": "port-buenosaires",
+        "name": "Порт Буэнос-Айрес",
+        "lat": -34.6,
+        "lng": -58.3667
+      },
+      {
+        "id": "port-veracruz",
+        "name": "Порт Веракрус",
+        "lat": 19.2,
+        "lng": -96.1333
+      },
+      {
+        "id": "port-vladivostok",
+        "name": "Порт Владивосток",
+        "lat": 43.1155,
+        "lng": 131.8855
+      }
+    ],
+    "chokepoints": [
+      {
+        "id": "chokepoint-hormuz",
+        "name": "Ормузский пролив",
+        "lat": 26.5667,
+        "lng": 56.25
+      },
+      {
+        "id": "chokepoint-malacca",
+        "name": "Малаккский пролив",
+        "lat": 1.5,
+        "lng": 102.8
+      },
+      {
+        "id": "chokepoint-suez",
+        "name": "Суэцкий канал",
+        "lat": 30.5,
+        "lng": 32.5
+      },
+      {
+        "id": "chokepoint-panama",
+        "name": "Панамский канал",
+        "lat": 9.08,
+        "lng": -79.68
+      },
+      {
+        "id": "chokepoint-taiwan",
+        "name": "Тайваньский пролив",
+        "lat": 24.5,
+        "lng": 119.5
+      },
+      {
+        "id": "chokepoint-bosphorus",
+        "name": "Босфор и Дарданеллы",
+        "lat": 41.12,
+        "lng": 29.05
+      },
+      {
+        "id": "chokepoint-gibraltar",
+        "name": "Гибралтарский пролив",
+        "lat": 36,
+        "lng": -5.5
+      },
+      {
+        "id": "chokepoint-bab-el-mandeb",
+        "name": "Баб-эль-Мандебский пролив",
+        "lat": 12.58,
+        "lng": 43.33
+      },
+      {
+        "id": "chokepoint-cape",
+        "name": "Мыс Доброй Надежды",
+        "lat": -34.8333,
+        "lng": 20
+      },
+      {
+        "id": "chokepoint-korea",
+        "name": "Корейский пролив",
+        "lat": 34.5,
+        "lng": 129
+      },
+      {
+        "id": "chokepoint-english-channel",
+        "name": "Ла-Манш / Дуврский пролив",
+        "lat": 51,
+        "lng": 1.5
+      },
+      {
+        "id": "chokepoint-danish-straits",
+        "name": "Датские проливы (Балтика)",
+        "lat": 57,
+        "lng": 11
+      },
+      {
+        "id": "chokepoint-strait-of-hormuz-south",
+        "name": "Южная часть Персидского залива",
+        "lat": 26,
+        "lng": 52
+      },
+      {
+        "id": "chokepoint-north-sea",
+        "name": "Северное море (газопроводы)",
+        "lat": 56,
+        "lng": 3
+      },
+      {
+        "id": "chokepoint-panama-north",
+        "name": "Северный вход Панамского канала",
+        "lat": 9.5,
+        "lng": -79.9
+      }
+    ],
+    "routes": [
+      {
+        "from": "port-shanghai",
+        "to": "port-la",
+        "alternatives": [
+          {
+            "type": "direct",
+            "from": "port-shanghai",
+            "to": "port-la",
+            "distanceKm": 10456,
+            "durationHours": 403,
+            "costUSD": 10456,
+            "waypoints": [
+              "port-shanghai",
+              "port-la"
+            ]
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-shanghai",
+            "to": "port-la",
+            "via": "chokepoint-korea",
+            "distanceKm": 10482,
+            "durationHours": 404,
+            "costUSD": 10482,
+            "waypoints": [
+              "port-shanghai",
+              "chokepoint-korea",
+              "port-la"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-shanghai",
+            "to": "port-la",
+            "via": "chokepoint-taiwan",
+            "distanceKm": 11891,
+            "durationHours": 459,
+            "costUSD": 11891,
+            "waypoints": [
+              "port-shanghai",
+              "chokepoint-taiwan",
+              "port-la"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-shanghai",
+            "to": "port-la",
+            "via": "chokepoint-danish-straits",
+            "distanceKm": 17113,
+            "durationHours": 660,
+            "costUSD": 17113,
+            "waypoints": [
+              "port-shanghai",
+              "chokepoint-danish-straits",
+              "port-la"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-shanghai",
+            "to": "port-la",
+            "via": "chokepoint-north-sea",
+            "distanceKm": 17312,
+            "durationHours": 668,
+            "costUSD": 17312,
+            "waypoints": [
+              "port-shanghai",
+              "chokepoint-north-sea",
+              "port-la"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-shanghai",
+            "to": "port-la",
+            "via": "chokepoint-malacca",
+            "distanceKm": 18050,
+            "durationHours": 696,
+            "costUSD": 18050,
+            "waypoints": [
+              "port-shanghai",
+              "chokepoint-malacca",
+              "port-la"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-shanghai",
+            "to": "port-la",
+            "via": "chokepoint-english-channel",
+            "distanceKm": 18058,
+            "durationHours": 696,
+            "costUSD": 18058,
+            "waypoints": [
+              "port-shanghai",
+              "chokepoint-english-channel",
+              "port-la"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-shanghai",
+            "to": "port-la",
+            "via": "chokepoint-bosphorus",
+            "distanceKm": 19018,
+            "durationHours": 734,
+            "costUSD": 19018,
+            "waypoints": [
+              "port-shanghai",
+              "chokepoint-bosphorus",
+              "port-la"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-shanghai",
+            "to": "port-la",
+            "via": "chokepoint-hormuz",
+            "distanceKm": 19563,
+            "durationHours": 755,
+            "costUSD": 19563,
+            "waypoints": [
+              "port-shanghai",
+              "chokepoint-hormuz",
+              "port-la"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-shanghai",
+            "to": "port-la",
+            "via": "chokepoint-panama-north",
+            "distanceKm": 19695,
+            "durationHours": 760,
+            "costUSD": 19695,
+            "waypoints": [
+              "port-shanghai",
+              "chokepoint-panama-north",
+              "port-la"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-shanghai",
+            "to": "port-la",
+            "via": "chokepoint-panama",
+            "distanceKm": 19796,
+            "durationHours": 764,
+            "costUSD": 19796,
+            "waypoints": [
+              "port-shanghai",
+              "chokepoint-panama",
+              "port-la"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-shanghai",
+            "to": "port-la",
+            "via": "chokepoint-strait-of-hormuz-south",
+            "distanceKm": 19989,
+            "durationHours": 771,
+            "costUSD": 19989,
+            "waypoints": [
+              "port-shanghai",
+              "chokepoint-strait-of-hormuz-south",
+              "port-la"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-shanghai",
+            "to": "port-la",
+            "via": "chokepoint-gibraltar",
+            "distanceKm": 20304,
+            "durationHours": 783,
+            "costUSD": 20304,
+            "waypoints": [
+              "port-shanghai",
+              "chokepoint-gibraltar",
+              "port-la"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-shanghai",
+            "to": "port-la",
+            "via": "chokepoint-suez",
+            "distanceKm": 20464,
+            "durationHours": 789,
+            "costUSD": 20464,
+            "waypoints": [
+              "port-shanghai",
+              "chokepoint-suez",
+              "port-la"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-shanghai",
+            "to": "port-la",
+            "via": "chokepoint-bab-el-mandeb",
+            "distanceKm": 22678,
+            "durationHours": 875,
+            "costUSD": 22678,
+            "waypoints": [
+              "port-shanghai",
+              "chokepoint-bab-el-mandeb",
+              "port-la"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-shanghai",
+            "to": "port-la",
+            "via": "chokepoint-cape",
+            "distanceKm": 29087,
+            "durationHours": 1122,
+            "costUSD": 29087,
+            "waypoints": [
+              "port-shanghai",
+              "chokepoint-cape",
+              "port-la"
+            ],
+            "congestionDelayHours": 0
+          }
+        ],
+        "fastest": "direct",
+        "cheapest": "direct"
+      },
+      {
+        "from": "port-singapore",
+        "to": "port-rotterdam",
+        "alternatives": [
+          {
+            "type": "direct",
+            "from": "port-singapore",
+            "to": "port-rotterdam",
+            "distanceKm": 10558,
+            "durationHours": 407,
+            "costUSD": 10558,
+            "waypoints": [
+              "port-singapore",
+              "port-rotterdam"
+            ]
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-singapore",
+            "to": "port-rotterdam",
+            "via": "chokepoint-malacca",
+            "distanceKm": 10584,
+            "durationHours": 408,
+            "costUSD": 10584,
+            "waypoints": [
+              "port-singapore",
+              "chokepoint-malacca",
+              "port-rotterdam"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-singapore",
+            "to": "port-rotterdam",
+            "via": "chokepoint-danish-straits",
+            "distanceKm": 10775,
+            "durationHours": 416,
+            "costUSD": 10775,
+            "waypoints": [
+              "port-singapore",
+              "chokepoint-danish-straits",
+              "port-rotterdam"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-singapore",
+            "to": "port-rotterdam",
+            "via": "chokepoint-bosphorus",
+            "distanceKm": 10881,
+            "durationHours": 420,
+            "costUSD": 10881,
+            "waypoints": [
+              "port-singapore",
+              "chokepoint-bosphorus",
+              "port-rotterdam"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-singapore",
+            "to": "port-rotterdam",
+            "via": "chokepoint-hormuz",
+            "distanceKm": 10952,
+            "durationHours": 422,
+            "costUSD": 10952,
+            "waypoints": [
+              "port-singapore",
+              "chokepoint-hormuz",
+              "port-rotterdam"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-singapore",
+            "to": "port-rotterdam",
+            "via": "chokepoint-english-channel",
+            "distanceKm": 10967,
+            "durationHours": 423,
+            "costUSD": 10967,
+            "waypoints": [
+              "port-singapore",
+              "chokepoint-english-channel",
+              "port-rotterdam"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-singapore",
+            "to": "port-rotterdam",
+            "via": "chokepoint-north-sea",
+            "distanceKm": 11017,
+            "durationHours": 425,
+            "costUSD": 11017,
+            "waypoints": [
+              "port-singapore",
+              "chokepoint-north-sea",
+              "port-rotterdam"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-singapore",
+            "to": "port-rotterdam",
+            "via": "chokepoint-strait-of-hormuz-south",
+            "distanceKm": 11096,
+            "durationHours": 428,
+            "costUSD": 11096,
+            "waypoints": [
+              "port-singapore",
+              "chokepoint-strait-of-hormuz-south",
+              "port-rotterdam"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-singapore",
+            "to": "port-rotterdam",
+            "via": "chokepoint-suez",
+            "distanceKm": 11476,
+            "durationHours": 443,
+            "costUSD": 11476,
+            "waypoints": [
+              "port-singapore",
+              "chokepoint-suez",
+              "port-rotterdam"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-singapore",
+            "to": "port-rotterdam",
+            "via": "chokepoint-bab-el-mandeb",
+            "distanceKm": 12380,
+            "durationHours": 477,
+            "costUSD": 12380,
+            "waypoints": [
+              "port-singapore",
+              "chokepoint-bab-el-mandeb",
+              "port-rotterdam"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-singapore",
+            "to": "port-rotterdam",
+            "via": "chokepoint-taiwan",
+            "distanceKm": 12542,
+            "durationHours": 484,
+            "costUSD": 12542,
+            "waypoints": [
+              "port-singapore",
+              "chokepoint-taiwan",
+              "port-rotterdam"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-singapore",
+            "to": "port-rotterdam",
+            "via": "chokepoint-korea",
+            "distanceKm": 13537,
+            "durationHours": 522,
+            "costUSD": 13537,
+            "waypoints": [
+              "port-singapore",
+              "chokepoint-korea",
+              "port-rotterdam"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-singapore",
+            "to": "port-rotterdam",
+            "via": "chokepoint-gibraltar",
+            "distanceKm": 13578,
+            "durationHours": 524,
+            "costUSD": 13578,
+            "waypoints": [
+              "port-singapore",
+              "chokepoint-gibraltar",
+              "port-rotterdam"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-singapore",
+            "to": "port-rotterdam",
+            "via": "chokepoint-cape",
+            "distanceKm": 19297,
+            "durationHours": 744,
+            "costUSD": 19297,
+            "waypoints": [
+              "port-singapore",
+              "chokepoint-cape",
+              "port-rotterdam"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-singapore",
+            "to": "port-rotterdam",
+            "via": "chokepoint-panama-north",
+            "distanceKm": 27519,
+            "durationHours": 1061,
+            "costUSD": 27519,
+            "waypoints": [
+              "port-singapore",
+              "chokepoint-panama-north",
+              "port-rotterdam"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-singapore",
+            "to": "port-rotterdam",
+            "via": "chokepoint-panama",
+            "distanceKm": 27592,
+            "durationHours": 1064,
+            "costUSD": 27592,
+            "waypoints": [
+              "port-singapore",
+              "chokepoint-panama",
+              "port-rotterdam"
+            ],
+            "congestionDelayHours": 0
+          }
+        ],
+        "fastest": "direct",
+        "cheapest": "direct"
+      },
+      {
+        "from": "port-rotterdam",
+        "to": "port-newyork",
+        "alternatives": [
+          {
+            "type": "direct",
+            "from": "port-rotterdam",
+            "to": "port-newyork",
+            "distanceKm": 5841,
+            "durationHours": 225,
+            "costUSD": 5841,
+            "waypoints": [
+              "port-rotterdam",
+              "port-newyork"
+            ]
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-rotterdam",
+            "to": "port-newyork",
+            "via": "chokepoint-english-channel",
+            "distanceKm": 5917,
+            "durationHours": 228,
+            "costUSD": 5917,
+            "waypoints": [
+              "port-rotterdam",
+              "chokepoint-english-channel",
+              "port-newyork"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-rotterdam",
+            "to": "port-newyork",
+            "via": "chokepoint-north-sea",
+            "distanceKm": 6082,
+            "durationHours": 235,
+            "costUSD": 6082,
+            "waypoints": [
+              "port-rotterdam",
+              "chokepoint-north-sea",
+              "port-newyork"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-rotterdam",
+            "to": "port-newyork",
+            "via": "chokepoint-danish-straits",
+            "distanceKm": 6767,
+            "durationHours": 261,
+            "costUSD": 6767,
+            "waypoints": [
+              "port-rotterdam",
+              "chokepoint-danish-straits",
+              "port-newyork"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-rotterdam",
+            "to": "port-newyork",
+            "via": "chokepoint-gibraltar",
+            "distanceKm": 7784,
+            "durationHours": 300,
+            "costUSD": 7784,
+            "waypoints": [
+              "port-rotterdam",
+              "chokepoint-gibraltar",
+              "port-newyork"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-rotterdam",
+            "to": "port-newyork",
+            "via": "chokepoint-bosphorus",
+            "distanceKm": 10314,
+            "durationHours": 398,
+            "costUSD": 10314,
+            "waypoints": [
+              "port-rotterdam",
+              "chokepoint-bosphorus",
+              "port-newyork"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-rotterdam",
+            "to": "port-newyork",
+            "via": "chokepoint-panama-north",
+            "distanceKm": 12282,
+            "durationHours": 474,
+            "costUSD": 12282,
+            "waypoints": [
+              "port-rotterdam",
+              "chokepoint-panama-north",
+              "port-newyork"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-rotterdam",
+            "to": "port-newyork",
+            "via": "chokepoint-panama",
+            "distanceKm": 12346,
+            "durationHours": 476,
+            "costUSD": 12346,
+            "waypoints": [
+              "port-rotterdam",
+              "chokepoint-panama",
+              "port-newyork"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-rotterdam",
+            "to": "port-newyork",
+            "via": "chokepoint-suez",
+            "distanceKm": 12411,
+            "durationHours": 479,
+            "costUSD": 12411,
+            "waypoints": [
+              "port-rotterdam",
+              "chokepoint-suez",
+              "port-newyork"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-rotterdam",
+            "to": "port-newyork",
+            "via": "chokepoint-strait-of-hormuz-south",
+            "distanceKm": 15664,
+            "durationHours": 604,
+            "costUSD": 15664,
+            "waypoints": [
+              "port-rotterdam",
+              "chokepoint-strait-of-hormuz-south",
+              "port-newyork"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-rotterdam",
+            "to": "port-newyork",
+            "via": "chokepoint-hormuz",
+            "distanceKm": 16103,
+            "durationHours": 621,
+            "costUSD": 16103,
+            "waypoints": [
+              "port-rotterdam",
+              "chokepoint-hormuz",
+              "port-newyork"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-rotterdam",
+            "to": "port-newyork",
+            "via": "chokepoint-bab-el-mandeb",
+            "distanceKm": 16887,
+            "durationHours": 651,
+            "costUSD": 16887,
+            "waypoints": [
+              "port-rotterdam",
+              "chokepoint-bab-el-mandeb",
+              "port-newyork"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-rotterdam",
+            "to": "port-newyork",
+            "via": "chokepoint-korea",
+            "distanceKm": 20339,
+            "durationHours": 784,
+            "costUSD": 20339,
+            "waypoints": [
+              "port-rotterdam",
+              "chokepoint-korea",
+              "port-newyork"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-rotterdam",
+            "to": "port-newyork",
+            "via": "chokepoint-taiwan",
+            "distanceKm": 22090,
+            "durationHours": 852,
+            "costUSD": 22090,
+            "waypoints": [
+              "port-rotterdam",
+              "chokepoint-taiwan",
+              "port-newyork"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-rotterdam",
+            "to": "port-newyork",
+            "via": "chokepoint-cape",
+            "distanceKm": 22520,
+            "durationHours": 869,
+            "costUSD": 22520,
+            "waypoints": [
+              "port-rotterdam",
+              "chokepoint-cape",
+              "port-newyork"
+            ],
+            "congestionDelayHours": 0
+          },
+          {
+            "type": "via-chokepoint",
+            "from": "port-rotterdam",
+            "to": "port-newyork",
+            "via": "chokepoint-malacca",
+            "distanceKm": 25783,
+            "durationHours": 994,
+            "costUSD": 25783,
+            "waypoints": [
+              "port-rotterdam",
+              "chokepoint-malacca",
+              "port-newyork"
+            ],
+            "congestionDelayHours": 0
+          }
+        ],
+        "fastest": "direct",
+        "cheapest": "direct"
+      }
+    ],
+    "generated_at": "2026-09-12T15:02:20.871Z"
+  }
+}

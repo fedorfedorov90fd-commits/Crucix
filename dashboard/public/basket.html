@@ -1,172 +1,761 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Единая корзина данных — Crucix</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: monospace; background: #0a0a1a; color: #e0e0e0; padding: 20px; }
-    .container { max-width: 1400px; margin: 0 auto; }
-    h1 { font-size: 24px; margin-bottom: 20px; color: #2196f3; }
-    .stats { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px; }
-    .stat-card { background: rgba(255,255,255,0.05); padding: 12px 20px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06); }
-    .stat-card .label { font-size: 12px; color: #888; }
-    .stat-card .value { font-size: 24px; font-weight: bold; color: #fff; }
-    .filters { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
-    .filters input, .filters select { padding: 8px 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: #e0e0e0; font-size: 13px; }
-    .filters input:focus { border-color: #2196f3; outline: none; }
-    .items { display: flex; flex-direction: column; gap: 8px; }
-    .item { background: rgba(255,255,255,0.03); padding: 12px 16px; border-radius: 6px; border-left: 3px solid #555; cursor: pointer; transition: background 0.15s; }
-    .item:hover { background: rgba(255,255,255,0.06); }
-    .item .title { font-size: 15px; font-weight: 500; color: #e0e0e0; }
-    .item .meta { font-size: 12px; color: #888; margin-top: 4px; display: flex; gap: 12px; flex-wrap: wrap; }
-    .item .meta .source { color: #4caf50; }
-    .item .meta .score { color: #ffeb3b; }
-    .item .meta .region { color: #2196f3; }
-    .item .summary { font-size: 13px; color: #aaa; margin-top: 4px; }
-    .item .score-high { border-left-color: #f44336; }
-    .item .score-medium { border-left-color: #ff9800; }
-    .item .score-low { border-left-color: #4caf50; }
-    .pagination { display: flex; gap: 8px; justify-content: center; margin-top: 20px; }
-    .pagination button { padding: 6px 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: #e0e0e0; cursor: pointer; }
-    .pagination button:hover { background: rgba(255,255,255,0.1); }
-    .pagination button.active { background: #2196f3; border-color: #2196f3; }
-    .loading { text-align: center; padding: 40px; color: #666; }
-    .empty { text-align: center; padding: 40px; color: #555; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Корзина данных — Crucix</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a1a;
+            color: #e0e0e0;
+            font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+        }
+
+        /* ===== ПЕРВЫЙ БЛОК: ТОПБАР (НЕ ТРОГАЕМ) ===== */
+        .topbar {
+            position: fixed; top: 0; left: 0; right: 0;
+            height: 60px;
+            background: rgba(10,10,20,0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid rgba(91,192,248,0.25);
+            box-shadow: 0 2px 20px rgba(91,192,248,0.08);
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        .topbar::after {
+            content: "";
+            position: absolute;
+            bottom: -2px; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #5bc0f8, transparent);
+            opacity: 0.6;
+        }
+        .topbar-left { display: flex; align-items: center; gap: 12px; }
+        .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; }
+        .topbar-right { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .topbar-btn {
+            height: 28px; padding: 0 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 4px;
+            background: rgba(255,255,255,0.03);
+            color: #888;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .topbar-btn:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+        .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
+        .btn-home:hover { background: rgba(91,192,248,0.15); }
+        .btn-copy { color: #5bc0f8; border-color: rgba(91,192,248,0.15); background: rgba(91,192,248,0.06); }
+        .btn-copy.copied { background: rgba(76,175,80,0.2); border-color: #4caf50; color: #4caf50; }
+        .btn-rss { color: #f26522; border-color: rgba(242,101,34,0.2); background: rgba(242,101,34,0.06); }
+        .btn-rss:hover { background: rgba(242,101,34,0.15); }
+        .btn-help { color: #a78bfa; border-color: rgba(167,139,250,0.2); background: rgba(167,139,250,0.06); }
+        .btn-help:hover { background: rgba(167,139,250,0.15); }
+
+        .lang-switch {
+            display: flex; gap: 2px; padding: 2px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .lang-btn {
+            padding: 2px 8px; border: none; background: transparent;
+            color: #666; font-size: 11px; font-weight: 500;
+            cursor: pointer; border-radius: 3px; transition: all 0.2s;
+        }
+        .lang-btn:hover { color: #888; background: rgba(255,255,255,0.05); }
+        .lang-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.1); }
+
+        .copy-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .copy-dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 32px;
+            background: #0a0a1a;
+            min-width: 220px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+            z-index: 200;
+            padding: 6px 0;
+        }
+        .copy-dropdown-content.show { display: block; }
+        .copy-dropdown-content button {
+            display: block; width: 100%; padding: 8px 16px;
+            background: transparent; border: none;
+            color: #c8d0d8; font-size: 12px; text-align: left;
+            cursor: pointer; transition: all 0.15s;
+            font-family: inherit;
+        }
+        .copy-dropdown-content button:hover { background: rgba(91,192,248,0.08); color: #5bc0f8; }
+        .copy-dropdown-content .divider { height: 1px; background: rgba(255,255,255,0.05); margin: 4px 12px; }
+        .copy-dropdown-content .label { padding: 4px 16px; font-size: 10px; color: #4a5a6a; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* ===== ВТОРОЙ БЛОК: НАВИГАЦИЯ ПО ДАШБОРДАМ ===== */
+        .nav-dashboards {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            height: 38px;
+            background: rgba(6,10,18,0.92);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            z-index: 99;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 4px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .nav-dashboards::-webkit-scrollbar { display: none; }
+
+        .nav-btn {
+            padding: 4px 10px;
+            border: none;
+            border-radius: 4px;
+            background: transparent;
+            color: #666;
+            font-size: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            font-family: inherit;
+            border: 1px solid transparent;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .nav-btn:hover { color: #c8d0d8; background: rgba(255,255,255,0.04); }
+        .nav-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.08); border-color: rgba(91,192,248,0.15); }
+        .nav-btn .icon { margin-right: 3px; }
+        .nav-btn.center { color: #fbbf24; border-color: rgba(251,191,36,0.2); background: rgba(251,191,36,0.06); }
+        .nav-btn.center:hover { background: rgba(251,191,36,0.15); }
+
+        /* ===== ОСНОВНОЙ КОНТЕНТ ===== */
+        .main-content {
+            padding-top: 114px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
+            padding-bottom: 40px;
+            min-height: calc(100vh - 114px);
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #e8f0f8;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .page-title .badge {
+            font-size: 12px; font-weight: 400;
+            background: rgba(74,222,128,0.15); color: #4ade80;
+            padding: 2px 12px; border-radius: 20px;
+            border: 1px solid rgba(74,222,128,0.2);
+        }
+        .page-subtitle {
+            color: #8899aa;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+        .page-subtitle a { color: #5bc0f8; text-decoration: none; }
+        .page-subtitle a:hover { text-decoration: underline; }
+
+        /* ===== СТАТИСТИКА КОРЗИНЫ ===== */
+        .basket-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 16px 20px;
+            text-align: center;
+        }
+        .stat-card .number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #5bc0f8;
+        }
+        .stat-card .label {
+            font-size: 12px;
+            color: #8899aa;
+            margin-top: 4px;
+        }
+
+        /* ===== ФИЛЬТРЫ ===== */
+        .filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .filter-btn {
+            padding: 6px 14px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            background: rgba(255,255,255,0.02);
+            color: #888;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .filter-btn:hover {
+            background: rgba(255,255,255,0.06);
+            color: #c8d0d8;
+        }
+        .filter-btn.active {
+            background: rgba(91,192,248,0.1);
+            border-color: rgba(91,192,248,0.3);
+            color: #5bc0f8;
+        }
+
+        /* ===== ТАБЛИЦА ДАННЫХ ===== */
+        .table-container {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+        .table-container table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .table-container th {
+            text-align: left;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.03);
+            color: #8899aa;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .table-container td {
+            padding: 8px 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            color: #c0d0e0;
+        }
+        .table-container tr:hover td {
+            background: rgba(255,255,255,0.02);
+        }
+        .table-container .source {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: rgba(91,192,248,0.1);
+            color: #5bc0f8;
+        }
+        .table-container .size {
+            font-size: 12px;
+            color: #4a5a6a;
+        }
+        .table-container .time {
+            font-size: 12px;
+            color: #4a5a6a;
+        }
+
+        /* ===== ПАГИНАЦИЯ ===== */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            padding: 12px 0;
+        }
+        .pagination button {
+            padding: 4px 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 4px;
+            background: rgba(255,255,255,0.02);
+            color: #888;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .pagination button:hover {
+            background: rgba(255,255,255,0.06);
+            color: #c8d0d8;
+        }
+        .pagination button.active {
+            background: rgba(91,192,248,0.1);
+            border-color: rgba(91,192,248,0.3);
+            color: #5bc0f8;
+        }
+
+        /* ===== АДАПТИВНОСТЬ ===== */
+        @media (max-width: 768px) {
+            .basket-stats { grid-template-columns: repeat(2, 1fr); }
+            .topbar { padding: 0 12px; height: 52px; }
+            .topbar-brand { font-size: 12px; }
+            .topbar-btn { font-size: 10px; padding: 0 8px; height: 24px; }
+            .nav-dashboards { top: 52px; height: 34px; padding: 0 10px; gap: 2px; }
+            .nav-btn { font-size: 9px; padding: 2px 6px; }
+            .main-content { padding-top: 102px; padding-left: 12px; padding-right: 12px; }
+            .page-title { font-size: 20px; }
+            .table-container { font-size: 12px; }
+            .table-container th, .table-container td { padding: 6px 10px; }
+        }
+        @media (max-width: 480px) {
+            .basket-stats { grid-template-columns: 1fr; }
+            .topbar { padding: 0 8px; height: 46px; }
+            .topbar-brand { font-size: 10px; letter-spacing: 1px; }
+            .topbar-btn { font-size: 9px; padding: 0 6px; height: 20px; }
+            .lang-btn { font-size: 9px; padding: 1px 5px; }
+            .nav-dashboards { top: 46px; height: 30px; padding: 0 6px; gap: 2px; overflow-x: auto; }
+            .nav-btn { font-size: 8px; padding: 2px 5px; }
+            .main-content { padding-top: 92px; padding-left: 8px; padding-right: 8px; }
+            .page-title { font-size: 16px; }
+        }
+    </style>
 </head>
 <body>
-<div class="container">
-  <h1>📦 Единая корзина данных</h1>
 
-  <div class="stats" id="stats">
-    <div class="stat-card"><div class="label">Всего новостей</div><div class="value" id="total">—</div></div>
-    <div class="stat-card"><div class="label">За сегодня</div><div class="value" id="today">—</div></div>
-    <div class="stat-card"><div class="label">Источников</div><div class="value" id="sources">—</div></div>
-  </div>
+<!-- ===== ПЕРВЫЙ БЛОК: ТОПБАР ===== -->
+<header class="topbar">
+    <div class="topbar-left"><span class="topbar-brand">📦 КОРЗИНА ДАННЫХ</span></div>
+    <div class="topbar-right">
+        <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
 
-  <div class="filters">
-    <input type="text" id="search" placeholder="Поиск по заголовку..." />
-    <select id="sourceFilter"><option value="">Все источники</option></select>
-    <select id="regionFilter"><option value="">Все регионы</option></select>
-    <button onclick="loadData()" style="padding:8px 16px;background:#2196f3;border:none;border-radius:4px;color:#fff;cursor:pointer;">Обновить</button>
-  </div>
+        <div class="copy-dropdown">
+            <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ ▼</button>
+            <div class="copy-dropdown-content" id="copyDropdown">
+                <div class="label">ФОРМАТЫ КОПИРОВАНИЯ</div>
+                <button data-format="text">📄 Как текст (полный снапшот)</button>
+                <button data-format="markdown">📝 Как Markdown</button>
+                <button data-format="json">📊 Как JSON</button>
+                <button data-format="csv">📋 Как CSV (таблицы)</button>
+                <div class="divider"></div>
+                <button data-format="dom">🌳 DOM-дерево</button>
+                <button data-format="storage">💾 localStorage + sessionStorage</button>
+                <button data-format="api">📡 API-запросы страницы</button>
+                <div class="divider"></div>
+                <button data-format="all">📦 ВСЁ В ОДНОМ</button>
+            </div>
+        </div>
 
-  <div class="items" id="items">
-    <div class="loading">Загрузка...</div>
-  </div>
+        <button class="topbar-btn btn-rss" onclick="window.location.href='/registry'">📡 Реестр</button>
+        <button class="topbar-btn btn-help" onclick="openHelp()">❓ HELP</button>
+        <div class="lang-switch">
+            <button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
+            <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+        </div>
+    </div>
+</header>
 
-  <div class="pagination" id="pagination"></div>
-</div>
+<!-- ===== ВТОРОЙ БЛОК: НАВИГАЦИЯ ПО ДАШБОРДАМ ===== -->
+<nav class="nav-dashboards" id="navDashboards">
+    <button class="nav-btn center" onclick="window.location.href='/dashboard-5in1'"><span class="icon">🎯</span>Центр аналитики</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-economic'"><span class="icon">📊</span>Экономика</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-financial'"><span class="icon">💰</span>Финансы</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-military'"><span class="icon">🛡️</span>Военный</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-geopolitical'"><span class="icon">🌍</span>Геополитика</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-ecological'"><span class="icon">🌿</span>Экология</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-cyber'"><span class="icon">🔒</span>Кибер</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-space'"><span class="icon">🚀</span>Космос</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-news'"><span class="icon">📰</span>Новости</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-ai'"><span class="icon">🧠</span>AI</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-scientific'"><span class="icon">🔬</span>Наука</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-esg'"><span class="icon">🌱</span>ESG</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-threats'"><span class="icon">⚡</span>Угрозы</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-health'"><span class="icon">🏥</span>Здоровье</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-energy'"><span class="icon">⛽</span>Энергетика</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-transport'"><span class="icon">🚛</span>Транспорт</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-regions'"><span class="icon">🌏</span>Регионы</button>
+</nav>
+
+<!-- ===== ОСНОВНОЙ КОНТЕНТ ===== -->
+<main class="main-content">
+    <div class="page-title">
+        📦 Корзина данных
+        <span class="badge" id="statusBadge">🟢 ONLINE</span>
+    </div>
+    <div class="page-subtitle">
+        Все собранные данные в одном месте
+        <span style="margin-left:12px;font-size:12px;color:#4a5a6a;">
+            <a href="/registry" target="_blank">📋 Полный реестр</a>
+        </span>
+    </div>
+
+    <!-- СТАТИСТИКА -->
+    <div class="basket-stats" id="basketStats">
+        <div class="stat-card">
+            <div class="number" id="totalFiles">—</div>
+            <div class="label">📄 Всего файлов</div>
+        </div>
+        <div class="stat-card">
+            <div class="number" id="totalSize">—</div>
+            <div class="label">💾 Общий размер</div>
+        </div>
+        <div class="stat-card">
+            <div class="number" id="totalRecords">—</div>
+            <div class="label">📊 Всего записей</div>
+        </div>
+        <div class="stat-card">
+            <div class="number" id="lastUpdate">—</div>
+            <div class="label">🔄 Последнее обновление</div>
+        </div>
+    </div>
+
+    <!-- ФИЛЬТРЫ -->
+    <div class="filters" id="filters">
+        <button class="filter-btn active" data-filter="all">📋 Все</button>
+        <button class="filter-btn" data-filter="financial">💰 Финансы</button>
+        <button class="filter-btn" data-filter="economic">📊 Экономика</button>
+        <button class="filter-btn" data-filter="military">🛡️ Военные</button>
+        <button class="filter-btn" data-filter="geopolitical">🌍 Геополитика</button>
+        <button class="filter-btn" data-filter="ecological">🌿 Экология</button>
+        <button class="filter-btn" data-filter="cyber">🔒 Кибер</button>
+        <button class="filter-btn" data-filter="space">🚀 Космос</button>
+    </div>
+
+    <!-- ТАБЛИЦА -->
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Файл</th>
+                    <th>Источник</th>
+                    <th>Размер</th>
+                    <th>Записей</th>
+                    <th>Обновлен</th>
+                </tr>
+            </thead>
+            <tbody id="basketTable">
+                <tr><td colspan="6" style="text-align:center;color:#4a5a6a;padding:20px;">Загрузка данных...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ПАГИНАЦИЯ -->
+    <div class="pagination" id="pagination"></div>
+</main>
 
 <script>
-let allItems = [];
+// ============================================================
+// 1. ПЕРЕКЛЮЧАТЕЛЬ ЯЗЫКА
+// ============================================================
+let currentLang = localStorage.getItem('crucix-lang') || 'ru';
+
+function switchLang(lang) {
+    currentLang = lang;
+    localStorage.setItem('crucix-lang', lang);
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+    });
+    showNotification('🌐 Язык: ' + lang.toUpperCase());
+}
+
+document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === currentLang);
+});
+
+// ============================================================
+// 2. УВЕДОМЛЕНИЯ И HELP
+// ============================================================
+function showNotification(msg) {
+    document.querySelectorAll('.notification').forEach(el => el.remove());
+    const el = document.createElement('div');
+    el.className = 'notification';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2500);
+}
+
+function openHelp() {
+    const pageId = window.location.pathname.replace(/^\/+/, "").replace(/\.html$/, "") || "basket";
+    const lang = currentLang || "ru";
+    const helpFile = `/data/help/${lang}/${pageId}.txt`;
+    fetch(helpFile).then(res => res.text()).then(text => {
+        alert(text || "Справка не найдена");
+    }).catch(() => alert("Справка не найдена"));
+}
+
+// ============================================================
+// 3. КНОПКА КОПИРОВАТЬ
+// ============================================================
+document.getElementById('copy-btn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    document.getElementById('copyDropdown').classList.toggle('show');
+});
+
+document.addEventListener('click', function() {
+    document.getElementById('copyDropdown').classList.remove('show');
+});
+
+function copyPageData(format) {
+    const timestamp = new Date().toLocaleString();
+    const pageTitle = document.querySelector('.page-title')?.textContent || document.title || 'Без заголовка';
+    const url = window.location.href;
+    const windowSize = window.innerWidth + '×' + window.innerHeight;
+
+    let report = '=== CRUCIX — КОРЗИНА ДАННЫХ ===\n';
+    report += 'Дата: ' + timestamp + '\n';
+    report += 'URL: ' + url + '\n';
+    report += 'Размер окна: ' + windowSize + '\n';
+    report += 'Страница: ' + pageTitle + '\n\n';
+
+    const rows = document.querySelectorAll('#basketTable tr');
+    report += '--- ФАЙЛЫ В КОРЗИНЕ ---\n';
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length === 6) {
+            report += cells[0].textContent + ' ' + cells[1].textContent + ' (' + cells[2].textContent + ') — ' + cells[3].textContent + ', ' + cells[4].textContent + ' записей\n';
+        }
+    });
+
+    report += '\n--- CRUCIX OSINT TERMINAL ---\n';
+    report += '🌐 ' + window.location.origin;
+
+    navigator.clipboard.writeText(report).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = '✅ ' + format.toUpperCase();
+        btn.classList.add('copied');
+        setTimeout(() => {
+            btn.textContent = '📋 КОПИРОВАТЬ ▼';
+            btn.classList.remove('copied');
+        }, 3000);
+        showNotification('✅ Скопировано в формате ' + format.toUpperCase());
+    }).catch(() => {
+        const textarea = document.createElement('textarea');
+        textarea.value = report;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        showNotification('✅ Скопировано в формате ' + format.toUpperCase());
+    });
+}
+
+document.querySelectorAll('#copyDropdown button[data-format]').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        document.getElementById('copyDropdown').classList.remove('show');
+        copyPageData(this.dataset.format);
+    });
+});
+
+// ============================================================
+// 4. ЗАГРУЗКА ДАННЫХ КОРЗИНЫ
+// ============================================================
+
+let basketData = [];
+let currentFilter = 'all';
 let currentPage = 1;
-const perPage = 50;
+const ITEMS_PER_PAGE = 20;
 
-async function loadData() {
-  const statsRes = await fetch('/api/basket/stats');
-  const statsData = await statsRes.json();
-  if (statsData.success) {
-    document.getElementById('total').textContent = statsData.stats.total;
-    document.getElementById('today').textContent = statsData.stats.today;
-    document.getElementById('sources').textContent = Object.keys(statsData.stats.sources).length;
-  }
+// Категории файлов
+const CATEGORIES = {
+    'vix': 'financial',
+    'vxx': 'financial',
+    'dxy': 'financial',
+    'ovx': 'financial',
+    'hy-spread': 'financial',
+    'gold-oil-ratio': 'financial',
+    'copper-gold': 'financial',
+    'gold-silver': 'financial',
+    'bdi': 'financial',
+    'uranium': 'financial',
+    'crypto-fear': 'financial',
+    'sp500-vix': 'financial',
+    'yield-curve': 'financial',
+    'tips': 'financial',
+    'inflation': 'economic',
+    'unemployment': 'economic',
+    'pmi': 'economic',
+    'recession': 'economic',
+    'debt-gdp': 'economic',
+    'big-mac': 'economic',
+    'happiness': 'economic',
+    'notam': 'military',
+    'gps-jamming': 'military',
+    'war-preparation': 'military',
+    'nuclear-monitor': 'military',
+    'dark-ships': 'military',
+    'maritime-monitor': 'military',
+    'aviation-monitor': 'military',
+    'opensky': 'military',
+    'ships': 'military',
+    'acled': 'geopolitical',
+    'gdelt': 'geopolitical',
+    'ofac': 'geopolitical',
+    'opensanctions': 'geopolitical',
+    'early-warning': 'geopolitical',
+    'hidden-links': 'geopolitical',
+    'strategic-intel': 'geopolitical',
+    'thinktanks': 'geopolitical',
+    'historical-analysis': 'geopolitical',
+    'correlation': 'geopolitical',
+    'conflict-predictor': 'geopolitical',
+    'lenses': 'geopolitical',
+    'social-unrest': 'geopolitical',
+    'silence': 'geopolitical',
+    'noaa': 'ecological',
+    'usgs': 'ecological',
+    'firms': 'ecological',
+    'safecast': 'ecological',
+    'epa': 'ecological',
+    'viirs': 'ecological',
+    'environment-monitor': 'ecological',
+    'weather-monitor': 'ecological',
+    'air-quality': 'ecological',
+    'cisa': 'cyber',
+    'cyber-threats': 'cyber',
+    'darkweb': 'cyber',
+    'cyber-intel': 'cyber',
+    'security': 'cyber',
+    'satellite': 'space',
+    'space-monitor': 'space',
+    'satellite-internet': 'space',
+    'space': 'space'
+};
 
-  const itemsRes = await fetch('/api/basket?limit=500');
-  const itemsData = await itemsRes.json();
-  if (itemsData.success) {
-    allItems = itemsData.items;
-    populateFilters();
-    renderItems();
-  }
+async function loadBasketData() {
+    try {
+        const res = await fetch('/api/basket/');
+        const data = await res.json();
+        if (data.success && data.files) {
+            basketData = data.files.map(file => ({
+                ...file,
+                category: CATEGORIES[file.name.replace('.json', '')] || 'other'
+            }));
+            renderStats();
+            renderTable();
+        } else {
+            document.getElementById('basketTable').innerHTML = '<tr><td colspan="6" style="text-align:center;color:#ef4444;padding:20px;">❌ Ошибка загрузки данных</td></tr>';
+        }
+    } catch (e) {
+        console.error('[Basket] Ошибка:', e);
+        document.getElementById('basketTable').innerHTML = '<tr><td colspan="6" style="text-align:center;color:#ef4444;padding:20px;">❌ Ошибка загрузки данных</td></tr>';
+    }
 }
 
-function populateFilters() {
-  const sources = new Set();
-  const regions = new Set();
-  for (const item of allItems) {
-    if (item.source) sources.add(item.source);
-    if (item.region) regions.add(item.region);
-  }
+function renderStats() {
+    const total = basketData.length;
+    const totalSize = basketData.reduce((sum, f) => sum + (f.size || 0), 0);
+    const totalRecords = basketData.reduce((sum, f) => sum + (f.count || 0), 0);
+    const lastUpdate = basketData.length > 0 ? basketData[0].updated || '—' : '—';
 
-  const sourceSelect = document.getElementById('sourceFilter');
-  sourceSelect.innerHTML = '<option value="">Все источники</option>';
-  for (const s of sources) {
-    sourceSelect.innerHTML += `<option value="${s}">${s}</option>`;
-  }
-
-  const regionSelect = document.getElementById('regionFilter');
-  regionSelect.innerHTML = '<option value="">Все регионы</option>';
-  for (const r of regions) {
-    regionSelect.innerHTML += `<option value="${r}">${r}</option>`;
-  }
+    document.getElementById('totalFiles').textContent = total;
+    document.getElementById('totalSize').textContent = formatBytes(totalSize);
+    document.getElementById('totalRecords').textContent = totalRecords.toLocaleString();
+    document.getElementById('lastUpdate').textContent = lastUpdate ? new Date(lastUpdate).toLocaleString('ru-RU') : '—';
 }
 
-function renderItems() {
-  const search = document.getElementById('search').value.toLowerCase();
-  const source = document.getElementById('sourceFilter').value;
-  const region = document.getElementById('regionFilter').value;
-
-  let filtered = allItems.filter(item => {
-    if (search && !item.title.toLowerCase().includes(search)) return false;
-    if (source && item.source !== source) return false;
-    if (region && item.region !== region) return false;
-    return true;
-  });
-
-  const totalPages = Math.ceil(filtered.length / perPage);
-  const start = (currentPage - 1) * perPage;
-  const pageItems = filtered.slice(start, start + perPage);
-
-  const container = document.getElementById('items');
-  if (pageItems.length === 0) {
-    container.innerHTML = '<div class="empty">Нет новостей</div>';
-    return;
-  }
-
-  let html = '';
-  for (const item of pageItems) {
-    const score = item.aiScore || 0;
-    const scoreClass = score >= 7 ? 'score-high' : score >= 4 ? 'score-medium' : 'score-low';
-    const date = item.publishedAt ? new Date(item.publishedAt).toLocaleDateString() : '—';
-    const time = item.publishedAt ? new Date(item.publishedAt).toLocaleTimeString() : '—';
-
-    html += `
-      <div class="item ${scoreClass}" onclick="window.open('${item.url || '#'}', '_blank')">
-        <div class="title">${item.title || 'Без заголовка'}</div>
-        <div class="summary">${item.content ? item.content.slice(0, 200) + (item.content.length > 200 ? '...' : '') : ''}</div>
-        <div class="meta">
-          <span class="source">📰 ${item.sourceName || item.source || 'unknown'}</span>
-          <span class="score">⭐ ${score}/10</span>
-          <span class="region">🌍 ${item.region || 'world'}</span>
-          <span>📅 ${date} ${time}</span>
-          ${item.aiSummary ? `<span>🤖 ${item.aiSummary.slice(0, 60)}${item.aiSummary.length > 60 ? '...' : ''}</span>` : ''}
-        </div>
-      </div>
-    `;
-  }
-
-  container.innerHTML = html;
-
-  // Пагинация
-  const pagination = document.getElementById('pagination');
-  let pagHtml = '';
-  for (let i = 1; i <= Math.min(totalPages, 10); i++) {
-    pagHtml += `<button class="${i === currentPage ? 'active' : ''}" onclick="currentPage=${i};renderItems();">${i}</button>`;
-  }
-  if (totalPages > 10) {
-    pagHtml += `<span>...</span><button onclick="currentPage=${totalPages};renderItems();">${totalPages}</button>`;
-  }
-  pagination.innerHTML = pagHtml;
+function formatBytes(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 }
 
-document.getElementById('search').addEventListener('input', () => { currentPage = 1; renderItems(); });
-document.getElementById('sourceFilter').addEventListener('change', () => { currentPage = 1; renderItems(); });
-document.getElementById('regionFilter').addEventListener('change', () => { currentPage = 1; renderItems(); });
+function getFilteredData() {
+    if (currentFilter === 'all') return basketData;
+    return basketData.filter(f => f.category === currentFilter);
+}
 
-loadData();
+function renderTable() {
+    const filtered = getFilteredData();
+    const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    const pageItems = filtered.slice(start, start + ITEMS_PER_PAGE);
+
+    const tbody = document.getElementById('basketTable');
+    if (pageItems.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#4a5a6a;padding:20px;">📭 Нет файлов в корзине</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = pageItems.map((file, i) => `
+        <tr>
+            <td>${start + i + 1}</td>
+            <td><strong>${file.name}</strong></td>
+            <td><span class="source">${file.source || '—'}</span></td>
+            <td class="size">${formatBytes(file.size || 0)}</td>
+            <td>${file.count || 0}</td>
+            <td class="time">${file.updated ? new Date(file.updated).toLocaleString('ru-RU') : '—'}</td>
+        </tr>
+    `).join('');
+
+    renderPagination(totalPages);
+}
+
+function renderPagination(totalPages) {
+    const container = document.getElementById('pagination');
+    if (totalPages <= 1) {
+        container.innerHTML = '';
+        return;
+    }
+
+    let html = '';
+    html += `<button ${currentPage === 1 ? 'disabled' : ''} onclick="goToPage(${currentPage - 1})">◀</button>`;
+    
+    for (let i = 1; i <= Math.min(totalPages, 7); i++) {
+        html += `<button class="${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+    }
+    
+    if (totalPages > 7) {
+        html += `<span style="color:#4a5a6a;">…</span>`;
+        html += `<button onclick="goToPage(${totalPages})">${totalPages}</button>`;
+    }
+    
+    html += `<button ${currentPage === totalPages ? 'disabled' : ''} onclick="goToPage(${currentPage + 1})">▶</button>`;
+    container.innerHTML = html;
+}
+
+function goToPage(page) {
+    const filtered = getFilteredData();
+    const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+    if (page < 1 || page > totalPages) return;
+    currentPage = page;
+    renderTable();
+}
+
+// Фильтры
+document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        currentFilter = this.dataset.filter;
+        currentPage = 1;
+        renderTable();
+    });
+});
+
+// ============================================================
+// 5. ЗАПУСК
+// ============================================================
+loadBasketData();
+setInterval(loadBasketData, 60000);
 </script>
 </body>
 </html>

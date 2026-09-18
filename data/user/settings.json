@@ -1,0 +1,30 @@
+{
+  "theme": "dark",
+  "language": "ru",
+  "layout": "comfortable",
+  "autoRefresh": "60s",
+  "sources": {
+    "rss": true,
+    "newsapi": true,
+    "satellite": true,
+    "aviation": true,
+    "shipping": true,
+    "economy": true,
+    "cyber": true,
+    "thinktanks": true
+  },
+  "notifications": {
+    "alerts": true,
+    "updates": true,
+    "recommendations": true
+  },
+  "dashboard": {
+    "widgets": [
+      "index",
+      "news",
+      "economy",
+      "cyber"
+    ],
+    "order": []
+  }
+}

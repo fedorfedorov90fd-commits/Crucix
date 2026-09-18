@@ -1,0 +1,69 @@
+{
+  "_meta": {
+    "id": "supply-chain-resilience",
+    "category": "flow",
+    "version": "1.0.0",
+    "schema_version": "1.0.0",
+    "sources": [
+      "route-explorer",
+      "supply-chain-analysis"
+    ],
+    "calculator": "SupplyChainResilience",
+    "updated_at": "2026-09-12T15:09:16.048Z",
+    "duration_ms": 2,
+    "checksum": "19c2c53334660fcf",
+    "stats": {
+      "chains": 3
+    }
+  },
+  "data": {
+    "chains": [
+      {
+        "chainId": "port-shanghai-port-la",
+        "diversity": 100,
+        "concentration": 80,
+        "resilienceScore": 90,
+        "level": "high"
+      },
+      {
+        "chainId": "port-singapore-port-rotterdam",
+        "diversity": 100,
+        "concentration": 80,
+        "resilienceScore": 90,
+        "level": "high"
+      },
+      {
+        "chainId": "port-rotterdam-port-newyork",
+        "diversity": 100,
+        "concentration": 80,
+        "resilienceScore": 90,
+        "level": "high"
+      }
+    ],
+    "weakest": [
+      {
+        "chainId": "port-shanghai-port-la",
+        "diversity": 100,
+        "concentration": 80,
+        "resilienceScore": 90,
+        "level": "high"
+      },
+      {
+        "chainId": "port-singapore-port-rotterdam",
+        "diversity": 100,
+        "concentration": 80,
+        "resilienceScore": 90,
+        "level": "high"
+      },
+      {
+        "chainId": "port-rotterdam-port-newyork",
+        "diversity": 100,
+        "concentration": 80,
+        "resilienceScore": 90,
+        "level": "high"
+      }
+    ],
+    "total": 3,
+    "generated_at": "2026-09-12T15:09:16.048Z"
+  }
+}

@@ -1,48 +1,48 @@
 {
   "name": "crucix",
-  "version": "2.0.0",
-  "description": "Local intelligence engine - 27 OSINT sources, live dashboard, public demo at crucix.live, auto-refresh, optional LLM layer.",
+  "version": "14.0.0",
+  "description": "Crucix — Open Source Intelligence Terminal + Predictive Core",
+  "main": "server.mjs",
   "type": "module",
   "scripts": {
     "start": "node server.mjs",
-    "dev": "node --trace-warnings server.mjs",
-    "sweep": "node apis/briefing.mjs",
-    "inject": "node dashboard/inject.mjs",
-    "brief": "node apis/briefing.mjs",
-    "brief:save": "node apis/save-briefing.mjs",
-    "diag": "node diag.mjs",
-    "clean": "node scripts/clean-old.mjs",
-    "fresh-start": "npm run clean && npm start",
-    "collect": "node scripts/collect-feeds.mjs",
-    "report": "node scripts/daily-report.mjs"
-  },
-  "keywords": [
-    "osint",
-    "intelligence",
-    "dashboard",
-    "geopolitical"
-  ],
-  "author": "Crucix",
-  "license": "AGPL-3.0-only",
-  "engines": {
-    "node": ">=22",
-    "npm": ">=10"
+    "dev": "node server.mjs",
+    "test": "node scripts/check-pages.mjs",
+    "test:unit": "node --test tests/predict/*.test.mjs",
+    "test:property": "node --test tests/property/*.property.mjs",
+    "test:fuzz": "node --test tests/fuzz/*.fuzz.mjs",
+    "test:integration": "node --test tests/integration/*.test.mjs",
+    "test:mutation": "node tests/mutation/run_all.mjs",
+    "test:mutation:meta": "node tests/mutation/meta_learner.mutate.mjs",
+    "test:mutation:hypergraph": "node tests/mutation/hypergraph.mutate.mjs",
+    "test:mutation:attention": "node tests/mutation/attention.mutate.mjs",
+    "test:mutation:coevolution": "node tests/mutation/coevolution.mutate.mjs",
+    "test:all": "node tests/test_all_modules.mjs && node tests/mutation/run_all.mjs",
+    "test:all-modules": "node tests/test_all_modules.mjs",
+    "test:predict": "node tests/test_all_modules.mjs",
+    "test:predict:integration": "node tests/integration/full_pipeline.test.mjs",
+    "test:predict:property": "node tests/property/reflexive.property.mjs",
+    "test:predict:mutation": "node tests/mutation/run_all.mjs"
   },
   "dependencies": {
-    "compression": "^1.8.1",
-    "cors": "^2.8.6",
-    "d3": "^7.9.0",
-    "dotenv": "^17.4.2",
-    "express": "^5.1.0",
-    "helmet": "^8.3.0",
-    "morgan": "^1.11.0",
-    "three": "^0.160.1",
-    "topojson-client": "^3.1.0"
+    "axios": "^1.20.0",
+    "cheerio": "^1.0.0-rc.12",
+    "chromadb": "^3.5.0",
+    "docx": "^9.7.1",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "winston": "^3.11.0"
   },
-  "optionalDependencies": {
-    "discord.js": "^14.25.1"
+  "devDependencies": {
+    "eslint": "^8.55.0"
   },
-  "overrides": {
-    "undici": "^7.24.4"
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "AGPL-3.0",
+  "author": "Crucix Team",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fedorfedorov90fd-commits/Crucix"
   }
 }

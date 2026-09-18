@@ -1,0 +1,24 @@
+=== YIELD CURVE ===
+URL: /yield-curve
+Module: Yield Curve
+Category: Financial Monitoring
+Icon: 📉
+
+DESCRIPTION:
+US Treasury yield curve.
+Inversion is a classic recession indicator.
+
+FUNCTIONALITY:
+- Current curve shape (normal/inverted)
+- 10Y-2Y spread
+- Historical spread chart
+- Recession risk color coding:
+  🔴 Spread < 0 — INVERSION (recession)
+  🟡 Spread 0-0.5 — WARNING
+  🟢 Spread > 0.5 — NORMAL
+
+DATA SOURCES:
+- FRED (Federal Reserve Economic Data) — free
+
+HELP FILE: /data/help/en/yield-curve.txt
+LAST UPDATED: 2026-08-21

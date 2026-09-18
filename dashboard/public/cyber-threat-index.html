@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Индекс киберугроз — Crucix</title>
+    <style>
+        /* ============================================================
+           СТИЛИ ТОЛЬКО ДЛЯ НАВИГАЦИИ (без переменного контента)
+           ============================================================ */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a1a;
+            color: #e0e0e0;
+            font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+        }
+
+        /* БЛОК 1: ВЕРХНЯЯ ПАНЕЛЬ (topbar) */
+        .topbar {
+            position: fixed; top: 0; left: 0; right: 0;
+            height: 60px;
+            background: rgba(10,10,20,0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid rgba(91,192,248,0.25);
+            box-shadow: 0 2px 20px rgba(91,192,248,0.08);
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        .topbar::after {
+            content: "";
+            position: absolute;
+            bottom: -2px; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #5bc0f8, transparent);
+            opacity: 0.6;
+        }
+        .topbar-left { display: flex; align-items: center; gap: 12px; }
+        .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; }
+        .topbar-right { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+        /* Кнопки верхней панели */
+        .topbar-btn {
+            height: 28px; padding: 0 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 4px;
+            background: rgba(255,255,255,0.03);
+            color: #888;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-family: inherit;
+        }
+        .topbar-btn:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+        .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
+        .btn-home:hover { background: rgba(91,192,248,0.15); }
+        .btn-copy { color: #5bc0f8; border-color: rgba(91,192,248,0.15); background: rgba(91,192,248,0.06); }
+        .btn-copy.copied { background: rgba(76,175,80,0.2); border-color: #4caf50; color: #4caf50; }
+        .btn-rss { color: #f26522; border-color: rgba(242,101,34,0.2); background: rgba(242,101,34,0.06); }
+        .btn-rss:hover { background: rgba(242,101,34,0.15); }
+        .btn-help { color: #a78bfa; border-color: rgba(167,139,250,0.2); background: rgba(167,139,250,0.06); }
+        .btn-help:hover { background: rgba(167,139,250,0.15); }
+
+        /* Переключатель языка */
+        .lang-switch {
+            display: flex; gap: 2px; padding: 2px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .lang-btn {
+            padding: 2px 8px; border: none; background: transparent;
+            color: #666; font-size: 11px; font-weight: 500;
+            cursor: pointer; border-radius: 3px; transition: all 0.2s;
+            font-family: inherit;
+        }
+        .lang-btn:hover { color: #888; background: rgba(255,255,255,0.05); }
+        .lang-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.1); }
+
+        /* Выпадающее меню "Копировать" */
+        .copy-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .copy-dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 32px;
+            background: #0a0a1a;
+            min-width: 220px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+            z-index: 200;
+            padding: 6px 0;
+        }
+        .copy-dropdown-content.show { display: block; }
+        .copy-dropdown-content button {
+            display: block; width: 100%; padding: 8px 16px;
+            background: transparent; border: none;
+            color: #c8d0d8; font-size: 12px; text-align: left;
+            cursor: pointer; transition: all 0.15s;
+            font-family: inherit;
+        }
+        .copy-dropdown-content button:hover { background: rgba(91,192,248,0.08); color: #5bc0f8; }
+        .copy-dropdown-content .divider { height: 1px; background: rgba(255,255,255,0.05); margin: 4px 12px; }
+        .copy-dropdown-content .label { padding: 4px 16px; font-size: 10px; color: #4a5a6a; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* БЛОК 2: НАВИГАЦИЯ ПО ДАШБОРДАМ */
+        .nav-dashboards {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            height: 38px;
+            background: rgba(6,10,18,0.92);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            z-index: 99;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 4px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .nav-dashboards::-webkit-scrollbar { display: none; }
+
+        .nav-btn {
+            padding: 4px 10px;
+            border: none;
+            border-radius: 4px;
+            background: transparent;
+            color: #666;
+            font-size: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            font-family: inherit;
+            border: 1px solid transparent;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .nav-btn:hover { color: #c8d0d8; background: rgba(255,255,255,0.04); }
+        .nav-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.08); border-color: rgba(91,192,248,0.15); }
+        .nav-btn .icon { margin-right: 3px; }
+
+        /* ОСНОВНОЙ КОНТЕНТ (отступ под навигацию) */
+        .main-content {
+            padding-top: 114px;
+            max-width: 1440px;
+            margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
+            padding-bottom: 40px;
+            min-height: calc(100vh - 114px);
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #e8f0f8;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .page-title .badge {
+            font-size: 12px; font-weight: 400;
+            background: rgba(167,139,250,0.15); color: #a78bfa;
+            padding: 2px 12px; border-radius: 20px;
+            border: 1px solid rgba(167,139,250,0.2);
+        }
+        .page-subtitle {
+            color: #8899aa;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        .alert-banner {
+            background: rgba(239,68,68,0.08);
+            border: 1px solid rgba(239,68,68,0.2);
+            border-radius: 10px;
+            padding: 16px 24px;
+            margin-bottom: 24px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+        }
+        .alert-banner.show { display: flex; }
+        .alert-banner .icon { font-size: 24px; }
+        .alert-banner .text { color: #ef4444; font-weight: 600; font-size: 14px; flex: 1; }
+        .alert-banner .subtext { color: #8899aa; font-size: 12px; }
+
+        .indicators-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        .indicator-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .indicator-card:hover {
+            background: rgba(255,255,255,0.04);
+            transform: translateY(-2px);
+            border-color: rgba(255,255,255,0.1);
+        }
+        .indicator-card .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        .indicator-card .icon { font-size: 32px; }
+        .indicator-card .name { font-size: 18px; font-weight: 600; color: #c0d0e0; }
+        .indicator-card .subtitle {
+            font-size: 12px;
+            color: #4a5a6a;
+            margin-bottom: 8px;
+            font-weight: 400;
+        }
+        .indicator-card .value {
+            font-size: 48px;
+            font-weight: 700;
+            margin: 4px 0;
+        }
+        .indicator-card .status {
+            display: inline-block;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .status-critical { background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+        .status-warning { background: rgba(245,158,11,0.2); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+        .status-normal { background: rgba(74,222,128,0.2); color: #4ade80; border: 1px solid rgba(74,222,128,0.3); }
+        .status-unknown { background: rgba(74,74,74,0.2); color: #666; border: 1px solid rgba(74,74,74,0.3); }
+
+        .indicator-card .details {
+            margin-top: 12px;
+            font-size: 13px;
+            color: #8899aa;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding-top: 12px;
+        }
+        .indicator-card .details .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+        }
+        .indicator-card .details .label { color: #4a5a6a; }
+        .indicator-card .details .value-detail { color: #c0d0e0; font-weight: 500; }
+
+        .info-box {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .info-box .item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #8899aa;
+        }
+        .info-box .item .label { color: #4a5a6a; }
+        .info-box .item .val { color: #c0d0e0; font-weight: 500; }
+
+        .description-box {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 24px;
+        }
+        .description-box h3 {
+            color: #5bc0f8;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+        .description-box p {
+            color: #b0b8c0;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+        .description-box .scale {
+            display: flex;
+            gap: 16px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+        .description-box .scale .item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #c0d0e0;
+        }
+        .description-box .scale .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .dot-green { background: #4ade80; }
+        .dot-yellow { background: #f59e0b; }
+        .dot-red { background: #ef4444; }
+
+        .notification {
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            color: #ffffff;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            z-index: 100001;
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: notif-fade 2.5s forwards;
+        }
+        @keyframes notif-fade {
+            0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+            10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            80% { opacity: 1; }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        }
+
+        @media (max-width: 992px) { .indicators-grid { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 768px) {
+            .topbar { padding: 0 12px; height: 52px; }
+            .topbar-brand { font-size: 12px; }
+            .topbar-btn { font-size: 10px; padding: 0 8px; height: 24px; }
+            .nav-dashboards { top: 52px; height: 34px; padding: 0 10px; gap: 2px; }
+            .nav-btn { font-size: 9px; padding: 2px 6px; }
+            .main-content { padding-top: 102px; padding-left: 12px; padding-right: 12px; }
+            .page-title { font-size: 20px; }
+            .indicator-card .value { font-size: 32px; }
+            .info-box { flex-direction: column; gap: 8px; }
+            .indicators-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 480px) {
+            .topbar { padding: 0 8px; height: 46px; }
+            .topbar-brand { font-size: 10px; letter-spacing: 1px; }
+            .topbar-btn { font-size: 9px; padding: 0 6px; height: 20px; }
+            .lang-btn { font-size: 9px; padding: 1px 5px; }
+            .nav-dashboards { top: 46px; height: 30px; padding: 0 6px; gap: 2px; overflow-x: auto; }
+            .nav-btn { font-size: 8px; padding: 2px 5px; }
+            .main-content { padding-top: 92px; padding-left: 8px; padding-right: 8px; }
+            .page-title { font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="topbar">
+    <div class="topbar-left"><span class="topbar-brand">🔒 ИНДЕКС КИБЕРУГРОЗ</span></div>
+    <div class="topbar-right">
+        <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+        <div class="copy-dropdown">
+            <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ ▼</button>
+            <div class="copy-dropdown-content" id="copyDropdown">
+                <div class="label">ФОРМАТЫ КОПИРОВАНИЯ</div>
+                <button data-format="text">📄 Как текст (полный снапшот)</button>
+                <button data-format="markdown">📝 Как Markdown</button>
+                <button data-format="json">📊 Как JSON</button>
+                <button data-format="csv">📋 Как CSV (таблицы)</button>
+                <div class="divider"></div>
+                <button data-format="dom">🌳 DOM-дерево</button>
+                <button data-format="storage">💾 localStorage + sessionStorage</button>
+                <button data-format="api">📡 API-запросы страницы</button>
+                <div class="divider"></div>
+                <button data-format="all">📦 ВСЁ В ОДНОМ</button>
+            </div>
+        </div>
+        <button class="topbar-btn btn-rss" onclick="window.location.href='/registry'">📡 Реестр</button>
+        <button class="topbar-btn btn-help" onclick="openHelp()">❓ HELP</button>
+        <div class="lang-switch">
+            <button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
+            <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+        </div>
+    </div>
+</header>
+
+<nav class="nav-dashboards" id="navDashboards">
+    <button class="nav-btn" onclick="window.location.href='/dashboard-5in1'"><span class="icon">🎯</span>Центр аналитики</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-economic'"><span class="icon">📊</span>Экономика</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-financial'"><span class="icon">💰</span>Финансы</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-military'"><span class="icon">🛡️</span>Военный</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-geopolitical'"><span class="icon">🌍</span>Геополитика</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-ecological'"><span class="icon">🌿</span>Экология</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-cyber'"><span class="icon">🔒</span>Кибер</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-space'"><span class="icon">🚀</span>Космос</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-news'"><span class="icon">📰</span>Новости</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-ai'"><span class="icon">🧠</span>AI</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-scientific'"><span class="icon">🔬</span>Наука</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-esg'"><span class="icon">🌱</span>ESG</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-threats'"><span class="icon">⚡</span>Угрозы</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-health'"><span class="icon">🏥</span>Здоровье</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-energy'"><span class="icon">⛽</span>Энергетика</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-transport'"><span class="icon">🚛</span>Транспорт</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-regions'"><span class="icon">🌏</span>Регионы</button>
+    <button class="nav-btn active" onclick="window.location.href='/cyber-threat-index'"><span class="icon">🔒</span>Киберугрозы</button>
+</nav>
+
+<main class="main-content">
+    <div class="page-title">
+        🔒 Индекс киберугроз
+        <span class="badge" id="statusBadge">🟢 ONLINE</span>
+    </div>
+    <div class="page-subtitle">
+        Композитный индекс на основе CISA + Darkweb
+        <span style="margin-left:12px;font-size:12px;color:#4a5a6a;">
+            <a href="/registry" target="_blank">📋 Полный реестр</a>
+        </span>
+    </div>
+
+    <div class="alert-banner" id="alertBanner">
+        <span class="icon">🚨</span>
+        <span class="text" id="alertText">Обнаружены аномальные показатели</span>
+        <span class="subtext" id="alertSubtext">Рекомендуется усилить мониторинг</span>
+    </div>
+
+    <div class="info-box">
+        <div class="item">
+            <span class="label">📊 Текущий уровень:</span>
+            <span class="val" id="currentLevel">—</span>
+        </div>
+        <div class="item">
+            <span class="label">🟢 Низкий:</span>
+            <span class="val" id="lowCount">0</span>
+        </div>
+        <div class="item">
+            <span class="label">🟡 Средний:</span>
+            <span class="val" id="mediumCount">0</span>
+        </div>
+        <div class="item">
+            <span class="label">🔴 Высокий:</span>
+            <span class="val" id="highCount">0</span>
+        </div>
+        <div class="item">
+            <span class="label">🔄 Обновлено:</span>
+            <span class="val" id="lastUpdate">—</span>
+        </div>
+    </div>
+
+    <div class="indicators-grid" id="indicatorsGrid">
+        <!-- Индекс киберугроз -->
+        <div class="indicator-card" id="mainCard">
+            <div class="header">
+                <span class="icon">🔒</span>
+                <span class="name">Индекс киберугроз</span>
+            </div>
+            <div class="subtitle">CISA + Darkweb</div>
+            <div class="value" id="mainValue">—</div>
+            <div class="status status-unknown" id="mainStatus">⏳ Загрузка...</div>
+            <div class="details">
+                <div class="row"><span class="label">📊 Тренд</span><span class="value-detail" id="mainTrend">—</span></div>
+                <div class="row"><span class="label">🔴 Уровень</span><span class="value-detail" id="mainLevel">—</span></div>
+                <div class="row"><span class="label">📅 Обновлено</span><span class="value-detail" id="mainUpdate">—</span></div>
+            </div>
+        </div>
+
+        <!-- CISA -->
+        <div class="indicator-card" id="cisaCard">
+            <div class="header">
+                <span class="icon">🏛️</span>
+                <span class="name">CISA</span>
+            </div>
+            <div class="subtitle">Уязвимости</div>
+            <div class="value" id="cisaValue">—</div>
+            <div class="status status-unknown" id="cisaStatus">⏳ Загрузка...</div>
+            <div class="details">
+                <div class="row"><span class="label">📊 Тренд</span><span class="value-detail" id="cisaTrend">—</span></div>
+                <div class="row"><span class="label">🔴 Уровень</span><span class="value-detail" id="cisaLevel">—</span></div>
+                <div class="row"><span class="label">📅 Обновлено</span><span class="value-detail" id="cisaUpdate">—</span></div>
+            </div>
+        </div>
+
+        <!-- Darkweb -->
+        <div class="indicator-card" id="darkwebCard">
+            <div class="header">
+                <span class="icon">🌑</span>
+                <span class="name">Darkweb</span>
+            </div>
+            <div class="subtitle">Активность</div>
+            <div class="value" id="darkwebValue">—</div>
+            <div class="status status-unknown" id="darkwebStatus">⏳ Загрузка...</div>
+            <div class="details">
+                <div class="row"><span class="label">📊 Тренд</span><span class="value-detail" id="darkwebTrend">—</span></div>
+                <div class="row"><span class="label">🔴 Уровень</span><span class="value-detail" id="darkwebLevel">—</span></div>
+                <div class="row"><span class="label">📅 Обновлено</span><span class="value-detail" id="darkwebUpdate">—</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Описание -->
+    <div class="description-box">
+        <h3>📖 Как это работает</h3>
+        <p>
+            <strong>🔒 Индекс киберугроз</strong> — композитный индикатор, объединяющий данные из двух источников:
+        </p>
+        <p>
+            <strong>🏛️ CISA</strong> — уязвимости и угрозы из базы CISA Known Exploited Vulnerabilities.
+        </p>
+        <p>
+            <strong>🌑 Darkweb</strong> — активность в даркнете, утечки данных и обсуждения кибератак.
+        </p>
+        <div class="scale">
+            <span class="item"><span class="dot dot-green"></span> Низкий: 0–30</span>
+            <span class="item"><span class="dot dot-yellow"></span> Средний: 30–60</span>
+            <span class="item"><span class="dot dot-red"></span> Высокий: &gt; 60</span>
+        </div>
+        <p style="margin-top:12px;color:#4a5a6a;font-size:12px;">
+            📌 Источники: CISA Known Exploited Vulnerabilities + Darkweb monitoring
+        </p>
+    </div>
+</main>
+
+<script>
+// ============================================================
+// 1. ПЕРЕКЛЮЧАТЕЛЬ ЯЗЫКА
+// ============================================================
+let currentLang = localStorage.getItem('crucix-lang') || 'ru';
+
+function switchLang(lang) {
+    currentLang = lang;
+    localStorage.setItem('crucix-lang', lang);
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+    });
+    showNotification('🌐 Язык: ' + lang.toUpperCase());
+}
+
+document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === currentLang);
+});
+
+// ============================================================
+// 2. УВЕДОМЛЕНИЯ И HELP
+// ============================================================
+function showNotification(msg) {
+    document.querySelectorAll('.notification').forEach(el => el.remove());
+    const el = document.createElement('div');
+    el.className = 'notification';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2500);
+}
+
+function openHelp() {
+    const pageId = 'cyber-threat-index';
+    const lang = currentLang || "ru";
+    const helpFile = `/data/help/${lang}/${pageId}.txt`;
+    fetch(helpFile).then(res => res.text()).then(text => {
+        alert(text || "Справка не найдена");
+    }).catch(() => alert("Справка не найдена"));
+}
+
+// ============================================================
+// 3. КНОПКА КОПИРОВАТЬ
+// ============================================================
+document.getElementById('copy-btn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    document.getElementById('copyDropdown').classList.toggle('show');
+});
+
+document.addEventListener('click', function() {
+    document.getElementById('copyDropdown').classList.remove('show');
+});
+
+function copyPageData(format) {
+    const timestamp = new Date().toLocaleString();
+    const pageTitle = document.querySelector('.page-title')?.textContent || document.title || 'Без заголовка';
+    const url = window.location.href;
+    const windowSize = window.innerWidth + '×' + window.innerHeight;
+
+    let report = '=== CRUCIX — СНАПШОТ СТРАНИЦЫ ===\n';
+    report += 'Дата: ' + timestamp + '\n';
+    report += 'URL: ' + url + '\n';
+    report += 'Размер окна: ' + windowSize + '\n';
+    report += 'Страница: ' + pageTitle + '\n\n';
+
+    const mainVal = document.getElementById('mainValue')?.textContent || '—';
+    const mainStatus = document.getElementById('mainStatus')?.textContent || '—';
+    const cisaVal = document.getElementById('cisaValue')?.textContent || '—';
+    const darkwebVal = document.getElementById('darkwebValue')?.textContent || '—';
+
+    report += '--- ИНДЕКС КИБЕРУГРОЗ ---\n';
+    report += '🔒 Индекс: ' + mainVal + ' (' + mainStatus + ')\n';
+    report += '🏛️ CISA: ' + cisaVal + '\n';
+    report += '🌑 Darkweb: ' + darkwebVal + '\n';
+
+    report += '\n--- CRUCIX OSINT TERMINAL ---\n';
+    report += '🌐 ' + window.location.origin;
+
+    navigator.clipboard.writeText(report).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = '✅ ' + format.toUpperCase();
+        btn.classList.add('copied');
+        setTimeout(() => {
+            btn.textContent = '📋 КОПИРОВАТЬ ▼';
+            btn.classList.remove('copied');
+        }, 3000);
+        showNotification('✅ Скопировано в формате ' + format.toUpperCase());
+    }).catch(() => {
+        const textarea = document.createElement('textarea');
+        textarea.value = report;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        showNotification('✅ Скопировано в формате ' + format.toUpperCase());
+    });
+}
+
+document.querySelectorAll('#copyDropdown button[data-format]').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        document.getElementById('copyDropdown').classList.remove('show');
+        copyPageData(this.dataset.format);
+    });
+});
+
+// ============================================================
+// 4. ЗАГРУЗКА И ОТОБРАЖЕНИЕ ДАННЫХ
+// ============================================================
+const statusMap = {
+    'critical': { class: 'status-critical', label: '🔴 ВЫСОКИЙ' },
+    'warning': { class: 'status-warning', label: '🟡 СРЕДНИЙ' },
+    'normal': { class: 'status-normal', label: '🟢 НИЗКИЙ' },
+    'unknown': { class: 'status-unknown', label: '⚪ НЕИЗВЕСТНО' }
+};
+
+function getStatus(value, thresholds) {
+    if (value === null || value === undefined) return 'unknown';
+    if (thresholds.critical !== undefined && value > thresholds.critical) return 'critical';
+    if (thresholds.warning !== undefined && value > thresholds.warning) return 'warning';
+    return 'normal';
+}
+
+function getTrend(data, key) {
+    if (!data || data.length < 2) return 'stable';
+    const last = data[data.length - 1]?.[key];
+    const prev = data[data.length - 2]?.[key];
+    if (last === undefined || prev === undefined) return 'stable';
+    const diff = ((last - prev) / prev) * 100;
+    if (diff > 30) return 'spike';
+    if (diff > 10) return 'up';
+    if (diff < -10) return 'down';
+    return 'stable';
+}
+
+async function loadIndicators() {
+    try {
+        const res = await fetch('/api/cyber-threat-index');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+
+        if (data.data && data.data.length > 0) {
+            const latest = data.data[data.data.length - 1];
+            const mainValue = latest.value || null;
+            const cisaValue = latest.cisa || null;
+            const darkwebValue = latest.darkweb || null;
+
+            // Главный индекс
+            document.getElementById('mainValue').textContent = mainValue !== null ? mainValue.toFixed(1) : '—';
+            const mainStatus = getStatus(mainValue, { normal: 30, warning: 50, critical: 70 });
+            const ms = statusMap[mainStatus] || statusMap.unknown;
+            document.getElementById('mainStatus').textContent = ms.label;
+            document.getElementById('mainStatus').className = `status ${ms.class}`;
+            const mainTrend = getTrend(data.data, 'value');
+            document.getElementById('mainTrend').textContent =
+                mainTrend === 'spike' ? '🚀 РЕЗКИЙ РОСТ' :
+                mainTrend === 'up' ? '📈 Рост' :
+                mainTrend === 'down' ? '📉 Падение' : '➡️ Стабильно';
+            document.getElementById('mainLevel').textContent = ms.label;
+            document.getElementById('mainUpdate').textContent = latest.date ? new Date(latest.date).toLocaleString('ru-RU') : '—';
+
+            // CISA
+            document.getElementById('cisaValue').textContent = cisaValue !== null ? cisaValue.toFixed(1) : '—';
+            const cisaStatus = getStatus(cisaValue, { normal: 20, warning: 35, critical: 50 });
+            const cs = statusMap[cisaStatus] || statusMap.unknown;
+            document.getElementById('cisaStatus').textContent = cs.label;
+            document.getElementById('cisaStatus').className = `status ${cs.class}`;
+            const cisaTrend = getTrend(data.data, 'cisa');
+            document.getElementById('cisaTrend').textContent =
+                cisaTrend === 'spike' ? '🚀 РЕЗКИЙ РОСТ' :
+                cisaTrend === 'up' ? '📈 Рост' :
+                cisaTrend === 'down' ? '📉 Падение' : '➡️ Стабильно';
+            document.getElementById('cisaLevel').textContent = cs.label;
+            document.getElementById('cisaUpdate').textContent = latest.date ? new Date(latest.date).toLocaleString('ru-RU') : '—';
+
+            // Darkweb
+            document.getElementById('darkwebValue').textContent = darkwebValue !== null ? darkwebValue.toFixed(1) : '—';
+            const darkwebStatus = getStatus(darkwebValue, { normal: 20, warning: 35, critical: 50 });
+            const ds = statusMap[darkwebStatus] || statusMap.unknown;
+            document.getElementById('darkwebStatus').textContent = ds.label;
+            document.getElementById('darkwebStatus').className = `status ${ds.class}`;
+            const darkwebTrend = getTrend(data.data, 'darkweb');
+            document.getElementById('darkwebTrend').textContent =
+                darkwebTrend === 'spike' ? '🚀 РЕЗКИЙ РОСТ' :
+                darkwebTrend === 'up' ? '📈 Рост' :
+                darkwebTrend === 'down' ? '📉 Падение' : '➡️ Стабильно';
+            document.getElementById('darkwebLevel').textContent = ds.label;
+            document.getElementById('darkwebUpdate').textContent = latest.date ? new Date(latest.date).toLocaleString('ru-RU') : '—';
+
+            // Статистика
+            document.getElementById('currentLevel').textContent = ms.label;
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('ru-RU');
+
+            let lowCount = 0, mediumCount = 0, highCount = 0;
+            [mainStatus, cisaStatus, darkwebStatus].forEach(s => {
+                if (s === 'normal') lowCount++;
+                else if (s === 'warning') mediumCount++;
+                else if (s === 'critical') highCount++;
+            });
+            document.getElementById('lowCount').textContent = lowCount;
+            document.getElementById('mediumCount').textContent = mediumCount;
+            document.getElementById('highCount').textContent = highCount;
+
+            // Алерты
+            const alertBanner = document.getElementById('alertBanner');
+            const alertText = document.getElementById('alertText');
+            const alertSubtext = document.getElementById('alertSubtext');
+            if (mainStatus === 'critical') {
+                alertBanner.classList.add('show');
+                alertText.textContent = '🚨 КРИТИЧЕСКИЙ УРОВЕНЬ КИБЕРУГРОЗ!';
+                alertSubtext.textContent = 'Рекомендуется усилить защиту и мониторинг';
+            } else if (mainStatus === 'warning') {
+                alertBanner.classList.add('show');
+                alertText.textContent = '⚠️ ПОВЫШЕННЫЙ УРОВЕНЬ КИБЕРУГРОЗ';
+                alertSubtext.textContent = 'Рекомендуется усилить мониторинг';
+            } else {
+                alertBanner.classList.remove('show');
+            }
+        }
+    } catch (e) {
+        console.error('[Cyber Threat Index] Ошибка загрузки:', e);
+        document.getElementById('mainValue').textContent = '❌';
+        document.getElementById('mainStatus').textContent = '⚠️ Ошибка';
+    }
+}
+
+// ============================================================
+// 5. АВТООБНОВЛЕНИЕ
+// ============================================================
+loadIndicators();
+setInterval(loadIndicators, 60000);
+</script>
+</body>
+</html>

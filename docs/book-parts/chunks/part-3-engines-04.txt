@@ -1,0 +1,881 @@
+===== ЧАСТЬ part-3-engines · КУСОК 04/06 · 29.4 KB =====
+
+FILE: apis/predict/engine_integration_patch.mjs
+SIZE: 29897 bytes
+SHA1: 472acc5353d2f6f2
+========================================================================
+
+// apis/predict/engine_integration_patch.mjs
+// ===================================================================
+// Интеграционный патч для engine.mjs -- подключает 21 новых модулей
+// к существующему прогностическому конвейеру Crucix.
+//
+// ФАЗЫ:
+//   N -- Научный синтез (Hawkes, HMM, Kalman, Ising, TransferEntropy,
+//       Contagion, EVT, OU, Copula, BOCPD, Particle Filter)
+//   O -- Нейросетевой слой (MLP, GCN, DQN)
+//   P -- Объяснимость (Permutation Importance, Counterfactual, Uncertainty)
+//   Q -- Трансляция (WebSocket, Notifier, Python Bridge)
+//
+// ИСПОЛЬЗОВАНИЕ в engine.mjs:
+//   import { runNewModules } from './engine_integration_patch.mjs';
+//   const newResults = await runNewModules(latest, history, prediction);
+//   Object.assign(result, newResults);
+// ===================================================================
+
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const PRED_DIR = join(__dirname, '..', '..', 'runs', 'predictions');
+
+// --- 21 НОВЫХ МОДУЛЕЙ ---
+import { HawkesProcess, sweepToHawkesEvents } from './models/hawkes.mjs';
+import { HMM, createCrucixHMM, sweepToObservations } from './models/hmm.mjs';
+import { KalmanFilter, Kalman1D } from './models/kalman.mjs';
+import { IsingModel } from './models/ising.mjs';
+import { transferEntropy, influenceMatrix } from './models/transferentropy.mjs';
+import { SIRModel, SEIRModel, NetworkContagion } from './models/contagion.mjs';
+import { GPD, GEV, extremeEventProbability } from './models/evt.mjs';
+import { OrnsteinUhlenbeck } from './models/ornstein.mjs';
+import { tailDependence, dependenceAnalysis, estimateClayton } from './models/copula.mjs';
+import { BOCPD, GaussianConjugate } from './models/bocpd.mjs';
+import { ParticleFilter } from './models/particle.mjs';
+import { MLP } from './models/neural.mjs';
+import { GCN } from './models/graph_neural.mjs';
+import { DQN } from './models/reinforcement.mjs';
+import { hybridForecast, checkPythonService } from './python_bridge.mjs';
+import { permutationImportance, counterfactualExplanation, decomposeUncertainty, buildReasoningChain } from './explainability.mjs';
+import { publishPrediction, publishBrierUpdate } from './ws.mjs';
+import { notifyPrediction } from './notifier.mjs';
+
+// --- Утилиты ---
+
+function safeRun(fn, label) {
+  try {
+    return fn();
+  } catch (e) {
+    console.warn(`[engine_patch] ${label}: ${e.message}`);
+    return { error: e.message };
+  }
+}
+
+async function safeRunAsync(fn, label) {
+  try {
+    return await fn();
+  } catch (e) {
+    console.warn(`[engine_patch] ${label}: ${e.message}`);
+    return { error: e.message };
+  }
+}
+
+function extractVixSeries(history) {
+  return history
+    .filter(s => s.fred?.vix !== undefined)
+    .map(s => s.fred.vix);
+}
+
+function extractConflictSeries(history) {
+  return history.map(s => s.gdelt?.conflictEvents?.length || 0);
+}
+
+function extractHySpreadSeries(history) {
+  return history
+    .filter(s => s.fred?.hySpread !== undefined)
+    .map(s => s.fred.hySpread);
+}
+
+function extractAlertsSeries(history) {
+  return history.map(s => s.delta?.newAlerts || 0);
+}
+
+function extractTimestamps(history) {
+  return history
+    .map(s => new Date(s.timestamp).getTime() / 1000)
+    .filter(t => !isNaN(t));
+}
+
+// ===================================================================
+// ФАЗА N: Научный синтез -- 11 модулей из смежных дисциплин
+// ===================================================================
+
+function phaseN_ScientificSynthesis(latest, history) {
+  console.log('[engine] Фаза N: научный синтез (11 модулей)');
+  const result = {};
+  const now = Date.now() / 1000;
+
+  // N1. Процесс Хоукса -- кластеризация конфликтов
+  result.hawkes = safeRun(() => {
+    if (history.length < 5) return { error: 'insufficient_history' };
+    const events = sweepToHawkesEvents(history);
+    if (events.length < 3) return { error: 'insufficient_events', eventCount: events.length };
+
+    const hp = new HawkesProcess({ mu: 0.3, theta: 0.6, beta: 1.5 });
+    hp.fit(events);
+
+    const forecast24h = hp.forecastProbability(24 * 3600);
+    const forecast72h = hp.forecastProbability(72 * 3600);
+    const branching = hp.branchingFactor();
+
+    return {
+      branchingFactor: branching,
+      branchingInterpretation: branching >= 1 ? 'explosive' : 'stationary',
+      forecastProbability24h: forecast24h,
+      forecastProbability72h: forecast72h,
+      expectedEvents24h: hp.forecastCount(24 * 3600),
+      params: { mu: hp.mu, theta: hp.theta, beta: hp.beta },
+    };
+  }, 'Hawkes');
+
+  // N2. HMM -- скрытые состояния системы
+  result.hmm = safeRun(() => {
+    if (history.length < 10) return { error: 'insufficient_history' };
+
+    const hmm = createCrucixHMM();
+    const obsSeq = sweepToObservations(history);
+
+    if (obsSeq.length < 5) return { error: 'insufficient_observations' };
+
+    const { path, prob } = hmm.viterbi(obsSeq);
+    const currentState = path[path.length - 1];
+
+    const next = hmm.predictNext(obsSeq);
+
+    return {
+      currentState,
+      statePath: path.slice(-10),
+      pathProbability: prob,
+      nextState: next.predictedState,
+      stateDistribution: next.stateDistribution,
+      predictedObservation: next.predictedObservation,
+      regimeShift: currentState !== next.predictedState
+        ? { from: currentState, to: next.predictedState }
+        : null,
+    };
+  }, 'HMM');
+
+  // N3. Фильтр Калмана -- сглаживание VIX и прогноз
+  result.kalman = safeRun(() => {
+    const vixSeries = extractVixSeries(history);
+    if (vixSeries.length < 5) return { error: 'insufficient_vix_data' };
+
+    const kf = new Kalman1D({
+      processNoise: 0.5,
+      measurementNoise: 2.0,
+      initialValue: vixSeries[0],
+      initialTrend: vixSeries[1] - vixSeries[0] || 0,
+    });
+
+    const filtered = kf.filter(vixSeries);
+    const forecast = kf.forecast(5);
+
+    const currentVix = latest.fred?.vix || vixSeries[vixSeries.length - 1];
+    const smoothedVix = filtered[filtered.length - 1].value;
+    const trend = filtered[filtered.length - 1].trend;
+
+    return {
+      smoothedVix,
+      trend,
+      vixForecast5: forecast.map(f => ({
+        step: f.value.toFixed(2),
+        lower: f.lower.toFixed(2),
+        upper: f.upper.toFixed(2),
+      })),
+      kalmanVsRaw: smoothedVix !== currentVix
+        ? `${smoothedVix.toFixed(2)} (smoothed) vs ${currentVix} (raw)`
+        : 'aligned',
+    };
+  }, 'Kalman');
+
+  // N4. Модель Изинга -- фазовые переходы
+  result.ising = safeRun(() => {
+    const nNodes = 12;
+    const ising = new IsingModel({
+      nNodes,
+      temperature: 1.0,
+      coupling: 0.5,
+    });
+
+    ising.setTemperatureFromSweep(latest);
+    ising.simulate(500);
+
+    const flipProb = ising.predictFlipProbability();
+
+    return {
+      temperature: flipProb.temperature.toFixed(3),
+      criticalTemperature: flipProb.criticalTemperature.toFixed(3),
+      ratio: flipProb.ratio,
+      magnetization: flipProb.magnetization.toFixed(3),
+      susceptibility: flipProb.susceptibility.toFixed(3),
+      nearPhaseTransition: flipProb.nearPhaseTransition,
+      flipProbability: flipProb.flipProbability.toFixed(3),
+    };
+  }, 'Ising');
+
+  // N5. Transfer Entropy -- направленные влияния между сигналами
+  result.transferEntropy = safeRun(() => {
+    const vix = extractVixSeries(history);
+    const conflicts = extractConflictSeries(history);
+    const alerts = extractAlertsSeries(history);
+
+    const minLen = Math.min(vix.length, conflicts.length, alerts.length);
+    if (minLen < 15) return { error: 'insufficient_data' };
+
+    const vars = {
+      vix: vix.slice(-minLen),
+      conflicts: conflicts.slice(-minLen),
+      alerts: alerts.slice(-minLen),
+    };
+
+    const hySpread = extractHySpreadSeries(history);
+    if (hySpread.length >= minLen) {
+      vars.hySpread = hySpread.slice(-minLen);
+    }
+
+    const { matrix, ranked, topInfluence } = influenceMatrix(vars);
+
+    return {
+      topInfluence: topInfluence
+        ? { pair: topInfluence.pair, transferEntropy: topInfluence.transferEntropy.toFixed(4) }
+        : null,
+      rankedTop5: ranked.slice(0, 5).map(r => ({
+        pair: r.pair,
+        te: r.transferEntropy.toFixed(4),
+      })),
+      matrix,
+    };
+  }, 'TransferEntropy');
+
+  // N6. SIR/SEIR -- контагия нарративов/паники
+  result.contagion = safeRun(() => {
+    const conflictCount = latest.gdelt?.conflictEvents?.length || 0;
+    const alertCount = latest.delta?.newAlerts || 0;
+
+    const sir = new SIRModel({
+      S0: 50,
+      I0: Math.max(1, Math.min(5, Math.floor(conflictCount / 3))),
+      R0: 0,
+      beta: 0.15 + (latest.fred?.vix || 20) / 200,
+      gamma: 0.05,
+    });
+
+    const traj = sir.simulate(30);
+    const peak = sir.peak();
+    const R0 = sir.reproductionNumber();
+    const outbreakProb = sir.majorOutbreakProbability();
+
+    return {
+      reproductionNumber: R0.toFixed(3),
+      outbreakProbability: outbreakProb.toFixed(3),
+      peak: {
+        step: peak.step,
+        fraction: peak.fraction.toFixed(3),
+      },
+      finalState: {
+        susceptible: Math.round(traj[traj.length - 1].S),
+        infected: Math.round(traj[traj.length - 1].I),
+        recovered: Math.round(traj[traj.length - 1].R),
+      },
+      interpretation: R0 > 1
+        ? 'contagion_growing'
+        : 'contagion_fading',
+    };
+  }, 'Contagion');
+
+  // N7. EVT -- вероятность экстремального события
+  result.evt = safeRun(() => {
+    const vixSeries = extractVixSeries(history);
+    if (vixSeries.length < 20) return { error: 'insufficient_data' };
+
+    const evtResult = extremeEventProbability(vixSeries, 35, 30);
+
+    return {
+      probability30day: evtResult.probability.toFixed(4),
+      method: evtResult.method,
+      rate: evtResult.rate?.toFixed(4),
+      tailIndex: evtResult.tailIndex?.toFixed(3),
+      heavyTail: evtResult.heavyTail,
+      returnLevel95: evtResult.returnLevel95?.toFixed(2),
+      returnLevel99: evtResult.returnLevel99?.toFixed(2),
+    };
+  }, 'EVT');
+
+  // N8. Ornstein-Uhlenbeck -- mean-reverting прогноз VIX
+  result.ornsteinUhlenbeck = safeRun(() => {
+    const vixSeries = extractVixSeries(history);
+    if (vixSeries.length < 15) return { error: 'insufficient_data' };
+
+    const ou = new OrnsteinUhlenbeck();
+    ou.fit(vixSeries);
+
+    const currentVix = latest.fred?.vix || vixSeries[vixSeries.length - 1];
+    const forecast = ou.forecast(currentVix, 5);
+    const halfLife = ou.halfLife();
+    const probThreshold = ou.probabilityOfThreshold(currentVix, 35, 10);
+
+    return {
+      longRunMean: ou.mu.toFixed(2),
+      meanReversionSpeed: ou.theta.toFixed(4),
+      volatility: ou.sigma.toFixed(2),
+      halfLife: halfLife.toFixed(1),
+      forecast5: forecast.map(f => ({
+        step: f.h,
+        mean: f.mean.toFixed(2),
+        lower: f.lower.toFixed(2),
+        upper: f.upper.toFixed(2),
+      })),
+      probVixAbove35_10steps: probThreshold.toFixed(3),
+    };
+  }, 'OrnsteinUhlenbeck');
+
+  // N9. Копулы -- хвостовая зависимость между переменными
+  result.copula = safeRun(() => {
+    const vix = extractVixSeries(history);
+    const conflicts = extractConflictSeries(history);
+    const minLen = Math.min(vix.length, conflicts.length);
+
+    if (minLen < 15) return { error: 'insufficient_data' };
+
+    const vars = {
+      vix: vix.slice(-minLen),
+      conflicts: conflicts.slice(-minLen),
+    };
+
+    const hySpread = extractHySpreadSeries(history);
+    if (hySpread.length >= minLen) {
+      vars.hySpread = hySpread.slice(-minLen);
+    }
+
+    const analysis = dependenceAnalysis(vars);
+
+    const entries = Object.entries(analysis);
+    const strongest = entries.reduce(
+      (best, [k, v]) => Math.max(v.lowerTail, v.upperTail) > Math.max(best[1].lowerTail, best[1].upperTail)
+        ? [k, v] : best,
+      entries[0]
+    );
+
+    return {
+      pairs: entries.map(([pair, data]) => ({
+        pair,
+        kendallTau: data.kendallTau.toFixed(3),
+        lowerTail: data.lowerTail.toFixed(3),
+        upperTail: data.upperTail.toFixed(3),
+        asymmetric: data.asymmetric,
+        claytonTheta: data.claytonTheta.toFixed(2),
+      })),
+      strongestTailDependence: strongest
+        ? { pair: strongest[0], lower: strongest[1].lowerTail, upper: strongest[1].upperTail }
+        : null,
+    };
+  }, 'Copula');
+
+  // N10. BOCPD -- детектор разладки в реальном времени
+  result.bocpd = safeRun(() => {
+    const vixSeries = extractVixSeries(history);
+    if (vixSeries.length < 10) return { error: 'insufficient_data' };
+
+    const model = new GaussianConjugate({ mu0: 20, kappa0: 1, alpha0: 1, beta0: 10 });
+    const bocpd = new BOCPD({ model, hazardFn: () => 1 / 50 });
+
+    const { results, changepoints } = bocpd.detect(vixSeries);
+
+    const lastResult = results[results.length - 1];
+    const recentCps = changepoints.filter(cp => cp > vixSeries.length - 10);
+
+    return {
+      currentChangepointProb: lastResult.changepointProbability.toFixed(3),
+      mostLikelyRunLength: lastResult.mostLikelyRunLength,
+      changepointsDetected: changepoints.length,
+      recentChangepoints: recentCps,
+      regimeStability: lastResult.changepointProbability < 0.1
+        ? 'stable'
+        : lastResult.changepointProbability < 0.3
+        ? 'unstable'
+        : 'shift_detected',
+    };
+  }, 'BOCPD');
+
+  // N11. Particle Filter -- нелинейная фильтрация
+  result.particleFilter = safeRun(() => {
+    const vixSeries = extractVixSeries(history);
+    if (vixSeries.length < 5) return { error: 'insufficient_data' };
+
+    const pf = new ParticleFilter({
+      nParticles: 200,
+      transitionFn: (p) => ({
+        state: p.state + (Math.random() - 0.5) * 2,
+        params: p.params,
+      }),
+      observationFn: (p) => p.state,
+    });
+
+    const currentVix = latest.fred?.vix || 20;
+    pf.particles = Array.from({ length: 200 }, () => ({
+      state: currentVix + (Math.random() - 0.5) * 5,
+      params: {},
+    }));
+
+    const filtered = pf.filter(vixSeries);
+    const estimate = pf.estimate();
+
+    pf.predict();
+    const forecast = pf.estimate();
+
+    return {
+      currentEstimate: estimate.mean.toFixed(2),
+      currentStd: estimate.std.toFixed(2),
+      forecastMean: forecast.mean.toFixed(2),
+      forecastStd: forecast.std.toFixed(2),
+    };
+  }, 'ParticleFilter');
+
+  return result;
+}
+
+// ===================================================================
+// ФАЗА O: Нейросетевой слой -- MLP, GCN, DQN
+// ===================================================================
+
+async function phaseO_NeuralLayer(latest, history, prediction) {
+  console.log('[engine] Фаза O: нейросетевой слой (MLP, GCN, DQN)');
+  const result = {};
+
+  // O1. MLP -- классификация режима системы
+  result.mlp = safeRun(() => {
+    const vixSeries = extractVixSeries(history);
+    const conflictSeries = extractConflictSeries(history);
+    const alertSeries = extractAlertsSeries(history);
+
+    const minLen = Math.min(vixSeries.length, conflictSeries.length, alertSeries.length);
+    if (minLen < 30) return { error: 'need_30+_sweeps_for_training' };
+
+    const X = [];
+    const y = [];
+    for (let i = 0; i < minLen; i++) {
+      X.push([
+        vixSeries[i] / 50,
+        Math.min(conflictSeries[i] / 20, 1),
+        Math.min(alertSeries[i] / 15, 1),
+      ]);
+      if (vixSeries[i] > 35 || conflictSeries[i] > 15) y.push([0, 0, 1]);
+      else if (vixSeries[i] > 25 || conflictSeries[i] > 8) y.push([0, 1, 0]);
+      else y.push([1, 0, 0]);
+    }
+
+    const mlp = new MLP({
+      layers: [3, 8, 8, 3],
+      learningRate: 0.01,
+      activation: 'relu',
+    });
+
+    mlp.fit(X, y, 50, 16);
+
+    const currentFeatures = [
+      (latest.fred?.vix || 20) / 50,
+      Math.min((latest.gdelt?.conflictEvents?.length || 0) / 20, 1),
+      Math.min((latest.delta?.newAlerts || 0) / 15, 1),
+    ];
+
+    const pred = mlp.predict(currentFeatures);
+    const labels = ['stable', 'escalation', 'crisis'];
+    const maxIdx = pred.indexOf(Math.max(...pred));
+
+    return {
+      prediction: labels[maxIdx],
+      confidence: pred[maxIdx].toFixed(3),
+      distribution: Object.fromEntries(labels.map((l, i) => [l, pred[i].toFixed(3)])),
+    };
+  }, 'MLP');
+
+  // O2. GCN -- графовая нейросеть для графа событий
+  result.gcn = safeRun(() => {
+    const recentConflicts = (latest.gdelt?.conflictEvents || []).slice(0, 10);
+    const nNodes = Math.max(3, Math.min(recentConflicts.length, 10));
+
+    if (nNodes < 3) return { error: 'insufficient_events_for_graph' };
+
+    const adj = Array.from({ length: nNodes }, () =>
+      Array.from({ length: nNodes }, () => (Math.random() > 0.7 ? 1 : 0))
+    );
+    for (let i = 0; i < nNodes; i++) adj[i][i] = 1;
+
+    const adjNorm = GCN.normalizeAdjacency(adj);
+
+    const features = Array.from({ length: nNodes }, (_, i) => [
+      Math.random(),
+      Math.random(),
+      Math.random(),
+    ]);
+
+    const gcn = new GCN({
+      nNodes,
+      nFeatures: 3,
+      nHidden: 8,
+      nClasses: 3,
+    });
+
+    const output = gcn.forward(features, adjNorm);
+    const predictions = gcn.predict(features, adjNorm);
+
+    return {
+      nNodes,
+      nodePredictions: predictions.map(p => ['low', 'medium', 'high'][p]),
+      outputShape: `${output.output.length}x${output.output[0].length}`,
+    };
+  }, 'GCN');
+
+  // O3. DQN -- оптимизация выбора действий
+  result.dqn = safeRun(() => {
+    const vix = latest.fred?.vix || 20;
+    const stateBin = Math.min(9, Math.floor(vix / 5));
+
+    const modelPath = join(PRED_DIR, 'dqn_model.json');
+    let dqn;
+    if (existsSync(modelPath)) {
+      try {
+        dqn = DQN.deserialize(readFileSync(modelPath, 'utf-8'));
+      } catch {
+        dqn = new DQN({ nStates: 10, nActions: 3 });
+      }
+    } else {
+      dqn = new DQN({ nStates: 10, nActions: 3 });
+    }
+
+    const bestAction = dqn.bestAction(stateBin);
+    const actions = ['normal_sweep', 'add_sources', 'deep_scan'];
+
+    const reward = (vix > 25 && bestAction === 1) ? 1 :
+                   (vix > 35 && bestAction === 2) ? 2 :
+                   (vix < 20 && bestAction === 0) ? 1 : 0;
+
+    const nextStateBin = Math.min(9, Math.floor((vix + (Math.random() - 0.5) * 5) / 5));
+    dqn.remember(stateBin, bestAction, reward, nextStateBin, false);
+    dqn.train();
+
+    mkdirSync(PRED_DIR, { recursive: true });
+    writeFileSync(modelPath, dqn.serialize());
+
+    return {
+      currentState: stateBin,
+      recommendedAction: actions[bestAction],
+      epsilon: dqn.epsilon.toFixed(3),
+      bufferSize: dqn.replayBuffer.length,
+      lastReward: reward,
+    };
+  }, 'DQN');
+
+  // O4. Python Bridge -- опционально, если доступен Python-сервис
+  result.pythonBridge = await safeRunAsync(async () => {
+    const available = await checkPythonService();
+    if (!available) return { available: false };
+
+    const vixSeries = extractVixSeries(history);
+    if (vixSeries.length < 10) return { available: true, error: 'insufficient_data' };
+
+    const X = vixSeries.slice(-20).map((v, i) => [v, i]);
+    const result = await hybridForecast('keras_lstm', [X], () => {
+      const n = vixSeries.length;
+      if (n < 2) return [vixSeries[n - 1]];
+      let level = vixSeries[0];
+      let trend = vixSeries[1] - vixSeries[0];
+      for (let i = 2; i < n; i++) {
+        const nl = 0.3 * vixSeries[i] + 0.7 * (level + trend);
+        trend = 0.1 * (nl - level) + 0.9 * trend;
+        level = nl;
+      }
+      return [level + trend, level + 2 * trend, level + 3 * trend];
+    });
+
+    return {
+      available: true,
+      source: result.source,
+      predictions: result.predictions,
+    };
+  }, 'PythonBridge');
+
+  return result;
+}
+
+// ===================================================================
+// ФАЗА P: Объяснимость -- что драйвит прогноз
+// ===================================================================
+
+function phaseP_Explainability(latest, history, prediction) {
+  console.log('[engine] Фаза P: объяснимость прогноза');
+  const result = {};
+
+  // P1. Permutation Importance
+  result.featureImportance = safeRun(() => {
+    const features = {
+      vix: latest.fred?.vix || 20,
+      conflictCount: latest.gdelt?.conflictEvents?.length || 0,
+      newAlerts: latest.delta?.newAlerts || 0,
+      escalatedAlerts: latest.delta?.escalatedAlerts || 0,
+    };
+
+    if (latest.fred?.hySpread) features.hySpread = latest.fred.hySpread;
+    if (latest.sanctions?.count) features.sanctionsCount = latest.sanctions.count;
+
+    const predictFn = (f) => {
+      return (f.vix / 50) * 0.3 +
+             Math.min(f.conflictCount / 20, 1) * 0.25 +
+             Math.min(f.newAlerts / 15, 1) * 0.2 +
+             Math.min(f.escalatedAlerts / 10, 1) * 0.15 +
+             ((f.hySpread || 3) / 8) * 0.1;
+    };
+
+    const baseline = predictFn(features);
+    const imp = permutationImportance(predictFn, features, baseline, 5);
+
+    return {
+      topFeatures: imp.ranked.slice(0, 5),
+      baselineRisk: baseline.toFixed(3),
+    };
+  }, 'FeatureImportance');
+
+  // P2. Контрфактические сценарии
+  result.counterfactuals = safeRun(() => {
+    const features = {
+      vix: latest.fred?.vix || 20,
+      conflictCount: latest.gdelt?.conflictEvents?.length || 0,
+      newAlerts: latest.delta?.newAlerts || 0,
+    };
+
+    const predictFn = (f) =>
+      (f.vix / 50) * 0.4 + Math.min(f.conflictCount / 20, 1) * 0.35 + Math.min(f.newAlerts / 15, 1) * 0.25;
+
+    const cf = counterfactualExplanation(predictFn, features, [
+      { description: 'VIX drops to 15', values: { vix: 15 } },
+      { description: 'VIX spikes to 40', values: { vix: 40 } },
+      { description: 'Conflicts drop to 0', values: { conflictCount: 0 } },
+      { description: 'Conflicts double', values: { conflictCount: (features.conflictCount || 5) * 2 } },
+    ]);
+
+    return {
+      basePrediction: cf.basePrediction.toFixed(3),
+      scenarios: cf.counterfactuals.map(c => ({
+        description: c.description,
+        prediction: c.counterfactualPrediction.toFixed(3),
+        delta: c.delta.toFixed(3),
+        direction: c.delta > 0 ? 'risk_up' : 'risk_down',
+      })),
+    };
+  }, 'Counterfactuals');
+
+  // P3. Декомпозиция неопределённости
+  result.uncertainty = safeRun(() => {
+    const modelPredictions = [];
+
+    if (prediction?.bayesian?.events) {
+      for (const ev of prediction.bayesian.events) {
+        modelPredictions.push({ source: 'bayesian', forecast: ev.posterior || ev.probability });
+      }
+    }
+    if (prediction?.monteCarlo?.probabilities) {
+      for (const [outcome, prob] of Object.entries(prediction.monteCarlo.probabilities)) {
+        modelPredictions.push({ source: 'montecarlo', forecast: prob });
+      }
+    }
+    if (prediction?.markov?.nextState) {
+      modelPredictions.push({ source: 'markov', forecast: prediction.markov.distribution?.crisis || 0.1 });
+    }
+
+    if (prediction?.hmm) {
+      const dist = prediction.hmm.stateDistribution;
+      if (dist) modelPredictions.push({ source: 'hmm', forecast: dist.crisis || 0 });
+    }
+    if (prediction?.ising) {
+      modelPredictions.push({ source: 'ising', forecast: prediction.ising.flipProbability || 0 });
+    }
+    if (prediction?.evt) {
+      modelPredictions.push({ source: 'evt', forecast: prediction.evt.probability30day || 0 });
+    }
+    if (prediction?.bocpd) {
+      modelPredictions.push({ source: 'bocpd', forecast: prediction.bocpd.currentChangepointProb || 0 });
+    }
+
+    if (modelPredictions.length < 2) return { error: 'need_2+_models' };
+
+    const decomp = decomposeUncertainty(modelPredictions);
+
+    return {
+      total: decomp.total.toFixed(4),
+      epistemic: decomp.epistemic.toFixed(4),
+      aleatoric: decomp.aleatoric.toFixed(4),
+      mean: decomp.mean.toFixed(4),
+      disagreement: decomp.disagreement.toFixed(4),
+      interpretation: decomp.epistemic > decomp.aleatoric
+        ? 'models_disagree_needs_more_data'
+        : 'inherent_noise_in_system',
+      modelCount: modelPredictions.length,
+    };
+  }, 'Uncertainty');
+
+  // P4. Цепочка рассуждений для дашборда
+  result.reasoningChain = safeRun(() => {
+    if (!prediction) return { error: 'no_prediction' };
+
+    const importances = result.featureImportance?.topFeatures
+      ? { ranked: result.featureImportance.topFeatures }
+      : { ranked: [] };
+
+    const chain = buildReasoningChain(prediction, importances);
+
+    return {
+      steps: chain,
+      stepCount: chain.length,
+    };
+  }, 'ReasoningChain');
+
+  return result;
+}
+
+// ===================================================================
+// ФАЗА Q: Трансляция -- WebSocket, Notifier, сохранение
+// ===================================================================
+
+async function phaseQ_Dissemination(prediction) {
+  console.log('[engine] Фаза Q: трансляция (WS, Notifier)');
+
+  safeRun(() => {
+    publishPrediction(prediction);
+  }, 'WebSocket');
+
+  await safeRunAsync(async () => {
+    await notifyPrediction(prediction);
+  }, 'Notifier');
+
+  safeRun(() => {
+    mkdirSync(PRED_DIR, { recursive: true });
+    const ts = new Date().toISOString().replace(/[:.]/g, '-');
+    writeFileSync(
+      join(PRED_DIR, `extended_${ts}.json`),
+      JSON.stringify(prediction, null, 2)
+    );
+
+    writeFileSync(
+      join(PRED_DIR, 'latest_extended.json'),
+      JSON.stringify(prediction, null, 2)
+    );
+  }, 'Save');
+
+  return {
+    websocketPushed: true,
+    notificationsSent: true,
+    savedTo: 'runs/predictions/latest_extended.json',
+  };
+}
+
+// ===================================================================
+// ГЛАВНАЯ ФУНКЦИЯ -- вызывается из engine.mjs после существующих фаз
+// ===================================================================
+
+/**
+ * Запуск всех новых модулей и интеграция в prediction
+ *
+ * @param {Object} latest -- latest.json из Crucix
+ * @param {Array} history -- массив предыдущих sweep-данных
+ * @param {Object} existingPrediction -- прогноз от базовых модулей
+ * @param {Object} options -- { skipPhaseN, skipPhaseO, skipPhaseP, skipPhaseQ }
+ * @returns {Object} -- расширенный прогноз
+ */
+export async function runNewModules(latest, history, existingPrediction = {}, options = {}) {
+  const {
+    skipPhaseN = false,
+    skipPhaseO = false,
+    skipPhaseP = false,
+    skipPhaseQ = false,
+  } = options;
+
+  const result = {
+    ...existingPrediction,
+    extended: {},
+  };
+
+  if (!skipPhaseN) {
+    result.extended.scientificSynthesis = phaseN_ScientificSynthesis(latest, history);
+  }
+
+  if (!skipPhaseO) {
+    result.extended.neuralLayer = await phaseO_NeuralLayer(latest, history, result);
+  }
+
+  if (!skipPhaseP) {
+    result.extended.explainability = phaseP_Explainability(latest, history, result);
+  }
+
+  if (!skipPhaseQ) {
+    result.extended.dissemination = await phaseQ_Dissemination(result);
+  }
+
+  result.extended.summary = {
+    modulesRun:
+      (skipPhaseN ? 0 : 11) +
+      (skipPhaseO ? 0 : 4) +
+      (skipPhaseP ? 0 : 4) +
+      (skipPhaseQ ? 0 : 3),
+    phasesExecuted: [
+      !skipPhaseN && 'N_scientific_synthesis',
+      !skipPhaseO && 'O_neural_layer',
+      !skipPhaseP && 'P_explainability',
+      !skipPhaseQ && 'Q_dissemination',
+    ].filter(Boolean),
+    timestamp: new Date().toISOString(),
+  };
+
+  return result;
+}
+
+// ===================================================================
+// ПАТЧ ДЛЯ engine.mjs -- функция runForecastPipeline
+// ===================================================================
+
+/**
+ * Обёртка вокруг существующего runForecastPipeline.
+ *
+ * Добавьте в engine.mjs в конце runForecastPipeline перед return:
+ *
+ *   const { runNewModules } = await import('./engine_integration_patch.mjs');
+ *   result = await runNewModules(latest, history, result, {
+ *     skipPhaseN: options.skipPhaseN,
+ *     skipPhaseO: options.skipPhaseO,
+ *     skipPhaseP: options.skipPhaseP,
+ *     skipPhaseQ: options.skipPhaseQ,
+ *   });
+ *
+ * Или замените вызов runForecastPipeline на runForecastPipelineExtended
+ * в briefing.mjs:
+ *
+ *   import { runForecastPipelineExtended } from './predict/engine_integration_patch.mjs';
+ *   const forecast = await runForecastPipelineExtended(latest, history);
+ */
+
+export async function runForecastPipelineExtended(latest, history, options = {}) {
+  const engineModule = await import('./engine.mjs');
+  const runForecastPipeline = engineModule.default || engineModule.runForecastPipeline;
+
+  let prediction;
+  try {
+    prediction = await runForecastPipeline(latest, options);
+  } catch (e) {
+    console.warn('[engine_patch] Base pipeline failed, running extended only:', e.message);
+    prediction = { error: e.message, timestamp: new Date().toISOString() };
+  }
+
+  prediction = await runNewModules(latest, history || [], prediction, {
+    skipPhaseN: options.skipPhaseN,
+    skipPhaseO: options.skipPhaseO,
+    skipPhaseP: options.skipPhaseP,
+    skipPhaseQ: options.skipPhaseQ,
+  });
+
+  return prediction;
+}
+
+export default runForecastPipelineExtended;
+
+
+
+========================================================================

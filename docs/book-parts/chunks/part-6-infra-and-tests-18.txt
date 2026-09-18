@@ -1,0 +1,1070 @@
+===== ЧАСТЬ part-6-infra-and-tests · КУСОК 18/23 · 38.2 KB =====
+
+FILE: docs/handbook/sciences/bayesian.md
+SIZE: 5564 bytes
+SHA1: bb0b3123131e8d2b
+========================================================================
+
+# Глава 10. Байесовская статистика
+
+Байесовский подход — фундамент Crucix. Вместо точечных оценок — распределения. Вместо частотных тестов — credible intervals.
+
+Crucix использует четыре байесовских метода:
+
+1. BOCPD — Bayesian Online Change Point Detection
+2. MCMC — Markov Chain Monte Carlo
+3. Hierarchical Bayes — иерархические модели
+4. Bayesian Networks — вероятностные графы
+
+## 10.1 Bayesian Online Change Point Detection
+
+### Теория
+
+Adams & MacKay (2007). Онлайн определение смены режима:
+
+- Поддерживаем распределение по run length r_t
+- r_t = 0 — момент смены
+- r_t = k — прошло k точек с последней смены
+
+Predictive distribution: Student-t (устойчива к выбросам).
+
+Рекурсия:
+
+P(r_t, x_{1:t}) = sum P(r_{t-1}, x_{1:t-1}) * P(x_t | r_{t-1}) * P(r_t | r_{t-1})
+
+где:
+- P(r_t = 0 | r_{t-1}) = H — hazard rate
+- P(r_t = r_{t-1} + 1 | r_{t-1}) = 1 - H
+
+### Применение в Crucix
+
+Определение момента смены режима VIX без порогов.
+
+### Что это даёт
+
+Момент смены режима:
+
+Change points detected:
+  t=15: P=0.42
+  t=32: P=0.51
+  t=58: P=0.38
+
+Current: P(change) = 0.08 (режим стабилен)
+Regime age: 12 steps
+
+Правило: P(change) > 0.4 — режим меняется сейчас. Не пытайтесь торговать по старым правилам.
+
+## 10.2 MCMC
+
+### Теория
+
+Markov Chain Monte Carlo. Когда posterior не выводится аналитически, генерируем выборку.
+
+Metropolis-Hastings:
+
+1. Предлагаем theta_new ~ q(.|theta)
+2. Принимаем с вероятностью alpha = min(1, p(theta_new|D)/p(theta|D) * q(theta|theta_new)/q(theta_new|theta))
+
+Gibbs sampling: обновляем по одному параметру из conditional posterior.
+
+### Применение в Crucix
+
+Оценка скрытой интенсивности эскалации.
+
+### Что это даёт
+
+Posterior для параметров плюс прогноз:
+
+alpha = 1.24 +- 0.18
+beta = 0.42 +- 0.11
+
+Predicted conflicts (current stress):
+  mean = 6.2
+  p025 = 3.1
+  p975 = 11.4
+
+Правило: если p975 > 15 — высокий риск эскалации.
+
+## 10.3 Hierarchical Bayes
+
+### Теория
+
+Gelman et al. (2013). Иерархические модели — параметры на нескольких уровнях:
+
+Уровень 1: y_i ~ N(theta_i, sigma_i)      # наблюдения
+Уровень 2: theta_i ~ N(mu, tau)           # параметры групп
+Уровень 3: mu, tau ~ Hyperprior           # гиперпараметры
+
+Shrinkage: отдельные оценки подтягиваются к общему среднему.
+
+### Применение в Crucix
+
+Для стран/регионов с малыми данными — borrowing strength от глобального пула.
+
+### Что это даёт
+
+Топ рисковых регионов с учётом глобального контекста:
+
+1. ukraine: posterior 0.72 (raw 0.81, shrinkage -0.09)
+2. russia:  posterior 0.58 (raw 0.62)
+3. israel:  posterior 0.44 (raw 0.38, shrinkage +0.06)
+
+Для стран с n=3 наблюдениями — сильная усадка к глобальному mean=0.32.
+Для стран с n=50 — слабая усадка.
+
+Правило: hierarchical model надёжнее для стран с малыми данными.
+
+## 10.4 Bayesian Networks
+
+### Теория
+
+Pearl (1985). DAG с условными вероятностями:
+
+P(X_1, ..., X_n) = prod P(X_i | parents(X_i))
+
+Inference: P(Y | E) — posterior целевой переменной при evidence.
+
+### Применение в Crucix
+
+Граф причинности:
+
+ConflictLevel -> VIX -> CreditStress -> Crisis
+ConflictLevel -> SanctionsPressure -> SupplyChainStress -> Crisis
+
+### Что это даёт
+
+P(crisis | evidence) — точная вероятность с учётом всей структуры:
+
+Evidence:
+  ConflictLevel = high
+  VIX = elevated
+  SanctionsPressure = high
+  CreditStress = medium
+  SupplyChainStress = medium
+
+Posterior:
+  P(Crisis = yes) = 0.42
+  P(Crisis = no) = 0.58
+
+Crisis level: elevated
+
+Правило: P(Crisis) > 0.5 — кризис вероятен.
+
+## 10.5 Итог
+
+| Метод | Что показывает | Когда критично |
+|-------|----------------|----------------|
+| BOCPD | Момент смены | P(change) > 0.4 |
+| MCMC | Posterior параметров | p975 > порог |
+| HierBayes | Топ регионов | posterior > 0.6 |
+| BayesNet | P(crisis) | > 0.5 |
+
+Композитная логика: все четыре метода дополняют друг друга. BOCPD — когда. MCMC — что. HierBayes — где. BayesNet — почему.
+
+## 10.6 Литература
+
+- Adams, R. P., & MacKay, D. J. C. (2007). Bayesian online changepoint detection. arXiv.
+- Gelman, A. et al. (2013). Bayesian Data Analysis. Chapman & Hall.
+- Pearl, J. (1985). Bayesian networks: A model of self-activated memory for evidential reasoning. UCLA.
+- Robert, C. P., & Casella, G. (2004). Monte Carlo Statistical Methods. Springer.
+
+
+
+========================================================================
+
+FILE: docs/handbook/sciences/causality.md
+SIZE: 3438 bytes
+SHA1: d556032ee22d0791
+========================================================================
+
+# Глава 15. Причинность
+
+Корреляция не подразумевает причинность.
+
+Это утверждение верно. Но как доказать причинность? Pearl (2000) дал строгий формализм: do-calculus.
+
+Crucix использует:
+
+1. Structural Causal Models — SCM
+2. Do-calculus — интервенции
+3. Counterfactual reasoning — что было бы, если...
+
+## 15.1 Structural Causal Models
+
+### Теория
+
+SCM = набор структурных уравнений:
+
+X_i = f_i(parents(X_i), U_i)
+
+где:
+- X_i — переменная
+- parents(X_i) — прямые причины
+- U_i — экзогенный шум
+
+Граф причинности — DAG, где рёбра = прямые причинные связи.
+
+### Применение в Crucix
+
+SCM для геополитики:
+
+ConflictLevel -> VIX -> CreditStress -> Crisis
+ConflictLevel -> SanctionsPressure -> SupplyChainStress -> Crisis
+
+### Что это даёт
+
+Позволяет моделировать систему как набор причинных связей и отвечать на вопросы интервенций.
+
+## 15.2 Do-Calculus
+
+### Теория
+
+Pearl (1995). Разница между:
+
+- P(Y | X = x) — наблюдательная условная вероятность
+- P(Y | do(X = x)) — интервенционная
+
+Ключевое: P(Y | X) не равно P(Y | do(X)) при наличии confounders.
+
+Counterfactual — 3 шага Pearl:
+
+1. Abduction: infer exogenous noise from observed
+2. Action: change X
+3. Prediction: recompute Y with noise
+
+### Применение в Crucix
+
+Ответ на вопрос: Что было бы, если бы конфликт был другим?
+
+### Что это даёт
+
+Counterfactual анализ:
+
+Observed: crisis = 1 (уже случился)
+
+Counterfactuals:
+  If no conflict: crisis = 0 (не было бы)
+  If VIX = 20: crisis = 0 (не было бы)
+
+Probabilities:
+  P(crisis | conflict = 1) = 0.68
+  P(crisis | conflict = 0) = 0.12
+
+Attribution: conflict contribution = 82%
+
+Интерпретация: 82% кризиса объясняется конфликтом. Устранение конфликта устранило бы кризис.
+
+Правило: attribution > 0.6 — конфликт главный драйвер.
+
+## 15.3 Итог
+
+| Метод | Что показывает | Когда критично |
+|-------|----------------|----------------|
+| SCM | Граф причинности | Структура |
+| Do-Calculus | Эффект интервенции | P(Y do) не равно P(Y X) |
+| Counterfactual | Что было бы, если | Attribution > 0.6 |
+
+Композитная логика: причинный анализ отвечает на вопрос почему, в отличие от корреляционного что.
+
+Практическая польза: если attribution = 82% для конфликта — фокус на деэскалацию, а не на финансовые меры.
+
+## 15.4 Литература
+
+- Pearl, J. (2000). Causality: Models, Reasoning, and Inference. Cambridge University Press.
+- Pearl, J. (1995). Causal diagrams for empirical research. Biometrika.
+- Peters, J., Janzing, D., & Scholkopf, B. (2017). Elements of Causal Inference. MIT Press.
+
+
+
+========================================================================
+
+FILE: docs/handbook/sciences/epidemiology.md
+SIZE: 3416 bytes
+SHA1: fcb004c8b975e8b2
+========================================================================
+
+# Глава 8. Эпидемиология
+
+Кризисы распространяются как эпидемии:
+
+- Начало: локальный случай
+- Рост: заражение соседей
+- Пик: максимальное распространение
+- Спад: иммунитет / истощение
+
+Crucix использует две эпидемиологические модели:
+
+1. SIR — Susceptible-Infected-Recovered
+2. Renewal Theory — интервалы между событиями
+
+## 8.1 SIR Model
+
+### Теория
+
+Kermack & McKendrick (1927). Модель:
+
+dS/dt = -beta * S * I / N
+dI/dt = beta * S * I / N - gamma * I
+dR/dt = gamma * I
+
+где:
+- S — susceptible (уязвимые)
+- I — infected (заражённые)
+- R — recovered (иммунные)
+- beta — скорость заражения
+- gamma — скорость выздоровления
+
+Базовое репродуктивное число:
+
+R0 = beta / gamma
+
+- R0 < 1 — эпидемия затухает
+- R0 > 1 — эпидемия растёт
+
+### Применение в Crucix
+
+Граф стран/секторов. Каждый узел: S (здоров), I (в кризисе), R (восстановлен).
+
+### Что это даёт
+
+R0 показывает, распространится ли кризис:
+
+- R0 < 1 — кризис останется локальным
+- R0 > 1 — глобальный каскад
+- R0 > 3 — эпидемия выходит из-под контроля
+
+Вероятности заражения каждой страны:
+
+1. usa: 0.92 (высокая интеграция)
+2. eu: 0.88
+3. japan: 0.75
+4. china: 0.68
+5. india: 0.42
+
+## 8.2 Renewal Theory
+
+### Теория
+
+Cox (1962). Обобщение процесса Пуассона с произвольными интервалами:
+
+- Пуассон: интервалы экспоненциальные Exp(lambda)
+- Renewal: интервалы F(t) — любое распределение
+
+Ключевая функция — renewal function m(t) = E[N(t)]: ожидаемое число событий до времени t.
+
+Residual life — ожидаемое время до следующего события.
+
+### Применение в Crucix
+
+Интервалы между конфликтами/алертами.
+
+### Что это даёт
+
+Прогноз вероятности события:
+
+Mean interval: 24 hours
+Last event: 6 hours ago
+P(event in next 48h): 0.72
+Pattern: normal
+
+Правило: если pattern = clustering — события ускоряются. Если quiet — затишье перед бурей.
+
+## 8.3 Итог
+
+| Модель | Что показывает | Когда критично |
+|--------|----------------|----------------|
+| SIR | R0, распространение | R0 > 1.5 |
+| Renewal | Интервалы событий | pattern = clustering |
+
+Композитная логика: SIR показывает куда распространится кризис, Renewal показывает когда.
+
+## 8.4 Литература
+
+- Kermack, W. O., & McKendrick, A. G. (1927). A contribution to the mathematical theory of epidemics. Proc. Royal Society A.
+- Cox, D. R. (1962). Renewal Theory. Methuen.
+- Newman, M. E. J. (2002). Spread of epidemic disease on networks. Physical Review E.
+
+
+
+========================================================================
+
+FILE: docs/handbook/sciences/finance.md
+SIZE: 5759 bytes
+SHA1: 057cae1f050207d1
+========================================================================
+
+# Глава 9. Финансы
+
+Финансовая математика дала Crucix четыре ключевых инструмента:
+
+1. Copula — зависимость хвостов
+2. Vine Copula — многомерные зависимости
+3. Extreme Value Theory (EVT) — оценка хвостов
+4. Ornstein-Uhlenbeck — возврат к среднему
+
+## 9.1 Copula
+
+### Теория
+
+Sklar (1959). Copula — это функция, связывающая маргинальные распределения в совместное:
+
+F(x1, x2, ..., xn) = C(F1(x1), F2(x2), ..., Fn(xn))
+
+Ключевое: маргиналы — отдельно, зависимость — отдельно.
+
+Для двух переменных популярны:
+
+Clayton — нижний хвост:
+C_theta(u, v) = (u^(-theta) + v^(-theta) - 1)^(-1/theta)
+
+Gumbel — верхний хвост:
+C_theta(u, v) = exp(-((-ln u)^theta + (-ln v)^theta)^(1/theta))
+
+### Применение в Crucix
+
+Корреляция Пирсона не ловит хвостовые зависимости. Copula моделирует падение вместе именно в кризис.
+
+### Что это даёт
+
+Joint tail dependencies:
+
+VIX и HY-спред:
+  Pearson: 0.45
+  Kendall tau: 0.32
+  Clayton lower tail: 0.042
+  Gumbel upper tail: 0.018
+
+Ключевое: даже если корреляция Пирсона = 0.45 (умеренная), joint tail = 0.042 означает, что в 4.2% времени оба падают вместе. Это критично для портфельного риска.
+
+Правило: lowerTailDep > 0.03 — кризис может разразиться одновременно по нескольким фронтам.
+
+## 9.2 Vine Copula
+
+### Теория
+
+Aas et al. (2009). Для N переменных используем N(N-1)/2 бинарных копулы, организованных в дерево.
+
+Vine: C-vine, D-vine, R-vine. Каждая — способ организации дерева.
+
+### Применение в Crucix
+
+Для 6+ метрик (VIX, спред, нефть, золото, DXY, конфликты) — модель совместного хвоста.
+
+### Что это даёт
+
+P(все падают вместе) — оценка системного риска:
+
+Joint tail probability: 0.018
+Интерпретация: 1.8% времени — глобальный кризис
+
+Это НЕ 0.5^6 = 1.6%. В 100 раз выше случайного.
+
+Правило: jointTail > 0.015 — высокая системная связанность.
+
+## 9.3 Extreme Value Theory
+
+### Теория
+
+Pickands-Balkema-de Haan (1974). Хвост распределения сходится к Generalized Pareto Distribution (GPD):
+
+P(X - u > y | X > u) = (1 + xi*y/sigma)^(-1/xi)
+
+где u — порог, xi — shape, sigma — scale.
+
+- xi > 0 — тяжёлый хвост (степенной)
+- xi = 0 — экспоненциальный
+- xi < 0 — ограниченный
+
+### Применение в Crucix
+
+Оценка вероятности экстремальных событий, которых не было в истории.
+
+### Что это даёт
+
+Оценка хвостовых рисков:
+
+VIX historical max: 82 (2008)
+Current threshold: 25
+Fitted GPD: xi = 0.18 (heavy tail)
+
+P(VIX > 30) = 3.2%, return period = 31 months
+P(VIX > 40) = 1.1%, return period = 91 months
+P(VIX > 50) = 0.4%, return period = 250 months
+P(VIX > 60) = 0.18%, return period = 555 months
+
+Правило: returnPeriod < 100 months — готовьтесь к событию в течение 5-8 лет.
+
+## 9.4 Ornstein-Uhlenbeck
+
+### Теория
+
+Uhlenbeck & Ornstein (1930). Процесс возврата к среднему:
+
+dX = theta * (mu - X) * dt + sigma * dW
+
+где:
+- theta — скорость возврата
+- mu — долгосрочное среднее
+- sigma — волатильность
+
+Half-life: ln(2) / theta — время возврата к середине.
+
+### Применение в Crucix
+
+Спреды и VIX возвращаются к среднему.
+
+### Что это даёт
+
+Half-life показывает, сколько времени система возвращается к норме:
+
+VIX half-life: 5.2 steps (около 78 минут)
+HY-спред half-life: 12.4 steps (около 3 часов)
+Oil half-life: 30.1 steps (около 7.5 часов)
+
+Правило:
+- halfLife < 10 — паника рассосётся быстро
+- halfLife > 50 — структурный сдвиг, не шум
+
+## 9.5 Итог
+
+| Модель | Что показывает | Когда критично |
+|--------|----------------|----------------|
+| Copula | Хвостовые зависимости | lowerTail > 0.03 |
+| Vine | Многомерные хвосты | jointTail > 0.015 |
+| EVT | Экстремальные риски | returnPeriod < 100 |
+| OU | Возврат к среднему | halfLife > 50 |
+
+Композитная логика: Copula и Vine показывают системную связанность, EVT — вероятности катастроф, OU — восстановление.
+
+## 9.6 Литература
+
+- Sklar, A. (1959). Fonctions de repartition a n dimensions et leurs marges. Publ. Inst. Statist. Univ. Paris.
+- Aas, K. et al. (2009). Pair-copula constructions of multiple dependence. Insurance: Mathematics and Economics.
+- Pickands, J. (1975). Statistical inference using extreme order statistics. Annals of Statistics.
+- Uhlenbeck, G. E., & Ornstein, L. S. (1930). On the theory of the Brownian motion. Physical Review.
+
+
+
+========================================================================
+
+FILE: docs/handbook/sciences/gametheory.md
+SIZE: 5014 bytes
+SHA1: 655179d1deed7e77
+========================================================================
+
+# Глава 12. Теория игр
+
+Геополитика — это игра. Страны принимают решения в контексте других игроков. Теория игр даёт язык для описания равновесий и стратегий.
+
+Crucix использует три подхода:
+
+1. Nash equilibrium — стабильные стратегии
+2. Evolutionarily Stable Strategy — эволюционно стабильные
+3. Axelrod tournament — долгосрочные взаимодействия
+
+## 12.1 Nash Equilibrium
+
+### Теория
+
+Nash (1950). Равновесие — профиль стратегий, где ни один игрок не может улучшить свою полезность, меняя стратегию в одиночку.
+
+Pure: детерминированные стратегии.
+Mixed: вероятностные стратегии. Игрок 1 выбирает действие i с вероятностью p_i.
+
+Для 2x2:
+
+p = (b22 - b21) / (b11 - b21 - b12 + b22)
+q = (a22 - a12) / (a11 - a12 - a21 + a22)
+
+где A — матрица выигрышей игрока 1, B — матрица выигрышей игрока 2.
+
+### Применение в Crucix
+
+Игра США vs Китай:
+
+           Китай
+           cooperate  confront
+США  coop   (3, 3)    (-1, 5)
+     conf  (5, -1)    (0, 0)
+
+### Что это даёт
+
+Текущее равновесие:
+
+Mixed equilibrium:
+  США confront с p = 0.42
+  Китай confront с q = 0.55
+
+Current state:
+  US confront prob: 0.48
+  China confront prob: 0.62
+  Likely outcome: mutual_confront
+
+Правило: likelyOutcome = mutual_confront — обе стороны конфликтуют. Это worst case.
+
+## 12.2 Evolutionarily Stable Strategy
+
+### Теория
+
+Maynard Smith & Price (1973). ESS — стратегия, устойчивая к вторжению мутантов.
+
+Если вся популяция играет ESS, никакой мутант не может получить преимущество.
+
+Для симметричной 2x2:
+
+Pure ESS: A11 > A21 или A22 > A12.
+Mixed ESS: interior solution p = (A22 - A12) / (A11 - A12 - A21 + A22).
+
+### Применение в Crucix
+
+Для повторяющихся взаимодействий (торговая война, санкции).
+
+### Что это даёт
+
+Стабильные стратегии в долгосрочной игре.
+
+Пример для игры кооперация vs конфронтация:
+
+Pure ESS: confront (A22 > A12)
+Значит, в долгосрочной перспективе конфронтация стабильна — если обе стороны конфликтуют, никто не выигрывает от односторонней кооперации.
+
+Правило: если ESS = confront — структурный конфликт, не временный.
+
+## 12.3 Axelrod Tournament
+
+### Теория
+
+Axelrod (1984). Повторяющаяся дилемма заключённого. Классический результат:
+
+Tit-for-Tat (TFT) побеждает:
+1. Начинай с кооперации
+2. Копируй предыдущий ход противника
+3. Не завидуй, не хитри
+
+### Применение в Crucix
+
+Симуляция долгосрочных взаимодействий.
+
+### Что это даёт
+
+Стратегии стран в долгосрочной игре:
+
+1. tit_for_tat: 580 (winner)
+2. always_cooperate: 510
+3. grudger: 505
+4. always_defect: 320
+5. random: 285
+
+Интерпретация:
+- TFT побеждает — око за око оптимально в долгосрочной перспективе
+- Always defect — плохо, но не худшее
+- Random — худшее
+
+Правило: если обе страны играют TFT — стабильная кооперация. Если одна always defect — эскалация.
+
+## 12.4 Итог
+
+| Модель | Что показывает | Когда критично |
+|--------|----------------|----------------|
+| Nash | Равновесие | mutual_confront |
+| ESS | Стабильные стратегии | ESS = confront |
+| Axelrod | Долгосрочные исходы | no cooperation |
+
+Композитная логика: Nash показывает текущее равновесие, ESS — стабильные стратегии, Axelrod — долгосрочную динамику.
+
+Пример: если Nash = mixed, ESS = confront, Axelrod = always_defect dominant — структурный конфликт, не временный.
+
+## 12.5 Литература
+
+- Nash, J. F. (1950). Equilibrium points in n-person games. PNAS.
+- Maynard Smith, J., & Price, G. R. (1973). The logic of animal conflict. Nature.
+- Axelrod, R. (1984). The Evolution of Cooperation. Basic Books.
+
+
+
+========================================================================
+
+FILE: docs/handbook/sciences/_index_complete.md
+SIZE: 3048 bytes
+SHA1: 7024496ec3d6228a
+========================================================================
+
+# Часть II. Науки. Полный индекс
+
+## Готовые главы (14 из 14)
+
+| # | Наука | Файл | Модели |
+|---|-------|------|--------|
+| 1 | Физика | physics.md | Ising, SOC, Percolation, Catastrophe, Chaos |
+| 2 | Сейсмология | seismology.md | Hawkes, ETAS |
+| 3 | Распознавание речи | speech.md | HMM, HSMM |
+| 4 | Навигация | navigation.md | Kalman, EKF, Particle Filter |
+| 5 | Эпидемиология | epidemiology.md | SIR, Renewal |
+| 6 | Финансы | finance.md | Copula, Vine, EVT, OU |
+| 7 | Байесовская статистика | bayesian.md | BOCPD, MCMC, HierBayes, BayesNet |
+| 8 | Теория информации | infotheory.md | Transfer Entropy, KL, Fisher, Wasserstein, Renyi |
+| 9 | Теория игр | gametheory.md | Nash, ESS, Axelrod |
+| 10 | Теория сетей | networks.md | PageRank, Louvain, GNN, MRF |
+| 11 | Топология | topology.md | TDA, Persistent Homology |
+| 12 | Причинность | causality.md | Do-Calculus, Counterfactual |
+| 13 | Теория надёжности | reliability.md | Grey, FCM, Bayesian Optimization |
+| 14 | Социофизика | sociophysics.md | Ising opinions, Sznajd, HK |
+
+## Статистика
+
+- 14 глав про науки
+- 45+ моделей
+- 5000+ строк кода и формул
+- 100+ ссылок на первоисточники
+
+## Сборка PDF
+
+bash build.sh
+
+Результат: _build/crucix-handbook.pdf, .html, .epub.
+
+## Структура книги
+
+docs/handbook/
+├── 00-intro.md                 # Введение
+├── 01-architecture.md          # Архитектура
+├── 02-sciences.md              # Обзор наук
+├── 03-models.md                # Обзор моделей
+├── 04-deployment.md            # Развёртывание
+├── 05-api.md                   # API
+├── 06-development.md           # Разработка
+├── 07-philosophy.md            # Философия
+└── sciences/                   # Часть II — науки
+    ├── README.md
+    ├── physics.md
+    ├── seismology.md
+    ├── speech.md
+    ├── navigation.md
+    ├── epidemiology.md
+    ├── finance.md
+    ├── bayesian.md
+    ├── infotheory.md
+    ├── gametheory.md
+    ├── networks.md
+    ├── topology.md
+    ├── causality.md
+    ├── reliability.md
+    └── sociophysics.md
+
+Полная книга — 800+ страниц в формате PDF.
+
+## Философия
+
+Не существует чёрного ящика. Есть математика, которую можно понять, проверить и улучшить.
+
+Каждая модель — открытая, читаемая, модифицируемая. Каждый сигнал — калиброванный. Каждый прогноз — с честной оценкой неопределённости.
+
+
+
+========================================================================
+
+FILE: docs/handbook/sciences/infotheory.md
+SIZE: 6812 bytes
+SHA1: a92e9dc60d9ffaa5
+========================================================================
+
+# Глава 11. Теория информации
+
+Информационная теория (Shannon, 1948) — язык, на котором описываются зависимости между сигналами. Это фундамент для причинного анализа.
+
+Crucix использует пять методов:
+
+1. Transfer Entropy — направленная причинность
+2. KL divergence — различие распределений
+3. Fisher information — чувствительность параметров
+4. Wasserstein distance — оптимальный транспорт
+5. Renyi divergence — обобщение KL
+
+## 11.1 Transfer Entropy
+
+### Теория
+
+Schreiber (2000). Направленная причинность через информацию:
+
+TE(X->Y) = sum p(y_{t+1}, y_t, x_t) * log2 [ p(y_{t+1} | y_t, x_t) / p(y_{t+1} | y_t) ]
+
+Интерпретация: сколько информации прошлое X добавляет к предсказанию Y, сверх того, что даёт прошлое Y.
+
+Свойства:
+- TE(X->Y) не равно TE(Y->X) — направленность
+- TE(X->Y) = 0 — X не помогает предсказывать Y
+- TE(X->Y) > 0 — X полезен для прогноза Y
+
+### Применение в Crucix
+
+Из истории строим причинный граф: какие метрики влияют на какие.
+
+### Что это даёт
+
+Направленный граф причинности:
+
+conflict_count -> VIX: TE = 0.18
+VIX -> hy_spread: TE = 0.22
+VIX -> conflict_count: TE = 0.04
+
+Это данные, а не экспертные догадки. Композитный граф causal в Crucix строится автоматически из TE.
+
+Правило: если TE(A->B) > TE(B->A), значит A причинно влияет на B.
+
+## 11.2 KL divergence
+
+### Теория
+
+Kullback-Leibler (1951):
+
+D_KL(P || Q) = sum P(i) * log(P(i) / Q(i))
+
+Свойства:
+- D_KL(P || Q) >= 0
+- D_KL(P || Q) = 0 iff P = Q
+- Не симметрична: D_KL(P || Q) не равно D_KL(Q || P)
+
+### Применение в Crucix
+
+Сравнение распределения VIX в разные эпохи.
+
+### Что это даёт
+
+JS-divergence (Jensen-Shannon) — симметричная версия:
+
+- JS < 0.03 — распределение стабильно
+- JS 0.03-0.1 — умеренный сдвиг
+- JS > 0.1 — существенный сдвиг режима
+
+Правило: JS > 0.1 — это смена режима, не шум. Система работает по-новому.
+
+## 11.3 Fisher Information
+
+### Теория
+
+Fisher (1925):
+
+I(theta) = E[(d log p(x | theta) / d theta)^2]
+
+Свойства:
+- Мера чувствительности распределения к параметру
+- Обратная к дисперсии оценки (Cramer-Rao bound): Var(theta_hat) >= 1/I(theta)
+
+### Применение в Crucix
+
+Оценка уверенности в параметре модели.
+
+### Что это даёт
+
+Для нормального распределения:
+
+- При sigma = 1: I(mu) = 1, Var(mu_hat) >= 1
+- При sigma = 2: I(mu) = 0.25, Var(mu_hat) >= 4
+
+Чем больше sigma (волатильность), тем меньше информации о среднем. Это фундаментальный предел прогноза.
+
+Правило: если Cramer-Rao bound для VIX > 5, прогноз бессмысленен.
+
+## 11.4 Wasserstein Distance
+
+### Теория
+
+Villani (2003). Оптимальный транспорт:
+
+W_p(P, Q) = (inf int |x - y|^p d_gamma(x, y))^(1/p)
+
+где инфимум по всем связкам gamma с маргиналами P и Q.
+
+Интуиция: сколько работы нужно, чтобы переделать распределение P в Q.
+
+Свойства:
+- Симметрично
+- Учитывает геометрию распределений (KL — нет)
+- W_1 (Earth Mover's Distance) — самый распространённый
+
+### Применение в Crucix
+
+Сравнение сдвига распределений VIX.
+
+### Что это даёт
+
+W_1 divergence в единицах измерения:
+
+W_1 = 2 для VIX — распределение сдвинулось на 2 пункта
+Нормированное: W_1 / std — на сколько сигм сдвинулось
+
+Правило: W_1 / std > 0.5 — существенный сдвиг. Режим изменился.
+
+## 11.5 Renyi Divergence
+
+### Теория
+
+Renyi (1961) — обобщение KL с параметром alpha:
+
+D_alpha(P || Q) = 1/(alpha-1) * log sum P(i)^alpha * Q(i)^(1-alpha)
+
+Свойства:
+- alpha -> 1: сходится к KL
+- alpha = 2: квадратичная дивергенция
+- alpha -> inf: максимальное отклонение
+
+### Применение в Crucix
+
+Более чувствительна к хвостам, чем KL.
+
+### Что это даёт
+
+alpha = 2 — обнаруживает изменения в хвостах, которые KL может пропустить.
+
+Правило: если Renyi_2 > 2 * KL, значит изменение в хвостах — готовьтесь к экстремальным событиям.
+
+## 11.6 Итог
+
+| Метод | Что показывает | Когда критично |
+|-------|----------------|----------------|
+| Transfer Entropy | Направленная причинность | TE(A->B) >> TE(B->A) |
+| KL / JS | Различие распределений | JS > 0.1 |
+| Fisher | Чувствительность параметра | CR bound > 5 |
+| Wasserstein | Оптимальный транспорт | W1/std > 0.5 |
+| Renyi | Хвостовое различие | Renyi2 > 2*KL |
+
+Композитная логика: когда несколько информационных метрик одновременно показывают сдвиг — система переходит в новый режим.
+
+Правило: 3+ информационных метрик в критической зоне — сигнал о смене режима.
+
+## 11.7 Литература
+
+- Shannon, C. E. (1948). A mathematical theory of communication. Bell System Technical Journal.
+- Schreiber, T. (2000). Measuring information transfer. Physical Review Letters.
+- Kullback, S., & Leibler, R. A. (1951). On information and sufficiency. Annals of Mathematical Statistics.
+- Villani, C. (2003). Topics in Optimal Transportation. AMS.
+- Renyi, A. (1961). On measures of entropy and information. Proc. Berkeley Symposium.
+
+
+
+========================================================================
+
+FILE: docs/handbook/sciences/navigation.md
+SIZE: 4243 bytes
+SHA1: ac9b5f38c97b62a2
+========================================================================
+
+# Глава 7. Навигация
+
+Фильтры Калмана пришли из навигации: как, имея шумные GPS-измерения, оценить точную позицию и скорость? Тот же вопрос в Crucix: как, имея шумные метрики, оценить истинное состояние системы?
+
+Crucix использует три фильтра:
+
+1. Kalman Filter — линейный
+2. Extended Kalman Filter — для нелинейных систем
+3. Particle Filter — для сильно нелинейных
+
+## 7.1 Kalman Filter
+
+### Теория
+
+Kalman (1960). Оптимальный линейный фильтр.
+
+Модель:
+
+x_t = F * x_{t-1} + B * u_t + w_t   (w ~ N(0, Q))
+z_t = H * x_t + v_t                  (v ~ N(0, R))
+
+Predict:
+
+x_hat_minus = F * x_hat
+P_minus = F * P * F^T + Q
+
+Update:
+
+K = P_minus * H^T * (H * P_minus * H^T + R)^-1
+x_hat = x_hat_minus + K * (z - H * x_hat_minus)
+P = (I - K * H) * P_minus
+
+где K — Kalman gain.
+
+### Применение в Crucix
+
+Модель постоянная скорость для VIX:
+
+state = [vix, velocity]
+F = [[1, 1], [0, 1]]
+H = [1, 0]   # наблюдаем только VIX
+
+### Что это даёт
+
+Сглаженный VIX (без шума) плюс скорость изменения плюс прогноз с доверительным интервалом.
+
+Правило: velocity > 0.5 — VIX растёт быстрее нормы. Velocity > 1.0 — резкий рост, готовьтесь.
+
+## 7.2 Extended Kalman Filter (EKF)
+
+### Теория
+
+Для нелинейных систем линеаризуем через матрицу Якоби:
+
+x_t = f(x_{t-1}) + w
+z_t = h(x_t) + v
+
+Predict:
+
+x_hat_minus = f(x_hat)
+F_k = df/dx в точке x_hat
+P_minus = F_k * P * F_k^T + Q
+
+Update аналогично линейному, но с H_k = dh/dx.
+
+### Применение в Crucix
+
+Нелинейная модель VIX:
+
+dx/dt = theta * (mu - x) + gamma * (x - mu)^3 + noise
+
+Кубический член даёт резкие движения при больших отклонениях.
+
+## 7.3 Particle Filter
+
+### Теория
+
+Sequential Monte Carlo для сильно нелинейных систем. Представляем распределение набором частиц:
+
+{ (x_t^(i), w_t^(i)) }_{i=1}^N
+
+где w — веса. Обновление:
+
+Predict: x_t^(i) ~ p(x_t | x_{t-1}^(i))
+Update:  w_t^(i) пропорционально w_{t-1}^(i) * p(z_t | x_t^(i))
+Resample: если вес эффективно низкий — пересэмплировать
+
+### Применение в Crucix
+
+VIX как процесс с mean reversion и джампами. Распределение будущего VIX с тяжёлыми хвостами:
+
+Forecast VIX (5 steps):
+  mean = 24.3
+  p5 = 18.2, p50 = 23.8, p95 = 35.4
+  P(VIX > 30) = 0.18
+
+Правило: если p95 > 35 — высокая вероятность паники.
+
+## 7.4 Итог
+
+| Модель | Что показывает | Когда критично |
+|--------|----------------|----------------|
+| Kalman | Сглаженный плюс velocity | velocity > 1.0 |
+| EKF | Нелинейная динамика | nonlinear signal |
+| Particle | Распределение будущего | p95 > 35 |
+
+Композитная логика: три фильтра дают разные аспекты сглаживания. Kalman — быстрый тренд. EKF — нелинейные ускорения. Particle — хвостовые риски.
+
+Историческое правило: если все три показывают рост (velocity > 1, nonlinear signal = buy_vol, p95 > 35) — паника на подходе.
+
+## 7.5 Литература
+
+- Kalman, R. E. (1960). A new approach to linear filtering and prediction problems. Journal of Basic Engineering.
+- Julier, S. J., & Uhlmann, J. K. (2004). Unscented filtering and nonlinear estimation. Proceedings of the IEEE.
+- Gordon, N. J., Salmond, D. J., & Smith, A. F. (1993). Novel approach to nonlinear/non-Gaussian Bayesian state estimation. IEE Proceedings F.
+
+
+
+========================================================================

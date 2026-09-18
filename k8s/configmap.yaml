@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: crucix-config
+  namespace: crucix
+data:
+  NODE_ENV: "production"
+  CRUCIX_MODE: "crucix"
+  LOG_LEVEL: "info"
+  PYTHON_SERVICE_URL: "http://crucix-python:8090"
+  FL_COORDINATOR_URL: "http://crucix-fl-coordinator:3120"
+  PREDICTIONS_ENABLED: "true"
+  RETRAIN_INTERVAL: "50"
+  MAX_SHIFT: "0.15"
+  DECAY_RATE: "0.02"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: crucix-prometheus-config
+  namespace: crucix
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 30s
+      evaluation_interval: 30s
+    scrape_configs:
+      - job_name: 'crucix-core'
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names: [crucix]
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            target_label: __address__
+            regex: (.+)
+            replacement: ${1}

@@ -7,6 +7,21 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+export const route  = '/api/layers/analysis-events';
+export const method = 'GET';
+
+export const meta = {
+  category: "other",
+  icon: "📊",
+  color: "#64748b",
+  vizType: "marker",
+  source: null,
+  collector: "collect-analysis-events.mjs",
+  cache: 300,
+  description: "Слой analysis-events",
+  unit: "records",
+};
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -197,7 +212,7 @@ function calculateCorrelation(events, history) {
 /**
  * ГЛАВНЫЙ ОБРАБОТЧИК API
  */
-export async function handleAnalysisEventsAPI(req, res) {
+export async function handler(req, res) {
     const url = new URL(req.url, `http://${req.headers.host}`);
     const pathname = url.pathname;
     
@@ -281,9 +296,3 @@ export async function handleAnalysisEventsAPI(req, res) {
         }));
     }
 }
-
-export default {
-    handleAnalysisEventsAPI,
-    generateMockEvents,
-    detectEventType
-};

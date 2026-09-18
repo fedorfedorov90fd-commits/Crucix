@@ -1,0 +1,679 @@
+===== ЧАСТЬ part-2-models · КУСОК 12/13 · 31.9 KB =====
+
+FILE: apis/predict/federated/fl_node.mjs
+SIZE: 6096 bytes
+SHA1: c94440ecaa807862
+========================================================================
+
+// apis/predict/federated/fl_node.mjs
+// Federated Learning Node: HTTP-сервер + клиент
+
+import { createServer } from 'node:http';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { MLP } from '../models/neural.mjs';
+import { FederatedClient, FederatedServer, federatedAveraging } from './fl_protocol.mjs';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const RUNS_DIR = join(__dirname, '..', '..', '..', 'runs');
+const MEMORY_DIR = join(RUNS_DIR, 'memory');
+const FL_DIR = join(RUNS_DIR, 'federated');
+const DEFAULT_PORT = 3120;
+
+function readBody(req) { return new Promise((resolve, reject) => { let body = ''; req.on('data', chunk => body += chunk); req.on('end', () => resolve(body)); req.on('error', reject); }); }
+
+class FLNode {
+  constructor({ mode = 'worker', port = DEFAULT_PORT, nodeId = `node_${Date.now()}` }) { this.mode = mode; this.port = port; this.nodeId = nodeId; this.localModel = null; this.localData = null; this.server = mode === 'coordinator' ? new FederatedServer({ minClients: 2 }) : null; this.client = null; this.peers = []; this.roundsParticipated = 0; if (!existsSync(FL_DIR)) mkdirSync(FL_DIR, { recursive: true }); }
+  loadData() { const history = []; try { const files = readdirSync(MEMORY_DIR).filter(f => f.endsWith('.json')).sort().reverse().slice(0, 500); for (const file of files) { try { history.push(JSON.parse(readFileSync(join(MEMORY_DIR, file), 'utf-8'))); } catch {} } } catch {} if (history.length < 30) return null; const X = [], y = []; for (let i = 5; i < history.length - 1; i++) { const h = history[i], next = history[i + 1]; X.push([h.fred?.vix || 20, h.fred?.hySpread || 3, h.fred?.treasury10y || 4, h.gdelt?.conflictEvents?.length || 0, h.sanctions?.count || 0, h.energy?.oilPrice || 70, h.gold?.price || 1900, h.dxy?.value || 100, h.radiation ? Math.max(...Object.values(h.radiation).map(s => s.cpm || 0)) : 0, h.delta?.newAlerts || 0]); y.push([next.fred?.vix || 20]); } return { X, y, nSamples: X.length }; }
+  initLocalModel() { const data = this.loadData(); if (!data) return false; this.localData = data; this.localModel = new MLP({ layers: [10, 32, 16, 1], activation: 'relu', outputActivation: 'linear' }); this.client = new FederatedClient({ clientId: this.nodeId, model: this.localModel, data }); console.log(`[${this.nodeId}] Модель инициализирована, локальных сэмплов: ${data.nSamples}`); return true; }
+  async trainAndSubmit(coordinatorUrl, { epochs = 5, lr = 0.001 } = {}) { if (!this.client) return null; console.log(`[${this.nodeId}] Локальное обучение (${epochs} эпох)...`); const result = await this.client.localTrain({ epochs, lr }); const weights = this.client.getWeights({ withDP: true, epsilon: 1.0 }); try { const response = await fetch(`${coordinatorUrl}/update`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(weights) }); if (!response.ok) return null; const json = await response.json(); this.roundsParticipated++; console.log(`[${this.nodeId}] Обновление отправлено. Локальный loss: ${result.loss.toFixed(6)}`); if (json.globalModel) { this.client.setWeights(json.globalModel); console.log(`[${this.nodeId}] Глобальная модель получена`); } return { localLoss: result.loss, serverResponse: json }; } catch (e) { console.error(`[${this.nodeId}] Ошибка соединения: ${e.message}`); return null; } }
+  start() { const server = createServer(async (req, res) => { res.setHeader('Content-Type', 'application/json'); res.setHeader('Access-Control-Allow-Origin', '*'); if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; } const url = new URL(req.url, `http://localhost:${this.port}`); try { if (url.pathname === '/health') { res.writeHead(200); res.end(JSON.stringify({ status: 'ok', nodeId: this.nodeId, mode: this.mode, roundsParticipated: this.roundsParticipated, hasModel: !!this.localModel })); return; } if (url.pathname === '/update' && req.method === 'POST') { if (this.mode !== 'coordinator') { res.writeHead(403); res.end(JSON.stringify({ error: 'not_coordinator' })); return; } const body = await readBody(req); const update = JSON.parse(body); this.server.receiveUpdate(update); const result = this.server.aggregate(); res.writeHead(200); res.end(JSON.stringify({ accepted: true, buffered: this.server.updates.length, aggregation: result, globalModel: result.success ? result.globalModel : null })); return; } if (url.pathname === '/global_model' && req.method === 'GET') { if (this.mode !== 'coordinator' || !this.server.globalModel) { res.writeHead(404); res.end(JSON.stringify({ error: 'no_global_model' })); return; } res.writeHead(200); res.end(JSON.stringify({ model: this.server.globalModel })); return; } if (url.pathname === '/status') { res.writeHead(200); res.end(JSON.stringify({ nodeId: this.nodeId, mode: this.mode, port: this.port, hasModel: !!this.localModel, nSamples: this.localData?.nSamples || 0, roundsParticipated: this.roundsParticipated })); return; } res.writeHead(404); res.end(JSON.stringify({ error: 'not_found' })); } catch (e) { res.writeHead(500); res.end(JSON.stringify({ error: e.message })); } }); server.listen(this.port, () => { console.log(`[${this.nodeId}] FL-узел запущен на порту ${this.port} (режим: ${this.mode})`); }); return server; }
+}
+
+if (process.argv[1] && process.argv[1].endsWith('fl_node.mjs')) { const mode = process.argv[2] || 'worker'; const port = parseInt(process.argv[3]) || DEFAULT_PORT; const node = new FLNode({ mode, port }); node.initLocalModel(); const server = node.start(); if (mode === 'worker') { const coordinatorUrl = process.env.FL_COORDINATOR || 'http://localhost:3120'; setInterval(async () => await node.trainAndSubmit(coordinatorUrl, { epochs: 3 }), 60000); setTimeout(() => node.trainAndSubmit(coordinatorUrl, { epochs: 3 }), 5000); } }
+
+export { FLNode, readBody };
+
+
+
+========================================================================
+
+FILE: apis/predict/federated/fl_protocol.mjs
+SIZE: 5916 bytes
+SHA1: 9c697e5c81808686
+========================================================================
+
+// apis/predict/federated/fl_protocol.mjs
+// Federated Learning Protocol: FedAvg + Differential Privacy
+
+function federatedAveraging(updates, weights = null) { if (updates.length === 0) return null; const nModels = updates.length; const totalSamples = updates.reduce((s, u) => s + (u.nSamples || 1), 0); const normalizedWeights = weights || updates.map(u => (u.nSamples || 1) / totalSamples); const firstModel = updates[0].model; const structure = getModelStructure(firstModel); const averaged = deepCloneStructure(firstModel); applyAveraging(averaged, updates.map(u => u.model), normalizedWeights, structure); return averaged; }
+function getModelStructure(model) { const structure = {}; if (model.W) { structure.W = model.W.map(Wl => Wl.map(row => row.length)); structure.b = model.b.map(bl => bl.length); structure.type = 'MLP'; } else if (model.weights) { structure.weights = model.weights.map(Wl => Wl.map(row => row.length)); structure.biases = model.biases.map(bl => bl.length); structure.type = 'GCN'; } else if (model.trees) structure.type = 'Ensemble'; else if (model.layers) { structure.layers = model.layers.map(l => ({ W: l.W.map(row => row.length), b: l.b.length })); structure.type = 'DenseNet'; } return structure; }
+function deepCloneStructure(model) { if (model.W) return { W: model.W.map(Wl => Wl.map(row => new Float64Array(row))), b: model.b.map(bl => new Float64Array(bl)), layers: model.layers, activation: model.activation, outputActivation: model.outputActivation }; if (model.weights) return { weights: model.weights.map(Wl => Wl.map(row => new Float64Array(row))), biases: model.biases.map(bl => new Float64Array(bl)) }; return {}; }
+function applyAveraging(target, sources, weights, structure) { if (structure.type === 'MLP') { for (let l = 0; l < target.W.length; l++) { for (let i = 0; i < target.W[l].length; i++) { for (let j = 0; j < target.W[l][i].length; j++) { target.W[l][i][j] = 0; for (let k = 0; k < sources.length; k++) target.W[l][i][j] += weights[k] * sources[k].W[l][i][j]; } } for (let i = 0; i < target.b[l].length; i++) { target.b[l][i] = 0; for (let k = 0; k < sources.length; k++) target.b[l][i] += weights[k] * sources[k].b[l][i]; } } } }
+function addDifferentialPrivacy(model, epsilon = 1.0, sensitivity = 0.1) { const scale = sensitivity / epsilon; if (model.W) { for (let l = 0; l < model.W.length; l++) { for (let i = 0; i < model.W[l].length; i++) { for (let j = 0; j < model.W[l][i].length; j++) model.W[l][i][j] += laplaceSample(0, scale); } for (let i = 0; i < model.b[l].length; i++) model.b[l][i] += laplaceSample(0, scale); } } return model; }
+function addGaussianPrivacy(model, epsilon = 1.0, delta = 1e-5, sensitivity = 0.1) { const sigma = sensitivity * Math.sqrt(2 * Math.log(1.25 / delta)) / epsilon; if (model.W) { for (let l = 0; l < model.W.length; l++) { for (let i = 0; i < model.W[l].length; i++) { for (let j = 0; j < model.W[l][i].length; j++) model.W[l][i][j] += gaussianSample(0, sigma); } for (let i = 0; i < model.b[l].length; i++) model.b[l][i] += gaussianSample(0, sigma); } } return model; }
+function laplaceSample(loc = 0, scale = 1) { const u = Math.random() - 0.5; return loc - scale * Math.sign(u) * Math.log(1 - 2 * Math.abs(u)); }
+function gaussianSample(mean = 0, std = 1) { const u1 = Math.random(), u2 = Math.random(); return mean + std * Math.sqrt(-2 * Math.log(u1 + 1e-10)) * Math.cos(2 * Math.PI * u2); }
+function generateMaskingPair(seed, shape) { let s = seed; const rand = () => { s = (s * 9301 + 49297) % 233280; return s / 233280 - 0.5; }; const mask = shape.map(dims => dims.map(d => { const arr = new Float64Array(d); for (let i = 0; i < d; i++) arr[i] = rand() * 0.001; return arr; })); const negMask = mask.map(Wl => Wl.map(row => row.map(v => -v))); return { mask, negMask }; }
+class FederatedClient { constructor({ clientId, model, data }) { this.clientId = clientId; this.model = model; this.data = data; this.rounds = 0; this.totalSamples = data.X ? data.X.length : 0; } async localTrain({ epochs = 5, lr = 0.001 } = {}) { const result = this.model.fit(this.data.X, this.data.y, { epochs, batchSize: 16, lr, lossType: 'mse' }); this.rounds++; return { loss: result.finalLoss, nSamples: this.totalSamples }; } getWeights({ withDP = false, epsilon = 1.0 } = {}) { const weights = JSON.parse(JSON.stringify(this.model.toJSON ? this.model.toJSON() : this.model)); if (withDP) addDifferentialPrivacy(weights, epsilon, 0.1); return { clientId: this.clientId, nSamples: this.totalSamples, model: weights, rounds: this.rounds }; } setWeights(globalModel) { if (this.model.W) { this.model.W = globalModel.W.map(Wl => Wl.map(row => new Float64Array(row))); this.model.b = globalModel.b.map(bl => new Float64Array(bl)); } } }
+class FederatedServer { constructor({ minClients = 3, dpEnabled = false, epsilon = 1.0 }) { this.minClients = minClients; this.dpEnabled = dpEnabled; this.epsilon = epsilon; this.globalModel = null; this.rounds = 0; this.updates = []; this.history = []; } receiveUpdate(update) { this.updates.push(update); } aggregate() { if (this.updates.length < this.minClients) return { success: false, reason: `need at least ${this.minClients} clients, have ${this.updates.length}` }; if (this.dpEnabled) for (const u of this.updates) addDifferentialPrivacy(u.model, this.epsilon); const averaged = federatedAveraging(this.updates); this.globalModel = averaged; this.rounds++; const history = { round: this.rounds, nClients: this.updates.length, totalSamples: this.updates.reduce((s, u) => s + u.nSamples, 0), avgRounds: this.updates.reduce((s, u) => s + u.rounds, 0) / this.updates.length }; this.history.push(history); this.updates = []; return { success: true, ...history, globalModel: averaged }; } broadcast() { return this.globalModel; } }
+export { federatedAveraging, addDifferentialPrivacy, addGaussianPrivacy, generateMaskingPair, FederatedClient, FederatedServer, laplaceSample, gaussianSample };
+
+
+
+========================================================================
+
+FILE: apis/predict/wasm/simd_loader.mjs
+SIZE: 7668 bytes
+SHA1: ca7fb6711c58eb6d
+========================================================================
+
+// apis/predict/wasm/simd_loader.mjs
+// Загрузчик SIMD-WASM с многоуровневым fallback:
+//   1. SIMD WASM (быстрее всего, 3-4x над скалярным)
+//   2. Скалярный WASM (5-10x над JS)
+//   3. Чистый JS (всегда работает)
+
+import { readFileSync, existsSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+let simdModule = null;
+let scalarModule = null;
+let memory = null;
+let mode = 'js';
+let exports = {};
+
+let _nextPtr = 65536;
+let _maxPtr = 0;
+
+export async function initSIMD() {
+  if (mode !== 'js') return mode;
+
+  const simdSupported = checkSIMDSupport();
+
+  if (simdSupported) {
+    const simdPath = join(__dirname, 'linear_algebra_simd.wasm');
+    if (existsSync(simdPath)) {
+      try {
+        const bytes = readFileSync(simdPath);
+        const { instance } = await WebAssembly.instantiate(bytes);
+        simdModule = instance.exports;
+        exports = simdModule;
+        memory = instance.exports.memory;
+        mode = 'simd';
+        console.log('[wasm] SIMD module loaded (3-4x faster)');
+        return mode;
+      } catch (e) {
+        console.warn(`[wasm] SIMD загрузка не удалась: ${e.message}`);
+      }
+    } else {
+      console.warn('[wasm] linear_algebra_simd.wasm не найден');
+      console.warn('[wasm] Компилируйте: wat2wasm --enable-simd linear_algebra_simd.wat -o linear_algebra_simd.wasm');
+    }
+  } else {
+    console.warn('[wasm] SIMD не поддерживается этим окружением');
+  }
+
+  const scalarPath = join(__dirname, 'linear_algebra.wasm');
+  if (existsSync(scalarPath)) {
+    try {
+      const bytes = readFileSync(scalarPath);
+      const { instance } = await WebAssembly.instantiate(bytes);
+      scalarModule = instance.exports;
+      exports = scalarModule;
+      memory = instance.exports.memory;
+      mode = 'wasm';
+      console.log('[wasm] Scalar module loaded (5-10x over JS)');
+      return mode;
+    } catch (e) {
+      console.warn(`[wasm] Scalar загрузка не удалась: ${e.message}`);
+    }
+  }
+
+  mode = 'js';
+  console.log('[wasm] Используем JS-fallback');
+  return mode;
+}
+
+function checkSIMDSupport() {
+  try {
+    if (typeof WebAssembly.validate === 'function') {
+      return process.versions.node && parseInt(process.versions.node) >= 16;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+function ensureMemory(bytesNeeded) {
+  if (!memory) return;
+  const pagesNeeded = Math.ceil((bytesNeeded + _nextPtr) / 65536);
+  const currentPages = memory.buffer.byteLength / 65536;
+  if (pagesNeeded > currentPages) {
+    memory.grow(pagesNeeded - currentPages + 1);
+  }
+}
+
+function alloc(bytes) {
+  ensureMemory(bytes + 65536);
+  const ptr = _nextPtr;
+  _nextPtr += bytes;
+  if (_nextPtr > _maxPtr) _maxPtr = _nextPtr;
+  return ptr;
+}
+
+function resetAllocator() { _nextPtr = 65536; }
+
+function writeVector(vec, ptr) {
+  const f64 = new Float64Array(memory.buffer, ptr, vec.length);
+  for (let i = 0; i < vec.length; i++) f64[i] = vec[i];
+}
+
+function readVector(ptr, n) {
+  return Array.from(new Float64Array(memory.buffer, ptr, n));
+}
+
+export function dotProduct(a, b) {
+  if (mode === 'js') return jsDotProduct(a, b);
+  resetAllocator();
+  const n = Math.min(a.length, b.length);
+  const aPtr = alloc(n * 8);
+  const bPtr = alloc(n * 8);
+  writeVector(a.slice(0, n), aPtr);
+  writeVector(b.slice(0, n), bPtr);
+  const fn = mode === 'simd' ? exports.dot_product_simd : exports.dot_product;
+  return fn(aPtr, bPtr, n);
+}
+
+export function matrixMultiply(A, B) {
+  if (mode === 'js') return jsMatrixMultiply(A, B);
+  resetAllocator();
+  const n = A.length, m = A[0].length, p = B[0].length;
+  const aFlat = [];
+  for (let i = 0; i < n; i++) for (let j = 0; j < m; j++) aFlat.push(A[i][j]);
+  const bFlat = [];
+  for (let i = 0; i < m; i++) for (let j = 0; j < p; j++) bFlat.push(B[i][j]);
+  const aPtr = alloc(n * m * 8);
+  const bPtr = alloc(m * p * 8);
+  const cPtr = alloc(n * p * 8);
+  writeVector(aFlat, aPtr);
+  writeVector(bFlat, bPtr);
+  const fn = mode === 'simd' ? exports.matrix_multiply_simd : exports.matrix_multiply;
+  fn(aPtr, bPtr, cPtr, n, m, p);
+  const cFlat = readVector(cPtr, n * p);
+  const C = [];
+  for (let i = 0; i < n; i++) {
+    const row = [];
+    for (let j = 0; j < p; j++) row.push(cFlat[i * p + j]);
+    C.push(row);
+  }
+  return C;
+}
+
+export function l2Norm(x) {
+  if (mode === 'js') return Math.sqrt(x.reduce((s, v) => s + v * v, 0));
+  resetAllocator();
+  const ptr = alloc(x.length * 8);
+  writeVector(x, ptr);
+  const fn = mode === 'simd' ? exports.l2_norm_simd : exports.l2_norm;
+  return fn(ptr, x.length);
+}
+
+export function relu(x) {
+  if (mode === 'js') return x.map(v => Math.max(0, v));
+  resetAllocator();
+  const ptr = alloc(x.length * 8);
+  writeVector(x, ptr);
+  const fn = mode === 'simd' ? exports.relu_simd_inplace : exports.relu_inplace;
+  fn(ptr, x.length);
+  return readVector(ptr, x.length);
+}
+
+export function add(a, b) {
+  if (mode === 'js') return a.map((v, i) => v + b[i]);
+  resetAllocator();
+  const ptr = alloc(a.length * 8);
+  writeVector(a, ptr);
+  const bPtr = alloc(b.length * 8);
+  writeVector(b, bPtr);
+  const fn = mode === 'simd' ? exports.add_simd_inplace : exports.add_inplace;
+  fn(ptr, bPtr, a.length);
+  return readVector(ptr, a.length);
+}
+
+export function scalarMultiply(x, scalar) {
+  if (mode === 'js') return x.map(v => v * scalar);
+  resetAllocator();
+  const ptr = alloc(x.length * 8);
+  writeVector(x, ptr);
+  const fn = mode === 'simd' ? exports.scalar_multiply_simd_inplace : exports.scalar_multiply_inplace;
+  fn(ptr, x.length, scalar);
+  return readVector(ptr, x.length);
+}
+
+export function maxValue(x) {
+  if (mode === 'simd') {
+    resetAllocator();
+    const ptr = alloc(x.length * 8);
+    writeVector(x, ptr);
+    return exports.max_simd(ptr, x.length);
+  }
+  return Math.max(...x);
+}
+
+function jsDotProduct(a, b) {
+  let s = 0;
+  const n = Math.min(a.length, b.length);
+  for (let i = 0; i < n; i++) s += a[i] * b[i];
+  return s;
+}
+
+function jsMatrixMultiply(A, B) {
+  const n = A.length, m = A[0].length, p = B[0].length;
+  const C = Array.from({ length: n }, () => new Array(p).fill(0));
+  for (let i = 0; i < n; i++) {
+    for (let k = 0; k < m; k++) {
+      const aik = A[i][k];
+      if (aik === 0) continue;
+      for (let j = 0; j < p; j++) C[i][j] += aik * B[k][j];
+    }
+  }
+  return C;
+}
+
+export function simdStatus() {
+  return {
+    mode,
+    simdSupported: checkSIMDSupport(),
+    memoryBytes: memory ? memory.buffer.byteLength : 0,
+    exports: mode !== 'js' ? Object.keys(exports) : [],
+    fallbackChain: ['simd', 'wasm', 'js'].slice(['simd', 'wasm', 'js'].indexOf(mode)),
+  };
+}
+
+export function benchmarkAll(n = 100) {
+  const A = Array.from({ length: n }, () => Array.from({ length: n }, () => Math.random()));
+  const B = Array.from({ length: n }, () => Array.from({ length: n }, () => Math.random()));
+
+  const t0 = performance.now();
+  jsMatrixMultiply(A, B);
+  const jsTime = performance.now() - t0;
+
+  let wasmTime = null;
+  if (mode !== 'js') {
+    const t1 = performance.now();
+    matrixMultiply(A, B);
+    wasmTime = performance.now() - t1;
+  }
+
+  return {
+    size: n,
+    mode,
+    jsTimeMs: jsTime.toFixed(2),
+    wasmTimeMs: wasmTime ? wasmTime.toFixed(2) : 'n/a',
+    speedup: wasmTime ? (jsTime / wasmTime).toFixed(2) : 'n/a',
+  };
+}
+
+export const SIMD_INFO = {
+  name: 'WASM SIMD',
+  description: '128-bit vectorized operations для 3-4x ускорения',
+  fallbackChain: ['simd', 'wasm', 'js'],
+};
+
+
+
+========================================================================
+
+FILE: apis/predict/wasm/linear_algebra_simd.wat
+SIZE: 12046 bytes
+SHA1: 5355c5cc20f7d452
+========================================================================
+
+;; apis/predict/wasm/linear_algebra_simd.wat
+;; SIMD-версия линейной алгебры
+;; Использует 128-битные вектора (v128) для параллельной обработки 2×f64
+;;
+;; Компиляция: wat2wasm --enable-simd linear_algebra_simd.wat -o linear_algebra_simd.wasm
+
+(module
+  (memory (export "memory") 512)
+
+  ;; dot_product_simd(aPtr, bPtr, n) → f64
+  (func (export "dot_product_simd") (param $aPtr i32) (param $bPtr i32) (param $n i32) (result f64)
+    (local $i i32)
+    (local $acc v128)
+    (local $remaining i32)
+    (local $sum f64)
+    (local.set $acc (v128.const f64x2 0 0))
+    (local.set $i (i32.const 0))
+    (local.set $remaining (local.get $n))
+    (block $exit
+      (loop $loop
+        (br_if $exit (i32.lt_s (local.get $remaining) (i32.const 2)))
+        (local.set $acc
+          (f64x2.add
+            (local.get $acc)
+            (f64x2.mul
+              (v128.load (i32.add (local.get $aPtr) (i32.mul (local.get $i) (i32.const 8))))
+              (v128.load (i32.add (local.get $bPtr) (i32.mul (local.get $i) (i32.const 8))))
+            )
+          )
+        )
+        (local.set $i (i32.add (local.get $i) (i32.const 2)))
+        (local.set $remaining (i32.sub (local.get $remaining) (i32.const 2)))
+        (br $loop)
+      )
+    )
+    (local.set $sum
+      (f64.add
+        (f64x2.extract_lane 0 (local.get $acc))
+        (f64x2.extract_lane 1 (local.get $acc))
+      )
+    )
+    (if (i32.eq (local.get $remaining) (i32.const 1))
+      (then
+        (local.set $sum
+          (f64.add
+            (local.get $sum)
+            (f64.mul
+              (f64.load (i32.add (local.get $aPtr) (i32.mul (local.get $i) (i32.const 8))))
+              (f64.load (i32.add (local.get $bPtr) (i32.mul (local.get $i) (i32.const 8))))
+            )
+          )
+        )
+      )
+    )
+    (local.get $sum)
+  )
+
+  (func (export "l2_norm_simd") (param $xPtr i32) (param $n i32) (result f64)
+    (local $i i32)
+    (local $acc v128)
+    (local $remaining i32)
+    (local $sum f64)
+    (local.set $acc (v128.const f64x2 0 0))
+    (local.set $i (i32.const 0))
+    (local.set $remaining (local.get $n))
+    (block $exit
+      (loop $loop
+        (br_if $exit (i32.lt_s (local.get $remaining) (i32.const 2)))
+        (local.set $acc
+          (f64x2.add
+            (local.get $acc)
+            (f64x2.mul
+              (v128.load (i32.add (local.get $xPtr) (i32.mul (local.get $i) (i32.const 8))))
+              (v128.load (i32.add (local.get $xPtr) (i32.mul (local.get $i) (i32.const 8))))
+            )
+          )
+        )
+        (local.set $i (i32.add (local.get $i) (i32.const 2)))
+        (local.set $remaining (i32.sub (local.get $remaining) (i32.const 2)))
+        (br $loop)
+      )
+    )
+    (local.set $sum
+      (f64.add
+        (f64x2.extract_lane 0 (local.get $acc))
+        (f64x2.extract_lane 1 (local.get $acc))
+      )
+    )
+    (if (i32.eq (local.get $remaining) (i32.const 1))
+      (then
+        (local.set $sum
+          (f64.add
+            (local.get $sum)
+            (f64.mul
+              (f64.load (i32.add (local.get $xPtr) (i32.mul (local.get $i) (i32.const 8))))
+              (f64.load (i32.add (local.get $xPtr) (i32.mul (local.get $i) (i32.const 8))))
+            )
+          )
+        )
+      )
+    )
+    (f64.sqrt (local.get $sum))
+  )
+
+  (func (export "matrix_multiply_simd")
+    (param $aPtr i32) (param $bPtr i32) (param $cPtr i32)
+    (param $n i32) (param $m i32) (param $p i32)
+    (local $i i32) (local $j i32) (local $k i32)
+    (local $sum v128) (local $aik f64)
+    (local $bOffset i32) (local $cOffset i32) (local $p2 i32)
+    (local.set $p2 (i32.and (local.get $p) (i32.const -2)))
+    (local.set $i (i32.const 0))
+    (block $exitI
+      (loop $loopI
+        (br_if $exitI (i32.ge_s (local.get $i) (local.get $n)))
+        (local.set $j (i32.const 0))
+        (block $exitJ2
+          (loop $loopJ2
+            (br_if $exitJ2 (i32.ge_s (local.get $j) (local.get $p2)))
+            (local.set $sum (v128.const f64x2 0 0))
+            (local.set $k (i32.const 0))
+            (block $exitK
+              (loop $loopK
+                (br_if $exitK (i32.ge_s (local.get $k) (local.get $m)))
+                (local.set $aik
+                  (f64.load
+                    (i32.add (local.get $aPtr)
+                      (i32.mul
+                        (i32.add (i32.mul (local.get $i) (local.get $m)) (local.get $k))
+                        (i32.const 8)
+                      )
+                    )
+                  )
+                )
+                (local.set $bOffset
+                  (i32.add (local.get $bPtr)
+                    (i32.mul
+                      (i32.add (i32.mul (local.get $k) (local.get $p)) (local.get $j))
+                      (i32.const 8)
+                    )
+                  )
+                )
+                (local.set $sum
+                  (f64x2.add
+                    (local.get $sum)
+                    (f64x2.mul
+                      (f64x2.splat (local.get $aik))
+                      (v128.load (local.get $bOffset))
+                    )
+                  )
+                )
+                (local.set $k (i32.add (local.get $k) (i32.const 1)))
+                (br $loopK)
+              )
+            )
+            (local.set $cOffset
+              (i32.add (local.get $cPtr)
+                (i32.mul
+                  (i32.add (i32.mul (local.get $i) (local.get $p)) (local.get $j))
+                  (i32.const 8)
+                )
+              )
+            )
+            (v128.store (local.get $cOffset) (local.get $sum))
+            (local.set $j (i32.add (local.get $j) (i32.const 2)))
+            (br $loopJ2)
+          )
+        )
+        (if (i32.lt_s (local.get $j) (local.get $p))
+          (then
+            (local.set $k (i32.const 0))
+            (f64.store
+              (i32.add (local.get $cPtr)
+                (i32.mul (i32.add (i32.mul (local.get $i) (local.get $p)) (local.get $j)) (i32.const 8)))
+              (f64.const 0)
+            )
+            (block $exitKTail
+              (loop $loopKTail
+                (br_if $exitKTail (i32.ge_s (local.get $k) (local.get $m)))
+                (f64.store
+                  (i32.add (local.get $cPtr)
+                    (i32.mul (i32.add (i32.mul (local.get $i) (local.get $p)) (local.get $j)) (i32.const 8)))
+                  (f64.add
+                    (f64.load
+                      (i32.add (local.get $cPtr)
+                        (i32.mul (i32.add (i32.mul (local.get $i) (local.get $p)) (local.get $j)) (i32.const 8))))
+                    (f64.mul
+                      (f64.load
+                        (i32.add (local.get $aPtr)
+                          (i32.mul (i32.add (i32.mul (local.get $i) (local.get $m)) (local.get $k)) (i32.const 8))))
+                      (f64.load
+                        (i32.add (local.get $bPtr)
+                          (i32.mul (i32.add (i32.mul (local.get $k) (local.get $p)) (local.get $j)) (i32.const 8))))
+                    )
+                  )
+                )
+                (local.set $k (i32.add (local.get $k) (i32.const 1)))
+                (br $loopKTail)
+              )
+            )
+          )
+        )
+        (local.set $i (i32.add (local.get $i) (i32.const 1)))
+        (br $loopI)
+      )
+    )
+  )
+
+  (func (export "relu_simd_inplace") (param $xPtr i32) (param $n i32)
+    (local $i i32) (local $remaining i32) (local $zero v128) (local $v v128) (local $addr i32)
+    (local.set $zero (v128.const f64x2 0 0))
+    (local.set $i (i32.const 0))
+    (local.set $remaining (local.get $n))
+    (block $exit
+      (loop $loop
+        (br_if $exit (i32.lt_s (local.get $remaining) (i32.const 2)))
+        (local.set $addr (i32.add (local.get $xPtr) (i32.mul (local.get $i) (i32.const 8))))
+        (local.set $v (v128.load (local.get $addr)))
+        (v128.store (local.get $addr) (f64x2.max (local.get $v) (local.get $zero)))
+        (local.set $i (i32.add (local.get $i) (i32.const 2)))
+        (local.set $remaining (i32.sub (local.get $remaining) (i32.const 2)))
+        (br $loop)
+      )
+    )
+    (if (i32.eq (local.get $remaining) (i32.const 1))
+      (then
+        (local.set $addr (i32.add (local.get $xPtr) (i32.mul (local.get $i) (i32.const 8))))
+        (if (f64.lt (f64.load (local.get $addr)) (f64.const 0))
+          (then (f64.store (local.get $addr) (f64.const 0)))
+        )
+      )
+    )
+  )
+
+  (func (export "add_simd_inplace") (param $aPtr i32) (param $bPtr i32) (param $n i32)
+    (local $i i32) (local $remaining i32)
+    (local.set $i (i32.const 0))
+    (local.set $remaining (local.get $n))
+    (block $exit
+      (loop $loop
+        (br_if $exit (i32.lt_s (local.get $remaining) (i32.const 2)))
+        (v128.store
+          (i32.add (local.get $aPtr) (i32.mul (local.get $i) (i32.const 8)))
+          (f64x2.add
+            (v128.load (i32.add (local.get $aPtr) (i32.mul (local.get $i) (i32.const 8))))
+            (v128.load (i32.add (local.get $bPtr) (i32.mul (local.get $i) (i32.const 8))))
+          )
+        )
+        (local.set $i (i32.add (local.get $i) (i32.const 2)))
+        (local.set $remaining (i32.sub (local.get $remaining) (i32.const 2)))
+        (br $loop)
+      )
+    )
+    (if (i32.eq (local.get $remaining) (i32.const 1))
+      (then
+        (f64.store
+          (i32.add (local.get $aPtr) (i32.mul (local.get $i) (i32.const 8)))
+          (f64.add
+            (f64.load (i32.add (local.get $aPtr) (i32.mul (local.get $i) (i32.const 8))))
+            (f64.load (i32.add (local.get $bPtr) (i32.mul (local.get $i) (i32.const 8))))
+          )
+        )
+      )
+    )
+  )
+
+  (func (export "scalar_multiply_simd_inplace")
+    (param $xPtr i32) (param $n i32) (param $scalar f64)
+    (local $i i32) (local $remaining i32) (local $scalarVec v128)
+    (local.set $scalarVec (f64x2.splat (local.get $scalar)))
+    (local.set $i (i32.const 0))
+    (local.set $remaining (local.get $n))
+    (block $exit
+      (loop $loop
+        (br_if $exit (i32.lt_s (local.get $remaining) (i32.const 2)))
+        (v128.store
+          (i32.add (local.get $xPtr) (i32.mul (local.get $i) (i32.const 8)))
+          (f64x2.mul
+            (v128.load (i32.add (local.get $xPtr) (i32.mul (local.get $i) (i32.const 8))))
+            (local.get $scalarVec)
+          )
+        )
+        (local.set $i (i32.add (local.get $i) (i32.const 2)))
+        (local.set $remaining (i32.sub (local.get $remaining) (i32.const 2)))
+        (br $loop)
+      )
+    )
+    (if (i32.eq (local.get $remaining) (i32.const 1))
+      (then
+        (f64.store
+          (i32.add (local.get $xPtr) (i32.mul (local.get $i) (i32.const 8)))
+          (f64.mul
+            (f64.load (i32.add (local.get $xPtr) (i32.mul (local.get $i) (i32.const 8))))
+            (local.get $scalar)
+          )
+        )
+      )
+    )
+  )
+
+  (func (export "max_simd") (param $xPtr i32) (param $n i32) (result f64)
+    (local $i i32) (local $remaining i32) (local $maxVec v128) (local $maxScalar f64)
+    (local.set $maxVec (v128.const f64x2 -1e308 -1e308))
+    (local.set $i (i32.const 0))
+    (local.set $remaining (local.get $n))
+    (block $exit
+      (loop $loop
+        (br_if $exit (i32.lt_s (local.get $remaining) (i32.const 2)))
+        (local.set $maxVec
+          (f64x2.max
+            (local.get $maxVec)
+            (v128.load (i32.add (local.get $xPtr) (i32.mul (local.get $i) (i32.const 8))))
+          )
+        )
+        (local.set $i (i32.add (local.get $i) (i32.const 2)))
+        (local.set $remaining (i32.sub (local.get $remaining) (i32.const 2)))
+        (br $loop)
+      )
+    )
+    (local.set $maxScalar
+      (f64.max
+        (f64x2.extract_lane 0 (local.get $maxVec))
+        (f64x2.extract_lane 1 (local.get $maxVec))
+      )
+    )
+    (if (i32.eq (local.get $remaining) (i32.const 1))
+      (then
+        (local.set $maxScalar
+          (f64.max
+            (local.get $maxScalar)
+            (f64.load (i32.add (local.get $xPtr) (i32.mul (local.get $i) (i32.const 8))))
+          )
+        )
+      )
+    )
+    (local.get $maxScalar)
+  )
+)
+
+
+
+========================================================================

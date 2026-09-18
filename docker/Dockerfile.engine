@@ -1,0 +1,98 @@
+# ═══════════════════════════════════════════════════════════════
+# Crucix Titan · FINAL Docker Image
+# Включает: WASM SIMD + Web Workers + все 45+ модулей
+# Zero external dependencies (кроме ws — WebSocket)
+# ═══════════════════════════════════════════════════════════════
+
+# ─── Stage 1: WASM Builder ───
+FROM node:20-alpine AS wasm-builder
+
+RUN apk add --no-cache wabt bash
+
+WORKDIR /build/wasm
+COPY apis/predict/wasm/linear_algebra.wat ./
+COPY apis/predict/wasm/linear_algebra_simd.wat ./
+
+RUN wat2wasm linear_algebra.wat -o linear_algebra.wasm && \
+    (wat2wasm --enable-simd linear_algebra_simd.wat -o linear_algebra_simd.wasm || \
+     echo "SIMD compilation skipped — older wat2wasm" ) && \
+    ls -la
+
+# ─── Stage 2: App Builder ───
+FROM node:20-alpine AS app-builder
+
+WORKDIR /build
+
+COPY package*.json ./
+RUN npm ci --omit=dev --ignore-scripts 2>/dev/null || \
+    npm install --production 2>/dev/null || \
+    echo "No package.json — pure JS only"
+
+COPY apis/ ./apis/
+COPY dashboard/ ./dashboard/
+COPY benchmark/ ./benchmark/
+COPY tests/ ./tests/
+COPY scripts/ ./scripts/
+COPY observability/ ./observability/
+
+RUN find apis -name "*.mjs" -exec node --check {} \; && \
+    echo "✓ All modules pass syntax check"
+
+COPY --from=wasm-builder /build/wasm/*.wasm ./apis/predict/wasm/
+
+# ─── Stage 3: Runtime ───
+FROM node:20-alpine AS runtime
+
+LABEL org.opencontainers.image.title="Crucix Titan"
+LABEL org.opencontainers.image.description="Multidisciplinary predictive intelligence platform with WASM SIMD, Web Workers, and 45+ forecasting modules"
+LABEL org.opencontainers.image.version="3.0.0"
+LABEL org.opencontainers.image.authors="Crucix Team"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.source="https://github.com/crucix/crucix-titan"
+
+RUN apk add --no-cache \
+    curl \
+    tini \
+    ca-certificates \
+    && rm -rf /var/cache/apk/*
+
+RUN addgroup -g 1001 -S crucix && \
+    adduser -u 1001 -S crucix -G crucix -h /app -s /sbin/nologin
+
+WORKDIR /app
+
+COPY --from=app-builder --chown=crucix:crucix /build/apis ./apis
+COPY --from=app-builder --chown=crucix:crucix /build/dashboard ./dashboard
+COPY --from=app-builder --chown=crucix:crucix /build/benchmark ./benchmark
+COPY --from=app-builder --chown=crucix:crucix /build/tests ./tests
+COPY --from=app-builder --chown=crucix:crucix /build/scripts ./scripts
+COPY --from=app-builder --chown=crucix:crucix /build/observability ./observability
+COPY --from=app-builder --chown=crucix:crucix /build/node_modules ./node_modules 2>/dev/null || \
+    (mkdir -p ./node_modules && chown crucix:crucix ./node_modules)
+
+COPY --chown=crucix:crucix docker/entrypoint.sh /app/entrypoint.sh
+COPY --chown=crucix:crucix docker/healthcheck.sh /app/healthcheck.sh
+RUN chmod +x /app/entrypoint.sh /app/healthcheck.sh
+
+RUN mkdir -p /app/runs/memory /app/runs/predictions /app/runs/federated /app/runs/benchmark \
+             /app/logs /app/tmp && \
+    chown -R crucix:crucix /app/runs /app/logs /app/tmp
+
+ENV NODE_ENV=production \
+    CRUCIX_MODE=titan \
+    WS_PORT=3118 \
+    API_PORT=3117 \
+    FL_PORT=3120 \
+    LOG_LEVEL=info \
+    NODE_OPTIONS="--max-old-space-size=2048 --experimental-specifier-resolution=node"
+
+USER crucix
+
+EXPOSE 3117 3118 3120
+
+VOLUME ["/app/runs", "/app/logs"]
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD /app/healthcheck.sh
+
+ENTRYPOINT ["/sbin/tini", "--", "/app/entrypoint.sh"]

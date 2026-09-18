@@ -1,0 +1,49 @@
+{
+  "_meta": {
+    "id": "cross-stream-correlation",
+    "category": "flow",
+    "version": "1.0.0",
+    "schema_version": "1.0.0",
+    "sources": [
+      "acled",
+      "news",
+      "gdelt",
+      "vix",
+      "earthquakes",
+      "cyber-attacks"
+    ],
+    "calculator": "CrossStreamCorrelation",
+    "updated_at": "2026-09-12T14:50:46.965Z",
+    "period": "168h",
+    "duration_ms": 8,
+    "checksum": "cde769c34e80fb73",
+    "stats": {
+      "total_events": 56,
+      "regions": 1
+    },
+    "description": "Кросс-корреляция событий из разных потоков данных: новости, конфликты, рынки, инфраструктура, погода, кибер."
+  },
+  "data": {
+    "regions": [
+      {
+        "region": "Ukraine",
+        "windowHours": 168,
+        "totalEvents": 1,
+        "activeStreams": 1,
+        "convergenceScore": 17,
+        "convergenceLevel": "low",
+        "byStream": {
+          "news": 0,
+          "conflict": 1,
+          "market": 0,
+          "infrastructure": 0,
+          "weather": 0,
+          "cyber": 0
+        },
+        "correlations": []
+      }
+    ],
+    "total": 1,
+    "generated_at": "2026-09-12T14:50:46.965Z"
+  }
+}

@@ -1,0 +1,178 @@
+[
+  {
+    "id": "anomaly-1786966151850-2i9s",
+    "source": "newsapi",
+    "sourceName": "NewsAPI",
+    "icon": "🌐",
+    "color": "#f59e0b",
+    "type": "unusual",
+    "typeInfo": {
+      "name": "Необычное",
+      "icon": "⚠️",
+      "color": "#eab308",
+      "severity": "medium"
+    },
+    "severity": "medium",
+    "zScore": -2.215268519023095,
+    "currentValue": 40,
+    "mean": 58,
+    "std": 8,
+    "description": "Необычное отклонение (Z-score: -2.22)",
+    "timestamp": "2026-08-17T11:29:11.850Z",
+    "resolved": false
+  },
+  {
+    "id": "anomaly-1786966151850-2vvo",
+    "source": "satellite",
+    "sourceName": "Спутниковые данные",
+    "icon": "🛰️",
+    "color": "#8b5cf6",
+    "type": "drop",
+    "typeInfo": {
+      "name": "Падение",
+      "icon": "📉",
+      "color": "#f97316",
+      "severity": "medium"
+    },
+    "severity": "medium",
+    "zScore": -2.6468380800409705,
+    "currentValue": 54,
+    "mean": 73,
+    "std": 7,
+    "description": "Снижение активности (Z-score: -2.65)",
+    "timestamp": "2026-08-17T11:29:11.850Z",
+    "resolved": false
+  },
+  {
+    "id": "anomaly-1786969665990-94qd",
+    "source": "rss",
+    "sourceName": "RSS ленты",
+    "icon": "📰",
+    "color": "#3b82f6",
+    "type": "drop",
+    "typeInfo": {
+      "name": "Падение",
+      "icon": "📉",
+      "color": "#f97316",
+      "severity": "medium"
+    },
+    "severity": "high",
+    "zScore": -3.9555627604319,
+    "currentValue": 58,
+    "mean": 86,
+    "std": 7,
+    "description": "Резкое падение данных (Z-score: -3.96)",
+    "timestamp": "2026-08-17T12:27:45.990Z",
+    "resolved": false
+  },
+  {
+    "id": "anomaly-1786969665990-ghxx",
+    "source": "firms",
+    "sourceName": "FIRMS (пожары)",
+    "icon": "🔥",
+    "color": "#ef4444",
+    "type": "unusual",
+    "typeInfo": {
+      "name": "Необычное",
+      "icon": "⚠️",
+      "color": "#eab308",
+      "severity": "medium"
+    },
+    "severity": "medium",
+    "zScore": -2.0860145665851144,
+    "currentValue": 79,
+    "mean": 95,
+    "std": 8,
+    "description": "Необычное отклонение (Z-score: -2.09)",
+    "timestamp": "2026-08-17T12:27:45.990Z",
+    "resolved": false
+  },
+  {
+    "id": "anomaly-1786969665990-t4im",
+    "source": "aviation",
+    "sourceName": "Авиация",
+    "icon": "✈️",
+    "color": "#06b6d4",
+    "type": "drop",
+    "typeInfo": {
+      "name": "Падение",
+      "icon": "📉",
+      "color": "#f97316",
+      "severity": "medium"
+    },
+    "severity": "high",
+    "zScore": -4.280666502047486,
+    "currentValue": 44,
+    "mean": 75,
+    "std": 7,
+    "description": "Резкое падение данных (Z-score: -4.28)",
+    "timestamp": "2026-08-17T12:27:45.990Z",
+    "resolved": false
+  },
+  {
+    "id": "anomaly-1786969665990-960m",
+    "source": "cyber",
+    "sourceName": "Киберугрозы",
+    "icon": "🛡️",
+    "color": "#ef4444",
+    "type": "drop",
+    "typeInfo": {
+      "name": "Падение",
+      "icon": "📉",
+      "color": "#f97316",
+      "severity": "medium"
+    },
+    "severity": "high",
+    "zScore": -3.714677746864152,
+    "currentValue": 68,
+    "mean": 91,
+    "std": 6,
+    "description": "Резкое падение данных (Z-score: -3.71)",
+    "timestamp": "2026-08-17T12:27:45.990Z",
+    "resolved": false
+  },
+  {
+    "id": "anomaly-1786969665990-imnq",
+    "source": "health",
+    "sourceName": "Здравоохранение",
+    "icon": "🏥",
+    "color": "#ec4899",
+    "type": "spike",
+    "typeInfo": {
+      "name": "Всплеск",
+      "icon": "📈",
+      "color": "#ef4444",
+      "severity": "high"
+    },
+    "severity": "high",
+    "zScore": 3.962091921264329,
+    "currentValue": 89,
+    "mean": 59,
+    "std": 8,
+    "description": "Резкий рост данных (Z-score: 3.96)",
+    "timestamp": "2026-08-17T12:27:45.990Z",
+    "resolved": false
+  },
+  {
+    "id": "anomaly-1786969665990-k2az",
+    "source": "weather",
+    "sourceName": "Погода",
+    "icon": "🌤️",
+    "color": "#3b82f6",
+    "type": "drop",
+    "typeInfo": {
+      "name": "Падение",
+      "icon": "📉",
+      "color": "#f97316",
+      "severity": "medium"
+    },
+    "severity": "high",
+    "zScore": -3.381074227229471,
+    "currentValue": 65,
+    "mean": 92,
+    "std": 8,
+    "description": "Резкое падение данных (Z-score: -3.38)",
+    "timestamp": "2026-08-17T12:27:45.990Z",
+    "resolved": false
+  }
+]

@@ -1,0 +1,882 @@
+===== ЧАСТЬ part-6-infra-and-tests · КУСОК 13/23 · 33.5 KB =====
+
+FILE: scripts/README_neo4j.md
+SIZE: 3200 bytes
+SHA1: 999ac9a357203f76
+========================================================================
+
+# Crucix -> Neo4j Export
+
+Экспорт Multi-Layer Causal Graph в Neo4j для визуализации.
+
+## Установка
+
+~~~bash
+pip install neo4j
+~~~
+
+## Быстрый старт
+
+~~~bash
+# Запустить Neo4j (Docker)
+docker run -d \
+  --name crucix-neo4j \
+  -p 7474:7474 -p 7687:7687 \
+  -e NEO4J_AUTH=neo4j/password \
+  neo4j:5
+
+# Экспорт
+python scripts/neo4j_export.py --clear --analyze
+
+# Или через env vars
+NEO4J_URI=bolt://localhost:7687 \
+NEO4J_USER=neo4j \
+NEO4J_PASSWORD=password \
+python scripts/neo4j_export.py
+~~~
+
+## Что экспортируется
+
+Тип | Описание
+-----|----------
+:CrucixNode | Узлы из 4 слоёв (cyber/info/finance/physical)
+:CrucixLayer | Мета-узлы слоёв
+:CrucixNarrative | Нарративы (из unified narrative)
+:CrucixScenario | Сценарии (из scenario generator)
+:CAUSES | Рёбра с атрибутами strength, lagHours, crossLayer
+
+## Полезные запросы
+
+### Все узлы в слое
+
+~~~cypher
+MATCH (n:CrucixNode {layer: 'cyber'})
+RETURN n
+~~~
+
+### Кросс-слойные связи
+
+~~~cypher
+MATCH (a:CrucixNode)-[r:CAUSES]->(b:CrucixNode)
+WHERE r.crossLayer = true
+RETURN a, r, b
+ORDER BY r.strength DESC
+~~~
+
+### Пути распространения от кибератаки
+
+~~~cypher
+MATCH path = (a:CrucixNode {id:'cyberAttack'})-[:CAUSES*1..4]->(end)
+RETURN path
+~~~
+
+### Влияние между слоями
+
+~~~cypher
+MATCH (a:CrucixNode)-[r:CAUSES]->(b:CrucixNode)
+WHERE r.crossLayer = true
+RETURN a.layer AS from_layer, b.layer AS to_layer,
+       count(r) AS edges, avg(r.strength) AS avg_strength
+ORDER BY edges DESC
+~~~
+
+### Узлы с высокой вероятностью
+
+~~~cypher
+MATCH (n:CrucixNode)
+WHERE n.currentProb > 0.5
+RETURN n.name, n.layer, n.currentProb
+ORDER BY n.currentProb DESC
+~~~
+
+## Визуализация
+
+Neo4j Browser автоматически подбирает layout. Для более наглядной визуализации:
+
+- Установить плагин Neo4j Bloom — графовый интерфейс.
+- Использовать APOC для кастомных визуализаций:
+
+~~~cypher
+CALL apoc.nlp.gcp.classify.graph(...)
+~~~
+
+## Интеграция с CI
+
+~~~yaml
+# .github/workflows/neo4j-export.yml
+name: Nightly Neo4j Export
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  export-neo4j:
+    runs-on: ubuntu-latest
+    services:
+      neo4j:
+        image: neo4j:5
+        env:
+          NEO4J_AUTH: neo4j/testpassword
+        ports:
+          - 7474:7474
+          - 7687:7687
+    steps:
+      - uses: actions/checkout@v4
+      - name: Export
+        run: python scripts/neo4j_export.py --clear --analyze
+~~~
+
+## Troubleshooting
+
+Connection refused: проверьте, что Neo4j запущен и Bolt порт 7687 доступен.
+
+Auth failed: установите NEO4J_PASSWORD или сбросьте пароль в Neo4j.
+
+Empty graph after import: проверьте runs/predictions/latest_forecast.json — если граф пустой, скрипт использует fallback-узлы из _get_default_nodes().
+
+
+
+========================================================================
+
+FILE: scripts/compile-wasm-simd.sh
+SIZE: 2644 bytes
+SHA1: 95f4f6c6031b6145
+========================================================================
+
+#!/usr/bin/env bash
+# Компиляция SIMD WASM-модуля
+# Требует wabt с поддержкой SIMD
+
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT/apis/predict/wasm"
+
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+echo "════════════════════════════════════════════════"
+echo "  Compile WASM SIMD"
+echo "════════════════════════════════════════════════"
+
+if ! command -v wat2wasm >/dev/null 2>&1; then
+    echo -e "${RED}wat2wasm не установлен${NC}"
+    echo "Установить:"
+    echo "  npm install -g wabt        # через npm"
+    echo "  apt install wabt           # Debian/Ubuntu"
+    echo "  brew install wabt          # macOS"
+    exit 1
+fi
+
+WAT2WASM_VERSION=$(wat2wasm --version 2>&1 || echo "unknown")
+echo "wat2wasm: $WAT2WASM_VERSION"
+echo ""
+
+if [ -f "linear_algebra.wat" ]; then
+    echo "[1/2] Компиляция скалярной версии..."
+    wat2wasm linear_algebra.wat -o linear_algebra.wasm
+    SIZE=$(stat -c%s linear_algebra.wasm 2>/dev/null || stat -f%z linear_algebra.wasm)
+    echo -e "  ${GREEN}✓${NC} linear_algebra.wasm ($SIZE bytes)"
+fi
+
+if [ -f "linear_algebra_simd.wat" ]; then
+    echo ""
+    echo "[2/2] Компиляция SIMD версии..."
+    if wat2wasm --enable-simd linear_algebra_simd.wat -o linear_algebra_simd.wasm 2>&1; then
+        SIZE=$(stat -c%s linear_algebra_simd.wasm 2>/dev/null || stat -f%z linear_algebra_simd.wasm)
+        echo -e "  ${GREEN}✓${NC} linear_algebra_simd.wasm ($SIZE bytes)"
+    else
+        echo -e "  ${YELLOW}⚠${NC}  SIMD-компиляция не удалась"
+        echo "     Ваш wat2wasm может не поддерживать --enable-simd"
+        echo "     Обновите wabt: npm install -g wabt@latest"
+    fi
+fi
+
+echo ""
+echo "════════════════════════════════════════════════"
+echo -e "${GREEN}✓ Компиляция завершена${NC}"
+echo "════════════════════════════════════════════════"
+echo ""
+echo "Проверка:"
+echo "  node -e \"import('./apis/predict/wasm/simd_loader.mjs').then(async m => {"
+echo "    await m.initSIMD();"
+echo "    console.log(m.simdStatus());"
+echo "    console.log(m.benchmarkAll(100));"
+echo "  })\""
+
+
+
+========================================================================
+
+FILE: docs/handbook/00-intro.md
+SIZE: 6180 bytes
+SHA1: 46ebdf7d5dfef756
+========================================================================
+
+---
+title: "Crucix Handbook"
+subtitle: "Multidisciplinary Predictive Intelligence"
+author: "Crucix Team"
+date: "2026"
+version: "3.0.0"
+---
+
+# Введение
+
+> «Не существует чёрного ящика. Есть математика, которую можно понять, проверить и улучшить.»
+
+## О чём эта книга
+
+Crucix Handbook — открытая платформа прогностической аналитики, объединяющая **45+ моделей из 30 наук**. Каждая модель читается в 100 строк, каждая формула проверяется, каждое предсказание калибруется.
+
+Эта книга — не справочник API и не туториал. Это **трактат о том, как строить прогностические системы нового поколения**:
+
+- **Мультидисциплинарность** вместо одной модели
+- **Открытость** вместо чёрных ящиков
+- **Калибровка** вместо голословных предсказаний
+- **Zero dependencies** вместо стека из 500 npm-пакетов
+- **Локальное выполнение** вместо облачных API
+
+## Для кого
+
+- **Инженеры данных**, которые хотят понять, как работают современные прогностические системы
+- **Аналитики**, которым нужен инструмент для оценки рисков в реальном времени
+- **Исследователи**, интересующиеся применением математики из смежных наук
+- **Разработчики**, которые ценят открытый код и воспроизводимость
+- **Скептики**, которые не верят в «AI-магию» и хотят видеть формулы
+
+## Структура
+
+**Часть I — Фундамент**
+- Глава 1. Архитектура Crucix
+- Глава 2. Математическое ядро
+- Глава 3. WASM и производительность
+
+**Часть II — Науки**
+- Глава 4. Физика и статистическая механика
+- Глава 5. Теория информации
+- Глава 6. Эпидемиология и сети
+- Глава 7. Байесовская статистика
+- Глава 8. Теория хаоса и нелинейная динамика
+- Глава 9. Теория игр и причинность
+
+**Часть III — Модели**
+- Глава 10. Нейронные сети (MLP, LSTM, Transformer)
+- Глава 11. Gradient Boosting и Random Forest
+- Глава 12. Autoencoders и Diffusion
+- Глава 13. Graph Neural Networks
+- Глава 14. Reinforcement Learning
+- Глава 15. AutoML и Bayesian Optimization
+
+**Часть IV — Система**
+- Глава 16. Композитный индикатор риска
+- Глава 17. Brier-трекер и калибровка
+- Глава 18. Federated Learning
+- Глава 19. Real-time стриминг
+
+**Часть V — Практика**
+- Глава 20. Развёртывание
+- Глава 21. Мониторинг и observability
+- Глава 22. Chaos Engineering
+- Глава 23. Нагрузочное тестирование
+
+**Приложения**
+- A. API Reference
+- B. Математические выводы
+- C. Глоссарий
+- D. Ссылки на первоисточники
+
+## Как читать
+
+Книга написана так, чтобы её можно было читать **тремя способами**:
+
+1. **Линейно** — от начала к концу, как учебник
+2. **По наукам** — выберите интересующую вас науку
+3. **По задачам** — «мне нужно развернуть», «мне нужно понять композитный индикатор»
+
+Каждая глава содержит:
+- **Теорию** с формулами и происхождением
+- **Код** на чистом JavaScript
+- **Примеры применения** к реальным данным
+- **Ссылки** на первоисточники
+
+## Философия
+
+Crucix построен на трёх принципах:
+
+### 1. Открытость важнее удобства
+
+Мы не используем TensorFlow, PyTorch или XGBoost. Не потому что они плохие — а потому что **понимание важнее удобства**. Каждый алгоритм в Crucix можно прочитать, проверить, изменить.
+
+### 2. Мультидисциплинарность важнее эффективности
+
+Одна модель никогда не победит ансамбль. Crucix использует 45+ сигналов из 30 наук, потому что **разные науки видят разные аспекты реальности**.
+
+### 3. Калибровка важнее точности
+
+Мы не стремимся к идеальным предсказаниям. Мы стремимся к **честной оценке неопределённости**. Brier Score показывает, насколько каждая модель заслуживает доверия.
+
+## Благодарности
+
+Crucix стоит на плечах гигантов:
+
+- Pearl (причинность), Vaswani (Transformer), Kipf (GNN), Ho (Diffusion)
+- Kingma (VAE), Mnih (DQN), McMahan (Federated Learning)
+- Kadowaki (Quantum Annealing), Bak (SOC), Thom (Catastrophe Theory)
+- Ogata (ETAS), Broadbent (Percolation), Takens (Chaos)
+- И десятков других исследователей, чьи работы стали основой
+
+## Лицензия
+
+MIT. Используйте, модифицируйте, распространяйте. Присылайте PR.
+
+---
+
+**Начнём.**
+
+
+
+========================================================================
+
+FILE: docs/handbook/01-architecture.md
+SIZE: 7654 bytes
+SHA1: d93e57b1ad16ab88
+========================================================================
+
+# Глава 1. Архитектура Crucix
+
+## 1.1 Общая картина
+
+Crucix — это многослойная система:
+\+-------------------------------------------------+ | Frontend (Dashboard,
+WebSocket, Real-time) | +-------------------------------------------------+ |
+API Layer (WebSocket, HTTP, Notifications) |
+\+-------------------------------------------------+ | Composite Risk (weighted
+ensemble) | +-------------------------------------------------+ | Extended
+Trackers (Brier, calibration) |
+\+-------------------------------------------------+ | 45+ Prediction Modules
+(30 sciences) | +-------------------------------------------------+ | ML Models
+(Neural, GBM, RF, GNN, RL, VAE) |
+\+-------------------------------------------------+ | Math Core (linear
+algebra, stats, optim) | +-------------------------------------------------+ |
+WASM + Web Workers + WebGL (acceleration) |
+\+-------------------------------------------------+ | Data Layer (runs/memory,
+predictions, FL) | +-------------------------------------------------+
+
+text
+
+## 1.2 Что делает каждый слой
+
+### Data Layer
+
+Хранит все данные в файловой системе:
+
+- runs/memory/*.json — каждый sweep (сырые данные)
+- runs/predictions/latest.json — последний прогноз
+- runs/predictions/extended_tracker.json — история для Brier
+- runs/federated/ — FL-модели
+- runs/benchmark/ — результаты бенчмарков
+
+Принцип: всё — плоские JSON-файлы. Никаких баз данных. Легко бэкапить, легко
+читать, легко отлаживать.
+
+### Math Core
+
+Чистая математика без зависимостей:
+
+- linear_algebra.mjs — LU, QR, SVD, Cholesky, eigen
+- stats.mjs — 30+ распределений, тесты, KDE
+- optim.mjs — SGD, Adam, L-BFGS, Nelder-Mead, Differential Evolution
+
+Принцип: если это можно написать в 200 строк — пишем сами.
+
+### ML Models
+
+Все классические и современные модели:
+
+- Neural: MLP, LSTM, Transformer (с полным backprop)
+- Tree-based: Gradient Boosting, Random Forest
+- Meta: Stacking, AutoML, Bayesian Optimization
+- Unsupervised: VAE, Diffusion, Isolation Forest
+- Graph: GCN, GraphSAGE
+- Sequential: HMM, HSMM, DQN, Actor-Critic
+
+Принцип: каждая модель — 300-500 строк читаемого кода.
+
+### 45+ Prediction Modules
+
+Модули, сгруппированные по наукам:
+
+- Физика: Ising, SOC, Percolation, Catastrophe Theory, Chaos
+- Статистическая механика: MRF, Quantum Annealing
+- Теория информации: Transfer Entropy, KL, Fisher, Wasserstein
+- Эпидемиология: SIR, Hawkes-ETAS
+- Байесовская статистика: BOCPD, MCMC, Hierarchical Bayes
+- Сейсмология: Hawkes, ETAS
+- Распознавание речи: HMM, HSMM
+- Навигация: Kalman, EKF, Particle Filter
+- Финансы: Copula, Vine Copula, EVT, Ornstein-Uhlenbeck
+- Теория игр: Nash, ESS, Axelrod
+- Теория сетей: Centrality, Communities, PageRank
+- Топология: TDA, Persistent Homology
+- Причинность: Do-Calculus, Counterfactual
+
+Принцип: каждая наука даёт свой уникальный взгляд на данные.
+
+### Composite Risk
+
+Объединяет 45+ сигналов в один индикатор риска:
+
+composite = sum(w_i * signal_i) / sum(w_i)
+
+где w_i — динамические веса из Brier Score.
+
+Принцип: ансамбль всегда точнее одной модели.
+
+### Extended Trackers
+
+Каждый сигнал регистрируется как «прогноз». Когда проходит горизонт — сверяется
+с фактом. Обновляется Brier Score. Пересчитываются веса.
+
+Принцип: система, которая не измеряет свою точность — это гадание.
+
+### API Layer
+
+- WebSocket — real-time стриминг
+- HTTP — REST API для внешних клиентов
+- Notifications — Discord, Telegram, webhook
+
+Принцип: система должна быть доступна из любого места.
+
+### Frontend
+
+- crucix.html — основной дашборд
+- realtime.html — события в реальном времени
+- nn_live.html — обучение нейросети
+- predictions_composite.html — радар сигналов
+
+Принцип: визуализация должна быть мгновенной и информативной.
+
+## 1.3 Поток данных
+
+Каждые 15 минут (по умолчанию):
+
+1.  Sweep собирает данные из 27+ источников
+2.  Сохраняет в runs/memory/
+3.  Crucix Engine v3 запускается: a. Базовые модели (Bayesian, Markov, MC) b. 17
+    sciences (Hawkes, HMM, Ising, ...) c. 11 advanced ML (MRF, MCMC, GPR, ...)
+    d. 8 crucix modules (AutoML, Anomaly, ...) e. 3 GNN/RL/Python f. 3
+    Transformer/VAE/Diffusion
+4.  ExtendedTracker регистрирует 45+ сигналов
+5.  AutoResolve проверяет созревшие прогнозы
+6.  Пересчёт Brier Score и калибровка
+7.  Composite Risk объединяет всё
+8.  WebSocket публикует результат
+9.  Notifications отправляют алерты (если критично)
+10. latest.json обновлён для фронтенда
+
+Время полного цикла: 3-6 секунд (без Python), 4-8 секунд (с Python).
+
+## 1.4 Ускорения
+
+### WASM
+
+Матричные операции в WebAssembly:
+
+- Скалярный WASM: 5-10x над JS
+- SIMD WASM: 15-30x над JS
+
+Используется в: neural networks, GBM, GNN, VAE, Transformer.
+
+### Web Workers
+
+Параллельные вычисления через worker_threads:
+
+- Monte Carlo (100K итераций за доли секунды)
+- Обучение нескольких моделей параллельно
+- Кросс-валидация
+
+### WebGL
+
+GPU-вычисления через WebGL fragment shaders:
+
+- Matmul больших матриц
+- Elementwise operations
+- Adam updates
+
+Работает в браузере и в Node.js через headless-gl.
+
+## 1.5 Отказоустойчивость
+
+Crucix спроектирован так, что любой модуль может упасть — система продолжит
+работать:
+
+try { result.hawkes = hawkesForecast(history); } catch (e) { result.hawkes = {
+error: e.message }; // продолжаем без Hawkes }
+
+Принцип: 44 работающих модуля лучше 45 падающих.
+
+## 1.6 Развёртывание
+
+Три способа:
+
+1.  Локально — node apis/predict/ws.mjs
+2.  Docker — docker-compose up -d
+3.  Kubernetes — kustomize build k8s/ | kubectl apply -f -
+
+Принцип: одинаково просто для dev, staging и production.
+
+## 1.7 Что дальше
+
+Следующая глава — математическое ядро. Мы разберём:
+
+- Линейную алгебру через LU, QR, SVD
+- Статистические распределения
+- Оптимизацию через Adam, L-BFGS
+
+Каждый алгоритм — с кодом и объяснением.
+
+
+
+
+========================================================================
+
+FILE: docs/handbook/02-sciences.md
+SIZE: 6080 bytes
+SHA1: 1feb30fd18999015
+========================================================================
+
+# Глава 2. Науки. Обзор
+
+## 2.1 Зачем 30 наук
+
+Crucix — не просто набор ML-моделей. Это синтез 30 наук, каждая из которых даёт свой уникальный взгляд на прогнозирование.
+
+**Проблема одной модели:** ARIMA или LSTM учится на исторических данных и делает прогноз. Но она не знает про фазовые переходы, эпидемиологию кризисов, причинность, топологию.
+
+**Решение Crucix:** 30 моделей из разных наук. Каждая — со своей специализацией. Ансамбль видит реальность полнее.
+
+## 2.2 Список наук
+
+| # | Наука | Модели | Что показывает |
+|---|-------|--------|----------------|
+| 1 | Физика | Ising, SOC, Percolation, Catastrophe, Chaos | Фазовые переходы |
+| 2 | Сейсмология | Hawkes, ETAS | Афтершоки конфликтов |
+| 3 | Распознавание речи | HMM, HSMM | Скрытые режимы |
+| 4 | Навигация | Kalman, EKF, Particle | Сглаживание шума |
+| 5 | Эпидемиология | SIR, Renewal | Распространение кризисов |
+| 6 | Финансы | Copula, Vine, EVT, OU | Хвостовые зависимости |
+| 7 | Байесовская статистика | BOCPD, MCMC, HierBayes | Смена режима |
+| 8 | Теория информации | Transfer Entropy, KL, Fisher | Причинность |
+| 9 | Теория игр | Nash, ESS, Axelrod | Равновесия |
+| 10 | Теория сетей | PageRank, Louvain, GNN, MRF | Структура графа |
+| 11 | Топология | TDA, Persistent Homology | Скрытая форма |
+| 12 | Причинность | Do-Calculus, Counterfactual | Интервенции |
+| 13 | Теория надёжности | Grey, FCM, Bayesian Opt | Отказы систем |
+| 14 | Социофизика | Opinion dynamics, Social SOC | Социальные взрывы |
+| 15 | Продвинутые ML | MRF, MCMC, GPR, HSMM | Вероятностные модели |
+| 16 | Crucix-модули | AutoML, Anomaly, Chaos, Game | Мета-уровень |
+| 17 | GNN + RL + Python | GCN, DQN, TensorFlow bridge | Пространство + политики |
+| 18 | Transformer + VAE + Diffusion | Attention, latent, DDPM | Глубокие генеративные |
+
+**Итого: 45+ сигналов из 30 наук.**
+
+## 2.3 Как науки дополняют друг друга
+
+**Физика** отвечает на вопрос «где система на грани фазового перехода».
+
+**Сейсмология** — «когда ждать афтершоков».
+
+**Распознавание речи** — «в каком скрытом режиме мы находимся».
+
+**Навигация** — «какой истинный сигнал под шумом».
+
+**Эпидемиология** — «куда распространится кризис».
+
+**Финансы** — «как связаны хвосты распределений».
+
+**Байес** — «когда меняется режим».
+
+**Информация** — «кто на кого влияет».
+
+**Игры** — «какие равновесия устойчивы».
+
+**Сети** — «кто ключевой узел».
+
+**Топология** — «есть ли скрытая структура».
+
+**Причинность** — «что было бы, если...».
+
+Каждая наука видит **один аспект**. Ансамбль видит реальность.
+
+## 2.4 Пример: композитный сигнал из 5 наук
+
+Возьмём конкретный момент: VIX = 32, конфликты = 12, HY spread = 5.2.
+
+- **Ising**: proximityToCritical = 0.85 → фазовый переход близко
+- **Hawkes**: branchingRatio = 1.12 → эскалация
+- **HMM**: currentState = 2 (crisis)
+- **Copula**: lowerTail = 0.045 → совместные просадки
+- **Transfer Entropy**: conflict→VIX = 0.22 → причинность
+
+**Композит**: все пять кричат «кризис». Composite risk = 0.87 (critical).
+
+Одна модель бы это пропустила. Пять — нет.
+
+## 2.5 Детальные главы
+
+Полные главы по каждой науке:
+
+1. **sciences/physics.md** — Ising, SOC, Percolation, Catastrophe, Chaos
+2. **sciences/seismology.md** — Hawkes, ETAS
+3. **sciences/speech.md** — HMM, HSMM
+4. **sciences/navigation.md** — Kalman, EKF, Particle
+5. **sciences/epidemiology.md** — SIR, Renewal
+6. **sciences/finance.md** — Copula, Vine, EVT, OU
+7. **sciences/bayesian.md** — BOCPD, MCMC, HierBayes, BayesNet
+8. **sciences/infotheory.md** — Transfer Entropy, KL, Fisher, Wasserstein, Renyi
+9. **sciences/gametheory.md** — Nash, ESS, Axelrod
+10. **sciences/networks.md** — Centrality, Community, GNN, MRF
+11. **sciences/topology.md** — TDA, Persistent Homology
+12. **sciences/causality.md** — Do-Calculus, Counterfactual
+13. **sciences/reliability.md** — Grey, FCM, Bayesian Optimization
+14. **sciences/sociophysics.md** — Ising opinions, Sznajd, Hegselmann-Krause
+
+Каждая глава с формулами, кодом, примерами применения.
+
+## 2.6 Принцип
+
+Одна наука видит один аспект.
+30 наук видят реальность.
+45 сигналов в композитном индикаторе.
+Каждый — со своим весом, калиброванным через Brier Score.
+
+**Философия:** ансамбль всегда точнее одной модели. Не бывает «лучшей модели» — бывает лучший ансамбль.
+
+
+
+========================================================================
+
+FILE: docs/handbook/03-models.md
+SIZE: 7190 bytes
+SHA1: 3277cde5af020cbb
+========================================================================
+
+# Глава 3. Модели
+
+## 3.1 Обзор
+
+Crucix включает 45+ моделей из 30 наук. Все модели реализованы на чистом JavaScript, без внешних зависимостей. Каждая модель — 300-500 строк читаемого кода.
+
+## 3.2 Классификация моделей
+
+### По типу обучения
+
+| Тип | Примеры | Применение |
+|-----|---------|------------|
+| Supervised | MLP, GBM, RF, GNN | Прогноз VIX/конфликтов |
+| Unsupervised | VAE, Isolation Forest, K-means | Anomaly detection, кластеризация |
+| Generative | Diffusion, VAE | Генерация сценариев |
+| Reinforcement | DQN, Actor-Critic, REINFORCE | Политики алертинга |
+| Probabilistic | HMM, HSMM, MRF, BOCPD | Скрытые режимы, change points |
+| Sequential | LSTM, Transformer, ARIMA | Временные ряды |
+| Graph | GCN, GraphSAGE | Сетевые данные |
+
+### По сложности
+
+- Простые (100-200 строк): Ising, SOC, Kalman, Grey
+- Средние (300-500 строк): MLP, HMM, Copula, Hawkes
+- Сложные (500-800 строк): Transformer, GNN, VAE, Diffusion
+
+## 3.3 Основные классы моделей
+
+### Neural Networks
+
+- MLP — многослойный перцептрон, 3-5 слоёв
+- LSTM — рекуррентная сеть с гейтами
+- Transformer — attention + positional encoding
+- GNN (GCN, GraphSAGE) — свёртки на графах
+
+### Tree-based
+
+- Gradient Boosting — XGBoost-подобный, бинарные деревья
+- Random Forest — бэггинг + OOB-оценка
+- Stacking Ensemble — мета-обучение
+
+### Meta-модели
+
+- AutoML — поиск архитектуры
+- Bayesian Optimization — оптимизация гиперпараметров
+- Stacking — объединение моделей
+
+### Unsupervised
+
+- VAE — вариационный автоэнкодер
+- Diffusion (DDPM) — генеративная модель
+- Isolation Forest — anomaly detection
+- K-means, DBSCAN — кластеризация
+
+### Sequential
+
+- HMM / HSMM — скрытые марковские модели
+- Kalman / EKF / Particle — фильтры Калмана
+- BOCPD — Bayesian Online Change Point Detection
+
+## 3.4 Архитектура MLP
+
+Простой трёхслойный перцептрон:
+
+Вход (10) -> Скрытый1 (32) -> Скрытый2 (16) -> Выход (1)
+
+Обучение:
+- Активация: ReLU скрытые, linear выход
+- Оптимизатор: Adam, lr = 0.01
+- Loss: MSE
+- Batch size: 16
+- Эпох: 50
+
+Результат: RMSE ~1.5 на VIX (при базовой ~3.1 у Naive).
+
+## 3.5 Архитектура Transformer
+
+Input (seq_len=10, features=10)
+    -> Linear Projection -> dModel=32
+    -> + Positional Encoding
+    -> TransformerBlock x 2:
+        - Multi-Head Self-Attention (4 heads)
+        - LayerNorm + Residual
+        - Feed-Forward (32 -> 64 -> 32)
+        - LayerNorm + Residual
+    -> Global Mean Pooling
+    -> Linear (32 -> 1)
+    -> Output (VIX prediction)
+
+Особенности:
+- Полный backprop через attention
+- Residual connections
+- LayerNorm для стабильности
+
+Результат: RMSE ~1.4 на VIX. Лучше MLP, но требует больше данных.
+
+## 3.6 Архитектура VAE
+
+Input (10) -> Encoder:
+    Linear (10 -> 32) -> ReLU
+    Linear (32 -> 16) -> ReLU
+    Linear (16 -> 8) -> [mu, logvar] (по 4)
+    -> Reparameterization:
+        z = mu + sigma * epsilon, epsilon ~ N(0, I)
+    -> Decoder:
+        Linear (4 -> 16) -> ReLU
+        Linear (16 -> 32) -> ReLU
+        Linear (32 -> 10) -> Reconstruction
+
+Loss: reconstruction_MSE + KL_divergence
+
+Применение:
+- Латентное представление системы (10 -> 4)
+- Кластеризация режимов
+- Anomaly detection (высокая reconstruction error = нетипичное состояние)
+
+## 3.7 Архитектура Diffusion (DDPM)
+
+Forward process (обучение):
+x_0 -> x_1 -> ... -> x_T
+x_t = sqrt(alpha_t) * x_0 + sqrt(1 - alpha_t) * epsilon
+
+Reverse process (генерация):
+x_T -> x_{T-1} -> ... -> x_0
+x_{t-1} = (1/sqrt(alpha_t)) * (x_t - (beta_t/sqrt(1-alpha_t)) * eps_theta(x_t, t)) + sigma_t * z
+
+DenoiseNet: 3-слойный MLP с time embedding.
+
+Применение:
+- Генерация 100 сценариев будущего
+- Tail risk: P(VIX > 40) по сценариям
+- Не предполагает распределение — учит его
+
+## 3.8 Архитектура GNN
+
+Graph Convolutional Network:
+H^(l+1) = activation(A_hat * H^(l) * W^(l))
+
+где A_hat — нормализованная adjacency матрица с self-loops.
+
+Слой 1: 10 features -> 32 hidden
+Слой 2: 32 hidden -> 16 hidden
+Слой 3: 16 hidden -> 1 output
+
+Применение: риск каждой страны с учётом соседей.
+
+## 3.9 Reinforcement Learning
+
+DQN (Deep Q-Network):
+- State: 10 features текущего sweep
+- Actions: hold, buy_vol, sell_vol
+- Reward: sharpe-like ratio
+
+Actor-Critic:
+- Policy network (Actor): state -> action probabilities
+- Value network (Critic): state -> value estimate
+- Advantage = reward - value
+
+Применение: оптимальная политика алертинга.
+
+## 3.10 Обучение и валидация
+
+Train/test split: 80/20 по времени (не случайно!).
+Cross-validation: 5-fold walk-forward.
+
+Метрики:
+- RMSE (regression)
+- MAE (robustness)
+- Brier Score (probabilistic)
+- Hit Rate (direction)
+- Sharpe-like ratio (risk-adjusted)
+
+Калибровка: все сигналы через Brier Score трекер. Динамические веса.
+
+## 3.11 Оптимизация
+
+Оптимизаторы:
+- SGD (baseline)
+- Adam (default)
+- L-BFGS (для маленьких моделей)
+- Nelder-Mead (без градиента)
+- Differential Evolution (глобальный поиск)
+
+Регуляризация:
+- L1/L2 на весах
+- Early stopping
+- Dropout (в нейросетях)
+
+## 3.12 Композитный ансамбль
+
+Финальный прогноз — взвешенная сумма всех сигналов:
+
+composite = sum(w_i * signal_i) / sum(w_i)
+
+где веса w_i обновляются автоматически из Brier Score каждого сигнала.
+
+Преимущество: ансамбль никогда не хуже худшей модели. Обычно — лучше средней.
+
+## 3.13 Итог
+
+45+ моделей из 30 наук. Каждая — открытая, читаемая, модифицируемая.
+
+Ключевые принципы:
+1. Zero dependencies
+2. Каждая модель — до 800 строк
+3. Полный backprop где нужно
+4. Brier Score для всех
+5. Динамические веса
+
+Не бывает "лучшей модели". Бывает лучший ансамбль.
+
+
+
+========================================================================

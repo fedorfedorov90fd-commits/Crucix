@@ -7,6 +7,21 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+export const route  = '/api/layers/historical-analysis';
+export const method = 'GET';
+
+export const meta = {
+  category: "other",
+  icon: "📊",
+  color: "#64748b",
+  vizType: "marker",
+  source: null,
+  collector: "collect-historical-analysis.mjs",
+  cache: 300,
+  description: "Слой historical-analysis",
+  unit: "records",
+};
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -273,7 +288,7 @@ function getMonthlyData(history) {
 /**
  * ГЛАВНЫЙ ОБРАБОТЧИК API
  */
-export async function handleHistoricalAnalysisAPI(req, res) {
+export async function handler(req, res) {
     const url = new URL(req.url, `http://${req.headers.host}`);
     const pathname = url.pathname;
 
@@ -444,6 +459,3 @@ export async function handleHistoricalAnalysisAPI(req, res) {
 }
 
 // Экспорт для server.mjs
-export default {
-    handleHistoricalAnalysisAPI
-};

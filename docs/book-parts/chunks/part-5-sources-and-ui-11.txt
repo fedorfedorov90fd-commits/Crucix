@@ -1,0 +1,975 @@
+===== ЧАСТЬ part-5-sources-and-ui · КУСОК 11/15 · 36.4 KB =====
+
+FILE: features/human-feedback/README.md
+SIZE: 13592 bytes
+SHA1: 653414cd89f0c298
+========================================================================
+
+# Human Feedback Learning — замысел модуля
+
+**Статус: спроектирован, не написан.**
+
+Папка-памятник замысла. Здесь всё, что нужно, чтобы через месяц вернуться и продолжить с того же места — без потери контекста, без переизобретения.
+
+---
+
+## Что это
+
+Модуль `human_feedback.mjs` замыкает обучающий цикл прогностической системы через оператора-человека.
+
+В мире LLM это называется RLHF — Reinforcement Learning from Human Feedback, обучение с подкреплением на основе обратной связи от человека. Применённое не к языковой модели, а к прогностическому ансамблю Crucix.
+
+**Короткая формулировка: оператор подтверждает или опровергает прогноз — система сразу корректирует веса признаков, не дожидаясь, пока событие произойдёт или не произойдёт.**
+
+---
+
+## Почему это важно
+
+Пять причин, каждая из которых — самостоятельный мотив.
+
+### 1. Быстрое обучение на малых данных
+
+Пока у Crucix нет 3–6 месяцев истории (об этом прямо говорит план вытряха), обычный Brier Score работает плохо — ему не хватает разрешённых прогнозов. Обратная связь оператора даёт сигнал сразу, без ожидания.
+
+### 2. Обработка редких событий
+
+Катастрофические события редки. Brier Score по ним почти не двигается: одно событие на сто прогнозов статистически незначимо. Оператор может отметить «этот прогноз катастрофы правдоподобен» — и это уже сигнал, несмотря на отсутствие самого события.
+
+### 3. Доверие оператора к системе
+
+Когда оператор видит, что его оценка действительно меняет модель — он начинает работать с системой, а не против неё. Это не украшение, а практическая необходимость: без доверия оператор не станет тратить время на разметку.
+
+### 4. Соединение двух типов знания
+
+Модель даёт вероятности, но не понимает контекста. Оператор понимает контекст, но не считает вероятности в реальном времени. Обратная связь — точка соединения. Экспертное знание превращается в форму, которую модель может использовать.
+
+### 5. Механизм «что если»
+
+Оператор может вручную изменить входные данные («предположим, санкции введут через 48 часов») и увидеть, как изменится прогноз. Это не просто интерфейс — это ещё один сигнал: если оператор часто меняет одно и то же входное значение, значит модель его недооценивает.
+
+---
+
+## Конкурентное преимущество
+
+Ни Palantir, ни Recorded Future, ни Seldon Vault публично не делают этого.
+
+У Palantir Maven операторская валидация есть — но она не превращается в автоматическое обновление весов. У Recorded Future есть обратная связь от аналитиков — но она уходит в отчёт, не в модель. У Seldon Vault 11 LLM-агентов, но нет оператора-человека в петле обучения.
+
+Crucix может стать первым открытым инструментом, где оператор замыкает цикл обучения напрямую.
+
+---
+
+## Три возможные архитектуры
+
+### Вариант 1. Простой
+
+Оператор ставит метку good/bad на прогноз. Система хранит историю меток и через простой градиентный шаг обновляет веса признаков: good — признакам, повлиявшим на прогноз, повышаем вес; bad — понижаем.
+
+Плюсы: просто, быстро, понятно.
+Минусы: грубо, нет градаций, нет текстовых комментариев.
+
+### Вариант 2. Полный RLHF
+
+Оператор ранжирует пары прогнозов («прогноз A лучше, чем прогноз B»). Система учится на предпочтениях через reward model.
+
+Плюсы: академически строго, стандарт для LLM.
+Минусы: требует больше данных оператора, сравнивать пары сложнее, чем ставить метку.
+
+### Вариант 3. Гибридный (рекомендуется)
+
+Оператор ставит метку good/bad/uncertain, плюс может дать текстовый комментарий («не учтён фактор X»). Система обновляет веса, комментарии уходят в отдельный поток для будущего дообучения LLM-слоя.
+
+Плюсы: практичность + гибкость, совместимо с реальной работой оператора.
+Минусы: чуть сложнее в реализации, но не критично.
+
+---
+
+## Пять причин, почему модуль заморожен
+
+### 1. Нет пары в оркестраторе
+
+В `apis/predict/engine.mjs` (4часть, строки 7–1200) нет вызова `human_feedback`. Там есть только `active_learning.mjs`. Прежде чем писать модуль, надо решить: до фазы D (ансамблирование), после фазы F (калибровка), или параллельно.
+
+**Рекомендация AI: после фазы F.** Потому что веса признаков обновляются уже с учётом калибровки. Если обновлять до калибровки, потом калибровка может срезать эффект обратной связи.
+
+### 2. Нет источника обратной связи
+
+Интерфейс оператора (дашборд с кнопками good/bad) не создан. Без интерфейса модуль будет ждать сигнала, которого не будет.
+
+**Решение: файл `human_feedback.dashboard.html` в этой же папке.**
+
+### 3. Не определена политика обновления весов
+
+Модель должна знать: обновлять веса признаков, веса источников, веса моделей ансамбля, или всё сразу?
+
+**Рекомендация AI: начать только с весов признаков.** Это самый прямой и понятный слой. Веса источников и моделей ансамбля подключаются позже, когда станет ясна эффективность базового механизма.
+
+### 4. Нет режима «что если»
+
+Механизм ручного изменения входных данных требует отдельного интерфейса и отдельной логики.
+
+**Решение: отдельная секция в `human_feedback.dashboard.html`.**
+
+### 5. Не решено, что делать с текстовыми комментариями
+
+Игнорировать? Сохранять в лог? Отправлять в LLM?
+
+**Рекомендация AI: сохранять в лог.** Отправка в LLM — отдельная задача, которая требует доработки LLM-слоя. На первом этапе комментарии служат контекстом для аналитика при следующем просмотре истории.
+
+---
+
+## Четыре зависимости (что ждёт реализации снаружи)
+
+Этот модуль не работает в одиночку. Чтобы он ожил, нужны четыре вещи:
+
+1. **Интерфейс оператора.** Дашборд с кнопками good/bad/uncertain и полем комментария. Уже есть — файл `human_feedback.dashboard.html` в этой папке.
+
+2. **Интеграция в engine.mjs.** Вызов `human_feedback` после фазы F. См. `engine_integration.md`.
+
+3. **Хранилище истории.** Файл `runs/predictions/human_feedback.json`. Создаётся автоматически при первом обращении.
+
+4. **Потребитель обновлённых весов.** Механизм, который читает обновлённые веса и использует их в следующем sweep. Пока не реализован — веса сохраняются, но никто их не читает.
+
+Из четырёх зависимостей в этой папке реализованы две: интерфейс оператора и интеграционный план.
+
+---
+
+## Что сделано и что предстоит
+
+### Сделано (в этой папке)
+
+- README.md — этот документ.
+- human_feedback.mjs — модуль с шапкой-эссе. Класс `HumanFeedbackLearner`, методы `recordFeedback`, `updateWeights`, `getCurrentWeights`, сериализация состояния, метрики. Готов к интеграции, но не вызывается из engine.mjs.
+- human_feedback.dashboard.html — интерфейс оператора. Статический, автономный, работает без сервера (читает `runs/predictions/human_feedback.json` через fetch).
+- engine_integration.md — план встраивания в engine.mjs.
+
+### Предстоит
+
+- Патч engine.mjs — вызов human_feedback после фазы F.
+- Потребитель весов — модуль, который читает обновлённые веса и использует их.
+- Обработка текстовых комментариев через LLM (опционально, позже).
+- Механизм «что если» в полном виде (сейчас только базовый интерфейс).
+- Тесты — unit + property-based для градиентного шага.
+
+---
+
+## Мотив и настроение
+
+Этот модуль — не «ещё одна фича». Это попытка сделать Crucix не просто системой, которая считает вероятности, а системой, которая учится у человека.
+
+Модель без обратной связи — как эксперт без оппонента. Он может быть прав, но он не знает, где ошибается. Оператор — оппонент, который видит то, чего модель не видит. Замыкание их в один цикл — это не про технологию, это про эпистемологию.
+
+Если Crucix станет первой открытой платформой, где оператор замыкает цикл обучения напрямую, — это будет не про производительность и не про количество сигналов. Это будет про то, как знание одного человека превращается в знание системы.
+
+---
+
+## История
+
+Замысел появился в `4часть.txt` (строка 1266) как одна фраза:
+
+> `apis/predict/human_feedback.mjs`: когда оператор подтверждает/опровергает прогноз, система обновляет не только Brier Score, но и веса признаков через градиентный шаг (аналог RLHF, но для прогнозов).
+
+Кода не было. Только замысел. Этот документ и модуль — попытка развернуть замысел до состояния, в котором его можно будет реализовать в любое время без потери контекста.
+
+Дата создания памятника: 2026-09-16.
+
+
+
+========================================================================
+
+FILE: integrations/slack.mjs
+SIZE: 6474 bytes
+SHA1: 020dc644c0144744
+========================================================================
+
+// integrations/slack.mjs
+// Slack интеграция: webhook + bot API + rich embeds
+//
+// Два режима:
+//   1. Incoming Webhook — простая отправка сообщений в канал
+//   2. Bot API — полные сообщения с buttons, threads, reactions
+
+const SLACK_WEBHOOK = process.env.SLACK_WEBHOOK_URL || '';
+const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN || '';
+const SLACK_CHANNEL = process.env.SLACK_CHANNEL || '#crucix-alerts';
+
+export class SlackClient {
+  constructor({ webhookUrl, botToken, channel } = {}) {
+    this.webhookUrl = webhookUrl || SLACK_WEBHOOK;
+    this.botToken = botToken || SLACK_BOT_TOKEN;
+    this.channel = channel || SLACK_CHANNEL;
+    this.enabled = !!(this.webhookUrl || this.botToken);
+  }
+
+  async sendWebhook(text, blocks = null) {
+    if (!this.webhookUrl) {
+      return { ok: false, error: 'webhook_url_missing' };
+    }
+
+    const payload = { text };
+    if (blocks) payload.blocks = blocks;
+
+    try {
+      const res = await fetch(this.webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      return { ok: res.ok, status: res.status };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
+  }
+
+  async sendMessage(text, { blocks, threadTs, channel, attachments } = {}) {
+    if (!this.botToken) {
+      return { ok: false, error: 'bot_token_missing' };
+    }
+
+    const payload = {
+      channel: channel || this.channel,
+      text,
+    };
+    if (blocks) payload.blocks = blocks;
+    if (threadTs) payload.thread_ts = threadTs;
+    if (attachments) payload.attachments = attachments;
+
+    try {
+      const res = await fetch('https://slack.com/api/chat.postMessage', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Authorization': `Bearer ${this.botToken}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      return { ok: data.ok, ts: data.ts, channel: data.channel, error: data.error };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
+  }
+
+  async sendPredictionAlert(result) {
+    const cr = result.compositeRisk;
+    if (!cr) return { ok: false, error: 'no_composite' };
+
+    const color = {
+      low: '#06b6d4',
+      moderate: '#22c55e',
+      elevated: '#eab308',
+      high: '#f97316',
+      critical: '#ef4444',
+    }[cr.level] || '#3b82f6';
+
+    const emoji = {
+      low: '🟢',
+      moderate: '🟢',
+      elevated: '🟡',
+      high: '🟠',
+      critical: '🔴',
+    }[cr.level] || '⚪';
+
+    const blocks = [
+      {
+        type: 'header',
+        text: {
+          type: 'plain_text',
+          text: `${emoji} Crucix Alert: ${cr.level.toUpperCase()}`,
+        },
+      },
+      {
+        type: 'section',
+        fields: [
+          { type: 'mrkdwn', text: `*Composite Risk:*\n${cr.composite.toFixed(3)}` },
+          { type: 'mrkdwn', text: `*Level:*\n${cr.level}` },
+          { type: 'mrkdwn', text: `*Signals:*\n${cr.signals?.length || 0}` },
+          { type: 'mrkdwn', text: `*Confidence:*\n${cr.confidence || 'n/a'}` },
+        ],
+      },
+      { type: 'divider' },
+    ];
+
+    if (cr.topDrivers && cr.topDrivers.length > 0) {
+      blocks.push({
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: '*Top Drivers:*\n' +
+            cr.topDrivers.map((d, i) =>
+              `${i + 1}. *${d.name}* — ${(d.value * 100).toFixed(1)}% (${d.rationale || ''})`
+            ).join('\n'),
+        },
+      });
+    }
+
+    blocks.push({
+      type: 'actions',
+      elements: [
+        {
+          type: 'button',
+          text: { type: 'plain_text', text: '📊 Full Report' },
+          url: `${process.env.CRUCIX_BASE_URL || 'http://localhost:3118'}/report`,
+        },
+        {
+          type: 'button',
+          text: { type: 'plain_text', text: '📈 Dashboard' },
+          url: `${process.env.CRUCIX_DASHBOARD_URL || 'http://localhost'}/crucix.html`,
+        },
+      ],
+    });
+
+    const attachments = [{
+      color,
+      blocks: [],
+    }];
+
+    const text = `Crucix ${cr.level.toUpperCase()}: ${cr.composite.toFixed(3)}`;
+
+    if (this.botToken) {
+      return await this.sendMessage(text, { blocks, attachments });
+    }
+    return await this.sendWebhook(text, blocks);
+  }
+
+  async sendSignalAlert(signal) {
+    const color = signal.value > 0.7 ? '#ef4444'
+      : signal.value > 0.5 ? '#f97316'
+      : '#eab308';
+
+    const blocks = [
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `*🔺 Signal High: ${signal.name}*\n` +
+                `Value: \`${(signal.value * 100).toFixed(1)}%\` · Weight: \`×${signal.weight.toFixed(2)}\`\n` +
+                `${signal.rationale || ''}`,
+        },
+      },
+    ];
+
+    return await this.sendWebhook(`Signal ${signal.name}: ${signal.value}`, blocks);
+  }
+
+  async sendRegimeChange(data) {
+    const blocks = [
+      {
+        type: 'header',
+        text: { type: 'plain_text', text: '🔄 Regime Change Detected' },
+      },
+      {
+        type: 'section',
+        fields: [
+          { type: 'mrkdwn', text: `*Probability:*\n${(data.changeProbability * 100).toFixed(1)}%` },
+          { type: 'mrkdwn', text: `*Regime Age:*\n${data.regimeAge} steps` },
+        ],
+      },
+    ];
+
+    return await this.sendWebhook('Regime change', blocks);
+  }
+
+  async addToThread(threadTs, text) {
+    return await this.sendMessage(text, { threadTs });
+  }
+}
+
+export async function notifySlack(result, config) {
+  const client = new SlackClient(config);
+
+  if (!client.enabled) {
+    return { skipped: true, reason: 'not_configured' };
+  }
+
+  const cr = result.compositeRisk;
+  const notifications = [];
+
+  if (cr && (cr.level === 'high' || cr.level === 'critical')) {
+    notifications.push(await client.sendPredictionAlert(result));
+  }
+
+  if (cr?.topDrivers?.[0]?.value > 0.7) {
+    notifications.push(await client.sendSignalAlert(cr.topDrivers[0]));
+  }
+
+  if (result.extended?.changePointVix?.changeProbability > 0.6) {
+    notifications.push(await client.sendRegimeChange(result.extended.changePointVix));
+  }
+
+  return { sent: notifications.length, results: notifications };
+}
+
+export const SLACK_INFO = {
+  name: 'Slack',
+  description: 'Alerts via Slack webhook or Bot API',
+  envVars: ['SLACK_WEBHOOK_URL', 'SLACK_BOT_TOKEN', 'SLACK_CHANNEL'],
+  optional: true,
+};
+
+
+
+========================================================================
+
+FILE: integrations/notion.mjs
+SIZE: 4702 bytes
+SHA1: c14deffccdcc8dc7
+========================================================================
+
+// integrations/notion.mjs
+// Notion API клиент — сохранение прогнозов в базы данных
+//
+// Возможности:
+//   - Создание записи в database
+//   - Обновление существующих страниц
+//   - Создание страниц со structured content
+//   - Запросы по фильтрам
+
+const NOTION_API_URL = 'https://api.notion.com/v1';
+const NOTION_VERSION = '2022-06-28';
+
+export class NotionClient {
+  constructor({ apiToken, databaseId } = {}) {
+    this.apiToken = apiToken || process.env.NOTION_API_TOKEN;
+    this.databaseId = databaseId || process.env.NOTION_DATABASE_ID;
+    this.enabled = !!this.apiToken;
+  }
+
+  async _request(path, method = 'GET', body = null) {
+    if (!this.apiToken) {
+      return { ok: false, error: 'api_token_missing' };
+    }
+
+    try {
+      const res = await fetch(`${NOTION_API_URL}${path}`, {
+        method,
+        headers: {
+          'Authorization': `Bearer ${this.apiToken}`,
+          'Notion-Version': NOTION_VERSION,
+          'Content-Type': 'application/json',
+        },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        return { ok: false, error: data.message || 'api_error', status: res.status };
+      }
+      return { ok: true, data };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
+  }
+
+  async createPage(properties, { children = [], icon = null } = {}) {
+    const body = {
+      parent: { database_id: this.databaseId },
+      properties,
+    };
+    if (children.length > 0) body.children = children;
+    if (icon) body.icon = { emoji: icon };
+
+    return await this._request('/pages', 'POST', body);
+  }
+
+  async updatePage(pageId, properties) {
+    return await this._request(`/pages/${pageId}`, 'PATCH', { properties });
+  }
+
+  async query(filter = null, { sorts = [], pageSize = 100 } = {}) {
+    const body = { page_size: pageSize };
+    if (filter) body.filter = filter;
+    if (sorts.length > 0) body.sorts = sorts;
+
+    return await this._request(`/databases/${this.databaseId}/query`, 'POST', body);
+  }
+
+  async savePrediction(result) {
+    const cr = result.compositeRisk;
+    if (!cr) return { ok: false, error: 'no_composite' };
+
+    const properties = {
+      'Name': {
+        title: [{
+          text: { content: `Prediction ${new Date(result.timestamp).toLocaleString()}` },
+        }],
+      },
+      'Timestamp': {
+        date: { start: result.timestamp },
+      },
+      'Composite Risk': {
+        number: cr.composite,
+      },
+      'Level': {
+        select: { name: cr.level },
+      },
+      'Confidence': {
+        select: { name: cr.confidence || 'unknown' },
+      },
+      'Signals Count': {
+        number: cr.signals?.length || 0,
+      },
+    };
+
+    const children = [
+      {
+        object: 'block',
+        type: 'heading_2',
+        heading_2: {
+          rich_text: [{ type: 'text', text: { content: 'Top Drivers' } }],
+        },
+      },
+    ];
+
+    for (const driver of (cr.topDrivers || []).slice(0, 5)) {
+      children.push({
+        object: 'block',
+        type: 'bulleted_list_item',
+        bulleted_list_item: {
+          rich_text: [{
+            type: 'text',
+            text: { content: `${driver.name}: ${(driver.value * 100).toFixed(1)}%` },
+          }],
+        },
+      });
+    }
+
+    children.push({
+      object: 'block',
+      type: 'heading_2',
+      heading_2: {
+        rich_text: [{ type: 'text', text: { content: 'All Signals' } }],
+      },
+    });
+
+    for (const sig of (cr.signals || []).slice(0, 20)) {
+      children.push({
+        object: 'block',
+        type: 'paragraph',
+        paragraph: {
+          rich_text: [{
+            type: 'text',
+            text: { content: `${sig.name}: ${(sig.value * 100).toFixed(1)}% × ${sig.weight.toFixed(2)}` },
+          }],
+        },
+      });
+    }
+
+    return await this.createPage(properties, {
+      children,
+      icon: cr.level === 'critical' ? '🔴'
+        : cr.level === 'high' ? '🟠'
+        : cr.level === 'elevated' ? '🟡'
+        : '🟢',
+    });
+  }
+}
+
+export async function savePredictionToNotion(result, config) {
+  const client = new NotionClient(config);
+
+  if (!client.enabled) {
+    return { skipped: true, reason: 'not_configured' };
+  }
+
+  const cr = result.compositeRisk;
+  if (!cr || cr.level === 'low') {
+    return { skipped: true, reason: 'low_priority' };
+  }
+
+  return await client.savePrediction(result);
+}
+
+export const NOTION_INFO = {
+  name: 'Notion',
+  description: 'Save predictions to Notion databases',
+  envVars: ['NOTION_API_TOKEN', 'NOTION_DATABASE_ID'],
+  optional: true,
+};
+
+
+
+========================================================================
+
+FILE: integrations/obsidian.mjs
+SIZE: 11636 bytes
+SHA1: 923cdca1e13c4c64
+========================================================================
+
+// integrations/obsidian.mjs
+// Obsidian интеграция - запись прогнозов в markdown vault.
+
+import { writeFileSync, existsSync, mkdirSync, renameSync, unlinkSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+function yamlString(value) {
+  const s = String(value == null ? '' : value);
+  return '"' + s.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '\\r') + '"';
+}
+
+function mdCell(value) {
+  const s = String(value == null ? '' : value);
+  return s.replace(/\|/g, '\\|').replace(/\n/g, ' ').replace(/\r/g, '');
+}
+
+function mdLinkText(value) {
+  return String(value == null ? '' : value).replace(/\[\[/g, '[').replace(/\]\]/g, ']');
+}
+
+function atomicWrite(filePath, content) {
+  const tmp = filePath + '.tmp.' + process.pid + '.' + Date.now();
+  try {
+    writeFileSync(tmp, content, 'utf-8');
+    renameSync(tmp, filePath);
+  } catch (e) {
+    try { if (existsSync(tmp)) unlinkSync(tmp); } catch (_) { /* ignore */ }
+    throw e;
+  }
+}
+
+function normalizeSignals(signals) {
+  if (!Array.isArray(signals)) return [];
+  return signals.filter(s => s && typeof s === 'object');
+}
+
+function normalizeDrivers(drivers) {
+  if (!Array.isArray(drivers)) return [];
+  return drivers.filter(d => d && typeof d === 'object');
+}
+
+function pct(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return '0.0';
+  return (n * 100).toFixed(1);
+}
+
+function weightStr(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return '1.00';
+  return n.toFixed(2);
+}
+
+class ObsidianVault {
+  constructor({ vaultPath, folder = 'Crucix' } = {}) {
+    this.vaultPath = vaultPath || process.env.OBSIDIAN_VAULT_PATH;
+    this.folder = folder;
+    this.enabled = !!this.vaultPath;
+  }
+
+  validate() {
+    if (!this.enabled) return { ok: false, error: 'vault_not_configured' };
+    try {
+      mkdirSync(this.vaultPath, { recursive: true });
+    } catch (e) {
+      return { ok: false, error: 'vault_path_invalid: ' + e.message };
+    }
+    return { ok: true };
+  }
+
+  _folderPath(subfolder = '') {
+    const path = subfolder
+      ? join(this.vaultPath, this.folder, subfolder)
+      : join(this.vaultPath, this.folder);
+    if (!existsSync(path)) mkdirSync(path, { recursive: true });
+    return path;
+  }
+
+  savePrediction(result, filename = null) {
+    if (!this.enabled) return { ok: false, error: 'vault_not_configured' };
+    if (!result || typeof result !== 'object') return { ok: false, error: 'invalid_result' };
+
+    const cr = result.compositeRisk;
+    if (!cr) return { ok: false, error: 'no_composite' };
+
+    const ts = new Date(result.timestamp || Date.now());
+    const dateStr = ts.toISOString().split('T')[0];
+    const timeStr = ts.toISOString().split('T')[1].split('.')[0].replace(/:/g, '-');
+    const name = filename || (dateStr + '_' + timeStr + '_prediction');
+
+    const frontmatter = this._buildFrontmatter({
+      type: 'prediction',
+      timestamp: ts.toISOString(),
+      composite: cr.composite,
+      level: cr.level,
+      confidence: cr.confidence,
+      signals: normalizeSignals(cr.signals).length,
+      tags: ['crucix/prediction', 'crucix/level-' + (cr.level || 'unknown')],
+    });
+
+    const content = this._buildContent(result);
+    const fullContent = '---\n' + frontmatter + '\n---\n\n' + content;
+
+    const filePath = join(this._folderPath('predictions'), name + '.md');
+
+    try {
+      atomicWrite(filePath, fullContent);
+    } catch (e) {
+      return { ok: false, error: 'write_failed: ' + e.message };
+    }
+
+    return { ok: true, path: filePath };
+  }
+
+  saveDailyNote(date = new Date()) {
+    if (!this.enabled) return { ok: false, error: 'vault_not_configured' };
+
+    const dateStr = date.toISOString().split('T')[0];
+    const filePath = join(this._folderPath('daily'), dateStr + '.md');
+    const predictionLink = '[[' + dateStr + '_prediction]]';
+
+    if (existsSync(filePath)) {
+      let existing = '';
+      try { existing = readFileSync(filePath, 'utf-8'); } catch (_) { existing = ''; }
+      if (existing.includes(predictionLink)) {
+        return { ok: true, path: filePath, existed: true, updated: false };
+      }
+      const patched = existing.replace(
+        /(## Predictions\n)([\s\S]*?)(\n## Notes)/,
+        (m, head, body, tail) => head + body + '\n- ' + predictionLink + '\n' + tail
+      );
+      try {
+        atomicWrite(filePath, patched);
+      } catch (e) {
+        return { ok: false, error: 'write_failed: ' + e.message };
+      }
+      return { ok: true, path: filePath, existed: true, updated: true };
+    }
+
+    const frontmatter = this._buildFrontmatter({
+      type: 'daily-note',
+      date: dateStr,
+      tags: ['crucix/daily'],
+    });
+
+    const content =
+      '# Crucix Daily Note - ' + dateStr + '\n\n' +
+      '## Predictions\n\n' +
+      '- ' + predictionLink + '\n\n' +
+      '## Notes\n\n';
+
+    try {
+      atomicWrite(filePath, '---\n' + frontmatter + '\n---\n\n' + content);
+    } catch (e) {
+      return { ok: false, error: 'write_failed: ' + e.message };
+    }
+    return { ok: true, path: filePath, existed: false };
+  }
+
+  saveSignalReference(signal) {
+    if (!this.enabled) return { ok: false, error: 'vault_not_configured' };
+    if (!signal || !signal.name) return { ok: false, error: 'invalid_signal' };
+
+    const slug = String(signal.name).toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    const filePath = join(this._folderPath('signals'), slug + '.md');
+
+    const frontmatter = this._buildFrontmatter({
+      type: 'signal',
+      name: signal.name,
+      category: signal.category || 'unknown',
+      weight: signal.weight,
+      tags: ['crucix/signal'],
+    });
+
+    const lines = [
+      '# Signal: ' + mdLinkText(signal.name),
+      '',
+      '**Category:** ' + (signal.category || 'unknown'),
+      '**Weight:** x' + weightStr(signal.weight),
+      '',
+    ];
+
+    if (signal.rationale) {
+      lines.push('## Rationale');
+      lines.push('');
+      lines.push(mdCell(signal.rationale));
+      lines.push('');
+    }
+
+    lines.push('## Referenced by');
+    lines.push('');
+    lines.push('Search: `#crucix/prediction`');
+    lines.push('');
+    lines.push('---');
+    lines.push('');
+    lines.push('#crucix #signal');
+
+    try {
+      atomicWrite(filePath, '---\n' + frontmatter + '\n---\n\n' + lines.join('\n'));
+    } catch (e) {
+      return { ok: false, error: 'write_failed: ' + e.message };
+    }
+    return { ok: true, path: filePath };
+  }
+
+  updateIndex() {
+    if (!this.enabled) return { ok: false, error: 'vault_not_configured' };
+
+    const indexPath = join(this._folderPath(), 'README.md');
+    const now = new Date().toISOString();
+
+    let userBlock = '';
+    if (existsSync(indexPath)) {
+      try {
+        const old = readFileSync(indexPath, 'utf-8');
+        const m = old.match(/<!-- USER CONTENT -->([\s\S]*?)<!-- \/USER CONTENT -->/);
+        if (m) userBlock = m[1];
+      } catch (_) { /* ignore */ }
+    }
+
+    const content =
+      '# Crucix Vault\n\n' +
+      '> Auto-generated ' + now + '\n\n' +
+      '## Structure\n\n' +
+      '- **predictions/** - Individual predictions with full data\n' +
+      '- **daily/** - Daily summary notes\n' +
+      '- **signals/** - Signal reference\n\n' +
+      '## Latest Predictions\n\n' +
+      '<!-- Auto-updated by Crucix -->\n\n' +
+      '## Tags\n\n' +
+      '#crucix #prediction #alert\n\n' +
+      '<!-- USER CONTENT -->' + userBlock + '<!-- /USER CONTENT -->\n';
+
+    try {
+      atomicWrite(indexPath, content);
+    } catch (e) {
+      return { ok: false, error: 'write_failed: ' + e.message };
+    }
+    return { ok: true, path: indexPath };
+  }
+
+  _buildFrontmatter(data) {
+    const lines = ['---'];
+    for (const [key, value] of Object.entries(data)) {
+      if (Array.isArray(value)) {
+        lines.push(key + ':');
+        for (const v of value) lines.push('  - ' + yamlString(v));
+      } else if (typeof value === 'string') {
+        lines.push(key + ': ' + yamlString(value));
+      } else if (value === null || value === undefined) {
+        lines.push(key + ': null');
+      } else {
+        lines.push(key + ': ' + value);
+      }
+    }
+    lines.push('---');
+    return lines.join('\n');
+  }
+
+  _buildContent(result) {
+    const cr = result.compositeRisk || {};
+    const lines = [];
+
+    const levelLabel = ({
+      low: '[LOW]',
+      moderate: '[MOD]',
+      elevated: '[ELEV]',
+      high: '[HIGH]',
+      critical: '[CRIT]',
+    })[cr.level] || '[?]';
+
+    lines.push('# ' + levelLabel + ' Crucix Prediction - ' + String(cr.level || 'unknown').toUpperCase());
+    lines.push('');
+    lines.push('**Composite Risk:** ' + (Number(cr.composite) ? Number(cr.composite).toFixed(3) : '0.000'));
+    lines.push('**Confidence:** ' + mdCell(cr.confidence || 'unknown'));
+    lines.push('**Signals:** ' + normalizeSignals(cr.signals).length);
+    lines.push('');
+
+    lines.push('## Top Drivers');
+    lines.push('');
+    for (const d of normalizeDrivers(cr.topDrivers).slice(0, 5)) {
+      lines.push('- **' + mdLinkText(d.name) + '** - ' + pct(d.value) + '% (' + mdCell(d.rationale || '') + ')');
+    }
+    lines.push('');
+
+    lines.push('## All Signals');
+    lines.push('');
+    lines.push('| Signal | Value | Weight | Rationale |');
+    lines.push('|--------|-------|--------|-----------|');
+    for (const s of normalizeSignals(cr.signals)) {
+      lines.push('| ' + mdCell(s.name) + ' | ' + pct(s.value) + '% | x' + weightStr(s.weight) + ' | ' + mdCell(s.rationale || '') + ' |');
+    }
+    lines.push('');
+
+    lines.push('## Related');
+    lines.push('');
+    const relDate = new Date(result.timestamp || Date.now()).toISOString().split('T')[0];
+    lines.push('- [[daily/' + relDate + ']]');
+    lines.push('');
+
+    lines.push('---');
+    lines.push('');
+    lines.push('#crucix #prediction #level-' + (cr.level || 'unknown'));
+
+    return lines.join('\n');
+  }
+}
+
+export async function saveToObsidian(result, config) {
+  const vault = new ObsidianVault(config || {});
+
+  const check = vault.validate();
+  if (!check.ok) {
+    return { skipped: true, reason: check.error };
+  }
+
+  const results = {
+    prediction: null,
+    daily: null,
+    index: null,
+    signals: [],
+    errors: [],
+  };
+
+  try {
+    results.prediction = vault.savePrediction(result);
+    if (!results.prediction.ok) results.errors.push({ step: 'prediction', error: results.prediction.error });
+  } catch (e) {
+    results.errors.push({ step: 'prediction', error: e.message });
+  }
+
+  try {
+    results.daily = vault.saveDailyNote();
+    if (!results.daily.ok) results.errors.push({ step: 'daily', error: results.daily.error });
+  } catch (e) {
+    results.errors.push({ step: 'daily', error: e.message });
+  }
+
+  try {
+    results.index = vault.updateIndex();
+    if (!results.index.ok) results.errors.push({ step: 'index', error: results.index.error });
+  } catch (e) {
+    results.errors.push({ step: 'index', error: e.message });
+  }
+
+  const signals = normalizeSignals(result && result.compositeRisk && result.compositeRisk.signals);
+  for (const s of signals) {
+    try {
+      const r = vault.saveSignalReference(s);
+      if (r.ok) results.signals.push(r.path);
+      else results.errors.push({ step: 'signal:' + (s.name || '?'), error: r.error });
+    } catch (e) {
+      results.errors.push({ step: 'signal:' + (s.name || '?'), error: e.message });
+    }
+  }
+
+  return {
+    ok: results.errors.length === 0,
+    results,
+  };
+}
+
+export const OBSIDIAN_INFO = {
+  name: 'Obsidian',
+  description: 'Save predictions as markdown notes in Obsidian vault',
+  envVars: ['OBSIDIAN_VAULT_PATH'],
+  optional: true,
+};
+
+export { ObsidianVault };
+
+
+
+========================================================================

@@ -1,0 +1,39 @@
+{
+  "_meta": {
+    "id": "social-sentiment-analyzer",
+    "category": "semantic",
+    "version": "1.0.0",
+    "schema_version": "1.0.0",
+    "sources": [
+      "news.json"
+    ],
+    "calculator": "SocialSentimentAnalyzer",
+    "updated_at": "2026-09-12T15:12:14.223Z",
+    "duration_ms": 3,
+    "checksum": "980684eb5689c5ba",
+    "stats": {
+      "items_processed": 34,
+      "total_result": 1
+    }
+  },
+  "data": {
+    "items": [
+      {
+        "region": "GLOBAL",
+        "count": 34,
+        "avgSentiment": 0.03,
+        "level": "neutral"
+      }
+    ],
+    "top": [
+      {
+        "region": "GLOBAL",
+        "count": 34,
+        "avgSentiment": 0.03,
+        "level": "neutral"
+      }
+    ],
+    "total": 1,
+    "generated_at": "2026-09-12T15:12:14.223Z"
+  }
+}

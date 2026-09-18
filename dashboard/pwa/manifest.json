@@ -1,0 +1,86 @@
+{
+  "name": "Crucix Dashboard — Predictive Intelligence",
+  "short_name": "Crucix",
+  "description": "Real-time predictive analytics dashboard with 45+ signals from 30 sciences",
+  "start_url": "/crucix.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#06080f",
+  "theme_color": "#3b82f6",
+  "lang": "ru",
+  "dir": "ltr",
+  "categories": ["finance", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/pwa/icons/icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa/icons/icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "/pwa/icons/icon-128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "/pwa/icons/icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "/pwa/icons/icon-152.png",
+      "sizes": "152x152",
+      "type": "image/png"
+    },
+    {
+      "src": "/pwa/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/pwa/icons/icon-384.png",
+      "sizes": "384x384",
+      "type": "image/png"
+    },
+    {
+      "src": "/pwa/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Live Dashboard",
+      "short_name": "Live",
+      "url": "/realtime.html",
+      "icons": [{ "src": "/pwa/icons/icon-96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Composite Risk",
+      "short_name": "Composite",
+      "url": "/predictions_composite.html",
+      "icons": [{ "src": "/pwa/icons/icon-96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Plugin Manager",
+      "short_name": "Plugins",
+      "url": "/plugins.html",
+      "icons": [{ "src": "/pwa/icons/icon-96.png", "sizes": "96x96" }]
+    }
+  ],
+  "prefer_related_applications": false,
+  "protocol_handlers": [
+    {
+      "protocol": "web+crucix",
+      "url": "/?url=%s"
+    }
+  ]
+}

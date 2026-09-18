@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Простая карта — Crucix</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #c8d0d8;
+            font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+            font-size: 13px;
+            line-height: 1.5;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        #map {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #0a1628;
+        }
+        .topbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(10,10,20,0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid rgba(91,192,248,0.25);
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        .topbar-brand {
+            font-size: 14px;
+            font-weight: 700;
+            color: #5bc0f8;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .topbar-btn {
+            height: 28px;
+            padding: 0 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 4px;
+            background: rgba(255,255,255,0.03);
+            color: #888;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-family: inherit;
+        }
+        .topbar-btn:hover {
+            background: rgba(255,255,255,0.06);
+            transform: translateY(-1px);
+        }
+        .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
+        .btn-home:hover { background: rgba(91,192,248,0.15); }
+        .btn-copy { color: #5bc0f8; border-color: rgba(91,192,248,0.15); background: rgba(91,192,248,0.06); }
+        .btn-copy:hover { background: rgba(91,192,248,0.15); }
+        .btn-copy.copied { background: rgba(76,175,80,0.2); border-color: #4caf50; color: #4caf50; }
+        .btn-help { color: #a78bfa; border-color: rgba(167,139,250,0.2); background: rgba(167,139,250,0.06); }
+        .btn-help:hover { background: rgba(167,139,250,0.15); }
+        .btn-rss { color: #f26522; border-color: rgba(242,101,34,0.2); background: rgba(242,101,34,0.06); }
+        .btn-rss:hover { background: rgba(242,101,34,0.15); }
+        .lang-switch {
+            display: flex;
+            gap: 2px;
+            padding: 2px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .lang-btn {
+            padding: 2px 8px;
+            border: none;
+            background: transparent;
+            color: #666;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .lang-btn:hover { color: #888; background: rgba(255,255,255,0.05); }
+        .lang-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.1); }
+        .notification {
+            position: fixed;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            color: #fff;
+            padding: 6px 16px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 100001;
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: notif-fade 2.5s forwards;
+        }
+        @keyframes notif-fade {
+            0% { opacity: 0; transform: translateX(-50%) translateY(8px); }
+            10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            80% { opacity: 1; }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-16px); }
+        }
+        .legend {
+            position: absolute;
+            bottom: 30px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(10,10,30,0.92);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 10px;
+            backdrop-filter: blur(10px);
+            color: #ccc;
+        }
+        .legend .title { font-weight: 600; color: #fff; margin-bottom: 4px; font-size: 11px; }
+        .legend .item { display: flex; align-items: center; gap: 6px; margin: 2px 0; }
+        .legend .color-box { width: 14px; height: 10px; border-radius: 2px; display: inline-block; border: 1px solid rgba(255,255,255,0.1); }
+        .legend .color-box.critical { background: #ef4444; }
+        .legend .color-box.pre-war { background: #f97316; }
+        .legend .color-box.high { background: #f59e0b; }
+        .legend .color-box.medium { background: #eab308; }
+        .legend .color-box.low { background: #22c55e; }
+        .stats {
+            position: absolute;
+            top: 80px;
+            right: 16px;
+            z-index: 1000;
+            background: rgba(10,10,30,0.92);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px;
+            padding: 8px 14px;
+            backdrop-filter: blur(10px);
+            color: #ccc;
+            text-align: center;
+        }
+        .stats .count { font-size: 20px; font-weight: 700; color: #44ccff; }
+        .stats .label { font-size: 9px; color: #888; }
+        .ssi-panel {
+            position: absolute;
+            bottom: 140px;
+            right: 16px;
+            z-index: 1000;
+            background: rgba(10,10,30,0.92);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px;
+            padding: 8px 14px;
+            backdrop-filter: blur(10px);
+            min-width: 100px;
+        }
+        .ssi-panel .ssi-title { font-size: 9px; color: #888; margin-bottom: 2px; text-align: center; }
+        .ssi-panel .ssi-bar { height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; }
+        .ssi-panel .ssi-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #22c55e, #eab308, #f59e0b, #f97316, #ef4444);
+            transition: width 1s ease;
+            border-radius: 3px;
+            width: 0%;
+        }
+        .ssi-panel .ssi-value { font-size: 16px; font-weight: 700; margin-top: 2px; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <header class="topbar">
+        <div class="topbar-left">
+            <span class="topbar-brand">🌍 CRUCIX MAP</span>
+        </div>
+        <div class="topbar-right">
+            <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+            <button class="topbar-btn btn-copy" id="copy-btn" onclick="copyAllData()">📋 КОПИРОВАТЬ</button>
+            <button class="topbar-btn btn-rss" onclick="window.location.href='/registry'">📡 Список страниц</button>
+            <button class="topbar-btn btn-help" onclick="alert('Простая карта — тест')">❓ HELP</button>
+            <div class="lang-switch">
+                <button class="lang-btn active" data-lang="ru" onclick="setLanguage('ru')">RU</button>
+                <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">EN</button>
+            </div>
+        </div>
+    </header>
+
+    <div id="map"></div>
+
+    <!-- Легенда -->
+    <div class="legend" id="legend">
+        <div class="title">🎯 Легенда</div>
+        <div class="item"><span class="color-box critical"></span> Критический</div>
+        <div class="item"><span class="color-box pre-war"></span> Предвоенный</div>
+        <div class="item"><span class="color-box high"></span> Высокий</div>
+        <div class="item"><span class="color-box medium"></span> Средний</div>
+        <div class="item"><span class="color-box low"></span> Нормальный</div>
+    </div>
+
+    <!-- Статистика -->
+    <div class="stats">
+        <div class="count" id="marker-count">0</div>
+        <div class="label">событий</div>
+    </div>
+
+    <!-- SSI -->
+    <div class="ssi-panel">
+        <div class="ssi-title">📊 Индекс напряжённости</div>
+        <div class="ssi-bar"><div class="ssi-fill" id="ssi-fill"></div></div>
+        <div class="ssi-value" id="ssi-label">0%</div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        console.log('🚀 ПРОСТАЯ КАРТА ЗАГРУЖЕНА');
+
+        let map;
+        let allMarkers = [];
+
+        // ============================================================
+        // 1. ДЕМО-ДАННЫЕ
+        // ============================================================
+        const DEMO_COUNTRIES = [
+            { id: 'ukraine', name: 'Украина', status: 'critical', lat: 48.4, lng: 31.2 },
+            { id: 'russia', name: 'Россия', status: 'pre-war', lat: 61.5, lng: 105 },
+            { id: 'north-korea', name: 'Северная Корея', status: 'pre-war', lat: 40.7, lng: 126.9 },
+            { id: 'usa', name: 'США', status: 'normal', lat: 39.7, lng: -98.8 },
+            { id: 'china', name: 'Китай', status: 'medium', lat: 34.9, lng: 105.2 },
+            { id: 'india', name: 'Индия', status: 'medium', lat: 20.8, lng: 78.5 },
+            { id: 'france', name: 'Франция', status: 'normal', lat: 46.5, lng: 2.3 },
+            { id: 'germany', name: 'Германия', status: 'normal', lat: 50.6, lng: 10.4 },
+            { id: 'uk', name: 'Великобритания', status: 'normal', lat: 55.3, lng: -3.2 },
+            { id: 'turkey', name: 'Турция', status: 'medium', lat: 38.6, lng: 34.8 },
+            { id: 'iran', name: 'Иран', status: 'high', lat: 32.5, lng: 53.2 },
+            { id: 'iraq', name: 'Ирак', status: 'high', lat: 33.0, lng: 43.2 },
+            { id: 'syria', name: 'Сирия', status: 'pre-war', lat: 34.8, lng: 38.2 },
+            { id: 'afghanistan', name: 'Афганистан', status: 'high', lat: 34.0, lng: 67.4 },
+            { id: 'pakistan', name: 'Пакистан', status: 'medium', lat: 30.3, lng: 70.5 },
+            { id: 'israel', name: 'Израиль', status: 'high', lat: 30.7, lng: 34.6 },
+            { id: 'saudi-arabia', name: 'Саудовская Аравия', status: 'normal', lat: 23.2, lng: 45.0 },
+            { id: 'yemen', name: 'Йемен', status: 'pre-war', lat: 15.9, lng: 47.6 },
+            { id: 'egypt', name: 'Египет', status: 'medium', lat: 26.9, lng: 30.7 },
+            { id: 'ethiopia', name: 'Эфиопия', status: 'high', lat: 8.9, lng: 40.1 },
+            { id: 'sudan', name: 'Судан', status: 'pre-war', lat: 15.5, lng: 32.4 },
+            { id: 'libya', name: 'Ливия', status: 'high', lat: 26.6, lng: 17.6 },
+            { id: 'venezuela', name: 'Венесуэла', status: 'high', lat: 6.1, lng: -66.7 },
+            { id: 'brazil', name: 'Бразилия', status: 'normal', lat: -13.8, lng: -51.9 },
+            { id: 'argentina', name: 'Аргентина', status: 'normal', lat: -38.3, lng: -63.9 },
+            { id: 'australia', name: 'Австралия', status: 'normal', lat: -25.5, lng: 133.8 },
+            { id: 'japan', name: 'Япония', status: 'normal', lat: 36.3, lng: 138.7 },
+            { id: 'south-korea', name: 'Южная Корея', status: 'normal', lat: 36.6, lng: 127.8 },
+            { id: 'canada', name: 'Канада', status: 'normal', lat: 55.9, lng: -106.5 },
+            { id: 'mexico', name: 'Мексика', status: 'normal', lat: 23.4, lng: -102.3 }
+        ];
+
+        // ============================================================
+        // 2. ИНИЦИАЛИЗАЦИЯ КАРТЫ
+        // ============================================================
+        function initMap() {
+            console.log('🗺️ Инициализация карты...');
+
+            map = L.map('map', {
+                center: [30, 20],
+                zoom: 2.5,
+                minZoom: 1.5,
+                maxZoom: 10,
+                zoomControl: true
+            });
+
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '© OpenStreetMap, © CartoDB',
+                maxZoom: 19,
+                opacity: 0.9
+            }).addTo(map);
+
+            addMarkers();
+            calculateSSI();
+
+            console.log('✅ Карта инициализирована');
+        }
+
+        // ============================================================
+        // 3. ДОБАВЛЕНИЕ МАРКЕРОВ
+        // ============================================================
+        function addMarkers() {
+            const statusColors = {
+                critical: '#ef4444',
+                'pre-war': '#f97316',
+                high: '#f59e0b',
+                medium: '#eab308',
+                normal: '#22c55e'
+            };
+
+            const statusLabels = {
+                critical: 'Критический',
+                'pre-war': 'Предвоенный',
+                high: 'Высокий',
+                medium: 'Средний',
+                normal: 'Нормальный'
+            };
+
+            let count = 0;
+
+            for (const country of DEMO_COUNTRIES) {
+                const color = statusColors[country.status] || '#22c55e';
+                const size = country.status === 'critical' ? 14 :
+                    country.status === 'pre-war' ? 12 : 10;
+
+                const icon = L.divIcon({
+                    className: 'custom-marker',
+                    html: '<div style="position:relative;width:' + size + 'px;height:' + size + 'px;">' +
+                        '<div style="position:absolute;top:0;left:0;width:100%;height:100%;background:' + color + ';border-radius:50%;border:2px solid rgba(255,255,255,0.5);box-shadow:0 0 16px ' + color + '60;animation:pulse 2s infinite;"></div>' +
+                        '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:' + (size/3.5) + 'px;height:' + (size/3.5) + 'px;background:#fff;border-radius:50%;opacity:0.5;"></div>' +
+                        '</div>',
+                    iconSize: [size, size],
+                    iconAnchor: [size / 2, size / 2]
+                });
+
+                const popupContent = '<div style="padding:4px 0;">' +
+                    '<strong style="color:#e8f0f8;font-size:15px;">' + country.name + '</strong><br>' +
+                    '<span style="color:' + color + ';font-weight:600;font-size:13px;">' + (statusLabels[country.status] || country.status) + '</span>' +
+                    '</div>';
+
+                const marker = L.marker([country.lat, country.lng], { icon: icon });
+                marker.bindPopup(popupContent);
+                marker.addTo(map);
+                count++;
+                allMarkers.push(marker);
+            }
+
+            document.getElementById('marker-count').textContent = count;
+            console.log('📍 Добавлено маркеров:', count);
+        }
+
+        // ============================================================
+        // 4. SSI (ИНДЕКС НАПРЯЖЁННОСТИ)
+        // ============================================================
+        function calculateSSI() {
+            const total = DEMO_COUNTRIES.length;
+            let score = 0;
+
+            for (const country of DEMO_COUNTRIES) {
+                if (country.status === 'critical') score += 100;
+                else if (country.status === 'pre-war') score += 80;
+                else if (country.status === 'high') score += 70;
+                else if (country.status === 'medium') score += 40;
+                else if (country.status === 'normal') score += 10;
+            }
+
+            const clamped = Math.min(Math.max(Math.round(score / total), 0), 100);
+
+            const fill = document.getElementById('ssi-fill');
+            const label = document.getElementById('ssi-label');
+
+            if (fill) fill.style.width = clamped + '%';
+            if (label) {
+                label.textContent = clamped + '%';
+                label.style.color = clamped > 80 ? '#ef4444' : clamped > 60 ? '#f97316' : clamped > 40 ? '#eab308' : '#22c55e';
+            }
+        }
+
+        // ============================================================
+        // 5. КОПИРОВАНИЕ
+        // ============================================================
+        function copyAllData() {
+            const timestamp = new Date().toLocaleString();
+            const countries = DEMO_COUNTRIES;
+
+            let report = '=== CRUCIX — ПРОСТАЯ КАРТА ===\n';
+            report += 'Дата: ' + timestamp + '\n';
+            report += 'URL: ' + window.location.href + '\n\n';
+            report += '--- СТАТИСТИКА ---\n';
+            report += 'Стран: ' + countries.length + '\n';
+            report += 'Маркеров: ' + allMarkers.length + '\n\n';
+            report += '--- ВСЕ СТРАНЫ ---\n';
+
+            for (const c of countries) {
+                report += '  ' + c.name + ' (' + c.status + ') — ' + c.lat + ', ' + c.lng + '\n';
+            }
+
+            const ssiLabel = document.getElementById('ssi-label');
+            report += '\n--- SSI ---\n';
+            report += 'Индекс напряжённости: ' + (ssiLabel ? ssiLabel.textContent : '0%') + '\n';
+
+            report += '\n--- CRUCIX OSINT TERMINAL ---\n';
+            report += '🌐 ' + window.location.origin + '/geo-map-simple';
+
+            navigator.clipboard.writeText(report).then(() => {
+                const btn = document.getElementById('copy-btn');
+                btn.textContent = '✅ Скопировано!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = '📋 КОПИРОВАТЬ';
+                    btn.classList.remove('copied');
+                }, 3000);
+                showNotification('✅ Данные скопированы');
+            }).catch(() => {
+                const textarea = document.createElement('textarea');
+                textarea.value = report;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showNotification('✅ Данные скопированы');
+            });
+        }
+
+        // ============================================================
+        // 6. ЯЗЫК
+        // ============================================================
+        function setLanguage(lang) {
+            localStorage.setItem('crucix-lang', lang);
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === lang);
+            });
+            showNotification('🌐 Язык: ' + lang.toUpperCase());
+        }
+
+        // ============================================================
+        // 7. УВЕДОМЛЕНИЯ
+        // ============================================================
+        function showNotification(msg) {
+            document.querySelectorAll('.notification').forEach(el => el.remove());
+            const el = document.createElement('div');
+            el.className = 'notification';
+            el.textContent = msg;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 2500);
+        }
+
+        // ============================================================
+        // 8. ЗАПУСК
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 DOM загружен');
+            setTimeout(initMap, 200);
+        });
+
+        // Экспорт глобальных функций
+        window.copyAllData = copyAllData;
+        window.setLanguage = setLanguage;
+        window.showNotification = showNotification;
+    </script>
+
+</body>
+</html>

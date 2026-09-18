@@ -1,247 +1,134 @@
-#!/usr/bin/env node
+// KiwiSDR Network — Global software-defined radio receiver network
+// С демо-данными для автономной работы
 
 // ============================================================
-// KIIWISDR — РАДИОМОНИТОРИНГ
+// ДЕМО-ДАННЫЕ (если внешний API недоступен)
 // ============================================================
-// Источник: KiwiSDR API
-// Данные: доступные SDR-приёмники по всему миру
-// Обновление: ежедневно
-// ============================================================
-
-import { fetchWithRetry } from '../utils/fetch.mjs';
-
-// ============================================================
-// 1. КОНСТАНТЫ
-// ============================================================
-
-const KIIWISDR_API = 'https://kiwisdr.com/public';
-
-// Горячие регионы для мониторинга
-const REGIONS = [
-    { name: 'Ближний Восток', lat: 30, lng: 45, radius: 20 },
-    { name: 'Украина', lat: 49, lng: 31, radius: 10 },
-    { name: 'Южно-Китайское море', lat: 18, lng: 114, radius: 15 },
-    { name: 'Балтийский регион', lat: 55, lng: 24, radius: 10 }
+const DEMO_RECEIVERS = [
+  { name: 'KFS - Half Moon Bay, CA', location: 'Half Moon Bay, CA', lat: 37.5, lon: -122.5, country: 'USA', url: 'http://kfs.kiwisdr.com:8073/' },
+  { name: 'Northern Utah WebSDR', location: 'Utah', lat: 40.5, lon: -111.8, country: 'USA' },
+  { name: 'VE3SMC - Ontario', location: 'Ontario', lat: 44.0, lon: -78.0, country: 'Canada' },
+  { name: 'G0JPS - UK', location: 'UK', lat: 51.5, lon: -0.1, country: 'UK' },
+  { name: 'PA0RWE - Netherlands', location: 'Netherlands', lat: 52.0, lon: 5.0, country: 'Netherlands' },
+  { name: 'DL2SDR - Germany', location: 'Germany', lat: 50.0, lon: 10.0, country: 'Germany' },
+  { name: 'F1ATB - France', location: 'France', lat: 47.0, lon: 2.0, country: 'France' },
+  { name: 'EA1IR - Spain', location: 'Spain', lat: 40.0, lon: -3.0, country: 'Spain' },
+  { name: 'I1SFR - Italy', location: 'Italy', lat: 42.0, lon: 12.0, country: 'Italy' },
+  { name: 'SV1BDS - Greece', location: 'Greece', lat: 38.0, lon: 24.0, country: 'Greece' },
+  { name: 'RA3SDR - Russia', location: 'Russia', lat: 55.0, lon: 37.0, country: 'Russia' },
+  { name: 'UA3SDR - Russia', location: 'Russia', lat: 56.0, lon: 38.0, country: 'Russia' },
+  { name: 'JA1SDR - Japan', location: 'Japan', lat: 35.0, lon: 139.0, country: 'Japan' },
+  { name: 'VK3SDR - Australia', location: 'Australia', lat: -37.0, lon: 145.0, country: 'Australia' },
+  { name: 'ZS1SDR - South Africa', location: 'South Africa', lat: -33.0, lon: 18.0, country: 'South Africa' },
+  { name: '4X1SDR - Israel', location: 'Israel', lat: 32.0, lon: 35.0, country: 'Israel' },
+  { name: 'TA1SDR - Turkey', location: 'Turkey', lat: 39.0, lon: 32.0, country: 'Turkey' },
+  { name: 'EP2SDR - Iran', location: 'Iran', lat: 35.0, lon: 51.0, country: 'Iran' },
+  { name: 'HS1SDR - Thailand', location: 'Thailand', lat: 13.0, lon: 100.0, country: 'Thailand' },
+  { name: '9M2SDR - Malaysia', location: 'Malaysia', lat: 3.0, lon: 101.0, country: 'Malaysia' },
 ];
 
 // ============================================================
-// 2. ОСНОВНАЯ ФУНКЦИЯ
+// ПОЛУЧЕНИЕ ДАННЫХ
 // ============================================================
-
-export async function fetchSDR() {
-    try {
-        console.log('[KiwiSDR] Запрос данных о SDR-приёмниках...');
-
-        const receivers = [];
-
-        for (const region of REGIONS) {
-            try {
-                const data = await fetchRegionSDR(region);
-                receivers.push(...data);
-            } catch (e) {
-                console.warn(`[KiwiSDR] Ошибка для региона ${region.name}:`, e.message);
-            }
+export async function getAllReceivers() {
+  // Пробуем загрузить реальные данные
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 5000);
+    const res = await fetch('https://www.receiverbook.de/map?type=kiwisdr', {
+      headers: { 'User-Agent': 'Crucix/1.0' },
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+    if (res.ok) {
+      const html = await res.text();
+      const match = html.match(/var\s+receivers\s*=\s*(\[[\s\S]*?\]);/);
+      if (match) {
+        const sites = JSON.parse(match[1]);
+        const flat = [];
+        for (const site of sites) {
+          const [lon, lat] = site.location?.coordinates || [NaN, NaN];
+          const country = site.label?.split(',').pop()?.trim() || '';
+          for (const rx of (site.receivers || [site])) {
+            flat.push({
+              name: rx.label || site.label || '',
+              location: site.label || '',
+              lat, lon,
+              country,
+              url: rx.url || site.url || '',
+              version: rx.version || '',
+              offline: false,
+            });
+          }
         }
-
-        // Убираем дубликаты
-        const unique = [];
-        const seen = new Set();
-        for (const r of receivers) {
-            if (!seen.has(r.id)) {
-                seen.add(r.id);
-                unique.push(r);
-            }
+        if (flat.length > 0) {
+          console.log(`[KiwiSDR] Загружено ${flat.length} приёмников`);
+          return flat;
         }
-
-        const summary = getSDRSummary(unique);
-
-        console.log(`[KiwiSDR] Найдено ${unique.length} приёмников`);
-
-        return {
-            success: true,
-            count: unique.length,
-            receivers: unique.slice(0, 50),
-            summary: summary,
-            source: 'KiwiSDR',
-            timestamp: new Date().toISOString()
-        };
-
-    } catch (error) {
-        console.error('[KiwiSDR] Ошибка:', error.message);
-        return getDemoSDR();
+      }
     }
+  } catch (e) {
+    console.log('[KiwiSDR] Внешний API недоступен, использую демо-данные');
+  }
+
+  // Возвращаем демо-данные
+  return DEMO_RECEIVERS.map(r => ({ ...r, offline: false, version: 'demo' }));
 }
 
-// ============================================================
-// 3. ЗАПРОС ПО РЕГИОНУ
-// ============================================================
-
-async function fetchRegionSDR(region) {
-    try {
-        const url = `${KIIWISDR_API}/?lat=${region.lat}&lng=${region.lng}&radius=${region.radius}`;
-        const response = await fetchWithRetry(url, { timeout: 10000 });
-        const text = await response.text();
-
-        // Простой парсинг HTML (в реальности лучше использовать API)
-        const receivers = [];
-        const matches = text.match(/<div class="receiver">([\s\S]*?)<\/div>/g) || [];
-
-        for (const match of matches) {
-            const nameMatch = match.match(/<h3>(.*?)<\/h3>/);
-            const latMatch = match.match(/lat: (\d+\.\d+)/);
-            const lngMatch = match.match(/lng: (\d+\.\d+)/);
-            const statusMatch = match.match(/status.*?(\w+)/);
-
-            if (nameMatch) {
-                receivers.push({
-                    id: `kiwi-${receivers.length + 1}`,
-                    name: nameMatch[1] || 'Unknown',
-                    lat: latMatch ? parseFloat(latMatch[1]) : null,
-                    lng: lngMatch ? parseFloat(lngMatch[1]) : null,
-                    status: statusMatch ? statusMatch[1] : 'unknown',
-                    region: region.name,
-                    url: 'https://kiwisdr.com/public'
-                });
-            }
-        }
-
-        return receivers;
-    } catch (error) {
-        console.warn(`[KiwiSDR] Ошибка парсинга:`, error.message);
-        return getDemoReceivers(region);
-    }
-}
-
-// ============================================================
-// 4. ДЕМО-ДАННЫЕ ДЛЯ РЕГИОНА
-// ============================================================
-
-function getDemoReceivers(region) {
-    const names = ['SDR-1', 'SDR-2', 'SDR-3', 'RX-001', 'RX-002'];
-    const statuses = ['online', 'online', 'offline', 'online', 'online'];
-
-    return names.map((name, i) => ({
-        id: `demo-${region.name}-${i}`,
-        name: `${name} (${region.name})`,
-        lat: region.lat + (Math.random() - 0.5) * 2,
-        lng: region.lng + (Math.random() - 0.5) * 2,
-        status: statuses[i % statuses.length],
-        region: region.name,
-        url: 'https://kiwisdr.com/public',
-        isDemo: true
-    }));
-}
-
-// ============================================================
-// 5. СТАТИСТИКА
-// ============================================================
-
-function getSDRSummary(receivers) {
-    const summary = {
-        total: receivers.length,
-        byRegion: {},
-        byStatus: { online: 0, offline: 0, unknown: 0 }
-    };
-
-    for (const r of receivers) {
-        const region = r.region || 'unknown';
-        summary.byRegion[region] = (summary.byRegion[region] || 0) + 1;
-
-        const status = r.status || 'unknown';
-        if (summary.byStatus[status] !== undefined) {
-            summary.byStatus[status]++;
-        }
-    }
-
-    return summary;
-}
-
-// ============================================================
-// 6. ДЕМО-ДАННЫЕ
-// ============================================================
-
-function getDemoSDR() {
-    const receivers = [];
-    const regions = ['Ближний Восток', 'Украина', 'Южно-Китайское море', 'Балтийский регион'];
-    const statuses = ['online', 'online', 'offline', 'online', 'online'];
-
-    for (let i = 0; i < 15; i++) {
-        const region = regions[i % regions.length];
-        receivers.push({
-            id: `demo-sdr-${i}`,
-            name: `SDR-${i + 1} (${region})`,
-            lat: 30 + (Math.random() - 0.5) * 20,
-            lng: 45 + (Math.random() - 0.5) * 20,
-            status: statuses[i % statuses.length],
-            region: region,
-            url: 'https://kiwisdr.com/public',
-            isDemo: true
-        });
-    }
-
+export async function briefing() {
+  const data = await getAllReceivers();
+  if (Array.isArray(data)) {
+    const countries = [...new Set(data.map(r => r.country).filter(c => c))];
     return {
-        success: true,
-        count: receivers.length,
-        receivers: receivers,
-        summary: getSDRSummary(receivers),
-        source: 'DEMO (KiwiSDR)',
-        timestamp: new Date().toISOString(),
-        isDemo: true
+      total: data.length,
+      countries: countries,
+      online: data.filter(r => !r.offline).length,
+      byCountry: countries.map(c => ({ country: c, count: data.filter(r => r.country === c).length }))
     };
+  }
+  return { error: data.error };
 }
 
 // ============================================================
-// 7. API-ОБРАБОТЧИК
+// API-ОБРАБОТЧИК
 // ============================================================
+export async function handleKiwiSDRAPI(req, res) {
+  const url = new URL(req.url, `http://${req.headers.host}`);
+  const path = url.pathname;
 
-export async function handleKiwiSDRApi(req, res) {
-    const url = new URL(req.url, `http://${req.headers.host}`);
-    const path = url.pathname;
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') {
+    res.writeHead(200);
+    res.end();
+    return;
+  }
 
-    if (req.method === 'OPTIONS') {
-        res.writeHead(200);
-        res.end();
-        return;
-    }
+  if (path === '/api/kiwisdr/status' && req.method === 'GET') {
+    const data = await getAllReceivers();
+    const count = Array.isArray(data) ? data.length : 0;
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      success: true,
+      module: 'kiwisdr',
+      status: 'online',
+      receivers: count,
+      timestamp: new Date().toISOString()
+    }));
+    return;
+  }
 
-    try {
-        if (path === '/api/kiwisdr/receivers' && req.method === 'GET') {
-            const data = await fetchSDR();
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify(data));
-            return;
-        }
+  if (path === '/api/kiwisdr/receivers' && req.method === 'GET') {
+    const data = await getAllReceivers();
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ success: true, receivers: data }));
+    return;
+  }
 
-        if (path === '/api/kiwisdr/status' && req.method === 'GET') {
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({
-                success: true,
-                module: 'KiwiSDR',
-                status: 'active',
-                timestamp: new Date().toISOString()
-            }));
-            return;
-        }
-
-        res.writeHead(404, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ success: false, error: 'Неизвестный путь' }));
-
-    } catch (error) {
-        console.error('[KiwiSDR API] Ошибка:', error);
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-            success: false,
-            error: 'Внутренняя ошибка сервера',
-            details: error.message
-        }));
-    }
+  res.writeHead(404, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ success: false, error: 'Неизвестный путь' }));
 }
 
-export default {
-    fetchSDR,
-    handleKiwiSDRApi
-};
+export default { handleKiwiSDRAPI, getAllReceivers, briefing };

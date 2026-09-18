@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crucix · Human Feedback Dashboard</title>
+<style>
+:root{--bg:#06080f;--surface:#0d1220;--surface2:#161d2e;--surface3:#1f2842;--border:#1a2540;--border2:#2b3a5c;--text:#e8edf5;--text-dim:#8fa1c2;--text-faint:#5a6b8a;--accent:#3b82f6;--accent2:#8b5cf6;--green:#22c55e;--yellow:#eab308;--orange:#f97316;--red:#ef4444;--cyan:#06b6d4;--mono:'SF Mono',monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text);padding:24px;font-size:13px;line-height:1.5;min-height:100vh}
+.header{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.header h1{font-size:18px;font-weight:800}
+.header h1 span{color:var(--text-dim);font-weight:400;font-size:12px;margin-left:8px}
+.header .stats{display:flex;gap:16px;font-family:var(--mono);font-size:11px;color:var(--text-dim)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:1400px;margin:0 auto}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px}
+.card-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+.card-title .meta{font-family:var(--mono);font-size:10px;color:var(--text-faint);text-transform:none;letter-spacing:0}
+.prediction{background:var(--surface2);border-radius:10px;padding:16px;margin-bottom:14px;border-left:3px solid var(--accent)}
+.prediction h3{font-size:14px;font-weight:700;margin-bottom:6px}
+.prediction .prob{font-family:var(--mono);font-size:22px;font-weight:800;color:var(--accent)}
+.prediction .details{font-size:11px;color:var(--text-dim);font-family:var(--mono);margin-top:6px}
+.buttons{display:flex;gap:8px;margin-bottom:12px}
+.btn{flex:1;padding:12px;border-radius:8px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s;font-family:inherit}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.3)}
+.btn.good{border-color:var(--green);color:var(--green)}
+.btn.good.active{background:var(--green);color:white}
+.btn.bad{border-color:var(--red);color:var(--red)}
+.btn.bad.active{background:var(--red);color:white}
+.btn.uncertain{border-color:var(--yellow);color:var(--yellow)}
+.btn.uncertain.active{background:var(--yellow);color:var(--bg)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:white}
+.btn.primary:hover{background:#2563eb}
+.btn.primary:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+.comment{width:100%;padding:10px;border-radius:8px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-size:12px;font-family:inherit;margin-bottom:12px;resize:vertical;min-height:70px}
+.comment:focus{outline:none;border-color:var(--accent)}
+.row{display:flex;gap:10px;margin-bottom:14px}
+.row .field{flex:1}
+.row .field label{display:block;font-size:10px;color:var(--text-faint);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px}
+.row .field .value{font-family:var(--mono);font-size:12px;padding:6px 10px;background:var(--surface2);border-radius:6px}
+.history{max-height:400px;overflow-y:auto}
+.history-item{padding:10px;background:var(--surface2);border-radius:8px;margin-bottom:6px;border-left:3px solid var(--accent);font-size:11px}
+.history-item.good{border-left-color:var(--green)}
+.history-item.bad{border-left-color:var(--red)}
+.history-item.uncertain{border-left-color:var(--yellow)}
+.history-item .time{font-family:var(--mono);font-size:9px;color:var(--text-faint);margin-bottom:2px}
+.history-item .sig{font-weight:700;text-transform:uppercase;font-size:10px;letter-spacing:1px;display:inline-block;margin-right:6px}
+.history-item.good .sig{color:var(--green)}
+.history-item.bad .sig{color:var(--red)}
+.history-item.uncertain .sig{color:var(--yellow)}
+.history-item .comment-text{color:var(--text-dim);margin-top:4px;font-style:italic}
+.weights{margin-top:14px}
+.weight-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:11px}
+.weight-row .name{flex:0 0 130px;font-family:var(--mono);color:var(--text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.weight-row .bar-wrap{flex:1;height:14px;background:var(--surface3);border-radius:3px;overflow:hidden;position:relative}
+.weight-row .bar{height:100%;background:linear-gradient(90deg,var(--cyan),var(--accent));border-radius:3px;transition:width 0.4s}
+.weight-row .num{flex:0 0 45px;font-family:var(--mono);font-weight:700;text-align:right}
+.interpretation{padding:12px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);border-radius:8px;font-size:12px;color:var(--text-dim);margin-top:12px}
+.interpretation strong{color:var(--accent)}
+.empty{text-align:center;padding:30px;color:var(--text-faint);font-size:12px}
+.footer-actions{display:flex;gap:10px;margin-top:14px}
+.footer-actions .btn{flex:1}
+.notice{padding:10px 14px;background:rgba(234,179,8,0.1);border:1px solid rgba(234,179,8,0.3);border-radius:8px;font-size:11px;color:var(--text-dim);margin-bottom:14px}
+.notice strong{color:var(--yellow)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>Human Feedback Dashboard <span>· Crucix · заготовка</span></h1>
+  </div>
+  <div class="stats">
+    <span>Feedback: <strong id="stat-total">0</strong></span>
+    <span>Good: <strong id="stat-good" style="color:var(--green)">0</strong></span>
+    <span>Bad: <strong id="stat-bad" style="color:var(--red)">0</strong></span>
+    <span>Uncertain: <strong id="stat-uncertain" style="color:var(--yellow)">0</strong></span>
+  </div>
+</div>
+
+<div class="grid">
+
+  <!-- ЛЕВАЯ КОЛОНКА -->
+  <div>
+
+    <div class="card">
+      <div class="card-title">
+        Текущий прогноз
+        <span class="meta" id="prediction-meta">—</span>
+      </div>
+      <div id="prediction-content">
+        <div class="empty">Загрузка latest_forecast.json...</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Оценка оператора</div>
+
+      <div class="notice">
+        <strong>Важно:</strong> страница статическая. Метки сохраняются в localStorage как черновик. Для применения к системе используйте кнопку «Экспорт JSON» и команду в терминале (см. engine_integration.md).
+      </div>
+
+      <div class="buttons" id="sig-buttons">
+        <button class="btn good" data-sig="good">Good</button>
+        <button class="btn bad" data-sig="bad">Bad</button>
+        <button class="btn uncertain" data-sig="uncertain">Uncertain</button>
+      </div>
+
+      <textarea class="comment" id="comment-field" placeholder="Комментарий (опционально): почему вы так считаете? Что модель упустила?"></textarea>
+
+      <div class="row">
+        <div class="field">
+          <label>Operator ID</label>
+          <input type="text" id="operator-id" class="comment" style="min-height:34px;margin-bottom:0" placeholder="default" value="default">
+        </div>
+      </div>
+
+      <div class="footer-actions">
+        <button class="btn primary" id="save-btn" disabled>Сохранить метку</button>
+        <button class="btn" id="export-btn">Экспорт JSON</button>
+        <button class="btn" id="clear-btn">Очистить черновик</button>
+      </div>
+
+      <div id="save-status" style="margin-top:10px;font-size:11px;color:var(--text-faint)"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        What-if — что если?
+        <span class="meta">упрощённый механизм</span>
+      </div>
+      <div id="whatif-content">
+        <div class="empty">Загрузите прогноз, чтобы использовать What-if</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ПРАВАЯ КОЛОНКА -->
+  <div>
+
+    <div class="card">
+      <div class="card-title">
+        Метрики обучения
+        <span class="meta" id="metrics-meta">—</span>
+      </div>
+      <div id="metrics-content">
+        <div class="empty">Ожидание первого сигнала...</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        Веса признаков
+        <span class="meta" id="weights-meta">—</span>
+      </div>
+      <div class="weights" id="weights-content">
+        <div class="empty">Веса появятся после первого сигнала</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        История обратной связи
+        <span class="meta" id="history-meta">0 записей</span>
+      </div>
+      <div class="history" id="history-content">
+        <div class="empty">История пуста</div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+const STATE = {
+  prediction: null,
+  feedback: null,
+  draft: {
+    signature: null,
+    comment: '',
+    operatorId: 'default',
+  },
+};
+
+// ========== ЗАГРУЗКА ==========
+
+async function loadData() {
+  try {
+    // Прогноз
+    const predRes = await fetch('../../runs/predictions/latest_forecast.json', { cache: 'no-store' });
+    if (predRes.ok) STATE.prediction = await predRes.json();
+  } catch (e) { console.warn('Prediction load failed:', e.message); }
+
+  try {
+    // Состояние feedback
+    const fbRes = await fetch('../../runs/predictions/human_feedback.json', { cache: 'no-store' });
+    if (fbRes.ok) STATE.feedback = await fbRes.json();
+  } catch (e) { console.warn('Feedback load failed:', e.message); }
+
+  // Черновик из localStorage
+  const draftRaw = localStorage.getItem('crucix_hf_draft');
+  if (draftRaw) {
+    try {
+      STATE.draft = JSON.parse(draftRaw);
+      $('comment-field').value = STATE.draft.comment || '';
+      $('operator-id').value = STATE.draft.operatorId || 'default';
+      if (STATE.draft.signature) {
+        document.querySelectorAll('.btn[data-sig]').forEach(b => {
+          if (b.dataset.sig === STATE.draft.signature) b.classList.add('active');
+        });
+        $('save-btn').disabled = false;
+      }
+    } catch (e) {}
+  }
+
+  renderPrediction();
+  renderMetrics();
+  renderWeights();
+  renderHistory();
+  renderWhatIf();
+  updateStats();
+}
+
+// ========== ТЕКУЩИЙ ПРОГНОЗ ==========
+
+function renderPrediction() {
+  const container = $('prediction-content');
+  const meta = $('prediction-meta');
+  const p = STATE.prediction;
+
+  if (!p || !p.topRisks || p.topRisks.length === 0) {
+    container.innerHTML = '<div class="empty">Прогноз не найден. Запустите pipeline или создайте заглушку runs/predictions/latest_forecast.json.</div>';
+    meta.textContent = '—';
+    return;
+  }
+
+  const top = p.topRisks[0];
+  const ts = p.timestamp ? new Date(p.timestamp).toLocaleString('ru-RU') : '—';
+  meta.textContent = ts;
+
+  const color = top.probability > 0.7 ? 'var(--red)' :
+                top.probability > 0.5 ? 'var(--orange)' :
+                top.probability > 0.3 ? 'var(--yellow)' : 'var(--green)';
+
+  container.innerHTML = `
+    <div class="prediction" style="border-left-color:${color}">
+      <h3>${top.name || top.id || 'Прогноз'}</h3>
+      <div class="prob" style="color:${color}">${(top.probability * 100).toFixed(1)}%</div>
+      <div class="details">
+        Категория: ${top.category || '—'} ·
+        Горизонт: ${top.horizonHours || '—'}ч ·
+        Disagreement: ${top.disagreement ? (top.disagreement * 100).toFixed(1) + '%' : '—'}
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--text-dim);margin-top:8px">
+      Всего рисков в прогнозе: <strong>${p.topRisks.length}</strong>
+    </div>
+  `;
+}
+
+// ========== МЕТРИКИ ==========
+
+function renderMetrics() {
+  const container = $('metrics-content');
+  const meta = $('metrics-meta');
+  const f = STATE.feedback;
+
+  if (!f || !f.totalFeedback) {
+    container.innerHTML = '<div class="empty">Обратной связи ещё не было. Модуль ожидает сигнала оператора.</div>';
+    meta.textContent = '—';
+    return;
+  }
+
+  meta.textContent = f.lastUpdate ? new Date(f.lastUpdate).toLocaleString('ru-RU') : '—';
+
+  const agreementRate = f.totalFeedback > 0
+    ? ((f.goodCount + f.badCount) / f.totalFeedback * 100).toFixed(0)
+    : 0;
+
+  container.innerHTML = `
+    <div style="font-family:var(--mono);font-size:12px;line-height:1.9">
+      <div>Всего: <strong>${f.totalFeedback}</strong></div>
+      <div>Good: <strong style="color:var(--green)">${f.goodCount}</strong></div>
+      <div>Bad: <strong style="color:var(--red)">${f.badCount}</strong></div>
+      <div>Uncertain: <strong style="color:var(--yellow)">${f.uncertainCount}</strong></div>
+      <div>Agreement rate: <strong>${agreementRate}%</strong></div>
+      <div>Признаков: <strong>${Object.keys(f.featureWeights || {}).length}</strong></div>
+    </div>
+    <div class="interpretation">
+      <strong>Интерпретация:</strong> ${interpretMetrics(f)}
+    </div>
+  `;
+}
+
+function interpretMetrics(f) {
+  if (!f.totalFeedback) return 'Обратной связи ещё не было.';
+  if (f.totalFeedback < 5) return 'Мало данных для значимых выводов. Продолжайте размечать прогнозы.';
+  const rate = (f.goodCount + f.badCount) / f.totalFeedback;
+  if (rate > 0.8) return 'Высокая согласованность операторских оценок. Модель стабильна.';
+  if (rate < 0.5) return 'Противоречивые оценки оператора. Возможна неоднозначность прогнозов.';
+  return 'Умеренная согласованность. Продолжайте разметку.';
+}
+
+// ========== ВЕСА ==========
+
+function renderWeights() {
+  const container = $('weights-content');
+  const meta = $('weights-meta');
+  const f = STATE.feedback;
+
+  if (!f || !f.featureWeights || Object.keys(f.featureWeights).length === 0) {
+    container.innerHTML = '<div class="empty">Веса появятся после первого сигнала</div>';
+    meta.textContent = '—';
+    return;
+  }
+
+  const entries = Object.entries(f.featureWeights).sort((a, b) => b[1] - a[1]);
+  const maxW = Math.max(...entries.map(([, w]) => w), 1.5);
+
+  meta.textContent = `${entries.length} признаков`;
+
+  container.innerHTML = entries.slice(0, 15).map(([name, w]) => {
+    const pct = (w / maxW * 100).toFixed(0);
+    return `
+      <div class="weight-row">
+        <span class="name" title="${name}">${name}</span>
+        <div class="bar-wrap"><div class="bar" style="width:${pct}%"></div></div>
+        <span class="num">${w.toFixed(3)}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+// ========== ИСТОРИЯ ==========
+
+function renderHistory() {
+  const container = $('history-content');
+  const meta = $('history-meta');
+  const f = STATE.feedback;
+
+  if (!f || !f.feedbackHistory || f.feedbackHistory.length === 0) {
+    container.innerHTML = '<div class="empty">История пуста</div>';
+    meta.textContent = '0 записей';
+    return;
+  }
+
+  const items = [...f.feedbackHistory].reverse().slice(0, 30);
+  meta.textContent = `${f.feedbackHistory.length} записей`;
+
+  container.innerHTML = items.map(item => {
+    const ts = new Date(item.timestamp).toLocaleString('ru-RU');
+    const sig = item.signature || '?';
+    const comment = item.comment ? `<div class="comment-text">${escapeHtml(item.comment)}</div>` : '';
+    return `
+      <div class="history-item ${sig}">
+        <div class="time">${ts} · ${item.operatorId || 'default'}</div>
+        <span class="sig">${sig}</span>
+        <span style="color:var(--text-dim);font-size:10px">${item.predictionId ? 'pred: ' + item.predictionId.slice(0, 12) : ''}</span>
+        ${comment}
+      </div>
+    `;
+  }).join('');
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// ========== WHAT-IF ==========
+
+function renderWhatIf() {
+  const container = $('whatif-content');
+  const p = STATE.prediction;
+
+  if (!p) {
+    container.innerHTML = '<div class="empty">Нет прогноза для What-if</div>';
+    return;
+  }
+
+  container.innerHTML = `
+    <div style="font-size:11px;color:var(--text-dim);margin-bottom:10px">
+      Упрощённый What-if: укажите значение признака, и посмотрите, как изменится прогноз.
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>Признак</label>
+        <select id="whatif-feature" class="comment" style="min-height:34px;margin-bottom:0">
+          <option value="vix">vix</option>
+          <option value="conflictCount">conflictCount</option>
+          <option value="sanctionsCount">sanctionsCount</option>
+          <option value="newAlerts">newAlerts</option>
+          <option value="escalatedAlerts">escalatedAlerts</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Значение (0-1)</label>
+        <input type="number" id="whatif-value" class="comment" style="min-height:34px;margin-bottom:0" step="0.05" min="0" max="1" value="0.8">
+      </div>
+    </div>
+    <button class="btn" id="whatif-run" style="margin-top:8px">Рассчитать</button>
+    <div id="whatif-result" style="margin-top:12px;font-size:11px;color:var(--text-dim)"></div>
+  `;
+
+  $('whatif-run').addEventListener('click', () => {
+    const feature = $('whatif-feature').value;
+    const value = parseFloat($('whatif-value').value);
+    const baseProb = p.topRisks?.[0]?.probability || 0.5;
+    const deviation = Math.abs(value - 0.5);
+    const expectedShift = deviation * 0.1 * (value > 0.5 ? 1 : -1);
+    const newProb = Math.max(0, Math.min(1, baseProb + expectedShift));
+    $('whatif-result').innerHTML = `
+      Если <strong>${feature} = ${value.toFixed(2)}</strong>:<br>
+      Базовый прогноз: <strong>${(baseProb * 100).toFixed(1)}%</strong><br>
+      Ожидаемый сдвиг: <strong>${(expectedShift * 100).toFixed(1)} п.п.</strong><br>
+      Новый прогноз: <strong style="color:var(--accent)">${(newProb * 100).toFixed(1)}%</strong>
+    `;
+  });
+}
+
+// ========== СТАТИСТИКА ==========
+
+function updateStats() {
+  const f = STATE.feedback || {};
+  $('stat-total').textContent = f.totalFeedback || 0;
+  $('stat-good').textContent = f.goodCount || 0;
+  $('stat-bad').textContent = f.badCount || 0;
+  $('stat-uncertain').textContent = f.uncertainCount || 0;
+}
+
+// ========== ОБРАБОТЧИКИ КНОПОК ==========
+
+document.querySelectorAll('.btn[data-sig]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.btn[data-sig]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    STATE.draft.signature = btn.dataset.sig;
+    $('save-btn').disabled = false;
+    saveDraft();
+  });
+});
+
+$('comment-field').addEventListener('input', (e) => {
+  STATE.draft.comment = e.target.value;
+  saveDraft();
+});
+
+$('operator-id').addEventListener('input', (e) => {
+  STATE.draft.operatorId = e.target.value;
+  saveDraft();
+});
+
+$('save-btn').addEventListener('click', () => {
+  if (!STATE.draft.signature) {
+    $('save-status').textContent = 'Сначала выберите оценку (Good/Bad/Uncertain).';
+    return;
+  }
+  if (!STATE.prediction || !STATE.prediction.topRisks || STATE.prediction.topRisks.length === 0) {
+    $('save-status').textContent = 'Нет прогноза для оценки.';
+    return;
+  }
+
+  // Сохраняем в очередь черновиков
+  const queue = JSON.parse(localStorage.getItem('crucix_hf_queue') || '[]');
+  const top = STATE.prediction.topRisks[0];
+  queue.push({
+    timestamp: Date.now(),
+    predictionId: `pred_${p => p.timestamp || Date.now()}`,
+    signature: STATE.draft.signature,
+    comment: STATE.draft.comment || null,
+    operatorId: STATE.draft.operatorId || 'default',
+    context: {
+      features: {
+        vix: STATE.prediction.fred?.vix ? Math.min(1, STATE.prediction.fred.vix / 50) : 0.4,
+        conflictCount: Math.min(1, (STATE.prediction.gdelt?.conflictEvents?.length || 0) / 20),
+        sanctionsCount: Math.min(1, (STATE.prediction.sanctions?.count || 0) / 10),
+        newAlerts: Math.min(1, (STATE.prediction.delta?.newAlerts || 0) / 10),
+        escalatedAlerts: Math.min(1, (STATE.prediction.delta?.escalatedAlerts || 0) / 5),
+      },
+      predictedProb: top.probability,
+      actualOutcome: null,
+    },
+  });
+  localStorage.setItem('crucix_hf_queue', JSON.stringify(queue));
+
+  // Сброс формы
+  document.querySelectorAll('.btn[data-sig]').forEach(b => b.classList.remove('active'));
+  STATE.draft.signature = null;
+  $('save-btn').disabled = true;
+  $('save-status').innerHTML = `✓ Метка добавлена в очередь. Всего в очереди: <strong>${queue.length}</strong>. Не забудьте экспортировать и применить.`;
+});
+
+$('export-btn').addEventListener('click', () => {
+  const queue = JSON.parse(localStorage.getItem('crucix_hf_queue') || '[]');
+  if (queue.length === 0) {
+    $('save-status').textContent = 'Очередь пуста. Нечего экспортировать.';
+    return;
+  }
+  const blob = new Blob([JSON.stringify(queue, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `human_feedback_pending_${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  $('save-status').innerHTML = `✓ Экспортировано <strong>${queue.length}</strong> меток. Примените через команду в терминале (см. engine_integration.md).`;
+});
+
+$('clear-btn').addEventListener('click', () => {
+  if (!confirm('Очистить всю очередь черновиков? Это действие нельзя отменить.')) return;
+  localStorage.removeItem('crucix_hf_queue');
+  localStorage.removeItem('crucix_hf_draft');
+  $('save-status').textContent = 'Очередь и черновик очищены.';
+  location.reload();
+});
+
+function saveDraft() {
+  localStorage.setItem('crucix_hf_draft', JSON.stringify(STATE.draft));
+}
+
+// ========== СТАРТ ==========
+
+loadData();
+setInterval(loadData, 60000);
+</script>
+
+</body>
+</html>

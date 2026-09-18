@@ -1,0 +1,1012 @@
+===== ЧАСТЬ part-6-infra-and-tests · КУСОК 04/23 · 37.9 KB =====
+
+FILE: tests/predict/meta_ensemble.test.mjs
+SIZE: 2951 bytes
+SHA1: 718e2f2e2ac9448b
+========================================================================
+
+// tests/predict/meta_ensemble.test.mjs
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
+import { MetaLearner, MetaEnsemble, extractRegimeSignature, crucixMetaEnsemble, DEFAULT_MODELS } from '../../apis/predict/meta_ensemble.mjs';
+
+describe('MetaLearner', () => {
+  it('forward возвращает нормализованные веса', () => {
+    const ml = new MetaLearner({ inputDim: 4, hiddenDim: 8, outputDim: 3 });
+    const features = [0.5, 0.3, 0.8, 0.2];
+    const { weights } = ml.forward(features);
+    assert.strictEqual(weights.length, 3);
+    const sum = weights.reduce((a, b) => a + b, 0);
+    assert.ok(Math.abs(sum - 1) < 1e-6);
+  });
+
+  it('обучается и уменьшает loss', () => {
+    const ml = new MetaLearner({ inputDim: 4, hiddenDim: 16, outputDim: 3 });
+    const features = [0.5, 0.3, 0.8, 0.2];
+    const predictions = [0.3, 0.7, 0.5];
+    const outcome = 0.6;
+
+    const losses = [];
+    for (let i = 0; i < 50; i++) {
+      const result = ml.trainStep(features, predictions, outcome);
+      losses.push(result.loss);
+    }
+
+    // Loss должен уменьшиться
+    assert.ok(losses[losses.length - 1] < losses[0] * 1.5);
+  });
+
+  it('сериализуется и десериализуется', () => {
+    const ml = new MetaLearner({ inputDim: 4, hiddenDim: 8, outputDim: 3 });
+    const json = ml.serialize();
+    const ml2 = MetaLearner.deserialize(json);
+    assert.strictEqual(ml2.inputDim, 4);
+    assert.strictEqual(ml2.outputDim, 3);
+  });
+});
+
+describe('extractRegimeSignature', () => {
+  it('возвращает 8 признаков', () => {
+    const latest = { fred: { vix: 25, hySpread: 4 }, gdelt: { conflictEvents: [{}] }, sanctions: { count: 2 }, delta: { newAlerts: 3, escalatedAlerts: 1 } };
+    const history = [];
+    const sig = extractRegimeSignature(latest, history);
+    assert.strictEqual(sig.length, 8);
+    assert.ok(sig.every(v => v >= 0 && v <= 1));
+  });
+});
+
+describe('MetaEnsemble', () => {
+  it('возвращает веса по режиму', () => {
+    const me = new MetaEnsemble(['m1', 'm2', 'm3']);
+    const latest = { fred: { vix: 22 } };
+    const weights = me.getWeights(latest, []);
+    assert.ok(weights.weights);
+    assert.ok(weights.regime);
+  });
+
+  it('классифицирует режимы', () => {
+    const me = new MetaEnsemble(['m1']);
+    assert.strictEqual(me._classifyRegime([0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9]), 'crisis');
+    assert.strictEqual(me._classifyRegime([0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05]), 'calm');
+  });
+});
+
+describe('crucixMetaEnsemble', () => {
+  it('обрабатывает sweep', () => {
+    const latest = { fred: { vix: 25 }, gdelt: { conflictEvents: [] } };
+    const result = crucixMetaEnsemble(latest, [], {});
+    assert.strictEqual(result.module, 'meta_ensemble');
+    assert.ok(result.modelWeights);
+    assert.ok(result.currentRegime);
+  });
+});
+
+
+
+========================================================================
+
+FILE: tests/predict/multilayer_causal.test.mjs
+SIZE: 2973 bytes
+SHA1: cd49319997b2238f
+========================================================================
+
+// tests/predict/multilayer_causal.test.mjs
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
+import { MultiLayerCausalGraph, LAYERS, crucixMultiLayerCausal, NODE_DEFINITIONS, CAUSAL_EDGES } from '../../apis/predict/multilayer_causal.mjs';
+
+describe('MultiLayerCausalGraph', () => {
+  it('инициализируется со всеми узлами', () => {
+    const g = new MultiLayerCausalGraph();
+    assert.strictEqual(g.nodes.size, Object.keys(NODE_DEFINITIONS).length);
+    assert.ok(g.crossLayerEdges.length > 0);
+  });
+
+  it('содержит 4 слоя', () => {
+    const g = new MultiLayerCausalGraph();
+    const layers = new Set([...g.nodes.values()].map(n => n.layer));
+    assert.strictEqual(layers.size, 4);
+    assert.ok(layers.has(LAYERS.CYBER));
+    assert.ok(layers.has(LAYERS.INFO));
+    assert.ok(layers.has(LAYERS.FINANCE));
+    assert.ok(layers.has(LAYERS.PHYSICAL));
+  });
+
+  it('обновляет вероятность узла', () => {
+    const g = new MultiLayerCausalGraph();
+    g.observe('vixSpike', 0.9, 0.9);
+    const node = g.nodes.get('vixSpike');
+    assert.ok(node.currentProb > 0.5);
+  });
+
+  it('распространяет вероятности по графу', () => {
+    const g = new MultiLayerCausalGraph();
+    g.observe('cyberAttack', 0.95, 1.0);
+    const updates = g.propagate(3);
+    assert.ok(updates.length > 0);
+    assert.ok(updates.some(u => u.to === 'vixSpike'));
+  });
+
+  it('выполняет do-intervention', () => {
+    const g = new MultiLayerCausalGraph();
+    const result = g.doIntervention('infrastructureBreach', 0.9);
+    assert.strictEqual(result.intervention.nodeId, 'infrastructureBreach');
+    assert.ok(result.directUpdates >= 0);
+    assert.ok(typeof result.totalImpact === 'number');
+  });
+
+  it('анализирует кросс-слойное влияние', () => {
+    const g = new MultiLayerCausalGraph();
+    const influence = g.crossLayerInfluence();
+    assert.ok(Object.keys(influence).length > 0);
+    for (const [key, val] of Object.entries(influence)) {
+      assert.ok(val.count > 0);
+      assert.ok(val.avgStrength > 0);
+    }
+  });
+
+  it('генерирует рекурсивные counterfactuals', () => {
+    const g = new MultiLayerCausalGraph();
+    const chains = g.recursiveCounterfactual('militaryBuildUp', 0.85, 3);
+    assert.ok(Array.isArray(chains));
+    assert.ok(chains.length > 0);
+  });
+});
+
+describe('crucixMultiLayerCausal', () => {
+  it('обрабатывает sweep', () => {
+    const latest = {
+      fred: { vix: 32 },
+      gdelt: { conflictEvents: Array.from({ length: 12 }, () => ({})) },
+      sanctions: { count: 5 },
+      radiation: { max: 180 },
+      delta: { escalatedAlerts: 3 },
+    };
+    const result = crucixMultiLayerCausal(latest, []);
+    assert.strictEqual(result.module, 'multilayer_causal');
+    assert.ok(result.graphStats.nodeCount > 0);
+    assert.ok(result.scenarios.scenario1);
+  });
+});
+
+
+
+========================================================================
+
+FILE: tests/predict/narrative_warfare.test.mjs
+SIZE: 4247 bytes
+SHA1: db1d653ed326c063
+========================================================================
+
+// tests/predict/narrative_warfare.test.mjs
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
+import { NarrativeWarfareDetector, computeNarrativeConfidence, isPropagandaSource, crucixNarrativeWarfare } from '../../apis/predict/narrative_warfare.mjs';
+
+describe('isPropagandaSource', () => {
+  it('распознаёт RT', () => {
+    assert.strictEqual(isPropagandaSource('https://rt.com/news/article'), true);
+  });
+  it('не распознаёт BBC', () => {
+    assert.strictEqual(isPropagandaSource('https://bbc.com/news'), false);
+  });
+});
+
+describe('NarrativeWarfareDetector', () => {
+  it('не находит кампаний в малом количестве постов', () => {
+    const d = new NarrativeWarfareDetector();
+    const result = d.detectCampaigns([{ text: 'test', source: 'a.com', timestamp: new Date().toISOString() }]);
+    assert.strictEqual(result.available, false);
+  });
+
+  it('обнаруживает скоординированную кампанию', () => {
+    const d = new NarrativeWarfareDetector({ minSourcesForCampaign: 3, similarityThreshold: 0.4 });
+    const now = Date.now();
+    const sharedText = 'СРОЧНО катастрофа паника ужас шок';
+    const posts = [
+      { text: sharedText + ' 1', source: 'rt.com', timestamp: new Date(now).toISOString() },
+      { text: sharedText + ' 2', source: 'sputniknews.com', timestamp: new Date(now + 60000).toISOString() },
+      { text: sharedText + ' 3', source: 'tass.ru', timestamp: new Date(now + 120000).toISOString() },
+      { text: sharedText + ' 4', source: 'ria.ru', timestamp: new Date(now + 180000).toISOString() },
+    ];
+
+    const result = d.detectCampaigns(posts);
+    assert.strictEqual(result.available, true);
+    assert.ok(result.campaignsDetected > 0);
+    const campaign = result.campaigns[0];
+    assert.ok(campaign.suspicionScore > 0.4);
+    assert.ok(campaign.knownPropagandaSources.length > 0);
+  });
+
+  it('классифицирует state_propaganda', () => {
+    const d = new NarrativeWarfareDetector();
+    const result = d._classify(0.8, 0.7, 0.8);
+    assert.strictEqual(result, 'state_propaganda');
+  });
+});
+
+describe('computeNarrativeConfidence', () => {
+  it('низкая уверенность при пропагандистских источниках', () => {
+    const posts = [
+      { text: 'test1', source: 'rt.com' },
+      { text: 'test2', source: 'sputniknews.com' },
+    ];
+    const result = computeNarrativeConfidence(posts);
+    assert.ok(result.confidence < 0.5);
+    assert.strictEqual(result.propagandaSources, 2);
+    assert.strictEqual(result.independentSources, 0);
+  });
+
+  it('высокая уверенность при независимых источниках', () => {
+    const posts = [
+      { text: 'unique text one', source: 'bbc.com' },
+      { text: 'different text two', source: 'reuters.com' },
+      { text: 'third independent three', source: 'apnews.com' },
+      { text: 'fourth source text', source: 'nytimes.com' },
+      { text: 'fifth original text', source: 'washingtonpost.com' },
+    ];
+    const result = computeNarrativeConfidence(posts);
+    assert.ok(result.confidence > 0.4);
+  });
+});
+
+describe('crucixNarrativeWarfare', () => {
+  it('возвращает unavailable при малом количестве постов', () => {
+    const result = crucixNarrativeWarfare({ gdelt: { rawEvents: [] } }, []);
+    assert.strictEqual(result.available, false);
+  });
+
+  it('обрабатывает GDELT события', () => {
+    const latest = {
+      gdelt: {
+        rawEvents: [
+          { summary: 'Conflict in region A escalated today with multiple attacks', sourceUrl: 'https://reuters.com/x', timestamp: new Date().toISOString() },
+          { summary: 'Conflict in region A escalated today with multiple attacks again', sourceUrl: 'https://bbc.com/y', timestamp: new Date().toISOString() },
+          { summary: 'Reports of new attacks in region A conflict escalated', sourceUrl: 'https://apnews.com/z', timestamp: new Date().toISOString() },
+        ],
+      },
+    };
+    const result = crucixNarrativeWarfare(latest, []);
+    assert.strictEqual(result.module, 'narrative_warfare');
+  });
+});
+
+
+
+========================================================================
+
+FILE: tests/predict/resource_exhaustion.test.mjs
+SIZE: 3438 bytes
+SHA1: 9caec591cdce8cad
+========================================================================
+
+// tests/predict/resource_exhaustion.test.mjs
+import { describe, it, beforeEach } from 'node:test';
+import assert from 'node:assert';
+import { MilitaryExhaustionModel, EconomicExhaustionModel, crucixResourceExhaustion } from '../../apis/predict/resource_exhaustion.mjs';
+
+describe('MilitaryExhaustionModel', () => {
+  let model;
+  beforeEach(() => { model = new MilitaryExhaustionModel(); });
+
+  it('инициализируется с начальными ресурсами', () => {
+    assert.strictEqual(model.currentResources.ammunition, 100);
+    assert.strictEqual(model.currentResources.fuel, 100);
+  });
+
+  it('уменьшает ресурсы при наблюдении', () => {
+    model.observe({ ammunition: 10, fuel: 5 }, 1);
+    assert.ok(model.currentResources.ammunition < 100);
+    assert.ok(model.currentResources.fuel < 100);
+  });
+
+  it('прогнозирует истощение', () => {
+    for (let i = 0; i < 10; i++) {
+      model.observe({ ammunition: 5, fuel: 3, equipment: 2, personnel: 1, logistics: 2 }, 1);
+    }
+    const forecast = model.predictExhaustion(20);
+    assert.ok(forecast.aggregateExhaustion > 0);
+    assert.ok(forecast.aggregateExhaustion <= 1);
+    assert.ok(['stable', 'warning', 'urgent', 'critical'].includes(forecast.overallStatus));
+    assert.ok(forecast.criticalResource);
+  });
+
+  it('симулирует сценарий с остановкой поставок', () => {
+    for (let i = 0; i < 5; i++) {
+      model.observe({ ammunition: 5, fuel: 3, equipment: 2, personnel: 1, logistics: 2 }, 1);
+    }
+    const scenario = model.simulateScenario({ stoppedSupplies: true, increasedConsumption: 1.5 });
+    assert.ok(scenario.daysUntilDepletion > 0);
+    assert.ok(scenario.limitingResource);
+  });
+
+  it('сериализуется и десериализуется', () => {
+    model.observe({ ammunition: 10 }, 1);
+    const json = model.serialize();
+    const m2 = MilitaryExhaustionModel.deserialize(json);
+    assert.strictEqual(m2.currentResources.ammunition, model.currentResources.ammunition);
+  });
+});
+
+describe('EconomicExhaustionModel', () => {
+  it('прогнозирует истощение резервов', () => {
+    const m = new EconomicExhaustionModel();
+    m.sanctions = { exportRestrictions: 0.8, importRestrictions: 0.7, financialRestrictions: 0.9, technologyRestrictions: 0.9 };
+    m.budget = { revenue: 50, expenses: 150 };
+    const forecast = m.predictExhaustion();
+    assert.ok(forecast.economicPressure > 0.5);
+    assert.ok(forecast.daysUntilCritical !== undefined);
+  });
+
+  it('симулирует ужесточение санкций', () => {
+    const m = new EconomicExhaustionModel();
+    const result = m.simulateTightening({ exportRestrictions: 0.3 });
+    assert.ok(result.result);
+    assert.ok(typeof result.deltaDaysUntilCritical === 'number');
+  });
+});
+
+describe('crucixResourceExhaustion', () => {
+  it('обрабатывает sweep', () => {
+    const latest = {
+      fred: { vix: 30, hySpread: 5 },
+      gdelt: { conflictEvents: Array.from({ length: 10 }, () => ({})) },
+      sanctions: { count: 6 },
+    };
+    const result = crucixResourceExhaustion(latest, [{ timestamp: new Date().toISOString(), gdelt: { conflictEvents: [{}] } }]);
+    assert.strictEqual(result.module, 'resource_exhaustion');
+    assert.ok(result.military);
+    assert.ok(result.economic);
+    assert.ok(result.scenarios);
+  });
+});
+
+
+
+========================================================================
+
+FILE: tests/predict/scenario_generator.test.mjs
+SIZE: 2067 bytes
+SHA1: 8ca090a91f1beb32
+========================================================================
+
+// tests/predict/scenario_generator.test.mjs
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
+import { ScenarioGenerator, crucixScenarioGeneration } from '../../apis/predict/scenario_generator.mjs';
+
+describe('ScenarioGenerator', () => {
+  it('генерирует fallback-сценарии без LLM', async () => {
+    const gen = new ScenarioGenerator();
+    const scenarios = await gen.generate({ fred: { vix: 30 }, gdelt: { conflictEvents: [] } });
+    assert.ok(Array.isArray(scenarios));
+    assert.ok(scenarios.length >= 3);
+    const totalProb = scenarios.reduce((s, sc) => s + sc.probability, 0);
+    assert.ok(Math.abs(totalProb - 1) < 0.1);
+  });
+
+  it('использует LLM при наличии', async () => {
+    const mockLLM = {
+      chat: async () => JSON.stringify({
+        scenarios: [
+          { id: 's1', name: 'Test', description: 'Desc', probability: 0.5, severity: 'medium', horizonHours: 72 },
+          { id: 's2', name: 'Test2', description: 'Desc2', probability: 0.5, severity: 'low', horizonHours: 48 },
+        ],
+      }),
+    };
+    const gen = new ScenarioGenerator({ llm: mockLLM, nScenarios: 2 });
+    const scenarios = await gen.generate({ fred: { vix: 20 } });
+    assert.strictEqual(scenarios.length, 2);
+  });
+
+  it('_describeState формирует строку', () => {
+    const gen = new ScenarioGenerator();
+    const desc = gen._describeState({ fred: { vix: 25, hySpread: 4 }, gdelt: { conflictEvents: [{}] } }, {});
+    assert.ok(desc.includes('VIX: 25'));
+    assert.ok(desc.includes('Конфликтных событий: 1'));
+  });
+});
+
+describe('crucixScenarioGeneration', () => {
+  it('возвращает структурированный результат', async () => {
+    const result = await crucixScenarioGeneration({ fred: { vix: 30 } }, {});
+    assert.strictEqual(result.module, 'scenario_generator');
+    assert.ok(result.scenarioCount > 0);
+    assert.ok(Array.isArray(result.scenarios));
+    assert.ok(typeof result.expectedSeverity === 'number');
+  });
+});
+
+
+
+========================================================================
+
+FILE: tests/predict/temporal_causal.test.mjs
+SIZE: 4611 bytes
+SHA1: b96c3c9aa11a20c9
+========================================================================
+
+// tests/predict/temporal_causal.test.mjs
+import { describe, it, expect, beforeEach } from 'node:test';
+import assert from 'node:assert';
+import { TemporalLagNetwork, VulnerabilityWindowModel, crucixTemporalCausalAnalysis } from '../../apis/predict/temporal_causal.mjs';
+
+describe('TemporalLagNetwork', () => {
+  let net;
+
+  beforeEach(() => {
+    net = new TemporalLagNetwork();
+  });
+
+  it('регистрирует события и сохраняет порядок', () => {
+    net.recordEvent('A', 1000);
+    net.recordEvent('B', 2000);
+    net.recordEvent('A', 1500);
+
+    assert.strictEqual(net.eventTimeline.length, 3);
+    assert.strictEqual(net.eventTimeline[0].t, 1000);
+    assert.strictEqual(net.eventTimeline[1].t, 1500);
+    assert.strictEqual(net.eventTimeline[2].t, 2000);
+  });
+
+  it('извлекает пары с задержками', () => {
+    const now = Date.now();
+    net.recordEvent('A', now);
+    net.recordEvent('B', now + 1000);
+    net.recordEvent('A', now + 2000);
+    net.recordEvent('B', now + 3000);
+
+    const pairs = net.extractLags();
+    assert.ok(pairs.has('A→B'));
+    const aToB = pairs.get('A→B');
+    assert.ok(aToB.length >= 2);
+  });
+
+  it('обучает распределение задержек', () => {
+    const now = Date.now();
+    for (let i = 0; i < 5; i++) {
+      net.recordEvent('A', now + i * 10000);
+      net.recordEvent('B', now + i * 10000 + 1000);
+    }
+
+    net.fit();
+    const dist = net.lagDistributions.get('A')?.get('B');
+    assert.ok(dist);
+    assert.ok(dist.mean > 0);
+    assert.ok(dist.count >= 3);
+  });
+
+  it('детектирует ускорение задержки', () => {
+    const now = Date.now();
+    // Исторически: A→B задержка 10000ms
+    for (let i = 0; i < 5; i++) {
+      net.recordEvent('A', now + i * 100000);
+      net.recordEvent('B', now + i * 100000 + 10000);
+    }
+    // Недавно: задержка упала до 1000ms
+    net.recordEvent('A', now + 600000);
+    net.recordEvent('B', now + 600000 + 1000);
+    net.recordEvent('A', now + 700000);
+    net.recordEvent('B', now + 700000 + 1000);
+    net.recordEvent('A', now + 800000);
+    net.recordEvent('B', now + 800000 + 1000);
+
+    net.fit();
+    const shift = net.detectLagShift('A', 'B', 3);
+    assert.strictEqual(shift.detected, true);
+    assert.strictEqual(shift.type, 'accelerating');
+  });
+
+  it('сериализуется и десериализуется', () => {
+    net.recordEvent('A', 1000);
+    net.recordEvent('B', 2000);
+    const json = net.serialize();
+    const net2 = TemporalLagNetwork.deserialize(json);
+    assert.strictEqual(net2.eventTimeline.length, 2);
+  });
+});
+
+describe('VulnerabilityWindowModel', () => {
+  it('обучается на истории и оценивает уязвимость', () => {
+    const model = new VulnerabilityWindowModel();
+    const history = [];
+    const now = new Date();
+    for (let i = 0; i < 100; i++) {
+      const t = new Date(now.getTime() - i * 3600000);
+      history.push({
+        timestamp: t.toISOString(),
+        fred: { vix: 15 + Math.random() * 30 },
+        gdelt: { conflictEvents: Array.from({ length: Math.floor(Math.random() * 20) }, () => ({})) },
+        delta: { newAlerts: Math.floor(Math.random() * 10) },
+      });
+    }
+
+    model.fit(history);
+    const assessment = model.assess(new Date());
+    assert.ok(assessment.vulnerability >= 0 && assessment.vulnerability <= 1);
+    assert.ok(['low', 'medium', 'high', 'critical'].includes(assessment.level));
+  });
+});
+
+describe('crucixTemporalCausalAnalysis', () => {
+  it('возвращает unavailable при малой истории', () => {
+    const result = crucixTemporalCausalAnalysis([]);
+    assert.strictEqual(result.available, false);
+  });
+
+  it('обрабатывает достаточную историю', () => {
+    const now = Date.now();
+    const history = [];
+    for (let i = 0; i < 30; i++) {
+      history.push({
+        timestamp: new Date(now - i * 3600000).toISOString(),
+        fred: { vix: 20 + Math.random() * 15 },
+        gdelt: { conflictEvents: Array.from({ length: Math.floor(Math.random() * 15) }, () => ({})) },
+        sanctions: { count: Math.floor(Math.random() * 8) },
+        delta: { newAlerts: Math.floor(Math.random() * 8), escalatedAlerts: Math.floor(Math.random() * 5) },
+      });
+    }
+    const result = crucixTemporalCausalAnalysis(history);
+    assert.strictEqual(result.available, true);
+    assert.strictEqual(result.module, 'temporal_causal');
+    assert.ok(Array.isArray(result.shiftDetections));
+  });
+});
+
+
+
+========================================================================
+
+FILE: tests/property/adversarial_coevolution.property.mjs
+SIZE: 3358 bytes
+SHA1: 307e3ec311f4f030
+========================================================================
+
+// tests/property/adversarial_coevolution.property.mjs
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
+import { OpponentModel, AdversarialCoEvolution } from '../../apis/predict/adversarial_coevolution.mjs';
+
+const PROPERTY_CASES = parseInt(process.env.PROPERTY_CASES || '100', 10);
+
+function forAll(numCases, generator, assertion) {
+  const failures = [];
+  for (let i = 0; i < numCases; i++) {
+    try { assertion(generator(i)); }
+    catch (e) { failures.push({ case: i, error: e.message }); }
+  }
+  return failures;
+}
+
+describe('AdversarialCoEvolution — Property Tests', () => {
+  it('PROPERTY: strategyProbabilities суммируются к 1', () => {
+    const failures = forAll(PROPERTY_CASES, () => {
+      const om = new OpponentModel({ opponentId: 'test' });
+      const numObs = Math.floor(Math.random() * 30);
+      const obs = [];
+      for (let i = 0; i < numObs; i++) {
+        obs.push(['escalate', 'hold', 'deescalate', 'deceive'][Math.floor(Math.random() * 4)]);
+      }
+      return { om, obs };
+    }, ({ om, obs }) => {
+      for (const o of obs) om.observe(o);
+      const sum = [...om.strategyProbabilities.values()].reduce((a, b) => a + b, 0);
+      assert.ok(Math.abs(sum - 1) < 1e-6, `Sum = ${sum}`);
+    });
+    assert.strictEqual(failures.length, 0, JSON.stringify(failures.slice(0, 3)));
+  });
+
+  it('PROPERTY: все вероятности в [0, 1]', () => {
+    const failures = forAll(PROPERTY_CASES, () => {
+      const om = new OpponentModel({ opponentId: 'test' });
+      for (let i = 0; i < 50; i++) {
+        om.observe(['escalate', 'hold', 'deescalate', 'deceive'][Math.floor(Math.random() * 4)]);
+      }
+      return om;
+    }, (om) => {
+      for (const [s, p] of om.strategyProbabilities) {
+        assert.ok(p >= 0 && p <= 1, `P(${s}) = ${p}`);
+        assert.ok(!isNaN(p), `NaN probability`);
+      }
+    });
+    assert.strictEqual(failures.length, 0);
+  });
+
+  it('PROPERTY: detectAdaptation не падает при любых входах', () => {
+    const failures = forAll(PROPERTY_CASES, () => {
+      const om = new OpponentModel({ opponentId: 'test' });
+      const numObs = Math.floor(Math.random() * 40);
+      const observations = [];
+      for (let i = 0; i < numObs; i++) {
+        observations.push({
+          strategy: ['escalate', 'hold', 'deescalate', 'deceive'][Math.floor(Math.random() * 4)],
+          ourPrediction: ['escalation', 'de-escalation', 'unknown'][Math.floor(Math.random() * 3)],
+        });
+      }
+      return { om, observations };
+    }, ({ om, observations }) => {
+      for (const o of observations) om.observe(o.strategy, { ourPrediction: o.ourPrediction });
+      const result = om.detectAdaptation();
+      assert.ok(typeof result.adapted === 'boolean', `adapted not boolean: ${result.adapted}`);
+    });
+    assert.strictEqual(failures.length, 0);
+  });
+
+  it('PROPERTY: simulateCoEvolution сохраняет историю', () => {
+    const failures = forAll(Math.min(PROPERTY_CASES, 30), () => {
+      const ace = new AdversarialCoEvolution();
+      ace.addOpponent('opp1');
+      return ace;
+    }, (ace) => {
+      const rounds = Math.floor(Math.random() * 20) + 1;
+      ace.simulateCoEvolution(rounds);
+      assert.strictEqual(ace.evolutionHistory.length, rounds);
+    });
+    assert.strictEqual(failures.length, 0);
+  });
+});
+
+
+
+========================================================================
+
+FILE: tests/property/attention_dynamics.property.mjs
+SIZE: 3089 bytes
+SHA1: 05dc9bc0879914cb
+========================================================================
+
+// tests/property/attention_dynamics.property.mjs
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
+import { AttentionDynamics } from '../../apis/predict/attention_dynamics.mjs';
+
+const PROPERTY_CASES = parseInt(process.env.PROPERTY_CASES || '100', 10);
+
+function forAll(numCases, generator, assertion) {
+  const failures = [];
+  for (let i = 0; i < numCases; i++) {
+    try { assertion(generator(i)); }
+    catch (e) { failures.push({ case: i, error: e.message }); }
+  }
+  return failures;
+}
+
+describe('AttentionDynamics — Property Tests', () => {
+  it('PROPERTY: attention всегда ≥ 0', () => {
+    const failures = forAll(PROPERTY_CASES, () => {
+      const ad = new AttentionDynamics({ halfLifeHours: 1 + Math.random() * 100 });
+      const numUpdates = Math.floor(Math.random() * 20);
+      const updates = [];
+      for (let i = 0; i < numUpdates; i++) {
+        updates.push({
+          topic: `topic_${Math.floor(Math.random() * 5)}`,
+          mentions: Math.floor(Math.random() * 20),
+          hours: Math.random() * 5,
+        });
+      }
+      return { ad, updates };
+    }, ({ ad, updates }) => {
+      for (const u of updates) ad.update(u.topic, u.mentions, u.hours);
+      for (const topic of ad.topics.values()) {
+        assert.ok(topic.attention >= 0, `attention < 0: ${topic.attention}`);
+        assert.ok(!isNaN(topic.attention), 'attention NaN');
+      }
+    });
+    assert.strictEqual(failures.length, 0, JSON.stringify(failures.slice(0, 3)));
+  });
+
+  it('PROPERTY: allocation sum = 1 (когда есть темы)', () => {
+    const failures = forAll(PROPERTY_CASES, () => {
+      const ad = new AttentionDynamics({ halfLifeHours: 1000 });
+      for (let i = 0; i < 3; i++) ad.update(`t${i}`, Math.random() * 10, 0.01);
+      return ad;
+    }, (ad) => {
+      const alloc = ad.getAttentionAllocation();
+      const sum = Object.values(alloc).reduce((s, a) => s + a.share, 0);
+      assert.ok(Math.abs(sum - 1) < 1e-6, `Sum != 1: ${sum}`);
+    });
+    assert.strictEqual(failures.length, 0);
+  });
+
+  it('PROPERTY: predictExplosive возвращает не более topN', () => {
+    const failures = forAll(PROPERTY_CASES, () => {
+      const ad = new AttentionDynamics({ halfLifeHours: 1000 });
+      const numTopics = Math.floor(Math.random() * 10);
+      for (let i = 0; i < numTopics; i++) {
+        for (let j = 0; j < 3; j++) ad.update(`t${i}`, Math.random() * 10, 0.01);
+      }
+      return ad;
+    }, (ad) => {
+      const topN = 5;
+      const preds = ad.predictExplosive(topN, 24);
+      assert.ok(preds.length <= topN, `Got ${preds.length} > ${topN}`);
+    });
+    assert.strictEqual(failures.length, 0);
+  });
+
+  it('PROPERTY: momentum равен разнице attention', () => {
+    const ad = new AttentionDynamics({ halfLifeHours: 1000 });
+    const oldAttention = ad.update('test', 5, 0.01).attention;
+    const newAttention = ad.update('test', 5, 0.01).attention;
+    const momentum = ad.topics.get('test').momentum;
+
+    assert.ok(Math.abs(momentum - (newAttention - oldAttention)) < 1e-9);
+  });
+});
+
+
+
+========================================================================
+
+FILE: tests/property/hypergraph_contagion.property.mjs
+SIZE: 3585 bytes
+SHA1: 484decb98581dd00
+========================================================================
+
+// tests/property/hypergraph_contagion.property.mjs
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
+import { Hypergraph, buildCrucixHypergraph } from '../../apis/predict/hypergraph_contagion.mjs';
+
+const PROPERTY_CASES = parseInt(process.env.PROPERTY_CASES || '100', 10);
+
+function forAll(numCases, generator, assertion) {
+  const failures = [];
+  for (let i = 0; i < numCases; i++) {
+    try { assertion(generator(i)); }
+    catch (e) { failures.push({ case: i, error: e.message }); }
+  }
+  return failures;
+}
+
+describe('Hypergraph — Property Tests', () => {
+  it(`PROPERTY: propagate не возвращает NaN (${PROPERTY_CASES} кейсов)`, () => {
+    const failures = forAll(PROPERTY_CASES, () => {
+      const hg = new Hypergraph();
+      const numNodes = 3 + Math.floor(Math.random() * 5);
+      for (let i = 0; i < numNodes; i++) {
+        hg.addNode(`n${i}`, `Node ${i}`, 'cyber', Math.random());
+      }
+      // Случайные гиперрёбра
+      for (let i = 0; i < 3; i++) {
+        const nodes = [];
+        const numInEdge = 3 + Math.floor(Math.random() * 2);
+        const shuffled = [...hg.nodes.keys()].sort(() => Math.random() - 0.5);
+        for (let j = 0; j < numInEdge; j++) nodes.push(shuffled[j]);
+        hg.addHyperedge(nodes, {
+          weight: 0.5 + Math.random() * 3,
+          type: ['AND', 'OR', 'MAJORITY'][Math.floor(Math.random() * 3)],
+        });
+      }
+      return hg;
+    }, (hg) => {
+      const updates = hg.propagateAll(3);
+      for (const u of updates) {
+        assert.ok(!isNaN(u.delta), `NaN delta: ${u.delta}`);
+        assert.ok(!isNaN(u.newProb), `NaN newProb: ${u.newProb}`);
+        assert.ok(u.newProb >= 0 && u.newProb <= 1, `newProb out of [0,1]: ${u.newProb}`);
+        assert.ok(!isNaN(u.activation), `NaN activation`);
+      }
+    });
+    assert.strictEqual(failures.length, 0, JSON.stringify(failures.slice(0, 3)));
+  });
+
+  it('PROPERTY: вероятность узла всегда в [0, 1]', () => {
+    const failures = forAll(PROPERTY_CASES, () => {
+      const hg = new Hypergraph();
+      hg.addNode('a', 'A', 'cyber', Math.random());
+      hg.addNode('b', 'B', 'info', Math.random());
+      hg.addNode('c', 'C', 'finance', Math.random());
+      hg.addNode('target', 'T', 'finance', Math.random());
+      hg.addHyperedge(['a', 'b', 'c', 'target'], {
+        weight: Math.random() * 5,
+        type: 'AND',
+      });
+      return hg;
+    }, (hg) => {
+      hg.propagateAll(5);
+      for (const node of hg.nodes.values()) {
+        assert.ok(node.currentProb >= 0 && node.currentProb <= 1,
+          `Node ${node.id} out of [0,1]: ${node.currentProb}`);
+      }
+    });
+    assert.strictEqual(failures.length, 0);
+  });
+
+  it('PROPERTY: propagate идемпотентен для стабильной системы', () => {
+    const hg = buildCrucixHypergraph();
+    // Все узлы в 0 — propagate не меняет
+    for (const node of hg.nodes.values()) node.currentProb = 0;
+
+    const updates = hg.propagateAll(3);
+    // AND с 0 не активирует, OR тоже (0 - 0 = 0), MAJORITY = 0
+    assert.strictEqual(updates.length, 0, `Expected no updates, got ${updates.length}`);
+  });
+
+  it('PROPERTY: сериализация round-trip сохраняет структуру', () => {
+    const hg = buildCrucixHypergraph();
+    const json = hg.toJSON();
+
+    assert.strictEqual(json.nodes.length, hg.nodes.size);
+    assert.strictEqual(json.hyperedges.length, hg.hyperedges.size);
+    assert.ok(json.stats.nodeCount === hg.nodes.size);
+  });
+});
+
+
+
+========================================================================
+
+FILE: tests/property/meta_ensemble.property.mjs
+SIZE: 6114 bytes
+SHA1: 5106659405121d42
+========================================================================
+
+// tests/property/meta_ensemble.property.mjs
+// Property-based тесты для MetaLearner
+// Проверяем инварианты, которые должны сохраняться при ЛЮБЫХ входных данных
+
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
+import { MetaLearner, MetaEnsemble, extractRegimeSignature } from '../../apis/predict/meta_ensemble.mjs';
+
+/**
+ * Простой property-based testing framework
+ * Генерирует случайные входы, проверяет что инварианты сохраняются
+ */
+function forAll(numCases, generator, assertion) {
+  const failures = [];
+  for (let i = 0; i < numCases; i++) {
+    const input = generator(i);
+    try {
+      assertion(input);
+    } catch (e) {
+      failures.push({ case: i, input, error: e.message });
+    }
+  }
+  return failures;
+}
+
+function randomRegimeFeatures() {
+  return Array.from({ length: 8 }, () => Math.random());
+}
+
+function randomModelPredictions(n) {
+  return Array.from({ length: n }, () => Math.random());
+}
+
+function randomOutcome() {
+  return Math.random() > 0.5 ? 1 : 0;
+}
+
+describe('MetaLearner — Property-Based Tests', () => {
+
+  it('PROPERTY: forward всегда возвращает веса, суммирующиеся к 1', () => {
+    const failures = forAll(100, () => ({
+      inputDim: Math.floor(Math.random() * 10) + 3,
+      outputDim: Math.floor(Math.random() * 8) + 2,
+      features: randomRegimeFeatures(),
+    }), ({ inputDim, outputDim, features }) => {
+      const ml = new MetaLearner({ inputDim, hiddenDim: 16, outputDim });
+      const features_trimmed = features.slice(0, inputDim);
+      const { weights } = ml.forward(features_trimmed);
+
+      assert.strictEqual(weights.length, outputDim, 'Wrong weights length');
+
+      const sum = weights.reduce((a, b) => a + b, 0);
+      assert.ok(Math.abs(sum - 1) < 1e-6, `Sum ${sum} != 1`);
+
+      weights.forEach(w => {
+        assert.ok(w >= 0 && w <= 1, `Weight ${w} out of [0,1]`);
+      });
+    });
+
+    assert.strictEqual(failures.length, 0, `Failures: ${JSON.stringify(failures.slice(0, 3))}`);
+  });
+
+  it('PROPERTY: forward детерминирован для одинаковых входов', () => {
+    const failures = forAll(50, () => ({
+      features: randomRegimeFeatures(),
+    }), ({ features }) => {
+      const ml = new MetaLearner({ inputDim: 8, hiddenDim: 16, outputDim: 5 });
+      const r1 = ml.forward(features);
+      const r2 = ml.forward(features);
+
+      for (let i = 0; i < r1.weights.length; i++) {
+        assert.ok(Math.abs(r1.weights[i] - r2.weights[i]) < 1e-10,
+          `Determinism violated at index ${i}`);
+      }
+    });
+
+    assert.strictEqual(failures.length, 0);
+  });
+
+  it('PROPERTY: обучение не увеличивает loss монотонно (сходимость)', () => {
+    const failures = forAll(20, () => ({
+      features: randomRegimeFeatures(),
+      predictions: randomModelPredictions(5),
+      outcome: randomOutcome(),
+    }), ({ features, predictions, outcome }) => {
+      const ml = new MetaLearner({ inputDim: 8, hiddenDim: 16, outputDim: 5 });
+
+      let losses = [];
+      for (let i = 0; i < 20; i++) {
+        const r = ml.trainStep(features, predictions, outcome);
+        losses.push(r.loss);
+      }
+
+      // Loss должен уменьшиться хотя бы на 5%
+      const firstLoss = losses[0];
+      const minLoss = Math.min(...losses);
+      assert.ok(minLoss <= firstLoss * 1.05,
+        `No convergence: first=${firstLoss}, min=${minLoss}`);
+    });
+
+    assert.strictEqual(failures.length, 0);
+  });
+
+  it('PROPERTY: веса не NaN даже при экстремальных входах', () => {
+    const extremeFeatures = [
+      [1e6, 1e6, 1e6, 1e6, 1e6, 1e6, 1e6, 1e6],
+      [-1e6, -1e6, -1e6, -1e6, -1e6, -1e6, -1e6, -1e6],
+      [0, 0, 0, 0, 0, 0, 0, 0],
+      [1e-10, 1e-10, 1e-10, 1e-10, 1e-10, 1e-10, 1e-10, 1e-10],
+    ];
+
+    for (const features of extremeFeatures) {
+      const ml = new MetaLearner({ inputDim: 8, hiddenDim: 16, outputDim: 5 });
+      const { weights } = ml.forward(features);
+      weights.forEach((w, i) => {
+        assert.ok(!isNaN(w), `NaN at index ${i} for features ${features[0]}`);
+        assert.ok(isFinite(w), `Infinity at index ${i}`);
+      });
+    }
+  });
+
+  it('PROPERTY: сериализация round-trip сохраняет поведение', () => {
+    const failures = forAll(30, () => ({
+      features: randomRegimeFeatures(),
+      outputDim: Math.floor(Math.random() * 6) + 2,
+    }), ({ features, outputDim }) => {
+      const ml1 = new MetaLearner({ inputDim: 8, hiddenDim: 16, outputDim });
+      const r1 = ml1.forward(features);
+
+      const json = ml1.serialize();
+      const ml2 = MetaLearner.deserialize(json);
+      const r2 = ml2.forward(features);
+
+      for (let i = 0; i < outputDim; i++) {
+        assert.ok(Math.abs(r1.weights[i] - r2.weights[i]) < 1e-10,
+          `Round-trip changed weights at ${i}: ${r1.weights[i]} != ${r2.weights[i]}`);
+      }
+    });
+
+    assert.strictEqual(failures.length, 0);
+  });
+});
+
+describe('MetaEnsemble — Property-Based Tests', () => {
+  it('PROPERTY: getWeights всегда возвращает валидные веса', () => {
+    const failures = forAll(50, () => ({
+      vix: Math.random() * 50,
+      hySpread: Math.random() * 10,
+      conflicts: Math.floor(Math.random() * 20),
+    }), ({ vix, hySpread, conflicts }) => {
+      const me = new MetaEnsemble(['m1', 'm2', 'm3', 'm4', 'm5']);
+      const latest = { fred: { vix, hySpread }, gdelt: { conflictEvents: Array.from({ length: conflicts }, () => ({})) } };
+      const result = me.getWeights(latest, []);
+
+      const weights = Object.values(result.weights);
+      const sum = weights.reduce((a, b) => a + b, 0);
+      assert.ok(Math.abs(sum - 1) < 1e-6, `Weights sum ${sum}`);
+      weights.forEach(w => assert.ok(w >= 0 && w <= 1));
+      assert.ok(['calm', 'normal', 'elevated', 'crisis'].includes(result.regime));
+    });
+
+    assert.strictEqual(failures.length, 0);
+  });
+});
+
+
+
+========================================================================

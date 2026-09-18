@@ -1,0 +1,66 @@
+{
+  "_meta": {
+    "id": "market-composite",
+    "category": "market",
+    "version": "1.0.0",
+    "schema_version": "1.0.0",
+    "sources": [
+      "vix",
+      "oil",
+      "gold",
+      "dxy",
+      "treasury",
+      "hy-spread"
+    ],
+    "calculator": "MarketComposite",
+    "updated_at": "2026-09-12T14:40:05.008Z",
+    "duration_ms": 7,
+    "period": "daily",
+    "checksum": "d51fbc50c3bd0b06",
+    "stats": {
+      "sources_found": [
+        "vix",
+        "oil",
+        "gold",
+        "dxy",
+        "hySpread"
+      ],
+      "sources_missing": [
+        "treasury",
+        "dxyAlt"
+      ],
+      "fields_imputed": [
+        "yield10y"
+      ]
+    },
+    "description": "Композитный рыночный риск: волатильность (VIX) + commodities (нефть/золото) + валюты (DXY) + bonds (yield10y/HY spread). Взвешенная сумма."
+  },
+  "data": {
+    "composite": {
+      "region": "GLOBAL",
+      "score": 45.86,
+      "level": "moderate",
+      "components": {
+        "volatility": 63.45,
+        "commodities": 45.48,
+        "currencies": 46,
+        "bonds": 25
+      },
+      "raw": {
+        "vix": 42.3,
+        "oil": 74.8,
+        "gold": 2652.1,
+        "dxy": 105.2,
+        "yield10y": null,
+        "hySpread": 3.16
+      },
+      "weights": {
+        "volatility": 0.3,
+        "commodities": 0.25,
+        "currencies": 0.2,
+        "bonds": 0.25
+      }
+    },
+    "generated_at": "2026-09-12T14:40:05.008Z"
+  }
+}

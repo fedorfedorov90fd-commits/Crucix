@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Диагностика системы — Crucix</title>
+  <link rel="stylesheet" href="/css/diagnostics.css">
+  <style>
+    /* Дополнительные стили для новых блоков */
+    .module-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; margin-top: 10px; }
+    .module-item-d { display: flex; justify-content: space-between; padding: 6px 10px; background: rgba(255,255,255,0.03); border-radius: 4px; font-size: 13px; }
+    .module-item-d .status { font-weight: 600; }
+    .module-item-d .online { color: #4caf50; }
+    .module-item-d .error { color: #f97316; }
+    .module-item-d .offline { color: #f44336; }
+    .module-item-d .time { color: #666; font-size: 11px; }
+    .metric-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+    .metric-card { background: rgba(255,255,255,0.03); padding: 10px 14px; border-radius: 6px; text-align: center; }
+    .metric-card .label { font-size: 11px; color: #666; text-transform: uppercase; }
+    .metric-card .value { font-size: 18px; font-weight: 600; color: #e8f0f8; margin-top: 4px; }
+    .integrity-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin-top: 10px; }
+    .integrity-item { display: flex; justify-content: space-between; padding: 6px 10px; background: rgba(255,255,255,0.03); border-radius: 4px; }
+    .integrity-item .ok { color: #4caf50; }
+    .integrity-item .error { color: #f44336; }
+    .integrity-item .warning { color: #ffd700; }
+    .ai-analysis { padding: 12px; background: rgba(0,0,0,0.2); border-radius: 6px; margin-top: 10px; }
+    .ai-analysis .stable { color: #4caf50; }
+    .ai-analysis .warning { color: #ffd700; }
+    .ai-analysis .critical { color: #f44336; }
+    .ai-analysis .summary { color: #c8d0d8; margin: 8px 0; }
+    .ai-analysis .issues { color: #f44336; padding-left: 16px; }
+    .ai-analysis .recommendations { color: #4caf50; padding-left: 16px; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-brand">⚡ CRUCIX MONITOR</span>
+      <span class="topbar-status">САМОДИАГНОСТИКА</span>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-time" id="topbar-date">Загрузка...</span>
+      <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+      <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ</button>
+      <button class="topbar-btn btn-grid" id="grid-toggle">📐 СЕТКА</button>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <h1 class="page-title">🩺 Расширенная самодиагностика</h1>
+    <p class="page-subtitle">Статус API, системные метрики, целостность данных, AI-анализ логов</p>
+
+    <!-- Общий статус -->
+    <div class="status-banner" id="status-banner">
+      <div class="status-icon" id="status-icon">⏳</div>
+      <div class="status-text" id="status-text">Загрузка...</div>
+    </div>
+
+    <!-- Статистика (как было) -->
+    <div class="stats-row" id="stats-row">
+      <div class="stat-item">
+        <div class="stat-label">Всего модулей</div>
+        <div class="stat-value blue" id="stat-total">—</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">🟢 Онлайн</div>
+        <div class="stat-value green" id="stat-online">—</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">🟡 Ошибка</div>
+        <div class="stat-value orange" id="stat-error">—</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">🔴 Офлайн</div>
+        <div class="stat-value red" id="stat-offline">—</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">⏱ Время проверки</div>
+        <div class="stat-value" id="stat-time">—</div>
+      </div>
+    </div>
+
+    <!-- Кнопки управления -->
+    <div class="controls">
+      <button class="btn btn-primary" id="btn-run">🔄 Запустить диагностику</button>
+      <button class="btn btn-secondary" id="btn-refresh">🔄 Обновить</button>
+      <span class="status-label" id="status-label">⏹ Готов</span>
+    </div>
+
+    <!-- НОВЫЙ БЛОК: Статус API-модулей -->
+    <div class="panel-card" style="margin-bottom:16px;">
+      <div class="panel-card-header">
+        <span>🔌 API-Модули</span>
+        <span class="panel-icon">●</span>
+      </div>
+      <div id="modules-grid" class="module-grid">
+        <div class="loading">⏳ Запустите диагностику...</div>
+      </div>
+    </div>
+
+    <!-- НОВЫЙ БЛОК: Системные метрики -->
+    <div class="panel-card" style="margin-bottom:16px;">
+      <div class="panel-card-header">
+        <span>💻 Системные метрики</span>
+        <span class="panel-icon">●</span>
+      </div>
+      <div id="metrics-grid" class="metric-grid">
+        <div class="loading">⏳ Загрузка...</div>
+      </div>
+    </div>
+
+    <!-- НОВЫЙ БЛОК: Целостность данных -->
+    <div class="panel-card" style="margin-bottom:16px;">
+      <div class="panel-card-header">
+        <span>📁 Целостность данных</span>
+        <span class="panel-icon">●</span>
+      </div>
+      <div id="integrity-grid" class="integrity-grid">
+        <div class="loading">⏳ Загрузка...</div>
+      </div>
+    </div>
+
+    <!-- НОВЫЙ БЛОК: AI-анализ логов -->
+    <div class="panel-card" style="margin-bottom:16px;">
+      <div class="panel-card-header">
+        <span>🧠 AI-анализ логов</span>
+        <span class="panel-icon">●</span>
+      </div>
+      <div id="ai-analysis" class="ai-analysis">
+        <div class="loading">⏳ Загрузка...</div>
+      </div>
+    </div>
+
+    <!-- ОРИГИНАЛЬНЫЙ БЛОК: Список страниц (сохраняем как было) -->
+    <div class="panel-card">
+      <div class="panel-card-header">
+        <span>📄 Страницы</span>
+        <span class="panel-icon">●</span>
+      </div>
+      <div id="pages-grid" class="module-grid">
+        <div class="loading">⏳ Запустите диагностику...</div>
+      </div>
+    </div>
+  </main>
+
+  <div id="coordinate-grid"></div>
+  <div id="grid-coords">X: 0  Y: 0</div>
+
+  <script src="/js/diagnostics.js"></script>
+</body>
+</html>

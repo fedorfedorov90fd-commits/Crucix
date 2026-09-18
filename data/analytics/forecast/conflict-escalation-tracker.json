@@ -1,0 +1,65 @@
+{
+  "_meta": {
+    "id": "conflict-escalation-tracker",
+    "category": "forecast",
+    "version": "1.0.0",
+    "schema_version": "1.0.0",
+    "sources": [
+      "acled"
+    ],
+    "calculator": "ConflictEscalationTracker",
+    "updated_at": "2026-09-12T14:42:32.516Z",
+    "period": "latest",
+    "duration_ms": 2,
+    "checksum": "bb835faccad464e5",
+    "description": "Отслеживание эскалации конфликтов: 6-уровневая шкала, тренды интенсивности, прогноз следующего уровня."
+  },
+  "data": {
+    "conflicts": [
+      {
+        "conflictId": "ukraine",
+        "region": "Eastern Europe",
+        "intensity": 16.89,
+        "currentLevel": 1,
+        "currentLevelName": "tension",
+        "currentLevelLabel": "Напряжённость",
+        "previousLevel": 1,
+        "trajectory": "stable",
+        "nextLevel": 2,
+        "nextLevelName": "confrontation",
+        "nextLevelRisk": 0.56,
+        "components": {
+          "fatalities": 19.45,
+          "events": 0.33,
+          "civilian": 0,
+          "geography": 50
+        },
+        "observedDays": 30,
+        "timestamp": 1789224152518
+      },
+      {
+        "conflictId": "georgia",
+        "region": "Unknown",
+        "intensity": 10.08,
+        "currentLevel": 0,
+        "currentLevelName": "peace",
+        "currentLevelLabel": "Мир",
+        "previousLevel": 0,
+        "trajectory": "stable",
+        "nextLevel": 1,
+        "nextLevelName": "tension",
+        "nextLevelRisk": 0.84,
+        "components": {
+          "fatalities": 0,
+          "events": 0.33,
+          "civilian": 0,
+          "geography": 50
+        },
+        "observedDays": 30,
+        "timestamp": 1789224152518
+      }
+    ],
+    "total": 2,
+    "generated_at": "2026-09-12T14:42:32.516Z"
+  }
+}

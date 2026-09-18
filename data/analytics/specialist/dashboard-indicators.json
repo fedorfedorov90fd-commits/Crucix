@@ -1,0 +1,113 @@
+{
+  "_meta": {
+    "id": "dashboard-indicators",
+    "category": "specialist",
+    "version": "1.0.0",
+    "schema_version": "1.0.0",
+    "sources": [
+      "market-composite",
+      "strategic-risk-composite",
+      "threat-classification"
+    ],
+    "calculator": "DashboardIndicators",
+    "updated_at": "2026-09-12T15:17:25.973Z",
+    "duration_ms": 8,
+    "checksum": "1c558128bd654d07",
+    "stats": {
+      "indicators": 3
+    }
+  },
+  "data": {
+    "indicators": [
+      {
+        "key": "market_score",
+        "value": 45.86,
+        "metadata": {
+          "category": "market",
+          "unit": "score"
+        },
+        "added": 1789226245982
+      },
+      {
+        "key": "top_risk_countries",
+        "value": [
+          {
+            "code": "UKR",
+            "score": 56
+          },
+          {
+            "code": "SDN",
+            "score": 50.79
+          },
+          {
+            "code": "IRN",
+            "score": 50.3
+          },
+          {
+            "code": "SYR",
+            "score": 45.05
+          },
+          {
+            "code": "YEM",
+            "score": 45.05
+          }
+        ],
+        "metadata": {
+          "category": "risk"
+        },
+        "added": 1789226245982
+      },
+      {
+        "key": "threats_total",
+        "value": 7,
+        "metadata": {
+          "category": "threats"
+        },
+        "added": 1789226245982
+      }
+    ],
+    "dashboard": {
+      "market": [
+        {
+          "key": "market_score",
+          "value": 45.86,
+          "unit": "score"
+        }
+      ],
+      "risk": [
+        {
+          "key": "top_risk_countries",
+          "value": [
+            {
+              "code": "UKR",
+              "score": 56
+            },
+            {
+              "code": "SDN",
+              "score": 50.79
+            },
+            {
+              "code": "IRN",
+              "score": 50.3
+            },
+            {
+              "code": "SYR",
+              "score": 45.05
+            },
+            {
+              "code": "YEM",
+              "score": 45.05
+            }
+          ]
+        }
+      ],
+      "threats": [
+        {
+          "key": "threats_total",
+          "value": 7
+        }
+      ]
+    },
+    "generated_at": "2026-09-12T15:17:25.973Z"
+  }
+}

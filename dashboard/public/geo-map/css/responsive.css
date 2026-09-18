@@ -1,0 +1,192 @@
+/* ============================================================
+   RESPONSIVE.CSS — Адаптивность
+   ============================================================ */
+
+@media (max-width: 992px) {
+    .layer-panel {
+        width: 300px;
+    }
+    .map-container {
+        right: 300px;
+    }
+    .topbar-brand {
+        font-size: 11px;
+    }
+    .topbar-btn {
+        font-size: 9px;
+        padding: 0 6px;
+        height: 22px;
+    }
+}
+
+@media (max-width: 768px) {
+    .layer-panel {
+        width: 260px;
+        min-width: 200px;
+        top: 82px;
+    }
+    .map-container {
+        right: 260px;
+        top: 82px;
+    }
+    .topbar {
+        padding: 0 10px;
+        height: 46px;
+    }
+    .topbar-brand {
+        font-size: 10px;
+    }
+    .topbar-btn {
+        font-size: 8px;
+        padding: 0 5px;
+        height: 20px;
+    }
+    .nav-dashboards {
+        top: 46px;
+        height: 28px;
+        padding: 0 8px;
+    }
+    .nav-btn {
+        font-size: 7px;
+        padding: 2px 5px;
+    }
+    .stats {
+        top: 48px;
+        right: 8px;
+        padding: 5px 8px;
+        min-width: 60px;
+    }
+    .stats .count {
+        font-size: 16px;
+    }
+    .legend {
+        bottom: 8px;
+        left: 8px;
+        padding: 5px 8px;
+        font-size: 8px;
+        min-width: 80px;
+    }
+    .ssi-panel {
+        bottom: 95px;
+        right: 8px;
+        padding: 5px 8px;
+        min-width: 80px;
+    }
+    .ssi-panel .ssi-value {
+        font-size: 12px;
+    }
+    .timeline-panel {
+        bottom: 130px;
+        min-width: 150px;
+    }
+    .panel-toggle-btn {
+        top: 88px;
+        right: 4px;
+        font-size: 10px;
+        padding: 2px 5px;
+    }
+    .refresh-inline .label {
+        display: none;
+    }
+    .refresh-inline .last-update {
+        display: none;
+    }
+    .refresh-inline {
+        padding: 2px 4px;
+        height: 20px;
+    }
+    .refresh-inline select {
+        font-size: 7px;
+    }
+    .refresh-inline .timer {
+        font-size: 7px;
+        min-width: 20px;
+    }
+    .btn-mode {
+        font-size: 7px;
+        padding: 0 3px;
+        height: 18px;
+        min-width: 50px;
+    }
+}
+
+@media (max-width: 480px) {
+    .layer-panel {
+        width: 100%;
+        height: 50%;
+        top: auto;
+        bottom: 0;
+        right: 0;
+        border-left: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .layer-panel.collapsed {
+        transform: translateY(100%);
+    }
+    .map-container {
+        right: 0;
+        bottom: 50%;
+        top: 74px;
+    }
+    .layer-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 1px;
+    }
+    .layer-btn {
+        font-size: 9px;
+        padding: 2px 3px;
+    }
+    .layer-btn .name {
+        font-size: 9px;
+    }
+    .topbar {
+        height: 38px;
+        padding: 0 5px;
+    }
+    .topbar-brand {
+        font-size: 8px;
+        letter-spacing: 0.5px;
+    }
+    .topbar-btn {
+        font-size: 7px;
+        padding: 0 3px;
+        height: 16px;
+    }
+    .nav-dashboards {
+        top: 38px;
+        height: 24px;
+        padding: 0 4px;
+        gap: 2px;
+    }
+    .nav-btn {
+        font-size: 6px;
+        padding: 1px 3px;
+    }
+    .stats {
+        top: 42px;
+        right: 5px;
+        padding: 3px 6px;
+        min-width: 50px;
+    }
+    .stats .count {
+        font-size: 13px;
+    }
+    .legend {
+        display: none;
+    }
+    .ssi-panel {
+        bottom: 70px;
+        right: 5px;
+        padding: 3px 6px;
+        min-width: 60px;
+    }
+    .ssi-panel .ssi-value {
+        font-size: 10px;
+    }
+    .panel-toggle-btn {
+        top: 78px;
+        right: 2px;
+        font-size: 9px;
+        padding: 1px 3px;
+    }
+}

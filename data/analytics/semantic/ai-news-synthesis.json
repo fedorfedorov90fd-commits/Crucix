@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "id": "ai-news-synthesis",
+    "category": "semantic",
+    "version": "1.0.0",
+    "schema_version": "1.0.0",
+    "sources": [
+      "news",
+      "gdelt",
+      "rss"
+    ],
+    "calculator": "AINewsSynthesis",
+    "provider": "degraded",
+    "updated_at": "2026-09-12T14:58:05.314Z",
+    "duration_ms": 95,
+    "checksum": "a70807e3018803af",
+    "stats": {
+      "news_count": 50,
+      "provider": "degraded"
+    },
+    "description": "AI-синтез новостей через Ollama. Группировка, выделение главного, аналитический вывод."
+  },
+  "data": {
+    "synthesis": "[AI degraded: Ollama HTTP 404] Автосводка: 50 новостей, ключевые: Jury in Lindsay Clancy trial ends second day of deliberations without a verdict - AP News; Meta’s $18 billion settlement puts TikTok and YouTube on notice. Who's next on the firing line? - CNBC; Nancy Grace Roman Telescope live updates: SpaceX readying Roman for launch aboard Falcon Heavy rocket - Space; Judge throws out confession by alleged 9/11 mastermind Khalid Sheikh Mohammed - CBS News; OpenAI says it's ending its deal with Cursor because Elon Musk's companies violate contracts - Business Insider",
+    "provider": "degraded",
+    "newsCount": 50,
+    "generated_at": "2026-09-12T14:58:05.314Z"
+  }
+}

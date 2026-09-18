@@ -1,0 +1,77 @@
+{
+  "_meta": {
+    "id": "sanctions-pressure",
+    "category": "specialist",
+    "version": "1.0.0",
+    "schema_version": "1.0.0",
+    "sources": [
+      "ofac",
+      "sanction-list"
+    ],
+    "calculator": "SanctionsPressure",
+    "updated_at": "2026-09-12T15:09:01.265Z",
+    "duration_ms": 2,
+    "checksum": "01eb1e0e131f80bf",
+    "stats": {
+      "entities": 5
+    }
+  },
+  "data": {
+    "entities": [
+      {
+        "key": "Russia",
+        "sanctionsCount": 2,
+        "score": 10
+      },
+      {
+        "key": "China",
+        "sanctionsCount": 2,
+        "score": 10
+      },
+      {
+        "key": "North Korea",
+        "sanctionsCount": 1,
+        "score": 5
+      },
+      {
+        "key": "Iran",
+        "sanctionsCount": 1,
+        "score": 5
+      },
+      {
+        "key": "Belarus",
+        "sanctionsCount": 1,
+        "score": 5
+      }
+    ],
+    "top": [
+      {
+        "key": "Russia",
+        "sanctionsCount": 2,
+        "score": 10
+      },
+      {
+        "key": "China",
+        "sanctionsCount": 2,
+        "score": 10
+      },
+      {
+        "key": "North Korea",
+        "sanctionsCount": 1,
+        "score": 5
+      },
+      {
+        "key": "Iran",
+        "sanctionsCount": 1,
+        "score": 5
+      },
+      {
+        "key": "Belarus",
+        "sanctionsCount": 1,
+        "score": 5
+      }
+    ],
+    "total": 5,
+    "generated_at": "2026-09-12T15:09:01.265Z"
+  }
+}

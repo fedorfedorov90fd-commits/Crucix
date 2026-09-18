@@ -1,0 +1,857 @@
+// apis/predict/v7/dreamer.mjs
+// Dreamer — actor-critic обучение в latent space через imagination
+//
+// Теоретическая основа:
+//   - Hafner, D., Lillicrap, T., Ba, J., & Norouzi, M. (2020).
+//     "Dream to Control: Learning Behaviors by Latent Imagination". ICLR.
+//   - Hafner, D., Pasukonis, J., Ba, J., & Lillicrap, T. (2023).
+//     "Mastering Diverse Domains through World Models". arXiv:2301.04104.
+//   - Sutton, R. S., & Barto, A. G. (2018). "Reinforcement Learning:
+//     An Introduction" (2nd ed.). MIT Press.
+//   - Schulman, J., et al. (2017). "Proximal Policy Optimization". arXiv.
+//
+// Ключевая идея:
+//   Dreamer учится в "воображаемом" мире, который предоставляет
+//   World Model. Нет необходимости в реальных взаимодействиях —
+//   все rollouts генерируются через wm.imagine(z0, horizon).
+//
+//   Actor (π): latent state z → distribution over actions
+//   Critic (V): latent state z → value estimate
+//
+// Обучение:
+//   1. Собрать batch траекторий через imagination.
+//   2. Вычислить λ-returns (TD(λ) для n-шагов):
+//      R_t^λ = r_t + γ·[(1-λ)·V(z_{t+1}) + λ·R_{t+1}^λ]
+//   3. Actor loss: -E[log π(a|z) · A(z)] - β·H(π)   (A = advantage)
+//   4. Critic loss: MSE(V(z), R^λ)
+//
+// Применение в Crucix:
+//   - Latent state → какое действие (deescalation, monitoring, intervention).
+//   - Обучение в imagination: 10000 траекторий за секунды без реальных данных.
+//   - Reward: снижение tension/конфликтов/санкций.
+//
+// Версия: 7.0.0
+
+import { writeFileSync, mkdirSync, existsSync, readFileSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { WorldModel } from './world_model.mjs';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// ═══════════════════════════════════════════════════
+// УТИЛИТЫ
+// ═══════════════════════════════════════════════════
+
+function ensureDir(d) {
+  if (!existsSync(d)) mkdirSync(d, { recursive: true });
+}
+
+function saveJSON(fp, data) {
+  ensureDir(dirname(fp));
+  writeFileSync(fp, JSON.stringify(data, null, 2));
+}
+
+function mean(arr) {
+  if (arr.length === 0) return 0;
+  return arr.reduce((a, b) => a + b, 0) / arr.length;
+}
+
+function std(arr, ddof = 1) {
+  const n = arr.length;
+  if (n <= ddof) return 0;
+  const m = mean(arr);
+  return Math.sqrt(arr.reduce((s, v) => s + (v - m) ** 2, 0) / (n - ddof));
+}
+
+function gaussianRandom(mu = 0, sigma = 1) {
+  const u1 = Math.random() || 1e-10;
+  const u2 = Math.random();
+  const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+  return mu + z * sigma;
+}
+
+function heInit(fanIn, fanOut) {
+  return (Math.random() * 2 - 1) * Math.sqrt(2 / (fanIn + fanOut));
+}
+
+function xavierInit(fanIn, fanOut) {
+  return (Math.random() * 2 - 1) * Math.sqrt(6 / (fanIn + fanOut));
+}
+
+function tanh(x) {
+  return Math.tanh(x);
+}
+
+function relu(x) {
+  return Math.max(0, x);
+}
+
+function softmax(arr) {
+  const m = Math.max(...arr);
+  const e = arr.map(v => Math.exp(v - m));
+  const s = e.reduce((a, b) => a + b, 0) || 1e-10;
+  return e.map(v => v / s);
+}
+
+/**
+ * matVec(A, x): A [outDim][inDim], x длина inDim → длина outDim.
+ */
+function matVec(A, x) {
+  const out = new Array(A.length);
+  const inDim = A.length > 0 ? A[0].length : 0;
+  if (inDim !== x.length) {
+    throw new Error(`matVec: A rows have ${inDim} cols, x has ${x.length}`);
+  }
+  for (let i = 0; i < A.length; i++) {
+    let s = 0;
+    const row = A[i];
+    for (let j = 0; j < inDim; j++) s += row[j] * x[j];
+    out[i] = s;
+  }
+  return out;
+}
+
+function vecNorm(v) {
+  let s = 0;
+  for (let i = 0; i < v.length; i++) s += v[i] * v[i];
+  return Math.sqrt(s);
+}
+
+// ═══════════════════════════════════════════════════
+// SECTION 1: Actor Network (π)
+// ═══════════════════════════════════════════════════
+//
+// Linear policy: z (latentDim) → logits (nActions) → softmax.
+// Optionally: one hidden layer.
+
+class Actor {
+  constructor(config = {}) {
+    this.latentDim = config.latentDim || 16;
+    this.hiddenDim = config.hiddenDim || 32;
+    this.nActions = config.nActions || 5;
+    this.useHidden = config.useHidden !== false;
+    this.entropyCoef = config.entropyCoef ?? 0.01;
+
+    if (this.useHidden) {
+      this.W1 = Array.from({ length: this.hiddenDim }, () =>
+        Array.from({ length: this.latentDim }, () => heInit(this.latentDim, this.hiddenDim)));
+      this.b1 = new Array(this.hiddenDim).fill(0);
+
+      this.W2 = Array.from({ length: this.nActions }, () =>
+        Array.from({ length: this.hiddenDim }, () => xavierInit(this.hiddenDim, this.nActions) * 0.5));
+      this.b2 = new Array(this.nActions).fill(0);
+    } else {
+      this.W1 = Array.from({ length: this.nActions }, () =>
+        Array.from({ length: this.latentDim }, () => xavierInit(this.latentDim, this.nActions)));
+      this.b1 = new Array(this.nActions).fill(0);
+    }
+  }
+
+  /**
+   * Прямой проход: z → probabilities по действиям.
+   */
+  forward(z) {
+    if (this.useHidden) {
+      const pre1 = matVec(this.W1, z);
+      const h1 = new Array(this.hiddenDim);
+      for (let i = 0; i < this.hiddenDim; i++) {
+        h1[i] = relu(pre1[i] + this.b1[i]);
+      }
+      const pre2 = matVec(this.W2, h1);
+      const logits = new Array(this.nActions);
+      for (let i = 0; i < this.nActions; i++) {
+        logits[i] = pre2[i] + this.b2[i];
+      }
+      return { probs: softmax(logits), logits, h1 };
+    } else {
+      const pre = matVec(this.W1, z);
+      const logits = new Array(this.nActions);
+      for (let i = 0; i < this.nActions; i++) {
+        logits[i] = pre[i] + this.b1[i];
+      }
+      return { probs: softmax(logits), logits };
+    }
+  }
+
+  /**
+   * Sampling действие по распределению.
+   */
+  sample(z) {
+    const { probs } = this.forward(z);
+    const r = Math.random();
+    let cum = 0;
+    let action = this.nActions - 1;
+    for (let i = 0; i < this.nActions; i++) {
+      cum += probs[i];
+      if (r < cum) {
+        action = i;
+        break;
+      }
+    }
+    return action;
+  }
+
+  /**
+   * Детерминированный выбор (argmax).
+   */
+  best(z) {
+    const { probs } = this.forward(z);
+    let bestAction = 0;
+    let bestP = probs[0];
+    for (let i = 1; i < probs.length; i++) {
+      if (probs[i] > bestP) {
+        bestP = probs[i];
+        bestAction = i;
+      }
+    }
+    return bestAction;
+  }
+
+  /**
+   * Градиент по параметрам через finite differences (упрощённо).
+   * lossGradFn(z, probs) → скаляр, который надо минимизировать.
+   */
+  updateFromGradient(z, lossGradFn, lr) {
+    const eps = 1e-4;
+
+    if (this.useHidden) {
+      // W1 update
+      for (let i = 0; i < this.hiddenDim; i++) {
+        for (let j = 0; j < this.latentDim; j++) {
+          if (Math.random() > 0.2) continue;
+          const orig = this.W1[i][j];
+          this.W1[i][j] = orig + eps;
+          const lp = lossGradFn(z);
+          this.W1[i][j] = orig - eps;
+          const lm = lossGradFn(z);
+          this.W1[i][j] = orig;
+          const grad = (lp - lm) / (2 * eps);
+          if (Number.isFinite(grad) && Math.abs(grad) < 50) {
+            this.W1[i][j] = orig - lr * grad;
+          }
+        }
+      }
+      // W2 update
+      for (let i = 0; i < this.nActions; i++) {
+        for (let j = 0; j < this.hiddenDim; j++) {
+          if (Math.random() > 0.2) continue;
+          const orig = this.W2[i][j];
+          this.W2[i][j] = orig + eps;
+          const lp = lossGradFn(z);
+          this.W2[i][j] = orig - eps;
+          const lm = lossGradFn(z);
+          this.W2[i][j] = orig;
+          const grad = (lp - lm) / (2 * eps);
+          if (Number.isFinite(grad) && Math.abs(grad) < 50) {
+            this.W2[i][j] = orig - lr * grad;
+          }
+        }
+      }
+    } else {
+      for (let i = 0; i < this.nActions; i++) {
+        for (let j = 0; j < this.latentDim; j++) {
+          if (Math.random() > 0.2) continue;
+          const orig = this.W1[i][j];
+          this.W1[i][j] = orig + eps;
+          const lp = lossGradFn(z);
+          this.W1[i][j] = orig - eps;
+          const lm = lossGradFn(z);
+          this.W1[i][j] = orig;
+          const grad = (lp - lm) / (2 * eps);
+          if (Number.isFinite(grad) && Math.abs(grad) < 50) {
+            this.W1[i][j] = orig - lr * grad;
+          }
+        }
+      }
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// SECTION 2: Critic Network (V)
+// ═══════════════════════════════════════════════════
+//
+// MLP: z (latentDim) → h (hiddenDim) → value (scalar).
+
+class Critic {
+  constructor(config = {}) {
+    this.latentDim = config.latentDim || 16;
+    this.hiddenDim = config.hiddenDim || 32;
+
+    this.W1 = Array.from({ length: this.hiddenDim }, () =>
+      Array.from({ length: this.latentDim }, () => heInit(this.latentDim, this.hiddenDim)));
+    this.b1 = new Array(this.hiddenDim).fill(0);
+
+    this.W2 = Array.from({ length: 1 }, () =>
+      Array.from({ length: this.hiddenDim }, () => xavierInit(this.hiddenDim, 1)));
+    this.b2 = new Array(1).fill(0);
+  }
+
+  forward(z) {
+    const pre1 = matVec(this.W1, z);
+    const h1 = new Array(this.hiddenDim);
+    for (let i = 0; i < this.hiddenDim; i++) {
+      h1[i] = relu(pre1[i] + this.b1[i]);
+    }
+    const pre2 = matVec(this.W2, h1);
+    return { value: pre2[0] + this.b2[0], h1 };
+  }
+
+  /**
+   * MSE loss: (V(z) - target)²
+   */
+  loss(z, target) {
+    const { value } = this.forward(z);
+    return (value - target) ** 2;
+  }
+
+  /**
+   * Обучение через finite differences.
+   */
+  update(z, target, lr) {
+    const eps = 1e-4;
+
+    // W1
+    for (let i = 0; i < this.hiddenDim; i++) {
+      for (let j = 0; j < this.latentDim; j++) {
+        if (Math.random() > 0.3) continue;
+        const orig = this.W1[i][j];
+        this.W1[i][j] = orig + eps;
+        const lp = this.loss(z, target);
+        this.W1[i][j] = orig - eps;
+        const lm = this.loss(z, target);
+        this.W1[i][j] = orig;
+        const grad = (lp - lm) / (2 * eps);
+        if (Number.isFinite(grad) && Math.abs(grad) < 50) {
+          this.W1[i][j] = orig - lr * grad;
+        }
+      }
+    }
+
+    // b1
+    for (let i = 0; i < this.hiddenDim; i++) {
+      if (Math.random() > 0.3) continue;
+      const orig = this.b1[i];
+      this.b1[i] = orig + eps;
+      const lp = this.loss(z, target);
+      this.b1[i] = orig - eps;
+      const lm = this.loss(z, target);
+      this.b1[i] = orig;
+      const grad = (lp - lm) / (2 * eps);
+      if (Number.isFinite(grad) && Math.abs(grad) < 50) {
+        this.b1[i] = orig - lr * grad;
+      }
+    }
+
+    // W2
+    for (let j = 0; j < this.hiddenDim; j++) {
+      if (Math.random() > 0.3) continue;
+      const orig = this.W2[0][j];
+      this.W2[0][j] = orig + eps;
+      const lp = this.loss(z, target);
+      this.W2[0][j] = orig - eps;
+      const lm = this.loss(z, target);
+      this.W2[0][j] = orig;
+      const grad = (lp - lm) / (2 * eps);
+      if (Number.isFinite(grad) && Math.abs(grad) < 50) {
+        this.W2[0][j] = orig - lr * grad;
+      }
+    }
+
+    // b2
+    const origB2 = this.b2[0];
+    this.b2[0] = origB2 + eps;
+    const lp2 = this.loss(z, target);
+    this.b2[0] = origB2 - eps;
+    const lm2 = this.loss(z, target);
+    this.b2[0] = origB2;
+    const gradB2 = (lp2 - lm2) / (2 * eps);
+    if (Number.isFinite(gradB2) && Math.abs(gradB2) < 50) {
+      this.b2[0] = origB2 - lr * gradB2;
+    }
+
+    return this.loss(z, target);
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// SECTION 3: Reward Function
+// ═══════════════════════════════════════════════════
+//
+// В imagination состояние z → decoded vector xHat → извлекаем tension,
+// vix, conflicts → reward = -(tension + 0.5·vix + conflicts) + bonus.
+
+function computeReward(decoded, prevDecoded) {
+  // decoded — вектор из wm.decode(z), длина inputDim (11)
+  // Порядок: vix, hySpread, treasury10y, dxy, conflicts, tone,
+  //          sanctions, tension, radiation, oilPrice, goldPrice
+
+  const tension = decoded[7];
+  const vix = decoded[0];
+  const conflicts = decoded[4];
+  const sanctions = decoded[6];
+
+  // Reward за низкий стресс
+  let reward = 0;
+  reward -= tension * 2.0;
+  reward -= vix * 1.0;
+  reward -= conflicts * 1.5;
+  reward -= sanctions * 0.5;
+
+  // Штраф за рост
+  if (prevDecoded) {
+    const dTension = tension - prevDecoded[7];
+    const dConflicts = conflicts - prevDecoded[4];
+    if (dTension > 0.05) reward -= dTension * 3.0;
+    if (dConflicts > 0.05) reward -= dConflicts * 4.0;
+  }
+
+  return reward;
+}
+
+// ═══════════════════════════════════════════════════
+// SECTION 4: Dreamer — оркестратор
+// ═══════════════════════════════════════════════════
+
+class Dreamer {
+  constructor(config = {}) {
+    this.worldModel = config.worldModel;
+    if (!this.worldModel) {
+      throw new Error('Dreamer requires a WorldModel instance');
+    }
+
+    this.latentDim = this.worldModel.latentDim;
+    this.nActions = config.nActions || 5;
+    this.gamma = config.gamma ?? 0.99;
+    this.lambda = config.lambda ?? 0.95;
+    this.horizon = config.horizon || 15;
+
+    this.actor = new Actor({
+      latentDim: this.latentDim,
+      hiddenDim: config.actorHidden || 32,
+      nActions: this.nActions,
+      entropyCoef: config.entropyCoef ?? 0.01,
+    });
+
+    this.critic = new Critic({
+      latentDim: this.latentDim,
+      hiddenDim: config.criticHidden || 32,
+    });
+
+    this.actorLr = config.actorLr || 0.001;
+    this.criticLr = config.criticLr || 0.002;
+
+    this.metrics = {
+      episodes: 0,
+      avgReturn: 0,
+      avgCriticLoss: 0,
+      returnHistory: [],
+      criticLossHistory: [],
+    };
+  }
+
+  /**
+   * Imagination rollout: разворачиваем траекторию через wm.imagine,
+   * но вместо random actions используем политику actor.
+   *
+   * Здесь: используем wm.imagine с useController=false,
+   * действия подаём вручную через actor.sample(z).
+   *
+   * Возвращает массив { z, action, reward, decoded, logPi }.
+   */
+  rollout(z0) {
+    const trajectory = [];
+    let z = [...z0];
+
+    // Первое состояние
+    const firstDecoded = this.worldModel.decode(z);
+    trajectory.push({
+      z: [...z],
+      action: null,
+      reward: 0,
+      decoded: firstDecoded,
+      logPi: null,
+    });
+
+    this.worldModel.rnn.resetState();
+
+    for (let t = 1; t <= this.horizon; t++) {
+      // Actor выбирает действие
+      const { probs, logits } = this.actor.forward(z);
+      const action = this.actor.sample(z);
+      const logPi = Math.log(Math.max(1e-10, probs[action]));
+
+      // Действие → one-hot → вектор для RNN
+      const actionVec = new Array(this.nActions).fill(0);
+      actionVec[action] = 1;
+
+      // RNN forward
+      const { dist } = this.worldModel.rnn.forward(z, actionVec);
+      const zNext = this.worldModel.rnn.sample(dist);
+
+      // Decode для reward
+      const decoded = this.worldModel.decode(zNext);
+      const prevDecoded = trajectory[trajectory.length - 1].decoded;
+      const reward = computeReward(decoded, prevDecoded);
+
+      trajectory.push({
+        z: zNext,
+        action,
+        reward,
+        decoded,
+        logPi,
+        actionProbs: probs,
+      });
+
+      z = zNext;
+    }
+
+    return trajectory;
+  }
+
+  /**
+   * Вычисление λ-returns (TD(λ)) по траектории.
+   * R_t^λ = r_t + γ·[(1-λ)·V(z_{t+1}) + λ·R_{t+1}^λ]
+   * При t = T: R_T = V(z_T).
+   */
+  computeLambdaReturns(trajectory) {
+    const T = trajectory.length - 1;
+    const returns = new Array(T + 1);
+
+    // Bootstrap: последнее состояние → V(z_T)
+    const { value: vLast } = this.critic.forward(trajectory[T].z);
+    returns[T] = vLast;
+
+    for (let t = T - 1; t >= 0; t--) {
+      const { value: vNext } = this.critic.forward(trajectory[t + 1].z);
+      const r = trajectory[t + 1].reward;
+      returns[t] = r + this.gamma * ((1 - this.lambda) * vNext + this.lambda * returns[t + 1]);
+    }
+
+    return returns;
+  }
+
+  /**
+   * Нормализация returns по траектории: (r - mean) / (std + eps).
+   * Без неё Critic плохо сходится при больших разбросах.
+   */
+  normalizeReturns(returns) {
+    const m = returns.reduce((a, b) => a + b, 0) / returns.length;
+    let varSum = 0;
+    for (const r of returns) varSum += (r - m) ** 2;
+    const sd = Math.sqrt(varSum / returns.length) + 1e-6;
+    return { normalized: returns.map(r => (r - m) / sd), mean: m, std: sd };
+  }
+
+  /**
+   * Один шаг обучения:
+   *   1. Rollout из случайной/текущей точки.
+   *   2. Вычислить λ-returns.
+   *   3. Обновить critic на (z_t, R_t).
+   *   4. Обновить actor: -logPi·advantage - β·entropy.
+   */
+  trainStep(z0) {
+    const trajectory = this.rollout(z0);
+    const returns = this.computeLambdaReturns(trajectory);
+
+    // Critic update
+    let criticLoss = 0;
+    const T = trajectory.length - 1;
+    for (let t = 0; t <= T; t++) {
+      const loss = this.critic.update(trajectory[t].z, returns[t], this.criticLr);
+      criticLoss += loss;
+    }
+    criticLoss /= (T + 1);
+
+    // Нормализуем advantage (стандартный трюк RL)
+    const returnsMean = returns.reduce((a, b) => a + b, 0) / returns.length;
+    let varSum = 0;
+    for (const r of returns) varSum += (r - returnsMean) ** 2;
+    const returnsStd = Math.sqrt(varSum / returns.length) + 1e-6;
+
+    // Actor update
+    let actorLoss = 0;
+    for (let t = 1; t <= T; t++) {
+      const step = trajectory[t];
+      const { value } = this.critic.forward(step.z);
+      const advantageRaw = returns[t] - value;
+      const advantage = advantageRaw / returnsStd;
+
+      const lossGradFn = (z) => {
+        const { probs } = this.actor.forward(z);
+        const logPi = Math.log(Math.max(1e-10, probs[step.action]));
+        // Actor loss = -logPi · advantage - β · entropy
+        // entropy = -Σ π log π
+        let entropy = 0;
+        for (let a = 0; a < this.nActions; a++) {
+          if (probs[a] > 1e-10) entropy -= probs[a] * Math.log(probs[a]);
+        }
+        return -logPi * advantage - this.actor.entropyCoef * entropy;
+      };
+
+      const lossBefore = lossGradFn(step.z);
+      this.actor.updateFromGradient(step.z, lossGradFn, this.actorLr);
+      actorLoss += lossBefore;
+    }
+    actorLoss /= T;
+
+    // Total return
+    const totalReturn = trajectory.reduce((s, step) => s + step.reward, 0);
+
+    this.metrics.episodes++;
+    this.metrics.returnHistory.push(totalReturn);
+    this.metrics.criticLossHistory.push(criticLoss);
+    this.metrics.avgReturn = mean(this.metrics.returnHistory.slice(-20));
+    this.metrics.avgCriticLoss = mean(this.metrics.criticLossHistory.slice(-20));
+
+    return {
+      return: totalReturn,
+      criticLoss,
+      actorLoss,
+      trajLen: trajectory.length,
+    };
+  }
+
+  /**
+   * Полный цикл обучения: N шагов.
+   */
+  train(z0, nSteps = 20, verbose = false) {
+    for (let step = 0; step < nSteps; step++) {
+      const r = this.trainStep(z0);
+      if (verbose && step % 5 === 0) {
+        console.log(
+          `[dreamer] step ${step}: return=${r.return.toFixed(3)}, ` +
+          `criticLoss=${r.criticLoss.toFixed(5)}, actorLoss=${r.actorLoss.toFixed(5)}`
+        );
+      }
+    }
+    return this.metrics;
+  }
+
+  /**
+   * Оценка политики: возвращает средний return за N episodes.
+   */
+  evaluate(z0, nEpisodes = 10) {
+    const returns = [];
+    for (let e = 0; e < nEpisodes; e++) {
+      const trajectory = this.rollout(z0);
+      const totalReturn = trajectory.reduce((s, step) => s + step.reward, 0);
+      returns.push(totalReturn);
+    }
+    return {
+      meanReturn: mean(returns),
+      stdReturn: std(returns),
+      minReturn: Math.min(...returns),
+      maxReturn: Math.max(...returns),
+      nEpisodes,
+    };
+  }
+
+  /**
+   * Лучшее действие для текущего состояния (для inference).
+   */
+  bestAction(z) {
+    return this.actor.best(z);
+  }
+
+  /**
+   * Действия в человеко-читаемом виде.
+   */
+  actionNames() {
+    return ['observe', 'monitor', 'sanctions_low', 'sanctions_high', 'intervention'];
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// SECTION 5: ИНТЕГРАЦИЯ С CRUCIX
+// ═══════════════════════════════════════════════════
+
+export function crucixDreamer(history, options = {}) {
+  if (!history || history.length < 30) {
+    return {
+      module: 'dreamer',
+      available: false,
+      reason: 'insufficient_history',
+      minimumRequired: 30,
+      actual: history.length,
+    };
+  }
+
+  const t0 = Date.now();
+  console.log(`[dreamer] Запуск на ${history.length} sweep'ах`);
+
+  const latentDim = options.latentDim || 8;
+  const hiddenDim = options.hiddenDim || 16;
+  const nActions = options.nActions || 5;
+  const vaeEpochs = options.vaeEpochs || 3;
+  const rnnEpochs = options.rnnEpochs || 2;
+  const trainSteps = options.trainSteps || 20;
+  const horizon = options.horizon || 10;
+
+  // 1. Обучаем WorldModel (или используем переданный)
+  let wm;
+  if (options.worldModel) {
+    wm = options.worldModel;
+    console.log('[dreamer] Используется переданный WorldModel');
+  } else {
+    wm = new WorldModel({
+      inputDim: 11,
+      latentDim,
+      hiddenDim,
+      actionDim: nActions,
+      nMixtures: 3,
+      vaeBeta: 0.5,
+      vaeLr: 0.002,
+    });
+    console.log('[dreamer] Обучение WorldModel...');
+    try {
+      wm.train(history, { vaeEpochs, rnnEpochs, verbose: false });
+    } catch (e) {
+      return {
+        module: 'dreamer',
+        available: false,
+        error: `WorldModel training failed: ${e.message}`,
+        elapsedMs: Date.now() - t0,
+      };
+    }
+  }
+
+  // 2. Создаём Dreamer
+  const dreamer = new Dreamer({
+    worldModel: wm,
+    nActions,
+    gamma: 0.99,
+    lambda: 0.95,
+    horizon,
+    actorLr: 0.001,
+    criticLr: 0.002,
+    actorHidden: 16,
+    criticHidden: 16,
+    entropyCoef: 0.01,
+  });
+
+  // 3. Стартовое состояние — из последнего sweep
+  const lastSweep = history[history.length - 1];
+  let z0;
+  try {
+    z0 = wm.encodeDeterministic(lastSweep);
+  } catch (e) {
+    return {
+      module: 'dreamer',
+      available: false,
+      error: `encode failed: ${e.message}`,
+      elapsedMs: Date.now() - t0,
+    };
+  }
+
+  // 4. Оценка до обучения
+  const evalBefore = dreamer.evaluate(z0, 5);
+
+  // 5. Обучение
+  console.log(`[dreamer] Обучение ${trainSteps} шагов...`);
+  try {
+    dreamer.train(z0, trainSteps, options.verbose);
+  } catch (e) {
+    return {
+      module: 'dreamer',
+      available: false,
+      error: `training failed: ${e.message}`,
+      elapsedMs: Date.now() - t0,
+    };
+  }
+
+  // 6. Оценка после обучения
+  const evalAfter = dreamer.evaluate(z0, 5);
+
+  // 7. Лучшее действие для текущего состояния
+  const bestActionIdx = dreamer.bestAction(z0);
+  const actionNames = dreamer.actionNames();
+  const bestActionName = actionNames[bestActionIdx] || `action_${bestActionIdx}`;
+
+  // 8. Финальный rollout с обученной политикой (для отображения)
+  const finalTrajectory = dreamer.rollout(z0);
+  const finalReturn = finalTrajectory.reduce((s, step) => s + step.reward, 0);
+
+  // 9. Action distribution
+  const { probs: actionProbs } = dreamer.actor.forward(z0);
+  const actionDist = actionNames.slice(0, nActions).map((name, i) => ({
+    action: name,
+    probability: Math.round(actionProbs[i] * 10000) / 10000,
+  }));
+
+  // 10. Reward trajectory
+  const rewardTrajectory = finalTrajectory
+    .filter((_, i) => i > 0)
+    .map((step, i) => ({
+      step: i + 1,
+      reward: Math.round(step.reward * 10000) / 10000,
+      action: actionNames[step.action] || `action_${step.action}`,
+      tension: Math.round(step.decoded[7] * 10000) / 10000,
+      vix: Math.round(step.decoded[0] * 10000) / 10000,
+      conflicts: Math.round(step.decoded[4] * 10000) / 10000,
+    }));
+
+  // 11. Improvement
+  const improvement = evalAfter.meanReturn - evalBefore.meanReturn;
+  const improvementPct = evalBefore.meanReturn !== 0
+    ? (improvement / Math.abs(evalBefore.meanReturn)) * 100
+    : 0;
+
+  const result = {
+    module: 'dreamer',
+    available: true,
+    elapsedMs: Date.now() - t0,
+    config: {
+      latentDim,
+      hiddenDim,
+      nActions,
+      horizon,
+      trainSteps,
+      gamma: dreamer.gamma,
+      lambda: dreamer.lambda,
+    },
+    evaluation: {
+      before: {
+        meanReturn: Math.round(evalBefore.meanReturn * 10000) / 10000,
+        stdReturn: Math.round(evalBefore.stdReturn * 10000) / 10000,
+      },
+      after: {
+        meanReturn: Math.round(evalAfter.meanReturn * 10000) / 10000,
+        stdReturn: Math.round(evalAfter.stdReturn * 10000) / 10000,
+      },
+      improvement: Math.round(improvement * 10000) / 10000,
+      improvementPct: Math.round(improvementPct * 100) / 100,
+    },
+    bestAction: {
+      index: bestActionIdx,
+      name: bestActionName,
+      actionDistribution: actionDist,
+    },
+    finalRollout: {
+      totalReturn: Math.round(finalReturn * 10000) / 10000,
+      trajectoryLength: finalTrajectory.length,
+      rewardTrajectory,
+    },
+    training: {
+      episodes: dreamer.metrics.episodes,
+      avgReturn: Math.round(dreamer.metrics.avgReturn * 10000) / 10000,
+      avgCriticLoss: Math.round(dreamer.metrics.avgCriticLoss * 100000) / 100000,
+      returnHistoryLast10: dreamer.metrics.returnHistory.slice(-10).map(v =>
+        Math.round(v * 10000) / 10000
+      ),
+    },
+    interpretation:
+      `Dreamer обучен на ${trainSteps} imagination-эпизодах в latent space (dim=${latentDim}). ` +
+      `Return до/после: ${evalBefore.meanReturn.toFixed(3)} → ${evalAfter.meanReturn.toFixed(3)} ` +
+      `(${improvement >= 0 ? '+' : ''}${improvement.toFixed(3)}). ` +
+      `Рекомендуемое действие: ${bestActionName} (P=${actionProbs[bestActionIdx].toFixed(3)}). ` +
+      `Итоговый return политики: ${finalReturn.toFixed(3)}.`,
+  };
+
+  const outFile = join(__dirname, '..', '..', '..', 'runs', 'predictions', 'dreamer.json');
+  saveJSON(outFile, result);
+  return result;
+}
+
+export { Dreamer, Actor, Critic, computeReward };

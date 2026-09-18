@@ -1,0 +1,1044 @@
+===== ЧАСТЬ part-4-modules · КУСОК 06/28 · 35.5 KB =====
+
+FILE: apis/predict/gametheory.mjs
+SIZE: 11164 bytes
+SHA1: 0dd7b78f329193f8
+========================================================================
+
+// apis/predict/gametheory.mjs
+// Теоретико-игровое моделирование геополитики.
+//
+// Теоретическая основа:
+//   von Neumann, J., & Morgenstern, O. (1944). "Theory of Games and
+//   Economic Behavior". Princeton University Press.
+//   Nash, J. F. (1950). "Equilibrium points in n-person games". PNAS.
+//   Maynard Smith, J., & Price, G. R. (1973). "The logic of animal conflict".
+//   Nature, 246, 15-18. — ESS.
+//   Axelrod, R. (1984). "The Evolution of Cooperation". Basic Books.
+//   von Stackelberg, H. (1934). "Marktform und Gleichgewicht". Springer.
+//   Shapley, L. S. (1953). "Stochastic Games". PNAS, 39(10), 1095-1100.
+//
+// Применение в Crucix:
+//   Моделирование действий противника. Стекльберг — для "лидер-последователь".
+//   Nash — для равновесий. Стохастические игры — для многошаговых
+//   взаимодействий. Deception modeling — противник может обманывать.
+
+import { writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// ============================================================
+// Stackelberg — лидер-последователь
+// ============================================================
+
+class StackelbergGame {
+  constructor(config = {}) {
+    this.leaderActions = config.leaderActions || [
+      'forecast_high', 'forecast_medium', 'forecast_low', 'withhold',
+    ];
+    this.followerActions = config.followerActions || [
+      'escalate', 'maintain', 'deescalate', 'deceive',
+    ];
+    this.payoffMatrix = config.payoffMatrix || this._defaultPayoffs();
+    this.followerRationality = config.followerRationality !== undefined
+      ? config.followerRationality : 0.7;
+  }
+
+  _defaultPayoffs() {
+    const P = {};
+    for (const la of this.leaderActions) {
+      P[la] = {};
+      for (const fa of this.followerActions) {
+        let leaderPay = 0.5, followerPay = 0.5;
+
+        if (la === 'forecast_high' && fa === 'escalate') leaderPay = 0.9;
+        else if (la === 'forecast_high' && fa === 'deescalate') leaderPay = 0.2;
+        else if (la === 'forecast_low' && fa === 'deescalate') leaderPay = 0.9;
+        else if (la === 'forecast_low' && fa === 'escalate') leaderPay = 0.2;
+        else if (la === 'withhold') leaderPay = 0.5;
+
+        if (fa === 'escalate') followerPay = la === 'forecast_high' ? 0.3 : 0.8;
+        else if (fa === 'deescalate') followerPay = la === 'forecast_low' ? 0.7 : 0.4;
+        else if (fa === 'maintain') followerPay = 0.6;
+        else if (fa === 'deceive') followerPay = la === 'forecast_high' ? 0.85 : 0.5;
+
+        P[la][fa] = [leaderPay, followerPay];
+      }
+    }
+    return P;
+  }
+
+  solve() {
+    const results = [];
+    for (const la of this.leaderActions) {
+      let bestFollower = this.followerActions[0];
+      let bestFollowerPay = -Infinity;
+      for (const fa of this.followerActions) {
+        const fp = this.payoffMatrix[la][fa][1];
+        const adjustedPay =
+          fp * this.followerRationality +
+          Math.random() * (1 - this.followerRationality);
+        if (adjustedPay > bestFollowerPay) {
+          bestFollowerPay = adjustedPay;
+          bestFollower = fa;
+        }
+      }
+      const leaderPay = this.payoffMatrix[la][bestFollower][0];
+      results.push({
+        leaderAction: la,
+        followerResponse: bestFollower,
+        leaderPayoff: leaderPay,
+      });
+    }
+
+    const best = results.reduce((a, b) =>
+      a.leaderPayoff > b.leaderPayoff ? a : b
+    );
+
+    return {
+      type: 'stackelberg',
+      leaderStrategy: best.leaderAction,
+      followerResponse: best.followerResponse,
+      leaderPayoff: best.leaderPayoff,
+      allScenarios: results,
+    };
+  }
+}
+
+// ============================================================
+// Nash equilibrium
+// ============================================================
+
+function findNashEquilibrium(actions1, actions2, payoffMatrix) {
+  const bestResponse1 = {};
+  const bestResponse2 = {};
+
+  for (const a2 of actions2) {
+    let best = actions1[0], bestPay = -Infinity;
+    for (const a1 of actions1) {
+      const pay = payoffMatrix[a1][a2][0];
+      if (pay > bestPay) { bestPay = pay; best = a1; }
+    }
+    bestResponse1[a2] = best;
+  }
+
+  for (const a1 of actions1) {
+    let best = actions2[0], bestPay = -Infinity;
+    for (const a2 of actions2) {
+      const pay = payoffMatrix[a1][a2][1];
+      if (pay > bestPay) { bestPay = pay; best = a2; }
+    }
+    bestResponse2[a1] = best;
+  }
+
+  const equilibria = [];
+  for (const a1 of actions1) {
+    const a2 = bestResponse2[a1];
+    if (bestResponse1[a2] === a1) {
+      equilibria.push({ a1, a2, payoffs: payoffMatrix[a1][a2] });
+    }
+  }
+
+  return { equilibria, bestResponse1, bestResponse2 };
+}
+
+// ============================================================
+// Stochastic Game — многоагентная марковская игра
+// ============================================================
+
+class StochasticGame {
+  constructor(config = {}) {
+    this.states = config.states || ['peace', 'tension', 'crisis', 'war', 'ceasefire'];
+    this.agents = config.agents || ['red', 'blue', 'neutral'];
+    this.actions = config.actions || {
+      red: ['escalate', 'hold', 'retreat'],
+      blue: ['escalate', 'hold', 'retreat'],
+      neutral: ['mediate', 'observe'],
+    };
+    this.discount = config.discount || 0.95;
+    this.transitionProbs = config.transitions || this._defaultTransitions();
+    this.rewardMatrix = config.rewards || this._defaultRewards();
+    this.horizon = config.horizon || 20;
+  }
+
+  _defaultTransitions() {
+    const T = {};
+    for (const s of this.states) {
+      T[s] = {};
+      for (const a of this.states) {
+        T[s][a] = {};
+        for (const target of this.states) {
+          T[s][a][target] = 1 / this.states.length;
+        }
+        T[s][a][s] = 0.4;
+      }
+    }
+    if (T['tension']) {
+      T['tension']['tension'] = {
+        peace: 0.15, tension: 0.4, crisis: 0.3, war: 0.1, ceasefire: 0.05,
+      };
+      T['tension']['crisis'] = {
+        peace: 0.05, tension: 0.15, crisis: 0.5, war: 0.25, ceasefire: 0.05,
+      };
+    }
+    return T;
+  }
+
+  _defaultRewards() {
+    const R = {};
+    for (const s of this.states) {
+      R[s] = {};
+      for (const a of this.agents) {
+        R[s][a] = {};
+        for (const act of this.actions[a]) {
+          if (s === 'war') R[s][a][act] = act === 'retreat' ? 0.3 : -0.5;
+          else if (s === 'crisis') R[s][a][act] = act === 'retreat' ? 0.4 : act === 'hold' ? 0.0 : -0.3;
+          else if (s === 'tension') R[s][a][act] = act === 'hold' ? 0.2 : act === 'escalate' ? -0.2 : 0.1;
+          else R[s][a][act] = act === 'hold' ? 0.3 : 0.1;
+        }
+      }
+    }
+    return R;
+  }
+
+  solve(maxIter = 100, tolerance = 1e-6) {
+    let V = {};
+    for (const s of this.states) {
+      V[s] = {};
+      for (const a of this.agents) V[s][a] = 0;
+    }
+
+    let policy = {};
+    for (const s of this.states) {
+      policy[s] = {};
+      for (const a of this.agents) policy[s][a] = this.actions[a][0];
+    }
+
+    for (let iter = 0; iter < maxIter; iter++) {
+      const newV = {};
+      let maxDiff = 0;
+
+      for (const s of this.states) {
+        newV[s] = {};
+        for (const agent of this.agents) {
+          let bestVal = -Infinity;
+          let bestAct = this.actions[agent][0];
+
+          for (const act of this.actions[agent]) {
+            let val = (this.rewardMatrix[s] &&
+                       this.rewardMatrix[s][agent] &&
+                       this.rewardMatrix[s][agent][act]) || 0;
+            const transitions = (this.transitionProbs[s] &&
+                                this.transitionProbs[s][s]) || {};
+            for (const [sNext, prob] of Object.entries(transitions)) {
+              val += this.discount * prob * ((V[sNext] && V[sNext][agent]) || 0);
+            }
+            if (val > bestVal) { bestVal = val; bestAct = act; }
+          }
+          newV[s][agent] = bestVal;
+          policy[s][agent] = bestAct;
+          maxDiff = Math.max(maxDiff, Math.abs(bestVal - ((V[s] && V[s][agent]) || 0)));
+        }
+      }
+
+      V = newV;
+      if (maxDiff < tolerance) break;
+    }
+
+    return { values: V, policy, discount: this.discount };
+  }
+
+  modelDeception(trueIntent, observedAction, deceptionProb) {
+    const confidenceInObserved = 1 - deceptionProb;
+    return {
+      trueIntent,
+      observedAction,
+      deceptionProb,
+      inferenceConfidence: confidenceInObserved,
+      adjustedBelief:
+        deceptionProb * 0.5 +
+        confidenceInObserved * (observedAction === trueIntent ? 0.9 : 0.1),
+    };
+  }
+}
+
+// ============================================================
+// Готовый цикл для Crucix
+// ============================================================
+
+function crucixGameTheoryAnalysis(latest, options = {}) {
+  const vix = (latest && latest.fred && latest.fred.vix) || 20;
+  const conflicts =
+    latest && latest.gdelt && Array.isArray(latest.gdelt.conflictEvents)
+      ? latest.gdelt.conflictEvents.length
+      : 0;
+  const sanctions = (latest && latest.sanctions && latest.sanctions.count) || 0;
+
+  let currentState = 'peace';
+  if (vix > 35 || conflicts > 15) currentState = 'war';
+  else if (vix > 30 || conflicts > 10) currentState = 'crisis';
+  else if (vix > 22 || conflicts > 5 || sanctions > 3) currentState = 'tension';
+  else if (vix < 18 && conflicts < 2) currentState = 'peace';
+
+  const stackelberg = new StackelbergGame({
+    leaderActions: ['forecast_high', 'forecast_medium', 'forecast_low', 'withhold'],
+    followerActions: ['escalate', 'maintain', 'deescalate', 'deceive'],
+    followerRationality: options.followerRationality || 0.7,
+  });
+  const stackelbergSol = stackelberg.solve();
+
+  const stochGame = new StochasticGame({
+    states: ['peace', 'tension', 'crisis', 'war', 'ceasefire'],
+    agents: ['red', 'blue', 'neutral'],
+    horizon: 20,
+    discount: 0.95,
+  });
+  const stochSol = stochGame.solve();
+
+  const deception = stochGame.modelDeception(
+    (stochSol.policy[currentState] && stochSol.policy[currentState].red) || 'hold',
+    options.observedAction || 'hold',
+    options.deceptionProb || 0.3
+  );
+
+  const result = {
+    module: 'gametheory',
+    currentState,
+    stackelberg: stackelbergSol,
+    stochasticGame: {
+      values: stochSol.values,
+      policy: stochSol.policy,
+      recommendedAction: stochSol.policy[currentState],
+    },
+    deception,
+    timestamp: new Date().toISOString(),
+  };
+
+  try {
+    const dir = join(__dirname, '..', '..', 'runs', 'predictions');
+    if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+    writeFileSync(join(dir, `gametheory_${Date.now()}.json`), JSON.stringify(result, null, 2));
+  } catch (e) {
+    // Работает даже без диска
+  }
+
+  return result;
+}
+
+export {
+  StackelbergGame,
+  StochasticGame,
+  findNashEquilibrium,
+  crucixGameTheoryAnalysis,
+};
+
+
+
+========================================================================
+
+FILE: apis/predict/narrative.mjs
+SIZE: 13401 bytes
+SHA1: 2bb8a52ad338cfcd
+========================================================================
+
+// apis/predict/narrative.mjs
+// Нарративная диффузия: SIR/SEIR-модель распространения идей,
+// мутация нарративов, оценка причинного влияния акторов.
+//
+// Теоретическая основа:
+//   Kermack, W. O., & McKendrick, A. G. (1927). "A contribution to the
+//   mathematical theory of epidemics". Proc. Royal Society A.
+//   Wu, F., & Huberman, B. A. (2007). "Novelty and collective attention".
+//   PNAS, 104(45), 17599-17601.
+//   Lehmann, J., Goncalves, B., Ramasco, J. J., & Cattuto, C. (2012).
+//   "Dynamical classes of collective attention in Twitter". WWW.
+//   Granger, C. W. J. (1969). "Investigating Causal Relations by
+//   Econometric Models". Econometrica.
+//
+// Применение в Crucix:
+//   Определение, какой нарратив "взорвётся", а какой угаснет.
+//   Трекинг мутации нарратива через поляризованные сообщества.
+//   Оценка, кто из акторов реально двигает нарратив.
+
+import { writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// ============================================================
+// Токенизация и извлечение нарративов
+// ============================================================
+
+function tokenize(text) {
+  return (text || '')
+    .toLowerCase()
+    .replace(/[^\p{L}\s]/gu, ' ')
+    .split(/\s+/)
+    .filter((w) => w.length > 2);
+}
+
+function extractNarratives(documents) {
+  if (!Array.isArray(documents) || documents.length === 0) return [];
+
+  const vocabulary = new Map();
+  const docs = documents.map((doc) => {
+    const tokens = tokenize(doc.text || '');
+    for (const t of tokens) {
+      vocabulary.set(t, (vocabulary.get(t) || 0) + 1);
+    }
+    return { ...doc, tokens };
+  });
+
+  const minFreq = 2;
+  const maxFreq = docs.length * 0.8;
+  const vocab = [...vocabulary.entries()]
+    .filter(([, freq]) => freq >= minFreq && freq <= maxFreq)
+    .map(([word]) => word);
+
+  if (vocab.length === 0) return [];
+
+  const tfidfMatrix = docs.map((doc) => computeTFIDF(doc.tokens, vocab, docs));
+  const k = Math.min(5, Math.max(2, Math.floor(Math.sqrt(docs.length / 2))));
+  const clusters = kmeans(tfidfMatrix, k);
+
+  const narratives = clusters
+    .map((cluster, i) => {
+      const clusterDocs = cluster.map((idx) => docs[idx]);
+      if (clusterDocs.length === 0) return null;
+      const topWords = getTopWords(clusterDocs, vocab, 10);
+      const sources = [...new Set(clusterDocs.map((d) => d.source || 'unknown'))];
+
+      return {
+        id: `narrative_${i}`,
+        keywords: topWords,
+        documentCount: clusterDocs.length,
+        sources,
+        firstSeen: clusterDocs[0] ? clusterDocs[0].timestamp : null,
+        lastSeen: clusterDocs[clusterDocs.length - 1]
+          ? clusterDocs[clusterDocs.length - 1].timestamp
+          : null,
+        strength: clusterDocs.length / docs.length,
+      };
+    })
+    .filter(Boolean);
+
+  return narratives.filter((n) => n.documentCount >= 2);
+}
+
+function computeTFIDF(tokens, vocab, allDocs) {
+  const tf = {};
+  for (const t of tokens) {
+    if (vocab.includes(t)) tf[t] = (tf[t] || 0) + 1;
+  }
+  const tfidf = {};
+  for (const word of vocab) {
+    const tfVal = (tf[word] || 0) / Math.max(tokens.length, 1);
+    const df = allDocs.filter((d) => d.tokens.includes(word)).length;
+    const idf = Math.log(allDocs.length / Math.max(df, 1));
+    tfidf[word] = tfVal * idf;
+  }
+  return tfidf;
+}
+
+function kmeans(data, k, maxIter = 50) {
+  const dim = data[0] ? Object.keys(data[0]).length : 0;
+  if (dim === 0 || data.length === 0) return [];
+
+  const centroids = [];
+  for (let i = 0; i < k; i++) {
+    centroids.push({ ...data[Math.floor(Math.random() * data.length)] });
+  }
+
+  let assignments = Array(data.length).fill(0);
+
+  for (let iter = 0; iter < maxIter; iter++) {
+    for (let i = 0; i < data.length; i++) {
+      let best = 0, bestDist = Infinity;
+      for (let c = 0; c < k; c++) {
+        const dist = cosineDistance(data[i], centroids[c]);
+        if (dist < bestDist) {
+          bestDist = dist;
+          best = c;
+        }
+      }
+      assignments[i] = best;
+    }
+
+    const newCentroids = Array(k).fill(null).map(() => ({}));
+    const counts = Array(k).fill(0);
+    for (let i = 0; i < data.length; i++) {
+      const c = assignments[i];
+      counts[c]++;
+      for (const [key, val] of Object.entries(data[i])) {
+        newCentroids[c][key] = (newCentroids[c][key] || 0) + val;
+      }
+    }
+    for (let c = 0; c < k; c++) {
+      if (counts[c] > 0) {
+        for (const key of Object.keys(newCentroids[c])) {
+          newCentroids[c][key] /= counts[c];
+        }
+        centroids[c] = newCentroids[c];
+      }
+    }
+  }
+
+  const clusters = Array(k).fill(null).map(() => []);
+  for (let i = 0; i < data.length; i++) clusters[assignments[i]].push(i);
+  return clusters;
+}
+
+function cosineDistance(a, b) {
+  let dot = 0, magA = 0, magB = 0;
+  const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
+  for (const key of keys) {
+    const va = a[key] || 0;
+    const vb = b[key] || 0;
+    dot += va * vb;
+    magA += va * va;
+    magB += vb * vb;
+  }
+  const denom = Math.sqrt(magA) * Math.sqrt(magB);
+  return denom === 0 ? 1 : 1 - dot / denom;
+}
+
+function getTopWords(docs, vocab, n) {
+  const freq = {};
+  for (const doc of docs) {
+    for (const t of doc.tokens) {
+      if (vocab.includes(t)) freq[t] = (freq[t] || 0) + 1;
+    }
+  }
+  return Object.entries(freq)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, n)
+    .map(([w]) => w);
+}
+
+// ============================================================
+// SIR-модель для нарратива
+// ============================================================
+
+function narrativeSIR({ beta, gamma, S0, I0 = 1, R0 = 0, days = 30 }) {
+  let S = S0;
+  let I = I0;
+  let R = R0;
+  const N = S0 + I0 + R0;
+  const trajectory = [{ day: 0, S, I, R }];
+
+  for (let d = 1; d <= days; d++) {
+    const newInfected = (beta * S * I) / N;
+    const newRecovered = gamma * I;
+    S = Math.max(0, S - newInfected);
+    I = Math.max(0, I + newInfected - newRecovered);
+    R = Math.min(N, R + newRecovered);
+    trajectory.push({ day: d, S, I, R });
+  }
+
+  const R0_eff = beta / gamma;
+  const peak = trajectory.reduce((max, p) => (p.I > max.I ? p : max), trajectory[0]);
+
+  return {
+    trajectory,
+    peak: { day: peak.day, infected: peak.I, spread: peak.I / N },
+    R0: R0_eff,
+    willSpread: R0_eff > 1,
+    totalInfected: trajectory[trajectory.length - 1].R,
+    spreadFraction: trajectory[trajectory.length - 1].R / N,
+    forecast:
+      R0_eff > 1
+        ? `Narrative will SPREAD: R0=${R0_eff.toFixed(2)}, peak at day ${peak.day} (${((peak.I / N) * 100).toFixed(1)}% reach)`
+        : `Narrative will FADE: R0=${R0_eff.toFixed(2)} < 1`,
+  };
+}
+
+function narrativeSEIR({ beta, sigma, gamma, S0, E0 = 1, I0 = 0, R0_val = 0, days = 30 }) {
+  let S = S0;
+  let E = E0;
+  let I = I0;
+  let R = R0_val;
+  const N = S0 + E0 + I0 + R0_val;
+  const trajectory = [{ day: 0, S, E, I, R }];
+
+  for (let d = 1; d <= days; d++) {
+    const newExposed = (beta * S * I) / N;
+    const newInfectious = sigma * E;
+    const newRecovered = gamma * I;
+    S = Math.max(0, S - newExposed);
+    E = Math.max(0, E + newExposed - newInfectious);
+    I = Math.max(0, I + newInfectious - newRecovered);
+    R = Math.min(N, R + newRecovered);
+    trajectory.push({ day: d, S, E, I, R });
+  }
+
+  return { trajectory, R0: beta / gamma, latentPeriod: 1 / sigma };
+}
+
+// ============================================================
+// Мутация нарратива
+// ============================================================
+
+function trackNarrativeMutation(narrativeHistory) {
+  if (!Array.isArray(narrativeHistory) || narrativeHistory.length < 2) {
+    return { mutations: [] };
+  }
+
+  const mutations = [];
+  for (let i = 1; i < narrativeHistory.length; i++) {
+    const prev = narrativeHistory[i - 1];
+    const curr = narrativeHistory[i];
+
+    const added = curr.keywords.filter((k) => !prev.keywords.includes(k));
+    const removed = prev.keywords.filter((k) => !curr.keywords.includes(k));
+    const retained = curr.keywords.filter((k) => prev.keywords.includes(k));
+
+    const mutationRate =
+      (added.length + removed.length) /
+      Math.max(prev.keywords.length + added.length, 1);
+
+    mutations.push({
+      step: i,
+      from: prev,
+      to: curr,
+      addedKeywords: added,
+      removedKeywords: removed,
+      retainedKeywords: retained,
+      mutationRate,
+      direction: classifyMutationDirection(added, removed),
+    });
+  }
+
+  return {
+    mutations,
+    totalMutationRate:
+      mutations.reduce((s, m) => s + m.mutationRate, 0) / mutations.length,
+    isMutating: mutations.some((m) => m.mutationRate > 0.3),
+  };
+}
+
+function classifyMutationDirection(added, removed) {
+  const escalationWords = ['attack', 'threat', 'crisis', 'war', 'danger', 'enemy'];
+  const deescalationWords = ['peace', 'agreement', 'calm', 'dialogue', 'cooperation'];
+
+  const addedEscalation = added.filter((w) =>
+    escalationWords.some((e) => w.includes(e))
+  ).length;
+  const addedDeescalation = added.filter((w) =>
+    deescalationWords.some((e) => w.includes(e))
+  ).length;
+
+  if (addedEscalation > addedDeescalation) return 'radicalization';
+  if (addedDeescalation > addedEscalation) return 'moderation';
+  return 'neutral';
+}
+
+// ============================================================
+// Granger causality для оценки влияния акторов
+// ============================================================
+
+function estimateNarrativeInfluence(actors, narrativeTimeline) {
+  const results = {};
+
+  for (const actor of actors) {
+    const actorPosts = narrativeTimeline.filter((t) => t.actor === actor.id);
+    const otherPosts = narrativeTimeline.filter((t) => t.actor !== actor.id);
+
+    if (actorPosts.length < 3 || otherPosts.length < 3) {
+      results[actor.id] = { influence: 0, type: 'insufficient_data' };
+      continue;
+    }
+
+    const x = actorPosts.map((p) => p.volume || 0);
+    const y = otherPosts.map((p) => p.volume || 0);
+    const lag = 1;
+    const granger = grangerTest(x, y, lag);
+
+    results[actor.id] = {
+      influence: granger.fStatistic > 3.0 ? granger.fStatistic / 10 : 0,
+      type: granger.fStatistic > 3.0 ? 'driver' : 'amplifier',
+      fStat: granger.fStatistic,
+      pValue: granger.pValue,
+    };
+  }
+
+  const ranking = Object.entries(results)
+    .sort((a, b) => b[1].influence - a[1].influence)
+    .map(([id, r]) => ({ actor: id, ...r }));
+
+  return {
+    actors: results,
+    ranking,
+    topDriver: ranking[0] || null,
+  };
+}
+
+function grangerTest(x, y, lag = 1) {
+  const n = Math.min(x.length, y.length) - lag;
+  if (n < 5) return { fStatistic: 0, pValue: 1 };
+
+  const yTarget = [];
+  const yLag = [];
+  const xLag = [];
+
+  for (let i = lag; i < Math.min(x.length, y.length); i++) {
+    yTarget.push(y[i]);
+    yLag.push(y[i - lag]);
+    xLag.push(x[i - lag]);
+  }
+
+  const meanY = yTarget.reduce((a, b) => a + b, 0) / n;
+
+  let rssR = 0, rssU = 0;
+  for (let i = 0; i < n; i++) {
+    const predR = meanY * 0.5 + yLag[i] * 0.3;
+    rssR += (yTarget[i] - predR) ** 2;
+    const predU = meanY * 0.3 + yLag[i] * 0.2 + xLag[i] * 0.4;
+    rssU += (yTarget[i] - predU) ** 2;
+  }
+
+  const fStat =
+    ((rssR - rssU) / lag) / (rssU / Math.max(n - 2 * lag - 1, 1));
+  return {
+    fStatistic: fStat,
+    pValue: 1 / (1 + Math.max(fStat, 0)),
+  };
+}
+
+// ============================================================
+// Готовый цикл для Crucix
+// ============================================================
+
+function crucixNarrativeAnalysis(latest, history) {
+  const documents = (history || [])
+    .slice(-50)
+    .map((h) => ({
+      text:
+        h.gdelt && Array.isArray(h.gdelt.rawEvents)
+          ? h.gdelt.rawEvents.map((e) => (e && e.summary) || '').join(' ')
+          : '',
+      source: 'gdelt',
+      timestamp: h.timestamp || new Date().toISOString(),
+    }))
+    .filter((d) => d.text.length > 20);
+
+  const narratives = extractNarratives(documents);
+
+  const forecasts = narratives.map((n) => {
+    const sir = narrativeSIR({
+      beta: 0.3 + n.strength * 0.4,
+      gamma: 0.1 + (1 - n.strength) * 0.2,
+      S0: 1000,
+      I0: Math.max(1, n.documentCount),
+      days: 30,
+    });
+    return { narrative: n, sirForecast: sir };
+  });
+
+  const result = {
+    module: 'narrative',
+    narrativeCount: narratives.length,
+    narratives,
+    forecasts,
+    topNarrative:
+      forecasts.sort((a, b) => b.sirForecast.R0 - a.sirForecast.R0)[0] || null,
+    timestamp: new Date().toISOString(),
+  };
+
+  try {
+    const dir = join(__dirname, '..', '..', 'runs', 'predictions');
+    if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+    writeFileSync(
+      join(dir, `narrative_${Date.now()}.json`),
+      JSON.stringify(result, null, 2)
+    );
+  } catch (e) {
+    // Модуль работает даже без диска
+  }
+
+  return result;
+}
+
+export {
+  extractNarratives,
+  narrativeSIR,
+  narrativeSEIR,
+  trackNarrativeMutation,
+  estimateNarrativeInfluence,
+  crucixNarrativeAnalysis,
+};
+
+
+
+========================================================================
+
+FILE: apis/predict/narrative_unified.mjs
+SIZE: 11150 bytes
+SHA1: 96b5c3aab1071e46
+========================================================================
+
+// apis/predict/narrative_unified.mjs
+// Объединение обычного нарративного анализа (SIR/SEIR) с детекцией
+// информационной войны.
+//
+// Базовый narrative.mjs даёт "что распространяется".
+// narrative_warfare.mjs даёт "кто распространяет и скоординированно ли".
+// Вместе: полная картина информационного поля.
+//
+// Внутренний модуль (контракт Тип B):
+//   export const meta = { id, name, layer, category, description, version, depends, exports }
+//   export function crucixUnifiedNarrative(latest, history, options)
+//
+// Никаких route / methods / handler — это не HTTP-эндпоинт.
+
+import { writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { readFileSync } from 'node:fs';
+
+import { crucixNarrativeAnalysis } from './narrative.mjs';
+import { crucixNarrativeWarfare, computeNarrativeConfidence } from './narrative_warfare.mjs';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const PROJECT_ROOT = resolveSafe(__dirname, '..', '..');
+const RUNS_DIR = join(PROJECT_ROOT, 'runs', 'predictions');
+
+function resolveSafe(base, ...segments) {
+  return join(base, ...segments);
+}
+
+export const meta = {
+  id: 'narrative_unified',
+  name: 'Объединённый нарративный анализ',
+  layer: 8,
+  category: 'information',
+  description: 'SIR/SEIR-прогноз распространения нарратива + детекция скоординированных кампаний + оценка достоверности через независимые источники',
+  version: '1.0.0',
+  depends: ['narrative', 'narrative_warfare', 'temporal_causal'],
+  exports: ['crucixUnifiedNarrative', 'classifyNarrativeThreat'],
+};
+
+// ─── ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ─────────────────────────
+
+function ensureDir(dir) {
+  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+}
+
+function loadJSON(filepath, fallback) {
+  try {
+    if (!existsSync(filepath)) return fallback;
+    return JSON.parse(readFileSync(filepath, 'utf-8'));
+  } catch (e) {
+    console.warn(`[narrative_unified] loadJSON ${filepath}: ${e.message}`);
+    return fallback;
+  }
+}
+
+// ─── ГЛАВНАЯ ФУНКЦИЯ ─────────────────────────────────
+
+/**
+ * Unified Narrative Analysis:
+ *   1. Извлекаем нарративы (topic modeling) — через narrative.mjs
+ *   2. Для каждого нарратива: SIR/SEIR-прогноз распространения
+ *   3. Проверяем: не является ли нарратив частью скоординированной кампании
+ *   4. Оцениваем достоверность через независимые источники
+ *   5. Строим мост к многослойному причинному графу (INFO → FINANCE)
+ *
+ * @param {object} latest — текущий sweep
+ * @param {Array} history — история sweep-ов
+ * @param {object} options — резерв под будущие опции
+ * @returns {object} unified narrative analysis
+ */
+export function crucixUnifiedNarrative(latest, history, options = {}) {
+  const startTime = Date.now();
+
+  // 1. Базовый нарративный анализ
+  let baseNarrative = null;
+  try {
+    baseNarrative = crucixNarrativeAnalysis(latest, history);
+  } catch (e) {
+    console.warn(`[narrative_unified] base narrative failed: ${e.message}`);
+    baseNarrative = { narratives: [], forecasts: [], narrativeCount: 0 };
+  }
+
+  // 2. Детекция информационной войны
+  let warfare = null;
+  try {
+    warfare = crucixNarrativeWarfare(latest, history);
+  } catch (e) {
+    console.warn(`[narrative_unified] warfare failed: ${e.message}`);
+    warfare = { available: false, campaigns: [], campaignsDetected: 0, threatLevel: 0 };
+  }
+
+  // 3. Обогащение каждого нарратива
+  const rawEvents = Array.isArray(latest?.gdelt?.rawEvents) ? latest.gdelt.rawEvents : [];
+  const enrichedNarratives = (baseNarrative.narratives || []).map(narrative => {
+    const keywords = Array.isArray(narrative.keywords) ? narrative.keywords : [];
+
+    // Матчинг с известными кампаниями
+    const matchingCampaign = (warfare.campaigns || []).find(campaign => {
+      const sampleTexts = Array.isArray(campaign.sampleTexts) ? campaign.sampleTexts : [];
+      return keywords.some(kw =>
+        sampleTexts.some(text =>
+          typeof text === 'string' &&
+          text.toLowerCase().includes(String(kw).toLowerCase())
+        )
+      );
+    }) || null;
+
+    // Посты, относящиеся к нарративу
+    const narrativePosts = rawEvents
+      .filter(e => {
+        const summary = (e?.summary || '').toLowerCase();
+        return keywords.some(kw => summary.includes(String(kw).toLowerCase()));
+      })
+      .map(e => ({
+        text: e.summary,
+        source: e.sourceUrl || e.domain || 'unknown',
+      }));
+
+    // Достоверность через независимые источники
+    let confidence;
+    if (narrativePosts.length > 0) {
+      try {
+        confidence = computeNarrativeConfidence(narrativePosts);
+      } catch (e) {
+        confidence = { confidence: 0.5, level: 'unknown', independentSources: 0, propagandaSources: 0 };
+      }
+    } else {
+      confidence = { confidence: 0.5, level: 'unknown', independentSources: 0, propagandaSources: 0 };
+    }
+
+    // SIR-прогноз
+    const sirForecast = (baseNarrative.forecasts || [])
+      .find(f => f?.narrative?.id === narrative.id)?.sirForecast || null;
+
+    // Классификация происхождения
+    let originType = 'organic';
+    if (matchingCampaign && matchingCampaign.suspicionScore > 0.6) {
+      originType = 'coordinated_campaign';
+    } else if (matchingCampaign && matchingCampaign.suspicionScore > 0.4) {
+      originType = 'suspicious_coordination';
+    }
+
+    // Оценка угрозы
+    const spreadFactor = sirForecast?.willSpread ? 0.4 : 0.1;
+    const suspicionFactor = matchingCampaign?.suspicionScore || 0;
+    const lowConfidenceFactor = confidence.confidence < 0.4 ? 0.3 : 0;
+    const threatLevel = Math.min(1, spreadFactor + suspicionFactor * 0.5 + lowConfidenceFactor);
+
+    return {
+      ...narrative,
+      originType,
+      matchedCampaign: matchingCampaign ? {
+        id: matchingCampaign.id,
+        suspicionScore: matchingCampaign.suspicionScore,
+        classification: matchingCampaign.classification,
+        sourceCount: Array.isArray(matchingCampaign.sources) ? matchingCampaign.sources.length : 0,
+      } : null,
+      confidence: {
+        value: confidence.confidence,
+        level: confidence.level,
+        independentSources: confidence.independentSources || 0,
+        propagandaSources: confidence.propagandaSources || 0,
+      },
+      sirForecast,
+      threatLevel,
+      recommendation: classifyNarrativeThreat(originType, sirForecast, confidence),
+    };
+  });
+
+  enrichedNarratives.sort((a, b) => b.threatLevel - a.threatLevel);
+
+  const topCampaign = (warfare.campaigns && warfare.campaigns[0]) || null;
+
+  const overallThreat = enrichedNarratives.length > 0
+    ? enrichedNarratives.reduce((s, n) => s + n.threatLevel, 0) / enrichedNarratives.length
+    : 0;
+
+  // Мост к многослойному причинному графу
+  const causalBridge = {
+    infoLayerNodes: enrichedNarratives.slice(0, 5).map(n => ({
+      narrative: (n.keywords && n.keywords[0]) || 'unknown',
+      threatLevel: n.threatLevel,
+      originType: n.originType,
+      financialImpact: n.sirForecast?.willSpread
+        ? Math.min(0.8, n.threatLevel * 0.7 + 0.2)
+        : n.threatLevel * 0.3,
+    })),
+    interpretation: overallThreat > 0.6
+      ? 'Высокая информационная угроза. Нарративы распространяются, часть — скоординированно. Возможно влияние на финансовый слой.'
+      : overallThreat > 0.4
+        ? 'Средняя информационная угроза. Требуется мониторинг.'
+        : 'Информационное поле стабильно.',
+  };
+
+  const result = {
+    module: 'narrative_unified',
+    timestamp: new Date().toISOString(),
+    elapsedMs: Date.now() - startTime,
+
+    narratives: enrichedNarratives.slice(0, 10),
+    campaigns: warfare.campaigns || [],
+    topCampaign,
+
+    narrativeCount: enrichedNarratives.length,
+    coordinatedCampaignsCount: enrichedNarratives.filter(n => n.originType === 'coordinated_campaign').length,
+    organicNarrativesCount: enrichedNarratives.filter(n => n.originType === 'organic').length,
+    overallThreat,
+
+    causalBridge,
+
+    assessments: {
+      threatLevel: overallThreat > 0.6 ? 'КРИТИЧНО'
+        : overallThreat > 0.4 ? 'ВЫСОКО'
+        : overallThreat > 0.2 ? 'СРЕДНЕ' : 'НИЗКО',
+      description: causalBridge.interpretation,
+    },
+
+    warfareAvailable: warfare.available === true,
+    baseNarrativeAvailable: !!(baseNarrative && baseNarrative.narratives),
+  };
+
+  // Сохранение
+  try {
+    ensureDir(RUNS_DIR);
+    writeFileSync(
+      join(RUNS_DIR, 'narrative_unified.json'),
+      JSON.stringify(result, null, 2)
+    );
+  } catch (e) {
+    console.warn(`[narrative_unified] save failed: ${e.message}`);
+  }
+
+  return result;
+}
+
+/**
+ * Классификация угрозы нарратива по комбинации происхождения,
+ * прогноза распространения и достоверности источников.
+ */
+export function classifyNarrativeThreat(originType, sirForecast, confidence) {
+  if (originType === 'coordinated_campaign' && sirForecast?.willSpread) {
+    return 'КРИТИЧНО: скоординированная кампания активно распространяется. Требуется противодействие.';
+  }
+  if (originType === 'coordinated_campaign' && !sirForecast?.willSpread) {
+    return 'ВЫСОКО: обнаружена кампания, но распространение сдерживается.';
+  }
+  if (originType === 'suspicious_coordination' && sirForecast?.willSpread) {
+    return 'ВНИМАНИЕ: признаки координации + активное распространение. Мониторинг усилен.';
+  }
+  if ((confidence?.confidence ?? 1) < 0.3) {
+    return 'Недостоверный нарратив. Не подтверждён независимыми источниками.';
+  }
+  return 'Органический нарратив. Стандартный мониторинг.';
+}
+
+export default crucixUnifiedNarrative;
+
+
+
+========================================================================

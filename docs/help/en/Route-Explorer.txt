@@ -1,0 +1,53 @@
+============================================================
+ROUTE EXPLORER — SUPPLY CHAIN ANALYSIS
+============================================================
+Version: 1.0.0
+Port: 3170
+Status: ✅ RUNNING
+
+DESCRIPTION
+-----------
+Supply chain and maritime route analysis. Tracks chokepoints and
+suggests alternative routes when risks arise.
+
+FEATURES
+--------
+- Route analysis "from-to-what"
+- 5 key chokepoints tracking
+- Risk assessment for each route
+- Alternative routes
+- Country impact
+
+CHOKEPOINTS
+-----------
+1. Hormuz Strait          - risk: high
+2. Suez Canal             - risk: medium
+3. Malacca Strait         - risk: low
+4. Bab-el-Mandeb          - risk: high
+5. Panama Canal           - risk: medium
+
+API ENDPOINTS
+-------------
+POST   /route/analyze           - Route analysis
+GET    /route/chokepoints       - List of chokepoints
+
+EXAMPLES
+--------
+# List chokepoints
+curl http://localhost:3170/route/chokepoints
+
+# Analyze route
+curl -X POST http://localhost:3170/route/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"from": "CN", "to": "US", "commodity": "electronics", "cargoType": "container"}'
+
+DEPENDENCIES
+------------
+- Node.js v22+
+
+INSTALLATION
+------------
+cd /home/ta8_/Рабочий стол/Crucix/crucix-extensions/route-explorer
+npm install
+node index.mjs
+============================================================

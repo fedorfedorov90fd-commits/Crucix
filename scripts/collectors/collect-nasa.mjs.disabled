@@ -1,0 +1,53 @@
+#!/usr/bin/env node
+
+// ============================================================
+// collect-nasa.mjs — NASA APOD (Astronomy Picture of the Day)
+// ============================================================
+// API: https://api.nasa.gov/planetary/apod
+// Ключ: DEMO_KEY (бесплатно, без регистрации)
+// Сохраняет: data/basket/nasa.json
+// ============================================================
+
+import { promises as fs } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const PROJECT_ROOT = join(__dirname, '..', '..');
+const BASKET_DIR = join(PROJECT_ROOT, 'data', 'basket');
+const FILE_PATH = join(BASKET_DIR, 'nasa.json');
+const LOGS_DIR = join(PROJECT_ROOT, 'logs', 'collectors');
+const LOG_FILE = join(LOGS_DIR, 'collect-nasa.log');
+
+async function logMessage(msg) {
+  const ts = new Date().toISOString();
+  await fs.mkdir(LOGS_DIR, { recursive: true });
+  await fs.appendFile(LOG_FILE, `[${ts}] ${msg}\n`);
+}
+
+async function fetchNASA() {
+  const start = Date.now();
+  await logMessage('Запуск сборщика NASA APOD');
+
+  try {
+    // DEMO_KEY — бесплатный ключ для тестов (50 запросов/час)
+    const url = 'https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY&count=5';
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+    const data = await res.json();
+
+    await fs.mkdir(BASKET_DIR, { recursive: true });
+    await fs.writeFile(FILE_PATH, JSON.stringify(data, null, 2));
+
+    const elapsed = ((Date.now() - start) / 1000).toFixed(1);
+    await logMessage(`Сохранено ${data.length} картинок за ${elapsed}с`);
+    console.log(`[NASA] ✅ ${data.length} картинок`);
+  } catch (error) {
+    await logMessage(`Ошибка: ${error.message}`);
+    console.error('[NASA]', error.message);
+  }
+}
+
+fetchNASA();

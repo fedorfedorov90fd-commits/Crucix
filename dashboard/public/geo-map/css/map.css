@@ -1,0 +1,253 @@
+/* ============================================================
+   MAP.CSS — Карта, легенда, статистика
+   ============================================================ */
+
+.map-container {
+    position: fixed;
+    top: 90px;
+    left: 0;
+    right: 380px;
+    bottom: 0;
+    transition: right 0.3s ease;
+}
+.map-container.full {
+    right: 0;
+}
+
+#map {
+    height: 100%;
+    width: 100%;
+    background: #0a1628;
+}
+
+/* Leaflet */
+.leaflet-tile-pane {
+    filter: hue-rotate(200deg) saturate(1.4) brightness(0.55);
+}
+.leaflet-tile-pane + * {
+    filter: none !important;
+}
+
+.leaflet-popup-content-wrapper {
+    background: rgba(10, 10, 20, 0.92) !important;
+    color: #c8d0d8 !important;
+    border-radius: 6px !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    font-size: 12px !important;
+}
+.leaflet-popup-tip {
+    background: rgba(10, 10, 20, 0.92) !important;
+}
+.leaflet-control-zoom {
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+.leaflet-control-zoom a {
+    background: rgba(10, 10, 20, 0.8) !important;
+    color: #c8d0d8 !important;
+}
+
+/* Страны */
+.country-boundary {
+    stroke: rgba(255, 255, 255, 0.5) !important;
+    stroke-width: 1px !important;
+    stroke-opacity: 0.6 !important;
+    transition: all 0.3s;
+}
+.country-boundary:hover {
+    fill-opacity: 0.8 !important;
+    stroke-width: 2px !important;
+    stroke-opacity: 1 !important;
+}
+.country-antarctica {
+    fill: #d0d5dd !important;
+    fill-opacity: 0.85 !important;
+    stroke: #a0a5ad !important;
+    stroke-width: 1px !important;
+}
+.country-arctic {
+    fill: #c8cdd5 !important;
+    fill-opacity: 0.7 !important;
+    stroke: #a0a5ad !important;
+    stroke-width: 1px !important;
+}
+
+/* Подписи стран */
+.country-label {
+    color: #e0e8f0;
+    font-size: 10px;
+    font-weight: 500;
+    text-shadow: 0 0 12px rgba(0, 0, 0, 0.95), 0 0 6px rgba(0, 0, 0, 0.9), 0 0 3px rgba(0, 0, 0, 0.8);
+    pointer-events: none;
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+}
+.country-label-russia {
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
+    text-shadow: 0 0 15px rgba(0, 0, 0, 0.95), 0 0 8px rgba(0, 0, 0, 0.9), 0 0 4px rgba(0, 0, 0, 0.8);
+    letter-spacing: 0.6px;
+}
+.country-label-inactive {
+    color: #8899aa;
+    font-size: 9px;
+    font-weight: 400;
+    text-shadow: 0 0 8px rgba(0, 0, 0, 0.9);
+    opacity: 0.85;
+}
+
+/* Легенда */
+.legend {
+    position: absolute;
+    bottom: 20px;
+    left: 16px;
+    z-index: 1000;
+    background: rgba(10, 10, 30, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 8px 12px;
+    backdrop-filter: blur(10px);
+    color: #ccc;
+    min-width: 110px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+.legend-title {
+    font-weight: 600;
+    color: #e8f0f8;
+    margin-bottom: 4px;
+    font-size: 11px;
+}
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 1px 0;
+    font-size: 10px;
+    color: #c0d0e0;
+}
+.legend-color {
+    width: 12px;
+    height: 9px;
+    border-radius: 2px;
+    display: inline-block;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.legend-count {
+    color: #4a5a6a;
+    font-size: 8px;
+    margin-left: auto;
+}
+
+/* Статистика */
+.stats {
+    position: absolute;
+    top: 60px;
+    right: 14px;
+    z-index: 1000;
+    background: rgba(10, 10, 30, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 6px 12px;
+    backdrop-filter: blur(10px);
+    min-width: 80px;
+    color: #ccc;
+    text-align: center;
+}
+.stats .count {
+    font-size: 20px;
+    font-weight: 700;
+    color: #44ccff;
+}
+.stats .label {
+    font-size: 8px;
+    color: #888;
+}
+.stats .countries-count {
+    font-size: 10px;
+    color: #ffd700;
+    margin-top: 2px;
+}
+
+/* SSI */
+.ssi-panel {
+    position: absolute;
+    bottom: 120px;
+    right: 14px;
+    z-index: 1000;
+    background: rgba(10, 10, 30, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 6px 12px;
+    backdrop-filter: blur(10px);
+    min-width: 100px;
+}
+.ssi-panel .ssi-title {
+    font-size: 8px;
+    color: #888;
+    margin-bottom: 2px;
+    text-align: center;
+}
+.ssi-panel .ssi-bar {
+    height: 5px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+    overflow: hidden;
+}
+.ssi-panel .ssi-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #22c55e, #eab308, #f59e0b, #f97316, #ef4444);
+    transition: width 1s ease;
+    border-radius: 3px;
+    width: 0%;
+}
+.ssi-panel .ssi-value {
+    font-size: 14px;
+    font-weight: 700;
+    margin-top: 2px;
+    text-align: center;
+}
+
+.timeline-panel {
+    position: absolute;
+    bottom: 170px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    background: rgba(10, 10, 30, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 5px 12px;
+    backdrop-filter: blur(10px);
+    min-width: 200px;
+    display: none;
+    color: #ccc;
+}
+.timeline-panel.active {
+    display: block;
+}
+.timeline-panel .timeline-title {
+    font-size: 8px;
+    color: #888;
+    margin-bottom: 2px;
+    text-align: center;
+}
+.timeline-panel .timeline-track {
+    display: flex;
+    gap: 2px;
+    height: 14px;
+    align-items: flex-end;
+    padding: 1px 0;
+}
+.timeline-panel .timeline-bar {
+    flex: 1;
+    min-height: 2px;
+    border-radius: 2px;
+    transition: height 0.5s ease;
+}
+.timeline-panel .timeline-date {
+    font-size: 7px;
+    color: #666;
+    text-align: center;
+    margin-top: 2px;
+}

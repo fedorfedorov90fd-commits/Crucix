@@ -1,0 +1,37 @@
+{
+  "_meta": {
+    "id": "social-briefing",
+    "category": "forecast",
+    "version": "1.0.0",
+    "schema_version": "1.0.0",
+    "sources": [
+      "adaptive-news-clustering",
+      "conflict-escalation-tracker",
+      "strategic-risk-composite",
+      "market-composite"
+    ],
+    "calculator": "SocialBriefingEngine",
+    "format": "daily",
+    "updated_at": "2026-09-12T14:57:08.779Z",
+    "duration_ms": 77,
+    "checksum": "3baba186560678b7",
+    "provider": "degraded",
+    "description": "Генерация человекочитаемых брифов через локальный LLM (Ollama). Форматы: daily, alert, summary."
+  },
+  "data": {
+    "brief": {
+      "text": "Briefing (DAILY) — auto-generated summary (AI degraded).\nTop clusters: \"Jury in Lindsay Clancy trial ends second day of deliberations without a verdict - AP News\"; \"Meta’s $18 billion settlement puts TikTok and YouTube on notice. Who's next on the firing line? - CNBC\"; \"Nancy Grace Roman Telescope live updates: SpaceX readying Roman for launch aboard Falcon Heavy rocket - Space\"\nEscalations: ukraine L1, georgia L0\nRisk areas: UKR 56, SDN 50.79, IRN 50.3",
+      "provider": "degraded",
+      "format": "daily",
+      "metadata": {
+        "clusterCount": 20,
+        "escalationCount": 2,
+        "riskCount": 10,
+        "chokepointCount": 0,
+        "marketScore": 45.86
+      },
+      "error": "Ollama HTTP 404"
+    },
+    "generated_at": "2026-09-12T14:57:08.779Z"
+  }
+}

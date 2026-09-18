@@ -1,0 +1,69 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: crucix-core
+  namespace: crucix
+  labels:
+    app: crucix-core
+spec:
+  type: ClusterIP
+  selector:
+    app: crucix-core
+  ports:
+    - name: api
+      port: 3117
+      targetPort: 3117
+      protocol: TCP
+    - name: websocket
+      port: 3118
+      targetPort: 3118
+      protocol: TCP
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 3600
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: crucix-core-headless
+  namespace: crucix
+  labels:
+    app: crucix-core
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: crucix-core
+  ports:
+    - name: websocket
+      port: 3118
+      targetPort: 3118
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: crucix-python
+  namespace: crucix
+spec:
+  type: ClusterIP
+  selector:
+    app: crucix-python
+  ports:
+    - name: http
+      port: 8090
+      targetPort: 8090
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: crucix-fl-coordinator
+  namespace: crucix
+spec:
+  type: ClusterIP
+  selector:
+    app: crucix-fl-coordinator
+  ports:
+    - name: http
+      port: 3120
+      targetPort: 3120

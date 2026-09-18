@@ -1,0 +1,803 @@
+// apis/predict/v7/continuous_causal.mjs
+// Continuous-Time Causal Model
+// Neural ODE + Structural Causal Model (SCM) с do-operator
+//
+// Теоретическая основа:
+//   - Pearl, J. (2000). "Causality: Models, Reasoning, and Inference".
+//   - Chen, R. T. Q., et al. (2018). "Neural Ordinary Differential Equations". NeurIPS.
+//   - Rubenstein, P. K., et al. (2018). "Learning Deterministic SCM with Cycles".
+//   - Bica, I., Jordon, J., & van der Schaar, M. (2020). "Estimating the
+//     Effects of Continuous-valued Interventions". NeurIPS.
+//
+// Ключевая идея:
+//   Neural ODE, где динамика каждой переменной зависит ТОЛЬКО от её
+//   причинных родителей в DAG:
+//
+//     dz_i/dt = f_i( {z_j : j ∈ parents(i)}, t ) + ε_i
+//
+//   Do-operator: зафиксировать z_j = v на всём интервале [t0, t1].
+//   Counterfactual: сравнение фактической и контр-фактической траектории.
+//   ATE = mean(z_CF(t1) - z_F(t1)).
+//
+// Версия: 7.0.0
+
+import { writeFileSync, mkdirSync, existsSync, readFileSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// ═══════════════════════════════════════════════════
+// УТИЛИТЫ
+// ═══════════════════════════════════════════════════
+
+function ensureDir(d) {
+  if (!existsSync(d)) mkdirSync(d, { recursive: true });
+}
+
+function saveJSON(fp, data) {
+  ensureDir(dirname(fp));
+  writeFileSync(fp, JSON.stringify(data, null, 2));
+}
+
+function mean(arr) {
+  if (arr.length === 0) return 0;
+  return arr.reduce((a, b) => a + b, 0) / arr.length;
+}
+
+function gaussianRandom(mu = 0, sigma = 1) {
+  const u1 = Math.random() || 1e-10;
+  const u2 = Math.random();
+  const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+  return mu + z * sigma;
+}
+
+function heInit(fanIn, fanOut) {
+  return (Math.random() * 2 - 1) * Math.sqrt(2 / (fanIn + fanOut));
+}
+
+function xavierInit(fanIn, fanOut) {
+  return (Math.random() * 2 - 1) * Math.sqrt(6 / (fanIn + fanOut));
+}
+
+function tanh(x) {
+  return Math.tanh(x);
+}
+
+function vecAdd(a, b) {
+  const out = new Array(a.length);
+  for (let i = 0; i < a.length; i++) out[i] = a[i] + b[i];
+  return out;
+}
+
+function vecScale(a, k) {
+  const out = new Array(a.length);
+  for (let i = 0; i < a.length; i++) out[i] = a[i] * k;
+  return out;
+}
+
+function vecSub(a, b) {
+  const out = new Array(a.length);
+  for (let i = 0; i < a.length; i++) out[i] = a[i] - b[i];
+  return out;
+}
+
+function vecNorm(v) {
+  let s = 0;
+  for (let i = 0; i < v.length; i++) s += v[i] * v[i];
+  return Math.sqrt(s);
+}
+
+function matVec(A, x) {
+  const out = new Array(A.length);
+  const inDim = A.length > 0 ? A[0].length : 0;
+  if (inDim !== x.length) {
+    throw new Error(`matVec: A rows have ${inDim} cols, x has ${x.length}`);
+  }
+  for (let i = 0; i < A.length; i++) {
+    let s = 0;
+    const row = A[i];
+    for (let j = 0; j < inDim; j++) s += row[j] * x[j];
+    out[i] = s;
+  }
+  return out;
+}
+
+// ═══════════════════════════════════════════════════
+// SECTION 1: CausalDAG
+// ═══════════════════════════════════════════════════
+
+class CausalDAG {
+  constructor(config = {}) {
+    this.nodes = config.nodes || [];
+    this.edges = config.edges || [];
+    this._validateAcyclic();
+  }
+
+  parents(node) {
+    return this.edges.filter(e => e.to === node).map(e => e.from);
+  }
+
+  children(node) {
+    return this.edges.filter(e => e.from === node).map(e => e.to);
+  }
+
+  descendants(node) {
+    const visited = new Set();
+    const stack = [node];
+    while (stack.length > 0) {
+      const u = stack.pop();
+      for (const e of this.edges) {
+        if (e.from === u && !visited.has(e.to)) {
+          visited.add(e.to);
+          stack.push(e.to);
+        }
+      }
+    }
+    return [...visited];
+  }
+
+  ancestors(node) {
+    const visited = new Set();
+    const stack = [node];
+    while (stack.length > 0) {
+      const u = stack.pop();
+      for (const e of this.edges) {
+        if (e.to === u && !visited.has(e.from)) {
+          visited.add(e.from);
+          stack.push(e.from);
+        }
+      }
+    }
+    return [...visited];
+  }
+
+  topologicalOrder() {
+    const indeg = new Map();
+    for (const n of this.nodes) indeg.set(n, 0);
+    for (const e of this.edges) indeg.set(e.to, (indeg.get(e.to) || 0) + 1);
+
+    const queue = this.nodes.filter(n => indeg.get(n) === 0);
+    const order = [];
+    while (queue.length > 0) {
+      const u = queue.shift();
+      order.push(u);
+      for (const e of this.edges) {
+        if (e.from === u) {
+          indeg.set(e.to, indeg.get(e.to) - 1);
+          if (indeg.get(e.to) === 0) queue.push(e.to);
+        }
+      }
+    }
+    return order;
+  }
+
+  _validateAcyclic() {
+    const order = this.topologicalOrder();
+    if (order.length !== this.nodes.length) {
+      throw new Error('CausalDAG contains a cycle');
+    }
+  }
+
+  toJSON() {
+    return {
+      nodes: [...this.nodes],
+      edges: this.edges.map(e => ({ ...e })),
+    };
+  }
+
+  static induceFromData(data, varNames, options = {}) {
+    const threshold = options.threshold ?? 0.05;
+    const maxParents = options.maxParents || 3;
+    const maxLag = options.maxLag || 3;
+    const useTimePrecedence = options.useTimePrecedence !== false;
+    const n = data.length;
+    const dim = data[0].length;
+
+    if (n < 10) {
+      return new CausalDAG({ nodes: varNames, edges: [] });
+    }
+
+    // Нормализация каждой переменной (z-score)
+    const normalized = varNames.map((_, j) => {
+      const col = data.map(r => r[j]);
+      const m = col.reduce((a, b) => a + b, 0) / n;
+      let varSum = 0;
+      for (const v of col) varSum += (v - m) ** 2;
+      const sd = Math.sqrt(varSum / n) || 1;
+      return col.map(v => (v - m) / sd);
+    });
+
+    // Лаг-кросс-корреляция: corr(x_i[t], x_j[t+lag])
+    const lagCorr = (i, j, lag) => {
+      if (lag === 0) {
+        const xi = normalized[i];
+        const xj = normalized[j];
+        let s = 0;
+        for (let t = 0; t < n; t++) s += xi[t] * xj[t];
+        return s / n;
+      }
+      const xi = normalized[i];
+      const xj = normalized[j];
+      let s = 0;
+      let count = 0;
+      if (lag > 0) {
+        // i опережает j на lag
+        for (let t = 0; t + lag < n; t++) {
+          s += xi[t] * xj[t + lag];
+          count++;
+        }
+      } else {
+        // lag < 0: j опережает i
+        const al = -lag;
+        for (let t = 0; t + al < n; t++) {
+          s += xi[t + al] * xj[t];
+          count++;
+        }
+      }
+      return count > 0 ? s / count : 0;
+    };
+
+    // Для каждой пары (i, j) определяем направление:
+    // Если max_{lag>0} corr(x_i[t], x_j[t+lag]) > max_{lag>0} corr(x_j[t], x_i[t+lag])
+    //   и > threshold → i→j
+    const edges = [];
+
+    for (let i = 0; i < dim; i++) {
+      for (let j = 0; j < dim; j++) {
+        if (i === j) continue;
+
+        // Пик корреляции при lag от -maxLag до +maxLag
+        let bestForward = -Infinity;
+        let bestForwardLag = 0;
+        let bestBackward = -Infinity;
+        let bestBackwardLag = 0;
+
+        for (let lag = 1; lag <= maxLag; lag++) {
+          const cf = Math.abs(lagCorr(i, j, lag));
+          const cb = Math.abs(lagCorr(i, j, -lag));
+          if (cf > bestForward) { bestForward = cf; bestForwardLag = lag; }
+          if (cb > bestBackward) { bestBackward = cb; bestBackwardLag = -lag; }
+        }
+
+        // Instantaneous корреляция (для сравнения)
+        const instant = Math.abs(lagCorr(i, j, 0));
+
+        if (useTimePrecedence) {
+          // Направление i→j если bestForward > bestBackward и > threshold
+          if (bestForward > bestBackward && bestForward > threshold) {
+            edges.push({
+              from: varNames[i],
+              to: varNames[j],
+              score: Math.round(bestForward * 10000) / 10000,
+              lag: bestForwardLag,
+              weight: 1.0,
+              method: 'lag_correlation',
+            });
+          }
+        } else {
+          // Fallback: без time-precedence просто по instant корреляции
+          if (instant > threshold && i < j) {
+            edges.push({
+              from: varNames[i],
+              to: varNames[j],
+              score: Math.round(instant * 10000) / 10000,
+              weight: 1.0,
+              method: 'instant_correlation',
+            });
+          }
+        }
+      }
+    }
+
+    // Убираем дубли (i→j и j→i — оставляем более сильное)
+    const edgeMap = new Map();
+    for (const e of edges) {
+      const key1 = e.from + '->' + e.to;
+      const key2 = e.to + '->' + e.from;
+      if (edgeMap.has(key2)) {
+        const existing = edgeMap.get(key2);
+        if (Math.abs(e.score) > Math.abs(existing.score)) {
+          edgeMap.delete(key2);
+          edgeMap.set(key1, e);
+        }
+      } else if (edgeMap.has(key1)) {
+        const existing = edgeMap.get(key1);
+        if (Math.abs(e.score) > Math.abs(existing.score)) {
+          edgeMap.set(key1, e);
+        }
+      } else {
+        edgeMap.set(key1, e);
+      }
+    }
+
+    let edgeList = [...edgeMap.values()];
+
+    // Ограничиваем количество родителей на узел
+    const parentsCount = new Map();
+    edgeList = edgeList.filter(e => {
+      const c = parentsCount.get(e.to) || 0;
+      if (c >= maxParents) return false;
+      parentsCount.set(e.to, c + 1);
+      return true;
+    });
+
+    // Убираем циклы: добавляем рёбра по одному, проверяем ацикличность
+    const finalEdges = [];
+    for (const e of edgeList) {
+      const testEdges = [...finalEdges, e];
+      try {
+        new CausalDAG({ nodes: varNames, edges: testEdges });
+        finalEdges.push(e);
+      } catch (err) {
+        // цикл — пропускаем
+      }
+    }
+
+    return new CausalDAG({ nodes: varNames, edges: finalEdges });
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// SECTION 2: ContinuousSCM
+// ═══════════════════════════════════════════════════
+
+class ContinuousSCM {
+  constructor(config = {}) {
+    this.dag = config.dag;
+    if (!this.dag) throw new Error('ContinuousSCM requires a CausalDAG');
+
+    this.nodes = this.dag.nodes;
+    this.dim = this.nodes.length;
+    this.hiddenDim = config.hiddenDim || 16;
+    this.timeAware = config.timeAware !== false;
+
+    this.functions = {};
+    this.initFunctions();
+  }
+
+  initFunctions() {
+    for (const node of this.nodes) {
+      const parents = this.dag.parents(node);
+      const inputDim = this.timeAware ? parents.length + 1 : parents.length;
+      const totalInput = inputDim + 1; // +1 для self
+
+      this.functions[node] = {
+        parents,
+        W1: Array.from({ length: this.hiddenDim }, () =>
+          Array.from({ length: totalInput }, () => heInit(totalInput, this.hiddenDim))),
+        b1: new Array(this.hiddenDim).fill(0),
+        W2: Array.from({ length: this.hiddenDim }, () =>
+          Array.from({ length: this.hiddenDim }, () => heInit(this.hiddenDim, this.hiddenDim))),
+        b2: new Array(this.hiddenDim).fill(0),
+        W3: Array.from({ length: 1 }, () =>
+          Array.from({ length: this.hiddenDim }, () => xavierInit(this.hiddenDim, 1) * 0.1)),
+        b3: new Array(1).fill(0),
+      };
+    }
+  }
+
+  forward(z, t = 0) {
+    const dzdt = new Array(this.dim);
+    for (let i = 0; i < this.dim; i++) {
+      const node = this.nodes[i];
+      const fn = this.functions[node];
+
+      const input = [z[i]];
+      for (const p of fn.parents) {
+        const pIdx = this.nodes.indexOf(p);
+        input.push(z[pIdx]);
+      }
+      if (this.timeAware) input.push(t);
+
+      const pre1 = matVec(fn.W1, input);
+      const h1 = new Array(this.hiddenDim);
+      for (let k = 0; k < this.hiddenDim; k++) h1[k] = tanh(pre1[k] + fn.b1[k]);
+
+      const pre2 = matVec(fn.W2, h1);
+      const h2 = new Array(this.hiddenDim);
+      for (let k = 0; k < this.hiddenDim; k++) h2[k] = tanh(pre2[k] + fn.b2[k]);
+
+      const pre3 = matVec(fn.W3, h2);
+      dzdt[i] = pre3[0] + fn.b3[0];
+    }
+    return dzdt;
+  }
+
+  solve(z0, t0, t1, nSteps = 10, intervention = null) {
+    const dt = (t1 - t0) / nSteps;
+    let z = [...z0];
+    let t = t0;
+
+    const intervIdxs = [];
+    if (intervention) {
+      for (const [nodeName, value] of Object.entries(intervention)) {
+        const idx = this.nodes.indexOf(nodeName);
+        if (idx >= 0) {
+          z[idx] = value;
+          intervIdxs.push({ idx, value });
+        }
+      }
+    }
+
+    const trajectory = [{ t, z: [...z] }];
+
+    for (let step = 0; step < nSteps; step++) {
+      const k1 = this.forward(z, t);
+      const k2 = this.forward(vecAdd(z, vecScale(k1, dt / 2)), t + dt / 2);
+      const k3 = this.forward(vecAdd(z, vecScale(k2, dt / 2)), t + dt / 2);
+      const k4 = this.forward(vecAdd(z, vecScale(k3, dt)), t + dt);
+
+      const zNext = new Array(this.dim);
+      for (let i = 0; i < this.dim; i++) {
+        zNext[i] = z[i] + (dt / 6) * (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]);
+      }
+
+      for (const { idx, value } of intervIdxs) zNext[idx] = value;
+
+      z = zNext;
+      t = t0 + (step + 1) * dt;
+      trajectory.push({ t, z: [...z] });
+    }
+
+    return { z, trajectory };
+  }
+
+  trainStep(z0, z1, dt = 1.0, lr = 0.005, sampleRate = 0.15) {
+    const eps = 1e-4;
+
+    const lossAt = () => {
+      const { z: zPredicted } = this.solve(z0, 0, dt, 6, null);
+      let loss = 0;
+      for (let i = 0; i < this.dim; i++) loss += (zPredicted[i] - z1[i]) ** 2;
+      return loss / this.dim;
+    };
+
+    for (const node of this.nodes) {
+      const fn = this.functions[node];
+      const updateW = (W) => {
+        for (let i = 0; i < W.length; i++) {
+          for (let j = 0; j < W[i].length; j++) {
+            if (Math.random() > sampleRate) continue;
+            const orig = W[i][j];
+            W[i][j] = orig + eps;
+            const lp = lossAt();
+            W[i][j] = orig - eps;
+            const lm = lossAt();
+            W[i][j] = orig;
+            const grad = (lp - lm) / (2 * eps);
+            if (Number.isFinite(grad) && Math.abs(grad) < 50) {
+              W[i][j] = orig - lr * grad;
+            }
+          }
+        }
+      };
+      updateW(fn.W1);
+      updateW(fn.W2);
+      updateW(fn.W3);
+
+      const updateB = (b) => {
+        for (let i = 0; i < b.length; i++) {
+          if (Math.random() > sampleRate) continue;
+          const orig = b[i];
+          b[i] = orig + eps;
+          const lp = lossAt();
+          b[i] = orig - eps;
+          const lm = lossAt();
+          b[i] = orig;
+          const grad = (lp - lm) / (2 * eps);
+          if (Number.isFinite(grad) && Math.abs(grad) < 50) {
+            b[i] = orig - lr * grad;
+          }
+        }
+      };
+      updateB(fn.b1);
+      updateB(fn.b2);
+      updateB(fn.b3);
+    }
+
+    return lossAt();
+  }
+
+  fit(transitions, epochs = 3, lr = 0.005, sampleRate = 0.15) {
+    for (let e = 0; e < epochs; e++) {
+      let totalLoss = 0;
+      let count = 0;
+      for (const tr of transitions) {
+        const loss = this.trainStep(tr.z0, tr.z1, 1.0, lr, sampleRate);
+        if (Number.isFinite(loss)) {
+          totalLoss += loss;
+          count++;
+        }
+      }
+      if (count > 0) {
+        console.log(`[continuous_causal] epoch ${e}: avg loss = ${(totalLoss / count).toFixed(5)}`);
+      }
+    }
+  }
+
+  counterfactual(z0, intervention, horizon = 10, nSteps = 20) {
+    const factual = this.solve(z0, 0, horizon, nSteps, null);
+    const counter = this.solve(z0, 0, horizon, nSteps, intervention);
+
+    const diff = vecSub(counter.z, factual.z);
+    const diffMagnitude = vecNorm(diff);
+
+    return { factual, counterfactual: counter, diff, diffMagnitude, intervention };
+  }
+
+  estimateATE(z0, nodeName, treatmentValue, baselineValue, horizon = 5, nSamples = 20) {
+    const diffs = [];
+    const noiseSigma = 0.05;
+
+    const intervIdx = this.nodes.indexOf(nodeName);
+
+    for (let k = 0; k < nSamples; k++) {
+      // Шум только на НЕинтервенированные переменные (иначе он
+      // перезаписывается фиксированным значением intervention)
+      const noisyZ0 = z0.map((v, i) =>
+        i === intervIdx ? v : v + gaussianRandom(0, noiseSigma)
+      );
+      const factual = this.solve(noisyZ0, 0, horizon, 10, { [nodeName]: baselineValue });
+      const counter = this.solve(noisyZ0, 0, horizon, 10, { [nodeName]: treatmentValue });
+      diffs.push(vecSub(counter.z, factual.z));
+    }
+
+    const avgDiff = new Array(this.dim).fill(0);
+    for (const d of diffs) {
+      for (let i = 0; i < this.dim; i++) avgDiff[i] += d[i];
+    }
+    for (let i = 0; i < this.dim; i++) avgDiff[i] /= diffs.length;
+
+    const stdDiff = new Array(this.dim).fill(0);
+    for (const d of diffs) {
+      for (let i = 0; i < this.dim; i++) stdDiff[i] += (d[i] - avgDiff[i]) ** 2;
+    }
+    for (let i = 0; i < this.dim; i++) stdDiff[i] = Math.sqrt(stdDiff[i] / diffs.length);
+
+    const perVar = {};
+    for (let i = 0; i < this.dim; i++) {
+      perVar[this.nodes[i]] = {
+        ate: Math.round(avgDiff[i] * 10000) / 10000,
+        std: Math.round(stdDiff[i] * 10000) / 10000,
+        sign: avgDiff[i] > 0.01 ? 'positive' : avgDiff[i] < -0.01 ? 'negative' : 'neutral',
+      };
+    }
+
+    return {
+      intervention: { [nodeName]: treatmentValue },
+      baseline: { [nodeName]: baselineValue },
+      horizon,
+      nSamples,
+      perVar,
+      totalMagnitude: Math.round(vecNorm(avgDiff) * 10000) / 10000,
+    };
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// SECTION 3: ИНТЕГРАЦИЯ С CRUCIX
+// ═══════════════════════════════════════════════════
+
+function sweepToVector(s, vars) {
+  const out = [];
+  for (const v of vars) {
+    switch (v) {
+      case 'vix': out.push(Math.min(1, Math.max(0, (s.fred?.vix ?? 20) / 50))); break;
+      case 'tension': out.push(Math.min(1, Math.max(0, s.tension ?? 0.5))); break;
+      case 'sanctions': out.push(Math.min(1, Math.max(0, (s.sanctions?.count ?? 0) / 10))); break;
+      case 'conflicts': out.push(Math.min(1, Math.max(0, (s.gdelt?.conflictEvents?.length ?? 0) / 20))); break;
+      case 'hySpread': out.push(Math.min(1, Math.max(0, (s.fred?.hySpread ?? 3) / 10))); break;
+      case 'dxy': out.push(Math.min(1, Math.max(0, (s.fred?.dxy ?? 100) / 110))); break;
+      default: out.push(0.5);
+    }
+  }
+  return out;
+}
+
+export function crucixContinuousCausal(history, options = {}) {
+  if (!history || history.length < 20) {
+    return {
+      module: 'continuous_causal',
+      available: false,
+      reason: 'insufficient_history',
+      minimumRequired: 20,
+      actual: history.length,
+    };
+  }
+
+  const t0 = Date.now();
+  console.log(`[continuous_causal] Запуск на ${history.length} sweep'ах`);
+
+  const varNames = options.variables || ['vix', 'tension', 'conflicts', 'sanctions', 'hySpread'];
+  const hiddenDim = options.hiddenDim || 16;
+  const epochs = options.epochs || 3;
+  const horizon = options.horizon || 10;
+  const interventionVar = options.interventionVar || 'tension';
+  const treatmentValue = options.treatmentValue ?? 0.8;
+  const baselineValue = options.baselineValue ?? 0.3;
+
+  // 1. Данные как матрица
+  const data = history.map(h => sweepToVector(h, varNames));
+
+  // 2. Индукция DAG
+  let dag;
+  try {
+    dag = options.dag || CausalDAG.induceFromData(data, varNames, {
+      threshold: options.dagThreshold ?? 0.03,
+      maxParents: options.maxParents || 2,
+    });
+  } catch (e) {
+    return {
+      module: 'continuous_causal',
+      available: false,
+      error: `DAG induction failed: ${e.message}`,
+      elapsedMs: Date.now() - t0,
+    };
+  }
+
+  // 3. Transitions для обучения
+  const transitions = [];
+  for (let i = 0; i < data.length - 1; i++) {
+    transitions.push({ z0: data[i], z1: data[i + 1] });
+  }
+
+  // 4. ContinuousSCM
+  const scm = new ContinuousSCM({
+    dag,
+    hiddenDim,
+    timeAware: options.timeAware !== false,
+  });
+
+  // 5. Loss до обучения
+  const lossBefore = (() => {
+    let sum = 0;
+    let cnt = 0;
+    for (let i = 0; i < Math.min(10, transitions.length); i++) {
+      const tr = transitions[i];
+      const { z: zPred } = scm.solve(tr.z0, 0, 1.0, 6, null);
+      let loss = 0;
+      for (let j = 0; j < scm.dim; j++) loss += (zPred[j] - tr.z1[j]) ** 2;
+      sum += loss / scm.dim;
+      cnt++;
+    }
+    return cnt > 0 ? sum / cnt : 0;
+  })();
+
+  // 6. Обучение
+  try {
+    scm.fit(transitions, epochs, options.learningRate || 0.005, options.sampleRate || 0.15);
+  } catch (e) {
+    return {
+      module: 'continuous_causal',
+      available: false,
+      error: `training failed: ${e.message}`,
+      elapsedMs: Date.now() - t0,
+    };
+  }
+
+  // 7. Loss после
+  const lossAfter = (() => {
+    let sum = 0;
+    let cnt = 0;
+    for (let i = 0; i < Math.min(10, transitions.length); i++) {
+      const tr = transitions[i];
+      const { z: zPred } = scm.solve(tr.z0, 0, 1.0, 6, null);
+      let loss = 0;
+      for (let j = 0; j < scm.dim; j++) loss += (zPred[j] - tr.z1[j]) ** 2;
+      sum += loss / scm.dim;
+      cnt++;
+    }
+    return cnt > 0 ? sum / cnt : 0;
+  })();
+
+  // 8. Прогноз из последнего состояния
+  const z0 = data[data.length - 1];
+  const forecast = scm.solve(z0, 0, horizon, horizon * 2, null);
+
+  // 9. Counterfactual
+  const intervention = { [interventionVar]: treatmentValue };
+  const cf = scm.counterfactual(z0, intervention, horizon, horizon * 2);
+
+  // 10. ATE для вмешательства
+  const ate = scm.estimateATE(z0, interventionVar, treatmentValue, baselineValue, 5, 15);
+
+  // 11. Читаемая траектория
+  const forecastReadable = forecast.trajectory.map(pt => {
+    const obj = { t: Math.round(pt.t * 100) / 100 };
+    for (let i = 0; i < scm.dim; i++) {
+      obj[varNames[i]] = Math.round(pt.z[i] * 10000) / 10000;
+    }
+    return obj;
+  });
+
+  // 12. Counterfactual readable
+  const cfReadable = {
+    intervention: cf.intervention,
+    diff: cf.diff.map(v => Math.round(v * 10000) / 10000),
+    diffMagnitude: Math.round(cf.diffMagnitude * 10000) / 10000,
+  };
+
+  // 13. DAG readable
+  const dagReadable = dag.edges.map(e => ({
+    from: e.from,
+    to: e.to,
+    score: e.score,
+  }));
+
+  // 14. Тренд
+  const zFinal = forecast.z;
+  const trend = {};
+  for (let i = 0; i < scm.dim; i++) {
+    trend[varNames[i]] = {
+      before: Math.round(z0[i] * 10000) / 10000,
+      after: Math.round(zFinal[i] * 10000) / 10000,
+      delta: Math.round((zFinal[i] - z0[i]) * 10000) / 10000,
+    };
+  }
+
+  const tensionIdx = varNames.indexOf('tension');
+  const tensionDelta = tensionIdx >= 0 ? trend.tension.delta : 0;
+  const direction = tensionDelta > 0.05 ? 'escalation'
+    : tensionDelta < -0.05 ? 'deescalation'
+    : 'stable';
+
+  const result = {
+    module: 'continuous_causal',
+    available: true,
+    elapsedMs: Date.now() - t0,
+    config: {
+      variables: varNames,
+      hiddenDim,
+      epochs,
+      horizon,
+      timeAware: scm.timeAware,
+    },
+    dag: {
+      nNodes: dag.nodes.length,
+      nEdges: dag.edges.length,
+      edges: dagReadable,
+      topologicalOrder: dag.topologicalOrder(),
+    },
+    training: {
+      transitionsCount: transitions.length,
+      lossBefore: Math.round(lossBefore * 100000) / 100000,
+      lossAfter: Math.round(lossAfter * 100000) / 100000,
+      lossReduction: lossBefore > 0
+        ? Math.round((1 - lossAfter / lossBefore) * 10000) / 10000
+        : null,
+    },
+    forecast: {
+      horizonHours: horizon * 0.25,
+      trajectory: forecastReadable,
+      trend,
+      direction,
+    },
+    counterfactual: cfReadable,
+    ate: {
+      intervention: ate.intervention,
+      baseline: ate.baseline,
+      horizon: ate.horizon,
+      nSamples: ate.nSamples,
+      totalMagnitude: ate.totalMagnitude,
+      perVar: ate.perVar,
+    },
+    interpretation:
+      `Continuous Causal обучен на ${transitions.length} переходах. ` +
+      `DAG: ${dag.edges.length} рёбер (${varNames.length} узлов). ` +
+      `Loss: ${lossBefore.toFixed(5)} → ${lossAfter.toFixed(5)} ` +
+      `(reduction ${((1 - lossAfter / (lossBefore || 1)) * 100).toFixed(1)}%). ` +
+      `Прогноз на ${horizon} шагов (${horizon * 0.25}ч): ${direction}. ` +
+      `Counterfactual do(${interventionVar}=${treatmentValue}): |diff|=${cf.diffMagnitude.toFixed(3)}. ` +
+      `ATE(${interventionVar}: ${baselineValue}→${treatmentValue}) = ${ate.totalMagnitude.toFixed(3)}.`,
+  };
+
+  const outFile = join(__dirname, '..', '..', '..', 'runs', 'predictions', 'continuous_causal.json');
+  saveJSON(outFile, result);
+  return result;
+}
+
+export {
+  CausalDAG,
+  ContinuousSCM,
+};

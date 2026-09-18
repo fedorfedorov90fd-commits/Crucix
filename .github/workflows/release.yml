@@ -1,0 +1,110 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version (e.g., v3.0.1)'
+        required: true
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
+jobs:
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION="${GITHUB_REF#refs/tags/}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -z "$PREV_TAG" ]; then
+            CHANGELOG="Initial release"
+          else
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" "$PREV_TAG"..HEAD)
+          fi
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install wabt and build WASM
+        run: |
+          sudo apt-get install -y wabt
+          cd apis/predict/wasm
+          wat2wasm linear_algebra.wat -o linear_algebra.wasm
+          wat2wasm --enable-simd linear_algebra_simd.wat -o linear_algebra_simd.wasm
+
+      - name: Build handbook
+        continue-on-error: true
+        run: |
+          sudo apt-get install -y pandoc texlive-xetex texlive-fonts-recommended
+          cd docs/handbook
+          bash build.sh || echo "Handbook build failed - continuing"
+
+      - name: Create release tarball
+        run: |
+          mkdir -p release
+          cp -r apis dashboard benchmark docs tests scripts observability release/
+          cp README.md LICENSE* release/ 2>/dev/null || true
+          cd release
+          tar -czf ../crucix-core-${{ steps.version.outputs.version }}.tar.gz .
+          cd ..
+          sha256sum crucix-core-*.tar.gz > crucix-core-${{ steps.version.outputs.version }}.tar.gz.sha256
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: "Crucix Core ${{ steps.version.outputs.version }}"
+          body: |
+            # Crucix Core ${{ steps.version.outputs.version }}
+
+            ## Changes
+            ${{ steps.changelog.outputs.changelog }}
+
+            ## Installation
+
+            Download the release tarball and extract:
+
+            curl -L https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.version }}/crucix-core-${{ steps.version.outputs.version }}.tar.gz | tar xz
+            cd crucix-core
+            bash scripts/build.sh
+            bash scripts/deploy.sh local
+
+            ## Docker
+
+            docker pull ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}
+            docker run -p 3118:3118 ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}
+          files: |
+            crucix-core-${{ steps.version.outputs.version }}.tar.gz
+            crucix-core-${{ steps.version.outputs.version }}.tar.gz.sha256
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

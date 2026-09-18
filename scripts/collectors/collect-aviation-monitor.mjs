@@ -1,0 +1,38 @@
+#!/usr/bin/env node
+import { promises as fs } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const BASKET_PATH = join(__dirname, '..', 'data', 'basket', 'aviation-monitor.json');
+
+function generateData() {
+    const now = new Date();
+    const data = [];
+    const regions = ['Eastern Europe', 'Middle East', 'South China Sea', 'Baltic Sea', 'Korean Peninsula'];
+    
+    for (let i = 30; i >= 0; i--) {
+        const date = new Date(now);
+        date.setDate(date.getDate() - i);
+        data.push({
+            date: date.toISOString().slice(0,10),
+            region: regions[Math.floor(Math.random() * regions.length)],
+            flights: Math.floor(Math.random() * 200) + 50,
+            military: Math.floor(Math.random() * 20) + 1
+        });
+    }
+    return data;
+}
+
+async function collectAviationMonitor() {
+    const data = generateData();
+    await fs.mkdir(join(__dirname, '..', 'data', 'basket'), { recursive: true });
+    await fs.writeFile(BASKET_PATH, JSON.stringify(data, null, 2));
+    console.log(`[Aviation Monitor] ✅ Сохранено ${data.length} записей`);
+    return data;
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+    collectAviationMonitor().catch(console.error);
+}
+export { collectAviationMonitor };

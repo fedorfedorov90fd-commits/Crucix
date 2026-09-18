@@ -1,0 +1,54 @@
+============================================================
+SATELLITE — SATELLITE IMAGERY
+============================================================
+Version: 1.0.0
+Port: 3200
+Status: ✅ RUNNING
+
+DESCRIPTION
+-----------
+Integration with satellite imagery via STAC API.
+Search and retrieval of images by coordinates and date.
+Supports major satellite platforms.
+
+FEATURES
+--------
+- Image search by coordinates
+- Filtering by date and radius
+- Satellite information
+- Cloud cover assessment
+
+AVAILABLE SATELLITES
+--------------------
+1. Sentinel-2   - ESA, resolution 10m, revisit 5 days
+2. Landsat 9    - NASA, resolution 15m, revisit 16 days
+3. MODIS        - NASA, resolution 250m, revisit 1 day
+4. Planet Scope - Planet, resolution 3m, revisit 1 day
+
+API ENDPOINTS
+-------------
+GET    /satellite/search        - Search images
+GET    /satellite/satellites    - List satellites
+
+EXAMPLES
+--------
+# List satellites
+curl http://localhost:3200/satellite/satellites
+
+# Search images (Kyiv)
+curl "http://localhost:3200/satellite/search?lat=48.4&lon=31.2&radius=50&date=2026-08-29"
+
+# Search images (Hormuz Strait)
+curl "http://localhost:3200/satellite/search?lat=26.5&lon=56.0&radius=30"
+
+DEPENDENCIES
+------------
+- Node.js v22+
+- Access to STAC API (external service)
+
+INSTALLATION
+------------
+cd /home/ta8_/Рабочий стол/Crucix/crucix-extensions/satellite
+npm install
+node index.mjs
+============================================================

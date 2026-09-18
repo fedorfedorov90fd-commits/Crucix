@@ -1,48 +1,85 @@
-# Dependencies
-node_modules/
+# ============================================================
+# Crucix .gitignore — публикация публичной части
+# data/, core/, server/, endpoint-finder/ — ОФИЦИАЛЬНЫЕ, публикуются
+# ============================================================
 
-# Environment (contains API keys)
-.env
-apis/.env
-
-# Runtime data
+# --- Приватные папки (НИКОГДА в Git) ---
+PROJECT/
+AI_MEMORY/
+logs/
+LOGS/
+backups/
+reports/
+snapshots/
+snapshots_full/
 runs/
-output/
+test/
+DATA/
+CODE/
+Тексты/
+Чат/
+Корзина/
+Резервные копии/
+1opml/
+RSS_lenta/
+node_modules/
+venv/
+__pycache__/
 
-# IDE / Editor
-.vscode/
-.idea/
+# --- Персональные копии (правило #42) ---
+*[А-Яа-яЁё]*
+* (копия)*
+* (другая копия)*
+* (3-я копия)*
+*_копия*
+*=*
+*/=*
+1server.mjs
+новый файл
+новый_файл
+как надо делать.txt
+
+# --- Бэкапы (любые формы) ---
+*.bak
+*.bak.*
+*.bak_*
+*.bak-*
+*.backup
+*.backup.*
+*.old
+*.old.*
+*.tmp
 *.swp
 *.swo
 *~
+.gitignore.backup_before_strengthen
 
-# OS files
-.DS_Store
-Thumbs.db
-desktop.ini
+# --- Архивы ---
+*.tar.gz
+*.zip
+*.7z
+*.rar
 
-# Claude Code
-.claude/
-CLAUDE.md
-AGENTS.md
+# --- Секреты ---
+.env
+.env.*
+!.env.example
 
-
-# Playwright
-.playwright-cli/
-
-# Logs
+# --- Логи ---
 *.log
 npm-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
 
+# --- Python ---
+*.py[cod]
+.pytest_cache/
 
-# Package lock (optional — remove this line if you want deterministic installs)
-# package-lock.json
+# --- Прочее ---
+.DS_Store
+.cache/
+dist/
+build/
 
-# Backup files
-*.bak
-
-# Local maintainer notes
-MAINTAINER_DECISIONS.local.md
-
-# Local deploy config
-dashboard/public/vercel.json
+# --- Persist (приватные данные внутри data/) ---
+data/persist/*.json

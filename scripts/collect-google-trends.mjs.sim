@@ -1,0 +1,99 @@
+#!/usr/bin/env node
+// ============================================================
+// COLLECT-GOOGLE-TRENDS.MJS — Сборщик Google Trends
+// ============================================================
+// Собирает данные о поисковых запросах по регионам
+// Сохраняет в: data/basket/google-trends.json
+// ============================================================
+
+import { promises as fs } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const BASKET_DIR = join(__dirname, '..', 'data', 'basket');
+const BASKET_PATH = join(BASKET_DIR, 'google-trends.json');
+
+// ============================================================
+// 1. ГЕНЕРАЦИЯ ДАННЫХ (симуляция)
+// ============================================================
+
+function generateTrendsData() {
+    const now = new Date();
+    const regions = [
+        { name: 'Россия', lat: 60, lon: 90 },
+        { name: 'Украина', lat: 49, lon: 31 },
+        { name: 'Польша', lat: 52, lon: 19 },
+        { name: 'Германия', lat: 51, lon: 10 },
+        { name: 'Франция', lat: 46, lon: 2 },
+        { name: 'Великобритания', lat: 55, lon: -3 },
+        { name: 'США', lat: 40, lon: -100 },
+        { name: 'Турция', lat: 39, lon: 35 },
+        { name: 'Иран', lat: 32, lon: 53 },
+        { name: 'Китай', lat: 35, lon: 105 },
+        { name: 'Индия', lat: 20, lon: 78 },
+        { name: 'Япония', lat: 36, lon: 138 },
+        { name: 'Израиль', lat: 31, lon: 34 },
+        { name: 'Саудовская Аравия', lat: 24, lon: 45 }
+    ];
+
+    const keywords = ['война', 'эвакуация', 'кризис', 'мобилизация', 'беженцы', 'убежище'];
+    const trends = [];
+
+    for (const region of regions) {
+        const keyword = keywords[Math.floor(Math.random() * keywords.length)];
+        const score = Math.floor(Math.random() * 80) + 20;
+        const change = Math.floor(Math.random() * 60) - 10;
+        const volume = Math.floor(Math.random() * 100000) + 10000;
+        const startTime = new Date(now.getTime() - Math.random() * 86400000 * 7);
+        const endTime = new Date(startTime.getTime() + 86400000 * 3);
+
+        trends.push({
+            id: `TREND-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+            region: region.name,
+            lat: region.lat + (Math.random() - 0.5) * 3,
+            lon: region.lon + (Math.random() - 0.5) * 3,
+            keyword: keyword,
+            score: score,
+            change: change,
+            volume: volume,
+            intensity: change > 30 ? 'critical' : change > 15 ? 'high' : change > 5 ? 'medium' : 'low',
+            start: startTime.toISOString(),
+            end: endTime.toISOString(),
+            source: 'Google Trends (симуляция)',
+            updated: now.toISOString()
+        });
+    }
+
+    return trends;
+}
+
+// ============================================================
+// 2. СОХРАНЕНИЕ
+// ============================================================
+
+async function saveToBasket(data) {
+    try {
+        await fs.mkdir(BASKET_DIR, { recursive: true });
+        await fs.writeFile(BASKET_PATH, JSON.stringify(data, null, 2), 'utf8');
+        console.log(`[GOOGLE-TRENDS] ✅ Сохранено ${data.length} записей`);
+        return true;
+    } catch (error) {
+        console.error(`[GOOGLE-TRENDS] ❌ Ошибка:`, error.message);
+        return false;
+    }
+}
+
+async function collectGoogleTrends() {
+    console.log('[GOOGLE-TRENDS] 📡 Начинаем сбор...');
+    const data = generateTrendsData();
+    await saveToBasket(data);
+    console.log('[GOOGLE-TRENDS] ✅ Сбор завершен');
+    return data;
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+    collectGoogleTrends().catch(console.error);
+}
+
+export { collectGoogleTrends, generateTrendsData };

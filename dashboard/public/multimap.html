@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crucix MultiMap — 4 независимые карты</title>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; background: #0a0b0f; color: #e2e8f0; font-family: system-ui, -apple-system, sans-serif; overflow: hidden; }
+#top-bar { position: fixed; top: 0; left: 0; right: 0; height: 44px; background: #14161d; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; padding: 0 12px; z-index: 100; gap: 10px; font-size: 12px; }
+#top-bar .logo { font-weight: 700; color: #e94560; letter-spacing: 0.5px; }
+#top-bar .logo span { color: #e2e8f0; font-weight: 400; }
+#top-bar .hint { color: #64748b; font-size: 11px; }
+#top-bar .spacer { flex: 1; }
+#top-bar button { padding: 4px 10px; font-size: 11px; background: #1c1f28; color: #e2e8f0; border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; cursor: pointer; }
+#top-bar button:hover { border-color: #e94560; color: #e94560; }
+#map-grid { position: fixed; top: 44px; bottom: 32px; left: 0; right: 0; display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr); gap: 2px; background: rgba(255,255,255,0.08); }
+.map-cell { position: relative; background: #0a0b0f; overflow: hidden; }
+.map-cell.focused { outline: 2px solid #e94560; outline-offset: -2px; z-index: 5; }
+.map-cell .map-container { width: 100%; height: 100%; }
+.map-cell .map-label { position: absolute; top: 6px; left: 6px; z-index: 10; background: rgba(0,0,0,0.7); backdrop-filter: blur(6px); padding: 3px 8px; border-radius: 3px; font-size: 11px; font-weight: 600; pointer-events: none; display: flex; gap: 6px; align-items: center; }
+.map-cell .map-label .badge { font-size: 9px; padding: 1px 5px; border-radius: 2px; background: rgba(255,255,255,0.1); color: #64748b; }
+.map-cell .map-label .badge.graph { background: rgba(124,58,237,0.3); color: #c4b5fd; }
+.map-cell .map-label .badge.geo { background: rgba(74,158,255,0.3); color: #93c5fd; }
+.map-cell .map-actions { position: absolute; top: 6px; right: 6px; z-index: 10; display: flex; gap: 4px; opacity: 0; transition: opacity 0.2s; }
+.map-cell:hover .map-actions { opacity: 1; }
+.map-cell .map-actions button { padding: 3px 8px; font-size: 10px; background: rgba(0,0,0,0.75); color: #e2e8f0; border: 1px solid rgba(255,255,255,0.15); border-radius: 3px; cursor: pointer; }
+.map-cell .map-actions button:hover { border-color: #e94560; color: #e94560; }
+#bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 32px; background: #14161d; border-top: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; padding: 0 12px; gap: 16px; font-size: 11px; color: #64748b; z-index: 100; }
+#bottom-bar .stat { display: flex; gap: 5px; }
+#bottom-bar .v { color: #e2e8f0; font-weight: 600; }
+#preset-menu { position: fixed; top: 50px; left: 50%; transform: translateX(-50%); background: #14161d; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 8px; z-index: 200; display: none; min-width: 260px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+#preset-menu.show { display: block; }
+#preset-menu .item { padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+#preset-menu .item:hover { background: rgba(233,69,96,0.15); color: #e94560; }
+#preset-menu .item .desc { color: #64748b; font-size: 10px; }
+</style>
+</head>
+<body>
+
+<div id="top-bar">
+  <div class="logo">★ CRUCIX <span>MultiMap</span></div>
+  <div class="hint">1-4 фокус | Q/W/E/R пресеты | T режим | L layout | S сохранить | Esc закрыть</div>
+  <div class="spacer"></div>
+  <button id="btn-presets">Пресеты</button>
+  <button id="btn-save">Сохранить как...</button>
+</div>
+
+<div id="map-grid">
+  <div class="map-cell" data-map="0">
+    <div class="map-label"><span>Global Monitor</span><span class="badge geo" data-role="mode">geo</span></div>
+    <div class="map-container" id="map-0"></div>
+    <div class="map-actions">
+      <button data-action="toggle-mode" data-map="0">режим</button>
+      <button data-action="presets" data-map="0">Пресет</button>
+      <button data-action="clear" data-map="0">Очистить</button>
+    </div>
+  </div>
+  <div class="map-cell" data-map="1">
+    <div class="map-label"><span>Entity Graph</span><span class="badge graph" data-role="mode">graph</span></div>
+    <div class="map-container" id="map-1"></div>
+    <div class="map-actions">
+      <button data-action="toggle-mode" data-map="1">режим</button>
+      <button data-action="presets" data-map="1">Пресет</button>
+      <button data-action="clear" data-map="1">Очистить</button>
+    </div>
+  </div>
+  <div class="map-cell" data-map="2">
+    <div class="map-label"><span>Recon</span><span class="badge geo" data-role="mode">geo</span></div>
+    <div class="map-container" id="map-2"></div>
+    <div class="map-actions">
+      <button data-action="toggle-mode" data-map="2">режим</button>
+      <button data-action="presets" data-map="2">Пресет</button>
+      <button data-action="clear" data-map="2">Очистить</button>
+    </div>
+  </div>
+  <div class="map-cell" data-map="3">
+    <div class="map-label"><span>Custom</span><span class="badge geo" data-role="mode">geo</span></div>
+    <div class="map-container" id="map-3"></div>
+    <div class="map-actions">
+      <button data-action="toggle-mode" data-map="3">режим</button>
+      <button data-action="presets" data-map="3">Пресет</button>
+      <button data-action="clear" data-map="3">Очистить</button>
+    </div>
+  </div>
+</div>
+
+<div id="preset-menu"></div>
+
+<div id="bottom-bar">
+  <div class="stat"><span>Layout:</span><span class="v" id="stat-layout">grid-2x2</span></div>
+  <div class="stat"><span>Active:</span><span class="v" id="stat-active">0</span></div>
+  <div class="stat"><span>Presets:</span><span class="v" id="stat-presets">—</span></div>
+  <div class="spacer" style="flex:1"></div>
+  <div class="stat"><span>Server:</span><span class="v" id="stat-server">checking...</span></div>
+</div>
+
+<script type="module">
+import { MultiMapController } from './geo-map/js/preset-multi-map.js';
+
+const ctrl = new MultiMapController({
+  mapGridId: 'map-grid',
+  apiBase: '/api/layers/preset',
+});
+
+function refreshStats() {
+  const st = ctrl.exportState();
+  document.getElementById('stat-layout').textContent = st.layout;
+  document.getElementById('stat-active').textContent = st.activeMap;
+}
+
+function updateModeBadge(mapId, mode) {
+  const badge = document.querySelector(`.map-cell[data-map="${mapId}"] .badge[data-role="mode"]`);
+  if (!badge) return;
+  badge.textContent = mode;
+  badge.className = `badge ${mode}`;
+}
+
+async function loadPresetsMenu(mapId) {
+  const presets = await ctrl.listPresets();
+  const menu = document.getElementById('preset-menu');
+  menu.innerHTML = '';
+  for (const p of presets) {
+    const item = document.createElement('div');
+    item.className = 'item';
+    item.innerHTML = `<span>${p.icon || '★'} ${p.name}</span><span class="desc">${p.layersCount} слоёв</span>`;
+    item.addEventListener('click', async () => {
+      await ctrl.applyPresetToMap(mapId, p.id);
+      menu.classList.remove('show');
+      const cell = document.querySelector(`.map-cell[data-map="${mapId}"] .map-label span:first-child`);
+      if (cell) cell.textContent = p.name;
+      const ui = ctrl.maps[mapId];
+      if (ui) updateModeBadge(mapId, ui.viewMode);
+    });
+    menu.appendChild(item);
+  }
+  menu.classList.add('show');
+}
+
+async function toggleMapMode(mapId) {
+  const ui = ctrl.maps[mapId];
+  if (!ui || typeof ui.switchMode !== 'function') return;
+  const newMode = ui.viewMode === 'geo' ? 'graph' : 'geo';
+  await ui.switchMode(newMode);
+  updateModeBadge(mapId, newMode);
+  if (newMode === 'graph') {
+    await ctrl.loadGraphData(mapId);
+  }
+}
+
+document.getElementById('btn-presets').addEventListener('click', () => {
+  loadPresetsMenu(ctrl.activeMap);
+});
+
+document.getElementById('btn-save').addEventListener('click', async () => {
+  const name = prompt('Имя нового пресета:');
+  if (!name) return;
+  const saved = await ctrl.saveCurrentAsPreset(ctrl.activeMap, name);
+  if (saved) {
+    alert(`Пресет "${saved.name}" сохранён`);
+    const list = await ctrl.listPresets();
+    document.getElementById('stat-presets').textContent = list.length;
+  } else {
+    alert('Не удалось сохранить пресет');
+  }
+});
+
+document.querySelectorAll('.map-actions button').forEach(btn => {
+  btn.addEventListener('click', async (e) => {
+    const mapId = parseInt(btn.dataset.map, 10);
+    const action = btn.dataset.action;
+    if (action === 'presets') loadPresetsMenu(mapId);
+    else if (action === 'clear') ctrl.clearMap(mapId);
+    else if (action === 'toggle-mode') toggleMapMode(mapId);
+  });
+});
+
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('preset-menu');
+  if (!menu.contains(e.target) && !e.target.closest('button')) {
+    menu.classList.remove('show');
+  }
+});
+
+// Горячая клавиша T — переключить режим активной карты
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key.toLowerCase() === 't') toggleMapMode(ctrl.activeMap);
+});
+
+ctrl.init().then(async () => {
+  const list = await ctrl.listPresets();
+  document.getElementById('stat-presets').textContent = list.length;
+  document.getElementById('stat-server').textContent = 'connected';
+  refreshStats();
+  // Обновить бейджи режимов для всех карт
+  for (let i = 0; i < ctrl.maps.length; i++) {
+    const ui = ctrl.maps[i];
+    if (ui) updateModeBadge(i, ui.viewMode);
+  }
+  setInterval(refreshStats, 2000);
+}).catch(e => {
+  document.getElementById('stat-server').textContent = 'error: ' + e.message;
+});
+
+window.crucixMultiMap = ctrl;
+</script>
+</body>
+</html>

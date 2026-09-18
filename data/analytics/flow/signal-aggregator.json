@@ -1,0 +1,188 @@
+{
+  "_meta": {
+    "id": "signal-aggregator",
+    "category": "flow",
+    "version": "1.0.0",
+    "schema_version": "1.0.0",
+    "sources": [
+      "country-instability",
+      "cross-stream-correlation",
+      "threat-classification",
+      "geo-convergence",
+      "market-composite"
+    ],
+    "calculator": "SignalAggregator",
+    "updated_at": "2026-09-12T15:02:38.832Z",
+    "duration_ms": 8,
+    "checksum": "13cd69e7a9aadceb",
+    "stats": {
+      "total_signals": 141,
+      "byCategory": {
+        "conflict": 131,
+        "geo": 1,
+        "cyber": 7,
+        "infra": 1,
+        "market": 1
+      }
+    }
+  },
+  "data": {
+    "top": [
+      {
+        "category": "infra",
+        "source": "gc",
+        "entity": "16_-33",
+        "weight": 0.7625,
+        "added": 1789225358840
+      },
+      {
+        "category": "cyber",
+        "source": "tc",
+        "entity": "GLOBAL",
+        "weight": 0.459,
+        "added": 1789225358840
+      },
+      {
+        "category": "cyber",
+        "source": "tc",
+        "entity": "GLOBAL",
+        "weight": 0.459,
+        "added": 1789225358840
+      },
+      {
+        "category": "cyber",
+        "source": "tc",
+        "entity": "GLOBAL",
+        "weight": 0.459,
+        "added": 1789225358840
+      },
+      {
+        "category": "cyber",
+        "source": "tc",
+        "entity": "GLOBAL",
+        "weight": 0.459,
+        "added": 1789225358840
+      },
+      {
+        "category": "cyber",
+        "source": "tc",
+        "entity": "GLOBAL",
+        "weight": 0.459,
+        "added": 1789225358840
+      },
+      {
+        "category": "market",
+        "source": "mc",
+        "entity": "GLOBAL",
+        "weight": 0.4586,
+        "added": 1789225358840
+      },
+      {
+        "category": "conflict",
+        "source": "cii",
+        "entity": "SOM",
+        "weight": 0.36,
+        "added": 1789225358840
+      },
+      {
+        "category": "conflict",
+        "source": "cii",
+        "entity": "SDN",
+        "weight": 0.36,
+        "added": 1789225358840
+      },
+      {
+        "category": "conflict",
+        "source": "cii",
+        "entity": "SSD",
+        "weight": 0.336,
+        "added": 1789225358840
+      },
+      {
+        "category": "conflict",
+        "source": "cii",
+        "entity": "AFG",
+        "weight": 0.312,
+        "added": 1789225358840
+      },
+      {
+        "category": "conflict",
+        "source": "cii",
+        "entity": "CAF",
+        "weight": 0.312,
+        "added": 1789225358840
+      },
+      {
+        "category": "conflict",
+        "source": "cii",
+        "entity": "COD",
+        "weight": 0.288,
+        "added": 1789225358840
+      },
+      {
+        "category": "conflict",
+        "source": "cii",
+        "entity": "LBY",
+        "weight": 0.288,
+        "added": 1789225358840
+      },
+      {
+        "category": "conflict",
+        "source": "cii",
+        "entity": "PSE",
+        "weight": 0.288,
+        "added": 1789225358840
+      },
+      {
+        "category": "conflict",
+        "source": "cii",
+        "entity": "BFA",
+        "weight": 0.264,
+        "added": 1789225358840
+      },
+      {
+        "category": "conflict",
+        "source": "cii",
+        "entity": "TCD",
+        "weight": 0.264,
+        "added": 1789225358840
+      },
+      {
+        "category": "conflict",
+        "source": "cii",
+        "entity": "ERI",
+        "weight": 0.264,
+        "added": 1789225358840
+      },
+      {
+        "category": "conflict",
+        "source": "cii",
+        "entity": "MLI",
+        "weight": 0.264,
+        "added": 1789225358840
+      },
+      {
+        "category": "conflict",
+        "source": "cii",
+        "entity": "NER",
+        "weight": 0.264,
+        "added": 1789225358840
+      }
+    ],
+    "byCategory": {
+      "conflict": 131,
+      "geo": 1,
+      "cyber": 7,
+      "infra": 1,
+      "market": 1
+    },
+    "aggregatedScores": {
+      "conflict": 13.70381679389311,
+      "market": 45.86,
+      "cyber": 34.07142857142858,
+      "geo": 18.700000000000003,
+      "infra": 76.25
+    },
+    "generated_at": "2026-09-12T15:02:38.832Z"
+  }
+}

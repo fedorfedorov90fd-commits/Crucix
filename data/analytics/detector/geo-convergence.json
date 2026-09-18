@@ -1,0 +1,41 @@
+{
+  "_meta": {
+    "id": "geo-convergence",
+    "category": "detector",
+    "version": "1.0.0",
+    "schema_version": "1.0.0",
+    "sources": [
+      "acled",
+      "earthquakes",
+      "firms"
+    ],
+    "calculator": "GeoConvergence",
+    "updated_at": "2026-09-12T14:52:54.993Z",
+    "period": "latest",
+    "duration_ms": 3,
+    "checksum": "8f9333f0686d1c4c",
+    "stats": {
+      "total_events": 17,
+      "hotspots": 1
+    },
+    "description": "Пространственная конвергенция событий: кластеризация координат, поиск горячих точек."
+  },
+  "data": {
+    "hotspots": [
+      {
+        "cellId": "16_-33",
+        "lat": 44.75,
+        "lon": -124.9,
+        "eventCount": 2,
+        "avgSeverity": 0.7625,
+        "convergenceScore": 1.53,
+        "dominantType": "earthquake",
+        "types": {
+          "earthquake": 2
+        }
+      }
+    ],
+    "total": 1,
+    "generated_at": "2026-09-12T14:52:54.993Z"
+  }
+}

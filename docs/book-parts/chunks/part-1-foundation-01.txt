@@ -1,0 +1,432 @@
+===== ЧАСТЬ part-1-foundation · КУСОК 01/04 · 30.6 KB =====
+
+========================================================================
+CRUCIX · PREDICT-EXTENSIONS · BOOK
+ТОМ: part-1-foundation
+НАЗВАНИЕ: Том 1. Фундамент: package.json, README, математическое ядро, научные модели
+СОЗДАН: 2026-09-17T06:28:00.224Z
+ВСЕГО ФАЙЛОВ В МАНИФЕСТЕ: 16
+========================================================================
+
+
+========================================================================
+
+FILE: package.json
+SIZE: 1371 bytes
+SHA1: c01dfd3d999d4ffa
+========================================================================
+
+{
+  "name": "crucix",
+  "version": "4.0.0",
+  "description": "Открытая OSINT-платформа прогностической аналитики: 45+ сигналов из 30 наук, zero dependencies",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "test": "node --test tests/predict/*.test.mjs tests/property/*.property.mjs tests/fuzz/*.fuzz.mjs",
+    "test:unit": "node --test tests/predict/*.test.mjs",
+    "test:property": "node --test tests/property/*.property.mjs",
+    "test:fuzz": "node --test tests/fuzz/*.fuzz.mjs",
+    "test:integration": "node --test tests/integration/*.test.mjs",
+    "test:mutation": "node tests/mutation/run_all.mjs",
+    "test:mutation:meta": "node tests/mutation/meta_learner.mutate.mjs",
+    "test:mutation:hypergraph": "node tests/mutation/hypergraph.mutate.mjs",
+    "test:mutation:attention": "node tests/mutation/attention.mutate.mjs",
+    "test:mutation:coevolution": "node tests/mutation/coevolution.mutate.mjs",
+    "test:all": "node tests/test_all_modules.mjs && node tests/mutation/run_all.mjs",
+    "test:all-modules": "node tests/test_all_modules.mjs"
+  },
+  "keywords": [
+    "osint",
+    "predictive-analytics",
+    "forecasting",
+    "bayesian",
+    "monte-carlo",
+    "causal-inference",
+    "hypergraph",
+    "mutation-testing"
+  ]
+}
+
+
+
+========================================================================
+
+FILE: README_CRUCIX_v4.md
+SIZE: 13769 bytes
+SHA1: 9c2ef2480ea947e0
+========================================================================
+
+# Crucix Handbook · v5.0.0
+
+**Ultimate Edition — Predictive Core v5.0, Causal Discovery, Federated Hypergraph, Unified Cockpit, 100% mutation score.**
+
+## Что нового в v5
+
+### v1 -> v2
+
+- 15 модулей из смежных наук
+- Composite risk с dynamic weights
+
+### v2 -> v3
+
+- GNN + RL + Python bridge
+- WASM + Web Workers
+- Transformer, VAE, Diffusion
+
+### v3 -> v4
+
+- Handbook — полная книга 800+ страниц (14 глав про науки)
+- 6 интеграций — Slack, Notion, Obsidian, RSS, Email, Webhook
+- Plugin system — манифесты, sandbox, hooks, registry, examples
+- PWA — install + push notifications + offline
+- Plugin Dashboard — UI для управления плагинами
+- Crucix Engine v4 — engine с hooks, plugins, integrations
+
+### v4 -> v5 (текущая версия)
+
+Пять новых модулей прогностического ядра:
+
+- **Causal Hypergraph Discovery** (`apis/predict/hypergraph_discovery.mjs`) — автоматический поиск N-арных причинных связей через G²-тест и mutual information с permutation testing. Не требует ручной разметки гиперрёбер.
+- **Multi-scale Attention** (`apis/predict/multiscale_attention.mjs`) — параллельное моделирование коллективного внимания на трёх временных горизонтах (fast/medium/slow с half-life 2/12/72 часа). Дивергенция между масштабами = шум, согласие = устойчивый тренд.
+- **Opponent Modeling PPO** (`apis/predict/opponent_ppo.mjs`) — обучение модели противника через Proximal Policy Optimization. Actor-critic с GAE, PPO-clip, entropy regularization. Полный Adam с раздельными bias correction для actor и critic.
+- **Federated Hypergraph** (`apis/predict/federated_hypergraph.mjs`) — распределённое обучение гиперграфов между инстансами через FedAvg с дифференциальной приватностью (Laplace + Gaussian noise).
+- **Bayesian Causal Discovery** (`apis/predict/bayesian_causal.mjs`) — MCMC по пространству DAG с BDeu score, posterior edge probabilities, Markov blankets. Не точечная оценка, а распределение по структурам.
+
+Плюс интеграционный патч:
+
+- **Engine Integration Patch** (`apis/predict/engine_integration_patch.mjs`) — подключает 21 модуль (11 научных + 4 нейросетевых + 4 объяснимости + 3 трансляции) к основному конвейеру через четыре фазы: N (научный синтез), O (нейросетевой слой), P (объяснимость), Q (трансляция). Экспортирует `runNewModules` и `runForecastPipelineExtended`.
+
+Единый дашборд:
+
+- **Unified Cockpit** (`dashboard/cockpit.html`) — единая точка управления всеми дашбордами: 8 mission-карточек, глобальный status bar, live feed, command palette (Ctrl+K), 13-layer health monitoring, alert banner, sticky sidebars.
+
+Тестирование:
+
+- **Мутационное тестирование** — 24 мутации по 4 модулям (MetaLearner, Hypergraph Contagion, Attention Dynamics, Adversarial Co-evolution). **Mutation score: 100% (24/24).**
+- **Интеграционные тесты** (`tests/integration/full_pipeline.test.mjs`) — 15 тестов на полный конвейер, идемпотентность, graceful degradation, производительность.
+- **Тест всех модулей** (`tests/test_all_modules.mjs`) — 22 модуля на синтетических данных. **Результат: 22/22 PASSED.**
+
+## Быстрый старт
+
+# 1. Сборка
+
+bash scripts/build.sh
+
+# 2. Локальный запуск
+
+bash scripts/deploy.sh local
+
+# 3. Дашборды
+
+# http://localhost:3118/cockpit.html — единая точка управления
+
+# http://localhost:3118/crucix.html — основной прогностический
+
+# http://localhost:3118/advanced.html — продвинутая аналитика
+
+# http://localhost:3118/hypergraph.html — N-арные причинные связи
+
+# http://localhost:3118/attention.html — динамика внимания
+
+# http://localhost:3118/coevolution.html — модель противника
+
+# http://localhost:3118/realtime.html — события реального времени
+
+# http://localhost:3118/plugins.html — менеджер плагинов
+
+# http://localhost:3118/predictions_composite.html — композитный риск
+
+## Тестирование
+
+# Все unit-тесты
+
+npm run test:unit
+
+# Property-based тесты
+
+npm run test:property
+
+# Fuzz-тесты
+
+npm run test:fuzz
+
+# Интеграционные тесты
+
+npm run test:integration
+
+# Мутационное тестирование (4 набора, оркестратор)
+
+npm run test:mutation
+
+# Все тесты 22 модулей на синтетике
+
+npm run test:all-modules
+
+# Полный прогон (модули + мутации)
+
+npm run test:all
+
+Мутационный оркестратор запускает 4 набора параллельно через `child_process.spawn` с env `CRUCIX_MUTATION_JSON=1`. Пишет два отчёта: `runs/mutation/report.json` (машиночитаемый) и `runs/mutation/report.md` (Markdown-дайджест). Ведёт регрессионный трекинг: сравнивает score с предыдущим запуском, отмечает тренды `^` (улучшение), `v` (деградация), `=` (без изменений), `*` (первый запуск).
+
+Порог можно переопределить: `CRUCIX_MUTATION_THRESHOLD=0.8 npm run test:mutation`.
+
+## Handbook
+
+Полная книга доступна в формате:
+
+- PDF: docs/handbook/_build/crucix-handbook.pdf
+- HTML: docs/handbook/_build/crucix-handbook.html
+- EPUB: docs/handbook/_build/crucix-handbook.epub
+
+Сборка:
+
+cd docs/handbook && bash build.sh
+
+## Прогностическое ядро — слои
+
+### Группа I. Базовые модели
+
+Bayesian Updating, Naive Bayes, Markov Chains, Monte Carlo, Time Series, Cascade Graph.
+
+### Группа II. Науки
+
+Physics-Inspired (Ising, SOC), Hawkes/ETAS, Hidden Markov, Kalman/Particle, Copula/Vine/EVT/OU, BOCPD, MCMC/Hierarchical Bayes.
+
+### Группа III. Продвинутый ML
+
+Transformer, VAE, Diffusion, GNN, RL (DQN, Actor-Critic), AutoML, Anomaly Detection.
+
+### Группа IV. Meta-слои v2.0
+
+Temporal Causal Discovery, Multi-Layer Causal DAG, Narrative Warfare Detection, Resource Exhaustion Modeling, Meta-Learning Ensemble, LLM Scenario Generator.
+
+### Группа V. Слои v3.0
+
+Hypergraph Contagion, Attention Dynamics, Adversarial Co-evolution.
+
+### Группа VI. Слои v5.0
+
+Causal Hypergraph Discovery, Multi-scale Attention, Opponent Modeling PPO, Federated Hypergraph, Bayesian Causal Discovery.
+
+## Интеграции
+
+Все интеграции работают без внешних npm-пакетов:
+
+| Сервис   | Env vars            | Что умеет           |
+|----------|---------------------|---------------------|
+| Slack    | SLACK_WEBHOOK_URL   | Alerts в канал      |
+| Notion   | NOTION_API_TOKEN    | Save predictions    |
+| Obsidian | OBSIDIAN_VAULT_PATH | Markdown notes      |
+| Email    | SMTP_HOST           | SMTP-алерты         |
+| RSS      | —                   | Atom/RSS/JSON feed  |
+| Webhook  | CRUCIX_WEBHOOK_URL  | Generic             |
+
+Пример:
+
+import { dispatchToIntegrations } from './integrations/webhook_manager.mjs';
+
+const result = await dispatchToIntegrations(prediction);
+// { dispatched: 3, sent: 2, failed: 0, skipped: 1 }
+
+## Плагины
+
+# Установить из examples
+
+cp -r plugins/examples/hello-world plugins/installed/
+
+# Или через dashboard
+
+open http://localhost:3118/plugins.html
+
+Манифест:
+
+{ "name": "my-plugin", "version": "1.0.0", "entryPoint": "index.mjs", "type": "signal", "hooks": ["afterPrediction"], "permissions": ["read:predictions"] }
+
+Code:
+
+export async function init(config) { console.log('Plugin initialized', config); }
+export async function afterPrediction(result) { return { customSignal: 0.7 }; }
+
+## PWA
+
+- Install — добавление на домашний экран
+- Offline — caching + retry
+- Push — real-time alerts
+- Background sync — auto-refresh
+
+Server-side push реализован на чистом Node.js (node:crypto):
+
+- ECDH (prime256v1)
+- HKDF (RFC 5869)
+- AES-128-GCM
+- VAPID JWT (ES256)
+
+## Engine v4
+
+import { CrucixEngineV4 } from './apis/predict/crucix_engine_v4.mjs';
+
+const engine = new CrucixEngineV4({
+  integrations: {
+    slack: { webhookUrl: process.env.SLACK_WEBHOOK_URL },
+    obsidian: { vaultPath: process.env.OBSIDIAN_VAULT_PATH },
+  },
+});
+
+await engine.init();
+
+// Каждые 15 минут
+const result = await engine.runCycle(latest, history);
+
+Lifecycle hooks: onStartup, onShutdown, beforePrediction, afterPrediction, onSignal, onSignalHigh, onAlert, onRegimeChange, onTimer.
+
+## Engine Integration Patch (v5.0)
+
+Расширенная обёртка над основным конвейером. Запускает новые модули четырьмя фазами:
+
+- **Фаза N — научный синтез** (11 модулей): Hawkes, HMM, Kalman, Ising, Transfer Entropy, SIR, EVT, Ornstein-Uhlenbeck, Copula, BOCPD, Particle Filter.
+- **Фаза O — нейросетевой слой** (4 модуля): MLP, GCN, DQN, Python Bridge.
+- **Фаза P — объяснимость** (4 модуля): Permutation Importance, Counterfactual, Uncertainty Decomposition, Reasoning Chain.
+- **Фаза Q — трансляция** (3 модуля): WebSocket, Notifier, Save latest_extended.json.
+
+Использование:
+
+import { runNewModules } from './apis/predict/engine_integration_patch.mjs';
+
+const extended = await runNewModules(latest, history, prediction);
+
+// Или заменить вызов в briefing.mjs на:
+import { runForecastPipelineExtended } from './apis/predict/engine_integration_patch.mjs';
+const forecast = await runForecastPipelineExtended(latest, history);
+
+## Endpoints
+
+REST:
+
+GET    /api/plugins                — список + статус
+GET    /api/plugins/available      — доступные
+GET    /api/plugins/:name          — детали
+POST   /api/plugins/:name/install  — установка
+POST   /api/plugins/:name/uninstall — удаление
+POST   /api/plugins/:name/enable   — включить
+POST   /api/plugins/:name/disable  — выключить
+GET    /api/plugins/:name/config   — конфиг
+PUT    /api/plugins/:name/config   — обновить конфиг
+GET    /api/plugins/:name/logs     — логи
+POST   /api/plugins/reload         — reload all
+
+GET    /api/push/vapid-key         — VAPID public key
+POST   /api/push/subscribe         — subscribe
+POST   /api/push/unsubscribe       — unsubscribe
+POST   /api/push/test              — test notification
+
+GET    /api/integrations/status    — статус интеграций
+GET    /api/engine/status          — статус движка
+
+WebSocket:
+
+ws://localhost:3118
+
+Actions: subscribe, unsubscribe, ping/pong, stats, train_nn.
+
+## Структура проекта
+
+apis/predict/             — прогностическое ядро (42 .mjs)
+apis/predict/models/      — научные модели (17 .mjs)
+apis/predict/core/        — математическое ядро
+apis/predict/exotic/      — квантовый отжиг, теория игр, сети
+apis/predict/federated/   — федеративное обучение
+apis/predict/wasm/        — SIMD-ускорение
+apis/predict/webgl/       — GPU-вычисления
+apis/predict/workers/     — Web Workers
+apis/sources/             — HTTP-источники (satellite, prediction_markets, multilang)
+dashboard/                — 9 HTML-дашбордов
+tests/                    — unit, property, fuzz, mutation, integration, chaos, load
+docs/handbook/            — книга (главы + sciences)
+integrations/             — Slack, Notion, Obsidian, RSS, Email, Webhook
+plugins/                  — plugin system + examples
+observability/            — OTel, Prometheus, Grafana
+docker/, k8s/             — развёртывание
+.github/workflows/        — 7 workflows
+
+Всего: **264 файла**.
+
+## Философия
+
+- Открытость важнее удобства — каждая строка читается
+- Мультидисциплинарность важнее эффективности — 45+ сигналов из 30 наук
+- Калибровка важнее точности — Brier Score как метрика
+- Локальность важнее облака — никаких внешних API в runtime
+- Zero dependencies — чистый Node.js + ESM
+
+## Лицензия
+
+MIT. Используйте, модифицируйте, распространяйте.
+
+## Ссылки
+
+- Handbook: docs/handbook/_build/crucix-handbook.pdf
+- GitHub: https://github.com/crucix/crucix
+- Docker: ghcr.io/crucix/crucix:latest
+- Issues: https://github.com/crucix/crucix/issues
+
+
+========================================================================
+
+FILE: apis/predict/core/linear_algebra.mjs
+SIZE: 6432 bytes
+SHA1: 41e5299ab8d2d2f5
+========================================================================
+
+// apis/predict/core/linear_algebra.mjs
+// Математическое ядро: линейная алгебра на чистом JS
+
+function zeros(n, m) { const r = []; for (let i = 0; i < n; i++) r.push(new Float64Array(m)); return r; }
+function identity(n) { const M = zeros(n, n); for (let i = 0; i < n; i++) M[i][i] = 1; return M; }
+function clone(A) { return A.map(row => new Float64Array(row)); }
+function matmul(A, B) { const n = A.length, k = A[0].length, m = B[0].length; const C = zeros(n, m); for (let i = 0; i < n; i++) { for (let l = 0; l < k; l++) { const a = A[i][l]; if (a === 0) continue; const Bl = B[l]; for (let j = 0; j < m; j++) C[i][j] += a * Bl[j]; } } return C; }
+function transpose(A) { const n = A.length, m = A[0].length; const T = zeros(m, n); for (let i = 0; i < n; i++) for (let j = 0; j < m; j++) T[j][i] = A[i][j]; return T; }
+function lu(A) { const n = A.length; const LU = clone(A); const P = Array(n).fill(0).map((_, i) => i); let sign = 1; for (let k = 0; k < n - 1; k++) { let maxVal = Math.abs(LU[k][k]); let maxIdx = k; for (let i = k + 1; i < n; i++) { if (Math.abs(LU[i][k]) > maxVal) { maxVal = Math.abs(LU[i][k]); maxIdx = i; } } if (maxIdx !== k) { [LU[k], LU[maxIdx]] = [LU[maxIdx], LU[k]]; [P[k], P[maxIdx]] = [P[maxIdx], P[k]]; sign = -sign; } if (Math.abs(LU[k][k]) < 1e-14) continue; for (let i = k + 1; i < n; i++) { LU[i][k] /= LU[k][k]; for (let j = k + 1; j < n; j++) LU[i][j] -= LU[i][k] * LU[k][j]; } } return { LU, P, sign }; }
+function solve(A, b) { const n = A.length; const { LU, P } = lu(A); const x = new Float64Array(n); const bPerm = new Float64Array(n); for (let i = 0; i < n; i++) bPerm[i] = b[P[i]]; const y = new Float64Array(n); for (let i = 0; i < n; i++) { let sum = bPerm[i]; for (let j = 0; j < i; j++) sum -= LU[i][j] * y[j]; y[i] = sum; } for (let i = n - 1; i >= 0; i--) { let sum = y[i]; for (let j = i + 1; j < n; j++) sum -= LU[i][j] * x[j]; x[i] = sum / LU[i][i]; } return x; }
+function inverse(A) { const n = A.length; const { LU, P } = lu(A); const result = zeros(n, n); for (let col = 0; col < n; col++) { const b = new Float64Array(n); b[P[col]] = 1; const y = new Float64Array(n); for (let i = 0; i < n; i++) { let sum = b[i]; for (let j = 0; j < i; j++) sum -= LU[i][j] * y[j]; y[i] = sum; } const x = new Float64Array(n); for (let i = n - 1; i >= 0; i--) { let sum = y[i]; for (let j = i + 1; j < n; j++) sum -= LU[i][j] * x[j]; x[i] = sum / LU[i][i]; } for (let i = 0; i < n; i++) result[i][col] = x[i]; } return result; }
+function det(A) { const { LU, sign } = lu(A); let d = sign; for (let i = 0; i < LU.length; i++) d *= LU[i][i]; return d; }
+function cholesky(A) { const n = A.length; const L = zeros(n, n); for (let i = 0; i < n; i++) { for (let j = 0; j <= i; j++) { let sum = 0; for (let k = 0; k < j; k++) sum += L[i][k] * L[j][k]; if (i === j) { L[i][j] = Math.sqrt(Math.max(A[i][i] - sum, 1e-14)); } else { L[i][j] = (A[i][j] - sum) / (L[j][j] || 1e-14); } } } return L; }
+function qr(A) { const n = A.length, m = A[0].length; const R = clone(A); const Q = identity(n); const minNM = Math.min(n - 1, m); for (let k = 0; k < minNM; k++) { let norm = 0; for (let i = k; i < n; i++) norm += R[i][k] ** 2; norm = Math.sqrt(norm); if (norm < 1e-14) continue; const alpha = R[k][k] > 0 ? -norm : norm; const v = new Float64Array(n); v[k] = R[k][k] - alpha; for (let i = k + 1; i < n; i++) v[i] = R[i][k]; let vNorm2 = 0; for (let i = k; i < n; i++) vNorm2 += v[i] ** 2; if (vNorm2 < 1e-14) continue; for (let j = k; j < m; j++) { let dot = 0; for (let i = k; i < n; i++) dot += v[i] * R[i][j]; const factor = 2 * dot / vNorm2; for (let i = k; i < n; i++) R[i][j] -= factor * v[i]; } for (let j = 0; j < n; j++) { let dot = 0; for (let i = k; i < n; i++) dot += v[i] * Q[j][i]; const factor = 2 * dot / vNorm2; for (let i = k; i < n; i++) Q[j][i] -= factor * v[i]; } } return { Q: transpose(Q), R }; }
+function jacobiEigen(A, maxIter = 100, tol = 1e-9) { const n = A.length; const M = clone(A); const V = identity(n); for (let iter = 0; iter < maxIter; iter++) { let maxOff = 0, p = 0, q = 1; for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) if (Math.abs(M[i][j]) > maxOff) { maxOff = Math.abs(M[i][j]); p = i; q = j; } if (maxOff < tol) break; const app = M[p][p], aqq = M[q][q], apq = M[p][q]; const theta = 0.5 * Math.atan2(2 * apq, app - aqq); const c = Math.cos(theta), s = Math.sin(theta); for (let i = 0; i < n; i++) { const mip = M[i][p], miq = M[i][q]; M[i][p] = c * mip - s * miq; M[i][q] = s * mip + c * miq; } for (let j = 0; j < n; j++) { const mpj = M[p][j], mqj = M[q][j]; M[p][j] = c * mpj - s * mqj; M[q][j] = s * mpj + c * mqj; } for (let i = 0; i < n; i++) { const vip = V[i][p], viq = V[i][q]; V[i][p] = c * vip - s * viq; V[i][q] = s * vip + c * viq; } } const eigenvalues = M.map((row, i) => row[i]); const idx = eigenvalues.map((v, i) => ({ v, i })).sort((a, b) => b.v - a.v); const sortedValues = idx.map(x => x.v); const sortedVectors = idx.map(x => V.map(row => row[x.i])); const Vt = zeros(n, n); for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) Vt[i][j] = sortedVectors[j][i]; return { eigenvalues: sortedValues, eigenvectors: Vt }; }
+function svd(A, maxIter = 100, tol = 1e-9) { const n = A.length, m = A[0].length; const AtA = matmul(transpose(A), A); const { eigenvalues, eigenvectors } = jacobiEigen(AtA, maxIter, tol); const singularValues = eigenvalues.map(v => Math.sqrt(Math.max(v, 0))); const V = eigenvectors; const AV = matmul(A, V); const U = zeros(n, m); for (let i = 0; i < n; i++) for (let j = 0; j < m; j++) { const s = singularValues[j]; U[i][j] = s > 1e-10 ? AV[i][j] / s : 0; } return { U, S: singularValues, V }; }
+function pinv(A, tol = 1e-10) { const { U, S, V } = svd(A); const n = A.length, m = A[0].length; const Smax = Math.max(...S); const cutoff = tol * Smax; const SInv = zeros(m, n); for (let i = 0; i < S.length; i++) if (S[i] > cutoff) SInv[i][i] = 1 / S[i]; return matmul(matmul(V, SInv), transpose(U)); }
+function lstsq(A, b) { const AtA = matmul(transpose(A), A); const Atb = matmul(transpose(A), b.map(x => [x])).map(row => row[0]); return solve(AtA, Atb); }
+function conditionNumber(A) { const { S } = svd(A); const maxS = Math.max(...S); const minS = Math.min(...S.filter(s => s > 1e-14)); return maxS / minS; }
+export { zeros, identity, clone, matmul, transpose, lu, solve, inverse, det, cholesky, qr, svd, jacobiEigen, pinv, lstsq, conditionNumber };
+
+
+
+========================================================================
+
+FILE: apis/predict/core/optim.mjs
+SIZE: 8390 bytes
+SHA1: b9e3818737b12d08
+========================================================================
+
+// apis/predict/core/optim.mjs
+// Численная оптимизация на чистом JS
+
+function dot(a, b) { let s = 0; for (let i = 0; i < a.length; i++) s += a[i] * b[i]; return s; }
+function gradientDescent({ f, grad, x0, lr = 0.01, iterations = 1000, tol = 1e-8, callback = null }) { let x = [...x0]; let fx = f(x); const history = [{ x: [...x], f: fx }]; for (let i = 0; i < iterations; i++) { const g = grad(x); const xNew = x.map((xi, j) => xi - lr * g[j]); const fNew = f(xNew); if (callback) callback({ iteration: i, x: xNew, f: fNew, grad: g }); if (Math.abs(fNew - fx) < tol) { x = xNew; fx = fNew; break; } x = xNew; fx = fNew; history.push({ x: [...x], f: fx }); } return { x, f: fx, iterations: history.length, history }; }
+function adam({ f, grad, x0, lr = 0.001, beta1 = 0.9, beta2 = 0.999, eps = 1e-8, iterations = 1000, tol = 1e-8 }) { const n = x0.length; let x = [...x0]; const m = new Array(n).fill(0); const v = new Array(n).fill(0); const history = []; for (let t = 1; t <= iterations; t++) { const g = grad(x); for (let i = 0; i < n; i++) { m[i] = beta1 * m[i] + (1 - beta1) * g[i]; v[i] = beta2 * v[i] + (1 - beta2) * g[i] * g[i]; } const mHat = m.map(mi => mi / (1 - Math.pow(beta1, t))); const vHat = v.map(vi => vi / (1 - Math.pow(beta2, t))); for (let i = 0; i < n; i++) x[i] -= lr * mHat[i] / (Math.sqrt(vHat[i]) + eps); const fx = f(x); history.push({ iteration: t, f: fx, x: [...x] }); if (history.length > 1 && Math.abs(history[history.length - 1].f - history[history.length - 2].f) < tol) break; } return { x, f: f(x), iterations: history.length, history }; }
+function rmsprop({ f, grad, x0, lr = 0.01, rho = 0.9, eps = 1e-8, iterations = 1000, tol = 1e-8 }) { const n = x0.length; let x = [...x0]; const cache = new Array(n).fill(0); const history = []; for (let t = 1; t <= iterations; t++) { const g = grad(x); for (let i = 0; i < n; i++) { cache[i] = rho * cache[i] + (1 - rho) * g[i] * g[i]; x[i] -= lr * g[i] / (Math.sqrt(cache[i]) + eps); } const fx = f(x); history.push({ iteration: t, f: fx }); if (history.length > 1 && Math.abs(history[history.length - 1].f - history[history.length - 2].f) < tol) break; } return { x, f: f(x), iterations: history.length, history }; }
+function nelderMead({ f, x0, iterations = 1000, tol = 1e-8, alpha = 1, gamma = 2, rho = 0.5, sigma = 0.5 }) { const n = x0.length; let simplex = [x0.slice()]; for (let i = 0; i < n; i++) { const p = x0.slice(); p[i] += p[i] === 0 ? 0.00025 : p[i] * 0.05; simplex.push(p); } const fVals = simplex.map(f); let history = []; for (let iter = 0; iter < iterations; iter++) { const order = fVals.map((v, i) => ({ v, i })).sort((a, b) => a.v - b.v); simplex = order.map(o => simplex[o.i]); fVals.length = 0; fVals.push(...order.map(o => o.v)); const spread = Math.max(...fVals) - Math.min(...fVals); history.push({ iteration: iter, fBest: fVals[0], spread }); if (spread < tol) break; const centroid = new Array(n).fill(0); for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) centroid[j] += simplex[i][j] / n; const xr = centroid.map((c, j) => c + alpha * (c - simplex[n][j])); const fr = f(xr); if (fr < fVals[0]) { const xe = centroid.map((c, j) => c + gamma * (xr[j] - c)); const fe = f(xe); if (fe < fr) { simplex[n] = xe; fVals[n] = fe; } else { simplex[n] = xr; fVals[n] = fr; } } else if (fr < fVals[n - 1]) { simplex[n] = xr; fVals[n] = fr; } else { const xc = centroid.map((c, j) => c + rho * (simplex[n][j] - c)); const fc = f(xc); if (fc < fVals[n]) { simplex[n] = xc; fVals[n] = fc; } else { for (let i = 1; i <= n; i++) { simplex[i] = simplex[i].map((v, j) => simplex[0][j] + sigma * (v - simplex[0][j])); fVals[i] = f(simplex[i]); } } } } const order = fVals.map((v, i) => ({ v, i })).sort((a, b) => a.v - b.v); return { x: simplex[order[0].i], f: order[0].v, iterations: history.length, history }; }
+function lbfgs({ f, grad, x0, iterations = 1000, tol = 1e-8, memory = 10 }) { const n = x0.length; let x = [...x0]; let g = grad(x); const sHistory = []; const yHistory = []; const rhoHistory = []; for (let iter = 0; iter < iterations; iter++) { if (Math.sqrt(g.reduce((s, gi) => s + gi * gi, 0)) < tol) break; const q = [...g]; const alpha = new Array(sHistory.length); for (let i = sHistory.length - 1; i >= 0; i--) { alpha[i] = rhoHistory[i] * dot(sHistory[i], q); q = q.map((qi, j) => qi - alpha[i] * yHistory[i][j]); } const gamma = sHistory.length > 0 ? dot(sHistory[sHistory.length - 1], yHistory[yHistory.length - 1]) / dot(yHistory[yHistory.length - 1], yHistory[yHistory.length - 1]) : 1 / Math.sqrt(g.reduce((s, gi) => s + gi * gi, 0)); let r = q.map(qi => qi * gamma); for (let i = 0; i < sHistory.length; i++) { const beta = rhoHistory[i] * dot(yHistory[i], r); r = r.map((ri, j) => ri + sHistory[i][j] * (alpha[i] - beta)); } const direction = r.map(ri => -ri); let step = 1; const fx = f(x); const gDotD = dot(g, direction); let xNew = x.map((xi, j) => xi + step * direction[j]); let fNew = f(xNew); let lsIter = 0; while (fNew > fx + 0.0001 * step * gDotD && lsIter < 20) { step *= 0.5; xNew = x.map((xi, j) => xi + step * direction[j]); fNew = f(xNew); lsIter++; } const gNew = grad(xNew); const s = xNew.map((xi, j) => xi - x[j]); const y = gNew.map((gi, j) => gi - g[j]); const sy = dot(s, y); if (sy > 1e-10) { sHistory.push(s); yHistory.push(y); rhoHistory.push(1 / sy); if (sHistory.length > memory) { sHistory.shift(); yHistory.shift(); rhoHistory.shift(); } } x = xNew; g = gNew; } return { x, f: f(x), gradient: g }; }
+function differentialEvolution({ f, bounds, populationSize = 50, iterations = 500, F = 0.8, CR = 0.9 }) { const n = bounds.length; const pop = []; for (let i = 0; i < populationSize; i++) { const individual = bounds.map(([lo, hi]) => lo + Math.random() * (hi - lo)); pop.push({ x: individual, f: f(individual) }); } const history = []; for (let iter = 0; iter < iterations; iter++) { for (let i = 0; i < populationSize; i++) { const candidates = []; while (candidates.length < 3) { const idx = Math.floor(Math.random() * populationSize); if (idx !== i && !candidates.includes(idx)) candidates.push(idx); } const [a, b, c] = candidates.map(idx => pop[idx].x); const mutant = a.map((ai, j) => ai + F * (b[j] - c[j])); const trial = pop[i].x.map((xi, j) => Math.random() < CR ? Math.max(bounds[j][0], Math.min(bounds[j][1], mutant[j])) : xi); const trialF = f(trial); if (trialF < pop[i].f) pop[i] = { x: trial, f: trialF }; } const best = pop.reduce((a, b) => a.f < b.f ? a : b); history.push({ iteration: iter, fBest: best.f, xBest: [...best.x] }); } const best = pop.reduce((a, b) => a.f < b.f ? a : b); return { x: best.x, f: best.f, population: pop, history }; }
+function simulatedAnnealing({ f, x0, bounds = null, T0 = 1, Tmin = 1e-8, coolingRate = 0.995, iterations = 10000, stepSize = 0.1 }) { let x = [...x0]; let fx = f(x); let T = T0; let bestX = [...x]; let bestF = fx; const history = []; for (let iter = 0; iter < iterations && T > Tmin; iter++) { const xNew = x.map((xi, idx) => { let v = xi + (Math.random() - 0.5) * 2 * stepSize; if (bounds) v = Math.max(bounds[idx][0], Math.min(bounds[idx][1], v)); return v; }); const fNew = f(xNew); const delta = fNew - fx; if (delta < 0 || Math.random() < Math.exp(-delta / T)) { x = xNew; fx = fNew; if (fx < bestF) { bestF = fx; bestX = [...x]; } } T *= coolingRate; if (iter % 100 === 0) history.push({ iteration: iter, T, f: fx, bestF }); } return { x: bestX, f: bestF, history }; }
+function gridSearch({ f, paramGrid }) { const keys = Object.keys(paramGrid); const values = keys.map(k => paramGrid[k]); const combinations = values.reduce((acc, vals) => { const newAcc = []; for (const combo of acc) for (const v of vals) newAcc.push([...combo, v]); return newAcc; }, [[]]); let best = { f: Infinity, params: null }; for (const combo of combinations) { const params = {}; keys.forEach((k, i) => params[k] = combo[i]); const fVal = f(params); if (fVal < best.f) best = { f: fVal, params }; } return { best, totalCombinations: combinations.length }; }
+function randomSearch({ f, bounds, nTrials = 100 }) { let best = { f: Infinity, x: null }; for (let i = 0; i < nTrials; i++) { const x = bounds.map(([lo, hi]) => lo + Math.random() * (hi - lo)); const fx = f(x); if (fx < best.f) best = { f: fx, x }; } return best; }
+export { gradientDescent, adam, rmsprop, nelderMead, lbfgs, differentialEvolution, simulatedAnnealing, gridSearch, randomSearch, dot };
+
+
+
+========================================================================

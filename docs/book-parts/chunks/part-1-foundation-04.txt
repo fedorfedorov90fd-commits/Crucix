@@ -1,0 +1,851 @@
+===== ЧАСТЬ part-1-foundation · КУСОК 04/04 · 25.8 KB =====
+
+FILE: apis/predict/models/copula.mjs
+SIZE: 8815 bytes
+SHA1: ddcb5b8a426f2a25
+========================================================================
+
+// apis/predict/models/copula.mjs
+// Копулы — моделирование зависимости в хвостах распределений.
+//
+// Теоретическая основа:
+//   Sklar, A. (1959). "Fonctions de répartition à n dimensions et leurs
+//   marges". Publications de l'Institut de Statistique de l'Université de
+//   Paris, 8, 229-231.
+//   Nelsen, R. B. (2006). "An Introduction to Copulas" (2nd ed.). Springer.
+//   Joe, H. (1997). "Multivariate Models and Dependence Concepts". Chapman & Hall.
+//
+//   Sklar's theorem: любое многомерное распределение F(x, y) можно
+//   представить как C(F_X(x), F_Y(y)), где C — копула.
+//
+//   Tail dependence (λ_lower, λ_upper) — критически важная метрика:
+//   корреляция Пирсона может быть 0.3, но в нижнем 5% хвосте активы
+//   падают вместе. Копулы это ловят.
+//
+// Применение в Crucix:
+//   VIX и HY-спред могут не коррелировать в спокойные дни, но
+//   одновременно обваливаться в кризис. Copula показывает
+//   joint tail dependence между всеми парами сигналов.
+
+// ============================================================
+// Ранжирование
+// ============================================================
+
+/**
+ * Ранги элементов (1-based).
+ */
+function rank(arr) {
+  const indexed = arr.map((v, i) => [v, i]);
+  indexed.sort((a, b) => a[0] - b[0]);
+  const ranks = new Array(arr.length);
+  indexed.forEach(([, idx], rank) => {
+    ranks[idx] = rank + 1;
+  });
+  return ranks;
+}
+
+/**
+ * Псевдо-наблюдения через нормализованные ранги.
+ */
+function empiricalCopula(x, y) {
+  const n = Math.min(x.length, y.length);
+  const rankX = rank(x.slice(0, n));
+  const rankY = rank(y.slice(0, n));
+
+  return {
+    rankX: rankX.map((r) => (r - 0.5) / n),
+    rankY: rankY.map((r) => (r - 0.5) / n),
+    n,
+  };
+}
+
+// ============================================================
+// Tail dependence
+// ============================================================
+
+/**
+ * Коэффициенты tail dependence:
+ *   λ_lower = P(Y < F_Y⁻¹(q) | X < F_X⁻¹(q))  для q → 0
+ *   λ_upper = P(Y > F_Y⁻¹(q) | X > F_X⁻¹(q))  для q → 1
+ */
+function tailDependence(x, y, q = 0.1) {
+  const n = Math.min(x.length, y.length);
+  const { rankX, rankY } = empiricalCopula(x, y);
+
+  // Lower tail
+  let lowerBoth = 0;
+  let lowerX = 0;
+  for (let i = 0; i < n; i++) {
+    if (rankX[i] < q) {
+      lowerX++;
+      if (rankY[i] < q) lowerBoth++;
+    }
+  }
+  const lambdaLower = lowerX > 0 ? lowerBoth / lowerX : 0;
+
+  // Upper tail
+  const upperThreshold = 1 - q;
+  let upperBoth = 0;
+  let upperX = 0;
+  for (let i = 0; i < n; i++) {
+    if (rankX[i] > upperThreshold) {
+      upperX++;
+      if (rankY[i] > upperThreshold) upperBoth++;
+    }
+  }
+  const lambdaUpper = upperX > 0 ? upperBoth / upperX : 0;
+
+  return { lambdaLower, lambdaUpper, q };
+}
+
+// ============================================================
+// Копулы
+// ============================================================
+
+/**
+ * Gaussian copula: C(u, v) = Φ_ρ(Φ⁻¹(u), Φ⁻¹(v)).
+ * Упрощённая аппроксимация.
+ */
+function gaussianCopula(u, v, rho) {
+  const c = rho * u * v * (1 - u) * (1 - v);
+  return u * v + c * 4;
+}
+
+/**
+ * Clayton copula — асимметричная, ловит нижний хвост.
+ *   C(u, v) = max((u^{−θ} + v^{−θ} − 1)^{−1/θ}, 0)
+ */
+function claytonCopula(u, v, theta) {
+  const val = Math.pow(u, -theta) + Math.pow(v, -theta) - 1;
+  return Math.max(0, Math.pow(val, -1 / theta));
+}
+
+/**
+ * Gumbel copula — асимметричная, ловит верхний хвост.
+ *   C(u, v) = exp(−((−ln u)^θ + (−ln v)^θ)^{1/θ})
+ */
+function gumbelCopula(u, v, theta) {
+  const a = Math.pow(-Math.log(u + 1e-15), theta);
+  const b = Math.pow(-Math.log(v + 1e-15), theta);
+  return Math.exp(-Math.pow(a + b, 1 / theta));
+}
+
+// ============================================================
+// Оценка параметров
+// ============================================================
+
+/**
+ * Kendall's tau — ранговая корреляция.
+ */
+function kendallTau(x, y) {
+  const n = Math.min(x.length, y.length);
+  let concordant = 0;
+  let discordant = 0;
+
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      const dx = x[i] - x[j];
+      const dy = y[i] - y[j];
+      if (dx * dy > 0) concordant++;
+      else if (dx * dy < 0) discordant++;
+    }
+  }
+
+  const total = (n * (n - 1)) / 2;
+  return total > 0 ? (concordant - discordant) / total : 0;
+}
+
+/**
+ * Оценка параметра Clayton через Kendall's tau:
+ *   θ = 2τ / (1 − τ)
+ */
+function estimateClayton(x, y) {
+  const tau = kendallTau(x, y);
+  if (tau >= 1) return { theta: 100, tau, method: 'clayton' };
+  if (tau <= 0) return { theta: 0.01, tau, method: 'clayton' };
+  return { theta: (2 * tau) / (1 - tau), tau, method: 'clayton' };
+}
+
+/**
+ * Оценка параметра Gumbel: θ = 1/(1 − τ).
+ */
+function estimateGumbel(x, y) {
+  const tau = kendallTau(x, y);
+  if (tau <= 0) return { theta: 1.01, tau, method: 'gumbel' };
+  return { theta: Math.max(1.01, 1 / (1 - tau)), tau, method: 'gumbel' };
+}
+
+// ============================================================
+// Анализ зависимостей
+// ============================================================
+
+/**
+ * Анализ зависимостей между всеми парами переменных.
+ *
+ * @param {Object} vars — {vix: [...], conflicts: [...], hySpread: [...]}
+ * @returns {Object}
+ */
+function dependenceAnalysis(vars) {
+  const names = Object.keys(vars);
+  const results = {};
+
+  for (let i = 0; i < names.length; i++) {
+    for (let j = i + 1; j < names.length; j++) {
+      const x = vars[names[i]];
+      const y = vars[names[j]];
+      const td = tailDependence(x, y, 0.1);
+      const tau = kendallTau(x, y);
+      const clayton = estimateClayton(x, y);
+      const gumbel = estimateGumbel(x, y);
+
+      results[`${names[i]}_${names[j]}`] = {
+        kendallTau: tau,
+        tailDependence: td,
+        claytonTheta: clayton.theta,
+        gumbelTheta: gumbel.theta,
+        lowerTail: td.lambdaLower,
+        upperTail: td.lambdaUpper,
+        asymmetric: Math.abs(td.lambdaLower - td.lambdaUpper) > 0.1,
+      };
+    }
+  }
+
+  return results;
+}
+
+// ============================================================
+// Готовый сценарий Crucix
+// ============================================================
+
+/**
+ * Анализ хвостовых зависимостей в Crucix-истории.
+ *
+ * @param {Array} history — sweep-история
+ * @param {Object} opts
+ * @returns {Object}
+ */
+function crucixCopulaAnalysis(history, opts = {}) {
+  if (!Array.isArray(history) || history.length < 15) {
+    return {
+      available: false,
+      reason: 'insufficient_history',
+      count: history?.length || 0,
+    };
+  }
+
+  const vars = {
+    vix: history.map((h) => (h.fred && h.fred.vix) || 20),
+    hySpread: history.map((h) => (h.fred && h.fred.hySpread) || 3),
+    conflicts: history.map(
+      (h) => (h.gdelt && h.gdelt.conflictEvents && h.gdelt.conflictEvents.length) || 0
+    ),
+    alerts: history.map((h) => (h.delta && h.delta.newAlerts) || 0),
+  };
+
+  const analysis = dependenceAnalysis(vars);
+  const entries = Object.entries(analysis);
+
+  // Самая сильная хвостовая зависимость
+  const strongest = entries.reduce((best, [pair, val]) => {
+    const strength = Math.max(val.lowerTail, val.upperTail);
+    const bestStrength = best ? Math.max(best[1].lowerTail, best[1].upperTail) : -1;
+    return strength > bestStrength ? [pair, val] : best;
+  }, null);
+
+  return {
+    available: true,
+    nObservations: history.length,
+    pairs: entries.map(([pair, data]) => ({
+      pair,
+      kendallTau: parseFloat(data.kendallTau.toFixed(3)),
+      lowerTail: parseFloat(data.lowerTail.toFixed(3)),
+      upperTail: parseFloat(data.upperTail.toFixed(3)),
+      asymmetric: data.asymmetric,
+    })),
+    strongestTailDependence: strongest
+      ? {
+          pair: strongest[0],
+          lowerTail: parseFloat(strongest[1].lowerTail.toFixed(3)),
+          upperTail: parseFloat(strongest[1].upperTail.toFixed(3)),
+        }
+      : null,
+  };
+}
+
+export {
+  rank,
+  empiricalCopula,
+  tailDependence,
+  gaussianCopula,
+  claytonCopula,
+  gumbelCopula,
+  kendallTau,
+  estimateClayton,
+  estimateGumbel,
+  dependenceAnalysis,
+  crucixCopulaAnalysis,
+};
+
+
+
+========================================================================
+
+FILE: apis/predict/models/bocpd.mjs
+SIZE: 8237 bytes
+SHA1: 77f795d17dde91ef
+========================================================================
+
+// apis/predict/models/bocpd.mjs
+// Bayesian Online Changepoint Detection (BOCPD).
+//
+// Теоретическая основа:
+//   Adams, R. P., & MacKay, D. J. C. (2007). "Bayesian Online Changepoint
+//   Detection". arXiv:0710.3742.
+//   Fearnhead, P., & Liu, Z. (2007). "On-line Inference for Multiple
+//   Changepoint Problems". Journal of the Royal Statistical Society B,
+//   69(4), 589-605.
+//
+//   Идея: поддерживаем распределение по «run length» r_t — числу
+//   шагов с последней точки смены режима. Когда r_t становится
+//   маленьким — детектирована смена режима.
+//
+//   P(r_t = 0 | data) — вероятность смены режима в момент t
+//   P(r_t = k | data) — режим стабилен уже k шагов.
+//
+// Применение в Crucix:
+//   Детектирование момента смены режима VIX в реальном времени, без
+//   ручных порогов. Работает на онлайн-потоке sweep-данных.
+
+// ============================================================
+// Gaussian conjugate prior (Normal-Inverse-Gamma)
+// ============================================================
+
+/**
+ * Для онлайн-обновления параметров нормального распределения.
+ * Позволяет вычислить predictive probability N(x | μ, σ²) для нового x.
+ */
+class GaussianConjugate {
+  constructor({ mu0 = 0, kappa0 = 1, alpha0 = 1, beta0 = 1 } = {}) {
+    this.mu0 = mu0;
+    this.kappa0 = kappa0;
+    this.alpha0 = alpha0;
+    this.beta0 = beta0;
+    this.history = [];
+  }
+
+  /**
+   * Student-t predictive distribution для run length r.
+   * Упрощённая нормальная аппроксимация для устойчивости.
+   */
+  predProb(x, runLength) {
+    const n = Math.min(Math.max(runLength, 0), this.history.length);
+    if (n === 0) {
+      return this._normalPdf(x, this.mu0, Math.sqrt(this.beta0 / this.alpha0 + 1e-6));
+    }
+
+    const data = this.history.slice(-n);
+    const mean = data.reduce((a, b) => a + b, 0) / data.length;
+    let variance = 0;
+    if (data.length > 1) {
+      variance = data.reduce((s, d) => s + (d - mean) ** 2, 0) / data.length;
+    } else {
+      variance = this.beta0 / this.alpha0;
+    }
+
+    const std = Math.sqrt(Math.max(variance + 1e-6, 1e-6));
+    return this._normalPdf(x, mean, std);
+  }
+
+  _normalPdf(x, mean, std) {
+    const z = (x - mean) / std;
+    return Math.exp(-0.5 * z * z) / (std * Math.sqrt(2 * Math.PI));
+  }
+
+  update(x) {
+    this.history.push(x);
+    // Ограничиваем историю (для скорости)
+    if (this.history.length > 1000) this.history.shift();
+  }
+}
+
+// ============================================================
+// BOCPD
+// ============================================================
+
+class BOCPD {
+  constructor({ hazardFn, model, maxRunLength = 1000 } = {}) {
+    this.hazardFn = hazardFn || (() => 1 / 100);
+    this.model = model || new GaussianConjugate();
+    this.maxRunLength = maxRunLength;
+    this.R = [{ 0: 1.0 }];       // распределение длин пробегов
+    this.t = 0;
+    this.changepoints = [];
+  }
+
+  /**
+   * Обработка нового наблюдения.
+   * Возвращает {changepointProbability, mostLikelyRunLength, runLengthDistribution}
+   */
+  update(x) {
+    this.t++;
+    const prevR = this.R[this.t - 1];
+    const newR = {};
+    let totalProb = 0;
+
+    const maxPrev = Math.max(...Object.keys(prevR).map(Number), 0);
+
+    // --- Продолжение пробега ---
+    for (let r = 0; r <= Math.min(maxPrev, this.maxRunLength); r++) {
+      const predProb = this.model.predProb(x, r);
+      const growthProb = (prevR[r] || 0) * (1 - this.hazardFn(r)) * predProb;
+      newR[r + 1] = growthProb;
+      totalProb += growthProb;
+    }
+
+    // --- Новый пробег (changepoint) ---
+    const prevSum = Object.values(prevR).reduce((a, b) => a + b, 0);
+    const changepointProb =
+      this.model.predProb(x, 0) * this.hazardFn(0) * prevSum;
+    newR[0] = changepointProb;
+    totalProb += changepointProb;
+
+    // --- Нормализация ---
+    if (totalProb > 0) {
+      for (const key of Object.keys(newR)) {
+        newR[key] /= totalProb;
+      }
+    }
+
+    this.model.update(x);
+    this.R.push(newR);
+
+    // --- Ограничение размера R (память) ---
+    if (this.R.length > this.maxRunLength * 2) {
+      this.R = this.R.slice(-this.maxRunLength);
+    }
+
+    const cpProb = newR[0] || 0;
+
+    // Наиболее вероятная длина пробега
+    let mostLikelyR = 0;
+    let maxProb = 0;
+    for (const [r, p] of Object.entries(newR)) {
+      if (p > maxProb) {
+        maxProb = p;
+        mostLikelyR = parseInt(r);
+      }
+    }
+
+    // Детекция: если P(changepoint) > 0.3 — фиксируем точку
+    if (cpProb > 0.3) {
+      this.changepoints.push({ time: this.t, probability: cpProb });
+    }
+
+    return {
+      changepointProbability: cpProb,
+      mostLikelyRunLength: mostLikelyR,
+      runLengthDistribution: newR,
+      time: this.t,
+      regimeStability:
+        cpProb < 0.1 ? 'stable' : cpProb < 0.3 ? 'unstable' : 'shift_detected',
+    };
+  }
+
+  /**
+   * Обработка всего ряда.
+   */
+  detect(series) {
+    const results = [];
+    for (const x of series) {
+      results.push(this.update(x));
+    }
+
+    const changepoints = results
+      .filter((r) => r.changepointProbability > 0.3)
+      .map((r) => r.time);
+
+    return { results, changepoints };
+  }
+
+  /**
+   * Сериализация состояния (только последнее распределение).
+   */
+  serialize() {
+    return JSON.stringify({
+      t: this.t,
+      R: this.R.slice(-10),  // только последние 10 распределений
+      changepoints: this.changepoints.slice(-20),
+      modelHistory: this.model.history.slice(-200),
+    });
+  }
+
+  static deserialize(json) {
+    const data = typeof json === 'string' ? JSON.parse(json) : json;
+    const model = new GaussianConjugate();
+    model.history = data.modelHistory || [];
+    const bocpd = new BOCPD({ model });
+    bocpd.t = data.t || 0;
+    bocpd.R = data.R || [{ 0: 1.0 }];
+    bocpd.changepoints = data.changepoints || [];
+    return bocpd;
+  }
+}
+
+// ============================================================
+// Готовый сценарий Crucix
+// ============================================================
+
+/**
+ * Детекция смены режима VIX в реальном времени.
+ *
+ * @param {Array} history — sweep-история
+ * @param {Object} opts — {hazardRate, horizon}
+ * @returns {Object}
+ */
+function crucixBOCPDAnalysis(history, opts = {}) {
+  const { hazardRate = 1 / 50 } = opts;
+
+  if (!Array.isArray(history) || history.length < 15) {
+    return {
+      available: false,
+      reason: 'insufficient_history',
+      count: history?.length || 0,
+    };
+  }
+
+  const vixSeries = history
+    .map((h) => h.fred && h.fred.vix)
+    .filter((v) => typeof v === 'number' && isFinite(v));
+
+  if (vixSeries.length < 15) {
+    return {
+      available: false,
+      reason: 'insufficient_vix',
+      count: vixSeries.length,
+    };
+  }
+
+  const model = new GaussianConjugate({
+    mu0: 20,
+    kappa0: 1,
+    alpha0: 1,
+    beta0: 10,
+  });
+
+  const bocpd = new BOCPD({
+    model,
+    hazardFn: () => hazardRate,
+  });
+
+  const { results, changepoints } = bocpd.detect(vixSeries);
+  const lastResult = results[results.length - 1];
+  const recentCps = changepoints.filter((cp) => cp > vixSeries.length - 10);
+
+  return {
+    available: true,
+    nObservations: vixSeries.length,
+    currentChangepointProb: parseFloat(lastResult.changepointProbability.toFixed(3)),
+    mostLikelyRunLength: lastResult.mostLikelyRunLength,
+    regimeStability: lastResult.regimeStability,
+    changepointsDetected: changepoints.length,
+    recentChangepoints: recentCps,
+    hazardRate,
+  };
+}
+
+export { GaussianConjugate, BOCPD, crucixBOCPDAnalysis };
+
+
+
+========================================================================
+
+FILE: apis/predict/models/particle.mjs
+SIZE: 8391 bytes
+SHA1: c61eb7bad04d6ade
+========================================================================
+
+// apis/predict/models/particle.mjs
+// Particle Filter (Sequential Monte Carlo) — фильтрация нелинейных
+// негауссовских систем.
+//
+// Теоретическая основа:
+//   Gordon, N. J., Salmond, D. J., & Smith, A. F. M. (1993). "Novel approach
+//   to nonlinear/non-Gaussian Bayesian state estimation". IEE Proceedings F,
+//   140(2), 107-113.
+//   Doucet, A., de Freitas, N., & Gordon, N. (2001). "Sequential Monte Carlo
+//   Methods in Practice". Springer.
+//   Arulampalam, M. S., et al. (2002). "A Tutorial on Particle Filters for
+//   Online Nonlinear/Non-Gaussian Bayesian Tracking". IEEE Transactions on
+//   Signal Processing, 50(2), 174-188.
+//
+//   Идея: распределение состояния представляется набором N взвешенных
+//   частиц. Каждая частица эволюционирует по transition-модели, затем
+//   веса обновляются по наблюдению. При вырождении — resampling.
+//
+// Применение в Crucix:
+//   Нелинейная фильтрация VIX с учётом mean reversion и джампов.
+//   В отличие от Калмана, Particle Filter не требует линейности и
+//   гауссовости, что критично для кризисных режимов.
+
+// ============================================================
+// Particle Filter
+// ============================================================
+
+class ParticleFilter {
+  constructor({ nParticles = 500, transitionFn, observationFn, initialParticles } = {}) {
+    this.n = nParticles;
+    this.transitionFn = transitionFn || ((p) => p);
+    this.observationFn = observationFn || ((p) => p);
+    this.particles = initialParticles || this._initParticles();
+    this.weights = new Array(nParticles).fill(1 / nParticles);
+  }
+
+  _initParticles() {
+    return Array.from({ length: this.n }, () => ({
+      state: Math.random() * 10 - 5,
+      params: {},
+    }));
+  }
+
+  /**
+   * Predict: propagate particles through transition.
+   */
+  predict() {
+    for (let i = 0; i < this.n; i++) {
+      this.particles[i] = this.transitionFn(this.particles[i]);
+    }
+  }
+
+  /**
+   * Update: reweight by observation likelihood.
+   */
+  update(observation) {
+    let sumW = 0;
+    for (let i = 0; i < this.n; i++) {
+      const predicted = this.observationFn(this.particles[i]);
+      const likelihood = this._gaussianLikelihood(observation, predicted);
+      this.weights[i] *= likelihood;
+      sumW += this.weights[i];
+    }
+
+    if (sumW > 0) {
+      for (let i = 0; i < this.n; i++) this.weights[i] /= sumW;
+    } else {
+      this.weights.fill(1 / this.n);
+    }
+  }
+
+  _gaussianLikelihood(obs, pred, std = 1.0) {
+    const diff = obs - (typeof pred === 'number' ? pred : pred.state);
+    return (
+      Math.exp(-0.5 * (diff / std) ** 2) /
+      (std * Math.sqrt(2 * Math.PI))
+    );
+  }
+
+  /**
+   * Систематический resampling — O(N), сохраняет разнообразие частиц.
+   */
+  resample() {
+    const cumulative = [];
+    let sum = 0;
+    for (let i = 0; i < this.n; i++) {
+      sum += this.weights[i];
+      cumulative.push(sum);
+    }
+
+    const newParticles = [];
+    const positions = Array.from({ length: this.n }, (_, i) =>
+      (i + Math.random()) / this.n
+    );
+
+    let idx = 0;
+    for (const pos of positions) {
+      while (idx < this.n - 1 && pos > cumulative[idx]) idx++;
+      newParticles.push({ ...this.particles[idx] });
+    }
+
+    this.particles = newParticles;
+    this.weights.fill(1 / this.n);
+  }
+
+  /**
+   * Полный шаг: predict → update → (resample если ESS < N/2).
+   */
+  step(observation) {
+    this.predict();
+    this.update(observation);
+
+    // Effective Sample Size
+    const ess = 1 / this.weights.reduce((s, w) => s + w * w, 0);
+    if (ess < this.n / 2) this.resample();
+
+    return { ess, resampled: ess < this.n / 2 };
+  }
+
+  /**
+   * Оценка состояния: взвешенное среднее и дисперсия.
+   */
+  estimate() {
+    let mean = 0;
+    for (let i = 0; i < this.n; i++) {
+      const s = typeof this.particles[i] === 'number'
+        ? this.particles[i]
+        : this.particles[i].state;
+      mean += s * this.weights[i];
+    }
+
+    let variance = 0;
+    for (let i = 0; i < this.n; i++) {
+      const s = typeof this.particles[i] === 'number'
+        ? this.particles[i]
+        : this.particles[i].state;
+      variance += this.weights[i] * (s - mean) ** 2;
+    }
+
+    return { mean, std: Math.sqrt(variance), variance };
+  }
+
+  /**
+   * Фильтрация всего ряда.
+   */
+  filter(observations) {
+    return observations.map((z) => {
+      this.step(z);
+      return this.estimate();
+    });
+  }
+
+  /**
+   * Прогноз на N шагов без наблюдений.
+   */
+  forecast(steps = 5) {
+    let forecastParticles = this.particles.map((p) =>
+      typeof p === 'number' ? p : { ...p }
+    );
+    const path = [];
+
+    for (let s = 1; s <= steps; s++) {
+      forecastParticles = forecastParticles.map((p) => this.transitionFn(p));
+      const numeric = forecastParticles.map((p) =>
+        typeof p === 'number' ? p : p.state
+      );
+      const mean = numeric.reduce((a, b) => a + b, 0) / numeric.length;
+      const sorted = [...numeric].sort((a, b) => a - b);
+
+      path.push({
+        step: s,
+        mean,
+        p5: sorted[Math.floor(numeric.length * 0.05)],
+        p25: sorted[Math.floor(numeric.length * 0.25)],
+        p50: sorted[Math.floor(numeric.length * 0.50)],
+        p75: sorted[Math.floor(numeric.length * 0.75)],
+        p95: sorted[Math.floor(numeric.length * 0.95)],
+      });
+    }
+
+    return path;
+  }
+}
+
+// ============================================================
+// Готовый сценарий Crucix
+// ============================================================
+
+/**
+ * Particle Filter для VIX с mean reversion + джампами.
+ *
+ * @param {Array} history — sweep-история
+ * @param {Object} opts — {nParticles, horizon}
+ * @returns {Object}
+ */
+function crucixParticleAnalysis(history, opts = {}) {
+  const { nParticles = 300, horizon = 5 } = opts;
+
+  if (!Array.isArray(history) || history.length < 10) {
+    return {
+      available: false,
+      reason: 'insufficient_history',
+      count: history?.length || 0,
+    };
+  }
+
+  const vixSeries = history
+    .map((h) => h.fred && h.fred.vix)
+    .filter((v) => typeof v === 'number' && isFinite(v));
+
+  if (vixSeries.length < 10) {
+    return {
+      available: false,
+      reason: 'insufficient_vix',
+      count: vixSeries.length,
+    };
+  }
+
+  const currentVix = vixSeries[vixSeries.length - 1];
+  const meanVix = vixSeries.reduce((a, b) => a + b, 0) / vixSeries.length;
+
+  // Transition: OU + джампы
+  const transitionFn = (p) => {
+    const value = typeof p === 'number' ? p : p.state;
+    const meanReversion = 0.05 * (meanVix - value);
+    const diffusion = (Math.random() - 0.5) * 1.5;
+    const jumpProb = 0.02;
+    const jump = Math.random() < jumpProb
+      ? (Math.random() < 0.7 ? -1 : 1) * (5 + Math.random() * 10)
+      : 0;
+    return {
+      state: Math.max(8, Math.min(80, value + meanReversion + diffusion + jump)),
+      params: {},
+    };
+  };
+
+  const pf = new ParticleFilter({
+    nParticles,
+    transitionFn,
+    observationFn: (p) => (typeof p === 'number' ? p : p.state),
+  });
+
+  // Инициализация вокруг текущего VIX
+  pf.particles = Array.from({ length: nParticles }, () => ({
+    state: currentVix + (Math.random() - 0.5) * 5,
+    params: {},
+  }));
+
+  // Фильтрация
+  const filtered = pf.filter(vixSeries.slice(-20));
+  const estimate = pf.estimate();
+
+  // Прогноз
+  pf.predict();
+  const forecastPath = pf.forecast(horizon);
+
+  // Хвостовой риск
+  const lastFc = forecastPath[forecastPath.length - 1];
+
+  return {
+    available: true,
+    nObservations: vixSeries.length,
+    nParticles,
+    currentVix,
+    currentEstimate: parseFloat(estimate.mean.toFixed(2)),
+    currentStd: parseFloat(estimate.std.toFixed(2)),
+    forecast: forecastPath,
+    tailRisk: {
+      p95AtHorizon: parseFloat(lastFc.p95.toFixed(2)),
+      probabilityAbove35: lastFc.p95 > 35 ? 1 : 0,
+    },
+  };
+}
+
+export { ParticleFilter, crucixParticleAnalysis };
+
+
+
+========================================================================
+КОНЕЦ ТОМА part-1-foundation
+ФАЙЛОВ НАЙДЕНО: 16
+ФАЙЛОВ НЕ НАЙДЕНО: 0
+ФАЙЛОВ ОБРЕЗАНО: 0
+РАЗМЕР ТОМА: 119.5 KB
+========================================================================

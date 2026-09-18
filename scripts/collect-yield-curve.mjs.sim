@@ -1,0 +1,80 @@
+#!/usr/bin/env node
+// ============================================================
+// COLLECT-YIELD-CURVE.MJS — Сборщик данных кривой доходности
+// ============================================================
+// Собирает данные о спреде 10Y-2Y (индикатор рецессии)
+// Источник: FRED (симуляция)
+// Сохраняет в: data/basket/yield-curve.json
+// ============================================================
+
+import { promises as fs } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const BASKET_DIR = join(__dirname, '..', 'data', 'basket');
+const BASKET_PATH = join(BASKET_DIR, 'yield-curve.json');
+
+// ============================================================
+// 1. ГЕНЕРАЦИЯ ДАННЫХ (симуляция)
+// ============================================================
+
+function generateYieldCurveData() {
+    const now = new Date();
+    const data = [];
+
+    // Генерируем 30 дней истории с трендом к инверсии
+    for (let i = 29; i >= 0; i--) {
+        const date = new Date(now);
+        date.setDate(date.getDate() - i);
+
+        // Спред 10Y-2Y с трендом к инверсии
+        const baseSpread = 0.8 - (i / 30) * 1.2;
+        const noise = (Math.random() - 0.5) * 0.3;
+        const spread = Math.round((baseSpread + noise) * 100) / 100;
+
+        // Отдельные ставки
+        const rate2y = Math.round((3.5 + (i / 30) * 1.5 + (Math.random() - 0.5) * 0.5) * 100) / 100;
+        const rate10y = Math.round((rate2y + spread) * 100) / 100;
+
+        data.push({
+            date: date.toISOString().split('T')[0],
+            spread: spread,
+            rate2y: rate2y,
+            rate10y: rate10y,
+            inverted: spread < 0
+        });
+    }
+
+    return data;
+}
+
+// ============================================================
+// 2. СОХРАНЕНИЕ
+// ============================================================
+
+async function saveToBasket(data) {
+    try {
+        await fs.mkdir(BASKET_DIR, { recursive: true });
+        await fs.writeFile(BASKET_PATH, JSON.stringify(data, null, 2), 'utf8');
+        console.log(`[YIELD-CURVE] ✅ Сохранено ${data.length} записей`);
+        return true;
+    } catch (error) {
+        console.error(`[YIELD-CURVE] ❌ Ошибка:`, error.message);
+        return false;
+    }
+}
+
+async function collectYieldCurve() {
+    console.log('[YIELD-CURVE] 📡 Начинаем сбор данных...');
+    const data = generateYieldCurveData();
+    await saveToBasket(data);
+    console.log('[YIELD-CURVE] ✅ Сбор завершен');
+    return data;
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+    collectYieldCurve().catch(console.error);
+}
+
+export { collectYieldCurve, generateYieldCurveData };

@@ -1,445 +1,270 @@
-#!/usr/bin/env node
-
-// ============================================================
-// BASKET-API — Единая корзина данных
-// ============================================================
-// Хранит данные из разных источников в едином формате
-// Версия: 2.0
-// ============================================================
+/**
+ * apis/sources/basket-api.mjs — SERVICE-МОДУЛЬ: УНИВЕРСАЛЬНЫЙ ДОСТУП К КОРЗИНЕ
+ *
+ * КОНТРАКТ CRUCIX v2 (SERVICE).
+ * ИСТОЧНИК: читает файлы из data/basket/*.json напрямую (сервис-фасад).
+ *
+ * ЭНДПОИНТЫ:
+ *   GET /                — список файлов в корзине
+ *   GET /:name           — содержимое файла (records / raw / FC)
+ *   GET /:name/stats     — статистика файла (ключи, размер)
+ *   GET /:name/records   — только массив records
+ *   GET /:name/raw       — сырое содержимое
+ *   GET /:name/schema    — схема верхнего уровня (ключи + типы)
+ *
+ * ФОРМАТЫ: json, records, raw, schema.
+ * ФИЛЬТРЫ (гео): ?lat=&lon=&radius= (км) — фильтр по радиусу.
+ * ФИЛЬТРЫ (пагинация): ?limit=&offset=.
+ *
+ * БЕЗОПАСНОСТЬ: path traversal блокируется (resolve + startsWith).
+ */
 
 import { promises as fs } from 'fs';
-import { join, dirname } from 'path';
+import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT = join(__dirname, '..', '..');
-const BASKET_DIR = join(ROOT, 'data', 'basket');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname  = dirname(__filename);
+const PROJECT_ROOT = join(__dirname, '..', '..');
+const BASKET_DIR = resolve(join(PROJECT_ROOT, 'data', 'basket'));
+
+export const route  = '/api/services/basket';
+export const method = 'GET';
+
+export const meta = {
+  service: true,
+  description: 'Basket service: universal access to data/basket/*.json (list, records, raw, schema, geo-radius filter, pagination).',
+  cache: 60,
+  version: '2.0.0',
+};
 
 // ============================================================
-// 1. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+//  УТИЛИТЫ
 // ============================================================
 
-async function ensureBasketDir() {
-  try {
-    await fs.mkdir(BASKET_DIR, { recursive: true });
-  } catch (e) {
-    // Папка уже существует
+const NAME_RE = /^[a-zA-Z0-9._-]+$/;
+const MAX_NAME_LEN = 120;
+const CACHE_TTL = 5 * 60 * 1000;
+const cache = new Map();
+
+function isValidName(name) {
+  if (!name || typeof name !== 'string') return false;
+  if (name.length > MAX_NAME_LEN) return false;
+  if (name.includes('..')) return false;
+  if (name.startsWith('/')) return false;
+  if (!NAME_RE.test(name)) return false;
+  return true;
+}
+
+function toJsonName(name) {
+  return name.endsWith('.json') ? name : name + '.json';
+}
+
+function haversineKm(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 +
+            Math.cos(lat1 * Math.PI / 180) *
+            Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+function extractRecords(raw) {
+  if (Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== 'object') return [];
+  for (const key of ['records', 'data', 'articles', 'events', 'items', 'features', 'objects']) {
+    if (Array.isArray(raw[key])) return raw[key];
   }
+  return [];
 }
 
-function getBasketFile() {
-  const today = new Date().toISOString().slice(0, 10);
-  return join(BASKET_DIR, `basket-${today}.json`);
+function schemaOf(raw) {
+  if (Array.isArray(raw)) return { type: 'array', length: raw.length, itemKeys: raw[0] ? Object.keys(raw[0]) : [] };
+  if (!raw || typeof raw !== 'object') return { type: typeof raw };
+  const keys = Object.keys(raw);
+  const types = {};
+  for (const k of keys) {
+    const v = raw[k];
+    if (Array.isArray(v)) types[k] = `array[${v.length}]`;
+    else types[k] = typeof v;
+  }
+  return { type: 'object', keys, types };
 }
 
-function getStatsFile() {
-  return join(BASKET_DIR, 'stats.json');
+async function loadFile(name) {
+  const jsonName = toJsonName(name);
+  const now = Date.now();
+  const cached = cache.get(jsonName);
+  if (cached && cached.expires > now) return cached.data;
+
+  const fullPath = resolve(join(BASKET_DIR, jsonName));
+  if (!fullPath.startsWith(BASKET_DIR + '/')) {
+    const err = new Error('path_traversal_blocked'); err.statusCode = 403; throw err;
+  }
+
+  let raw;
+  try { raw = await fs.readFile(fullPath, 'utf8'); }
+  catch (e) {
+    if (e.code === 'ENOENT') {
+      const err = new Error('basket_file_not_found'); err.statusCode = 404;
+      err.hint = `data/basket/${jsonName}`; throw err;
+    }
+    throw e;
+  }
+
+  let parsed;
+  try { parsed = JSON.parse(raw); }
+  catch (e) {
+    const err = new Error('invalid_json_in_basket: ' + e.message); err.statusCode = 500; throw err;
+  }
+
+  cache.set(jsonName, { data: parsed, expires: now + CACHE_TTL });
+  return parsed;
+}
+
+function applyGeoFilter(records, lat, lon, radiusKm) {
+  if (!Number.isFinite(lat) || !Number.isFinite(lon) || !Number.isFinite(radiusKm)) return records;
+  return records.filter(r => {
+    const rLat = Number(r.lat ?? r.latitude);
+    const rLon = Number(r.lng ?? r.lon ?? r.longitude);
+    if (!Number.isFinite(rLat) || !Number.isFinite(rLon)) return false;
+    return haversineKm(lat, lon, rLat, rLon) <= radiusKm;
+  });
+}
+
+function applyPagination(records, query) {
+  const limit = parseInt(query.limit, 10);
+  const offset = parseInt(query.offset, 10);
+  const start = Number.isFinite(offset) && offset > 0 ? offset : 0;
+  if (Number.isFinite(limit) && limit > 0) return records.slice(start, start + limit);
+  return records;
+}
+
+function sendJSON(res, status, payload, extra = {}) {
+  const body = JSON.stringify(payload);
+  res.writeHead(status, {
+    'Content-Type': 'application/json; charset=utf-8',
+    'Content-Length': String(Buffer.byteLength(body)),
+    ...extra,
+  });
+  res.end(body);
 }
 
 // ============================================================
-// 2. ОСНОВНАЯ ФУНКЦИЯ — ДОБАВЛЕНИЕ В КОРЗИНУ
+//  ЭНДПОИНТЫ
 // ============================================================
 
-export async function addToBasket(item) {
-  try {
-    await ensureBasketDir();
-    const file = getBasketFile();
-
-    // Загружаем существующие данные
-    let basket = [];
+async function epList() {
+  const files = await fs.readdir(BASKET_DIR).catch(() => []);
+  const jsonFiles = files.filter(f => f.endsWith('.json'));
+  const detailed = await Promise.all(jsonFiles.map(async (f) => {
     try {
-      const data = await fs.readFile(file, 'utf-8');
-      basket = JSON.parse(data);
-    } catch (e) {
-      // Файла нет — создаём новый
-    }
+      const st = await fs.stat(join(BASKET_DIR, f));
+      return { name: f, size: st.size, mtime: st.mtime.toISOString() };
+    } catch { return { name: f, size: 0, mtime: null }; }
+  }));
+  return { service: 'basket', count: detailed.length, files: detailed };
+}
 
-    // Проверяем, есть ли уже такой ID
-    const exists = basket.some(existing => existing.id === item.id);
-    if (exists) {
-      return {
-        success: false,
-        error: 'Элемент с таким ID уже существует',
-        item: item
-      };
-    }
+async function epFile(name, query) {
+  const raw = await loadFile(name);
+  const records = extractRecords(raw);
+  const lat = Number(query.lat), lon = Number(query.lon), radius = Number(query.radius);
+  const geoFiltered = (Number.isFinite(lat) && Number.isFinite(lon) && Number.isFinite(radius))
+    ? applyGeoFilter(records, lat, lon, radius)
+    : records;
+  const paginated = applyPagination(geoFiltered, query);
+  return {
+    name,
+    total_records: records.length,
+    filtered_records: geoFiltered.length,
+    returned_records: paginated.length,
+    records: paginated,
+    schema: schemaOf(raw),
+  };
+}
 
-    // Добавляем время добавления
-    item.addedAt = item.addedAt || new Date().toISOString();
+async function epStats(name) {
+  const raw = await loadFile(name);
+  const records = extractRecords(raw);
+  return { name, records: records.length, schema: schemaOf(raw) };
+}
 
-    // Добавляем в корзину
-    basket.push(item);
+async function epRecords(name, query) {
+  const raw = await loadFile(name);
+  const records = extractRecords(raw);
+  const lat = Number(query.lat), lon = Number(query.lon), radius = Number(query.radius);
+  const geoFiltered = (Number.isFinite(lat) && Number.isFinite(lon) && Number.isFinite(radius))
+    ? applyGeoFilter(records, lat, lon, radius) : records;
+  const paginated = applyPagination(geoFiltered, query);
+  return { name, count: paginated.length, total: records.length, records: paginated };
+}
 
-    // Сохраняем
-    await fs.writeFile(file, JSON.stringify(basket, null, 2));
+async function epRaw(name) {
+  const raw = await loadFile(name);
+  return { name, data: raw };
+}
 
-    // Обновляем статистику
-    await updateStats('add');
-
-    console.log(`[Basket] Добавлен элемент: ${item.id} (${item.title?.slice(0, 50)}...)`);
-
-    return {
-      success: true,
-      item: item,
-      total: basket.length
-    };
-
-  } catch (error) {
-    console.error('[Basket] Ошибка добавления:', error.message);
-    return {
-      success: false,
-      error: error.message
-    };
-  }
+async function epSchema(name) {
+  const raw = await loadFile(name);
+  return { name, schema: schemaOf(raw) };
 }
 
 // ============================================================
-// 3. ПОЛУЧЕНИЕ ВСЕХ ЭЛЕМЕНТОВ ИЗ КОРЗИНЫ
+//  HANDLER
 // ============================================================
 
-export async function getBasketItems(options = {}) {
-  const {
-    limit = 100,
-    offset = 0,
-    source = null,
-    category = null,
-    fromDate = null,
-    toDate = null
-  } = options;
-
-  try {
-    await ensureBasketDir();
-    const file = getBasketFile();
-
-    let basket = [];
-    try {
-      const data = await fs.readFile(file, 'utf-8');
-      basket = JSON.parse(data);
-    } catch (e) {
-      // Файла нет — возвращаем пустой массив
-      return {
-        success: true,
-        items: [],
-        total: 0,
-        timestamp: new Date().toISOString()
-      };
-    }
-
-    // Фильтры
-    let items = basket;
-
-    if (source) {
-      items = items.filter(item => item.source === source || item.origin === source);
-    }
-
-    if (category) {
-      items = items.filter(item => item.category === category);
-    }
-
-    if (fromDate) {
-      items = items.filter(item => new Date(item.date || item.addedAt) >= new Date(fromDate));
-    }
-
-    if (toDate) {
-      items = items.filter(item => new Date(item.date || item.addedAt) <= new Date(toDate));
-    }
-
-    // Сортировка по дате (новые сверху)
-    items.sort((a, b) => new Date(b.date || b.addedAt) - new Date(a.date || a.addedAt));
-
-    const total = items.length;
-    const paginated = items.slice(offset, offset + limit);
-
-    return {
-      success: true,
-      items: paginated,
-      total: total,
-      offset: offset,
-      limit: limit,
-      timestamp: new Date().toISOString()
-    };
-
-  } catch (error) {
-    console.error('[Basket] Ошибка получения:', error.message);
-    return {
-      success: false,
-      error: error.message,
-      items: [],
-      total: 0
-    };
-  }
-}
-
-// ============================================================
-// 4. УДАЛЕНИЕ ЭЛЕМЕНТА ИЗ КОРЗИНЫ
-// ============================================================
-
-export async function removeFromBasket(id) {
-  try {
-    await ensureBasketDir();
-    const file = getBasketFile();
-
-    let basket = [];
-    try {
-      const data = await fs.readFile(file, 'utf-8');
-      basket = JSON.parse(data);
-    } catch (e) {
-      return {
-        success: false,
-        error: 'Корзина пуста или не найдена'
-      };
-    }
-
-    const index = basket.findIndex(item => item.id === id);
-    if (index === -1) {
-      return {
-        success: false,
-        error: 'Элемент не найден'
-      };
-    }
-
-    const removed = basket.splice(index, 1)[0];
-    await fs.writeFile(file, JSON.stringify(basket, null, 2));
-
-    await updateStats('remove');
-
-    console.log(`[Basket] Удалён элемент: ${id}`);
-
-    return {
-      success: true,
-      removed: removed,
-      total: basket.length
-    };
-
-  } catch (error) {
-    console.error('[Basket] Ошибка удаления:', error.message);
-    return {
-      success: false,
-      error: error.message
-    };
-  }
-}
-
-// ============================================================
-// 5. ОЧИСТКА КОРЗИНЫ
-// ============================================================
-
-export async function clearBasket() {
-  try {
-    await ensureBasketDir();
-    const file = getBasketFile();
-
-    await fs.writeFile(file, '[]');
-    await updateStats('clear');
-
-    console.log('[Basket] Корзина очищена');
-
-    return {
-      success: true,
-      message: 'Корзина очищена'
-    };
-
-  } catch (error) {
-    console.error('[Basket] Ошибка очистки:', error.message);
-    return {
-      success: false,
-      error: error.message
-    };
-  }
-}
-
-// ============================================================
-// 6. СТАТИСТИКА
-// ============================================================
-
-async function updateStats(action) {
-  try {
-    await ensureBasketDir();
-    const file = getStatsFile();
-
-    let stats = {};
-    try {
-      const data = await fs.readFile(file, 'utf-8');
-      stats = JSON.parse(data);
-    } catch (e) {
-      // Файла нет — создаём
-    }
-
-    const today = new Date().toISOString().slice(0, 10);
-    if (!stats.daily) stats.daily = {};
-    if (!stats.daily[today]) stats.daily[today] = { added: 0, removed: 0 };
-
-    if (action === 'add') {
-      stats.daily[today].added++;
-      stats.totalAdded = (stats.totalAdded || 0) + 1;
-    } else if (action === 'remove') {
-      stats.daily[today].removed++;
-      stats.totalRemoved = (stats.totalRemoved || 0) + 1;
-    } else if (action === 'clear') {
-      stats.clearedAt = new Date().toISOString();
-    }
-
-    stats.lastUpdated = new Date().toISOString();
-    await fs.writeFile(file, JSON.stringify(stats, null, 2));
-
-  } catch (error) {
-    console.error('[Basket] Ошибка обновления статистики:', error.message);
-  }
-}
-
-export async function getBasketStats() {
-  try {
-    await ensureBasketDir();
-    const file = getStatsFile();
-
-    let stats = {};
-    try {
-      const data = await fs.readFile(file, 'utf-8');
-      stats = JSON.parse(data);
-    } catch (e) {
-      // Файла нет
-    }
-
-    // Получаем текущий размер корзины
-    const basketFile = getBasketFile();
-    let total = 0;
-    try {
-      const data = await fs.readFile(basketFile, 'utf-8');
-      const basket = JSON.parse(data);
-      total = basket.length;
-    } catch (e) {
-      // Файла нет
-    }
-
-    return {
-      success: true,
-      stats: {
-        totalItems: total,
-        totalAdded: stats.totalAdded || 0,
-        totalRemoved: stats.totalRemoved || 0,
-        daily: stats.daily || {},
-        lastUpdated: stats.lastUpdated || new Date().toISOString()
-      },
-      timestamp: new Date().toISOString()
-    };
-
-  } catch (error) {
-    console.error('[Basket] Ошибка получения статистики:', error.message);
-    return {
-      success: false,
-      error: error.message,
-      stats: {}
-    };
-  }
-}
-
-// ============================================================
-// 7. API-ОБРАБОТЧИК
-// ============================================================
-
-export async function handleBasketAPI(req, res) {
-  const url = new URL(req.url, `http://${req.headers.host}`);
-  const path = url.pathname;
-
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+export async function handler(req, res) {
+  const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+  const subPath = url.pathname.replace(/^\/api\/services\/basket\/?/, '');
+  const query = Object.fromEntries(url.searchParams.entries());
 
   if (req.method === 'OPTIONS') {
-    res.writeHead(200);
+    res.writeHead(200, {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    });
     res.end();
     return;
   }
 
+  const extra = {
+    'X-Service': 'basket',
+    'X-Service-Version': meta.version,
+    'Cache-Control': `public, max-age=${meta.cache}`,
+    'Access-Control-Allow-Origin': '*',
+  };
+
   try {
-    // GET /api/basket — получить все элементы
-    if (path === '/api/basket' && req.method === 'GET') {
-      const params = url.searchParams;
-      const limit = parseInt(params.get('limit')) || 100;
-      const offset = parseInt(params.get('offset')) || 0;
-      const source = params.get('source') || null;
-      const category = params.get('category') || null;
-      const fromDate = params.get('from') || null;
-      const toDate = params.get('to') || null;
-
-      const data = await getBasketItems({
-        limit, offset, source, category, fromDate, toDate
-      });
-
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(data));
-      return;
+    if (subPath === '' || subPath === '/') {
+      return sendJSON(res, 200, { service: 'basket', endpoint: '/', data: await epList() }, extra);
     }
 
-    // POST /api/basket — добавить элемент
-    if (path === '/api/basket' && req.method === 'POST') {
-      let body = '';
-      req.on('data', chunk => body += chunk);
-      req.on('end', async () => {
-        try {
-          const item = JSON.parse(body);
-          const result = await addToBasket(item);
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify(result));
-        } catch (e) {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({
-            success: false,
-            error: e.message
-          }));
-        }
-      });
-      return;
+    const segments = subPath.split('/').filter(Boolean);
+    const name = segments[0];
+    const action = segments[1] || null;
+
+    if (!isValidName(name)) {
+      return sendJSON(res, 400, { error: 'invalid_name', name }, extra);
     }
 
-    // DELETE /api/basket/:id — удалить элемент
-    if (path.startsWith('/api/basket/') && req.method === 'DELETE') {
-      const id = path.split('/').pop();
-      const result = await removeFromBasket(id);
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(result));
-      return;
-    }
+    let data;
+    if (action === 'stats')        data = await epStats(name);
+    else if (action === 'records') data = await epRecords(name, query);
+    else if (action === 'raw')     data = await epRaw(name);
+    else if (action === 'schema')  data = await epSchema(name);
+    else if (action === null)      data = await epFile(name, query);
+    else return sendJSON(res, 404, { error: 'endpoint_not_found', path: subPath, available: ['stats','records','raw','schema'] }, extra);
 
-    // DELETE /api/basket — очистить корзину
-    if (path === '/api/basket' && req.method === 'DELETE') {
-      const result = await clearBasket();
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(result));
-      return;
-    }
+    return sendJSON(res, 200, { service: 'basket', endpoint: subPath, data }, extra);
 
-    // GET /api/basket/stats — статистика
-    if (path === '/api/basket/stats' && req.method === 'GET') {
-      const result = await getBasketStats();
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(result));
-      return;
-    }
-
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ success: false, error: 'Неизвестный путь' }));
-
-  } catch (error) {
-    console.error('[Basket API] Ошибка:', error);
-    res.writeHead(500, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({
-      success: false,
-      error: 'Внутренняя ошибка сервера',
-      details: error.message
-    }));
+  } catch (e) {
+    const status = e.statusCode || 500;
+    const payload = { error: status === 503 ? 'no_data' : 'service_error', message: e.message };
+    if (e.hint) payload.hint = e.hint;
+    try { sendJSON(res, status, payload, extra); } catch {}
   }
 }
-
-// ============================================================
-// 8. ЭКСПОРТЫ
-// ============================================================
-
-export default {
-  addToBasket,
-  getBasketItems,
-  removeFromBasket,
-  clearBasket,
-  getBasketStats,
-  handleBasketAPI
-};

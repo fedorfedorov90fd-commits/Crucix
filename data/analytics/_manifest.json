@@ -1,0 +1,375 @@
+{
+  "_meta": {
+    "schema_version": "1.0.0",
+    "updated_at": "2026-09-12T15:20:50.010Z",
+    "description": "Реестр анализаторов Crucix (партия №2 от Алисы). Показывает статус каждого из 59 анализаторов: completed / in_progress / queued.",
+    "total_completed": 59
+  },
+  "completed": [
+    {
+      "name": "country-instability",
+      "class": "CountryInstabilityIndex",
+      "category": "index",
+      "role": "эталон внедрения",
+      "api": "country-instability-api.mjs",
+      "output": "data/analytics/index/country-instability.json"
+    },
+    {
+      "name": "resilience-index",
+      "class": "ResilienceIndex",
+      "category": "index",
+      "version": "1.2.0",
+      "api": "resilience-index-api.mjs",
+      "output": "data/analytics/index/resilience-index.json"
+    },
+    {
+      "name": "infrastructure-cascade",
+      "class": "InfrastructureGraph + CascadePropagation + VulnerabilityCalculator + MonteCarloSimulator + ScenarioEngine",
+      "category": "specialist",
+      "api": "infrastructure-api.mjs",
+      "output": "data/infrastructure/objects.json",
+      "note": "13 файлов, 15 эндпоинтов, 114 объектов"
+    },
+    {
+      "name": "strategic-risk-composite",
+      "class": "StrategicRiskComposite",
+      "category": "specialist",
+      "version": "1.0.0",
+      "api": "strategic-risk-composite-api.mjs",
+      "output": "data/analytics/specialist/strategic-risk-composite.json",
+      "stats": "197 стран, 152 уникальных балла"
+    },
+    {
+      "name": "market-composite",
+      "class": "MarketComposite",
+      "category": "market",
+      "version": "1.0.0",
+      "api": "market-composite-api.mjs",
+      "output": "data/analytics/market/market-composite.json",
+      "stats": "глобальный композит"
+    },
+    {
+      "name": "conflict-escalation-tracker",
+      "class": "ConflictEscalationTracker",
+      "category": "forecast",
+      "version": "1.0.0",
+      "api": "conflict-escalation-tracker-api.mjs",
+      "output": "data/analytics/forecast/conflict-escalation-tracker.json",
+      "stats": "6-уровневая шкала эскалации"
+    },
+    {
+      "name": "adaptive-news-clustering",
+      "class": "AdaptiveNewsClustering",
+      "category": "semantic",
+      "version": "1.0.0",
+      "api": "adaptive-news-clustering-api.mjs",
+      "output": "data/analytics/semantic/adaptive-news-clustering.json",
+      "stats": "TF-IDF + cosine similarity"
+    },
+    {
+      "name": "social-briefing",
+      "class": "SocialBriefingEngine",
+      "category": "forecast",
+      "version": "1.0.0",
+      "api": "social-briefing-engine-api.mjs",
+      "output": "data/analytics/forecast/social-briefing.json",
+      "stats": "LLM-брифы (Ollama), 3 формата"
+    },
+    {
+      "name": "cross-stream-correlation",
+      "class": "CrossStreamCorrelation",
+      "category": "flow",
+      "version": "1.0.0",
+      "api": "cross-stream-correlation-api.mjs",
+      "output": "data/analytics/flow/cross-stream-correlation.json",
+      "stats": "конвергенция потоков"
+    },
+    {
+      "name": "geo-convergence",
+      "class": "GeoConvergence",
+      "category": "detector",
+      "version": "1.0.0",
+      "api": "geo-convergence-api.mjs",
+      "output": "data/analytics/detector/geo-convergence.json",
+      "stats": "горячие точки"
+    },
+    {
+      "name": "ai-news-synthesis",
+      "class": "AINewsSynthesis",
+      "category": "semantic",
+      "version": "1.0.0",
+      "api": "ai-news-synthesis-api.mjs"
+    },
+    {
+      "name": "threat-classification",
+      "class": "ThreatClassification",
+      "category": "detector",
+      "version": "1.0.0",
+      "api": "threat-classification-api.mjs"
+    },
+    {
+      "name": "baseline-alerting",
+      "class": "BaselineAlerting",
+      "category": "detector",
+      "version": "1.0.0",
+      "api": "baseline-alerting-api.mjs"
+    },
+    {
+      "name": "route-explorer",
+      "class": "RouteExplorer",
+      "category": "flow",
+      "version": "1.0.0",
+      "api": "route-explorer-api.mjs"
+    },
+    {
+      "name": "multi-source-corroboration",
+      "class": "MultiSourceCorroboration",
+      "category": "semantic",
+      "version": "1.0.0",
+      "api": "multi-source-corroboration-api.mjs"
+    },
+    {
+      "name": "signal-aggregator",
+      "class": "SignalAggregator",
+      "category": "flow",
+      "version": "1.0.0",
+      "api": "signal-aggregator-api.mjs"
+    },
+    {
+      "name": "entity-extraction",
+      "class": "EntityExtraction",
+      "category": "semantic",
+      "version": "1.0.0",
+      "api": "entity-extraction-api.mjs"
+    },
+    {
+      "name": "snapshot-system",
+      "class": "SnapshotSystem",
+      "category": "detector",
+      "version": "1.0.0",
+      "api": "snapshot-system-api.mjs"
+    },
+    {
+      "name": "focal-point-detection",
+      "class": "FocalPointDetection",
+      "category": "detector",
+      "version": "1.0.0",
+      "api": "focal-point-detection-api.mjs"
+    },
+    {
+      "name": "source-credibility",
+      "class": "SourceCredibility",
+      "category": "semantic"
+    },
+    {
+      "name": "surge-detection",
+      "class": "SurgeDetection",
+      "category": "detector"
+    },
+    {
+      "name": "derived-market-analytics",
+      "class": "DerivedMarketAnalytics",
+      "category": "market"
+    },
+    {
+      "name": "prediction-markets",
+      "class": "PredictionMarkets",
+      "category": "market"
+    },
+    {
+      "name": "stablecoin-monitor",
+      "class": "StablecoinMonitor",
+      "category": "market"
+    },
+    {
+      "name": "etf-flow-analysis",
+      "class": "ETFFlowAnalysis",
+      "category": "market"
+    },
+    {
+      "name": "sanctions-pressure",
+      "class": "SanctionsPressure",
+      "category": "specialist"
+    },
+    {
+      "name": "ai-forecasts",
+      "class": "AIForecasts",
+      "category": "forecast"
+    },
+    {
+      "name": "supply-chain-resilience",
+      "class": "SupplyChainResilience",
+      "category": "flow"
+    },
+    {
+      "name": "risk-signal-aggregator",
+      "class": "RiskSignalAggregator",
+      "category": "flow"
+    },
+    {
+      "name": "tanker-fleet-monitor",
+      "class": "TankerFleetMonitor",
+      "category": "flow"
+    },
+    {
+      "name": "satellite-analyzer",
+      "class": "SatelliteAnalyzer",
+      "category": "space"
+    },
+    {
+      "name": "pizza-index",
+      "class": "PizzaIndex",
+      "category": "detector"
+    },
+    {
+      "name": "diplomatic-tracker",
+      "class": "DiplomaticTracker",
+      "category": "flow"
+    },
+    {
+      "name": "cyber-attack-monitor",
+      "class": "CyberAttackMonitor",
+      "category": "detector"
+    },
+    {
+      "name": "fx-reserves-monitor",
+      "class": "FXReservesMonitor",
+      "category": "market"
+    },
+    {
+      "name": "social-sentiment-analyzer",
+      "class": "SocialSentimentAnalyzer",
+      "category": "semantic"
+    },
+    {
+      "name": "supply-chain-cascade-engine",
+      "class": "SupplyChainCascadeEngine",
+      "category": "flow"
+    },
+    {
+      "name": "energy-market-intelligence",
+      "class": "EnergyMarketIntelligence",
+      "category": "market"
+    },
+    {
+      "name": "political-stability-monitor",
+      "class": "PoliticalStabilityMonitor",
+      "category": "specialist"
+    },
+    {
+      "name": "arms-transfer-tracker",
+      "class": "ArmsTransferTracker",
+      "category": "flow"
+    },
+    {
+      "name": "central-bank-predictor",
+      "class": "CentralBankPredictor",
+      "category": "forecast"
+    },
+    {
+      "name": "food-security-monitor",
+      "class": "FoodSecurityMonitor",
+      "category": "specialist"
+    },
+    {
+      "name": "migration-flow-tracker",
+      "class": "MigrationFlowTracker",
+      "category": "flow"
+    },
+    {
+      "name": "tick-data-analyzer",
+      "class": "TickDataAnalyzer",
+      "category": "market"
+    },
+    {
+      "name": "module-registration-controller",
+      "class": "ModuleRegistrationController",
+      "category": "specialist"
+    },
+    {
+      "name": "crucix-doctor",
+      "class": "CrucixDoctor",
+      "category": "specialist"
+    },
+    {
+      "name": "mcp-server",
+      "class": "MCPServer",
+      "category": "specialist"
+    },
+    {
+      "name": "cli-analytics",
+      "class": "CLIAnalytics",
+      "category": "specialist"
+    },
+    {
+      "name": "progressive-disclosure",
+      "class": "ProgressiveDisclosure",
+      "category": "specialist"
+    },
+    {
+      "name": "dashboard-indicators",
+      "class": "DashboardIndicators",
+      "category": "specialist"
+    },
+    {
+      "name": "langgraph-orchestrator",
+      "class": "LangGraphOrchestrator",
+      "category": "specialist"
+    },
+    {
+      "name": "scenario-simulation-engine",
+      "class": "ScenarioSimulationEngine",
+      "category": "specialist"
+    },
+    {
+      "name": "watchdog",
+      "class": "Watchdog",
+      "category": "specialist"
+    },
+    {
+      "name": "event-deduplicator",
+      "class": "EventDeduplicator",
+      "category": "specialist"
+    },
+    {
+      "name": "rate-limiter",
+      "class": "RateLimiter",
+      "category": "specialist"
+    },
+    {
+      "name": "cache-manager",
+      "class": "CacheManager",
+      "category": "specialist"
+    },
+    {
+      "name": "alert-dispatcher",
+      "class": "AlertDispatcher",
+      "category": "specialist"
+    },
+    {
+      "name": "config-validator",
+      "class": "ConfigValidator",
+      "category": "specialist"
+    },
+    {
+      "name": "reference-data-provider",
+      "class": "ReferenceDataProvider",
+      "category": "specialist"
+    }
+  ],
+  "in_progress": [],
+  "queued": [
+    {
+      "name": "...и ещё 56 анализаторов из лога"
+    }
+  ],
+  "categories": {
+    "index": "индексы (страновые, региональные)",
+    "detector": "детекторы событий и аномалий",
+    "forecast": "прогностические модели",
+    "semantic": "семантический анализ текстов",
+    "flow": "потоки (торговля, миграция, ресурсы)",
+    "market": "рыночные индикаторы",
+    "specialist": "специализированные (инфраструктура, ядерная безопасность и т.д.)"
+  }
+}

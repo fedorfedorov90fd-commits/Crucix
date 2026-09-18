@@ -1,0 +1,25 @@
+{
+  "name": "custom-signal",
+  "version": "1.0.0",
+  "description": "Example plugin that adds a custom signal to the composite risk",
+  "author": "Crucix Team",
+  "license": "MIT",
+  "entryPoint": "index.mjs",
+  "crucixVersion": ">=3.0.0",
+  "type": "signal",
+  "hooks": ["afterPrediction"],
+  "permissions": ["read:memory", "read:predictions"],
+  "config": {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "weight": { "type": "number", "minimum": 0, "maximum": 5 },
+        "threshold": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "defaults": {
+      "weight": 1.0,
+      "threshold": 0.6
+    }
+  }
+}

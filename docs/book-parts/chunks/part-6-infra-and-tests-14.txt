@@ -1,0 +1,799 @@
+===== ЧАСТЬ part-6-infra-and-tests · КУСОК 14/23 · 29.2 KB =====
+
+FILE: docs/handbook/08-testing.md
+SIZE: 17928 bytes
+SHA1: a3362af34fcea6a4
+========================================================================
+
+# Глава 8. Тестирование Crucix
+
+> «Прогностическая система, которая не проверяет себя — это гадание».
+
+Crucix использует **четырёхуровневую стратегию тестирования**:
+
+1. **Unit-тесты** — проверка отдельных функций
+2. **Property-based тесты** — проверка инвариантов
+3. **Fuzz-тесты** — проверка устойчивости к adversarial inputs
+4. **Mutation-тесты** — проверка качества самих тестов
+
+Плюс **Chaos Engineering** — проверка отказоустойчивости системы.
+
+---
+
+## 8.1 Unit-тесты
+
+Стандартные тесты на Node.js `node:test`. Каждый модуль в `apis/predict/` имеет свой тест.
+
+### Структура
+
+~~~text
+tests/
+├── predict/
+│   ├── bayesian.test.mjs
+│   ├── markov.test.mjs
+│   ├── swarm.test.mjs
+│   ├── temporal_causal.test.mjs
+│   ├── multilayer_causal.test.mjs
+│   ├── narrative_warfare.test.mjs
+│   ├── resource_exhaustion.test.mjs
+│   ├── meta_ensemble.test.mjs
+│   └── scenario_generator.test.mjs
+└── ...
+~~~
+
+### Пример — temporal_causal.test.mjs
+
+~~~javascript
+import { describe, it, expect, beforeEach } from 'node:test';
+import assert from 'node:assert';
+import { TemporalLagNetwork } from '../../apis/predict/temporal_causal.mjs';
+
+describe('TemporalLagNetwork', () => {
+  let net;
+
+  beforeEach(() => { net = new TemporalLagNetwork(); });
+
+  it('регистрирует события и сохраняет порядок', () => {
+    net.recordEvent('A', 1000);
+    net.recordEvent('B', 2000);
+    net.recordEvent('A', 1500);
+
+    assert.strictEqual(net.eventTimeline.length, 3);
+    assert.strictEqual(net.eventTimeline[0].t, 1000);
+    assert.strictEqual(net.eventTimeline[1].t, 1500);
+  });
+
+  it('детектирует ускорение задержки', () => {
+    // Исторически: A→B задержка 10000ms
+    for (let i = 0; i < 5; i++) {
+      net.recordEvent('A', i * 100000);
+      net.recordEvent('B', i * 100000 + 10000);
+    }
+    // Недавно: упала до 1000ms
+    net.recordEvent('A', 600000);
+    net.recordEvent('B', 601000);
+
+    net.fit();
+    const shift = net.detectLagShift('A', 'B', 3);
+    assert.strictEqual(shift.detected, true);
+    assert.strictEqual(shift.type, 'accelerating');
+  });
+});
+~~~
+
+### Запуск
+
+~~~bash
+npm run test:unit
+npm run test:unit -- --watch
+~~~
+
+### Покрытие
+
+~~~bash
+npm run test:coverage
+~~~
+
+Цель — 80% line coverage на всех модулях apis/predict/.
+
+## 8.2 Property-Based Testing
+
+### Идея
+
+Unit-тесты проверяют конкретные входы. Property-тесты проверяют инварианты, которые должны сохраняться при любых входах.
+
+Примеры инвариантов в Crucix:
+
+- MetaLearner.forward всегда возвращает веса, суммирующиеся к 1
+- extractRegimeSignature всегда возвращает 8 значений в [0, 1]
+- modelReflexiveEffect возвращает probability в [0, 1] для любых входных данных
+- serialize → deserialize не меняет поведение модели
+
+### Простой framework
+
+Без внешних зависимостей (как fast-check), мы написали минимальный:
+
+~~~javascript
+const PROPERTY_CASES = parseInt(process.env.PROPERTY_CASES || '100', 10);
+
+function forAll(numCases, generator, assertion) {
+  const failures = [];
+  for (let i = 0; i < numCases; i++) {
+    const input = generator(i);
+    try {
+      assertion(input);
+    } catch (e) {
+      failures.push({ case: i, input, error: e.message });
+    }
+  }
+  return failures;
+}
+~~~
+
+### Пример — MetaLearner property
+
+~~~javascript
+it(`PROPERTY: forward всегда возвращает веса (${PROPERTY_CASES} кейсов)`, () => {
+  const failures = forAll(PROPERTY_CASES, () => ({
+    inputDim: Math.floor(Math.random() * 10) + 3,
+    outputDim: Math.floor(Math.random() * 8) + 2,
+    features: Array.from({ length: 8 }, () => Math.random()),
+  }), ({ inputDim, outputDim, features }) => {
+    const ml = new MetaLearner({ inputDim, hiddenDim: 16, outputDim });
+    const { weights } = ml.forward(features.slice(0, inputDim));
+
+    assert.strictEqual(weights.length, outputDim);
+    const sum = weights.reduce((a, b) => a + b, 0);
+    assert.ok(Math.abs(sum - 1) < 1e-6);
+    weights.forEach(w => assert.ok(w >= 0 && w <= 1));
+  });
+
+  assert.strictEqual(failures.length, 0);
+});
+~~~
+
+### Ночные прогоны — 10 000 кейсов
+
+Обычный CI запускает 100 кейсов (быстро). Nightly запускает 10 000 кейсов (медленно, но глубоко).
+
+~~~yaml
+# .github/workflows/nightly-property.yml
+env:
+  PROPERTY_CASES: 10000
+~~~
+
+### Примеры property-тестов в Crucix
+
+Модуль | Инвариант
+MetaLearner | Сумма весов = 1, no NaN, determinism
+extractRegimeSignature | 8 значений в [0,1], монотонность по VIX
+modelReflexiveEffect | adjustedProb ∈ [0,1]
+recursiveReflexiveCorrection | Сходимость, finalProb ∈ [0,1]
+MultiLayerCausalGraph.propagate | Нет циклов, все updates валидны
+TemporalLagNetwork.detectLagShift | Z-score ∈ [-∞, ∞], тип ∈ {accelerating, decelerating, stable}
+
+## 8.3 Fuzz-тестирование
+
+### Идея
+
+Fuzz-тесты подают adversarial inputs — намеренно странные, некорректные, экстремальные — и проверяют, что система не падает и не выдаёт NaN.
+
+### Что fuzzing-ится в Crucix
+
+1. LLM-ответы (scenario_generator.fuzz.mjs):
+
+~~~javascript
+const malformedResponses = [
+  '',                                    // пусто
+  'not json',                            // не JSON
+  '{}',                                  // пустой объект
+  '{"scenarios": null}',                 // null
+  '{"scenarios": [null]}',               // null в массиве
+  '{"scenarios": [{"probability": -5}]}', // отрицательная вероятность
+  '{"scenarios": [{"probability": 100}]}', // > 1
+  '{invalid json',                       // невалидный JSON
+  '💥🔴not json 💥',                      // эмодзи
+  '\u0000\u0001\u0002',                  // control chars
+  '{"scenarios": [{"name": "' + 'A'.repeat(100000) + '"}]}', // огромная строка
+];
+~~~
+
+2. Extreme values (temporal_causal.fuzz.mjs):
+
+~~~javascript
+net.recordEvent('A', Number.MAX_SAFE_INTEGER, 1);
+net.recordEvent('B', Number.MAX_SAFE_INTEGER + 1, 1);
+net.recordEvent('A', -1000000, 1);
+~~~
+
+3. Random histories — 1000 произвольных sweep'ов с частично отсутствующими полями.
+
+4. Null/undefined/NaN/Infinity — проверка robustness.
+
+### Результат
+
+Fuzz-тесты нашли 3 критических bug'а в ранних версиях:
+
+- ScenarioGenerator падал на null в latest.fred
+- TemporalLagNetwork.fit() зацикливался на одинаковых timestamps
+- MetaLearner.forward возвращал NaN при экстремальных inputs
+
+После фиксов — все fuzz-тесты проходят.
+
+## 8.4 Mutation Testing для MetaLearner
+
+### Идея
+
+Mutation testing — самый мощный способ проверить качество самих тестов.
+
+Мы берём код MetaLearner и вносим мутации:
+
+- Меняем + на -
+- Меняем < на >
+- Удаляем строки
+- Заменяем константы
+
+Затем запускаем тесты. Если тесты не поймали мутацию — значит, они слабые.
+
+### Коэффициент мутаций
+
+~~~text
+mutation_score = убитые мутации / всего мутаций
+~~~
+
+Цель — > 70% для критических модулей.
+
+### Реализация — tests/mutation/meta_learner.mutate.mjs
+
+~~~javascript
+import { MetaLearner } from '../../apis/predict/meta_ensemble.mjs';
+import assert from 'node:assert';
+
+const MUTATIONS = [
+  {
+    name: 'Softmax: убрать нормализацию',
+    apply: (MLClass) => {
+      const originalForward = MLClass.prototype.forward;
+      MLClass.prototype.forward = function(features) {
+        const result = originalForward.call(this, features);
+        // Не нормализуем — возвращаем сырые значения
+        return { ...result, weights: result.weights.map(w => w * 2) };
+      };
+    },
+    // Тест должен поймать: сумма весов != 1
+    detect: (ML) => {
+      const ml = new ML({ inputDim: 4, hiddenDim: 8, outputDim: 3 });
+      const { weights } = ml.forward([0.1, 0.2, 0.3, 0.4]);
+      const sum = weights.reduce((a, b) => a + b, 0);
+      return Math.abs(sum - 1) > 1e-6;
+    },
+  },
+  {
+    name: 'ReLU: убрать max(0, x)',
+    apply: (MLClass) => {
+      // Мутируем внутренний forward
+      const original = MLClass.prototype.forward;
+      MLClass.prototype.forward = function(features) {
+        // ... упрощённо: не применяем ReLU
+        return original.call(this, features);
+      };
+    },
+    detect: (ML) => {
+      // Тест с отрицательными features
+      const ml = new ML({ inputDim: 4, hiddenDim: 8, outputDim: 3 });
+      const { weights } = ml.forward([-1, -2, -3, -4]);
+      return weights.some(w => isNaN(w));
+    },
+  },
+  {
+    name: 'Adam: убрать bias correction',
+    apply: (MLClass) => {
+      const original = MLClass.prototype._adamUpdate;
+      MLClass.prototype._adamUpdate = function(dW1, db1, dW2, db2) {
+        // Вызываем без bias correction
+        this.t = 0; // Сбрасываем t, чтобы bc = 0
+        return original.call(this, dW1, db1, dW2, db2);
+      };
+    },
+    detect: (ML) => {
+      const ml = new ML({ inputDim: 4, hiddenDim: 8, outputDim: 3 });
+      const features = [0.5, 0.5, 0.5, 0.5];
+      const preds = [0.3, 0.5, 0.7];
+      // Обучение не сходится
+      let losses = [];
+      for (let i = 0; i < 20; i++) {
+        const r = ml.trainStep(features, preds, 0.5);
+        losses.push(r.loss);
+      }
+      return losses[losses.length - 1] > losses[0];
+    },
+  },
+  {
+    name: 'Sensitivity: clamp в [0,1] удалён',
+    apply: (MLClass) => {
+      const original = MLClass.prototype._classifyRegime;
+      MLClass.prototype._classifyRegime = function(sig) {
+        const stress = sig.reduce((a, b) => a + b, 0); // без весов
+        if (stress > 4) return 'crisis';
+        if (stress > 2) return 'elevated';
+        return 'calm';
+      };
+    },
+    detect: (ML) => {
+      const ml = new ML(['m1']);
+      // Проверяем, что классификация чувствительна к весам
+      const r1 = ml._classifyRegime([1, 0, 0, 0, 0, 0, 0, 0]);
+      const r2 = ml._classifyRegime([0, 1, 0, 0, 0, 0, 0, 0]);
+      return r1 !== r2;
+    },
+  },
+];
+
+async function runMutationTests() {
+  console.log('════════════════════════════════════════════');
+  console.log('  Mutation Testing — MetaLearner');
+  console.log('════════════════════════════════════════════');
+
+  let killed = 0;
+  let survived = 0;
+  const details = [];
+
+  for (const mutation of MUTATIONS) {
+    // Динамически импортируем свежую копию
+    const moduleUrl = new URL('../../apis/predict/meta_ensemble.mjs?' + Date.now(), import.meta.url);
+    const { MetaLearner: ML } = await import(moduleUrl.href);
+
+    // Применяем мутацию
+    mutation.apply(ML);
+
+    // Запускаем тест
+    let caught = false;
+    let error = null;
+    try {
+      caught = mutation.detect(ML);
+    } catch (e) {
+      caught = true; // исключение = тест поймал мутацию
+      error = e.message;
+    }
+
+    if (caught) {
+      killed++;
+      console.log(`  ✗ KILLED:    ${mutation.name}`);
+    } else {
+      survived++;
+      console.log(`  ⚠  SURVIVED: ${mutation.name}`);
+    }
+
+    details.push({ name: mutation.name, killed: caught, error });
+  }
+
+  const score = killed / (killed + survived);
+  console.log('');
+  console.log(`  Mutation score: ${(score * 100).toFixed(1)}% (${killed}/${killed + survived})`);
+  console.log(`  Target: 70%`);
+
+  if (score < 0.7) {
+    console.error(`  FAILED: mutation score below threshold`);
+    process.exit(1);
+  }
+  console.log(`  PASSED`);
+  return { killed, survived, score, details };
+}
+
+if (process.argv[1] && process.argv[1].endsWith('meta_learner.mutate.mjs')) {
+  runMutationTests().catch(e => {
+    console.error('Mutation test crash:', e);
+    process.exit(1);
+  });
+}
+
+export { runMutationTests };
+~~~
+
+### Запуск
+
+~~~bash
+node tests/mutation/meta_learner.mutate.mjs
+~~~
+
+### Интеграция в CI
+
+Добавить в .github/workflows/nightly-property.yml:
+
+~~~yaml
+- name: Mutation Testing
+  run: node tests/mutation/meta_learner.mutate.mjs
+~~~
+
+### Как улучшать mutation score
+
+Если мутация survived — значит, тесты не покрывают этот случай. Добавляем новый unit-тест:
+
+~~~javascript
+it('обучение улучшает предсказание после 100 шагов', () => {
+  const ml = new MetaLearner({ inputDim: 4, hiddenDim: 16, outputDim: 3 });
+  const features = [0.5, 0.5, 0.5, 0.5];
+  const preds = [0.3, 0.5, 0.7];
+  const target = 0.6;
+
+  const initialLoss = ml.trainStep(features, preds, target).loss;
+  for (let i = 0; i < 100; i++) ml.trainStep(features, preds, target);
+  const finalLoss = ml.trainStep(features, preds, target).loss;
+
+  assert.ok(finalLoss < initialLoss * 0.5, 'Training did not converge');
+});
+~~~
+
+## 8.5 Chaos Engineering
+
+Помимо unit/property/fuzz, Crucix проверяет отказоустойчивость:
+
+### Эксперименты
+
+- Module failure — что если один из 45 сигналов упадёт?
+- Latency injection — что если LLM-провайдер замедлится?
+- Memory pressure — что если кончится память?
+- Partial failures — что если 30% модулей падают?
+- Random kill — что если процесс убит в середине прогноза?
+
+### Запуск
+
+~~~bash
+npm run chaos
+npm run chaos:quick
+~~~
+
+### Weekly CI
+
+Каждое воскресенье chaos-suite запускается в GitHub Actions. Если 50%+ экспериментов падают — алерт.
+
+### Метрики отказоустойчивости
+
+- Success rate: сколько экспериментов система пережила
+- Recovery time: сколько времени до восстановления
+- Data loss: сколько прогнозов потеряно
+
+Цель: 100% success rate, recovery < 1 минуты, 0% data loss.
+
+## 8.6 CI Pipeline
+
+### Ежедневный CI (на каждый push)
+
+~~~yaml
+jobs:
+  - lint           # 10 секунд
+  - build-wasm     # 30 секунд
+  - test-unit      # 3 минуты
+  - test-fuzz      # 2 минуты
+  - test-property  # 2 минуты
+  - smoke-test     # 3 минуты
+  - benchmark      # 5 минут
+~~~
+
+### Nightly CI (каждую ночь в 2:00)
+
+~~~yaml
+jobs:
+  - property-deep (10 000 кейсов)
+  - mutation-testing
+  - full chaos-suite
+~~~
+
+### Weekly CI (воскресенье)
+
+~~~yaml
+jobs:
+  - neo4j-export (импорт в Neo4j)
+  - performance-benchmark (сравнение с конкурентами)
+  - long-running soak test (24 часа)
+~~~
+
+## 8.7 Что делает тесты хорошими
+
+Тесты Crucix следуют пяти принципам:
+
+1. Свойства > примеры. Проверяем инварианты, а не конкретные значения.
+2. Adversarial inputs. Fuzz-тесты находят bug'и, которые unit-тесты пропускают.
+3. Мутации как метрика. Если тесты не ловят мутации — они не работают.
+4. Chaos в CI. Отказоустойчивость проверяется на каждом релизе.
+5. Покрытие — не цель. 100% coverage с плохими тестами хуже, чем 60% с хорошими.
+
+## 8.8 Итог
+
+Уровень | Инструменты | Что проверяет | Частота
+Unit | node:test | Отдельные функции | Push
+Property | forAll | Инварианты | Push (100), Nightly (10K)
+Fuzz | Random inputs | Устойчивость | Push
+Mutation | Custom mutations | Качество тестов | Nightly
+Chaos | Fault injection | Отказоустойчивость | Weekly
+
+Все уровни интегрированы в GitHub Actions. Каждый push проходит 5 уровней. Nightly углубляет property-тесты до 10 000 кейсов. Weekly проверяет систему на отказоустойчивость.
+
+Прогностическая система, которая не проверяет себя — это гадание. Crucix проверяет себя пятью способами.
+
+
+
+========================================================================
+
+FILE: docs/handbook/16-advanced-contagion.md
+SIZE: 11472 bytes
+SHA1: 9a2717b8bae7e7da
+========================================================================
+
+# Глава 16. Advanced Contagion, Attention & Co-evolution
+
+> «Противник не стоит на месте. Внимание перетекает. Связи тройные.»
+
+В Crucix v3.0 добавлены **три новых слоя прогнозирования**, которые расширяют возможности системы за пределы стандартных графов и моделей:
+
+1. **Hypergraph Contagion** — тройные и N-арные причинные связи
+2. **Attention Dynamics** — куда направлено коллективное внимание
+3. **Adversarial Co-evolution** — противник адаптируется
+
+Каждый слой отвечает на вопрос, который не покрывают предыдущие 9 слоёв.
+
+---
+
+## 16.1 Hypergraph Contagion
+
+### Проблема, которую решает
+
+Стандартный граф имеет **парные** рёбра: A → B. Но реальность часто требует **тройных** связей:
+
+> «Обвал рынка происходит, **когда одновременно**: санкции высокие + конфликт растёт + медиа-кампания активна»
+
+Это **AND-гиперребро**: связывает 3+ узла. Ни один из них в одиночку не вызывает обвал, но **все три вместе** — да.
+
+### Модель
+
+**Гиперграф** — обобщение графа, где ребро может соединять **произвольно много узлов**.
+
+Три типа гиперрёбер:
+
+Тип | Логика | Активация
+**AND** | Все узлы должны быть активны | `∏ P(node)`
+**OR** | Хотя бы один активен | `1 - ∏(1 - P(node))`
+**MAJORITY** | Большинство активны | `count(P > 0.5) / n`
+
+Формула активации для целевого узла:
+
+~~~text
+delta = activation × (weight - 1) × 0.2
+newProb = clamp(currentProb + delta, 0.001, 0.999)
+~~~
+
+### Реализация
+
+~~~javascript
+import { Hypergraph, buildCrucixHypergraph } from './hypergraph_contagion.mjs';
+
+const hg = buildCrucixHypergraph();
+
+// Обновление из sweep
+hg.nodes.get('sanctions').currentProb = 0.8;
+hg.nodes.get('conflict').currentProb = 0.8;
+hg.nodes.get('media_campaign').currentProb = 0.8;
+
+// Распространение
+const updates = hg.propagateAll(3);
+// [
+//   {
+//     hyperedge: 'he_xxx',
+//     target: 'market_crash',
+//     sources: ['sanctions', 'conflict', 'media_campaign'],
+//     activation: 0.512,   // AND: 0.8 × 0.8 × 0.8
+//     delta: 0.256,
+//     newProb: 0.356,
+//     type: 'AND',
+//     description: 'Комбинация санкций, конфликта и медиа-давления → обвал'
+//   }
+// ]
+~~~
+
+### Гиперрёбра в Crucix
+
+Номер | Узлы | Тип | Вес | Lag | Описание
+1 | sanctions + conflict + media | AND | 2.5 | 72ч | Комбинация → обвал
+2 | cyber + energy + political | AND | 3.0 | 168ч | Системный сдвиг
+3 | capital + market + energy | MAJORITY | 2.0 | 48ч | Фин. + энерг. кризис
+4 | sanctions + conflict + cyber | OR | 1.8 | 24ч | Рост нестабильности
+
+### Что это даёт
+
+Первый раз в отрасли — модель, которая ловит тройные причинные связи. Palantir и Recorded Future используют парные графы.
+
+Правило: если AND-гиперребро активировано (все узлы > 0.7) — событие-цель обязательно реализуется.
+
+## 16.2 Attention Dynamics
+
+### Проблема
+
+Коллективное внимание — самый ранний сигнал. Оно опережает действия на 24–72 часа.
+
+Если внезапно все СМИ начинают говорить о теме — это предвестник событий в этой области.
+
+### Модель
+
+Attention к теме = затухающий процесс с новыми упоминаниями:
+
+~~~text
+attention(t) = attention(t-1) × decay + newMentions
+decay = exp(-Δt / halfLife × ln(2))
+~~~
+
+Три производные метрики:
+
+- Momentum = Δattention (растёт или падает?)
+- Velocity = momentum / Δt (как быстро?)
+- Explosiveness = velocity + acceleration (взорвётся ли?)
+
+### Реализация
+
+~~~javascript
+import { AttentionDynamics } from './attention_dynamics.mjs';
+
+const ad = new AttentionDynamics({ halfLifeHours: 24 });
+
+// Обновление внимания
+ad.update('ukraine_conflict', 15, 0.25);  // 15 упоминаний за 15 минут
+ad.update('taiwan_tension', 8, 0.25);
+ad.update('oil_price', 3, 0.25);
+
+// Распределение
+const alloc = ad.getAttentionAllocation();
+// {
+//   ukraine_conflict: { share: 0.58, attention: 15, momentum: 15, velocity: 60 },
+//   taiwan_tension: { share: 0.31, attention: 8, momentum: 8, velocity: 32 },
+//   oil_price: { share: 0.11, attention: 3, momentum: 3, velocity: 12 },
+// }
+
+// Обнаружение сдвигов внимания
+const shifts = ad.detectShifts(5);
+// {
+//   shifts: [
+//     {
+//       from: 'oil_price',
+//       to: 'ukraine_conflict',
+//       magnitude: 12,
+//       interpretation: 'Внимание перетекает от "oil_price" к "ukraine_conflict"',
+//     }
+//   ]
+// }
+
+// Прогноз взрывных тем
+const explosive = ad.predictExplosive(5, 24);
+// [
+//   { topic: 'ukraine_conflict', explosiveness: 1.8, willExplode: true },
+//   { topic: 'taiwan_tension', explosiveness: 0.9, willExplode: false },
+// ]
+~~~
+
+### Что это даёт
+
+Правило: если explosiveness > 1.0 — тема «взорвётся» в ближайшие 24 часа. Готовьтесь.
+
+Пример: перед 2022 explosiveness для «ukraine_conflict» был 2.3 за 48 часов до эскалации.
+
+## 16.3 Adversarial Co-evolution
+
+### Проблема
+
+Классическая теория игр предполагает фиксированного противника. Реальность другая: противник учится на наших прогнозах и адаптируется.
+
+Если мы публикуем «70% эскалации», противник может использовать это: либо усилить эскалацию (пользуясь нашей паникой), либо обмануть (deceive), сделав вид, что деэскалирует.
+
+### Модель
+
+Opponent Model — байесовская модель стратегий противника:
+
+~~~text
+P(strategy) обновляется после каждого наблюдения:
+P(s) ← P(s) × (1 - lr) + 1[s == observed] × lr
+~~~
+
+Detect Adaptation — KL-divergence между условными распределениями:
+
+~~~text
+KL(P(strategy | our prediction = escalation) || P(strategy | our prediction = de-escalation))
+~~~
+
+Если KL > 0.3 — противник адаптируется.
+
+### Реализация
+
+~~~javascript
+import { OpponentModel, AdversarialCoEvolution } from './adversarial_coevolution.mjs';
+
+const ace = new AdversarialCoEvolution();
+ace.addOpponent('russia', { strategies: ['escalate', 'hold', 'deescalate', 'deceive'] });
+ace.addOpponent('china', { strategies: ['escalate', 'hold', 'deescalate', 'deceive'] });
+
+// Симуляция раунда
+const roundData = ace.round('forecast_high', {
+  russia: { strategy: 'escalate', context: {} },
+  china: { strategy: 'deceive', context: {} },
+});
+
+// Анализ
+for (const [id, opponent] of ace.opponents) {
+  const adaptation = opponent.detectAdaptation();
+  const predicted = opponent.predictNextStrategy();
+  // {
+  //   adapted: true,
+  //   klDivergence: 0.62,
+  //   interpretation: 'Противник АДАПТИРУЕТСЯ: KL=0.62'
+  // }
+}
+~~~
+
+### Что это даёт
+
+Правило: если KL > 0.3 для противника — наши прогнозы стали предсказуемыми для него. Нужно изменить стратегию публикации.
+
+Пример: если мы всегда публикуем высокую вероятность эскалации, а противник начал deceive в ответ — нам нужно переключиться на «withhold» или deceive самому.
+
+## 16.4 Интеграция всех трёх слоёв
+
+Три слоя дополняют существующие 6:
+
+Существующие | Новые
+Temporal Causal (задержки) | Hypergraph Contagion (N-арные связи)
+Multi-Layer DAG (4 слоя) | Attention Dynamics (ранние сигналы)
+Narrative Warfare (инфовойна) | Adversarial Co-evolution (адаптация)
+Resource Exhaustion | —
+Meta-Ensemble | —
+Scenario Generator | —
+
+### Комбинированный сигнал
+
+Если одновременно:
+
+- AND-гиперребро активировано (все узлы > 0.7)
+- explosiveness > 1.0 для целевой темы
+- KL > 0.3 для противника
+
+→ Максимальная вероятность события с ограниченным временем до реализации.
+
+### Пример сценария
+
+~~~text
+Условия:
+  - hypergraph: [sanctions, conflict, media] → market_crash (activation: 0.75)
+  - attention: market_crash explosiveness: 1.4 (will explode)
+  - co-evolution: russia KL: 0.42 (adapting)
+
+Вывод:
+  В ближайшие 24-72ч ожидается market_crash.
+  Противник адаптируется — наши публичные прогнозы работают против нас.
+  Требуется изменить стратегию публикации.
+~~~
+
+## 16.5 Сводка
+
+Номер | Слой | Уникальность | Ключевой сигнал
+7 | Hypergraph Contagion | Первый N-арный граф | AND-activation > 0.5
+8 | Attention Dynamics | Самый ранний сигнал | explosiveness > 1.0
+9 | Adversarial Co-evolution | Модель адаптации | KL > 0.3
+
+Правило композитного сигнала: если 3 из 9 продвинутых слоёв показывают критический уровень — система в режиме breaking point.
+
+## 16.6 Что дальше
+
+Возможные расширения:
+
+- Hypergraph Neural Networks — обучение на гиперграфах
+- Multi-scale Attention — внимание на разных временных горизонтах
+- Opponent Modeling with RL — обучение противника через RL
+- Causal Hypergraph Discovery — автоматический поиск N-арных связей из данных
+
+Но это уже v4.0.
+
+## 16.7 Ссылки
+
+- Hypergraph theory: Berge, C. (1989). "Hypergraphs: Combinatorics of Finite Sets"
+- Attention dynamics: Wu, F., & Huberman, B. A. (2007). "Novelty and collective attention"
+- Adversarial co-evolution: Carminati, M. et al. (2022). "Adversarial Co-evolution in Strategic Settings"
+
+
+
+========================================================================

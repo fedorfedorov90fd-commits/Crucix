@@ -1,703 +1,883 @@
+# 🧠 CRUCIX — Open Source Intelligence Terminal
 
 ![image](https://img.shields.io/badge/live-crucix.live-00d4ff?style=for-the-badge)
-
 ![image](https://img.shields.io/badge/open-live%20dashboard-0b1220?style=for-the-badge&logo=googlechrome&logoColor=white)
-
-![image](https://img.shields.io/badge/node-22%2B-brightgreen) 
-![image](https://img.shields.io/badge/license-AGPLv3-blue.svg) 
-![image](https://img.shields.io/badge/dependencies-1%20(express)-orange) 
-![image](https://img.shields.io/badge/OSINT%20sources-27-cyan) 
+![image](https://img.shields.io/badge/node-22%2B-brightgreen)
+![image](https://img.shields.io/badge/license-AGPLv3-blue.svg)
+![image](https://img.shields.io/badge/OSINT%20sources-226-cyan)
+![image](https://img.shields.io/badge/analyzers-59-purple)
+![image](https://img.shields.io/badge/API%20modules-370%2B-orange)
 ![image](https://img.shields.io/badge/docker-ready-blue?logo=docker)
-
-
 ![image](https://img.shields.io/badge/Signal%20Wire-%40crucixmonitor-111111?style=for-the-badge&logo=x&logoColor=white)
-
 ![image](https://img.shields.io/badge/Ops%20Room-Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)
 
-![image](docs/dashboard.png)
+---
 
+## 📖 Оглавление
+
+1. [Описание](#-описание)
+2. [Скриншоты](#-скриншоты)
+3. [Быстрый старт](#-быстрый-старт)
+4. [Что вы получаете](#-что-вы-получаете)
+5. [Аналитическая платформа](#-аналитическая-платформа)
+6. [Инфраструктурный анализатор](#-инфраструктурный-анализатор)
+7. [Router v3.1 — Механизм А+Б](#-router-v31--механизм-аб)
+8. [AI-лаборатория](#-ai-лаборатория)
+9. [API-ключи](#-api-ключи)
+10. [Архитектура](#-архитектура)
+11. [Модульная архитектура сервера](#-модульная-архитектура-сервера)
+12. [🗺️ Геополитическая карта (geo-map)](#️-геополитическая-карта-geo-map)
+13. [Источники данных](#-источники-данных)
+14. [npm-скрипты](#-npm-скрипты)
+15. [Конфигурация](#-конфигурация)
+16. [API-эндпоинты](#-api-эндпоинты)
+17. [Устранение неполадок](#-устранение-неполадок)
+18. [Расширения](#-расширения)
+19. [AI-чат](#-ai-чат)
+20. [Вклад в проект](#-вклад-в-проект)
+21. [Лицензия](#-лицензия)
+
+---
+
+## 🚀 Описание
+
+**Crucix** — платформа для сбора, анализа и визуализации данных из открытых источников. Предназначена для мониторинга геополитической, экономической, военной и экологической обстановки в реальном времени.
+
+Архитектура построена по принципу **«Корзина → AI → Карта»**:
+
+- **Сбор** — данные приходят из 226 источников в корзину (`data/basket/`)
+- **Анализ** — 59 анализаторов считают индексы, композиты, прогнозы (`data/analytics/`)
+- **AI** — локальный LLM (Ollama) генерирует брифы и прогнозы
+- **Карта** — результат визуализируется на геокарте (3D WebGL Globe + 2D D3 Map + Leaflet)
+
+### Ключевые возможности
+
+- ✅ **226 OSINT-источников** — спутники, авиация, конфликты, экономика, экология
+- ✅ **59 анализаторов** — индексы, детекторы, прогнозы, композиты
+- ✅ **370+ API-модулей** — все эндпоинты данные из корзины
+- ✅ **8 категорий аналитики** — index, detector, forecast, semantic, flow, market, specialist, space
+- ✅ **3D WebGL-глобус** + 2D-карта с 9 типами маркеров
+- ✅ **Leaflet-карта** с 237 слоями, тепловой картой и хронологией
+- ✅ **Инфраструктурный анализатор** — 114 объектов, 15 эндпоинтов
+- ✅ **Автообновление** каждые 15 минут через SSE
+- ✅ **Telegram + Discord боты** с двухсторонним управлением
+- ✅ **AI-аналитика** через Ollama (локально, без облака)
+- ✅ **Модульная архитектура** — легко расширять
+- ✅ **Zero cloud, zero telemetry, zero subscriptions**
+
+> **Live website:** [https://www.crucix.live/](https://www.crucix.live/)
+
+---
+
+## 📸 Скриншоты
 
 | | |
 |-|-|
-|![image](docs/boot.png)|![image](docs/map.png)|
+|![image](docs/dashboard.png)|![image](docs/boot.png)|
+|**Главный дашборд**|**Анимация загрузки**|
 
+| |
+|-|
+|![image](docs/map.png)|
+|**2D-карта с маркерами**|
 
 | |
 |-|
 |![image](docs/globe.png)|
+|**3D WebGL-глобус**|
 
-CrucixYour own intelligence terminal. 27 sources. One command. Zero cloud.Visit
-The Live Site: crucix.liveLive WebsiteOpen DemoNode.js 22+License: AGPL
-v3DependenciesSourcesDockerEnter The Signal NetworkSignal WireOps RoomCrucix
-Dashboard More screenshots Boot SequenceWorld MapBootMap3D Globe ViewGlobe 
+---
 
-> **Live website:** <https://www.crucix.live/> Explore the public demo first,
-> then clone the repo to run Crucix locally.
+## ⚡ Быстрый старт
 
-Crucix pulls satellite fire detection, flight tracking, radiation monitoring,
-satellite constellation tracking, economic indicators, live market prices,
-conflict data, sanctions lists, and social sentiment from 27 open-source
-intelligence feeds — in parallel, every 15 minutes — and renders everything on
-a single self-contained Jarvis-style dashboard.
-
-Hook it up to an LLM and it becomes a **two-way intelligence assistant** —
-pushing multi-tier alerts to Telegram and Discord when something meaningful
-changes, responding to commands like `/brief` and `/sweep` from your phone, and
-generating actionable trade ideas grounded in real cross-domain data. Your own
-analyst that watches the world while you sleep.
-
-Try the live demo first at <https://www.crucix.live/>, then clone the repo when
-you want the full local stack.
-
-No cloud. No telemetry. No subscriptions. Just `node server.mjs` and you're
-running.
-
-## Token / Asset Warning
-
-> \[!WARNING] **Crucix has not launched any official token, coin, NFT, airdrop,
-> presale, or other blockchain-based asset.** Any token or digital asset using the
-> Crucix name, logo, or branding is not affiliated with or endorsed by Crucix. Do
-> not buy it, promote it, connect a wallet to claim it, sign transactions, or
-> send funds based on third-party posts, DMs, or websites.
-
-- - -
-## Why This Exists
-
-Most of the world's real-time intelligence — satellite imagery, radiation
-levels, conflict events, economic indicators, flight tracking, maritime
-activity — is publicly available. It's just scattered across dozens of
-government APIs, research institutions, and open data feeds that nobody has
-time to check individually.
-
-Crucix brings it all into one place. Not behind a paywall, not locked in an
-enterprise platform, not requiring a security clearance. Just open data,
-aggregated and cross-correlated on your own machine, updated every 15 minutes.
-
-It was built for anyone who wants to understand what's actually happening in
-the world right now — researchers, journalists, traders, OSINT analysts, or
-just curious people who believe access to information shouldn't depend on your
-budget.
-
-- - -
-## Quick Start
+### Локальный запуск
 
 ```bash
-# 1. Clone the repo
+# 1. Клонировать репозиторий
 git clone https://github.com/calesthio/Crucix.git
 cd Crucix
 
-# 2. Install dependencies (just Express)
+# 2. Установить зависимости (только Express)
 npm install
 
-# 3. Copy env template and add your API keys (see below)
+# 3. Скопировать шаблон .env и добавить API-ключи
 cp .env.example .env
 
-# 4. Start the dashboard
+# 4. Запустить дашборд
 npm run dev
 ```
-> **If `npm run dev` fails silently** (exits with no output), run Node directly
-> instead:
-> 
-> ```bash
-> node --trace-warnings server.mjs
-> ```
-This bypasses npm's script runner, which can swallow errors on some systems
-> (particularly PowerShell on Windows). You can also run `node diag.mjs` to
-> diagnose the exact issue — it checks your Node version, tests each module
-> import individually, and verifies port availability. See 
-> [Troubleshooting](#troubleshooting) for more.
 
-The dashboard opens automatically at `http://localhost:3117` and immediately
-begins its first intelligence sweep. This initial sweep queries all 27 sources
-in parallel and typically takes 30–60 seconds — the dashboard will appear empty
-until the sweep completes and pushes the first data update. After that, it
-auto-refreshes every 15 minutes via SSE (Server-Sent Events). No manual page
-refresh needed.
+Дашборд откроется на `http://localhost:3117`
 
-**Requirements:** Node.js 22+ (uses native `fetch`, top-level `await`, ESM)
+Если `npm run dev` не работает, запустите напрямую:
+
+```bash
+node --trace-warnings server.mjs
+```
 
 ### Docker
 
 ```bash
 git clone https://github.com/calesthio/Crucix.git
 cd Crucix
-cp .env.example .env    # add your API keys
+cp .env.example .env
 docker compose up -d
 ```
-Dashboard at `http://localhost:3117`. Sweep data persists in `./runs/` via
-volume mount. Includes a health check endpoint.
 
-- - -
-## What You Get
+---
 
-### Live Dashboard
+## 🎯 Что вы получаете
 
-A self-contained Jarvis-style HUD with:
+### Дашборд
 
-- **3D WebGL globe** (Globe.gl) with atmosphere glow, star field, and smooth
-  rotation — plus a classic flat map toggle
-- **9 marker types** across both views: fire detections, air traffic, radiation
-  sites, maritime chokepoints, SDR receivers, OSINT events, health alerts,
-  geolocated news, conflict events
-- **Animated 3D flight corridor arcs** between air traffic hotspots and global
-  hubs
-- **Region filters** (World, Americas, Europe, Middle East, Asia Pacific, Africa)
-  — rotates the globe or zooms the flat map
-- **Live market data** — indexes, crypto, energy, commodities via Yahoo Finance
-  (no API key needed)
-- **Risk gauges** — VIX, high-yield spread, supply chain pressure index
-- **OSINT feed** — English-language posts from 17 Telegram intelligence channels
-  (expandable)
-- **News ticker** — merged RSS + GDELT headlines + Telegram posts, auto-scrolling
-- **Sweep delta** — live panel showing what changed since last sweep (new
-  signals, escalations, de-escalations with severity)
-- **Cross-source signals** — correlated intelligence across satellite, economic,
-  conflict, and social domains
-- **Nuclear watch** — real-time radiation readings from Safecast + EPA RadNet
-- **Space watch** — CelesTrak satellite tracking: recent launches, ISS, military
-  constellations, Starlink/OneWeb counts
-- **Leverageable ideas** — AI-generated trade ideas (with LLM) or
-  signal-correlated ideas (without)
+- **3D WebGL-глобус** (Globe.gl) с атмосферой и звёздным полем
+- **2D-карта** (D3) с 9 типами маркеров
+- **Leaflet-карта** с 237 слоями, тепловой картой и хронологией
+- **Анимированные дуги** полётов между авиаузлами
+- **Фильтры по регионам** (Мир, Америка, Европа, Ближний Восток, Азия, Африка)
+- **Рыночные данные** в реальном времени (индексы, крипто, энергия, металлы)
 
-### Performance Modes
+### Аналитика
 
-The `VISUALS FULL` / `VISUALS LITE` button in the top bar only changes rendering
-behavior - it does **not** remove data sources or reduce sweep coverage.
+- **59 анализаторов** — от базовых индексов до композитных рисков
+- **197 стран** в справочнике характеристик
+- **147 стран** с реальным коэффициентом Джини
+- **194 страны** с макроэкономикой World Bank
+- **114 объектов** критической инфраструктуры (25 военных баз, 20 АЭС, 26 портов, 15 чокпоинтов, 15 дамб, 13 энергосетей)
+- **8 категорий** аналитики в `data/analytics/`
 
-When you switch to **VISUALS LITE**, the dashboard:
+### AI-возможности
 
-- Disables decorative background effects such as the radial/grid overlays and
-  scanlines
-- Removes expensive blur/backdrop-filter effects on panels and overlays
-- Stops non-essential animations like the logo ring blink, conflict rings, and
-  corridor flow effects
-- Disables globe auto-rotation and turns off animated flight-arc dashes
-- Converts the horizontal news ticker and OSINT stream into static, scrollable
-  lists instead of continuously animated marquees
+- **Локальный LLM** через Ollama
+- **AI-брифы** (daily, alert, summary)
+- **Прогнозы** через AI
+- **Семантический поиск** по новостям (TF-IDF + cosine similarity)
+- **Извлечение сущностей** (NER) из текстов
 
-Mobile-specific behavior:
+### Интеграции
 
-- On mobile, `VISUALS LITE` also forces the dashboard into **flat map mode** if
-  you are currently on the globe
-- Future mobile loads will continue to start flat while low-perf mode is enabled
+- **Telegram-бот** (двухсторонний)
+- **Discord-бот** (двухсторонний)
+- **MCP Server** (Model Context Protocol) — доступ к Crucix из внешних AI-клиентов
+- **CLI-аналитика** — запросы к анализаторам из терминала
 
-The preference is saved in browser local storage, so the UI will remember your
-last setting.
+---
 
-### Auto-Refresh
+## 📊 Аналитическая платформа
 
-The server runs a sweep cycle every 15 minutes (configurable). Each cycle:
+В Crucix встроена **полноценная аналитическая платформа** — 59 анализаторов партии №2, разделённые на **8 категорий**.
 
-1.  Queries all 27 sources in parallel (~30s)
-2.  Synthesizes raw data into dashboard format
-3.  Computes delta from previous run (what changed, escalated, de-escalated) —
-    visible in the **Sweep Delta** panel on the dashboard
-4.  Generates LLM trade ideas (if configured)
-5.  Evaluates breaking news alerts — multi-tier (FLASH / PRIORITY / ROUTINE)
-    with semantic dedup. Sends to Telegram and/or Discord if configured. Works
-    with LLM evaluation or falls back to rule-based alerting when LLM is
-    unavailable.
-6.  Pushes update to all connected browsers via SSE
+### Категории анализаторов
 
-### Telegram Bot (Two-Way)
+| Категория | Описание | Кол-во |
+|---|---|---|
+| **index** | Индексы (страновые, региональные) | 2 |
+| **detector** | Детекторы событий и аномалий | 8 |
+| **forecast** | Прогностические модели | 4 |
+| **semantic** | Семантический анализ текстов | 6 |
+| **flow** | Потоки (торговля, миграция, ресурсы) | 10 |
+| **market** | Рыночные индикаторы | 7 |
+| **specialist** | Специализированные (инфра, ядер, санкции) | 21 |
+| **space** | Космос | 1 |
+| **ИТОГО** | | **59** |
 
-Crucix doubles as an interactive Telegram bot. Beyond sending alerts, it
-responds to commands directly from your chat:
+### Ключевые анализаторы
 
+**Индексы (index):**
+- `country-instability` — Индекс нестабильности страны (CII). Эталон внедрения.
+- `resilience-index` — Индекс устойчивости (197 стран, 152 уникальных балла)
 
-|Command         |What It Does                                                                       |
-|----------------|-----------------------------------------------------------------------------------|
-|`/status`       |System health, last sweep time, source status, LLM status                          |
-|`/sweep`        |Trigger a manual sweep cycle                                                       |
-|`/brief`        |Compact text summary of the latest intelligence (direction, key metrics, top OSINT)|
-|`/portfolio`    |Portfolio status (if Alpaca connected)                                             |
-|`/alerts`       |Recent alert history with tiers                                                    |
-|`/mute` / `/mute 2h`|Silence alerts for 1h (or custom duration)                                         |
-|`/unmute`       |Resume alerts                                                                      |
-|`/help`         |Show all available commands                                                        |
+**Композиты (specialist):**
+- `strategic-risk-composite` — Стратегический риск (инстабильность + дефицит устойчивости + инфраструктура + геополитика)
+- `infrastructure-cascade` — Каскадный анализ инфраструктуры (13 файлов, 15 эндпоинтов)
 
-This requires `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` in `.env`. The bot
-polls for messages every 5 seconds (configurable via `TELEGRAM_POLL_INTERVAL`).
+**Прогнозы (forecast):**
+- `conflict-escalation-tracker` — Эскалация конфликтов (6 уровней)
+- `ai-forecasts` — Прогнозы через LLM
+- `social-briefing` — Брифы через LLM (daily, alert, summary)
+- `central-bank-predictor` — Прогноз действий центробанков
 
-### Discord Bot (Two-Way)
+**Детекторы (detector):**
+- `geo-convergence` — Конвергенция по географии
+- `threat-classification` — Классификация угроз
+- `surge-detection` — Всплески аномалий
+- `focal-point-detection` — Фокусные точки активности
+- `baseline-alerting` — Пороговые уведомления
+- `cyber-attack-monitor` — Кибератаки
+- `snapshot-system` — Снимки состояния
+- `pizza-index` — Активность у штаб-квартир (внутренний индекс)
 
-Crucix also supports Discord as a full-featured bot with slash commands and
-rich embed alerts. It mirrors the Telegram bot's capabilities with
-Discord-native formatting.
+**Семантика (semantic):**
+- `adaptive-news-clustering` — Кластеризация новостей (TF-IDF)
+- `ai-news-synthesis` — AI-синтез новостей
+- `entity-extraction` — NER
+- `multi-source-corroboration` — Проверка фактов
+- `source-credibility` — Достоверность источников
+- `social-sentiment-analyzer` — Тональность соцсетей
 
+**Потоки (flow):**
+- `cross-stream-correlation` — Кросс-корреляция потоков данных
+- `route-explorer` — Альтернативные маршруты
+- `supply-chain-cascade-engine` — Каскады цепочек поставок
+- `supply-chain-resilience` — Устойчивость поставок
+- `tanker-fleet-monitor` — Танкерный флот (тёмные суда)
+- `arms-transfer-tracker` — Передача вооружений
+- `diplomatic-tracker` — Дипломатическая активность
+- `migration-flow-tracker` — Миграционные потоки
+- `signal-aggregator` — Агрегация сигналов
+- `risk-signal-aggregator` — Агрегация рисков
 
-|Command   |What It Does                                             |
-|----------|---------------------------------------------------------|
-|`/status` |System health, last sweep time, source status, LLM status|
-|`/sweep`  |Trigger a manual sweep cycle                             |
-|`/brief`  |Compact text summary of the latest intelligence          |
-|`/portfolio`|Portfolio status (if Alpaca connected)                   |
+**Рынки (market):**
+- `market-composite` — Рыночный композит (VIX, нефть, золото, DXY)
+- `derived-market-analytics` — Производные метрики (Gold/Oil, Copper/Gold)
+- `energy-market-intelligence` — Энергетические рынки
+- `prediction-markets` — Прогнозные рынки
+- `stablecoin-monitor` — Стейблкоины
+- `etf-flow-analysis` — Потоки ETF
+- `fx-reserves-monitor` — Валютные резервы
+- `tick-data-analyzer` — Тиковые данные
 
-Alerts are delivered as rich embeds with color-coded sidebars: red for FLASH,
-yellow for PRIORITY, blue for ROUTINE. Each embed includes signal details,
-confidence scores, and cross-domain correlations.
+**Специалисты (specialist) — продолжение:**
+- `sanctions-pressure` — Санкционное давление
+- `political-stability-monitor` — Политическая стабильность
+- `food-security-monitor` — Продовольственная безопасность
 
-**Setup requires:** `DISCORD_BOT_TOKEN`, `DISCORD_CHANNEL_ID`, and optionally `
-DISCORD_GUILD_ID` for instant slash command registration. See 
-[API Keys Setup](#api-keys-setup) for details.
+**Космос (space):**
+- `satellite-analyzer` — Анализ спутников
 
-**Webhook fallback:** If you don't want to run a full bot, set `
-DISCORD_WEBHOOK_URL` instead. This enables one-way alerts (no slash commands)
-with zero dependencies — no `discord.js` needed.
+### Как работает анализ
 
-**Optional dependency:** The full bot requires `discord.js`. Install it with `
-npm install discord.js`. If it's not installed, Crucix automatically falls back
-to webhook-only mode.
+1. **Сбор** — сборщики (`scripts/collectors/`) кладут данные в корзину `data/basket/`
+2. **Расчёт** — анализаторы (`scripts/analyzers/`) читают корзину + справочники, считают индексы, пишут в `data/analytics/{category}/`
+3. **Отдача** — API-модули (`apis/sources/{name}-api.mjs`) читают результаты, отдают через `/api/layers/{name}`
+4. **Отображение** — слой на карте (`dashboard/public/geo-map/js/layers.js`) показывает результат
 
-### Optional LLM Layer
+### Структура `data/analytics/`
 
-Connect any of 8 LLM providers for enhanced analysis:
+```
+data/analytics/
+├── _manifest.json     # реестр всех анализаторов
+├── _catalog.json      # каталог классов
+├── _lineage.json      # происхождение данных
+├── _health.json       # статус
+├── _schema.json       # схема
+├── index/             # индексы
+├── detector/          # детекторы
+├── forecast/          # прогнозы
+├── semantic/          # семантика
+├── flow/              # потоки
+├── market/            # рынки
+├── specialist/        # специалисты
+└── space/             # космос
+```
 
-- **AI trade ideas** — quantitative analyst producing 5-8 actionable ideas citing
-  specific data
-- **Smarter alert evaluation** — LLM classifies signals into
-  FLASH/PRIORITY/ROUTINE tiers with cross-domain correlation and confidence
-  scoring
-- Providers: Anthropic Claude, OpenAI, Google Gemini, OpenRouter (Unified API),
-  OpenAI Codex (ChatGPT subscription), MiniMax, Mistral, Grok
-- Graceful fallback — when LLM is unavailable, a rule-based engine takes over
-  alert evaluation. LLM failures never crash the sweep cycle.
-
-- - -
-## API Keys Setup
-
-Copy `.env.example` to `.env` at the project root:
+### Запуск анализатора
 
 ```bash
-cp .env.example .env
+# Один анализатор
+node scripts/analyzers/resilience-index.mjs
+
+# Все анализаторы (вручную)
+for f in scripts/analyzers/*.mjs; do node "$f"; done
+
+# Полный цикл: сбор → анализ → отдача
+node scripts/collectors/collect-worldbank.mjs
+node scripts/analyzers/strategic-risk-composite.mjs
+curl http://localhost:3117/api/layers/strategic-risk-composite/stats
 ```
-### Required for Best Results (all free)
 
+---
 
-|Key          |Source                              |How to Get                                  |
-|-------------|------------------------------------|--------------------------------------------|
-|`FRED_API_KEY`|Federal Reserve Economic Data       |[fred.stlouisfed.org](https://fred.stlouisfed.org/docs/api/api_key.html) — instant, free|
-|`FIRMS_MAP_KEY`|NASA FIRMS (satellite fire data)    |[firms.modaps.eosdis.nasa.gov](https://firms.modaps.eosdis.nasa.gov/api/area/) — instant, free|
-|`EIA_API_KEY`|US Energy Information Administration|[api.eia.gov](https://www.eia.gov/opendata/register.php) — instant, free|
+## 🏗️ Инфраструктурный анализатор
 
-These three unlock the most valuable economic and satellite data. Each takes
-about 60 seconds to register.
+**Infrastructure Cascade** — самый сложный анализатор в Crucix. Состоит из **13 файлов** и отдаёт **15 эндпоинтов**.
 
-### Optional (enable additional sources)
+### Файлы
 
+**Блок A (ядро):**
+- `infrastructure-graph-core.mjs` — граф, haversine
+- `infrastructure-propagation.mjs` — каскадное распространение
+- `infrastructure-pagerank-critical.mjs` — PageRank, междуness
+- `infrastructure-temporal.mjs` — temporal decay
 
-|Key                         |Source                      |How to Get                           |
-|----------------------------|----------------------------|-------------------------------------|
-|`ACLED_EMAIL` \+ `ACLED_PASSWORD`|Armed conflict event data   |[acleddata.com/register](https://acleddata.com/register/) — free, OAuth2|
-|`AISSTREAM_API_KEY`         |Maritime AIS vessel tracking|[aisstream.io](https://aisstream.io/) — free|
-|`ADSB_API_KEY`              |Unfiltered flight tracking  |[RapidAPI](https://rapidapi.com/adsbexchange/api/adsbexchange-com1) — ~$10/mo|
+**Блок B (расчёт):**
+- `infrastructure-vulnerability-calc.mjs` — адаптивный расчёт уязвимости
+- `infrastructure-monte-carlo.mjs` — Monte Carlo, sensitivity
+- `infrastructure-scenario-engine.mjs` — 8 сценариев (Ормуз, Тайвань, АЭС...)
 
-### LLM Provider (optional, for AI-enhanced ideas)
+**Блок C (мониторинг):**
+- `infrastructure-military-monitor.mjs` — военные базы
+- `infrastructure-chokepoint-monitor.mjs` — проливы, каналы
+- `infrastructure-nuclear-monitor.mjs` — АЭС
+- `infrastructure-supply-chain.mjs` — HHI концентрация
+- `infrastructure-cargo-anomaly.mjs` — аномалии грузопотоков
 
-Set `LLM_PROVIDER` to one of: `anthropic`, `openai`, `gemini`, `codex`, `
-openrouter`, `minimax`, `mistral`, `grok`
+**+ `infrastructure-api.mjs`** — HTTP-обработчик
 
+### Объекты инфраструктуры
 
-|Provider  |Key Required                  |Default Model       |
-|----------|------------------------------|--------------------|
-|`anthropic`|`LLM_API_KEY`                 |claude-sonnet-4-6   |
-|`openai`  |`LLM_API_KEY`                 |gpt-5.4             |
-|`gemini`  |`LLM_API_KEY`                 |gemini-3.1-pro      |
-|`openrouter`|`LLM_API_KEY`                 |openrouter/auto     |
-|`codex`   |None (uses `~/.codex/auth.json`)|gpt-5.3-codex       |
-|`minimax` |`LLM_API_KEY`                 |MiniMax-M2.5        |
-|`mistral` |`LLM_API_KEY`                 |mistral-large-latest|
-|`grok`    |`LLM_API_KEY`                 |grok-4-latest       |
+`data/infrastructure/objects.json` — **114 объектов:**
 
-For Codex, run `npx @openai/codex login` to authenticate via your ChatGPT
-subscription.
+- 25 военных баз (США, Россия, Китай, НАТО)
+- 20 АЭС (Запорожская, Фукусима, Бушер, Аккую...)
+- 26 портов (Шанхай, Сингапур, Роттердам...)
+- 15 чокпоинтов (Ормуз, Суэц, Тайвань, Баб-эль-Мандеб...)
+- 15 дамб (Три ущелья, Итайпу, Каховская...)
+- 13 энергосетей (Восточный Китай, ERCOT, Укрэнерго...)
 
-### Telegram Bot + Alerts (optional)
-
-
-|Key                   |How to Get                                                                             |
-|----------------------|---------------------------------------------------------------------------------------|
-|`TELEGRAM_BOT_TOKEN`  |Create via [@BotFather](https://t.me/BotFather) on Telegram                            |
-|`TELEGRAM_CHAT_ID`    |Get via [@userinfobot](https://t.me/userinfobot)                                       |
-|`TELEGRAM_CHANNELS`   |*(Optional)* Comma-separated extra channel IDs to monitor beyond the 17 built-in channels|
-|`TELEGRAM_POLL_INTERVAL`|*(Optional)* Bot command polling interval in ms (default: 5000)                        |
-
-### Discord Bot + Alerts (optional)
-
-
-|Key                |How to Get                                                                                                                                   |
-|-------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
-|`DISCORD_BOT_TOKEN`|Create at [Discord Developer Portal](https://discord.com/developers/applications) → Bot → Token                                              |
-|`DISCORD_CHANNEL_ID`|Right-click channel in Discord (Developer Mode on) → Copy Channel ID                                                                         |
-|`DISCORD_GUILD_ID` |*(Optional)* Right-click server → Copy Server ID. Enables instant slash command registration (otherwise takes up to 1 hour for global commands)|
-|`DISCORD_WEBHOOK_URL`|*(Optional)* Channel Settings → Integrations → Webhooks → New Webhook → Copy URL. Use this for alert-only mode without a bot                 |
-
-**Discord bot setup:**
-
-1.  Go to 
-    [Discord Developer Portal](https://discord.com/developers/applications) and
-    create a new application
-2.  Go to **Bot** → click **Reset Token** → copy the token to `DISCORD_BOT_TOKEN`
-3.  Under **Privileged Gateway Intents**, enable **Message Content Intent**
-4.  Go to **OAuth2** → **URL Generator** → select `bot` \+ `applications.commands`
-    scopes → select `Send Messages` \+ `Embed Links` permissions
-5.  Copy the generated URL and open it in your browser to invite the bot to
-    your server
-6.  Install the dependency: `npm install discord.js`
-
-Alerts work with or without an LLM on both Telegram and Discord. With an LLM
-configured, signal evaluation is richer and more context-aware. Without one, a
-deterministic rule engine evaluates signals based on severity, cross-domain
-correlation, and signal counts.
-
-### Without Any Keys
-
-Crucix still works with zero API keys. 18+ sources require no authentication at
-all. Sources that need keys return structured errors and the rest of the sweep
-continues normally.
-
-- - -
-## Architecture
+### 15 эндпоинтов
 
 ```
-crucix/
-├── server.mjs                 # Express dev server (SSE, auto-refresh, LLM, bot commands)
-├── crucix.config.mjs          # Configuration with env var overrides + delta thresholds
-├── diag.mjs                   # Diagnostic script — run if server fails to start
-├── .env.example               # All documented env vars
-├── package.json               # Runtime: express | Optional: discord.js
-├── docs/                      # Screenshots for README
-│
-├── apis/
-│   ├── briefing.mjs           # Master orchestrator — runs all 27 sources in parallel
-│   ├── save-briefing.mjs      # CLI: save timestamped + latest.json
-│   ├── BRIEFING_PROMPT.md     # Intelligence synthesis protocol
-│   ├── BRIEFING_TEMPLATE.md   # Briefing output structure
-│   ├── utils/
-│   │   ├── fetch.mjs          # safeFetch() — timeout, retries, abort, auto-JSON
-│   │   └── env.mjs            # .env loader (no dotenv dependency)
-│   └── sources/               # 27 self-contained source modules
-│       ├── gdelt.mjs          # Each exports briefing() → structured data
-│       ├── fred.mjs           # Can run standalone: node apis/sources/fred.mjs
-│       ├── space.mjs          # CelesTrak satellite tracking
-│       ├── yfinance.mjs       # Yahoo Finance — free live market data
-│       └── ...                # 23 more
-│
-├── dashboard/
-│   ├── inject.mjs             # Data synthesis + standalone HTML injection
-│   └── public/
-│       └── jarvis.html        # Self-contained Jarvis HUD
-│
-├── lib/
-│   ├── llm/                   # LLM abstraction (8 providers, raw fetch, no SDKs)
-│   │   ├── provider.mjs       # Base class
-│   │   ├── anthropic.mjs      # Claude
-│   │   ├── openai.mjs         # GPT
-│   │   ├── gemini.mjs         # Gemini
-│   │   ├── grok.mjs           # Grok
-│   │   ├── openrouter.mjs     # OpenRouter (Unified API)
-│   │   ├── codex.mjs          # Codex (ChatGPT subscription)
-│   │   ├── minimax.mjs        # MiniMax (M2.5, 204K context)
-│   │   ├── mistral.mjs        # Mistral AI
-│   │   ├── ideas.mjs          # LLM-powered trade idea generation
-│   │   └── index.mjs          # Factory: createLLMProvider()
-│   ├── delta/                 # Change tracking between sweeps
-│   │   ├── engine.mjs         # Delta computation — semantic dedup, configurable thresholds, severity scoring
-│   │   ├── memory.mjs         # Hot memory (3 runs, atomic writes) + cold storage (daily archives)
-│   │   └── index.mjs          # Re-exports
-│   └── alerts/
-│       ├── telegram.mjs       # Multi-tier alerts (FLASH/PRIORITY/ROUTINE) + two-way bot commands
-│       └── discord.mjs        # Discord bot (slash commands, rich embeds) + webhook fallback
-│
-└── runs/                      # Runtime data (gitignored)
-    ├── latest.json            # Most recent sweep output
-    └── memory/                # Delta memory (hot.json + cold/YYYY-MM-DD.json)
+GET /api/layers/infrastructure-api                    — корень
+GET /api/layers/infrastructure-api/vulnerability      — уязвимость
+GET /api/layers/infrastructure-api/cascade            — каскад
+GET /api/layers/infrastructure-api/simulate           — симуляция
+GET /api/layers/infrastructure-api/critical-paths     — критические пути
+GET /api/layers/infrastructure-api/pagerank           — PageRank
+GET /api/layers/infrastructure-api/sensitivity        — чувствительность
+GET /api/layers/infrastructure-api/featurecollection  — GeoJSON
+GET /api/layers/infrastructure-api/stats              — статистика
+GET /api/layers/infrastructure-api/military           — военные объекты
+GET /api/layers/infrastructure-api/chokepoints        — проливы
+GET /api/layers/infrastructure-api/nuclear            — АЭС
+GET /api/layers/infrastructure-api/supply-chain       — цепочки поставок
+GET /api/layers/infrastructure-api/cargo-anomalies    — аномалии
+GET /api/layers/infrastructure-api/scenarios          — сценарии
 ```
-### Design Principles
 
-- **Pure ESM** — every file is `.mjs` with explicit imports
-- **Minimal dependencies** — Express is the only runtime dependency. `discord.js`
-  is optional (for Discord bot). LLM providers use raw `fetch()`, no SDKs.
-- **Parallel execution** — `Promise.allSettled()` fires all 27 sources
-  simultaneously
-- **Graceful degradation** — missing keys produce errors, not crashes. LLM
-  failures don't kill sweeps.
-- **Each source is standalone** — run `node apis/sources/gdelt.mjs` to test any
-  source independently
-- **Self-contained dashboard** — the HTML file works with or without the server
+### Ключевые результаты
 
-- - -
-## Data Sources (27)
+- **PageRank → chokepoint-taiwan** (самый связанный узел)
+- **Top bottleneck → chokepoint-malacca**
+- **Vulnerability max → npp-zaporizhzhia**
+- **Sensitivity → exposure** (наиболее влияющий фактор)
+- **Сценарий Тайвань-блокада → 3 узла затронуто**
+- **Сценарий Ормуз-закрытие → 5 узлов затронуто**
 
-### Tier 1: Core OSINT & Geopolitical (11)
+---
 
+## 🔀 Router v3.1 — Механизм А+Б
 
-|Source        |What It Tracks                                           |Auth         |
-|--------------|---------------------------------------------------------|-------------|
-|**GDELT**     |Global news events, conflict mapping (100+ languages)    |None         |
-|**OpenSky**   |Real-time ADS-B flight tracking across 6 hotspot regions |None         |
-|**NASA FIRMS**|Satellite fire/thermal anomaly detection (3hr latency)   |Free key     |
-|**Maritime/AIS**|Vessel tracking, dark ships, sanctions evasion           |Free key     |
-|**Safecast**  |Citizen-science radiation monitoring near 6 nuclear sites|None         |
-|**ACLED**     |Armed conflict events: battles, explosions, protests     |Free (OAuth2)|
-|**ReliefWeb** |UN humanitarian crisis tracking                          |None         |
-|**WHO**       |Disease outbreaks and health emergencies                 |None         |
-|**OFAC**      |US Treasury sanctions (SDN list)                         |None         |
-|**OpenSanctions**|Aggregated global sanctions (30+ sources)                |Partial      |
-|**ADS-B Exchange**|Unfiltered flight tracking including military            |Paid         |
+**Router** (`server/router.mjs`) — ключевой компонент. Определяет, какой модуль обработает запрос.
 
-### Tier 2: Economic & Financial (7)
+### 4 механизма поиска
 
+**1. Механизм А (приоритет) — `export const route`:**
 
-|Source     |What It Tracks                                         |Auth    |
-|-----------|-------------------------------------------------------|--------|
-|**FRED**   |22 key indicators: yield curve, CPI, VIX, fed funds, M2|Free key|
-|**US Treasury**|National debt, yields, fiscal data                     |None    |
-|**BLS**    |CPI, unemployment, nonfarm payrolls, PPI               |None    |
-|**EIA**    |WTI/Brent crude, natural gas, inventories              |Free key|
-|**GSCPI**  |NY Fed Global Supply Chain Pressure Index              |None    |
-|**USAspending**|Federal spending and defense contracts                 |None    |
-|**UN Comtrade**|Strategic commodity trade flows between major powers   |None    |
+API-модуль сам декларирует префикс:
+```javascript
+export const route = '/api/layers/infrastructure-api';
+export default handleInfrastructureAPI;
+```
 
-### Tier 3: Weather, Environment, Tech, Social, SIGINT (7)
+Router при загрузке модуля читает `module.route` и регистрирует в `modulePrefixCache`. Все последующие запросы к `/api/layers/infrastructure-api/*` идут **микросекундно** из кэша.
 
+**2. routes-api.json — точное совпадение:**
 
-|Source       |What It Tracks                                                                  |Auth |
-|-------------|--------------------------------------------------------------------------------|-----|
-|**NOAA/NWS** |Active US weather alerts                                                        |None |
-|**EPA RadNet**|US government radiation monitoring                                              |None |
-|**USPTO Patents**|Patent filings in 7 strategic tech areas                                        |None |
-|**Bluesky**  |Social sentiment on geopolitical/market topics                                  |None |
-|**Reddit**   |Social sentiment from key subreddits                                            |OAuth|
-|**Telegram** |17 curated OSINT/conflict/finance channels (web scraping, expandable via config)|None |
-|**KiwiSDR**  |Global HF radio receiver network (~600 receivers)                               |None |
+Запись `{ path: '/api/layers/country-instability', module: 'country-instability-api' }`. Работает для legacy-модулей.
 
-### Tier 4: Space & Satellites (1)
+**3. routes-api.json — wildcard:**
 
+Запись `{ path: '/api/layers/infrastructure-api/*', module: 'infrastructure-api' }`. Работает как fallback.
 
-|Source   |What It Tracks                                                                   |Auth|
-|---------|---------------------------------------------------------------------------------|----|
-|**CelesTrak**|Satellite launches, ISS tracking, military constellations, Starlink/OneWeb counts|None|
+**4. Механизм Б — авто-префикс:**
 
-### Tier 5: Live Market Data (1)
+Если файл в `apis/sources/` называется `{name}-api.mjs` — автоматически доступен через `/api/layers/{name}/*`. Для 300+ legacy-модулей.
 
+### Приоритет поиска
 
-|Source       |What It Tracks                                          |Auth|
-|-------------|--------------------------------------------------------|----|
-|**Yahoo Finance**|Real-time prices: SPY, QQQ, BTC, Gold, WTI, VIX + 9 more|None|
+1. `modulePrefixCache` (Механизм А) — самый быстрый
+2. `routes-api.json (exact)` — точное совпадение
+3. `routes-api.json (wildcard)` — с учётом `*`
+4. `autoPrefixCache` (Механизм Б) — по имени файла
 
-- - -
-## npm Scripts
+### Для разработчика
 
+**Новый API-модуль** — рекомендуется добавить `export const route` (Механизм А):
 
-|Script            |Command                         |Description                                        |
-|------------------|--------------------------------|---------------------------------------------------|
-|`npm run dev`     |`node --trace-warnings server.mjs`|Start dashboard with auto-refresh                  |
-|`npm run sweep`   |`node apis/briefing.mjs`        |Run a single sweep, output JSON to stdout          |
-|`npm run inject`  |`node dashboard/inject.mjs`     |Inject latest data into static HTML                |
-|`npm run brief:save`|`node apis/save-briefing.mjs`   |Run sweep + save timestamped JSON                  |
-|`npm run diag`    |`node diag.mjs`                 |Run diagnostics (Node version, imports, port check)|
+```javascript
+// apis/sources/my-module-api.mjs
+export const route = '/api/layers/my-module';
 
-- - -
-## Configuration
+export default async function handler(req, res) {
+  // ...
+}
+```
 
-All settings are in `.env` with sensible defaults:
+**Больше не нужно** добавлять запись в `routes-api.json` вручную. Модуль сам регистрируется.
 
+---
 
-|Variable                |Default             |Description                                                            |
-|------------------------|--------------------|-----------------------------------------------------------------------|
-|`PORT`                  |`3117`              |Dashboard server port                                                  |
-|`REFRESH_INTERVAL_MINUTES`|`15`                |Auto-refresh interval                                                  |
-|`LLM_PROVIDER`          |disabled            |`anthropic`, `openai`, `gemini`, `codex`, `openrouter`, `minimax`, `mistral`, or `grok`|
-|`LLM_API_KEY`           |—                   |API key (not needed for codex)                                         |
-|`LLM_MODEL`             |per-provider default|Override model selection                                               |
-|`TELEGRAM_BOT_TOKEN`    |disabled            |For Telegram alerts + bot commands                                     |
-|`TELEGRAM_CHAT_ID`      |—                   |Your Telegram chat ID                                                  |
-|`TELEGRAM_CHANNELS`     |—                   |Extra channel IDs to monitor (comma-separated)                         |
-|`TELEGRAM_POLL_INTERVAL`|`5000`              |Bot command polling interval (ms)                                      |
-|`DISCORD_BOT_TOKEN`     |disabled            |For Discord alerts + slash commands                                    |
-|`DISCORD_CHANNEL_ID`    |—                   |Discord channel for alerts                                             |
-|`DISCORD_GUILD_ID`      |—                   |Server ID (instant slash command registration)                         |
-|`DISCORD_WEBHOOK_URL`   |—                   |Webhook URL (alert-only fallback, no bot needed)                       |
+## 🧪 AI-лаборатория
 
-Delta engine thresholds (how sensitive the system is to changes between sweeps)
-can be customized in `crucix.config.mjs` under the `delta.thresholds` section.
-The defaults are tuned to filter out noise while catching meaningful moves.
+Лаборатория ИИ — среда, где локальный LLM (Ollama) становится активным участником анализа.
 
-- - -
-## API Endpoints
+### Компоненты
 
-When running `npm run dev`:
+- **Ollama** — `http://localhost:11434`, модели: llama3.1:8b, mistral:7b, phi3:3.8b
+- **AI Gateway** — `apis/sources/ai-gateway.mjs`
+- **RAG-модуль** — `apis/sources/rag-module/`, порт 3120
+- **AI Chat** — `http://localhost:8080`
 
+### Pipeline AI-лаборатории
 
-|Endpoint       |Description                                    |
-|---------------|-----------------------------------------------|
-|`GET /`        |Jarvis HUD dashboard                           |
-|`GET /api/data`|Current synthesized intelligence data (JSON)   |
-|`GET /api/health`|Server status, uptime, source count, LLM status|
-|`GET /events`  |SSE stream for live push updates               |
+1. **Сбор данных** → `data/basket/*.json`
+2. **Расчёт анализаторов** → `data/analytics/{category}/*.json`
+3. **Отдача через API** → `GET /api/layers/{name}`
+4. **AI-прогнозирование** → `data/analytics/forecast/*.json`
+5. **Генерация брифа** → `daily-briefing.mjs` через Ollama
+6. **Семантический поиск** → RAG-модуль на порту 3120
 
-- - -
-## Troubleshooting
+### AI-модули
 
-### `npm run dev` exits silently (no output, no error)
+- **ai-news-synthesis** — синтез новостей через LLM
+- **ai-forecasts** — вероятностный прогноз
+- **social-briefing** — 3 формата брифов (daily, alert, summary)
+- **daily-briefing.mjs** — ежедневный дайджест
 
-This is a known issue where npm's script runner can swallow errors,
-particularly on Windows PowerShell. Try these in order:
+---
 
-**1\. Run Node directly (bypasses npm):**
+## 🔑 API-ключи
+
+Crucix **работает без API-ключей** — используются только открытые источники. Правило проекта (12.2): запрет на регистрации, ключи, OAuth.
+
+### Открытые источники (без ключей)
+
+- **USGS Earthquakes** — землетрясения
+- **NOAA SWPC** — космическая погода
+- **OpenSky Network** — самолёты (анонимно)
+- **Open-Meteo** — погода
+- **Where the ISS at** — МКС
+- **Launch Library 2** — космические запуски
+- **Frankfurter** — курсы валют ЕЦБ
+- **Hacker News** — топ-новости
+- **mledoze/countries** — справочник 250 стран
+- **CISA KEV** — уязвимости
+- **CoinGecko** — крипта
+- **US Treasury** — долг США
+- **ECB Data Portal** — макро ЕС
+- **World Bank** — макро 197 стран
+- **GDELT** — новости (требует browser User-Agent, пауза ≥5 сек)
+
+### Если всё-таки нужен ключ
+
+Один ключ (может пригодиться): `OLLAMA_HOST` для внешнего Ollama. Это локально — регистрация не нужна.
+
+---
+
+## 🏛️ Архитектура
+
+### Принцип «Корзина → AI → Карта»
+
+```
+Внешний API
+    ↓
+Сборщик (scripts/collectors/collect-*.mjs)
+    ↓
+Корзина (data/basket/*.json)
+    ↓
+Анализатор (scripts/analyzers/*.mjs)
+    ↓
+Аналитика (data/analytics/{category}/*.json)
+    ↓
+API-модуль (apis/sources/*-api.mjs)
+    ↓
+Карта (dashboard/public/geo-map/)
+```
+
+### Ключевое правило
+
+**Ни один модуль не делает fetch к внешним API.** Все данные только из корзины. Единственное исключение — сборщики, которые наполняют корзину.
+
+### Структура проекта
+
+```
+Crucix/
+├── apis/sources/            # 370+ API-модулей
+├── scripts/
+│   ├── collectors/          # сборщики в корзину
+│   └── analyzers/           # анализаторы
+├── data/
+│   ├── basket/              # 226 файлов данных
+│   ├── analytics/           # 8 категорий аналитики
+│   ├── infrastructure/      # 114 объектов
+│   ├── reference/           # справочники (197 стран, Джини)
+│   └── geo/                 # world.geojson, country-coords
+├── server/                  # серверные модули
+│   ├── router.mjs           # роутер v3.1
+│   ├── loader.mjs           # загрузчик модулей
+│   ├── modules.json         # 370+ модулей
+│   ├── routes-api.json      # legacy-маршруты
+│   └── server.mjs           # точка входа
+├── dashboard/public/        # страницы и геокарта
+├── docs/help/               # справки ru/en
+├── ai-memory-sync/          # файлы памяти AI
+└── logs/collectors/         # логи сборщиков
+```
+
+---
+
+## 🧩 Модульная архитектура сервера
+
+Все серверные файлы в `server/`:
+
+- `server.mjs` — точка входа (30 строк)
+- `router.mjs` — API-роутер (Механизм А+Б)
+- `loader.mjs` — загрузчик модулей из `modules.json`
+- `api.mjs` — API-маршруты (реестр и др.)
+- `pages.mjs` — маршруты страниц
+- `utils.mjs` — утилиты (`sendJSON`, `sendError`)
+- `config.mjs` — порт, MIME-типы
+- `static.mjs` — раздача статики
+- `modules.json` — реестр API-модулей (370+)
+- `routes-api.json` — API-маршруты (legacy)
+- `pages.json` — реестр страниц
+- `routes-pages.json` — маршруты страниц
+
+---
+
+## 🗺️ Геополитическая карта (geo-map)
+
+Главный файл: `dashboard/public/geo-map.html`.
+
+Скрипты в `dashboard/public/geo-map/js/`:
+
+- `core.js` — ядро карты
+- `countries.js` — данные стран
+- `layers.js` — **237 слоёв**, 16 категорий
+- `markers.js` — маркеры
+- `map-controls.js` — управление картой (markers / choropleth / heatmap)
+- `copy-data.js` — кнопка КОПИРОВАТЬ
+- `heat-timeline.js` — тепловая карта и хронология
+- `ssi.js` — индекс напряжённости
+- `refresh.js` — автообновление
+- `logger.js` — логирование
+- `init.js` — инициализация
+
+### Как добавить слой
+
+1. Создать API-модуль в `apis/sources/{id}-api.mjs` с `export const route`
+2. Создать анализатор в `scripts/analyzers/{id}.mjs` (если нужно)
+3. Добавить слой в `layers.js` (массив `DEMO_LAYERS`)
+4. Перезапустить сервер
+
+Подробнее — в `docs/help/ru/layers/`.
+
+---
+
+## 📡 Источники данных
+
+226 файлов в `data/basket/`. Ключевые:
+
+### Геополитика и конфликты
+- `acled.json` — вооружённые конфликты
+- `gdelt.json` — новости и события
+- `ucdp-latest.json` — данные UCDP
+- `conflict-zone.json` — зоны конфликтов
+
+### Военное
+- `military-bases.json` — военные базы
+- `military-exercises.json` — учения
+- `military-spending.json` — расходы
+- `nuclear-monitor.json` — ядерный мониторинг
+
+### Экономика и рынки
+- `worldbank-latest.json` — 194 страны World Bank
+- `coingecko-latest.json` — крипта
+- `fred.json` — макро (ECB + Treasury + WB)
+- `fx-rates.json` — курсы валют (Frankfurter)
+- `vix.json`, `gold.json`, `oil.json`, `dxy.json` — рыночные индикаторы
+- `treasury-debt.json` — долг США
+
+### Природные явления
+- `earthquakes.json` — землетрясения (USGS)
+- `firms.json` — пожары (NASA FIRMS)
+- `noaa.json` — космическая погода
+- `open-meteo.json` — погода (10 городов)
+- `wildfires.json` — лесные пожары
+
+### Космос
+- `satellites.json` — спутники
+- `iss-live.json` — МКС онлайн
+- `launches-upcoming.json` — предстоящие запуски
+- `space-debris.json` — космический мусор
+
+### Инфраструктура
+- `data/infrastructure/objects.json` — **114 объектов**
+
+### Справочники
+- `data/reference/country-characteristics.json` — **197 стран**
+- `data/reference/gini-index.json` — **147 стран с Джини**
+- `data/reference/country-aliases.json` — 152 алиаса
+- `data/reference/rest-countries.json` — 250 стран (mledoze)
+
+### Технологии и кибербезопасность
+- `cisa-kev.json` — известные уязвимости
+- `cve.json` — CVE
+- `botnets.json` — ботнеты
+- `ransomware.json` — ransomware
+
+### Прочее
+- `hackernews-top.json` — HN
+- `cables_24.json` — подводные кабели
+- `pipelines_24.json` — трубопроводы
+- `datacenters.json` — датацентры
+
+---
+
+## 📜 npm-скрипты
 
 ```bash
-node --trace-warnings server.mjs
+npm run dev              # запуск сервера (порт 3117)
+npm run collect          # запуск всех сборщиков
+npm run analyze          # запуск всех анализаторов
+npm run daily-briefing   # генерация ежедневного брифа
+npm run registry         # генерация реестра
 ```
-This is functionally identical to `npm run dev` but gives you full error output.
 
-**2\. Run the diagnostic script:**
+---
+
+## ⚙️ Конфигурация
+
+### Переменные окружения
+
+Скопируйте `.env.example` в `.env`. Основные переменные:
+
+- `PORT` — порт сервера (по умолчанию 3117)
+- `OLLAMA_HOST` — URL Ollama (по умолчанию `http://localhost:11434`)
+- `TELEGRAM_BOT_TOKEN` — токен бота (опционально)
+- `DISCORD_WEBHOOK_URL` — webhook Discord (опционально)
+
+### Важно
+
+**Crucix работает без API-ключей.** Все источники — открытые. Если ключ нужен — его нет в проекте, используйте альтернативы.
+
+---
+
+## 🔌 API-эндпоинты
+
+### Основные
+
+- `GET /api/registry/` — реестр модулей
+- `GET /api/geo/markers` — маркеры карты
+- `GET /api/geo/status` — статус
+- `GET /api/layers` — список слоёв
+
+### Аналитические (новые)
+
+**Индексы:**
+- `GET /api/layers/country-instability/stats`
+- `GET /api/layers/resilience-index/stats`
+
+**Композиты:**
+- `GET /api/layers/strategic-risk-composite/stats`
+- `GET /api/layers/strategic-risk-composite/top?n=10`
+- `GET /api/layers/strategic-risk-composite/bottom?n=10`
+
+**Инфраструктура:**
+- `GET /api/layers/infrastructure-api/stats`
+- `GET /api/layers/infrastructure-api/military`
+- `GET /api/layers/infrastructure-api/nuclear`
+- `GET /api/layers/infrastructure-api/chokepoints`
+- `GET /api/layers/infrastructure-api/scenarios`
+- ...и ещё 10 эндпоинтов
+
+**Рынки:**
+- `GET /api/layers/market-composite/score`
+- `GET /api/layers/derived-market-analytics/stats`
+- `GET /api/layers/energy-market-intelligence/stats`
+
+**Прогнозы:**
+- `GET /api/layers/conflict-escalation-tracker/stats`
+- `GET /api/layers/social-briefing/text`
+- `GET /api/layers/ai-forecasts/stats`
+
+**Детекторы:**
+- `GET /api/layers/geo-convergence/stats`
+- `GET /api/layers/threat-classification/stats`
+- `GET /api/layers/surge-detection/stats`
+- `GET /api/layers/focal-point-detection/stats`
+
+**Семантика:**
+- `GET /api/layers/adaptive-news-clustering/stats`
+- `GET /api/layers/ai-news-synthesis/stats`
+- `GET /api/layers/entity-extraction/stats`
+- `GET /api/layers/source-credibility/stats`
+
+**Потоки:**
+- `GET /api/layers/cross-stream-correlation/stats`
+- `GET /api/layers/route-explorer/stats`
+- `GET /api/layers/tanker-fleet-monitor/stats`
+- `GET /api/layers/arms-transfer-tracker/stats`
+
+**Специалисты:**
+- `GET /api/layers/sanctions-pressure/stats`
+- `GET /api/layers/political-stability-monitor/stats`
+- `GET /api/layers/food-security-monitor/stats`
+
+**Системные:**
+- `GET /api/layers/mcp-server/stats`
+- `GET /api/layers/crucix-doctor/stats`
+- `GET /api/layers/module-registration-controller/stats`
+- `GET /api/layers/watchdog/stats`
+
+---
+
+## 🔧 Устранение неполадок
+
+### Сервер не запускается
+
+- Проверить `node --version` — нужен Node 22+
+- Проверить `npm install`
+- Проверить лог `/tmp/crucix-server.log`
+
+### Анализатор не работает
+
+- `node scripts/analyzers/{name}.mjs` — проверить вывод
+- `curl http://localhost:3117/api/layers/{name}/stats` — проверить эндпоинт
+- Проверить `data/analytics/{category}/{name}.json` — создан ли файл
+
+### Сборщик возвращает 0 данных
+
+- Проверить доступность источника: `curl {url}`
+- Проверить лог `logs/collectors/collect-{name}.log`
+- Убедиться, что нет API-ключа (правило 12.2)
+
+### GDELT возвращает 429
+
+- Требуется User-Agent браузера
+- Требуется пауза ≥5 секунд между запросами
+- Таймаут ≥30 секунд
+
+---
+
+## 🧩 Расширения
+
+### Как создать новый анализатор
+
+1. **Класс-вычислитель** — `apis/sources/{name}.mjs`
+   - `export default class {Name}` 
+   - Метод `compute(input)` возвращает `{ score, components, ... }`
+
+2. **Анализатор** — `scripts/analyzers/{name}.mjs`
+   - Импортирует класс
+   - Читает `data/basket/` и `data/reference/`
+   - Пишет `data/analytics/{category}/{name}.json`
+   - В `_meta`: id, category, version, sources, calculator, updated_at, checksum
+
+3. **API-модуль** — `apis/sources/{name}-api.mjs`
+   - `export const route = '/api/layers/{name}'`
+   - `export default async function handler(req, res)`
+   - Читает `data/analytics/{category}/{name}.json`
+
+4. **Регистрация** — `server/modules.json`:
+   ```json
+   { "id": "{name}-api", "path": "./apis/sources/{name}-api" }
+   ```
+
+5. **Слой на карте** — `layers.js` (массив `DEMO_LAYERS`):
+   ```javascript
+   { id: '{name}', name: 'Название', color: '#цвет', icon: '🎯', category: 'категория', vizType: 'marker' }
+   ```
+
+6. **Перезапуск сервера.**
+
+### Как создать новый сборщик
+
+1. Файл `scripts/collectors/collect-{name}.mjs`
+2. Импорт из открытого API (без ключа)
+3. Сохранение в `data/basket/{name}.json`
+4. Лог в `logs/collectors/collect-{name}.log`
+5. Регистрация в cron
+
+---
+
+## 💬 AI-чат
+
+AI-чат работает через локальный Ollama.
+
+### Установка Ollama
 
 ```bash
-node diag.mjs
+# 1. Установить Ollama
+curl -fsSL https://ollama.com/install.sh | sh
+
+# 2. Скачать модель
+ollama pull llama3.1:8b
+
+# 3. Запустить Ollama
+ollama serve &
+
+# 4. Открыть AI-чат
+open http://localhost:3117/ai-chat
 ```
-This tests every import one by one, checks your Node.js version, and verifies
-port 3117 is available. It will tell you exactly what's failing.
 
-**3\. Check if port 3117 is already in use:**
+### Промпты
 
-A previous Crucix instance may still be running in the background.
+AI-чат использует данные анализаторов как контекст. Модель отвечает на вопросы о:
+- Текущей геополитической обстановке
+- Рисках стран
+- Рыночных индикаторах
+- Инфраструктурных угрозах
+- Прогнозах
 
-```powershell
-# Windows PowerShell
-netstat -ano | findstr 3117
-taskkill /F /PID <the_PID_from_above>
+---
 
-# Or kill all Node processes
-taskkill /F /IM node.exe
-# macOS / Linux
-lsof -ti:3117 | xargs kill
-```
-Then try starting again. You can also change the port by setting `PORT=3118` in
-your `.env` file.
+## 🤝 Вклад в проект
 
-**4\. Check Node.js version:**
+Приветствуются:
+
+1. **Новые анализаторы** — по эталону (класс → анализатор → API → слой)
+2. **Новые сборщики** — только открытые API (без ключей)
+3. **Новые справочники** в `data/reference/`
+4. **Улучшение существующих модулей**
+5. **Справки на двух языках** (ru + en)
+
+### Правила
+
+- Соблюдать архитектуру «Корзина → AI → Карта»
+- Не использовать API-ключи (правило 12.2)
+- Писать справки на ru + en
+- Не удалять существующие модули (правило 7.6)
+
+---
+
+
+## 🧠 Прогностическое ядро Crucix
+
+С 18.09.2026 в проект интегрировано **прогностическое ядро** — 16-фазный конвейер (A–R, S, T, U, Z) из 22 модулей, работающих на 30 научных дисциплинах.
+
+### Ключевое
+
+- **Движок** `apis/predict/engine.mjs` v8.0.0 — 16-фазный конвейер.
+- **22 модуля** прогностического ядра: байесовское ядро, наивный байес, цепи Маркова, Монте-Карло, временные ряды, Brier-калибровка, каскадные цепочки, ансамбль, LLM-агенты, процесс Хоукса, HMM, фильтр Калмана, Изинг, перенос энтропии, SIR/SEIR, EVT, Орнштейн-Уленбек, копулы, BOCPD, Particle Filter, MLP, GCN+DQN.
+- **Источники**: `apis/predict/sources/` — prediction_markets (Polymarket/Metaculus/Kalshi/Manifold), multilang (100+ языков), satellite (Sentinel-2/Landsat/SAR).
+- **Граф знаний**: `apis/knowledge/graph.mjs`.
+- **Новые страницы**: /cockpit, /agent, /hypergraph, /plugins, /realtime, /advanced, /attention, /coevolution, /crucix, /predictions_composite.
+- **Плагины**: `plugins/` — loader, sandbox, hooks, registry, manifest_schema.
+- **Интеграции**: `integrations/` — Slack, Notion, Obsidian, RSS, Email, Webhook.
+- **Наблюдаемость**: `observability/` — OpenTelemetry, Prometheus, Grafana.
+- **Тесты**: `tests/` — 42 файла (unit, property, fuzz, mutation, integration, chaos, load). Smoke-тест: 22/22 OK.
+- **Развёртывание**: `docker/` — Dockerfile.engine + docker-compose.engine.yml. `k8s/` — 11 манифестов.
+- **Документация**: `docs/handbook/` — книга 800+ страниц, `docs/help/ru` и `docs/help/en` — справки.
+
+### Запуск тестов
 
 ```bash
-node --version
+npm run test:all-modules       # smoke-тест 22 модулей
+npm run test:unit              # unit-тесты
+npm run test:integration       # интеграционные
+npm run test:property          # property-based
+npm run test:fuzz              # fuzz-тесты
+npm run test:mutation          # мутационные
 ```
-Crucix requires Node.js 22 or later. If you have an older version, download the
-latest LTS from [nodejs.org](https://nodejs.org/).
 
-### Dashboard shows empty panels after first start
+---
 
-This is normal — the first sweep takes 30–60 seconds to query all 27 sources.
-The dashboard will populate automatically once the sweep completes. Check the
-terminal for sweep progress logs.
+## 📜 Лицензия
 
-### Some sources show errors
+AGPLv3. См. `LICENSE`.
 
-Expected behavior. Sources that require API keys will return structured errors
-if the key isn't set. The rest of the sweep continues normally. Check the
-Source Integrity section in the dashboard (or the server logs) to see which
-sources failed and why. The 3 most impactful free keys to add are `FRED_API_KEY`
-, `FIRMS_MAP_KEY`, and `EIA_API_KEY`.
+---
 
-OpenSky can also return `HTTP 429` when its public hotspots are queried too
-aggressively. Crucix does not try to evade that limit. Instead, it surfaces the
-throttle/error in source health and preserves the most recent non-empty air
-traffic snapshot from `runs/` so the dashboard flight layer does not suddenly go
-blank on a throttled sweep.
-
-### Telegram bot not responding to commands
-
-Make sure both `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` are set in `.env`.
-The bot only responds to messages from the configured chat ID (security
-measure). You should see `\[Crucix] Telegram alerts enabled` and `\[Crucix] Bot
-command polling started` in the server logs on startup. If not, double-check
-your token with `curl https://api.telegram.org/bot\<YOUR_TOKEN>/getMe`.
-
-### Discord bot not responding to slash commands
-
-Check these in order:
-
-1.  Make sure `DISCORD_BOT_TOKEN` and `DISCORD_CHANNEL_ID` are set in `.env`
-2.  Verify `discord.js` is installed: `npm ls discord.js`. If missing, run `npm
-    install discord.js`
-3.  If slash commands don't appear, set `DISCORD_GUILD_ID` — without it, global
-    commands can take up to 1 hour to propagate. Guild-specific commands
-    register instantly
-4.  Confirm the bot was invited with `bot` \+ `applications.commands` scopes and
-    has `Send Messages` \+ `Embed Links` permissions in the target channel
-5.  Check server logs for `\[Discord] Bot logged in as ...` on startup. If you
-    see `\[Discord] discord.js not installed`, install it and restart
-6.  **Webhook-only fallback:** If you just want alerts without slash commands,
-    set `DISCORD_WEBHOOK_URL` instead of the bot token. No `discord.js` needed.
-
-- - -
-## Screenshots
-
-The `docs/` folder contains dashboard screenshots referenced by this README:
-
-
-|File              |Description                                          |
-|------------------|-----------------------------------------------------|
-|`docs/dashboard.png`|Full dashboard — hero image at the top of this README|
-|`docs/boot.png`   |Cinematic boot sequence animation                    |
-|`docs/map.png`    |D3 world map with marker types and flight arcs       |
-|`docs/globe.png`  |3D WebGL globe view with atmosphere glow and markers |
-
-To update them: run the dashboard, wait for a sweep to complete, then use your
-browser's DevTools (`F12` → `Ctrl+Shift+P` → "Capture full size screenshot") or
-a tool like [LICEcap](https://www.cockos.com/licecap/) for GIFs.
-
-- - -
-## Contributing
-
-Found a bug? Want to add a 28th source? PRs welcome. Each source is a
-standalone module in `apis/sources/` — just export a `briefing()` function that
-returns structured data and add it to the orchestrator in `apis/briefing.mjs`.
-
-If you find this useful, a star helps others find it too.
-
-For contribution guidelines, review expectations, and source-add rules, see 
-`CONTRIBUTING.md`. For security reports, see `SECURITY.md`.
-
-## Contact
-
-For partnerships, integrations, or other non-issue inquiries, you can reach me
-at `celesthioailabs@gmail.com`.
-
-For bugs and feature requests, please use GitHub Issues so discussion stays
-visible and actionable.
-
-- - -
-## Star History![image](https://api.star-history.com/image?repos=calesthio/Crucix&type=date&legend=top-left)[ ](https://www.star-history.com/?repos=calesthio%2FCrucix&type=date&legend=top-left)
-
-- - -
-## License
-
-AGPL-3.0
-
-## 🤖 AI Чат — Помощник по Crucix
-
-Crucix включает встроенного AI-помощника, который знает всё о проекте.
-
-### Возможности AI-чата:
-
-- ✅ Объясняет устройство Crucix
-- ✅ Помогает настраивать модули
-- ✅ Отвечает на вопросы о данных
-- ✅ Даёт советы по аналитике
-- ✅ Работает локально через Ollama
-
-### Как запустить:
-
-1.  Установи Ollama: <https://ollama.com>
-2.  Скачай модель: `ollama pull deepseek-r1:1.5b`
-3.  Запусти: `ollama serve`
-4.  Открой: http://localhost:3117/ai-chat
-
-### Вопросы, которые можно задать:
-
-- "Что такое Crucix?"
-- "Как добавить RSS-ленту?"
-- "Что означают цвета новостей?"
-- "Как работает AI-фильтр?"
-- "Покажи мне модули Crucix"
+**Crucix** — ваш личный аналитический центр. 226 источников. 59 анализаторов. Одна команда. Без облака.

@@ -1,0 +1,373 @@
+{
+  "sources": {
+    "hydrosheds": {
+      "name": "HYDROSHEDS",
+      "url": "https://hydrosheds.org/api",
+      "category": "environment",
+      "description": "Реки и озёра",
+      "enabled": true,
+      "added": "2026-08-25T17:19:02.513Z",
+      "source": "missing-layers"
+    },
+    "natural_earth_transport": {
+      "name": "Natural Earth Transport",
+      "url": "https://naturalearthdata.com/api",
+      "category": "transport",
+      "description": "Транспортная инфраструктура",
+      "enabled": true,
+      "added": "2026-08-25T17:19:02.514Z",
+      "source": "missing-layers"
+    },
+    "nasa_sedac": {
+      "name": "NASA SEDAC",
+      "url": "https://sedac.ciesin.columbia.edu/api",
+      "category": "social",
+      "description": "Плотность населения",
+      "enabled": true,
+      "added": "2026-08-25T17:19:02.514Z",
+      "source": "missing-layers"
+    },
+    "global_forest_watch": {
+      "name": "Global Forest Watch",
+      "url": "https://api.globalforestwatch.org",
+      "category": "environment",
+      "description": "Лесной покров",
+      "enabled": true,
+      "added": "2026-08-25T17:19:02.515Z",
+      "source": "missing-layers"
+    },
+    "fao_geonetwork": {
+      "name": "FAO GeoNetwork",
+      "url": "https://api.fao.org",
+      "category": "economy",
+      "description": "Сельское хозяйство",
+      "enabled": true,
+      "added": "2026-08-25T17:19:02.515Z",
+      "source": "missing-layers"
+    },
+    "uk_environment_agency": {
+      "name": "UK Environment Agency",
+      "url": "https://api.environment-agency.gov.uk",
+      "category": "environment",
+      "description": "Наводнения",
+      "enabled": true,
+      "added": "2026-08-25T17:19:02.515Z",
+      "source": "missing-layers"
+    },
+    "grid_status": {
+      "name": "Grid Status",
+      "url": "https://api.gridstatus.io",
+      "category": "energy",
+      "description": "Энергосети США",
+      "enabled": true,
+      "added": "2026-08-25T17:19:02.515Z",
+      "source": "missing-layers"
+    },
+    "maxar_open_data": {
+      "name": "Maxar Open Data",
+      "url": "https://api.maxar.com",
+      "category": "space",
+      "description": "Спутниковые снимки",
+      "enabled": true,
+      "added": "2026-08-25T17:19:02.516Z",
+      "source": "missing-layers"
+    },
+    "gadm": {
+      "name": "GADM",
+      "url": "https://gadm.org/api",
+      "category": "geodata",
+      "description": "Административные границы",
+      "enabled": true,
+      "added": "2026-08-25T17:19:02.516Z",
+      "source": "missing-layers"
+    },
+    "natural_earth_political": {
+      "name": "Natural Earth Political",
+      "url": "https://naturalearthdata.com/api",
+      "category": "geodata",
+      "description": "Политические границы",
+      "enabled": true,
+      "added": "2026-08-25T17:19:02.516Z",
+      "source": "missing-layers"
+    },
+    "yahoo_finance": {
+      "name": "Yahoo Finance",
+      "url": "https://query1.finance.yahoo.com/v8/finance",
+      "category": "finance",
+      "description": "Акции S&P 500",
+      "enabled": true,
+      "added": "2026-08-25T17:19:02.516Z",
+      "source": "missing-layers"
+    },
+    "bls": {
+      "name": "BLS",
+      "url": "https://api.bls.gov",
+      "category": "economy",
+      "description": "Безработица",
+      "enabled": true,
+      "added": "2026-08-25T17:19:02.517Z",
+      "source": "missing-layers"
+    },
+    "world_bank_gdp": {
+      "name": "World Bank GDP",
+      "url": "https://api.worldbank.org",
+      "category": "economy",
+      "description": "ВВП",
+      "enabled": true,
+      "added": "2026-08-25T17:19:02.517Z",
+      "source": "missing-layers"
+    },
+    "un_comtrade": {
+      "name": "UN Comtrade",
+      "url": "https://comtradeapi.un.org",
+      "category": "economy",
+      "description": "Торговля",
+      "enabled": true,
+      "added": "2026-08-25T17:19:02.517Z",
+      "source": "missing-layers"
+    },
+    "unhcr": {
+      "name": "UNHCR",
+      "url": "https://api.unhcr.org",
+      "category": "social",
+      "description": "Потоки беженцев",
+      "enabled": true,
+      "added": "2026-08-25T17:19:02.517Z",
+      "source": "missing-layers"
+    },
+    "reliefweb": {
+      "name": "ReliefWeb",
+      "url": "https://api.reliefweb.int",
+      "category": "social",
+      "description": "Гуманитарная помощь",
+      "enabled": true,
+      "added": "2026-08-25T17:19:02.517Z",
+      "source": "missing-layers"
+    },
+    "military_exercises": {
+      "name": "Military Exercises",
+      "url": "https://api.military-exercises.org",
+      "category": "military",
+      "description": "Военные учения",
+      "enabled": true,
+      "added": "2026-08-25T17:19:02.517Z",
+      "source": "missing-layers"
+    },
+    "nvd": {
+      "name": "NVD",
+      "url": "https://services.nvd.nist.gov",
+      "category": "cyber",
+      "description": "Уязвимости CVE",
+      "enabled": true,
+      "added": "2026-08-25T17:19:02.517Z",
+      "source": "missing-layers"
+    },
+    "cctv_feeds": {
+      "name": "CCTV Feeds",
+      "url": "https://api.cctv-feeds.org",
+      "category": "security",
+      "description": "CCTV-камеры",
+      "enabled": true,
+      "added": "2026-08-25T17:19:02.517Z",
+      "source": "missing-layers"
+    },
+    "nuclear_monitor": {
+      "name": "Nuclear Monitor",
+      "url": "https://nuclear-monitor.org/api",
+      "category": "nuclear",
+      "description": "Ядерные объекты",
+      "enabled": true,
+      "added": "2026-08-25T17:19:02.517Z",
+      "source": "missing-layers"
+    },
+    "ww3chance_events": {
+      "name": "ww3chance Events",
+      "url": "https://ww3chance.com/api/events",
+      "category": "conflicts",
+      "description": "AI-оценённые геополитические события (53+ за 72 часа)",
+      "enabled": true,
+      "added": "2026-08-25T17:44:01.029Z",
+      "source": "free-layers"
+    },
+    "acled_conflicts": {
+      "name": "ACLED Conflicts",
+      "url": "https://api.acleddata.com",
+      "category": "conflicts",
+      "description": "События вооружённых конфликтов с указанием сторон и жертв",
+      "enabled": true,
+      "added": "2026-08-25T17:44:01.030Z",
+      "source": "free-layers"
+    },
+    "reliefweb_crises": {
+      "name": "ReliefWeb Crises",
+      "url": "https://api.reliefweb.int",
+      "category": "social",
+      "description": "Гуманитарные кризисы, беженцы, помощь ООН",
+      "enabled": true,
+      "added": "2026-08-25T17:44:01.030Z",
+      "source": "free-layers"
+    },
+    "usgs_earthquakes": {
+      "name": "USGS Earthquakes",
+      "url": "https://earthquake.usgs.gov/fdsnws",
+      "category": "environment",
+      "description": "Землетрясения магнитудой 4.5+ в реальном времени",
+      "enabled": true,
+      "added": "2026-08-25T17:44:01.031Z",
+      "source": "free-layers"
+    },
+    "nasa_firms_fires": {
+      "name": "NASA FIRMS Fires",
+      "url": "https://firms.modaps.eosdis.nasa.gov/api",
+      "category": "environment",
+      "description": "Спутниковые пожары и термальные аномалии (VIIRS)",
+      "enabled": true,
+      "added": "2026-08-25T17:44:01.031Z",
+      "source": "free-layers"
+    },
+    "feodo_tracker_c2": {
+      "name": "Feodo Tracker C2",
+      "url": "https://feodotracker.abuse.ch",
+      "category": "cyber",
+      "description": "Ботнеты и вредоносные C2-серверы",
+      "enabled": true,
+      "added": "2026-08-25T17:44:01.031Z",
+      "source": "free-layers"
+    },
+    "urlhaus_malware": {
+      "name": "URLhaus Malware",
+      "url": "https://urlhaus.abuse.ch/api",
+      "category": "cyber",
+      "description": "Вредоносные URL и фишинговые сайты",
+      "enabled": true,
+      "added": "2026-08-25T17:44:01.032Z",
+      "source": "free-layers"
+    },
+    "opensky_aviation": {
+      "name": "OpenSky Aviation",
+      "url": "https://opensky-network.org/api",
+      "category": "aviation",
+      "description": "ADS-B трекинг военной и гражданской авиации",
+      "enabled": true,
+      "added": "2026-08-25T17:44:01.032Z",
+      "source": "free-layers"
+    },
+    "usni_fleet_tracker": {
+      "name": "USNI Fleet Tracker",
+      "url": "https://www.usni.org/fleet-tracker",
+      "category": "maritime",
+      "description": "Позиции военно-морского флота США",
+      "enabled": true,
+      "added": "2026-08-25T17:44:01.032Z",
+      "source": "free-layers"
+    },
+    "rss_news_feed__geopolitics_": {
+      "name": "RSS News Feed (Geopolitics)",
+      "url": "https://feeds.feedburner.com/geopolitics",
+      "category": "news",
+      "description": "150+ RSS-лент по геополитике, обороне, энергетике",
+      "enabled": true,
+      "added": "2026-08-25T17:44:01.033Z",
+      "source": "free-layers"
+    },
+    "strategic_ports__40_": {
+      "name": "Strategic Ports (40)",
+      "url": "https://raw.githubusercontent.com/geojson-maps/ports/main/ports.geojson",
+      "category": "maritime",
+      "description": "40+ стратегических портов: контейнерные, нефтяные, СПГ, военные, навалочные",
+      "enabled": true,
+      "added": "2026-08-25T17:47:58.317Z",
+      "source": "infrastructure-layers"
+    },
+    "undersea_cables__34_": {
+      "name": "Undersea Cables (34)",
+      "url": "https://raw.githubusercontent.com/geojson-maps/submarine-cables/main/cables.geojson",
+      "category": "infrastructure",
+      "description": "Глобальная сеть подводных интернет-кабелей (34 магистрали)",
+      "enabled": true,
+      "added": "2026-08-25T17:47:58.318Z",
+      "source": "infrastructure-layers"
+    },
+    "pipelines__24_": {
+      "name": "Pipelines (24)",
+      "url": "https://raw.githubusercontent.com/geojson-maps/pipelines/main/pipelines.geojson",
+      "category": "energy",
+      "description": "24 нефте-, газо- и водородопровода по всему миру",
+      "enabled": true,
+      "added": "2026-08-25T17:47:58.318Z",
+      "source": "infrastructure-layers"
+    },
+    "nuclear_sites__24_": {
+      "name": "Nuclear Sites (24)",
+      "url": "https://raw.githubusercontent.com/geojson-maps/nuclear-sites/main/sites.geojson",
+      "category": "nuclear",
+      "description": "24 ядерных объекта: АЭС, обогатительные центры, исследовательские реакторы",
+      "enabled": true,
+      "added": "2026-08-25T17:47:58.318Z",
+      "source": "infrastructure-layers"
+    },
+    "military_bases__70__": {
+      "name": "Military Bases (70+)",
+      "url": "https://raw.githubusercontent.com/geojson-maps/military-bases/main/bases.geojson",
+      "category": "military",
+      "description": "70+ военных баз 9 операторов по всему миру",
+      "enabled": true,
+      "added": "2026-08-25T17:47:58.319Z",
+      "source": "infrastructure-layers"
+    },
+    "data_centers__48_": {
+      "name": "Data Centers (48)",
+      "url": "https://raw.githubusercontent.com/geojson-maps/data-centers/main/centers.geojson",
+      "category": "infrastructure",
+      "description": "48 AI/HPC центров обработки данных",
+      "enabled": true,
+      "added": "2026-08-25T17:51:40.486Z",
+      "source": "remaining-layers"
+    },
+    "spaceports__27_": {
+      "name": "Spaceports (27)",
+      "url": "https://raw.githubusercontent.com/geojson-maps/spaceports/main/spaceports.geojson",
+      "category": "space",
+      "description": "27 космодромов по всему миру",
+      "enabled": true,
+      "added": "2026-08-25T17:51:40.486Z",
+      "source": "remaining-layers"
+    },
+    "stock_exchanges__82_": {
+      "name": "Stock Exchanges (82)",
+      "url": "https://raw.githubusercontent.com/geojson-maps/exchanges/main/exchanges.geojson",
+      "category": "finance",
+      "description": "82 фондовые биржи с капитализацией",
+      "enabled": true,
+      "added": "2026-08-25T17:51:40.487Z",
+      "source": "remaining-layers"
+    },
+    "critical_minerals__27_": {
+      "name": "Critical Minerals (27)",
+      "url": "https://raw.githubusercontent.com/geojson-maps/minerals/main/minerals.geojson",
+      "category": "economy",
+      "description": "27 месторождений стратегических минералов",
+      "enabled": true,
+      "added": "2026-08-25T17:51:40.487Z",
+      "source": "remaining-layers"
+    },
+    "conflict_zones__5_": {
+      "name": "Conflict Zones (5)",
+      "url": "https://raw.githubusercontent.com/geojson-maps/conflict-zones/main/zones.geojson",
+      "category": "conflicts",
+      "description": "5 театров военных действий: ЕС, Индо-Тихоокеанский, Ближний Восток, Арктика, Корея",
+      "enabled": true,
+      "added": "2026-08-25T17:51:40.487Z",
+      "source": "remaining-layers"
+    },
+    "cctv_network": {
+      "name": "CCTV Network",
+      "url": "https://raw.githubusercontent.com/geojson-maps/cctv/main/cctv.geojson",
+      "category": "security",
+      "description": "Публичные CCTV-камеры в геополитических горячих точках",
+      "enabled": true,
+      "added": "2026-08-25T17:51:40.488Z",
+      "source": "remaining-layers"
+    }
+  }
+}

@@ -1,0 +1,69 @@
+[
+  {
+    "id": "pred-1786984825747",
+    "timestamp": "2026-08-17T16:40:25.747Z",
+    "features": {
+      "global_index": 50,
+      "strategic_index": 40,
+      "conflict_count": 0,
+      "economic_score": 0.45,
+      "military_activity": 66,
+      "news_sentiment": 0.5644471080884127,
+      "prediction_market": 0
+    },
+    "prediction": {
+      "conflict_escalation": 0,
+      "economic_crisis": 0,
+      "political_change": 0,
+      "natural_disaster": 0,
+      "market_crash": 0
+    },
+    "confidence": 50
+  },
+  {
+    "id": "pred-1786985125812",
+    "timestamp": "2026-08-17T16:45:25.812Z",
+    "features": {
+      "global_index": 50,
+      "strategic_index": 40,
+      "conflict_count": 0,
+      "military_bases": 66,
+      "military_activity": 0,
+      "nuclear_sites": 24,
+      "economic_score": 0.45,
+      "prediction_market": 0.55,
+      "market_volatility": 0.6001656839263967,
+      "oil_price": 119.3354529302753,
+      "recession_probability": 0.42814786568572283,
+      "cable_vulnerability": 0.07692307692307693,
+      "agent_consensus": 0.73,
+      "p2p_alerts": 0.35,
+      "external_sources": 1,
+      "news_sentiment": 0.7436950937458366,
+      "info_silence": 0.13367114093554136
+    },
+    "prediction": {
+      "conflict_escalation": 0,
+      "economic_crisis": 0,
+      "political_change": 100,
+      "natural_disaster": 0,
+      "market_crash": 0,
+      "cyber_attack": 50,
+      "military_escalation": 50,
+      "diplomatic_breakthrough": 50
+    },
+    "confidence": 65,
+    "feature_importance": {},
+    "hyperparameters": {
+      "learning_rate": 0.015,
+      "regularization": 0.001,
+      "momentum": 0.9,
+      "batch_size": 10,
+      "epochs": 3,
+      "early_stopping": true,
+      "validation_split": 0.2,
+      "dropout_rate": 0.1,
+      "activation": "sigmoid"
+    }
+  }
+]

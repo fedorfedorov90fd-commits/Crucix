@@ -1,0 +1,146 @@
+#!/usr/bin/env node
+// ============================================================
+// COLLECT-NOTAM.MJS — Сборщик NOTAM
+// ============================================================
+// Собирает данные о закрытии воздушного пространства
+// Источники: ICAO, Eurocontrol, FAA
+// Сохраняет в: data/basket/notam.json
+// ============================================================
+
+import { promises as fs } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const BASKET_PATH = join(__dirname, '..', 'data', 'basket', 'notam.json');
+
+// ============================================================
+// 1. СИМУЛЯЦИЯ ДАННЫХ (реальный парсинг будет позже)
+// ============================================================
+
+function generateSimulatedNOTAM() {
+    const now = new Date();
+    const regions = [
+        { name: 'Восточная Европа', lat: 50, lon: 30, severity: 'critical' },
+        { name: 'Ближний Восток', lat: 30, lon: 45, severity: 'high' },
+        { name: 'Южно-Китайское море', lat: 15, lon: 115, severity: 'high' },
+        { name: 'Балтийское море', lat: 58, lon: 20, severity: 'medium' },
+        { name: 'Черное море', lat: 43, lon: 35, severity: 'critical' },
+        { name: 'Тихий океан', lat: 20, lon: 170, severity: 'medium' },
+        { name: 'Персидский залив', lat: 27, lon: 52, severity: 'high' },
+        { name: 'Средиземное море', lat: 35, lon: 25, severity: 'medium' },
+        { name: 'Каспийское море', lat: 40, lon: 51, severity: 'low' },
+        { name: 'Курильские острова', lat: 46, lon: 152, severity: 'high' }
+    ];
+
+    const notams = [];
+    const severityMap = {
+        critical: { color: '#ef4444', label: 'КРИТИЧЕСКИЙ', hours: 48 },
+        high: { color: '#f59e0b', label: 'ВЫСОКИЙ', hours: 24 },
+        medium: { color: '#fbbf24', label: 'СРЕДНИЙ', hours: 12 },
+        low: { color: '#4ade80', label: 'НОРМАЛЬНЫЙ', hours: 6 }
+    };
+
+    for (const region of regions) {
+        const severity = region.severity;
+        const info = severityMap[severity];
+        const startTime = new Date(now.getTime() + Math.random() * 86400000);
+        const endTime = new Date(startTime.getTime() + info.hours * 3600000);
+
+        notams.push({
+            id: `NOTAM-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+            region: region.name,
+            lat: region.lat + (Math.random() - 0.5) * 5,
+            lon: region.lon + (Math.random() - 0.5) * 5,
+            severity: severity,
+            color: info.color,
+            label: info.label,
+            start: startTime.toISOString(),
+            end: endTime.toISOString(),
+            description: `Закрытие воздушного пространства в районе ${region.name}`,
+            source: 'ICAO (симуляция)',
+            updated: now.toISOString()
+        });
+    }
+
+    // Добавляем несколько случайных NOTAM
+    const extraCount = Math.floor(Math.random() * 5) + 3;
+    for (let i = 0; i < extraCount; i++) {
+        const lat = (Math.random() - 0.5) * 180;
+        const lon = (Math.random() - 0.5) * 360;
+        const severity = ['critical', 'high', 'medium', 'low'][Math.floor(Math.random() * 4)];
+        const info = severityMap[severity];
+        const startTime = new Date(now.getTime() + Math.random() * 86400000);
+        const endTime = new Date(startTime.getTime() + info.hours * 3600000);
+
+        notams.push({
+            id: `NOTAM-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+            region: `Зона ${i + 1}`,
+            lat: lat,
+            lon: lon,
+            severity: severity,
+            color: info.color,
+            label: info.label,
+            start: startTime.toISOString(),
+            end: endTime.toISOString(),
+            description: `Закрытие воздушного пространства в зоне ${i + 1}`,
+            source: 'Eurocontrol (симуляция)',
+            updated: now.toISOString()
+        });
+    }
+
+    return notams;
+}
+
+// ============================================================
+// 2. СОХРАНЕНИЕ В КОРЗИНУ
+// ============================================================
+
+async function saveToBasket(data) {
+    try {
+        // Создаем папку если нет
+        const dir = join(__dirname, '..', 'data', 'basket');
+        await fs.mkdir(dir, { recursive: true });
+
+        // Сохраняем
+        await fs.writeFile(BASKET_PATH, JSON.stringify(data, null, 2), 'utf8');
+        console.log(`[NOTAM] ✅ Сохранено ${data.length} NOTAM в корзину`);
+        return true;
+    } catch (error) {
+        console.error('[NOTAM] ❌ Ошибка сохранения:', error.message);
+        return false;
+    }
+}
+
+// ============================================================
+// 3. ОСНОВНАЯ ФУНКЦИЯ
+// ============================================================
+
+async function collectNOTAM() {
+    console.log('[NOTAM] 📡 Начинаем сбор данных...');
+
+    try {
+        // Генерируем данные
+        const notams = generateSimulatedNOTAM();
+
+        // Сохраняем
+        await saveToBasket(notams);
+
+        console.log(`[NOTAM] ✅ Сбор завершен. Всего: ${notams.length} NOTAM`);
+        return notams;
+    } catch (error) {
+        console.error('[NOTAM] ❌ Ошибка:', error.message);
+        return null;
+    }
+}
+
+// ============================================================
+// 4. ЗАПУСК
+// ============================================================
+
+// Если запускают напрямую
+if (import.meta.url === `file://${process.argv[1]}`) {
+    collectNOTAM().catch(console.error);
+}
+
+export { collectNOTAM, generateSimulatedNOTAM };

@@ -1,0 +1,45 @@
+name: Weekly Chaos Engineering
+
+on:
+  schedule:
+    - cron: '0 4 * * 0'  # Каждое воскресенье в 4:00 UTC
+  workflow_dispatch:
+
+jobs:
+  chaos-suite:
+    name: Chaos Engineering Suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run chaos experiments
+        run: npm run chaos
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: chaos-report
+          path: runs/chaos/
+          retention-days: 30
+
+      - name: Analyze chaos results
+        run: |
+          node -e "
+            const fs = require('fs');
+            const files = fs.readdirSync('runs/chaos').filter(f => f.startsWith('chaos_suite'));
+            if (files.length === 0) { console.log('No chaos reports'); process.exit(0); }
+            const latest = JSON.parse(fs.readFileSync('runs/chaos/' + files.sort().pop()));
+            console.log('Chaos suite results:');
+            console.log('  Total:', latest.totalExperiments);
+            console.log('  Successful:', latest.successful);
+            console.log('  Failed:', latest.failed);
+            console.log('  Success rate:', ((latest.successful / latest.totalExperiments) * 100).toFixed(1) + '%');
+            if (latest.failed > latest.totalExperiments * 0.5) {
+              console.error('::error::Too many chaos failures');
+              process.exit(1);
+            }
+          "

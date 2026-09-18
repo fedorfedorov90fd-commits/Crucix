@@ -43,3 +43,64 @@ If this PR adds a new source, explain:
 - [ ] I kept unrelated changes out of the diff
 - [ ] I considered security for any mixed-source content rendering
 - [ ] I tested the changed path locally
+
+---
+
+# Pull Request
+
+## Что изменилось
+
+<!-- Кратко опишите изменения -->
+
+## Тип изменения
+
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Refactoring (без функциональных изменений)
+- [ ] Documentation
+- [ ] Performance
+- [ ] Test
+- [ ] Build/CI
+
+## Модуль
+
+- [ ] apis/predict/core
+- [ ] apis/predict/models
+- [ ] apis/predict/exotic
+- [ ] apis/predict/federated
+- [ ] apis/predict/wasm
+- [ ] apis/predict/workers
+- [ ] apis/predict/webgl
+- [ ] dashboard
+- [ ] benchmark
+- [ ] tests
+- [ ] docs
+- [ ] docker
+- [ ] k8s
+- [ ] observability
+
+## Checklist
+
+- [ ] Код проходит node --check (все .mjs файлы)
+- [ ] Добавлены комментарии к новым функциям
+- [ ] Обновлена документация (если нужно)
+- [ ] Не добавлены внешние зависимости без необходимости
+- [ ] Проверена работа в браузере (если frontend)
+- [ ] Проверена производительность (если критичный код)
+
+## Zero-dependency policy
+
+- [ ] Изменения НЕ добавляют обязательных зависимостей
+- [ ] Если зависимость добавлена — она опциональная (WASM, Python, WebGL)
+
+## Тесты
+
+<!-- Как проверить изменения? -->
+
+## Screenshots / Benchmarks
+
+<!-- Если применимо -->
+
+## Related Issues
+
+Closes #

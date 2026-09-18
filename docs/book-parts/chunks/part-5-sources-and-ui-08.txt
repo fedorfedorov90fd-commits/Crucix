@@ -1,0 +1,1139 @@
+===== ЧАСТЬ part-5-sources-and-ui · КУСОК 08/15 · 36.2 KB =====
+
+FILE: dashboard/predictions_composite.html
+SIZE: 6878 bytes
+SHA1: f5bd58b94bf1244f
+========================================================================
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Crucix · Composite Risk</title>
+<style>
+:root{--bg:#06080f;--surface:#0d1220;--surface2:#161d2e;--border:#1a2540;--border2:#2b3a5c;--text:#e8edf5;--text-dim:#8fa1c2;--text-faint:#5a6b8a;--accent:#3b82f6;--accent2:#8b5cf6;--accent3:#ec4899;--green:#22c55e;--yellow:#eab308;--orange:#f97316;--red:#ef4444;--cyan:#06b6d4;--mono:'SF Mono',monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text);padding:20px;min-height:100vh}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px}
+.card-title{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-dim);margin-bottom:16px}
+.orb-wrap{display:flex;align-items:center;gap:28px;flex-wrap:wrap}
+.orb{position:relative;width:180px;height:180px;flex-shrink:0}
+.orb svg{width:100%;height:100%;transform:rotate(-90deg)}
+.orb-bg{fill:none;stroke:var(--surface2);stroke-width:12}
+.orb-fill{fill:none;stroke-width:12;stroke-linecap:round;transition:stroke-dashoffset 1s,stroke 0.6s}
+.orb-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.orb-value{font-family:var(--mono);font-size:42px;font-weight:800;letter-spacing:-2px;line-height:1}
+.orb-label{font-size:10px;color:var(--text-faint);text-transform:uppercase;letter-spacing:1.2px;margin-top:4px}
+.orb-info{flex:1;min-width:220px}
+.orb-level{font-size:24px;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.orb-meta{font-size:12px;color:var(--text-dim);margin-bottom:14px}
+.scale{position:relative;height:10px;border-radius:5px;background:linear-gradient(90deg,var(--cyan) 0%,var(--green) 15%,var(--yellow) 40%,var(--orange) 65%,var(--red) 100%);margin-top:8px}
+.scale-marker{position:absolute;top:-5px;width:4px;height:20px;background:var(--text);border-radius:2px;transform:translateX(-50%);box-shadow:0 0 8px rgba(255,255,255,0.4);transition:left 1s}
+.drivers{display:flex;flex-direction:column;gap:10px}
+.driver{padding:10px 12px;background:var(--surface2);border-radius:8px;border-left:3px solid var(--accent)}
+.driver-head{display:flex;justify-content:space-between;margin-bottom:4px}
+.driver-name{font-size:13px;font-weight:600}
+.driver-value{font-family:var(--mono);font-size:15px;font-weight:700}
+.driver-rationale{font-size:11px;color:var(--text-faint)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:8px 10px;color:var(--text-faint);font-weight:500;font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border)}
+td{padding:10px;border-bottom:1px solid var(--border)}
+.sig-bar{width:80px;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:8px}
+.sig-bar-fill{height:100%;border-radius:3px;transition:width 0.8s}
+.empty{text-align:center;padding:40px;color:var(--text-faint)}
+</style>
+</head>
+<body>
+
+<div class="card">
+<div class="card-title">Композитный индикатор риска</div>
+<div class="orb-wrap">
+<div class="orb">
+<svg viewBox="0 0 180 180">
+<circle class="orb-bg" cx="90" cy="90" r="78"></circle>
+<circle class="orb-fill" id="orb-fill" cx="90" cy="90" r="78" stroke-dasharray="490" stroke-dashoffset="490"></circle>
+</svg>
+<div class="orb-center">
+<div class="orb-value" id="composite-value">—</div>
+<div class="orb-label">risk</div>
+</div>
+</div>
+<div class="orb-info">
+<div class="orb-level" id="composite-level">ожидание</div>
+<div class="orb-meta" id="composite-meta">—</div>
+<div class="scale"><div class="scale-marker" id="scale-marker" style="left:0%"></div></div>
+</div>
+</div>
+</div>
+
+<div class="card">
+<div class="card-title">Топ-5 драйверов</div>
+<div class="drivers" id="drivers"><div class="empty">Загрузка...</div></div>
+</div>
+
+<div class="card">
+<div class="card-title">Все сигналы</div>
+<table>
+<thead><tr><th>Модуль</th><th>Значение</th><th>Вес</th><th>Обоснование</th></tr></thead>
+<tbody id="signals-body"><tr><td colspan="4" class="empty">Загрузка...</td></tr></tbody>
+</table>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const COLORS = {low:'#06b6d4',moderate:'#22c55e',elevated:'#eab308',high:'#f97316',critical:'#ef4444'};
+
+function sigColor(v) { return v > 0.7 ? '#ef4444' : v > 0.5 ? '#f97316' : v > 0.3 ? '#eab308' : v > 0.15 ? '#22c55e' : '#06b6d4'; }
+
+async function load() {
+try {
+const res = await fetch('../runs/predictions/latest_forecast.json');
+if (!res.ok) throw new Error('HTTP ' + res.status);
+const data = await res.json();
+render(data.compositeRisk);
+} catch (e) {
+document.querySelectorAll('.empty').forEach(el => el.textContent = 'Нет данных: ' + e.message);
+}
+}
+
+function render(cr) {
+if (!cr) return;
+const value = Math.max(0, Math.min(1, cr.composite || 0));
+const level = cr.level || 'unknown';
+const color = COLORS[level] || '#64748b';
+
+$('composite-value').textContent = value.toFixed(3);
+$('composite-value').style.color = color;
+$('composite-level').textContent = level;
+$('composite-level').style.color = color;
+$('composite-meta').textContent = 'confidence: ' + (cr.confidence || '—') + ' · signals: ' + ((cr.signals || []).length);
+
+const circ = 2 * Math.PI * 78;
+const offset = circ * (1 - value);
+const fill = $('orb-fill');
+fill.setAttribute('stroke', color);
+fill.setAttribute('stroke-dashoffset', offset);
+
+$('scale-marker').style.left = (value * 100) + '%';
+
+if (cr.topDrivers && cr.topDrivers.length > 0) {
+$('drivers').innerHTML = cr.topDrivers.map(d => {
+const c = sigColor(d.value);
+return '<div class="driver" style="border-left-color:' + c + '">' +
+'<div class="driver-head"><span class="driver-name">' + d.name + '</span>' +
+'<span class="driver-value" style="color:' + c + '">' + (d.value * 100).toFixed(1) + '%</span></div>' +
+'<div class="driver-rationale">' + (d.rationale || '') + '</div></div>';
+}).join('');
+}
+
+if (cr.signals && cr.signals.length > 0) {
+const sorted = [...cr.signals].sort((a, b) => (b.value * b.weight) - (a.value * a.weight));
+$('signals-body').innerHTML = sorted.map((s, i) => {
+const c = sigColor(s.value);
+return '<tr>' +
+'<td><strong>' + s.name + '</strong></td>' +
+'<td><span class="sig-bar"><span class="sig-bar-fill" style="width:' + (s.value * 100) + '%;background:' + c + '"></span></span>' +
+'<span style="font-family:var(--mono);font-weight:700;color:' + c + '">' + (s.value * 100).toFixed(1) + '%</span></td>' +
+'<td style="font-family:var(--mono);color:var(--accent)">×' + (s.weight || 1).toFixed(2) + '</td>' +
+'<td style="color:var(--text-faint);font-size:11px">' + (s.rationale || '') + '</td></tr>';
+}).join('');
+}
+}
+
+load();
+setInterval(load, 60000);
+</script>
+
+</body>
+</html>
+
+
+
+========================================================================
+
+FILE: dashboard/realtime.html
+SIZE: 5724 bytes
+SHA1: d7b35a560234af03
+========================================================================
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Crucix · Real-time</title>
+<style>
+:root{--bg:#06080f;--surface:#0d1220;--surface2:#161d2e;--border:#1a2540;--border2:#2b3a5c;--text:#e8edf5;--text-dim:#8fa1c2;--text-faint:#5a6b8a;--accent:#3b82f6;--green:#22c55e;--red:#ef4444;--mono:'SF Mono',monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text);padding:20px;min-height:100vh}
+.header{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:20px}
+.header h1{font-size:18px;font-weight:700}
+.status{display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--surface2);border-radius:8px;font-family:var(--mono);font-size:12px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--text-faint)}
+.dot.connected{background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.settings{display:flex;gap:12px;align-items:center;margin-bottom:16px;font-size:12px;color:var(--text-dim)}
+.settings input{padding:4px 8px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:var(--mono);font-size:11px;width:220px}
+.settings button{padding:5px 12px;background:var(--accent);border:none;border-radius:4px;color:white;font-size:11px;cursor:pointer;font-weight:500}
+.stream{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;max-height:700px;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+.event{padding:10px 12px;background:var(--surface2);border-radius:8px;border-left:3px solid var(--border2);font-size:12px;animation:slideIn 0.3s ease}
+@keyframes slideIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+.event.alert-critical{border-left-color:var(--red);background:rgba(239,68,68,0.08)}
+.event.alert-high{border-left-color:#f97316;background:rgba(249,115,22,0.08)}
+.event-header{display:flex;justify-content:space-between;margin-bottom:4px}
+.event-type{font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.5px}
+.event-time{font-family:var(--mono);font-size:10px;color:var(--text-faint)}
+.event-body{color:var(--text-dim);line-height:1.4}
+.event-body strong{color:var(--text);font-family:var(--mono)}
+.empty{text-align:center;padding:40px;color:var(--text-faint);font-size:12px}
+</style>
+</head>
+<body>
+
+<div class="header">
+<h1>Crucix <span style="color:var(--text-dim);font-weight:400;font-size:13px">· Real-time</span></h1>
+<div class="status">
+<span class="dot" id="status-dot"></span>
+<span id="status-text">не подключено</span>
+</div>
+</div>
+
+<div class="settings">
+<label>WebSocket:</label>
+<input type="text" id="ws-url" value="ws://localhost:3118">
+<button onclick="reconnect()">Подключить</button>
+<span id="event-count" style="font-family:var(--mono);font-size:11px">0 событий</span>
+</div>
+
+<div class="stream" id="stream">
+<div class="empty">Ожидание событий...</div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const state = { ws: null, events: [], maxEvents: 200 };
+
+function connect() {
+const url = $('ws-url').value;
+setStatus('connecting', 'подключение...');
+try { state.ws = new WebSocket(url); } catch (e) { setStatus('error', 'ошибка'); return; }
+state.ws.onopen = () => { setStatus('connected', 'подключено'); state.ws.send(JSON.stringify({action:'subscribe',filters:{}})); };
+state.ws.onmessage = (e) => { try { const msg = JSON.parse(e.data); handleMessage(msg); } catch {} };
+state.ws.onclose = () => { setStatus('error', 'отключено'); setTimeout(connect, 3000); };
+state.ws.onerror = () => { setStatus('error', 'ошибка'); };
+}
+
+function setStatus(type, text) {
+$('status-dot').className = 'dot' + (type === 'connected' ? ' connected' : '');
+$('status-text').textContent = text;
+}
+
+function handleMessage(msg) {
+if (msg.type === 'welcome' || msg.type === 'pong' || msg.type === 'subscribed' || msg.type === 'stats') return;
+state.events.unshift(msg);
+if (state.events.length > state.maxEvents) state.events.pop();
+render();
+}
+
+function render() {
+$('event-count').textContent = state.events.length + ' событий';
+const stream = $('stream');
+if (state.events.length === 0) { stream.innerHTML = '<div class="empty">Ожидание событий...</div>'; return; }
+stream.innerHTML = state.events.slice(0, 50).map(renderEvent).join('');
+}
+
+function renderEvent(e) {
+const time = new Date(e.serverTimestamp || Date.now()).toLocaleTimeString('ru-RU');
+let className = 'event';
+if (e.type === 'alert') className += ' alert-' + e.severity;
+let typeLabel = ({prediction:'Прогноз', alert:'Алерт', signal_high:'Сигнал', regime_change:'Смена режима'})[e.type] || e.type;
+let body = '';
+if (e.type === 'prediction') body = 'Composite: <strong>' + (e.data?.compositeRisk?.composite?.toFixed(3) || '—') + '</strong>';
+else if (e.type === 'alert') body = 'Composite: <strong>' + (e.data?.composite?.toFixed(3) || '—') + '</strong>';
+else if (e.type === 'signal_high') body = '<strong>' + (e.data?.name || '') + '</strong> = ' + ((e.data?.value || 0) * 100).toFixed(1) + '%';
+return '<div class="' + className + '"><div class="event-header"><span class="event-type">' + typeLabel + '</span><span class="event-time">' + time + '</span></div><div class="event-body">' + body + '</div></div>';
+}
+
+function reconnect() { if (state.ws) state.ws.close(); connect(); }
+
+connect();
+</script>
+
+</body>
+</html>
+
+
+
+========================================================================
+
+FILE: dashboard/pwa/install.js
+SIZE: 8209 bytes
+SHA1: 36d7d3af462375be
+========================================================================
+
+// dashboard/pwa/install.js
+// Логика установки PWA + регистрация SW + push subscriptions
+
+class PWAManager {
+  constructor() {
+    this.deferredPrompt = null;
+    this.installed = false;
+    this.swRegistration = null;
+    this.subscription = null;
+
+    this._setup();
+  }
+
+  _setup() {
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => this.registerSW());
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      this.deferredPrompt = e;
+      this.showInstallBanner();
+    });
+
+    window.addEventListener('appinstalled', () => {
+      this.installed = true;
+      this.deferredPrompt = null;
+      this.hideInstallBanner();
+      console.log('[PWA] App installed');
+    });
+
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      this.installed = true;
+      console.log('[PWA] Running in standalone mode');
+    }
+  }
+
+  async registerSW() {
+    try {
+      const registration = await navigator.serviceWorker.register('/pwa/service-worker.js', {
+        scope: '/',
+      });
+
+      this.swRegistration = registration;
+      console.log('[PWA] SW registered:', registration.scope);
+
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            this.showUpdateBanner();
+          }
+        });
+      });
+
+      return registration;
+    } catch (e) {
+      console.error('[PWA] SW registration failed:', e);
+      return null;
+    }
+  }
+
+  async promptInstall() {
+    if (!this.deferredPrompt) {
+      console.log('[PWA] No install prompt available');
+      return { ok: false, reason: 'no_prompt' };
+    }
+
+    this.deferredPrompt.prompt();
+    const { outcome } = await this.deferredPrompt.userChoice;
+    console.log('[PWA] User choice:', outcome);
+
+    this.deferredPrompt = null;
+    this.hideInstallBanner();
+
+    return { ok: outcome === 'accepted', outcome };
+  }
+
+  showInstallBanner() {
+    if (document.getElementById('pwa-install-banner')) return;
+
+    const banner = document.createElement('div');
+    banner.id = 'pwa-install-banner';
+    banner.innerHTML = `
+      <div style="
+        position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        color: white; padding: 16px 24px; border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3); z-index: 9999;
+        display: flex; align-items: center; gap: 16px;
+        font-family: -apple-system, sans-serif; max-width: 90%;
+      ">
+        <div style="flex: 1;">
+          <div style="font-weight: 700; margin-bottom: 4px;">Install Crucix</div>
+          <div style="font-size: 12px; opacity: 0.9;">Get real-time alerts on your device</div>
+        </div>
+        <button id="pwa-install-btn" style="
+          background: white; color: #3b82f6; border: none;
+          padding: 8px 16px; border-radius: 6px; font-weight: 600;
+          cursor: pointer; font-size: 13px;
+        ">Install</button>
+        <button id="pwa-dismiss-btn" style="
+          background: transparent; color: white; border: 1px solid rgba(255,255,255,0.3);
+          width: 32px; height: 32px; border-radius: 6px; cursor: pointer;
+          font-size: 18px; line-height: 1;
+        ">x</button>
+      </div>
+    `;
+    document.body.appendChild(banner);
+
+    document.getElementById('pwa-install-btn').onclick = () => this.promptInstall();
+    document.getElementById('pwa-dismiss-btn').onclick = () => this.hideInstallBanner();
+  }
+
+  hideInstallBanner() {
+    const banner = document.getElementById('pwa-install-banner');
+    if (banner) banner.remove();
+  }
+
+  showUpdateBanner() {
+    const banner = document.createElement('div');
+    banner.id = 'pwa-update-banner';
+    banner.innerHTML = `
+      <div style="
+        position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+        background: #1e293b; color: white; padding: 12px 20px;
+        border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        z-index: 9999; display: flex; gap: 12px; align-items: center;
+        font-family: -apple-system, sans-serif; font-size: 14px;
+      ">
+        <span>New version available</span>
+        <button onclick="this.parentElement.parentElement.remove(); location.reload();" style="
+          background: #3b82f6; color: white; border: none;
+          padding: 6px 12px; border-radius: 6px; cursor: pointer;
+        ">Reload</button>
+      </div>
+    `;
+    document.body.appendChild(banner);
+    setTimeout(() => banner.remove(), 30000);
+  }
+
+  async requestPushPermission() {
+    if (!('Notification' in window)) {
+      return { ok: false, reason: 'notifications_not_supported' };
+    }
+
+    if (Notification.permission === 'granted') {
+      return await this.subscribePush();
+    }
+
+    if (Notification.permission === 'denied') {
+      return { ok: false, reason: 'permission_denied' };
+    }
+
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      return { ok: false, reason: 'permission_denied' };
+    }
+
+    return await this.subscribePush();
+  }
+
+  async subscribePush() {
+    if (!this.swRegistration) {
+      return { ok: false, reason: 'no_sw' };
+    }
+
+    try {
+      const vapidPublicKey = await this._getVapidKey();
+
+      if (!vapidPublicKey) {
+        return { ok: false, reason: 'no_vapid_key' };
+      }
+
+      const subscription = await this.swRegistration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: this._urlBase64ToUint8Array(vapidPublicKey),
+      });
+
+      this.subscription = subscription;
+
+      await this._sendSubscriptionToServer(subscription);
+
+      return { ok: true, subscription };
+    } catch (e) {
+      console.error('[PWA] Push subscription failed:', e);
+      return { ok: false, reason: e.message };
+    }
+  }
+
+  async unsubscribePush() {
+    if (!this.subscription) return { ok: true };
+
+    try {
+      await this.subscription.unsubscribe();
+      await fetch('/api/push/unsubscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ endpoint: this.subscription.endpoint }),
+      });
+      this.subscription = null;
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, reason: e.message };
+    }
+  }
+
+  async _getVapidKey() {
+    try {
+      const res = await fetch('/api/push/vapid-key');
+      if (res.ok) {
+        const data = await res.json();
+        return data.publicKey;
+      }
+    } catch (e) {
+      // Fallback
+    }
+    return null;
+  }
+
+  async _sendSubscriptionToServer(subscription) {
+    try {
+      await fetch('/api/push/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(subscription),
+      });
+    } catch (e) {
+      console.error('[PWA] Failed to send subscription:', e);
+    }
+  }
+
+  _urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  }
+
+  async testNotification() {
+    if (!this.swRegistration) return;
+    await this.swRegistration.showNotification('Crucix Test', {
+      body: 'Push notifications are working!',
+      icon: '/pwa/icons/icon-192.png',
+      badge: '/pwa/icons/icon-96.png',
+      tag: 'test',
+    });
+  }
+
+  getStatus() {
+    return {
+      installed: this.installed,
+      swRegistered: !!this.swRegistration,
+      pushSupported: 'PushManager' in window,
+      notificationPermission: typeof Notification !== 'undefined' ? Notification.permission : 'unsupported',
+      subscription: !!this.subscription,
+    };
+  }
+}
+
+window.crucixPWA = new PWAManager();
+
+console.log('[PWA] Manager initialized');
+
+export { PWAManager };
+
+
+
+========================================================================
+
+FILE: dashboard/pwa/push.js
+SIZE: 9468 bytes
+SHA1: 9123ea65c1e142e0
+========================================================================
+
+// dashboard/pwa/push.js
+// Server-side: отправка push-уведомлений через Web Push Protocol
+//
+// Реализовано на чистом Node.js с использованием криптографии
+// (без web-push npm-пакета).
+
+import { createECDH, createHmac, createCipheriv, randomBytes, sign, createPrivateKey } from 'node:crypto';
+import { readFileSync, existsSync, writeFileSync, mkdirSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const PUSH_DIR = join(__dirname, '..', '..', 'runs', 'pwa');
+const SUBSCRIPTIONS_FILE = join(PUSH_DIR, 'subscriptions.json');
+const VAPID_FILE = join(PUSH_DIR, 'vapid.json');
+
+export function generateVAPIDKeys() {
+  const ecdh = createECDH('prime256v1');
+  ecdh.generateKeys();
+
+  const publicKey = ecdh.getPublicKey();
+  const privateKey = ecdh.getPrivateKey();
+
+  const publicKeyB64 = publicKey.toString('base64url');
+  const privateKeyB64 = privateKey.toString('base64url');
+
+  return {
+    publicKey: publicKeyB64,
+    privateKey: privateKeyB64,
+  };
+}
+
+export function loadOrCreateVAPIDKeys() {
+  if (existsSync(VAPID_FILE)) {
+    try {
+      return JSON.parse(readFileSync(VAPID_FILE, 'utf-8'));
+    } catch {}
+  }
+
+  const keys = generateVAPIDKeys();
+
+  if (!existsSync(PUSH_DIR)) mkdirSync(PUSH_DIR, { recursive: true });
+  writeFileSync(VAPID_FILE, JSON.stringify(keys, null, 2));
+
+  return keys;
+}
+
+export class SubscriptionStore {
+  constructor() {
+    this.subscriptions = this._load();
+  }
+
+  _load() {
+    if (!existsSync(SUBSCRIPTIONS_FILE)) return {};
+    try {
+      return JSON.parse(readFileSync(SUBSCRIPTIONS_FILE, 'utf-8'));
+    } catch {
+      return {};
+    }
+  }
+
+  _save() {
+    if (!existsSync(PUSH_DIR)) mkdirSync(PUSH_DIR, { recursive: true });
+    writeFileSync(SUBSCRIPTIONS_FILE, JSON.stringify(this.subscriptions, null, 2));
+  }
+
+  add(subscription) {
+    if (!subscription.endpoint) return { ok: false, error: 'no_endpoint' };
+
+    this.subscriptions[subscription.endpoint] = {
+      ...subscription,
+      addedAt: new Date().toISOString(),
+    };
+    this._save();
+
+    return { ok: true, total: Object.keys(this.subscriptions).length };
+  }
+
+  remove(endpoint) {
+    delete this.subscriptions[endpoint];
+    this._save();
+    return { ok: true };
+  }
+
+  list() {
+    return Object.values(this.subscriptions);
+  }
+
+  count() {
+    return Object.keys(this.subscriptions).length;
+  }
+}
+
+function hkdfExtract(salt, ikm) {
+  return createHmac('sha256', salt).update(ikm).digest();
+}
+
+function hkdfExpand(prk, info, length) {
+  const blocks = Math.ceil(length / 32);
+  let output = Buffer.alloc(0);
+  let T = Buffer.alloc(0);
+
+  for (let i = 1; i <= blocks; i++) {
+    const hmac = createHmac('sha256', prk);
+    hmac.update(T);
+    hmac.update(info);
+    hmac.update(Buffer.from([i]));
+    T = hmac.digest();
+    output = Buffer.concat([output, T]);
+  }
+
+  return output.slice(0, length);
+}
+
+export async function sendWebPush(subscription, payload, vapidKeys, options = {}) {
+  const { endpoint, keys } = subscription;
+  if (!endpoint || !keys?.p256dh || !keys?.auth) {
+    return { ok: false, error: 'invalid_subscription' };
+  }
+
+  const audience = new URL(endpoint).origin;
+
+  const payloadBuffer = Buffer.from(JSON.stringify(payload), 'utf-8');
+
+  const ecdh = createECDH('prime256v1');
+  ecdh.generateKeys();
+
+  const clientPublicKey = Buffer.from(keys.p256dh, 'base64url');
+  const authSecret = Buffer.from(keys.auth, 'base64url');
+
+  const sharedSecret = ecdh.computeSecret(clientPublicKey);
+
+  const authInfo = Buffer.concat([
+    Buffer.from('WebPush: info\0'),
+    clientPublicKey,
+    ecdh.getPublicKey(),
+  ]);
+  const prk = hkdfExtract(authSecret, sharedSecret);
+  const ikm = hkdfExpand(prk, authInfo, 32);
+
+  const salt = randomBytes(16);
+
+  const cekInfo = Buffer.from('Content-Encoding: aes128gcm\0');
+  const nonceInfo = Buffer.from('Content-Encoding: nonce\0');
+
+  const prk2 = hkdfExtract(salt, ikm);
+  const cek = hkdfExpand(prk2, cekInfo, 16);
+  const nonce = hkdfExpand(prk2, nonceInfo, 12);
+
+  const paddedPayload = Buffer.concat([payloadBuffer, Buffer.from([0x02])]);
+  const cipher = createCipheriv('aes-128-gcm', cek, nonce);
+  const encrypted = Buffer.concat([cipher.update(paddedPayload), cipher.final()]);
+  const authTag = cipher.getAuthTag();
+
+  const recordSize = Buffer.alloc(4);
+  recordSize.writeUInt32BE(4096);
+
+  const serverPublicKey = ecdh.getPublicKey();
+
+  const body = Buffer.concat([
+    salt,
+    recordSize,
+    Buffer.from([serverPublicKey.length]),
+    serverPublicKey,
+    encrypted,
+    authTag,
+  ]);
+
+  const jwt = createVAPIDJWT(audience, vapidKeys, options.subject);
+
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/octet-stream',
+        'Content-Encoding': 'aes128gcm',
+        'TTL': String(options.ttl || 86400),
+        'Authorization': `vapid t=${jwt}, k=${vapidKeys.publicKey}`,
+        'Urgency': options.urgency || 'normal',
+      },
+      body,
+    });
+
+    return {
+      ok: response.ok,
+      status: response.status,
+      statusText: response.statusText,
+    };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+}
+
+export async function broadcastPush(payload, vapidKeys, store, options = {}) {
+  const subscriptions = store.list();
+  const results = [];
+
+  for (const sub of subscriptions) {
+    const result = await sendWebPush(sub, payload, vapidKeys, options);
+    results.push({ endpoint: sub.endpoint, ...result });
+
+    if (result.status === 404 || result.status === 410) {
+      store.remove(sub.endpoint);
+    }
+  }
+
+  return {
+    sent: results.filter(r => r.ok).length,
+    failed: results.filter(r => !r.ok).length,
+    total: subscriptions.length,
+    results,
+  };
+}
+
+function createVAPIDJWT(audience, vapidKeys, subject = 'mailto:admin@crucix.local') {
+  const header = {
+    typ: 'JWT',
+    alg: 'ES256',
+  };
+
+  const now = Math.floor(Date.now() / 1000);
+  const payload = {
+    aud: audience,
+    exp: now + 12 * 3600,
+    sub: subject,
+  };
+
+  const encodeB64 = (obj) => Buffer.from(JSON.stringify(obj)).toString('base64url');
+
+  const headerB64 = encodeB64(header);
+  const payloadB64 = encodeB64(payload);
+  const unsigned = `${headerB64}.${payloadB64}`;
+
+  const privateKeyBuffer = Buffer.from(vapidKeys.privateKey, 'base64url');
+
+  const privateKey = createPrivateKey({
+    key: Buffer.concat([
+      Buffer.from('308141020100301306072a8648ce3d020106082a8648ce3d030107042730250201010420', 'hex'),
+      privateKeyBuffer,
+    ]),
+    format: 'der',
+    type: 'pkcs8',
+  });
+
+  const signature = sign('sha256', Buffer.from(unsigned), {
+    key: privateKey,
+    dsaEncoding: 'ieee-p1363',
+  });
+
+  const signatureB64 = signature.toString('base64url');
+
+  return `${unsigned}.${signatureB64}`;
+}
+
+export function createPushHandlers(vapidKeys, store) {
+  return {
+    getVapidKey: (req, res) => {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ publicKey: vapidKeys.publicKey }));
+    },
+
+    subscribe: async (req, res) => {
+      const body = await readBody(req);
+      try {
+        const subscription = JSON.parse(body);
+        const result = store.add(subscription);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(result));
+      } catch (e) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: e.message }));
+      }
+    },
+
+    unsubscribe: async (req, res) => {
+      const body = await readBody(req);
+      try {
+        const { endpoint } = JSON.parse(body);
+        const result = store.remove(endpoint);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(result));
+      } catch (e) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: e.message }));
+      }
+    },
+
+    test: async (req, res) => {
+      const result = await broadcastPush({
+        title: 'Crucix Test',
+        body: 'Test push notification',
+        icon: '/pwa/icons/icon-192.png',
+      }, vapidKeys, store);
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(result));
+    },
+  };
+}
+
+function readBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', () => resolve(body));
+    req.on('error', reject);
+  });
+}
+
+export async function notifyPush(result, store, vapidKeys) {
+  const cr = result.compositeRisk;
+  if (!cr) return { skipped: true };
+
+  if (cr.level !== 'high' && cr.level !== 'critical') {
+    return { skipped: true, reason: 'low_priority' };
+  }
+
+  const payload = {
+    title: `Crucix: ${cr.level.toUpperCase()}`,
+    body: `Composite risk: ${cr.composite.toFixed(3)} - ${cr.topDrivers?.[0]?.name || ''}`,
+    icon: '/pwa/icons/icon-192.png',
+    badge: '/pwa/icons/icon-96.png',
+    type: 'alert',
+    level: cr.level,
+    url: '/crucix.html',
+  };
+
+  return await broadcastPush(payload, vapidKeys, store, {
+    urgency: cr.level === 'critical' ? 'high' : 'normal',
+    ttl: cr.level === 'critical' ? 3600 : 86400,
+  });
+}
+
+export const PUSH_INFO = {
+  name: 'Web Push',
+  description: 'Push notifications via Web Push Protocol (RFC 8291)',
+  requiresVAPID: true,
+};
+
+
+
+========================================================================
+
+FILE: dashboard/pwa/service-worker.js
+SIZE: 3382 bytes
+SHA1: a65524b371f13a80
+========================================================================
+
+
+self.addEventListener('push', (event) => {
+  console.log('[SW] Push received');
+
+  let data = {
+    title: 'Crucix Alert',
+    body: 'New prediction available',
+    icon: '/pwa/icons/icon-192.png',
+    badge: '/pwa/icons/icon-96.png',
+    tag: 'crucix-default',
+    requireInteraction: false,
+  };
+
+  if (event.data) {
+    try {
+      const payload = event.data.json();
+      data = {
+        ...data,
+        ...payload,
+        icon: payload.icon || data.icon,
+        badge: payload.badge || data.badge,
+      };
+    } catch (e) {
+      data.body = event.data.text();
+    }
+  }
+
+  if (data.type) {
+    data.tag = `crucix-${data.type}`;
+  }
+
+  if (data.level === 'critical') {
+    data.requireInteraction = true;
+    data.vibrate = [200, 100, 200, 100, 200];
+    data.actions = [
+      { action: 'open', title: 'Open Dashboard' },
+      { action: 'dismiss', title: 'Dismiss' },
+    ];
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: data.icon,
+      badge: data.badge,
+      tag: data.tag,
+      data: data,
+      requireInteraction: data.requireInteraction,
+      vibrate: data.vibrate,
+      actions: data.actions,
+      timestamp: Date.now(),
+    })
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  console.log('[SW] Notification clicked:', event.action);
+
+  event.notification.close();
+
+  if (event.action === 'dismiss') return;
+
+  const urlToOpen = event.notification.data?.url || '/crucix.html';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true })
+      .then(clientList => {
+        for (const client of clientList) {
+          if (client.url.includes(urlToOpen) && 'focus' in client) {
+            return client.focus();
+          }
+        }
+        if (clients.openWindow) {
+          return clients.openWindow(urlToOpen);
+        }
+      })
+  );
+});
+
+self.addEventListener('sync', (event) => {
+  console.log('[SW] Sync event:', event.tag);
+
+  if (event.tag === 'sync-predictions') {
+    event.waitUntil(syncPredictions());
+  }
+});
+
+async function syncPredictions() {
+  try {
+    const cache = await caches.open(API_CACHE);
+    const response = await fetch('/api/predictions/latest');
+    if (response.ok) {
+      await cache.put('/api/predictions/latest', response);
+    }
+  } catch (e) {
+    // Retry later
+  }
+}
+
+async function registerPeriodicSync() {
+  if (!('periodicSync' in self.registration)) return;
+
+  try {
+    const status = await navigator.permissions.query({
+      name: 'periodic-background-sync',
+    });
+
+    if (status.state === 'granted') {
+      await self.registration.periodicSync.register('refresh-predictions', {
+        minInterval: 15 * 60 * 1000,
+      });
+    }
+  } catch (e) {
+    console.log('[SW] Periodic sync not available:', e.message);
+  }
+}
+
+self.addEventListener('periodicsync', (event) => {
+  if (event.tag === 'refresh-predictions') {
+    event.waitUntil(syncPredictions());
+  }
+});
+
+self.addEventListener('message', (event) => {
+  const { type, data } = event.data || {};
+
+  if (type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+
+  if (type === 'SHOW_NOTIFICATION') {
+    self.registration.showNotification(data.title, data);
+  }
+
+  if (type === 'CLEAR_CACHE') {
+    caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))));
+  }
+});
+
+console.log(`[SW] Service Worker ${VERSION} loaded`);
+
+
+
+========================================================================
+
+FILE: dashboard/pwa/manifest.json
+SIZE: 2076 bytes
+SHA1: d526b677cd550d0d
+========================================================================
+
+{
+  "name": "Crucix Dashboard — Predictive Intelligence",
+  "short_name": "Crucix",
+  "description": "Real-time predictive analytics dashboard with 45+ signals from 30 sciences",
+  "start_url": "/crucix.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#06080f",
+  "theme_color": "#3b82f6",
+  "lang": "ru",
+  "dir": "ltr",
+  "categories": ["finance", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/pwa/icons/icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa/icons/icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "/pwa/icons/icon-128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "/pwa/icons/icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "/pwa/icons/icon-152.png",
+      "sizes": "152x152",
+      "type": "image/png"
+    },
+    {
+      "src": "/pwa/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/pwa/icons/icon-384.png",
+      "sizes": "384x384",
+      "type": "image/png"
+    },
+    {
+      "src": "/pwa/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Live Dashboard",
+      "short_name": "Live",
+      "url": "/realtime.html",
+      "icons": [{ "src": "/pwa/icons/icon-96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Composite Risk",
+      "short_name": "Composite",
+      "url": "/predictions_composite.html",
+      "icons": [{ "src": "/pwa/icons/icon-96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Plugin Manager",
+      "short_name": "Plugins",
+      "url": "/plugins.html",
+      "icons": [{ "src": "/pwa/icons/icon-96.png", "sizes": "96x96" }]
+    }
+  ],
+  "prefer_related_applications": false,
+  "protocol_handlers": [
+    {
+      "protocol": "web+crucix",
+      "url": "/?url=%s"
+    }
+  ]
+}
+
+
+
+========================================================================

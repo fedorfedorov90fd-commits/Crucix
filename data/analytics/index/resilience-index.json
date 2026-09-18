@@ -1,0 +1,2421 @@
+{
+  "_meta": {
+    "id": "resilience-index",
+    "category": "index",
+    "version": "1.2.0",
+    "schema_version": "1.0.0",
+    "sources": [
+      "country-characteristics",
+      "country-aliases",
+      "acled",
+      "earthquakes",
+      "inflation",
+      "worldbank-latest",
+      "gini-index"
+    ],
+    "calculator": "ResilienceIndex",
+    "updated_at": "2026-09-12T13:51:29.183Z",
+    "period": "manual",
+    "duration_ms": 20,
+    "checksum": "10e658cc96bd5b88",
+    "imputed_fields": {
+      "from_real_source": [
+        "baseRisk (country-characteristics.json)",
+        "regime (country-characteristics.json)",
+        "conflictIntensity (acled.json)",
+        "disasterExposure (earthquakes.json)",
+        "gdpPerCapita (worldbank-latest.json)",
+        "giniIndex (gini-index.json)",
+        "economicVolatility (worldbank-latest.json, fallback inflation.json)"
+      ],
+      "from_regime": [
+        "governanceScore",
+        "institutionalCapacity"
+      ],
+      "from_formula": [
+        "resourceAdequacy (100 - baseRisk)"
+      ],
+      "default_used_when_missing": {
+        "gdpPerCapita": "default 10000 (189 стран из WB)",
+        "giniIndex": "default 50 (147 стран с реальным Gini)",
+        "economicVolatility": "0 (176 из WB, 0 из inflation.json)"
+      }
+    },
+    "stats": {
+      "gdp_from_wb": 189,
+      "gini_from_reference": 147,
+      "volatility_from_wb": 176,
+      "volatility_from_fallback": 0
+    }
+  },
+  "data": {
+    "countries": {
+      "AFG": {
+        "countryCode": "AFG",
+        "countryName": "Afghanistan",
+        "score": 55,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 10.7,
+          "shockImpact": 31.4,
+          "recoveryCapacity": 13
+        },
+        "timestamp": 1789221089184
+      },
+      "ALB": {
+        "countryCode": "ALB",
+        "countryName": "Albania",
+        "score": 75,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 18.2,
+          "shockImpact": 32.5,
+          "recoveryCapacity": 24
+        },
+        "timestamp": 1789221089184
+      },
+      "DZA": {
+        "countryCode": "DZA",
+        "countryName": "Algeria",
+        "score": 65,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 13.1,
+          "shockImpact": 32.7,
+          "recoveryCapacity": 19
+        },
+        "timestamp": 1789221089184
+      },
+      "AND": {
+        "countryCode": "AND",
+        "countryName": "Andorra",
+        "score": 87,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 21,
+          "shockImpact": 33,
+          "recoveryCapacity": 33
+        },
+        "timestamp": 1789221089184
+      },
+      "AGO": {
+        "countryCode": "AGO",
+        "countryName": "Angola",
+        "score": 66,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 15.4,
+          "shockImpact": 28.2,
+          "recoveryCapacity": 22
+        },
+        "timestamp": 1789221089184
+      },
+      "ATG": {
+        "countryCode": "ATG",
+        "countryName": "Antigua and Barbuda",
+        "score": 84,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 20.3,
+          "shockImpact": 32.7,
+          "recoveryCapacity": 31
+        },
+        "timestamp": 1789221089184
+      },
+      "ARG": {
+        "countryCode": "ARG",
+        "countryName": "Argentina",
+        "score": 75,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 20.4,
+          "shockImpact": 25,
+          "recoveryCapacity": 30
+        },
+        "timestamp": 1789221089184
+      },
+      "ARM": {
+        "countryCode": "ARM",
+        "countryName": "Armenia",
+        "score": 73,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 18,
+          "shockImpact": 32.2,
+          "recoveryCapacity": 23
+        },
+        "timestamp": 1789221089184
+      },
+      "AUS": {
+        "countryCode": "AUS",
+        "countryName": "Australia",
+        "score": 88,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 22.3,
+          "shockImpact": 32.3,
+          "recoveryCapacity": 33
+        },
+        "timestamp": 1789221089184
+      },
+      "AUT": {
+        "countryCode": "AUT",
+        "countryName": "Austria",
+        "score": 88,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 22.4,
+          "shockImpact": 32.2,
+          "recoveryCapacity": 33
+        },
+        "timestamp": 1789221089184
+      },
+      "AZE": {
+        "countryCode": "AZE",
+        "countryName": "Azerbaijan",
+        "score": 64,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 13.2,
+          "shockImpact": 31.7,
+          "recoveryCapacity": 19
+        },
+        "timestamp": 1789221089184
+      },
+      "BHS": {
+        "countryCode": "BHS",
+        "countryName": "Bahamas",
+        "score": 85,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 20.7,
+          "shockImpact": 32.9,
+          "recoveryCapacity": 31
+        },
+        "timestamp": 1789221089184
+      },
+      "BHR": {
+        "countryCode": "BHR",
+        "countryName": "Bahrain",
+        "score": 68,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 14.5,
+          "shockImpact": 33,
+          "recoveryCapacity": 21
+        },
+        "timestamp": 1789221089184
+      },
+      "BGD": {
+        "countryCode": "BGD",
+        "countryName": "Bangladesh",
+        "score": 70,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 16.7,
+          "shockImpact": 30.9,
+          "recoveryCapacity": 22
+        },
+        "timestamp": 1789221089184
+      },
+      "BRB": {
+        "countryCode": "BRB",
+        "countryName": "Barbados",
+        "score": 86,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 21.5,
+          "shockImpact": 32.8,
+          "recoveryCapacity": 32
+        },
+        "timestamp": 1789221089184
+      },
+      "BLR": {
+        "countryCode": "BLR",
+        "countryName": "Belarus",
+        "score": 65,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 15.3,
+          "shockImpact": 31.4,
+          "recoveryCapacity": 18
+        },
+        "timestamp": 1789221089184
+      },
+      "BEL": {
+        "countryCode": "BEL",
+        "countryName": "Belgium",
+        "score": 88,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 22.7,
+          "shockImpact": 32.4,
+          "recoveryCapacity": 33
+        },
+        "timestamp": 1789221089184
+      },
+      "BLZ": {
+        "countryCode": "BLZ",
+        "countryName": "Belize",
+        "score": 82,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 20,
+          "shockImpact": 32.7,
+          "recoveryCapacity": 29
+        },
+        "timestamp": 1789221089184
+      },
+      "BEN": {
+        "countryCode": "BEN",
+        "countryName": "Benin",
+        "score": 70,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 16,
+          "shockImpact": 32.7,
+          "recoveryCapacity": 21
+        },
+        "timestamp": 1789221089184
+      },
+      "BTN": {
+        "countryCode": "BTN",
+        "countryName": "Bhutan",
+        "score": 83,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 20.3,
+          "shockImpact": 32.1,
+          "recoveryCapacity": 31
+        },
+        "timestamp": 1789221089185
+      },
+      "BOL": {
+        "countryCode": "BOL",
+        "countryName": "Bolivia",
+        "score": 69,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 16.6,
+          "shockImpact": 28.3,
+          "recoveryCapacity": 24
+        },
+        "timestamp": 1789221089185
+      },
+      "BIH": {
+        "countryCode": "BIH",
+        "countryName": "Bosnia and Herzegovina",
+        "score": 72,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 17.9,
+          "shockImpact": 31.5,
+          "recoveryCapacity": 23
+        },
+        "timestamp": 1789221089185
+      },
+      "BWA": {
+        "countryCode": "BWA",
+        "countryName": "Botswana",
+        "score": 82,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 19.3,
+          "shockImpact": 32.4,
+          "recoveryCapacity": 30
+        },
+        "timestamp": 1789221089185
+      },
+      "BRA": {
+        "countryCode": "BRA",
+        "countryName": "Brazil",
+        "score": 82,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 19.5,
+          "shockImpact": 31.8,
+          "recoveryCapacity": 31
+        },
+        "timestamp": 1789221089185
+      },
+      "BRN": {
+        "countryCode": "BRN",
+        "countryName": "Brunei",
+        "score": 70,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 14.5,
+          "shockImpact": 32.9,
+          "recoveryCapacity": 23
+        },
+        "timestamp": 1789221089185
+      },
+      "BGR": {
+        "countryCode": "BGR",
+        "countryName": "Bulgaria",
+        "score": 84,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 20.9,
+          "shockImpact": 31.9,
+          "recoveryCapacity": 31
+        },
+        "timestamp": 1789221089185
+      },
+      "BFA": {
+        "countryCode": "BFA",
+        "countryName": "Burkina Faso",
+        "score": 60,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 12.5,
+          "shockImpact": 32.9,
+          "recoveryCapacity": 15
+        },
+        "timestamp": 1789221089185
+      },
+      "BDI": {
+        "countryCode": "BDI",
+        "countryName": "Burundi",
+        "score": 50,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 11.1,
+          "shockImpact": 25,
+          "recoveryCapacity": 14
+        },
+        "timestamp": 1789221089185
+      },
+      "CPV": {
+        "countryCode": "CPV",
+        "countryName": "Cabo Verde",
+        "score": 82,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 19,
+          "shockImpact": 32.4,
+          "recoveryCapacity": 31
+        },
+        "timestamp": 1789221089185
+      },
+      "KHM": {
+        "countryCode": "KHM",
+        "countryName": "Cambodia",
+        "score": 64,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 12.4,
+          "shockImpact": 32.4,
+          "recoveryCapacity": 19
+        },
+        "timestamp": 1789221089185
+      },
+      "CMR": {
+        "countryCode": "CMR",
+        "countryName": "Cameroon",
+        "score": 69,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 15.6,
+          "shockImpact": 32.2,
+          "recoveryCapacity": 21
+        },
+        "timestamp": 1789221089185
+      },
+      "CAN": {
+        "countryCode": "CAN",
+        "countryName": "Canada",
+        "score": 88,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 22.3,
+          "shockImpact": 32.5,
+          "recoveryCapacity": 33
+        },
+        "timestamp": 1789221089185
+      },
+      "CAF": {
+        "countryCode": "CAF",
+        "countryName": "Central African Republic",
+        "score": 57,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 11.5,
+          "shockImpact": 32.8,
+          "recoveryCapacity": 13
+        },
+        "timestamp": 1789221089185
+      },
+      "TCD": {
+        "countryCode": "TCD",
+        "countryName": "Chad",
+        "score": 59,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 12.4,
+          "shockImpact": 32.1,
+          "recoveryCapacity": 15
+        },
+        "timestamp": 1789221089185
+      },
+      "CHL": {
+        "countryCode": "CHL",
+        "countryName": "Chile",
+        "score": 74,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 20.5,
+          "shockImpact": 22,
+          "recoveryCapacity": 32
+        },
+        "timestamp": 1789221089185
+      },
+      "CHN": {
+        "countryCode": "CHN",
+        "countryName": "China",
+        "score": 69,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 14.8,
+          "shockImpact": 33,
+          "recoveryCapacity": 21
+        },
+        "timestamp": 1789221089185
+      },
+      "COL": {
+        "countryCode": "COL",
+        "countryName": "Colombia",
+        "score": 80,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 19.1,
+          "shockImpact": 31.8,
+          "recoveryCapacity": 29
+        },
+        "timestamp": 1789221089185
+      },
+      "COM": {
+        "countryCode": "COM",
+        "countryName": "Comoros",
+        "score": 71,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 16.5,
+          "shockImpact": 32.2,
+          "recoveryCapacity": 22
+        },
+        "timestamp": 1789221089185
+      },
+      "COD": {
+        "countryCode": "COD",
+        "countryName": "DR Congo",
+        "score": 67,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 14.7,
+          "shockImpact": 33,
+          "recoveryCapacity": 19
+        },
+        "timestamp": 1789221089185
+      },
+      "COG": {
+        "countryCode": "COG",
+        "countryName": "Republic of the Congo",
+        "score": 62,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 12.3,
+          "shockImpact": 32.4,
+          "recoveryCapacity": 17
+        },
+        "timestamp": 1789221089185
+      },
+      "CRI": {
+        "countryCode": "CRI",
+        "countryName": "Costa Rica",
+        "score": 85,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 20.4,
+          "shockImpact": 33,
+          "recoveryCapacity": 32
+        },
+        "timestamp": 1789221089185
+      },
+      "CIV": {
+        "countryCode": "CIV",
+        "countryName": "Ivory Coast",
+        "score": 71,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 16.5,
+          "shockImpact": 33,
+          "recoveryCapacity": 22
+        },
+        "timestamp": 1789221089185
+      },
+      "HRV": {
+        "countryCode": "HRV",
+        "countryName": "Croatia",
+        "score": 86,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 21.8,
+          "shockImpact": 32.1,
+          "recoveryCapacity": 32
+        },
+        "timestamp": 1789221089185
+      },
+      "CUB": {
+        "countryCode": "CUB",
+        "countryName": "Cuba",
+        "score": 64,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 13.5,
+          "shockImpact": 33,
+          "recoveryCapacity": 17
+        },
+        "timestamp": 1789221089185
+      },
+      "CYP": {
+        "countryCode": "CYP",
+        "countryName": "Cyprus",
+        "score": 86,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 22,
+          "shockImpact": 33,
+          "recoveryCapacity": 31
+        },
+        "timestamp": 1789221089185
+      },
+      "CZE": {
+        "countryCode": "CZE",
+        "countryName": "Czechia",
+        "score": 88,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 22.3,
+          "shockImpact": 32.4,
+          "recoveryCapacity": 33
+        },
+        "timestamp": 1789221089185
+      },
+      "DNK": {
+        "countryCode": "DNK",
+        "countryName": "Denmark",
+        "score": 88,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 22.7,
+          "shockImpact": 32.5,
+          "recoveryCapacity": 33
+        },
+        "timestamp": 1789221089185
+      },
+      "DJI": {
+        "countryCode": "DJI",
+        "countryName": "Djibouti",
+        "score": 64,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 13.3,
+          "shockImpact": 32.9,
+          "recoveryCapacity": 18
+        },
+        "timestamp": 1789221089185
+      },
+      "DMA": {
+        "countryCode": "DMA",
+        "countryName": "Dominica",
+        "score": 83,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 19.6,
+          "shockImpact": 32.4,
+          "recoveryCapacity": 31
+        },
+        "timestamp": 1789221089185
+      },
+      "DOM": {
+        "countryCode": "DOM",
+        "countryName": "Dominican Republic",
+        "score": 81,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 20.4,
+          "shockImpact": 32.1,
+          "recoveryCapacity": 29
+        },
+        "timestamp": 1789221089185
+      },
+      "ECU": {
+        "countryCode": "ECU",
+        "countryName": "Ecuador",
+        "score": 79,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 19.5,
+          "shockImpact": 32.8,
+          "recoveryCapacity": 27
+        },
+        "timestamp": 1789221089185
+      },
+      "EGY": {
+        "countryCode": "EGY",
+        "countryName": "Egypt",
+        "score": 63,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 14,
+          "shockImpact": 29.6,
+          "recoveryCapacity": 19
+        },
+        "timestamp": 1789221089185
+      },
+      "SLV": {
+        "countryCode": "SLV",
+        "countryName": "El Salvador",
+        "score": 74,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 16.7,
+          "shockImpact": 32.9,
+          "recoveryCapacity": 24
+        },
+        "timestamp": 1789221089185
+      },
+      "GNQ": {
+        "countryCode": "GNQ",
+        "countryName": "Equatorial Guinea",
+        "score": 63,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 13.9,
+          "shockImpact": 32.3,
+          "recoveryCapacity": 17
+        },
+        "timestamp": 1789221089185
+      },
+      "ERI": {
+        "countryCode": "ERI",
+        "countryName": "Eritrea",
+        "score": 62,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 13.5,
+          "shockImpact": 33,
+          "recoveryCapacity": 15
+        },
+        "timestamp": 1789221089185
+      },
+      "EST": {
+        "countryCode": "EST",
+        "countryName": "Estonia",
+        "score": 86,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 21.9,
+          "shockImpact": 31.8,
+          "recoveryCapacity": 32
+        },
+        "timestamp": 1789221089185
+      },
+      "SWZ": {
+        "countryCode": "SWZ",
+        "countryName": "Eswatini",
+        "score": 62,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 12.4,
+          "shockImpact": 33,
+          "recoveryCapacity": 17
+        },
+        "timestamp": 1789221089185
+      },
+      "ETH": {
+        "countryCode": "ETH",
+        "countryName": "Ethiopia",
+        "score": 66,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 15.8,
+          "shockImpact": 29.8,
+          "recoveryCapacity": 20
+        },
+        "timestamp": 1789221089185
+      },
+      "FJI": {
+        "countryCode": "FJI",
+        "countryName": "Fiji",
+        "score": 83,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 20.5,
+          "shockImpact": 32.7,
+          "recoveryCapacity": 30
+        },
+        "timestamp": 1789221089185
+      },
+      "FIN": {
+        "countryCode": "FIN",
+        "countryName": "Finland",
+        "score": 88,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 22.6,
+          "shockImpact": 32.9,
+          "recoveryCapacity": 33
+        },
+        "timestamp": 1789221089185
+      },
+      "FRA": {
+        "countryCode": "FRA",
+        "countryName": "France",
+        "score": 87,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 22.2,
+          "shockImpact": 32.8,
+          "recoveryCapacity": 32
+        },
+        "timestamp": 1789221089185
+      },
+      "GAB": {
+        "countryCode": "GAB",
+        "countryName": "Gabon",
+        "score": 65,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 14.2,
+          "shockImpact": 32.6,
+          "recoveryCapacity": 18
+        },
+        "timestamp": 1789221089185
+      },
+      "GMB": {
+        "countryCode": "GMB",
+        "countryName": "Gambia",
+        "score": 67,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 15.2,
+          "shockImpact": 30.2,
+          "recoveryCapacity": 22
+        },
+        "timestamp": 1789221089185
+      },
+      "GEO": {
+        "countryCode": "GEO",
+        "countryName": "Georgia",
+        "score": 73,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 17.6,
+          "shockImpact": 32.1,
+          "recoveryCapacity": 23
+        },
+        "timestamp": 1789221089185
+      },
+      "DEU": {
+        "countryCode": "DEU",
+        "countryName": "Germany",
+        "score": 87,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 22.2,
+          "shockImpact": 32.5,
+          "recoveryCapacity": 32
+        },
+        "timestamp": 1789221089185
+      },
+      "GHA": {
+        "countryCode": "GHA",
+        "countryName": "Ghana",
+        "score": 76,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 19,
+          "shockImpact": 29.6,
+          "recoveryCapacity": 27
+        },
+        "timestamp": 1789221089185
+      },
+      "GRC": {
+        "countryCode": "GRC",
+        "countryName": "Greece",
+        "score": 79,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 21.5,
+          "shockImpact": 26.4,
+          "recoveryCapacity": 31
+        },
+        "timestamp": 1789221089185
+      },
+      "GRD": {
+        "countryCode": "GRD",
+        "countryName": "Grenada",
+        "score": 84,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 20.1,
+          "shockImpact": 32.9,
+          "recoveryCapacity": 31
+        },
+        "timestamp": 1789221089185
+      },
+      "GTM": {
+        "countryCode": "GTM",
+        "countryName": "Guatemala",
+        "score": 71,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 16.5,
+          "shockImpact": 32.6,
+          "recoveryCapacity": 22
+        },
+        "timestamp": 1789221089185
+      },
+      "GIN": {
+        "countryCode": "GIN",
+        "countryName": "Guinea",
+        "score": 62,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 13.5,
+          "shockImpact": 32.1,
+          "recoveryCapacity": 16
+        },
+        "timestamp": 1789221089185
+      },
+      "GNB": {
+        "countryCode": "GNB",
+        "countryName": "Guinea-Bissau",
+        "score": 69,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 15.8,
+          "shockImpact": 32.8,
+          "recoveryCapacity": 20
+        },
+        "timestamp": 1789221089185
+      },
+      "GUY": {
+        "countryCode": "GUY",
+        "countryName": "Guyana",
+        "score": 82,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 20.5,
+          "shockImpact": 32.2,
+          "recoveryCapacity": 29
+        },
+        "timestamp": 1789221089185
+      },
+      "HTI": {
+        "countryCode": "HTI",
+        "countryName": "Haiti",
+        "score": 57,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 15.4,
+          "shockImpact": 26.1,
+          "recoveryCapacity": 16
+        },
+        "timestamp": 1789221089185
+      },
+      "HND": {
+        "countryCode": "HND",
+        "countryName": "Honduras",
+        "score": 69,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 15.9,
+          "shockImpact": 31.9,
+          "recoveryCapacity": 21
+        },
+        "timestamp": 1789221089185
+      },
+      "HUN": {
+        "countryCode": "HUN",
+        "countryName": "Hungary",
+        "score": 78,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 18.7,
+          "shockImpact": 31.9,
+          "recoveryCapacity": 27
+        },
+        "timestamp": 1789221089185
+      },
+      "ISL": {
+        "countryCode": "ISL",
+        "countryName": "Iceland",
+        "score": 88,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 23.1,
+          "shockImpact": 32,
+          "recoveryCapacity": 33
+        },
+        "timestamp": 1789221089185
+      },
+      "IND": {
+        "countryCode": "IND",
+        "countryName": "India",
+        "score": 82,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 20.1,
+          "shockImpact": 32.4,
+          "recoveryCapacity": 29
+        },
+        "timestamp": 1789221089185
+      },
+      "IDN": {
+        "countryCode": "IDN",
+        "countryName": "Indonesia",
+        "score": 72,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 20,
+          "shockImpact": 22.5,
+          "recoveryCapacity": 29
+        },
+        "timestamp": 1789221089185
+      },
+      "IRN": {
+        "countryCode": "IRN",
+        "countryName": "Iran",
+        "score": 46,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 13.7,
+          "shockImpact": 15,
+          "recoveryCapacity": 17
+        },
+        "timestamp": 1789221089185
+      },
+      "IRQ": {
+        "countryCode": "IRQ",
+        "countryName": "Iraq",
+        "score": 69,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 17.4,
+          "shockImpact": 32.9,
+          "recoveryCapacity": 19
+        },
+        "timestamp": 1789221089185
+      },
+      "IRL": {
+        "countryCode": "IRL",
+        "countryName": "Ireland",
+        "score": 88,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 23,
+          "shockImpact": 32.5,
+          "recoveryCapacity": 33
+        },
+        "timestamp": 1789221089185
+      },
+      "ISR": {
+        "countryCode": "ISR",
+        "countryName": "Israel",
+        "score": 80,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 21.9,
+          "shockImpact": 32.3,
+          "recoveryCapacity": 26
+        },
+        "timestamp": 1789221089185
+      },
+      "ITA": {
+        "countryCode": "ITA",
+        "countryName": "Italy",
+        "score": 87,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 21.9,
+          "shockImpact": 32.6,
+          "recoveryCapacity": 32
+        },
+        "timestamp": 1789221089185
+      },
+      "JAM": {
+        "countryCode": "JAM",
+        "countryName": "Jamaica",
+        "score": 81,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 20,
+          "shockImpact": 32,
+          "recoveryCapacity": 29
+        },
+        "timestamp": 1789221089185
+      },
+      "JPN": {
+        "countryCode": "JPN",
+        "countryName": "Japan",
+        "score": 76,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 21.9,
+          "shockImpact": 22.2,
+          "recoveryCapacity": 32
+        },
+        "timestamp": 1789221089185
+      },
+      "JOR": {
+        "countryCode": "JOR",
+        "countryName": "Jordan",
+        "score": 66,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 13,
+          "shockImpact": 32.6,
+          "recoveryCapacity": 20
+        },
+        "timestamp": 1789221089185
+      },
+      "KAZ": {
+        "countryCode": "KAZ",
+        "countryName": "Kazakhstan",
+        "score": 66,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 15.3,
+          "shockImpact": 30.3,
+          "recoveryCapacity": 20
+        },
+        "timestamp": 1789221089185
+      },
+      "KEN": {
+        "countryCode": "KEN",
+        "countryName": "Kenya",
+        "score": 70,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 16.1,
+          "shockImpact": 32,
+          "recoveryCapacity": 22
+        },
+        "timestamp": 1789221089185
+      },
+      "KIR": {
+        "countryCode": "KIR",
+        "countryName": "Kiribati",
+        "score": 81,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 20.1,
+          "shockImpact": 32.4,
+          "recoveryCapacity": 29
+        },
+        "timestamp": 1789221089185
+      },
+      "PRK": {
+        "countryCode": "PRK",
+        "countryName": "North Korea",
+        "score": 61,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 13.5,
+          "shockImpact": 33,
+          "recoveryCapacity": 14
+        },
+        "timestamp": 1789221089185
+      },
+      "KOR": {
+        "countryCode": "KOR",
+        "countryName": "South Korea",
+        "score": 85,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 21.8,
+          "shockImpact": 32.5,
+          "recoveryCapacity": 31
+        },
+        "timestamp": 1789221089185
+      },
+      "KWT": {
+        "countryCode": "KWT",
+        "countryName": "Kuwait",
+        "score": 69,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 14.5,
+          "shockImpact": 32.4,
+          "recoveryCapacity": 22
+        },
+        "timestamp": 1789221089185
+      },
+      "KGZ": {
+        "countryCode": "KGZ",
+        "countryName": "Kyrgyzstan",
+        "score": 70,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 17.1,
+          "shockImpact": 31,
+          "recoveryCapacity": 22
+        },
+        "timestamp": 1789221089185
+      },
+      "LAO": {
+        "countryCode": "LAO",
+        "countryName": "Laos",
+        "score": 63,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 13.3,
+          "shockImpact": 31.1,
+          "recoveryCapacity": 19
+        },
+        "timestamp": 1789221089185
+      },
+      "LVA": {
+        "countryCode": "LVA",
+        "countryName": "Latvia",
+        "score": 85,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 21.5,
+          "shockImpact": 32.1,
+          "recoveryCapacity": 31
+        },
+        "timestamp": 1789221089185
+      },
+      "LBN": {
+        "countryCode": "LBN",
+        "countryName": "Lebanon",
+        "score": 64,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 16.8,
+          "shockImpact": 29.5,
+          "recoveryCapacity": 18
+        },
+        "timestamp": 1789221089185
+      },
+      "LSO": {
+        "countryCode": "LSO",
+        "countryName": "Lesotho",
+        "score": 68,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 14.9,
+          "shockImpact": 32,
+          "recoveryCapacity": 21
+        },
+        "timestamp": 1789221089185
+      },
+      "LBR": {
+        "countryCode": "LBR",
+        "countryName": "Liberia",
+        "score": 73,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 18.5,
+          "shockImpact": 31,
+          "recoveryCapacity": 24
+        },
+        "timestamp": 1789221089185
+      },
+      "LBY": {
+        "countryCode": "LBY",
+        "countryName": "Libya",
+        "score": 66,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 16.1,
+          "shockImpact": 32.6,
+          "recoveryCapacity": 17
+        },
+        "timestamp": 1789221089185
+      },
+      "LIE": {
+        "countryCode": "LIE",
+        "countryName": "Liechtenstein",
+        "score": 88,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 21.5,
+          "shockImpact": 33,
+          "recoveryCapacity": 33
+        },
+        "timestamp": 1789221089185
+      },
+      "LTU": {
+        "countryCode": "LTU",
+        "countryName": "Lithuania",
+        "score": 85,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 21.5,
+          "shockImpact": 32.1,
+          "recoveryCapacity": 31
+        },
+        "timestamp": 1789221089185
+      },
+      "LUX": {
+        "countryCode": "LUX",
+        "countryName": "Luxembourg",
+        "score": 88,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 22.6,
+          "shockImpact": 32.5,
+          "recoveryCapacity": 33
+        },
+        "timestamp": 1789221089185
+      },
+      "MDG": {
+        "countryCode": "MDG",
+        "countryName": "Madagascar",
+        "score": 66,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 15,
+          "shockImpact": 31.1,
+          "recoveryCapacity": 20
+        },
+        "timestamp": 1789221089186
+      },
+      "MWI": {
+        "countryCode": "MWI",
+        "countryName": "Malawi",
+        "score": 62,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 15,
+          "shockImpact": 26.2,
+          "recoveryCapacity": 21
+        },
+        "timestamp": 1789221089186
+      },
+      "MYS": {
+        "countryCode": "MYS",
+        "countryName": "Malaysia",
+        "score": 76,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 17.4,
+          "shockImpact": 32.7,
+          "recoveryCapacity": 26
+        },
+        "timestamp": 1789221089186
+      },
+      "MDV": {
+        "countryCode": "MDV",
+        "countryName": "Maldives",
+        "score": 76,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 18.3,
+          "shockImpact": 32,
+          "recoveryCapacity": 26
+        },
+        "timestamp": 1789221089186
+      },
+      "MLI": {
+        "countryCode": "MLI",
+        "countryName": "Mali",
+        "score": 59,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 12.7,
+          "shockImpact": 32.2,
+          "recoveryCapacity": 14
+        },
+        "timestamp": 1789221089186
+      },
+      "MLT": {
+        "countryCode": "MLT",
+        "countryName": "Malta",
+        "score": 87,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 22.1,
+          "shockImpact": 32.4,
+          "recoveryCapacity": 32
+        },
+        "timestamp": 1789221089186
+      },
+      "MHL": {
+        "countryCode": "MHL",
+        "countryName": "Marshall Islands",
+        "score": 84,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 20.4,
+          "shockImpact": 33,
+          "recoveryCapacity": 31
+        },
+        "timestamp": 1789221089186
+      },
+      "MRT": {
+        "countryCode": "MRT",
+        "countryName": "Mauritania",
+        "score": 70,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 16.4,
+          "shockImpact": 32.6,
+          "recoveryCapacity": 21
+        },
+        "timestamp": 1789221089186
+      },
+      "MUS": {
+        "countryCode": "MUS",
+        "countryName": "Mauritius",
+        "score": 84,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 20.7,
+          "shockImpact": 32.1,
+          "recoveryCapacity": 31
+        },
+        "timestamp": 1789221089186
+      },
+      "MEX": {
+        "countryCode": "MEX",
+        "countryName": "Mexico",
+        "score": 81,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 20.3,
+          "shockImpact": 32.1,
+          "recoveryCapacity": 29
+        },
+        "timestamp": 1789221089186
+      },
+      "FSM": {
+        "countryCode": "FSM",
+        "countryName": "Micronesia",
+        "score": 80,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 18.8,
+          "shockImpact": 31.7,
+          "recoveryCapacity": 30
+        },
+        "timestamp": 1789221089186
+      },
+      "MDA": {
+        "countryCode": "MDA",
+        "countryName": "Moldova",
+        "score": 71,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 18,
+          "shockImpact": 31.1,
+          "recoveryCapacity": 22
+        },
+        "timestamp": 1789221089186
+      },
+      "MCO": {
+        "countryCode": "MCO",
+        "countryName": "Monaco",
+        "score": 88,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 21.5,
+          "shockImpact": 33,
+          "recoveryCapacity": 33
+        },
+        "timestamp": 1789221089186
+      },
+      "MNG": {
+        "countryCode": "MNG",
+        "countryName": "Mongolia",
+        "score": 80,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 20.5,
+          "shockImpact": 30.9,
+          "recoveryCapacity": 29
+        },
+        "timestamp": 1789221089186
+      },
+      "MNE": {
+        "countryCode": "MNE",
+        "countryName": "Montenegro",
+        "score": 75,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 17.9,
+          "shockImpact": 32.1,
+          "recoveryCapacity": 25
+        },
+        "timestamp": 1789221089186
+      },
+      "MAR": {
+        "countryCode": "MAR",
+        "countryName": "Morocco",
+        "score": 74,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 15.8,
+          "shockImpact": 32.8,
+          "recoveryCapacity": 25
+        },
+        "timestamp": 1789221089186
+      },
+      "MOZ": {
+        "countryCode": "MOZ",
+        "countryName": "Mozambique",
+        "score": 66,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 14.1,
+          "shockImpact": 32,
+          "recoveryCapacity": 20
+        },
+        "timestamp": 1789221089186
+      },
+      "MMR": {
+        "countryCode": "MMR",
+        "countryName": "Myanmar",
+        "score": 59,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 13.2,
+          "shockImpact": 33,
+          "recoveryCapacity": 13
+        },
+        "timestamp": 1789221089186
+      },
+      "NAM": {
+        "countryCode": "NAM",
+        "countryName": "Namibia",
+        "score": 80,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 18.9,
+          "shockImpact": 32.2,
+          "recoveryCapacity": 29
+        },
+        "timestamp": 1789221089186
+      },
+      "NRU": {
+        "countryCode": "NRU",
+        "countryName": "Nauru",
+        "score": 82,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 19.8,
+          "shockImpact": 33,
+          "recoveryCapacity": 29
+        },
+        "timestamp": 1789221089186
+      },
+      "NPL": {
+        "countryCode": "NPL",
+        "countryName": "Nepal",
+        "score": 62,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 16.3,
+          "shockImpact": 22.4,
+          "recoveryCapacity": 23
+        },
+        "timestamp": 1789221089186
+      },
+      "NLD": {
+        "countryCode": "NLD",
+        "countryName": "Netherlands",
+        "score": 88,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 22.9,
+          "shockImpact": 32.2,
+          "recoveryCapacity": 33
+        },
+        "timestamp": 1789221089186
+      },
+      "NZL": {
+        "countryCode": "NZL",
+        "countryName": "New Zealand",
+        "score": 76,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 20.9,
+          "shockImpact": 22.3,
+          "recoveryCapacity": 33
+        },
+        "timestamp": 1789221089186
+      },
+      "NIC": {
+        "countryCode": "NIC",
+        "countryName": "Nicaragua",
+        "score": 62,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 12.5,
+          "shockImpact": 32.5,
+          "recoveryCapacity": 17
+        },
+        "timestamp": 1789221089186
+      },
+      "NER": {
+        "countryCode": "NER",
+        "countryName": "Niger",
+        "score": 58,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 12.5,
+          "shockImpact": 31.9,
+          "recoveryCapacity": 14
+        },
+        "timestamp": 1789221089186
+      },
+      "NGA": {
+        "countryCode": "NGA",
+        "countryName": "Nigeria",
+        "score": 64,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 15.8,
+          "shockImpact": 27.5,
+          "recoveryCapacity": 21
+        },
+        "timestamp": 1789221089186
+      },
+      "MKD": {
+        "countryCode": "MKD",
+        "countryName": "North Macedonia",
+        "score": 83,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 20.7,
+          "shockImpact": 32,
+          "recoveryCapacity": 30
+        },
+        "timestamp": 1789221089186
+      },
+      "NOR": {
+        "countryCode": "NOR",
+        "countryName": "Norway",
+        "score": 88,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 23.1,
+          "shockImpact": 32.3,
+          "recoveryCapacity": 33
+        },
+        "timestamp": 1789221089186
+      },
+      "OMN": {
+        "countryCode": "OMN",
+        "countryName": "Oman",
+        "score": 69,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 14.1,
+          "shockImpact": 32.8,
+          "recoveryCapacity": 22
+        },
+        "timestamp": 1789221089186
+      },
+      "PAK": {
+        "countryCode": "PAK",
+        "countryName": "Pakistan",
+        "score": 67,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 16.1,
+          "shockImpact": 32.1,
+          "recoveryCapacity": 19
+        },
+        "timestamp": 1789221089186
+      },
+      "PLW": {
+        "countryCode": "PLW",
+        "countryName": "Palau",
+        "score": 85,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 20.1,
+          "shockImpact": 32.9,
+          "recoveryCapacity": 32
+        },
+        "timestamp": 1789221089186
+      },
+      "PAN": {
+        "countryCode": "PAN",
+        "countryName": "Panama",
+        "score": 83,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 20.1,
+          "shockImpact": 33,
+          "recoveryCapacity": 30
+        },
+        "timestamp": 1789221089186
+      },
+      "PNG": {
+        "countryCode": "PNG",
+        "countryName": "Papua New Guinea",
+        "score": 68,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 15.5,
+          "shockImpact": 31.9,
+          "recoveryCapacity": 21
+        },
+        "timestamp": 1789221089186
+      },
+      "PRY": {
+        "countryCode": "PRY",
+        "countryName": "Paraguay",
+        "score": 74,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 16.6,
+          "shockImpact": 32,
+          "recoveryCapacity": 25
+        },
+        "timestamp": 1789221089186
+      },
+      "PER": {
+        "countryCode": "PER",
+        "countryName": "Peru",
+        "score": 81,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 20.2,
+          "shockImpact": 32.6,
+          "recoveryCapacity": 28
+        },
+        "timestamp": 1789221089186
+      },
+      "PHL": {
+        "countryCode": "PHL",
+        "countryName": "Philippines",
+        "score": 79,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 19.5,
+          "shockImpact": 32.6,
+          "recoveryCapacity": 27
+        },
+        "timestamp": 1789221089186
+      },
+      "POL": {
+        "countryCode": "POL",
+        "countryName": "Poland",
+        "score": 84,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 21.9,
+          "shockImpact": 32.1,
+          "recoveryCapacity": 30
+        },
+        "timestamp": 1789221089186
+      },
+      "PRT": {
+        "countryCode": "PRT",
+        "countryName": "Portugal",
+        "score": 86,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 21.6,
+          "shockImpact": 32.4,
+          "recoveryCapacity": 32
+        },
+        "timestamp": 1789221089186
+      },
+      "QAT": {
+        "countryCode": "QAT",
+        "countryName": "Qatar",
+        "score": 72,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 16.3,
+          "shockImpact": 32.7,
+          "recoveryCapacity": 23
+        },
+        "timestamp": 1789221089186
+      },
+      "ROU": {
+        "countryCode": "ROU",
+        "countryName": "Romania",
+        "score": 83,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 21.6,
+          "shockImpact": 31.3,
+          "recoveryCapacity": 30
+        },
+        "timestamp": 1789221089186
+      },
+      "RUS": {
+        "countryCode": "RUS",
+        "countryName": "Russia",
+        "score": 62,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 15.2,
+          "shockImpact": 30.9,
+          "recoveryCapacity": 16
+        },
+        "timestamp": 1789221089186
+      },
+      "RWA": {
+        "countryCode": "RWA",
+        "countryName": "Rwanda",
+        "score": 61,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 12.3,
+          "shockImpact": 31.6,
+          "recoveryCapacity": 17
+        },
+        "timestamp": 1789221089186
+      },
+      "KNA": {
+        "countryCode": "KNA",
+        "countryName": "Saint Kitts and Nevis",
+        "score": 83,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 20.3,
+          "shockImpact": 32.1,
+          "recoveryCapacity": 31
+        },
+        "timestamp": 1789221089186
+      },
+      "LCA": {
+        "countryCode": "LCA",
+        "countryName": "Saint Lucia",
+        "score": 83,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 19.8,
+          "shockImpact": 32.5,
+          "recoveryCapacity": 31
+        },
+        "timestamp": 1789221089186
+      },
+      "VCT": {
+        "countryCode": "VCT",
+        "countryName": "Saint Vincent and the Grenadines",
+        "score": 84,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 19.7,
+          "shockImpact": 32.8,
+          "recoveryCapacity": 31
+        },
+        "timestamp": 1789221089186
+      },
+      "WSM": {
+        "countryCode": "WSM",
+        "countryName": "Samoa",
+        "score": 83,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 19,
+          "shockImpact": 32.5,
+          "recoveryCapacity": 31
+        },
+        "timestamp": 1789221089186
+      },
+      "SMR": {
+        "countryCode": "SMR",
+        "countryName": "San Marino",
+        "score": 87,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 21.1,
+          "shockImpact": 32.4,
+          "recoveryCapacity": 33
+        },
+        "timestamp": 1789221089186
+      },
+      "STP": {
+        "countryCode": "STP",
+        "countryName": "Sao Tome and Principe",
+        "score": 77,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 19.4,
+          "shockImpact": 30.3,
+          "recoveryCapacity": 27
+        },
+        "timestamp": 1789221089186
+      },
+      "SAU": {
+        "countryCode": "SAU",
+        "countryName": "Saudi Arabia",
+        "score": 67,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 14.6,
+          "shockImpact": 32.5,
+          "recoveryCapacity": 20
+        },
+        "timestamp": 1789221089186
+      },
+      "SEN": {
+        "countryCode": "SEN",
+        "countryName": "Senegal",
+        "score": 79,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 19,
+          "shockImpact": 32.6,
+          "recoveryCapacity": 27
+        },
+        "timestamp": 1789221089186
+      },
+      "SRB": {
+        "countryCode": "SRB",
+        "countryName": "Serbia",
+        "score": 74,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 18.1,
+          "shockImpact": 32.1,
+          "recoveryCapacity": 24
+        },
+        "timestamp": 1789221089186
+      },
+      "SYC": {
+        "countryCode": "SYC",
+        "countryName": "Seychelles",
+        "score": 85,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 21.3,
+          "shockImpact": 32.9,
+          "recoveryCapacity": 31
+        },
+        "timestamp": 1789221089186
+      },
+      "SLE": {
+        "countryCode": "SLE",
+        "countryName": "Sierra Leone",
+        "score": 67,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 15.4,
+          "shockImpact": 31.2,
+          "recoveryCapacity": 20
+        },
+        "timestamp": 1789221089186
+      },
+      "SGP": {
+        "countryCode": "SGP",
+        "countryName": "Singapore",
+        "score": 79,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 18.5,
+          "shockImpact": 32.8,
+          "recoveryCapacity": 28
+        },
+        "timestamp": 1789221089186
+      },
+      "SVK": {
+        "countryCode": "SVK",
+        "countryName": "Slovakia",
+        "score": 85,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 22.2,
+          "shockImpact": 32,
+          "recoveryCapacity": 31
+        },
+        "timestamp": 1789221089186
+      },
+      "SVN": {
+        "countryCode": "SVN",
+        "countryName": "Slovenia",
+        "score": 87,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 22.4,
+          "shockImpact": 32.4,
+          "recoveryCapacity": 32
+        },
+        "timestamp": 1789221089186
+      },
+      "SLB": {
+        "countryCode": "SLB",
+        "countryName": "Solomon Islands",
+        "score": 79,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 18.1,
+          "shockImpact": 32.2,
+          "recoveryCapacity": 29
+        },
+        "timestamp": 1789221089186
+      },
+      "SOM": {
+        "countryCode": "SOM",
+        "countryName": "Somalia",
+        "score": 63,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 14.1,
+          "shockImpact": 33,
+          "recoveryCapacity": 16
+        },
+        "timestamp": 1789221089186
+      },
+      "ZAF": {
+        "countryCode": "ZAF",
+        "countryName": "South Africa",
+        "score": 79,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 18.9,
+          "shockImpact": 32.2,
+          "recoveryCapacity": 28
+        },
+        "timestamp": 1789221089186
+      },
+      "SSD": {
+        "countryCode": "SSD",
+        "countryName": "South Sudan",
+        "score": 58,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 16.9,
+          "shockImpact": 25,
+          "recoveryCapacity": 16
+        },
+        "timestamp": 1789221089186
+      },
+      "ESP": {
+        "countryCode": "ESP",
+        "countryName": "Spain",
+        "score": 86,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 21.8,
+          "shockImpact": 32.4,
+          "recoveryCapacity": 32
+        },
+        "timestamp": 1789221089186
+      },
+      "LKA": {
+        "countryCode": "LKA",
+        "countryName": "Sri Lanka",
+        "score": 71,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 16.8,
+          "shockImpact": 31.9,
+          "recoveryCapacity": 22
+        },
+        "timestamp": 1789221089186
+      },
+      "SDN": {
+        "countryCode": "SDN",
+        "countryName": "Sudan",
+        "score": 48,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 11.6,
+          "shockImpact": 25,
+          "recoveryCapacity": 11
+        },
+        "timestamp": 1789221089186
+      },
+      "SUR": {
+        "countryCode": "SUR",
+        "countryName": "Suriname",
+        "score": 79,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 20,
+          "shockImpact": 30.8,
+          "recoveryCapacity": 28
+        },
+        "timestamp": 1789221089186
+      },
+      "SWE": {
+        "countryCode": "SWE",
+        "countryName": "Sweden",
+        "score": 88,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 22.5,
+          "shockImpact": 32.8,
+          "recoveryCapacity": 33
+        },
+        "timestamp": 1789221089186
+      },
+      "CHE": {
+        "countryCode": "CHE",
+        "countryName": "Switzerland",
+        "score": 89,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 22.6,
+          "shockImpact": 33,
+          "recoveryCapacity": 33
+        },
+        "timestamp": 1789221089186
+      },
+      "SYR": {
+        "countryCode": "SYR",
+        "countryName": "Syria",
+        "score": 58,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 13.2,
+          "shockImpact": 33,
+          "recoveryCapacity": 12
+        },
+        "timestamp": 1789221089186
+      },
+      "TWN": {
+        "countryCode": "TWN",
+        "countryName": "Taiwan",
+        "score": 81,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 19.5,
+          "shockImpact": 33,
+          "recoveryCapacity": 28
+        },
+        "timestamp": 1789221089186
+      },
+      "TJK": {
+        "countryCode": "TJK",
+        "countryName": "Tajikistan",
+        "score": 64,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 12.9,
+          "shockImpact": 33,
+          "recoveryCapacity": 18
+        },
+        "timestamp": 1789221089186
+      },
+      "TZA": {
+        "countryCode": "TZA",
+        "countryName": "Tanzania",
+        "score": 70,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 15.4,
+          "shockImpact": 32.2,
+          "recoveryCapacity": 22
+        },
+        "timestamp": 1789221089186
+      },
+      "THA": {
+        "countryCode": "THA",
+        "countryName": "Thailand",
+        "score": 74,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 17.5,
+          "shockImpact": 33,
+          "recoveryCapacity": 24
+        },
+        "timestamp": 1789221089186
+      },
+      "TLS": {
+        "countryCode": "TLS",
+        "countryName": "Timor-Leste",
+        "score": 78,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 17.8,
+          "shockImpact": 32.9,
+          "recoveryCapacity": 27
+        },
+        "timestamp": 1789221089186
+      },
+      "TGO": {
+        "countryCode": "TGO",
+        "countryName": "Togo",
+        "score": 63,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 12.6,
+          "shockImpact": 32.9,
+          "recoveryCapacity": 17
+        },
+        "timestamp": 1789221089186
+      },
+      "TON": {
+        "countryCode": "TON",
+        "countryName": "Tonga",
+        "score": 82,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 20.7,
+          "shockImpact": 31.7,
+          "recoveryCapacity": 30
+        },
+        "timestamp": 1789221089186
+      },
+      "TTO": {
+        "countryCode": "TTO",
+        "countryName": "Trinidad and Tobago",
+        "score": 83,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 20.1,
+          "shockImpact": 32.8,
+          "recoveryCapacity": 30
+        },
+        "timestamp": 1789221089186
+      },
+      "TUN": {
+        "countryCode": "TUN",
+        "countryName": "Tunisia",
+        "score": 72,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 17,
+          "shockImpact": 31.8,
+          "recoveryCapacity": 23
+        },
+        "timestamp": 1789221089186
+      },
+      "TUR": {
+        "countryCode": "TUR",
+        "countryName": "Turkey",
+        "score": 56,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 17.5,
+          "shockImpact": 15,
+          "recoveryCapacity": 24
+        },
+        "timestamp": 1789221089186
+      },
+      "TKM": {
+        "countryCode": "TKM",
+        "countryName": "Turkmenistan",
+        "score": 65,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 13.1,
+          "shockImpact": 33,
+          "recoveryCapacity": 19
+        },
+        "timestamp": 1789221089186
+      },
+      "TUV": {
+        "countryCode": "TUV",
+        "countryName": "Tuvalu",
+        "score": 82,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 19.1,
+          "shockImpact": 33,
+          "recoveryCapacity": 30
+        },
+        "timestamp": 1789221089186
+      },
+      "UGA": {
+        "countryCode": "UGA",
+        "countryName": "Uganda",
+        "score": 68,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 15.2,
+          "shockImpact": 32.1,
+          "recoveryCapacity": 21
+        },
+        "timestamp": 1789221089186
+      },
+      "UKR": {
+        "countryCode": "UKR",
+        "countryName": "Ukraine",
+        "score": 64,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 17.7,
+          "shockImpact": 29.9,
+          "recoveryCapacity": 16
+        },
+        "timestamp": 1789221089186
+      },
+      "ARE": {
+        "countryCode": "ARE",
+        "countryName": "United Arab Emirates",
+        "score": 72,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 16.6,
+          "shockImpact": 32.7,
+          "recoveryCapacity": 23
+        },
+        "timestamp": 1789221089186
+      },
+      "GBR": {
+        "countryCode": "GBR",
+        "countryName": "United Kingdom",
+        "score": 86,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 22.3,
+          "shockImpact": 32.1,
+          "recoveryCapacity": 32
+        },
+        "timestamp": 1789221089186
+      },
+      "USA": {
+        "countryCode": "USA",
+        "countryName": "United States",
+        "score": 84,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 22,
+          "shockImpact": 32.3,
+          "recoveryCapacity": 30
+        },
+        "timestamp": 1789221089186
+      },
+      "URY": {
+        "countryCode": "URY",
+        "countryName": "Uruguay",
+        "score": 85,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 21,
+          "shockImpact": 31.9,
+          "recoveryCapacity": 32
+        },
+        "timestamp": 1789221089186
+      },
+      "UZB": {
+        "countryCode": "UZB",
+        "countryName": "Uzbekistan",
+        "score": 65,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 13.9,
+          "shockImpact": 30.9,
+          "recoveryCapacity": 20
+        },
+        "timestamp": 1789221089186
+      },
+      "VUT": {
+        "countryCode": "VUT",
+        "countryName": "Vanuatu",
+        "score": 81,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 20,
+          "shockImpact": 32.8,
+          "recoveryCapacity": 28
+        },
+        "timestamp": 1789221089186
+      },
+      "VAT": {
+        "countryCode": "VAT",
+        "countryName": "Vatican City",
+        "score": 72,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 13.5,
+          "shockImpact": 33,
+          "recoveryCapacity": 25
+        },
+        "timestamp": 1789221089186
+      },
+      "VEN": {
+        "countryCode": "VEN",
+        "countryName": "Venezuela",
+        "score": 59,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 12.6,
+          "shockImpact": 33,
+          "recoveryCapacity": 13
+        },
+        "timestamp": 1789221089186
+      },
+      "VNM": {
+        "countryCode": "VNM",
+        "countryName": "Vietnam",
+        "score": 67,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 13.9,
+          "shockImpact": 32.2,
+          "recoveryCapacity": 21
+        },
+        "timestamp": 1789221089186
+      },
+      "YEM": {
+        "countryCode": "YEM",
+        "countryName": "Yemen",
+        "score": 65,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 16.5,
+          "shockImpact": 33,
+          "recoveryCapacity": 15
+        },
+        "timestamp": 1789221089186
+      },
+      "ZMB": {
+        "countryCode": "ZMB",
+        "countryName": "Zambia",
+        "score": 65,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 14.6,
+          "shockImpact": 29.7,
+          "recoveryCapacity": 21
+        },
+        "timestamp": 1789221089186
+      },
+      "ZWE": {
+        "countryCode": "ZWE",
+        "countryName": "Zimbabwe",
+        "score": 59,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 15.4,
+          "shockImpact": 25,
+          "recoveryCapacity": 19
+        },
+        "timestamp": 1789221089186
+      },
+      "XKX": {
+        "countryCode": "XKX",
+        "countryName": "Kosovo",
+        "score": 70,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 17.1,
+          "shockImpact": 32.1,
+          "recoveryCapacity": 21
+        },
+        "timestamp": 1789221089186
+      },
+      "PSE": {
+        "countryCode": "PSE",
+        "countryName": "Palestine",
+        "score": 67,
+        "delta": 0,
+        "pillars": {
+          "structuralReadiness": 17.5,
+          "shockImpact": 33,
+          "recoveryCapacity": 17
+        },
+        "timestamp": 1789221089186
+      }
+    },
+    "total": 197,
+    "generated_at": "2026-09-12T13:51:29.183Z"
+  }
+}

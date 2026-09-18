@@ -1,0 +1,117 @@
+{
+  "_meta": {
+    "id": "cyber-attack-monitor",
+    "category": "detector",
+    "version": "1.0.0",
+    "schema_version": "1.0.0",
+    "sources": [
+      "cyber-attacks.json"
+    ],
+    "calculator": "CyberAttackMonitor",
+    "updated_at": "2026-09-12T15:12:14.018Z",
+    "duration_ms": 1,
+    "checksum": "b80567a90832364c",
+    "stats": {
+      "items_processed": 5,
+      "total_result": 5
+    }
+  },
+  "data": {
+    "items": [
+      {
+        "name": "Ransomware attack",
+        "severity": 3,
+        "lat": 40.7128,
+        "lng": -74.006,
+        "region": "US",
+        "timestamp": "2026-09-05T14:57:07.553Z",
+        "added": 1789225934020
+      },
+      {
+        "name": "DDoS attack",
+        "severity": 2,
+        "lat": 51.5074,
+        "lng": -0.1278,
+        "region": "EU",
+        "timestamp": "2026-09-05T13:57:07.553Z",
+        "added": 1789225934020
+      },
+      {
+        "name": "Data breach",
+        "severity": 3,
+        "lat": 35.6762,
+        "lng": 139.6503,
+        "region": "JAPAN",
+        "timestamp": "2026-09-05T12:57:07.553Z",
+        "added": 1789225934020
+      },
+      {
+        "name": "Phishing campaign",
+        "severity": 1,
+        "lat": 22.3193,
+        "lng": 114.1694,
+        "region": "ASIA",
+        "timestamp": "2026-09-05T11:57:07.553Z",
+        "added": 1789225934020
+      },
+      {
+        "name": "Malware outbreak",
+        "severity": 2,
+        "lat": 55.7558,
+        "lng": 37.6173,
+        "region": "RUSSIA",
+        "timestamp": "2026-09-05T10:57:07.553Z",
+        "added": 1789225934020
+      }
+    ],
+    "top": [
+      {
+        "name": "Ransomware attack",
+        "severity": 0.3,
+        "lat": 40.7128,
+        "lng": -74.006,
+        "region": "US",
+        "timestamp": "2026-09-05T14:57:07.553Z",
+        "added": 1789225934020
+      },
+      {
+        "name": "DDoS attack",
+        "severity": 0.3,
+        "lat": 51.5074,
+        "lng": -0.1278,
+        "region": "EU",
+        "timestamp": "2026-09-05T13:57:07.553Z",
+        "added": 1789225934020
+      },
+      {
+        "name": "Data breach",
+        "severity": 0.3,
+        "lat": 35.6762,
+        "lng": 139.6503,
+        "region": "JAPAN",
+        "timestamp": "2026-09-05T12:57:07.553Z",
+        "added": 1789225934020
+      },
+      {
+        "name": "Phishing campaign",
+        "severity": 0.3,
+        "lat": 22.3193,
+        "lng": 114.1694,
+        "region": "ASIA",
+        "timestamp": "2026-09-05T11:57:07.553Z",
+        "added": 1789225934020
+      },
+      {
+        "name": "Malware outbreak",
+        "severity": 0.3,
+        "lat": 55.7558,
+        "lng": 37.6173,
+        "region": "RUSSIA",
+        "timestamp": "2026-09-05T10:57:07.553Z",
+        "added": 1789225934020
+      }
+    ],
+    "total": 5,
+    "generated_at": "2026-09-12T15:12:14.018Z"
+  }
+}

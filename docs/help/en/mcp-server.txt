@@ -1,0 +1,24 @@
+=== MCP SERVER ===
+URL: /mcp-server
+Module: #23 — MCP Server
+Category: Integration
+Icon: 🔌
+
+DESCRIPTION:
+MCP-compatible server for connecting AI agents (Claude, Cursor, DeepSeek) to Crucix data.
+
+FUNCTIONALITY:
+
+- MCP (Model Context Protocol) support
+- Tools for AI agents:
+
+- get_country_risk — country risk assessment
+- get_world_brief — global briefing
+- get_chokepoint_status — chokepoint status
+- get_market_data — market data
+- analyze_situation — situation analysis
+- generate_forecasts — forecast generation
+- API endpoint: /api/mcp/
+
+HELP FILE: /docs/help/en/mcp-server.txt
+LAST UPDATED: 2026-08-31

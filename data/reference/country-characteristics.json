@@ -1,0 +1,1801 @@
+{
+  "_meta": {
+    "schema_version": "2.0.0",
+    "updated_at": "2026-09-12T13:46:54.496Z",
+    "source": "manual + ISO 3166-1 alpha-3",
+    "description": "Полный справочник стран мира (197 ISO 3166-1 alpha-3: 193 члена ООН + Ватикан, Палестина, Тайвань, Косово). Поля: name, nameRu, regime, baseRisk, region, tier, multiplier.",
+    "regions": [
+      "Asia",
+      "Europe",
+      "Africa",
+      "Americas",
+      "Oceania",
+      "Middle East"
+    ],
+    "regimes": [
+      "democracy",
+      "hybrid",
+      "authoritarian"
+    ],
+    "tiers": [
+      1,
+      2,
+      3
+    ]
+  },
+  "countries": {
+    "AFG": {
+      "name": "Afghanistan",
+      "nameRu": "Афганистан",
+      "regime": "authoritarian",
+      "baseRisk": 65,
+      "region": "Asia",
+      "tier": 2,
+      "multiplier": 1
+    },
+    "ALB": {
+      "name": "Albania",
+      "nameRu": "Албания",
+      "regime": "hybrid",
+      "baseRisk": 30,
+      "region": "Europe",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "DZA": {
+      "name": "Algeria",
+      "nameRu": "Алжир",
+      "regime": "authoritarian",
+      "baseRisk": 35,
+      "region": "Africa",
+      "tier": 2,
+      "multiplier": 0.8
+    },
+    "AND": {
+      "name": "Andorra",
+      "nameRu": "Андорра",
+      "regime": "democracy",
+      "baseRisk": 5,
+      "region": "Europe",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "AGO": {
+      "name": "Angola",
+      "nameRu": "Ангола",
+      "regime": "hybrid",
+      "baseRisk": 40,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "ATG": {
+      "name": "Antigua and Barbuda",
+      "nameRu": "Антигуа и Барбуда",
+      "regime": "democracy",
+      "baseRisk": 15,
+      "region": "Americas",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "ARG": {
+      "name": "Argentina",
+      "nameRu": "Аргентина",
+      "regime": "democracy",
+      "baseRisk": 20,
+      "region": "Americas",
+      "tier": 2,
+      "multiplier": 0.8
+    },
+    "ARM": {
+      "name": "Armenia",
+      "nameRu": "Армения",
+      "regime": "hybrid",
+      "baseRisk": 35,
+      "region": "Asia",
+      "tier": 2,
+      "multiplier": 0.7
+    },
+    "AUS": {
+      "name": "Australia",
+      "nameRu": "Австралия",
+      "regime": "democracy",
+      "baseRisk": 5,
+      "region": "Oceania",
+      "tier": 1,
+      "multiplier": 0.5
+    },
+    "AUT": {
+      "name": "Austria",
+      "nameRu": "Австрия",
+      "regime": "democracy",
+      "baseRisk": 5,
+      "region": "Europe",
+      "tier": 2,
+      "multiplier": 0.5
+    },
+    "AZE": {
+      "name": "Azerbaijan",
+      "nameRu": "Азербайджан",
+      "regime": "authoritarian",
+      "baseRisk": 35,
+      "region": "Asia",
+      "tier": 2,
+      "multiplier": 0.8
+    },
+    "BHS": {
+      "name": "Bahamas",
+      "nameRu": "Багамы",
+      "regime": "democracy",
+      "baseRisk": 15,
+      "region": "Americas",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "BHR": {
+      "name": "Bahrain",
+      "nameRu": "Бахрейн",
+      "regime": "authoritarian",
+      "baseRisk": 25,
+      "region": "Middle East",
+      "tier": 2,
+      "multiplier": 0.8
+    },
+    "BGD": {
+      "name": "Bangladesh",
+      "nameRu": "Бангладеш",
+      "regime": "hybrid",
+      "baseRisk": 40,
+      "region": "Asia",
+      "tier": 2,
+      "multiplier": 0.8
+    },
+    "BRB": {
+      "name": "Barbados",
+      "nameRu": "Барбадос",
+      "regime": "democracy",
+      "baseRisk": 10,
+      "region": "Americas",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "BLR": {
+      "name": "Belarus",
+      "nameRu": "Беларусь",
+      "regime": "authoritarian",
+      "baseRisk": 40,
+      "region": "Europe",
+      "tier": 2,
+      "multiplier": 0.9
+    },
+    "BEL": {
+      "name": "Belgium",
+      "nameRu": "Бельгия",
+      "regime": "democracy",
+      "baseRisk": 5,
+      "region": "Europe",
+      "tier": 2,
+      "multiplier": 0.5
+    },
+    "BLZ": {
+      "name": "Belize",
+      "nameRu": "Белиз",
+      "regime": "democracy",
+      "baseRisk": 25,
+      "region": "Americas",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "BEN": {
+      "name": "Benin",
+      "nameRu": "Бенин",
+      "regime": "hybrid",
+      "baseRisk": 45,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "BTN": {
+      "name": "Bhutan",
+      "nameRu": "Бутан",
+      "regime": "democracy",
+      "baseRisk": 15,
+      "region": "Asia",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "BOL": {
+      "name": "Bolivia",
+      "nameRu": "Боливия",
+      "regime": "hybrid",
+      "baseRisk": 30,
+      "region": "Americas",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "BIH": {
+      "name": "Bosnia and Herzegovina",
+      "nameRu": "Босния и Герцеговина",
+      "regime": "hybrid",
+      "baseRisk": 35,
+      "region": "Europe",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "BWA": {
+      "name": "Botswana",
+      "nameRu": "Ботсвана",
+      "regime": "democracy",
+      "baseRisk": 20,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "BRA": {
+      "name": "Brazil",
+      "nameRu": "Бразилия",
+      "regime": "democracy",
+      "baseRisk": 15,
+      "region": "Americas",
+      "tier": 1,
+      "multiplier": 0.6
+    },
+    "BRN": {
+      "name": "Brunei",
+      "nameRu": "Бруней",
+      "regime": "authoritarian",
+      "baseRisk": 15,
+      "region": "Asia",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "BGR": {
+      "name": "Bulgaria",
+      "nameRu": "Болгария",
+      "regime": "democracy",
+      "baseRisk": 15,
+      "region": "Europe",
+      "tier": 2,
+      "multiplier": 0.6
+    },
+    "BFA": {
+      "name": "Burkina Faso",
+      "nameRu": "Буркина-Фасо",
+      "regime": "authoritarian",
+      "baseRisk": 55,
+      "region": "Africa",
+      "tier": 2,
+      "multiplier": 0.9
+    },
+    "BDI": {
+      "name": "Burundi",
+      "nameRu": "Бурунди",
+      "regime": "authoritarian",
+      "baseRisk": 60,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "CPV": {
+      "name": "Cabo Verde",
+      "nameRu": "Кабо-Верде",
+      "regime": "democracy",
+      "baseRisk": 15,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "KHM": {
+      "name": "Cambodia",
+      "nameRu": "Камбоджа",
+      "regime": "authoritarian",
+      "baseRisk": 35,
+      "region": "Asia",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "CMR": {
+      "name": "Cameroon",
+      "nameRu": "Камерун",
+      "regime": "hybrid",
+      "baseRisk": 45,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.7
+    },
+    "CAN": {
+      "name": "Canada",
+      "nameRu": "Канада",
+      "regime": "democracy",
+      "baseRisk": 5,
+      "region": "Americas",
+      "tier": 1,
+      "multiplier": 0.5
+    },
+    "CAF": {
+      "name": "Central African Republic",
+      "nameRu": "ЦАР",
+      "regime": "authoritarian",
+      "baseRisk": 65,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.8
+    },
+    "TCD": {
+      "name": "Chad",
+      "nameRu": "Чад",
+      "regime": "authoritarian",
+      "baseRisk": 55,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.7
+    },
+    "CHL": {
+      "name": "Chile",
+      "nameRu": "Чили",
+      "regime": "democracy",
+      "baseRisk": 10,
+      "region": "Americas",
+      "tier": 2,
+      "multiplier": 0.7
+    },
+    "CHN": {
+      "name": "China",
+      "nameRu": "Китай",
+      "regime": "authoritarian",
+      "baseRisk": 25,
+      "region": "Asia",
+      "tier": 1,
+      "multiplier": 1
+    },
+    "COL": {
+      "name": "Colombia",
+      "nameRu": "Колумбия",
+      "regime": "democracy",
+      "baseRisk": 25,
+      "region": "Americas",
+      "tier": 2,
+      "multiplier": 0.8
+    },
+    "COM": {
+      "name": "Comoros",
+      "nameRu": "Коморы",
+      "regime": "hybrid",
+      "baseRisk": 40,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "COD": {
+      "name": "DR Congo",
+      "nameRu": "ДР Конго",
+      "regime": "hybrid",
+      "baseRisk": 55,
+      "region": "Africa",
+      "tier": 2,
+      "multiplier": 0.8
+    },
+    "COG": {
+      "name": "Republic of the Congo",
+      "nameRu": "Республика Конго",
+      "regime": "authoritarian",
+      "baseRisk": 45,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "CRI": {
+      "name": "Costa Rica",
+      "nameRu": "Коста-Рика",
+      "regime": "democracy",
+      "baseRisk": 10,
+      "region": "Americas",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "CIV": {
+      "name": "Ivory Coast",
+      "nameRu": "Кот-д’Ивуар",
+      "regime": "hybrid",
+      "baseRisk": 40,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.7
+    },
+    "HRV": {
+      "name": "Croatia",
+      "nameRu": "Хорватия",
+      "regime": "democracy",
+      "baseRisk": 10,
+      "region": "Europe",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "CUB": {
+      "name": "Cuba",
+      "nameRu": "Куба",
+      "regime": "authoritarian",
+      "baseRisk": 45,
+      "region": "Americas",
+      "tier": 3,
+      "multiplier": 0.7
+    },
+    "CYP": {
+      "name": "Cyprus",
+      "nameRu": "Кипр",
+      "regime": "democracy",
+      "baseRisk": 15,
+      "region": "Europe",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "CZE": {
+      "name": "Czechia",
+      "nameRu": "Чехия",
+      "regime": "democracy",
+      "baseRisk": 5,
+      "region": "Europe",
+      "tier": 2,
+      "multiplier": 0.6
+    },
+    "DNK": {
+      "name": "Denmark",
+      "nameRu": "Дания",
+      "regime": "democracy",
+      "baseRisk": 5,
+      "region": "Europe",
+      "tier": 2,
+      "multiplier": 0.5
+    },
+    "DJI": {
+      "name": "Djibouti",
+      "nameRu": "Джибути",
+      "regime": "authoritarian",
+      "baseRisk": 40,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "DMA": {
+      "name": "Dominica",
+      "nameRu": "Доминика",
+      "regime": "democracy",
+      "baseRisk": 15,
+      "region": "Americas",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "DOM": {
+      "name": "Dominican Republic",
+      "nameRu": "Доминикана",
+      "regime": "democracy",
+      "baseRisk": 25,
+      "region": "Americas",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "ECU": {
+      "name": "Ecuador",
+      "nameRu": "Эквадор",
+      "regime": "democracy",
+      "baseRisk": 35,
+      "region": "Americas",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "EGY": {
+      "name": "Egypt",
+      "nameRu": "Египет",
+      "regime": "authoritarian",
+      "baseRisk": 35,
+      "region": "Africa",
+      "tier": 2,
+      "multiplier": 0.8
+    },
+    "SLV": {
+      "name": "El Salvador",
+      "nameRu": "Сальвадор",
+      "regime": "hybrid",
+      "baseRisk": 30,
+      "region": "Americas",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "GNQ": {
+      "name": "Equatorial Guinea",
+      "nameRu": "Экваториальная Гвинея",
+      "regime": "authoritarian",
+      "baseRisk": 45,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "ERI": {
+      "name": "Eritrea",
+      "nameRu": "Эритрея",
+      "regime": "authoritarian",
+      "baseRisk": 55,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "EST": {
+      "name": "Estonia",
+      "nameRu": "Эстония",
+      "regime": "democracy",
+      "baseRisk": 10,
+      "region": "Europe",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "SWZ": {
+      "name": "Eswatini",
+      "nameRu": "Эсватини",
+      "regime": "authoritarian",
+      "baseRisk": 45,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "ETH": {
+      "name": "Ethiopia",
+      "nameRu": "Эфиопия",
+      "regime": "hybrid",
+      "baseRisk": 50,
+      "region": "Africa",
+      "tier": 2,
+      "multiplier": 0.8
+    },
+    "FJI": {
+      "name": "Fiji",
+      "nameRu": "Фиджи",
+      "regime": "democracy",
+      "baseRisk": 20,
+      "region": "Oceania",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "FIN": {
+      "name": "Finland",
+      "nameRu": "Финляндия",
+      "regime": "democracy",
+      "baseRisk": 5,
+      "region": "Europe",
+      "tier": 2,
+      "multiplier": 0.5
+    },
+    "FRA": {
+      "name": "France",
+      "nameRu": "Франция",
+      "regime": "democracy",
+      "baseRisk": 10,
+      "region": "Europe",
+      "tier": 1,
+      "multiplier": 0.7
+    },
+    "GAB": {
+      "name": "Gabon",
+      "nameRu": "Габон",
+      "regime": "authoritarian",
+      "baseRisk": 40,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "GMB": {
+      "name": "Gambia",
+      "nameRu": "Гамбия",
+      "regime": "hybrid",
+      "baseRisk": 40,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "GEO": {
+      "name": "Georgia",
+      "nameRu": "Грузия",
+      "regime": "hybrid",
+      "baseRisk": 35,
+      "region": "Asia",
+      "tier": 3,
+      "multiplier": 0.7
+    },
+    "DEU": {
+      "name": "Germany",
+      "nameRu": "Германия",
+      "regime": "democracy",
+      "baseRisk": 10,
+      "region": "Europe",
+      "tier": 1,
+      "multiplier": 0.7
+    },
+    "GHA": {
+      "name": "Ghana",
+      "nameRu": "Гана",
+      "regime": "democracy",
+      "baseRisk": 35,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.7
+    },
+    "GRC": {
+      "name": "Greece",
+      "nameRu": "Греция",
+      "regime": "democracy",
+      "baseRisk": 15,
+      "region": "Europe",
+      "tier": 2,
+      "multiplier": 0.6
+    },
+    "GRD": {
+      "name": "Grenada",
+      "nameRu": "Гренада",
+      "regime": "democracy",
+      "baseRisk": 15,
+      "region": "Americas",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "GTM": {
+      "name": "Guatemala",
+      "nameRu": "Гватемала",
+      "regime": "hybrid",
+      "baseRisk": 40,
+      "region": "Americas",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "GIN": {
+      "name": "Guinea",
+      "nameRu": "Гвинея",
+      "regime": "authoritarian",
+      "baseRisk": 50,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "GNB": {
+      "name": "Guinea-Bissau",
+      "nameRu": "Гвинея-Бисау",
+      "regime": "hybrid",
+      "baseRisk": 50,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "GUY": {
+      "name": "Guyana",
+      "nameRu": "Гайана",
+      "regime": "democracy",
+      "baseRisk": 25,
+      "region": "Americas",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "HTI": {
+      "name": "Haiti",
+      "nameRu": "Гаити",
+      "regime": "hybrid",
+      "baseRisk": 70,
+      "region": "Americas",
+      "tier": 3,
+      "multiplier": 0.7
+    },
+    "HND": {
+      "name": "Honduras",
+      "nameRu": "Гондурас",
+      "regime": "hybrid",
+      "baseRisk": 45,
+      "region": "Americas",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "HUN": {
+      "name": "Hungary",
+      "nameRu": "Венгрия",
+      "regime": "hybrid",
+      "baseRisk": 15,
+      "region": "Europe",
+      "tier": 2,
+      "multiplier": 0.6
+    },
+    "ISL": {
+      "name": "Iceland",
+      "nameRu": "Исландия",
+      "regime": "democracy",
+      "baseRisk": 5,
+      "region": "Europe",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "IND": {
+      "name": "India",
+      "nameRu": "Индия",
+      "regime": "democracy",
+      "baseRisk": 25,
+      "region": "Asia",
+      "tier": 1,
+      "multiplier": 0.9
+    },
+    "IDN": {
+      "name": "Indonesia",
+      "nameRu": "Индонезия",
+      "regime": "democracy",
+      "baseRisk": 25,
+      "region": "Asia",
+      "tier": 1,
+      "multiplier": 0.8
+    },
+    "IRN": {
+      "name": "Iran",
+      "nameRu": "Иран",
+      "regime": "authoritarian",
+      "baseRisk": 45,
+      "region": "Middle East",
+      "tier": 1,
+      "multiplier": 0.9
+    },
+    "IRQ": {
+      "name": "Iraq",
+      "nameRu": "Ирак",
+      "regime": "hybrid",
+      "baseRisk": 55,
+      "region": "Middle East",
+      "tier": 2,
+      "multiplier": 0.9
+    },
+    "IRL": {
+      "name": "Ireland",
+      "nameRu": "Ирландия",
+      "regime": "democracy",
+      "baseRisk": 5,
+      "region": "Europe",
+      "tier": 2,
+      "multiplier": 0.5
+    },
+    "ISR": {
+      "name": "Israel",
+      "nameRu": "Израиль",
+      "regime": "democracy",
+      "baseRisk": 40,
+      "region": "Middle East",
+      "tier": 2,
+      "multiplier": 0.9
+    },
+    "ITA": {
+      "name": "Italy",
+      "nameRu": "Италия",
+      "regime": "democracy",
+      "baseRisk": 10,
+      "region": "Europe",
+      "tier": 1,
+      "multiplier": 0.7
+    },
+    "JAM": {
+      "name": "Jamaica",
+      "nameRu": "Ямайка",
+      "regime": "democracy",
+      "baseRisk": 25,
+      "region": "Americas",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "JPN": {
+      "name": "Japan",
+      "nameRu": "Япония",
+      "regime": "democracy",
+      "baseRisk": 10,
+      "region": "Asia",
+      "tier": 1,
+      "multiplier": 0.7
+    },
+    "JOR": {
+      "name": "Jordan",
+      "nameRu": "Иордания",
+      "regime": "authoritarian",
+      "baseRisk": 30,
+      "region": "Middle East",
+      "tier": 2,
+      "multiplier": 0.8
+    },
+    "KAZ": {
+      "name": "Kazakhstan",
+      "nameRu": "Казахстан",
+      "regime": "authoritarian",
+      "baseRisk": 30,
+      "region": "Asia",
+      "tier": 2,
+      "multiplier": 0.8
+    },
+    "KEN": {
+      "name": "Kenya",
+      "nameRu": "Кения",
+      "regime": "hybrid",
+      "baseRisk": 40,
+      "region": "Africa",
+      "tier": 2,
+      "multiplier": 0.8
+    },
+    "KIR": {
+      "name": "Kiribati",
+      "nameRu": "Кирибати",
+      "regime": "democracy",
+      "baseRisk": 25,
+      "region": "Oceania",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "PRK": {
+      "name": "North Korea",
+      "nameRu": "КНДР",
+      "regime": "authoritarian",
+      "baseRisk": 60,
+      "region": "Asia",
+      "tier": 2,
+      "multiplier": 0.9
+    },
+    "KOR": {
+      "name": "South Korea",
+      "nameRu": "Южная Корея",
+      "regime": "democracy",
+      "baseRisk": 15,
+      "region": "Asia",
+      "tier": 1,
+      "multiplier": 0.7
+    },
+    "KWT": {
+      "name": "Kuwait",
+      "nameRu": "Кувейт",
+      "regime": "authoritarian",
+      "baseRisk": 20,
+      "region": "Middle East",
+      "tier": 2,
+      "multiplier": 0.8
+    },
+    "KGZ": {
+      "name": "Kyrgyzstan",
+      "nameRu": "Киргизия",
+      "regime": "hybrid",
+      "baseRisk": 40,
+      "region": "Asia",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "LAO": {
+      "name": "Laos",
+      "nameRu": "Лаос",
+      "regime": "authoritarian",
+      "baseRisk": 35,
+      "region": "Asia",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "LVA": {
+      "name": "Latvia",
+      "nameRu": "Латвия",
+      "regime": "democracy",
+      "baseRisk": 15,
+      "region": "Europe",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "LBN": {
+      "name": "Lebanon",
+      "nameRu": "Ливан",
+      "regime": "hybrid",
+      "baseRisk": 60,
+      "region": "Middle East",
+      "tier": 2,
+      "multiplier": 0.8
+    },
+    "LSO": {
+      "name": "Lesotho",
+      "nameRu": "Лесото",
+      "regime": "hybrid",
+      "baseRisk": 45,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "LBR": {
+      "name": "Liberia",
+      "nameRu": "Либерия",
+      "regime": "democracy",
+      "baseRisk": 50,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "LBY": {
+      "name": "Libya",
+      "nameRu": "Ливия",
+      "regime": "hybrid",
+      "baseRisk": 65,
+      "region": "Africa",
+      "tier": 2,
+      "multiplier": 0.9
+    },
+    "LIE": {
+      "name": "Liechtenstein",
+      "nameRu": "Лихтенштейн",
+      "regime": "democracy",
+      "baseRisk": 5,
+      "region": "Europe",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "LTU": {
+      "name": "Lithuania",
+      "nameRu": "Литва",
+      "regime": "democracy",
+      "baseRisk": 15,
+      "region": "Europe",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "LUX": {
+      "name": "Luxembourg",
+      "nameRu": "Люксембург",
+      "regime": "democracy",
+      "baseRisk": 5,
+      "region": "Europe",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "MDG": {
+      "name": "Madagascar",
+      "nameRu": "Мадагаскар",
+      "regime": "hybrid",
+      "baseRisk": 50,
+      "region": "Africa",
+      "tier": 2,
+      "multiplier": 0.7
+    },
+    "MWI": {
+      "name": "Malawi",
+      "nameRu": "Малави",
+      "regime": "hybrid",
+      "baseRisk": 45,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "MYS": {
+      "name": "Malaysia",
+      "nameRu": "Малайзия",
+      "regime": "hybrid",
+      "baseRisk": 20,
+      "region": "Asia",
+      "tier": 2,
+      "multiplier": 0.7
+    },
+    "MDV": {
+      "name": "Maldives",
+      "nameRu": "Мальдивы",
+      "regime": "hybrid",
+      "baseRisk": 20,
+      "region": "Asia",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "MLI": {
+      "name": "Mali",
+      "nameRu": "Мали",
+      "regime": "authoritarian",
+      "baseRisk": 60,
+      "region": "Africa",
+      "tier": 2,
+      "multiplier": 0.8
+    },
+    "MLT": {
+      "name": "Malta",
+      "nameRu": "Мальта",
+      "regime": "democracy",
+      "baseRisk": 10,
+      "region": "Europe",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "MHL": {
+      "name": "Marshall Islands",
+      "nameRu": "Маршалловы Острова",
+      "regime": "democracy",
+      "baseRisk": 15,
+      "region": "Oceania",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "MRT": {
+      "name": "Mauritania",
+      "nameRu": "Мавритания",
+      "regime": "hybrid",
+      "baseRisk": 45,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "MUS": {
+      "name": "Mauritius",
+      "nameRu": "Маврикий",
+      "regime": "democracy",
+      "baseRisk": 15,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "MEX": {
+      "name": "Mexico",
+      "nameRu": "Мексика",
+      "regime": "democracy",
+      "baseRisk": 25,
+      "region": "Americas",
+      "tier": 1,
+      "multiplier": 0.7
+    },
+    "FSM": {
+      "name": "Micronesia",
+      "nameRu": "Микронезия",
+      "regime": "democracy",
+      "baseRisk": 20,
+      "region": "Oceania",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "MDA": {
+      "name": "Moldova",
+      "nameRu": "Молдова",
+      "regime": "hybrid",
+      "baseRisk": 40,
+      "region": "Europe",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "MCO": {
+      "name": "Monaco",
+      "nameRu": "Монако",
+      "regime": "democracy",
+      "baseRisk": 5,
+      "region": "Europe",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "MNG": {
+      "name": "Mongolia",
+      "nameRu": "Монголия",
+      "regime": "democracy",
+      "baseRisk": 25,
+      "region": "Asia",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "MNE": {
+      "name": "Montenegro",
+      "nameRu": "Черногория",
+      "regime": "hybrid",
+      "baseRisk": 25,
+      "region": "Europe",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "MAR": {
+      "name": "Morocco",
+      "nameRu": "Марокко",
+      "regime": "hybrid",
+      "baseRisk": 25,
+      "region": "Africa",
+      "tier": 2,
+      "multiplier": 0.7
+    },
+    "MOZ": {
+      "name": "Mozambique",
+      "nameRu": "Мозамбик",
+      "regime": "hybrid",
+      "baseRisk": 50,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.7
+    },
+    "MMR": {
+      "name": "Myanmar",
+      "nameRu": "Мьянма",
+      "regime": "authoritarian",
+      "baseRisk": 65,
+      "region": "Asia",
+      "tier": 2,
+      "multiplier": 0.8
+    },
+    "NAM": {
+      "name": "Namibia",
+      "nameRu": "Намибия",
+      "regime": "democracy",
+      "baseRisk": 25,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "NRU": {
+      "name": "Nauru",
+      "nameRu": "Науру",
+      "regime": "democracy",
+      "baseRisk": 25,
+      "region": "Oceania",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "NPL": {
+      "name": "Nepal",
+      "nameRu": "Непал",
+      "regime": "hybrid",
+      "baseRisk": 35,
+      "region": "Asia",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "NLD": {
+      "name": "Netherlands",
+      "nameRu": "Нидерланды",
+      "regime": "democracy",
+      "baseRisk": 5,
+      "region": "Europe",
+      "tier": 1,
+      "multiplier": 0.6
+    },
+    "NZL": {
+      "name": "New Zealand",
+      "nameRu": "Новая Зеландия",
+      "regime": "democracy",
+      "baseRisk": 5,
+      "region": "Oceania",
+      "tier": 2,
+      "multiplier": 0.6
+    },
+    "NIC": {
+      "name": "Nicaragua",
+      "nameRu": "Никарагуа",
+      "regime": "authoritarian",
+      "baseRisk": 45,
+      "region": "Americas",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "NER": {
+      "name": "Niger",
+      "nameRu": "Нигер",
+      "regime": "authoritarian",
+      "baseRisk": 60,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.7
+    },
+    "NGA": {
+      "name": "Nigeria",
+      "nameRu": "Нигерия",
+      "regime": "hybrid",
+      "baseRisk": 45,
+      "region": "Africa",
+      "tier": 1,
+      "multiplier": 0.9
+    },
+    "MKD": {
+      "name": "North Macedonia",
+      "nameRu": "Северная Македония",
+      "regime": "democracy",
+      "baseRisk": 20,
+      "region": "Europe",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "NOR": {
+      "name": "Norway",
+      "nameRu": "Норвегия",
+      "regime": "democracy",
+      "baseRisk": 5,
+      "region": "Europe",
+      "tier": 2,
+      "multiplier": 0.5
+    },
+    "OMN": {
+      "name": "Oman",
+      "nameRu": "Оман",
+      "regime": "authoritarian",
+      "baseRisk": 20,
+      "region": "Middle East",
+      "tier": 2,
+      "multiplier": 0.7
+    },
+    "PAK": {
+      "name": "Pakistan",
+      "nameRu": "Пакистан",
+      "regime": "hybrid",
+      "baseRisk": 55,
+      "region": "Asia",
+      "tier": 2,
+      "multiplier": 0.9
+    },
+    "PLW": {
+      "name": "Palau",
+      "nameRu": "Палау",
+      "regime": "democracy",
+      "baseRisk": 10,
+      "region": "Oceania",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "PAN": {
+      "name": "Panama",
+      "nameRu": "Панама",
+      "regime": "democracy",
+      "baseRisk": 20,
+      "region": "Americas",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "PNG": {
+      "name": "Papua New Guinea",
+      "nameRu": "Папуа — Новая Гвинея",
+      "regime": "hybrid",
+      "baseRisk": 45,
+      "region": "Oceania",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "PRY": {
+      "name": "Paraguay",
+      "nameRu": "Парагвай",
+      "regime": "hybrid",
+      "baseRisk": 25,
+      "region": "Americas",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "PER": {
+      "name": "Peru",
+      "nameRu": "Перу",
+      "regime": "democracy",
+      "baseRisk": 30,
+      "region": "Americas",
+      "tier": 2,
+      "multiplier": 0.7
+    },
+    "PHL": {
+      "name": "Philippines",
+      "nameRu": "Филиппины",
+      "regime": "democracy",
+      "baseRisk": 35,
+      "region": "Asia",
+      "tier": 2,
+      "multiplier": 0.7
+    },
+    "POL": {
+      "name": "Poland",
+      "nameRu": "Польша",
+      "regime": "democracy",
+      "baseRisk": 20,
+      "region": "Europe",
+      "tier": 2,
+      "multiplier": 0.7
+    },
+    "PRT": {
+      "name": "Portugal",
+      "nameRu": "Португалия",
+      "regime": "democracy",
+      "baseRisk": 10,
+      "region": "Europe",
+      "tier": 2,
+      "multiplier": 0.6
+    },
+    "QAT": {
+      "name": "Qatar",
+      "nameRu": "Катар",
+      "regime": "authoritarian",
+      "baseRisk": 15,
+      "region": "Middle East",
+      "tier": 2,
+      "multiplier": 0.8
+    },
+    "ROU": {
+      "name": "Romania",
+      "nameRu": "Румыния",
+      "regime": "democracy",
+      "baseRisk": 20,
+      "region": "Europe",
+      "tier": 2,
+      "multiplier": 0.7
+    },
+    "RUS": {
+      "name": "Russia",
+      "nameRu": "Россия",
+      "regime": "authoritarian",
+      "baseRisk": 50,
+      "region": "Europe",
+      "tier": 1,
+      "multiplier": 1
+    },
+    "RWA": {
+      "name": "Rwanda",
+      "nameRu": "Руанда",
+      "regime": "authoritarian",
+      "baseRisk": 45,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "KNA": {
+      "name": "Saint Kitts and Nevis",
+      "nameRu": "Сент-Китс и Невис",
+      "regime": "democracy",
+      "baseRisk": 15,
+      "region": "Americas",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "LCA": {
+      "name": "Saint Lucia",
+      "nameRu": "Сент-Люсия",
+      "regime": "democracy",
+      "baseRisk": 15,
+      "region": "Americas",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "VCT": {
+      "name": "Saint Vincent and the Grenadines",
+      "nameRu": "Сент-Винсент и Гренадины",
+      "regime": "democracy",
+      "baseRisk": 15,
+      "region": "Americas",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "WSM": {
+      "name": "Samoa",
+      "nameRu": "Самоа",
+      "regime": "democracy",
+      "baseRisk": 15,
+      "region": "Oceania",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "SMR": {
+      "name": "San Marino",
+      "nameRu": "Сан-Марино",
+      "regime": "democracy",
+      "baseRisk": 5,
+      "region": "Europe",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "STP": {
+      "name": "Sao Tome and Principe",
+      "nameRu": "Сан-Томе и Принсипи",
+      "regime": "democracy",
+      "baseRisk": 35,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "SAU": {
+      "name": "Saudi Arabia",
+      "nameRu": "Саудовская Аравия",
+      "regime": "authoritarian",
+      "baseRisk": 30,
+      "region": "Middle East",
+      "tier": 1,
+      "multiplier": 0.9
+    },
+    "SEN": {
+      "name": "Senegal",
+      "nameRu": "Сенегал",
+      "regime": "democracy",
+      "baseRisk": 35,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.7
+    },
+    "SRB": {
+      "name": "Serbia",
+      "nameRu": "Сербия",
+      "regime": "hybrid",
+      "baseRisk": 30,
+      "region": "Europe",
+      "tier": 2,
+      "multiplier": 0.7
+    },
+    "SYC": {
+      "name": "Seychelles",
+      "nameRu": "Сейшелы",
+      "regime": "democracy",
+      "baseRisk": 15,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "SLE": {
+      "name": "Sierra Leone",
+      "nameRu": "Сьерра-Леоне",
+      "regime": "hybrid",
+      "baseRisk": 50,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "SGP": {
+      "name": "Singapore",
+      "nameRu": "Сингапур",
+      "regime": "hybrid",
+      "baseRisk": 10,
+      "region": "Asia",
+      "tier": 2,
+      "multiplier": 0.6
+    },
+    "SVK": {
+      "name": "Slovakia",
+      "nameRu": "Словакия",
+      "regime": "democracy",
+      "baseRisk": 15,
+      "region": "Europe",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "SVN": {
+      "name": "Slovenia",
+      "nameRu": "Словения",
+      "regime": "democracy",
+      "baseRisk": 10,
+      "region": "Europe",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "SLB": {
+      "name": "Solomon Islands",
+      "nameRu": "Соломоновы Острова",
+      "regime": "democracy",
+      "baseRisk": 25,
+      "region": "Oceania",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "SOM": {
+      "name": "Somalia",
+      "nameRu": "Сомали",
+      "regime": "hybrid",
+      "baseRisk": 70,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.8
+    },
+    "ZAF": {
+      "name": "South Africa",
+      "nameRu": "ЮАР",
+      "regime": "democracy",
+      "baseRisk": 30,
+      "region": "Africa",
+      "tier": 1,
+      "multiplier": 0.8
+    },
+    "SSD": {
+      "name": "South Sudan",
+      "nameRu": "Южный Судан",
+      "regime": "hybrid",
+      "baseRisk": 70,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.7
+    },
+    "ESP": {
+      "name": "Spain",
+      "nameRu": "Испания",
+      "regime": "democracy",
+      "baseRisk": 10,
+      "region": "Europe",
+      "tier": 1,
+      "multiplier": 0.7
+    },
+    "LKA": {
+      "name": "Sri Lanka",
+      "nameRu": "Шри-Ланка",
+      "regime": "hybrid",
+      "baseRisk": 40,
+      "region": "Asia",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "SDN": {
+      "name": "Sudan",
+      "nameRu": "Судан",
+      "regime": "authoritarian",
+      "baseRisk": 75,
+      "region": "Africa",
+      "tier": 2,
+      "multiplier": 0.9
+    },
+    "SUR": {
+      "name": "Suriname",
+      "nameRu": "Суринам",
+      "regime": "democracy",
+      "baseRisk": 30,
+      "region": "Americas",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "SWE": {
+      "name": "Sweden",
+      "nameRu": "Швеция",
+      "regime": "democracy",
+      "baseRisk": 5,
+      "region": "Europe",
+      "tier": 2,
+      "multiplier": 0.5
+    },
+    "CHE": {
+      "name": "Switzerland",
+      "nameRu": "Швейцария",
+      "regime": "democracy",
+      "baseRisk": 5,
+      "region": "Europe",
+      "tier": 2,
+      "multiplier": 0.5
+    },
+    "SYR": {
+      "name": "Syria",
+      "nameRu": "Сирия",
+      "regime": "authoritarian",
+      "baseRisk": 70,
+      "region": "Middle East",
+      "tier": 2,
+      "multiplier": 0.9
+    },
+    "TWN": {
+      "name": "Taiwan",
+      "nameRu": "Тайвань",
+      "regime": "democracy",
+      "baseRisk": 30,
+      "region": "Asia",
+      "tier": 2,
+      "multiplier": 0.8
+    },
+    "TJK": {
+      "name": "Tajikistan",
+      "nameRu": "Таджикистан",
+      "regime": "authoritarian",
+      "baseRisk": 40,
+      "region": "Asia",
+      "tier": 3,
+      "multiplier": 0.7
+    },
+    "TZA": {
+      "name": "Tanzania",
+      "nameRu": "Танзания",
+      "regime": "hybrid",
+      "baseRisk": 40,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.7
+    },
+    "THA": {
+      "name": "Thailand",
+      "nameRu": "Таиланд",
+      "regime": "hybrid",
+      "baseRisk": 30,
+      "region": "Asia",
+      "tier": 2,
+      "multiplier": 0.7
+    },
+    "TLS": {
+      "name": "Timor-Leste",
+      "nameRu": "Восточный Тимор",
+      "regime": "democracy",
+      "baseRisk": 35,
+      "region": "Asia",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "TGO": {
+      "name": "Togo",
+      "nameRu": "Того",
+      "regime": "authoritarian",
+      "baseRisk": 45,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "TON": {
+      "name": "Tonga",
+      "nameRu": "Тонга",
+      "regime": "democracy",
+      "baseRisk": 20,
+      "region": "Oceania",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "TTO": {
+      "name": "Trinidad and Tobago",
+      "nameRu": "Тринидад и Тобаго",
+      "regime": "democracy",
+      "baseRisk": 20,
+      "region": "Americas",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "TUN": {
+      "name": "Tunisia",
+      "nameRu": "Тунис",
+      "regime": "hybrid",
+      "baseRisk": 35,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.7
+    },
+    "TUR": {
+      "name": "Turkey",
+      "nameRu": "Турция",
+      "regime": "hybrid",
+      "baseRisk": 30,
+      "region": "Middle East",
+      "tier": 1,
+      "multiplier": 0.8
+    },
+    "TKM": {
+      "name": "Turkmenistan",
+      "nameRu": "Туркменистан",
+      "regime": "authoritarian",
+      "baseRisk": 35,
+      "region": "Asia",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "TUV": {
+      "name": "Tuvalu",
+      "nameRu": "Тувалу",
+      "regime": "democracy",
+      "baseRisk": 20,
+      "region": "Oceania",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "UGA": {
+      "name": "Uganda",
+      "nameRu": "Уганда",
+      "regime": "hybrid",
+      "baseRisk": 45,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.7
+    },
+    "UKR": {
+      "name": "Ukraine",
+      "nameRu": "Украина",
+      "regime": "hybrid",
+      "baseRisk": 70,
+      "region": "Europe",
+      "tier": 1,
+      "multiplier": 1
+    },
+    "ARE": {
+      "name": "United Arab Emirates",
+      "nameRu": "ОАЭ",
+      "regime": "authoritarian",
+      "baseRisk": 15,
+      "region": "Middle East",
+      "tier": 2,
+      "multiplier": 0.8
+    },
+    "GBR": {
+      "name": "United Kingdom",
+      "nameRu": "Великобритания",
+      "regime": "democracy",
+      "baseRisk": 10,
+      "region": "Europe",
+      "tier": 1,
+      "multiplier": 0.7
+    },
+    "USA": {
+      "name": "United States",
+      "nameRu": "США",
+      "regime": "democracy",
+      "baseRisk": 20,
+      "region": "Americas",
+      "tier": 1,
+      "multiplier": 1
+    },
+    "URY": {
+      "name": "Uruguay",
+      "nameRu": "Уругвай",
+      "regime": "democracy",
+      "baseRisk": 10,
+      "region": "Americas",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "UZB": {
+      "name": "Uzbekistan",
+      "nameRu": "Узбекистан",
+      "regime": "authoritarian",
+      "baseRisk": 30,
+      "region": "Asia",
+      "tier": 3,
+      "multiplier": 0.7
+    },
+    "VUT": {
+      "name": "Vanuatu",
+      "nameRu": "Вануату",
+      "regime": "democracy",
+      "baseRisk": 30,
+      "region": "Oceania",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "VAT": {
+      "name": "Vatican City",
+      "nameRu": "Ватикан",
+      "regime": "authoritarian",
+      "baseRisk": 5,
+      "region": "Europe",
+      "tier": 3,
+      "multiplier": 0.5
+    },
+    "VEN": {
+      "name": "Venezuela",
+      "nameRu": "Венесуэла",
+      "regime": "authoritarian",
+      "baseRisk": 65,
+      "region": "Americas",
+      "tier": 2,
+      "multiplier": 0.8
+    },
+    "VNM": {
+      "name": "Vietnam",
+      "nameRu": "Вьетнам",
+      "regime": "authoritarian",
+      "baseRisk": 25,
+      "region": "Asia",
+      "tier": 2,
+      "multiplier": 0.7
+    },
+    "YEM": {
+      "name": "Yemen",
+      "nameRu": "Йемен",
+      "regime": "hybrid",
+      "baseRisk": 75,
+      "region": "Middle East",
+      "tier": 2,
+      "multiplier": 0.9
+    },
+    "ZMB": {
+      "name": "Zambia",
+      "nameRu": "Замбия",
+      "regime": "hybrid",
+      "baseRisk": 45,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "ZWE": {
+      "name": "Zimbabwe",
+      "nameRu": "Зимбабве",
+      "regime": "hybrid",
+      "baseRisk": 55,
+      "region": "Africa",
+      "tier": 3,
+      "multiplier": 0.7
+    },
+    "XKX": {
+      "name": "Kosovo",
+      "nameRu": "Косово",
+      "regime": "hybrid",
+      "baseRisk": 45,
+      "region": "Europe",
+      "tier": 3,
+      "multiplier": 0.6
+    },
+    "PSE": {
+      "name": "Palestine",
+      "nameRu": "Палестина",
+      "regime": "hybrid",
+      "baseRisk": 65,
+      "region": "Middle East",
+      "tier": 3,
+      "multiplier": 0.8
+    }
+  }
+}

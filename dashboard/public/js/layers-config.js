@@ -1,0 +1,86 @@
+// ============================================================
+// CRUCIX — ЕДИНЫЙ КОНФИГУРАЦИОННЫЙ ФАЙЛ СЛОЁВ
+// Все слои (30 базовых + 41 добавленных = 71)
+// ============================================================
+
+const LAYERS_CONFIG = {
+    // ===== 30 БАЗОВЫХ СЛОЁВ (были изначально) =====
+    notam: { name: 'NOTAM', category: 'aviation', enabled: true },
+    gps: { name: 'GPS-глушение', category: 'cyber', enabled: true },
+    vix: { name: 'VIX (индекс страха)', category: 'finance', enabled: true },
+    gold_oil: { name: 'Золото/Нефть', category: 'finance', enabled: true },
+    copper_gold: { name: 'Медь/Золото (рецессия)', category: 'finance', enabled: true },
+    bdi: { name: 'BDI (Балтийский сухой индекс)', category: 'finance', enabled: true },
+    uranium: { name: 'Уран', category: 'energy', enabled: true },
+    viirs: { name: 'Ночные огни (VIIRS)', category: 'space', enabled: true },
+    acled: { name: 'ACLED (конфликты)', category: 'conflicts', enabled: true },
+    gdelt: { name: 'GDELT (события)', category: 'news', enabled: true },
+    firms: { name: 'Пожары (FIRMS)', category: 'environment', enabled: true },
+    usgs: { name: 'Землетрясения (USGS)', category: 'environment', enabled: true },
+    noaa: { name: 'Погода (NOAA)', category: 'weather', enabled: true },
+    ships: { name: 'Суда', category: 'maritime', enabled: true },
+    aviation: { name: 'Авиация (OpenSky)', category: 'aviation', enabled: true },
+    dark_ships: { name: 'Тёмные суда', category: 'maritime', enabled: true },
+    ofac: { name: 'Санкции (OFAC)', category: 'finance', enabled: true },
+    conflict_predict: { name: 'Прогноз конфликтов', category: 'conflicts', enabled: true },
+    yield_curve: { name: 'Кривая доходности', category: 'finance', enabled: true },
+    global_index: { name: 'Глобальный индекс', category: 'analysis', enabled: true },
+    military_bases: { name: 'Военные базы', category: 'military', enabled: true },
+    undersea_cables: { name: 'Подводные кабели', category: 'infrastructure', enabled: true },
+    pipelines: { name: 'Трубопроводы', category: 'energy', enabled: true },
+    cyber_apt: { name: 'APT-группы', category: 'cyber', enabled: true },
+    strategic_ports: { name: 'Стратегические порты', category: 'maritime', enabled: true },
+    instability_index: { name: 'Нестабильность', category: 'analysis', enabled: true },
+    internet_outages: { name: 'Отключения интернета', category: 'cyber', enabled: true },
+    risk_heatmap: { name: 'Тепловая карта риска', category: 'analysis', enabled: true },
+    prediction_markets: { name: 'Рынки предсказаний', category: 'finance', enabled: true },
+    satellite_stac: { name: 'Спутники (STAC)', category: 'space', enabled: true },
+
+    // ===== 41 ДОБАВЛЕННЫЙ СЛОЙ (из sources.json) =====
+    hydrosheds: { name: 'Реки и озёра', category: 'environment', enabled: true },
+    natural_earth_transport: { name: 'Транспортная инфраструктура', category: 'transport', enabled: true },
+    nasa_sedac: { name: 'Плотность населения', category: 'social', enabled: true },
+    global_forest_watch: { name: 'Лесной покров', category: 'environment', enabled: true },
+    fao_geonetwork: { name: 'Сельское хозяйство', category: 'economy', enabled: true },
+    uk_environment_agency: { name: 'Наводнения', category: 'environment', enabled: true },
+    grid_status: { name: 'Энергосети США', category: 'energy', enabled: true },
+    maxar_open_data: { name: 'Спутниковые снимки', category: 'space', enabled: true },
+    gadm: { name: 'Административные границы', category: 'geodata', enabled: true },
+    natural_earth_political: { name: 'Политические границы', category: 'geodata', enabled: true },
+    yahoo_finance: { name: 'Акции S&P 500', category: 'finance', enabled: true },
+    bls: { name: 'Безработица (BLS)', category: 'economy', enabled: true },
+    world_bank_gdp: { name: 'ВВП (World Bank)', category: 'economy', enabled: true },
+    un_comtrade: { name: 'Торговля (UN Comtrade)', category: 'economy', enabled: true },
+    unhcr: { name: 'Потоки беженцев', category: 'social', enabled: true },
+    reliefweb: { name: 'Гуманитарная помощь', category: 'social', enabled: true },
+    military_exercises: { name: 'Военные учения', category: 'military', enabled: true },
+    nvd: { name: 'Уязвимости (NVD)', category: 'cyber', enabled: true },
+    cctv_feeds: { name: 'CCTV-камеры', category: 'security', enabled: true },
+    nuclear_monitor: { name: 'Ядерные объекты', category: 'nuclear', enabled: true },
+    ww3chance_events: { name: 'Геополитические события', category: 'conflicts', enabled: true },
+    acled_conflicts: { name: 'ACLED (конфликты)', category: 'conflicts', enabled: true },
+    reliefweb_crises: { name: 'Гуманитарные кризисы', category: 'social', enabled: true },
+    usgs_earthquakes: { name: 'Землетрясения 4.5+', category: 'environment', enabled: true },
+    nasa_firms_fires: { name: 'Пожары (NASA FIRMS)', category: 'environment', enabled: true },
+    feodo_tracker_c2: { name: 'Ботнеты (C2)', category: 'cyber', enabled: true },
+    urlhaus_malware: { name: 'Вредоносные URL', category: 'cyber', enabled: true },
+    opensky_aviation: { name: 'ADS-B авиация', category: 'aviation', enabled: true },
+    usni_fleet_tracker: { name: 'Военно-морской флот', category: 'maritime', enabled: true },
+    rss_news_feed: { name: 'Новости (RSS)', category: 'news', enabled: true },
+    strategic_ports_40: { name: 'Стратегические порты (40)', category: 'maritime', enabled: true },
+    undersea_cables_34: { name: 'Подводные кабели (34)', category: 'infrastructure', enabled: true },
+    pipelines_24: { name: 'Трубопроводы (24)', category: 'energy', enabled: true },
+    nuclear_sites_24: { name: 'Ядерные объекты (24)', category: 'nuclear', enabled: true },
+    military_bases_70: { name: 'Военные базы (70+)', category: 'military', enabled: true },
+    data_centers_48: { name: 'Дата-центры (48)', category: 'infrastructure', enabled: true },
+    spaceports_27: { name: 'Космодромы (27)', category: 'space', enabled: true },
+    stock_exchanges_82: { name: 'Биржи (82)', category: 'finance', enabled: true },
+    critical_minerals_27: { name: 'Критические минералы', category: 'economy', enabled: true },
+    conflict_zones_5: { name: 'Зоны конфликтов (5)', category: 'conflicts', enabled: true },
+    cctv_network: { name: 'CCTV (сеть)', category: 'security', enabled: true }
+};
+
+// Экспорт для использования в других файлах
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { LAYERS_CONFIG };
+}

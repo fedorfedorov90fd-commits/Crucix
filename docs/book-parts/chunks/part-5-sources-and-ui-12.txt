@@ -1,0 +1,1201 @@
+===== ЧАСТЬ part-5-sources-and-ui · КУСОК 12/15 · 39.7 KB =====
+
+FILE: integrations/rss.mjs
+SIZE: 9594 bytes
+SHA1: 945bea917b63a2a4
+========================================================================
+
+// integrations/rss.mjs
+// RSS/Atom feed generator для Crucix.
+// Три формата: Atom 1.0, RSS 2.0, JSON Feed 1.1.
+// Zero dependencies: только node:fs, node:path.
+
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+
+const LEVEL_LABELS = {
+  low: '[LOW]',
+  moderate: '[MOD]',
+  elevated: '[ELEV]',
+  high: '[HIGH]',
+  critical: '[CRIT]',
+};
+
+class FeedGenerator {
+  constructor({
+    baseUrl = process.env.CRUCIX_BASE_URL || 'http://localhost:3118',
+    title = 'Crucix Predictions',
+    description = 'Multidisciplinary predictive intelligence alerts',
+    language = 'ru',
+    maxItems = 50,
+  } = {}) {
+    this.baseUrl = String(baseUrl).replace(/\/$/, '');
+    this.title = title;
+    this.description = description;
+    this.language = language;
+    this.maxItems = maxItems;
+  }
+
+  loadPredictions(runsDir) {
+    if (!runsDir || !existsSync(runsDir)) return [];
+    try {
+      const files = readdirSync(runsDir)
+        .filter(f => f.startsWith('prediction_') && f.endsWith('.json'))
+        .sort()
+        .reverse()
+        .slice(0, this.maxItems);
+
+      const predictions = [];
+      for (const file of files) {
+        try {
+          const raw = readFileSync(join(runsDir, file), 'utf-8');
+          const data = JSON.parse(raw);
+          if (data && typeof data === 'object') predictions.push(data);
+        } catch (_) { /* skip malformed */ }
+      }
+      return predictions;
+    } catch (_) {
+      return [];
+    }
+  }
+
+  _ts(p) {
+    const ts = p && p.timestamp;
+    const d = ts ? new Date(ts) : new Date();
+    return Number.isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
+  }
+
+  _levelLabel(level) {
+    return LEVEL_LABELS[level] || '[UNKNOWN]';
+  }
+
+  _title(p) {
+    const cr = (p && p.compositeRisk) || {};
+    const composite = Number.isFinite(Number(cr.composite)) ? Number(cr.composite).toFixed(3) : '0.000';
+    return this._levelLabel(cr.level) + ' ' + String(cr.level || 'unknown').toUpperCase() + ': ' + composite;
+  }
+
+  _link(p) {
+    return this.baseUrl + '/prediction/' + encodeURIComponent(this._ts(p));
+  }
+
+  generateAtom(predictions) {
+    const now = new Date().toISOString();
+    const updated = predictions.length > 0 ? this._ts(predictions[0]) : now;
+
+    const entries = predictions.map(p => {
+      const cr = (p && p.compositeRisk) || {};
+      const title = this._title(p);
+      const composite = Number.isFinite(Number(cr.composite)) ? Number(cr.composite).toFixed(3) : '0.000';
+
+      const drivers = (cr.topDrivers || []).slice(0, 3)
+        .map(d => '- ' + this._escapeXml(d.name) + ': ' + (Number.isFinite(Number(d.value)) ? (Number(d.value) * 100).toFixed(1) : '0.0') + '%')
+        .join('\n');
+
+      const content =
+        '<h2>' + this._escapeXml(title) + '</h2>' +
+        '<p><strong>Composite Risk:</strong> ' + composite + '</p>' +
+        '<p><strong>Level:</strong> ' + this._escapeXml(cr.level || 'unknown') + '</p>' +
+        '<p><strong>Confidence:</strong> ' + this._escapeXml(cr.confidence || 'unknown') + '</p>' +
+        '<h3>Top Drivers</h3>' +
+        '<pre>' + this._escapeXml(drivers) + '</pre>';
+
+      const id = this._link(p);
+      const ts = this._ts(p);
+
+      return '\n  <entry>\n' +
+        '    <title>' + this._escapeXml(title) + '</title>\n' +
+        '    <link href="' + this._escapeXml(id) + '"/>\n' +
+        '    <id>' + this._escapeXml(id) + '</id>\n' +
+        '    <updated>' + ts + '</updated>\n' +
+        '    <author><name>Crucix</name></author>\n' +
+        '    <category term="prediction"/>\n' +
+        '    <category term="level-' + this._escapeXml(cr.level || 'unknown') + '"/>\n' +
+        '    <content type="html">' + this._escapeXml(content) + '</content>\n' +
+        '  </entry>';
+    }).join('\n');
+
+    return '<?xml version="1.0" encoding="utf-8"?>\n' +
+      '<feed xmlns="http://www.w3.org/2005/Atom">\n' +
+      '  <title>' + this._escapeXml(this.title) + '</title>\n' +
+      '  <subtitle>' + this._escapeXml(this.description) + '</subtitle>\n' +
+      '  <link href="' + this._escapeXml(this.baseUrl) + '/feed.xml" rel="self"/>\n' +
+      '  <link href="' + this._escapeXml(this.baseUrl) + '/"/>\n' +
+      '  <id>' + this._escapeXml(this.baseUrl) + '/</id>\n' +
+      '  <updated>' + updated + '</updated>\n' +
+      '  <author><name>Crucix</name></author>\n' +
+      '  <generator>Crucix Integrations 3.0.0</generator>\n' +
+      '  <rights>MIT</rights>\n' +
+      entries + '\n</feed>';
+  }
+
+  generateRSS(predictions) {
+    const buildDate = new Date().toUTCString();
+
+    const items = predictions.map(p => {
+      const cr = (p && p.compositeRisk) || {};
+      const title = this._title(p);
+      const link = this._link(p);
+      const composite = Number.isFinite(Number(cr.composite)) ? Number(cr.composite).toFixed(3) : '0.000';
+      const signalsCount = Array.isArray(cr.signals) ? cr.signals.length : 0;
+      const description =
+        'Composite Risk: ' + composite +
+        ' | Level: ' + (cr.level || 'unknown') +
+        ' | Signals: ' + signalsCount;
+
+      return '\n    <item>\n' +
+        '      <title>' + this._escapeXml(title) + '</title>\n' +
+        '      <link>' + this._escapeXml(link) + '</link>\n' +
+        '      <guid isPermaLink="true">' + this._escapeXml(link) + '</guid>\n' +
+        '      <pubDate>' + new Date(this._ts(p)).toUTCString() + '</pubDate>\n' +
+        '      <category>prediction</category>\n' +
+        '      <category>level-' + this._escapeXml(cr.level || 'unknown') + '</category>\n' +
+        '      <description>' + this._escapeXml(description) + '</description>\n' +
+        '    </item>';
+    }).join('\n');
+
+    return '<?xml version="1.0" encoding="UTF-8"?>\n' +
+      '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">\n' +
+      '  <channel>\n' +
+      '    <title>' + this._escapeXml(this.title) + '</title>\n' +
+      '    <link>' + this._escapeXml(this.baseUrl) + '/</link>\n' +
+      '    <description>' + this._escapeXml(this.description) + '</description>\n' +
+      '    <language>' + this._escapeXml(this.language) + '</language>\n' +
+      '    <lastBuildDate>' + buildDate + '</lastBuildDate>\n' +
+      '    <generator>Crucix Integrations 3.0.0</generator>\n' +
+      '    <atom:link href="' + this._escapeXml(this.baseUrl) + '/feed.rss" rel="self" type="application/rss+xml"/>\n' +
+      items + '\n  </channel>\n</rss>';
+  }
+
+  generateJSONFeed(predictions) {
+    const items = predictions.map(p => {
+      const cr = (p && p.compositeRisk) || {};
+      const composite = Number.isFinite(Number(cr.composite)) ? Number(cr.composite).toFixed(3) : '0.000';
+      const id = this._link(p);
+
+      return {
+        id: id,
+        url: id,
+        title: this._title(p),
+        content_text:
+          'Composite Risk: ' + composite +
+          '\nLevel: ' + (cr.level || 'unknown') +
+          '\nConfidence: ' + (cr.confidence || 'unknown') +
+          '\nSignals: ' + (Array.isArray(cr.signals) ? cr.signals.length : 0),
+        date_published: this._ts(p),
+        tags: ['prediction', 'level-' + (cr.level || 'unknown')],
+      };
+    });
+
+    return JSON.stringify({
+      version: 'https://jsonfeed.org/version/1.1',
+      title: this.title,
+      description: this.description,
+      home_page_url: this.baseUrl,
+      feed_url: this.baseUrl + '/feed.json',
+      language: this.language,
+      authors: [{ name: 'Crucix', url: this.baseUrl }],
+      items: items,
+    }, null, 2);
+  }
+
+  generateAll(predictions) {
+    return {
+      atom: this.generateAtom(predictions),
+      rss: this.generateRSS(predictions),
+      json: this.generateJSONFeed(predictions),
+    };
+  }
+
+  getInfo() {
+    return RSS_INFO;
+  }
+
+  _escapeXml(str) {
+    if (str === undefined || str === null) return '';
+    const s = String(str);
+    if (s === 'NaN') return '0';
+    return s
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;');
+  }
+}
+
+function feedHandler(generator, runsDir, format = 'atom') {
+  return (req, res) => {
+    const predictions = generator.loadPredictions(runsDir);
+
+    if (predictions.length === 0) {
+      res.writeHead(503, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'X-Crucix-Module': 'rss',
+        'Cache-Control': 'no-cache',
+      });
+      res.end(JSON.stringify({ error: 'no_data', reason: 'no_predictions_available' }));
+      return;
+    }
+
+    let content, contentType;
+    if (format === 'atom') {
+      content = generator.generateAtom(predictions);
+      contentType = 'application/atom+xml; charset=utf-8';
+    } else if (format === 'rss') {
+      content = generator.generateRSS(predictions);
+      contentType = 'application/rss+xml; charset=utf-8';
+    } else if (format === 'json') {
+      content = generator.generateJSONFeed(predictions);
+      contentType = 'application/feed+json; charset=utf-8';
+    } else {
+      res.writeHead(400, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'X-Crucix-Module': 'rss',
+      });
+      res.end(JSON.stringify({ error: 'bad_format', allowed: ['atom', 'rss', 'json'] }));
+      return;
+    }
+
+    res.writeHead(200, {
+      'Content-Type': contentType,
+      'X-Crucix-Module': 'rss',
+      'Cache-Control': 'public, max-age=300',
+    });
+    res.end(content);
+  };
+}
+
+const RSS_INFO = {
+  name: 'RSS/Atom Feed',
+  description: 'Publish predictions as RSS/Atom/JSON feed',
+  format: ['atom', 'rss', 'json'],
+  optional: true,
+};
+
+export { FeedGenerator, feedHandler, RSS_INFO };
+
+
+
+========================================================================
+
+FILE: integrations/email.mjs
+SIZE: 14798 bytes
+SHA1: b0a07942319c4a02
+========================================================================
+
+// integrations/email.mjs
+// Email-интеграция: SMTP на чистом Node.js, без внешних зависимостей.
+//
+// Применение в Crucix:
+//   Отправка алертов (compositeRisk level = high/critical) на почту
+//   при превышении порогов композитного риска. Поддерживает
+//   multipart/alternative (text+html), вложения, STARTTLS на порту 587.
+//
+// Особенности:
+//   - Zero dependencies: только node:net, node:tls, node:crypto.
+//   - STARTTLS на 587, implicit TLS на 465, plaintext на 25 (для локального relay).
+//   - Честная машина состояний вместо привязки к номеру шага.
+//   - HTML-экранирование в шаблоне письма (защита от XSS через имена драйверов).
+
+import { createConnection } from 'node:net';
+import { connect as tlsConnect } from 'node:tls';
+
+// --- SMTP-КЛИЕНТ -----------------------------------
+
+class SMTPClient {
+  constructor({
+    host = process.env.SMTP_HOST || 'localhost',
+    port = parseInt(process.env.SMTP_PORT || '587'),
+    secure = false,
+    starttls = true,
+    user = process.env.SMTP_USER,
+    password = process.env.SMTP_PASSWORD,
+    from = process.env.SMTP_FROM || 'crucix@localhost',
+  } = {}) {
+    this.host = host;
+    this.port = port;
+    this.secure = secure;         // true для порта 465 (implicit TLS)
+    this.starttls = starttls;     // true для порта 587 (explicit TLS после EHLO)
+    this.user = user;
+    this.password = password;
+    this.from = from;
+    this.enabled = !!host;
+  }
+
+  async send({ to, subject, text, html, attachments = [] }) {
+    if (!this.enabled) return { ok: false, error: 'smtp_not_configured' };
+
+    const toList = Array.isArray(to) ? to : [to];
+    const message = this._buildMessage({ from: this.from, to: toList, subject, text, html, attachments });
+
+    return await this._runDialog(toList, message);
+  }
+
+  _runDialog(toList, message) {
+    return new Promise((resolve) => {
+      let socket;
+      let settled = false;
+      const done = (result) => {
+        if (settled) return;
+        settled = true;
+        resolve(result);
+      };
+
+      const connectFn = this.secure ? tlsConnect : createConnection;
+      const connectOpts = this.secure
+        ? { host: this.host, port: this.port, rejectUnauthorized: false }
+        : { host: this.host, port: this.port };
+
+      socket = connectFn(connectOpts, () => {});
+      socket.setTimeout(10000);
+
+      // Честная машина состояний
+      // greeting -> ehlo -> [starttls] -> ehlo2 -> auth -> user -> pass -> mailfrom -> rcpt* -> data -> body -> quit
+      const state = {
+        name: 'greeting',
+        rcptIndex: 0,
+        toList,
+      };
+
+      let buffer = '';
+
+      const respondTo = (code) => {
+        switch (state.name) {
+          case 'greeting':
+            if (code.startsWith('2')) {
+              state.name = 'ehlo';
+              socket.write('EHLO crucix.local\r\n');
+            } else {
+              socket.end();
+              done({ ok: false, error: 'greeting failed: ' + code });
+            }
+            break;
+
+          case 'ehlo':
+            if (code.startsWith('2')) {
+              if (this.starttls && !this.secure) {
+                state.name = 'starttls';
+                socket.write('STARTTLS\r\n');
+              } else if (this.user) {
+                state.name = 'auth';
+                socket.write('AUTH LOGIN\r\n');
+              } else {
+                state.name = 'mailfrom';
+                socket.write('MAIL FROM:<' + this.from + '>\r\n');
+              }
+            } else {
+              socket.end();
+              done({ ok: false, error: 'ehlo failed: ' + code });
+            }
+            break;
+
+          case 'starttls':
+            if (code === '220') {
+              // Апгрейд сокета до TLS
+              const plain = socket;
+              socket = tlsConnect({
+                socket: plain,
+                host: this.host,
+                rejectUnauthorized: false,
+              }, () => {
+                state.name = 'ehlo2';
+                socket.write('EHLO crucix.local\r\n');
+              });
+              socket.setTimeout(10000);
+              this._attachHandlers(socket, respondTo, done, () => state.name);
+            } else {
+              socket.end();
+              done({ ok: false, error: 'starttls failed: ' + code });
+            }
+            break;
+
+          case 'ehlo2':
+            if (code.startsWith('2')) {
+              if (this.user) {
+                state.name = 'auth';
+                socket.write('AUTH LOGIN\r\n');
+              } else {
+                state.name = 'mailfrom';
+                socket.write('MAIL FROM:<' + this.from + '>\r\n');
+              }
+            } else {
+              socket.end();
+              done({ ok: false, error: 'ehlo2 failed: ' + code });
+            }
+            break;
+
+          case 'auth':
+            if (code === '334') {
+              state.name = 'user';
+              socket.write(Buffer.from(this.user || '').toString('base64') + '\r\n');
+            } else {
+              socket.end();
+              done({ ok: false, error: 'AUTH LOGIN failed: ' + code });
+            }
+            break;
+
+          case 'user':
+            if (code === '334') {
+              state.name = 'pass';
+              socket.write(Buffer.from(this.password || '').toString('base64') + '\r\n');
+            } else {
+              socket.end();
+              done({ ok: false, error: 'username rejected: ' + code });
+            }
+            break;
+
+          case 'pass':
+            if (code.startsWith('2')) {
+              state.name = 'mailfrom';
+              socket.write('MAIL FROM:<' + this.from + '>\r\n');
+            } else {
+              socket.end();
+              done({ ok: false, error: 'auth failed: ' + code });
+            }
+            break;
+
+          case 'mailfrom':
+            if (code.startsWith('2')) {
+              state.name = 'rcpt';
+              state.rcptIndex = 0;
+              socket.write('RCPT TO:<' + state.toList[0] + '>\r\n');
+            } else {
+              socket.end();
+              done({ ok: false, error: 'MAIL FROM rejected: ' + code });
+            }
+            break;
+
+          case 'rcpt':
+            if (code.startsWith('2')) {
+              state.rcptIndex++;
+              if (state.rcptIndex < state.toList.length) {
+                socket.write('RCPT TO:<' + state.toList[state.rcptIndex] + '>\r\n');
+              } else {
+                state.name = 'data';
+                socket.write('DATA\r\n');
+              }
+            } else {
+              socket.end();
+              done({ ok: false, error: 'RCPT TO rejected: ' + code });
+            }
+            break;
+
+          case 'data':
+            if (code === '354') {
+              state.name = 'body';
+              socket.write(message);
+            } else {
+              socket.end();
+              done({ ok: false, error: 'DATA rejected: ' + code });
+            }
+            break;
+
+          case 'body':
+            if (code.startsWith('2')) {
+              state.name = 'quit';
+              socket.write('QUIT\r\n');
+            } else {
+              socket.end();
+              done({ ok: false, error: 'message rejected: ' + code });
+            }
+            break;
+
+          case 'quit':
+            socket.end();
+            done({ ok: true });
+            break;
+
+          default:
+            socket.end();
+            done({ ok: false, error: 'unexpected state: ' + state.name });
+        }
+      };
+
+      this._attachHandlers(socket, respondTo, done);
+
+      socket.on('error', (err) => done({ ok: false, error: err.message }));
+      socket.on('timeout', () => {
+        socket.destroy();
+        done({ ok: false, error: 'timeout' });
+      });
+      socket.on('close', () => {
+        // Если соединение закрылось до завершения диалога
+        if (!settled) done({ ok: false, error: 'connection closed' });
+      });
+    });
+  }
+
+  _attachHandlers(socket, respondTo, done) {
+    let buffer = '';
+    socket.on('data', (data) => {
+      buffer += data.toString();
+      // SMTP-ответ может быть многострочным: "250-..." продолжения, "250 ..." последняя
+      const lines = buffer.split('\r\n');
+      // Оставляем последний неполный кусок в buffer
+      buffer = lines.pop() || '';
+      for (const line of lines) {
+        if (!line) continue;
+        // Финальная строка ответа — 4-й символ пробел (не дефис)
+        if (line.length >= 4 && line[3] === ' ') {
+          respondTo(line.substring(0, 3));
+        }
+      }
+    });
+  }
+
+  _buildMessage({ from, to, subject, text, html, attachments }) {
+    const boundary = '----crucix-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+    const lines = [];
+    lines.push('From: ' + from);
+    lines.push('To: ' + to.join(', '));
+    lines.push('Subject: ' + subject);
+    lines.push('MIME-Version: 1.0');
+    lines.push('Date: ' + new Date().toUTCString());
+
+    if (html || attachments.length > 0) {
+      lines.push('Content-Type: multipart/mixed; boundary="' + boundary + '"');
+      lines.push('');
+      lines.push('--' + boundary);
+
+      if (html) {
+        lines.push('Content-Type: multipart/alternative; boundary="' + boundary + '-alt"');
+        lines.push('');
+        lines.push('--' + boundary + '-alt');
+        lines.push('Content-Type: text/plain; charset=UTF-8');
+        lines.push('');
+        lines.push(text || '');
+        lines.push('');
+        lines.push('--' + boundary + '-alt');
+        lines.push('Content-Type: text/html; charset=UTF-8');
+        lines.push('');
+        lines.push(html);
+        lines.push('');
+        lines.push('--' + boundary + '-alt--');
+      } else {
+        lines.push('Content-Type: text/plain; charset=UTF-8');
+        lines.push('');
+        lines.push(text || '');
+      }
+
+      for (const att of attachments) {
+        lines.push('');
+        lines.push('--' + boundary);
+        lines.push('Content-Type: ' + (att.contentType || 'application/octet-stream'));
+        lines.push('Content-Transfer-Encoding: base64');
+        lines.push('Content-Disposition: attachment; filename="' + att.filename + '"');
+        lines.push('');
+        lines.push(att.content);
+      }
+      lines.push('');
+      lines.push('--' + boundary + '--');
+    } else {
+      lines.push('Content-Type: text/plain; charset=UTF-8');
+      lines.push('');
+      lines.push(text || '');
+    }
+
+    // SMTP требует завершения тела точкой на отдельной строке
+    lines.push('');
+    lines.push('.');
+    // Конец сообщения — CRLF после точки
+    return lines.join('\r\n') + '\r\n';
+  }
+}
+
+// --- HTML-ШАБЛОН ПИСЬМА ----------------------------
+
+/** Экранирование HTML-спецсимволов для защиты от XSS через данные. */
+function escapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
+ * HTML-письмо с композитным риском, топ-драйверами и ссылкой на дашборд.
+ * Все данные экранируются.
+ */
+function buildPredictionEmail(result) {
+  const cr = (result && result.compositeRisk) || {};
+  const color = ({
+    low: '#06b6d4',
+    moderate: '#22c55e',
+    elevated: '#eab308',
+    high: '#f97316',
+    critical: '#ef4444',
+  })[cr.level] || '#3b82f6';
+
+  const driversHtml = (cr.topDrivers || []).slice(0, 5).map(d => `
+    <tr>
+      <td style="padding: 8px; border-bottom: 1px solid #eee;">${escapeHtml(d.name)}</td>
+      <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; font-family: monospace;">
+        ${(Number(d.value) * 100).toFixed(1)}%
+      </td>
+    </tr>
+  `).join('');
+
+  const dashboardUrl = (process.env.CRUCIX_DASHBOARD_URL || 'http://localhost') + '/crucix.html';
+
+  return `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family: -apple-system, sans-serif; background: #f5f5f5; padding: 20px;">
+  <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+    <div style="background: ${color}; color: white; padding: 24px;">
+      <h1 style="margin: 0; font-size: 24px;">Crucix Alert: ${escapeHtml((cr.level || '').toUpperCase())}</h1>
+      <p style="margin: 8px 0 0; opacity: 0.9;">Composite Risk: ${(Number(cr.composite) || 0).toFixed(3)}</p>
+    </div>
+    <div style="padding: 24px;">
+      <p><strong>Confidence:</strong> ${escapeHtml(cr.confidence || 'unknown')}</p>
+      <p><strong>Signals:</strong> ${(cr.signals || []).length}</p>
+
+      <h3>Top Drivers</h3>
+      <table style="width: 100%; border-collapse: collapse;">
+        ${driversHtml}
+      </table>
+
+      <p style="margin-top: 24px;">
+        <a href="${escapeHtml(dashboardUrl)}"
+           style="display: inline-block; background: ${color}; color: white; padding: 12px 24px;
+                  text-decoration: none; border-radius: 6px;">
+          Open Dashboard
+        </a>
+      </p>
+    </div>
+    <div style="padding: 16px 24px; background: #fafafa; font-size: 12px; color: #666;">
+      Generated by Crucix Integrations ${new Date().toISOString()}
+    </div>
+  </div>
+</body>
+</html>
+  `;
+}
+
+// --- ПУБЛИЧНЫЙ API ---------------------------------
+
+export async function sendEmailAlert(result, config) {
+  const client = new SMTPClient(config);
+
+  if (!client.enabled || !config.to) {
+    return { skipped: true, reason: 'not_configured' };
+  }
+
+  const cr = result.compositeRisk;
+  if (!cr || (cr.level !== 'high' && cr.level !== 'critical')) {
+    return { skipped: true, reason: 'low_priority' };
+  }
+
+  const subject = `Crucix ${cr.level.toUpperCase()}: ${cr.composite.toFixed(3)}`;
+  const text = `Crucix Alert\nComposite Risk: ${cr.composite.toFixed(3)}\nLevel: ${cr.level}\n`;
+  const html = buildPredictionEmail(result);
+
+  return await client.send({
+    to: config.to,
+    subject,
+    text,
+    html,
+  });
+}
+
+export const EMAIL_INFO = {
+  name: 'Email (SMTP)',
+  description: 'Send alerts via SMTP (pure JS, no nodemailer)',
+  envVars: ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASSWORD', 'SMTP_FROM'],
+  optional: true,
+};
+
+export { SMTPClient, buildPredictionEmail };
+
+
+
+========================================================================
+
+FILE: integrations/webhook_manager.mjs
+SIZE: 10238 bytes
+SHA1: ce1c5e7b9c8468b3
+========================================================================
+
+// integrations/webhook_manager.mjs
+// Менеджер всех интеграций - реестр, retry, приоритеты.
+//
+// Назначение:
+//   Единая точка диспетчеризации результатов прогноза Crucix во внешние системы:
+//   Slack, Notion, Obsidian, Email, Generic Webhook.
+//   Каждая интеграция имеет приоритет, число retry, env-переменные.
+//   Dispatch идёт в порядке убывания приоритета (критичные первыми).
+//
+// Особенности:
+//   - Zero dependencies: только перечисленные модули integrations/*.
+//   - Retry с экспоненциальной задержкой (1s, 2s, 4s ...).
+//   - Timeout на каждый handler (по умолчанию 30 секунд).
+//   - Singleton через getIntegrationManager(), с поддержкой обновления config.
+//   - Публичная регистрация интеграций: register(key, def) / unregister(key).
+
+import { SlackClient } from './slack.mjs';
+import { NotionClient } from './notion.mjs';
+import { ObsidianVault } from './obsidian.mjs';
+import { SMTPClient } from './email.mjs';
+
+const DEFAULT_TIMEOUT_MS = 30000;
+
+export const INTEGRATION_REGISTRY = {
+  slack: {
+    name: 'Slack',
+    factory: (config) => new SlackClient(config),
+    envVars: ['SLACK_WEBHOOK_URL', 'SLACK_BOT_TOKEN'],
+    priority: 10,
+    retries: 3,
+    required: false,
+    handler: async (client, result) => {
+      const cr = result.compositeRisk;
+      if (!cr) return { skipped: true, reason: 'no_composite' };
+      if (cr.level !== 'high' && cr.level !== 'critical') {
+        return { skipped: true, reason: 'low_priority' };
+      }
+      return await client.sendPredictionAlert(result);
+    },
+  },
+
+  notion: {
+    name: 'Notion',
+    factory: (config) => new NotionClient(config),
+    envVars: ['NOTION_API_TOKEN', 'NOTION_DATABASE_ID'],
+    priority: 5,
+    retries: 2,
+    required: false,
+    handler: async (client, result) => {
+      if (!client.enabled) return { skipped: true, reason: 'not_configured' };
+      return await client.savePrediction(result);
+    },
+  },
+
+  obsidian: {
+    name: 'Obsidian',
+    factory: (config) => new ObsidianVault(config),
+    envVars: ['OBSIDIAN_VAULT_PATH'],
+    priority: 3,
+    retries: 1,
+    required: false,
+    handler: async (client, result) => {
+      if (!client.enabled) return { skipped: true, reason: 'not_configured' };
+      const r1 = client.savePrediction(result);
+      const r2 = client.saveDailyNote();
+      return { ok: r1.ok && r2.ok, results: [r1, r2] };
+    },
+  },
+
+  email: {
+    name: 'Email',
+    factory: (config) => new SMTPClient(config),
+    envVars: ['SMTP_HOST', 'SMTP_USER'],
+    priority: 8,
+    retries: 2,
+    required: false,
+    handler: async (client, result) => {
+      if (!client.enabled) return { skipped: true, reason: 'not_configured' };
+      const cr = result.compositeRisk;
+      if (!cr || cr.level !== 'critical') {
+        return { skipped: true, reason: 'not_critical' };
+      }
+      return await client.send({
+        to: process.env.SMTP_TO,
+        subject: 'Crucix CRITICAL: ' + Number(cr.composite || 0).toFixed(3),
+        text: 'Composite Risk: ' + Number(cr.composite || 0).toFixed(3),
+      });
+    },
+  },
+
+  webhook: {
+    name: 'Generic Webhook',
+    factory: (config) => ({
+      enabled: !!config.url,
+      url: config.url,
+      secret: config.secret,
+      async send(result) {
+        if (!this.enabled) return { ok: false, error: 'no_url' };
+        const res = await fetch(this.url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Crucix-Secret': this.secret || '',
+          },
+          body: JSON.stringify(result),
+        });
+        return { ok: res.ok, status: res.status };
+      },
+    }),
+    envVars: ['CRUCIX_WEBHOOK_URL'],
+    priority: 7,
+    retries: 3,
+    required: false,
+    handler: async (client, result) => await client.send(result),
+  },
+};
+
+function _withTimeout(promise, ms, label) {
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => {
+      resolve({ ok: false, error: 'timeout_after_' + ms + 'ms', step: label });
+    }, ms);
+    Promise.resolve(promise).then(
+      (v) => { clearTimeout(timer); resolve(v); },
+      (e) => { clearTimeout(timer); resolve({ ok: false, error: e && e.message ? e.message : String(e), step: label }); }
+    );
+  });
+}
+
+class IntegrationManager {
+  constructor(config = {}) {
+    this.integrations = new Map();
+    this.config = config;
+    this.timeoutMs = Number.isFinite(config.timeoutMs) ? config.timeoutMs : DEFAULT_TIMEOUT_MS;
+    this.startedAt = Date.now();
+    this.stats = {
+      totalSent: 0,
+      totalFailed: 0,
+      totalSkipped: 0,
+      byIntegration: {},
+    };
+    this._initialize();
+  }
+
+  _initialize() {
+    for (const [key, def] of Object.entries(INTEGRATION_REGISTRY)) {
+      const config = this.config[key] || {};
+      try {
+        const client = def.factory(config);
+        this.integrations.set(key, {
+          key,
+          name: def.name,
+          priority: def.priority,
+          retries: def.retries,
+          client,
+          handler: def.handler,
+          enabled: client.enabled !== false,
+        });
+      } catch (e) {
+        console.error('[webhook_manager] init failed for ' + key + ': ' + e.message);
+      }
+    }
+  }
+
+  register(key, def) {
+    if (!def || typeof def.factory !== 'function' || typeof def.handler !== 'function') {
+      return { ok: false, error: 'invalid_definition' };
+    }
+    try {
+      const config = this.config[key] || {};
+      const client = def.factory(config);
+      this.integrations.set(key, {
+        key,
+        name: def.name || key,
+        priority: def.priority || 0,
+        retries: def.retries || 0,
+        client,
+        handler: def.handler,
+        enabled: client.enabled !== false,
+      });
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
+  }
+
+  unregister(key) {
+    return this.integrations.delete(key);
+  }
+
+  reload(newConfig = null) {
+    if (newConfig) {
+      this.config = newConfig;
+      this.timeoutMs = Number.isFinite(newConfig.timeoutMs) ? newConfig.timeoutMs : this.timeoutMs;
+    }
+    this.integrations.clear();
+    this._initialize();
+    return { ok: true, integrations: this.integrations.size };
+  }
+
+  resetStats() {
+    this.stats = { totalSent: 0, totalFailed: 0, totalSkipped: 0, byIntegration: {} };
+    return { ok: true };
+  }
+
+  async dispatch(result) {
+    if (!result || typeof result !== 'object') {
+      return {
+        dispatched: 0,
+        sent: 0,
+        failed: 0,
+        skipped: 0,
+        results: [],
+        error: 'invalid_result',
+      };
+    }
+
+    const enabled = Array.from(this.integrations.values())
+      .filter(i => i.enabled)
+      .sort((a, b) => b.priority - a.priority);
+
+    const results = [];
+
+    for (const integration of enabled) {
+      const res = await this._dispatchWithRetry(integration, result);
+      results.push({ integration: integration.name, key: integration.key, ...res });
+
+      if (res.skipped) {
+        this.stats.totalSkipped++;
+      } else if (res.ok) {
+        this.stats.totalSent++;
+      } else {
+        this.stats.totalFailed++;
+      }
+
+      this.stats.byIntegration[integration.key] =
+        this.stats.byIntegration[integration.key] || { sent: 0, failed: 0, skipped: 0 };
+      if (res.skipped) this.stats.byIntegration[integration.key].skipped++;
+      else if (res.ok) this.stats.byIntegration[integration.key].sent++;
+      else this.stats.byIntegration[integration.key].failed++;
+    }
+
+    return {
+      dispatched: enabled.length,
+      sent: results.filter(r => r.ok && !r.skipped).length,
+      failed: results.filter(r => r.error).length,
+      skipped: results.filter(r => r.skipped).length,
+      results,
+    };
+  }
+
+  async _dispatchWithRetry(integration, result) {
+    const maxAttempts = integration.retries + 1;
+    let lastRes = { ok: false, error: 'no_attempt' };
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        const res = await _withTimeout(
+          integration.handler(integration.client, result),
+          this.timeoutMs,
+          integration.key
+        );
+
+        if (res && res.skipped) {
+          return { ...res, attempts: attempt + 1 };
+        }
+
+        if (res && res.ok) {
+          return { ...res, attempts: attempt + 1 };
+        }
+
+        lastRes = res || { ok: false, error: 'empty_response' };
+
+        if (attempt < maxAttempts - 1) {
+          await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempt)));
+        }
+      } catch (e) {
+        lastRes = { ok: false, error: e && e.message ? e.message : String(e) };
+        if (attempt < maxAttempts - 1) {
+          await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempt)));
+        }
+      }
+    }
+
+    return { ...lastRes, attempts: maxAttempts };
+  }
+
+  status() {
+    const all = Array.from(this.integrations.values());
+    return {
+      enabled: all.filter(i => i.enabled).map(i => i.key),
+      disabled: all.filter(i => !i.enabled).map(i => i.key),
+      byPriority: all
+        .filter(i => i.enabled)
+        .sort((a, b) => b.priority - a.priority)
+        .map(i => ({ key: i.key, priority: i.priority, retries: i.retries })),
+      uptimeMs: Date.now() - this.startedAt,
+      timeoutMs: this.timeoutMs,
+      stats: this.stats,
+    };
+  }
+}
+
+let _manager = null;
+
+export function getIntegrationManager(config) {
+  if (!_manager) {
+    _manager = new IntegrationManager(config || {});
+  } else if (config && typeof config === 'object') {
+    _manager.reload(config);
+  }
+  return _manager;
+}
+
+export async function dispatchToIntegrations(result, config = {}) {
+  const manager = getIntegrationManager(config);
+  return await manager.dispatch(result);
+}
+
+export const INTEGRATION_INFO = {
+  name: 'Integration Manager',
+  description: 'Unified manager for Slack, Notion, Obsidian, Email, Webhooks',
+  supported: Object.keys(INTEGRATION_REGISTRY),
+};
+
+export { IntegrationManager };
+
+
+
+========================================================================
+
+FILE: integrations/README.md
+SIZE: 5098 bytes
+SHA1: d5cc124cc6971716
+========================================================================
+
+# Crucix Integrations
+
+Единая система интеграций с внешними сервисами. Всё — без внешних зависимостей, только fetch и node:net.
+
+## Поддерживаемые сервисы
+
+| Сервис | Назначение | Env vars | Приоритет |
+|--------|-----------|----------|-----------|
+| Slack | Алерты в канал | SLACK_WEBHOOK_URL, SLACK_BOT_TOKEN | 10 |
+| Email | Критические алерты | SMTP_HOST, SMTP_USER | 8 |
+| Webhook | Универсальный | CRUCIX_WEBHOOK_URL | 7 |
+| Notion | Сохранение прогнозов | NOTION_API_TOKEN, NOTION_DATABASE_ID | 5 |
+| Obsidian | Markdown vault | OBSIDIAN_VAULT_PATH | 3 |
+
+## Быстрый старт
+
+export SLACK_WEBHOOK_URL=https://hooks.slack.com/services/XXX/YYY/ZZZ
+export SMTP_HOST=smtp.gmail.com
+export SMTP_PORT=587
+export SMTP_USER=your@email.com
+export SMTP_PASSWORD=app-password
+export SMTP_TO=alerts@company.com
+export NOTION_API_TOKEN=secret_xxx
+export NOTION_DATABASE_ID=abc123
+export OBSIDIAN_VAULT_PATH=/Users/you/ObsidianVault
+export CRUCIX_WEBHOOK_URL=https://your-server.com/crucix
+
+## Использование
+
+import { dispatchToIntegrations } from './integrations/webhook_manager.mjs';
+
+const prediction = await runCrucixCycle();
+const result = await dispatchToIntegrations(prediction);
+console.log(result);
+
+Результат:
+{
+  dispatched: 3,
+  sent: 2,
+  failed: 0,
+  skipped: 1,
+  results: [
+    { integration: 'Slack', ok: true },
+    { integration: 'Email', skipped: true, reason: 'not_critical' },
+    { integration: 'Obsidian', ok: true }
+  ]
+}
+
+## Отдельные интеграции
+
+### Slack
+
+import { SlackClient } from './integrations/slack.mjs';
+const slack = new SlackClient({ webhookUrl: process.env.SLACK_WEBHOOK_URL });
+await slack.sendPredictionAlert(prediction);
+await slack.sendSignalAlert({ name: 'Ising', value: 0.85, weight: 1.5, rationale: 'Фазовый переход' });
+await slack.sendRegimeChange({ changeProbability: 0.72, regimeAge: 5 });
+
+### Email (SMTP, без nodemailer)
+
+import { SMTPClient } from './integrations/email.mjs';
+const smtp = new SMTPClient({ host: 'smtp.gmail.com', port: 587, user: 'your@email.com', password: 'app-password' });
+await smtp.send({ to: 'alerts@company.com', subject: 'Crucix Alert', text: 'Plain text', html: '<h1>HTML</h1>' });
+
+### Notion
+
+import { NotionClient } from './integrations/notion.mjs';
+const notion = new NotionClient({ apiToken: process.env.NOTION_API_TOKEN, databaseId: process.env.NOTION_DATABASE_ID });
+await notion.savePrediction(prediction);
+
+### Obsidian
+
+import { ObsidianVault } from './integrations/obsidian.mjs';
+const vault = new ObsidianVault({ vaultPath: '/Users/you/ObsidianVault', folder: 'Crucix' });
+vault.savePrediction(prediction);
+vault.saveDailyNote();
+vault.updateIndex();
+
+### RSS/Atom Feed
+
+import { FeedGenerator, feedHandler } from './integrations/rss.mjs';
+const gen = new FeedGenerator({ baseUrl: 'https://crucix.example.com' });
+app.get('/feed.xml', feedHandler(gen, './runs/predictions', 'atom'));
+app.get('/feed.rss', feedHandler(gen, './runs/predictions', 'rss'));
+app.get('/feed.json', feedHandler(gen, './runs/predictions', 'json'));
+
+## Retry logic
+
+Каждая интеграция имеет настраиваемое число retry:
+
+- Slack: 3 retry с экспоненциальной задержкой
+- Email: 2 retry
+- Webhook: 3 retry
+- Notion: 2 retry
+- Obsidian: 1 retry (локально — быстро)
+
+Задержка: 1s × 2^attempt (1s, 2s, 4s, ...).
+
+## Статистика
+
+const manager = getIntegrationManager();
+console.log(manager.status());
+// {
+//   enabled: ['slack', 'obsidian'],
+//   disabled: ['notion', 'email', 'webhook'],
+//   stats: {
+//     totalSent: 42,
+//     totalFailed: 1,
+//     totalSkipped: 18,
+//     byIntegration: {
+//       slack: { sent: 25, failed: 0, skipped: 17 },
+//       obsidian: { sent: 17, failed: 1, skipped: 0 }
+//     }
+//   }
+// }
+
+## Приоритеты
+
+Интеграции выполняются в порядке приоритета (высокий первым):
+
+1. Slack (10) — быстрые алерты в команду
+2. Email (8) — критические события
+3. Webhook (7) — интеграция с внешними системами
+4. Notion (5) — долгосрочное хранение
+5. Obsidian (3) — персональные заметки
+
+Если одна интеграция падает — остальные продолжают работу.
+
+## Zero-dependency
+
+Все интеграции реализованы без внешних пакетов:
+
+- Slack — через fetch (webhook) или HTTP (bot API)
+- Email — через node:net и node:tls (собственный SMTP клиент)
+- Notion — через fetch (REST API)
+- Obsidian — через node:fs (markdown)
+- RSS — генерация XML вручную
+
+Единственные зависимости — стандартная библиотека Node.js.
+
+
+
+========================================================================

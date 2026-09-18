@@ -1,0 +1,1188 @@
+===== ЧАСТЬ part-4-modules · КУСОК 03/28 · 39.5 KB =====
+
+FILE: apis/predict/calibration.mjs
+SIZE: 14686 bytes
+SHA1: 0b33c1a2c6d7a001
+========================================================================
+
+// apis/predict/calibration.mjs
+// Калибровка вероятностных прогнозов и трекинг точности моделей.
+//
+// Теоретическая основа:
+//   Brier, G. W. (1950). "Verification of forecasts expressed in terms
+//   of probability". Monthly Weather Review, 78(1), 1-3.
+//   Platt, J. C. (1999). "Probabilistic Outputs for Support Vector Machines
+//   and Comparisons to Regularized Likelihood Methods". Advances in Large
+//   Margin Classifiers, 61-74.
+//   Niculescu-Mizil, A., & Caruana, R. (2005). "Predicting Good Probabilities
+//   with Supervised Learning". ICML.
+//
+// Ключевые метрики:
+//   Brier Score = (1/N) · Σ (f_i - o_i)²
+//     где f_i — предсказанная вероятность, o_i — фактический исход (0/1).
+//     0 = идеальная точность, 0.25 = случайное угадывание, 1 = всегда неверно.
+//
+//   Log Loss = -(1/N) · Σ [o·log(f) + (1-o)·log(1-f)]
+//     Более строгая метрика, штрафует за уверенные ошибки.
+//
+// Калибровка Платта: подгонка изотонической (монотонной) функции,
+// которая преобразует «сырые» вероятности модели в калиброванные.
+
+// ============================================================
+// Метрики точности
+// ============================================================
+
+/**
+ * Brier Score с разложением на надёжность / разрешение / неопределённость.
+ * Использует Murphy decomposition (Murphy, 1973).
+ *
+ * @param {Array<{forecast: number, outcome: number}>} predictions
+ * @returns {{score, resolution, reliability, uncertainty}}
+ */
+function brierScore(predictions) {
+  if (!Array.isArray(predictions) || predictions.length === 0) {
+    return { score: 0, resolution: 0, reliability: 0, uncertainty: 0 };
+  }
+
+  const n = predictions.length;
+  let score = 0;
+  for (const p of predictions) {
+    const f = typeof p.forecast === 'number' ? p.forecast : 0.5;
+    const o = p.outcome ? 1 : 0;
+    score += (f - o) ** 2;
+  }
+  score /= n;
+
+  // --- Разложение Brier Score (Murphy) ---
+  // Надёжность (reliability): насколько калиброваны прогнозы
+  // Разрешение (resolution): насколько прогнозы лучше климатологии
+  // Неопределённость (uncertainty): дисперсия климатологии
+  const bins = 10;
+  const binData = Array(bins).fill(null).map(() => ({
+    count: 0, sumF: 0, sumO: 0,
+  }));
+
+  for (const p of predictions) {
+    const f = typeof p.forecast === 'number' ? p.forecast : 0.5;
+    const o = p.outcome ? 1 : 0;
+    const idx = Math.min(Math.floor(f * bins), bins - 1);
+    binData[idx].count++;
+    binData[idx].sumF += f;
+    binData[idx].sumO += o;
+  }
+
+  const climatology = predictions.reduce((s, p) => s + (p.outcome ? 1 : 0), 0) / n;
+
+  let reliability = 0;
+  let resolution = 0;
+  for (const bin of binData) {
+    if (bin.count === 0) continue;
+    const avgF = bin.sumF / bin.count;
+    const avgO = bin.sumO / bin.count;
+    reliability += (bin.count / n) * (avgF - avgO) ** 2;
+    resolution += (bin.count / n) * (avgO - climatology) ** 2;
+  }
+
+  const uncertainty = climatology * (1 - climatology);
+
+  return { score, resolution, reliability, uncertainty, n };
+}
+
+/**
+ * Log Loss (кросс-энтропия).
+ *
+ * @param {Array<{forecast: number, outcome: number}>} predictions
+ * @returns {number}
+ */
+function logLoss(predictions) {
+  if (!Array.isArray(predictions) || predictions.length === 0) return 0;
+  const epsilon = 1e-15;
+  let sum = 0;
+  for (const p of predictions) {
+    const f = Math.max(epsilon, Math.min(1 - epsilon, p.forecast || 0.5));
+    const o = p.outcome ? 1 : 0;
+    sum += o * Math.log(f) + (1 - o) * Math.log(1 - f);
+  }
+  return -sum / predictions.length;
+}
+
+// ============================================================
+// Калибровка Платта (изотоническая регрессия через PAVA)
+// ============================================================
+
+/**
+ * Калибровка Платта-Бёрда на основе изотонической регрессии.
+ *
+ * Алгоритм PAVA (Pool Adjacent Violators Algorithm):
+ *   1. Сортируем прогнозы по значению f
+ *   2. Строим кусочно-постоянную монотонную функцию
+ *   3. Если соседние блоки нарушают монотонность — объединяем их
+ *
+ * @param {Array<{forecast: number, outcome: number}>} history
+ * @returns {Function} — calibrate(f) => f_calibrated
+ */
+function plattCalibration(history) {
+  if (!Array.isArray(history) || history.length < 10) {
+    // Недостаточно данных — возвращаем identity
+    return (p) => p;
+  }
+
+  const sorted = [...history].sort((a, b) => a.forecast - b.forecast);
+
+  // PAVA — начальные блоки по одному значению
+  const blocks = sorted.map((p) => ({
+    sum: p.outcome ? 1 : 0,
+    count: 1,
+    startX: p.forecast,
+    endX: p.forecast,
+  }));
+
+  // Объединение нарушителей монотонности
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (let i = 0; i < blocks.length - 1; i++) {
+      const avgI = blocks[i].sum / blocks[i].count;
+      const avgNext = blocks[i + 1].sum / blocks[i + 1].count;
+      if (avgI > avgNext) {
+        blocks[i].sum += blocks[i + 1].sum;
+        blocks[i].count += blocks[i + 1].count;
+        blocks[i].endX = blocks[i + 1].endX;
+        blocks.splice(i + 1, 1);
+        changed = true;
+      }
+    }
+  }
+
+  // Функция калибровки — линейная интерполяция между блоками
+  return function calibrate(rawProb) {
+    if (typeof rawProb !== 'number' || isNaN(rawProb)) return 0.5;
+    const p = Math.max(0, Math.min(1, rawProb));
+
+    if (p <= blocks[0].startX) {
+      return blocks[0].sum / blocks[0].count;
+    }
+    const last = blocks[blocks.length - 1];
+    if (p >= last.endX) {
+      return last.sum / last.count;
+    }
+
+    for (let i = 0; i < blocks.length - 1; i++) {
+      const a = blocks[i];
+      const b = blocks[i + 1];
+      if (p >= a.startX && p <= b.startX) {
+        const denom = b.startX - a.startX;
+        const t = denom > 0 ? (p - a.startX) / denom : 0;
+        const va = a.sum / a.count;
+        const vb = b.sum / b.count;
+        return va + t * (vb - va);
+      }
+    }
+
+    return p;
+  };
+}
+
+// ============================================================
+// ForecastTracker — отслеживание точности прогнозов
+// ============================================================
+
+/**
+ * Трекер прогнозов: сохраняет все прогнозы, разрешает их по истечении
+ * горизонта, пересчитывает Brier Score по каждому источнику и модели,
+ * возвращает веса для ансамбля.
+ */
+class ForecastTracker {
+  constructor() {
+    this.predictions = [];       // [{id, source, forecast, timestamp, horizonHours, outcome, resolved}]
+    this.brierBySource = {};     // {source: {score, reliability, resolution, uncertainty, n}}
+    this.brierByHorizon = {};    // {horizonBin: {score, ...}}
+  }
+
+  /**
+   * Регистрация нового прогноза.
+   *
+   * @param {Object} params
+   * @param {string} params.id — уникальный ID прогноза
+   * @param {string} params.source — источник/модель (например, 'bayesian', 'hmm')
+   * @param {number} params.forecast — предсказанная вероятность 0..1
+   * @param {string} [params.timestamp] — ISO-строка, по умолчанию now
+   * @param {number} [params.horizonHours] — горизонт в часах
+   * @param {string} [params.eventId] — ID события
+   */
+  addPrediction({ id, source, forecast, timestamp, horizonHours, eventId }) {
+    if (!id || !source) return null;
+    const entry = {
+      id,
+      source,
+      forecast: Math.max(0.001, Math.min(0.999, forecast)),
+      timestamp: timestamp || new Date().toISOString(),
+      horizonHours: horizonHours || 24,
+      eventId: eventId || null,
+      outcome: null,
+      resolved: false,
+      resolvedAt: null,
+    };
+    this.predictions.push(entry);
+    return entry;
+  }
+
+  /**
+   * Разрешение одного прогноза (установка фактического исхода).
+   *
+   * @param {string} id
+   * @param {number} outcome — 0 или 1
+   */
+  resolvePrediction(id, outcome) {
+    const pred = this.predictions.find((p) => p.id === id);
+    if (!pred) return false;
+    pred.outcome = outcome ? 1 : 0;
+    pred.resolved = true;
+    pred.resolvedAt = new Date().toISOString();
+    this._recalculate();
+    return true;
+  }
+
+  /**
+   * Автоматическое разрешение прогнозов, у которых истёк горизонт.
+   *
+   * @param {Function} checkOutcome — (prediction) => 0 | 1 | null
+   */
+  autoResolve(checkOutcome) {
+    if (typeof checkOutcome !== 'function') return 0;
+    const now = Date.now();
+    let resolvedCount = 0;
+
+    for (const pred of this.predictions) {
+      if (pred.resolved) continue;
+      const predTime = new Date(pred.timestamp).getTime();
+      const elapsedHours = (now - predTime) / (1000 * 60 * 60);
+      if (elapsedHours < pred.horizonHours) continue;
+
+      try {
+        const outcome = checkOutcome(pred);
+        if (outcome === null || outcome === undefined) continue;
+        pred.outcome = outcome ? 1 : 0;
+        pred.resolved = true;
+        pred.resolvedAt = new Date().toISOString();
+        resolvedCount++;
+      } catch (e) {
+        // Игнорируем ошибки одного разрешения
+      }
+    }
+
+    if (resolvedCount > 0) this._recalculate();
+    return resolvedCount;
+  }
+
+  /**
+   * Пересчёт Brier Score по каждому источнику и горизонту.
+   */
+  _recalculate() {
+    const bySource = {};
+    const byHorizon = {};
+
+    for (const pred of this.predictions) {
+      if (!pred.resolved) continue;
+      const item = { forecast: pred.forecast, outcome: pred.outcome };
+
+      if (!bySource[pred.source]) bySource[pred.source] = [];
+      bySource[pred.source].push(item);
+
+      const hBin = Math.floor(pred.horizonHours / 24);
+      if (!byHorizon[hBin]) byHorizon[hBin] = [];
+      byHorizon[hBin].push(item);
+    }
+
+    this.brierBySource = {};
+    for (const [src, preds] of Object.entries(bySource)) {
+      this.brierBySource[src] = brierScore(preds);
+    }
+
+    this.brierByHorizon = {};
+    for (const [h, preds] of Object.entries(byHorizon)) {
+      this.brierByHorizon[h] = brierScore(preds);
+    }
+  }
+
+  /**
+   * Веса для ансамбля на основе Brier Score.
+   * Модель с меньшим Brier Score получает больший вес.
+   *
+   * Формула: w_i = (1/Brier_i) / Σ_j (1/Brier_j)
+   *
+   * @returns {Object} — {source: weight}, сумма = 1
+   */
+  getEnsembleWeights() {
+    const sources = Object.keys(this.brierBySource);
+    if (sources.length === 0) return {};
+
+    const rawWeights = {};
+    let sum = 0;
+    for (const src of sources) {
+      const score = this.brierBySource[src].score;
+      // +0.01 для избежания деления на ноль
+      const w = 1 / (score + 0.01);
+      rawWeights[src] = w;
+      sum += w;
+    }
+
+    const normalized = {};
+    for (const src of sources) {
+      normalized[src] = rawWeights[src] / sum;
+    }
+    return normalized;
+  }
+
+  /**
+   * Общая точность (Brier по всем разрешённым прогнозам).
+   */
+  overallBrier() {
+    const resolved = this.predictions.filter((p) => p.resolved);
+    if (resolved.length === 0) return null;
+    return brierScore(resolved.map((p) => ({ forecast: p.forecast, outcome: p.outcome })));
+  }
+
+  /**
+   * Статистика для дашборда.
+   */
+  getStats() {
+    const total = this.predictions.length;
+    const resolved = this.predictions.filter((p) => p.resolved).length;
+    const brierList = Object.entries(this.brierBySource)
+      .map(([source, b]) => ({
+        source,
+        score: b.score,
+        n: b.n,
+        reliability: b.reliability,
+        resolution: b.resolution,
+      }))
+      .sort((a, b) => a.score - b.score);
+
+    return {
+      total,
+      resolved,
+      pending: total - resolved,
+      overall: this.overallBrier(),
+      bySource: brierList,
+      ensembleWeights: this.getEnsembleWeights(),
+    };
+  }
+
+  /**
+   * Удаление старых неразрешённых прогнозов (старше maxAgeHours).
+   */
+  pruneStale(maxAgeHours = 24 * 30) {
+    const now = Date.now();
+    const before = this.predictions.length;
+    this.predictions = this.predictions.filter((p) => {
+      if (p.resolved) return true;
+      const ageHours = (now - new Date(p.timestamp).getTime()) / (1000 * 60 * 60);
+      return ageHours < maxAgeHours;
+    });
+    return before - this.predictions.length;
+  }
+
+  serialize() {
+    return JSON.stringify({
+      predictions: this.predictions,
+      brierBySource: this.brierBySource,
+      brierByHorizon: this.brierByHorizon,
+    });
+  }
+
+  static deserialize(json) {
+    const data = typeof json === 'string' ? JSON.parse(json) : json;
+    const tracker = new ForecastTracker();
+    tracker.predictions = data.predictions || [];
+    tracker.brierBySource = data.brierBySource || {};
+    tracker.brierByHorizon = data.brierByHorizon || {};
+    return tracker;
+  }
+}
+
+// ============================================================
+// Готовые обёртки для Crucix
+// ============================================================
+
+/**
+ * Разложение Brier Score на компоненты в процентах — для UI.
+ */
+function brierBreakdown(predictions) {
+  const bs = brierScore(predictions);
+  const total = bs.reliability + bs.resolution + bs.uncertainty || 1;
+  return {
+    score: bs.score,
+    reliabilityPct: (bs.reliability / total) * 100,
+    resolutionPct: (bs.resolution / total) * 100,
+    uncertaintyPct: (bs.uncertainty / total) * 100,
+  };
+}
+
+export {
+  brierScore,
+  logLoss,
+  plattCalibration,
+  ForecastTracker,
+  brierBreakdown,
+};
+
+
+
+========================================================================
+
+FILE: apis/predict/cascade.mjs
+SIZE: 12133 bytes
+SHA1: afd5c3828e798154
+========================================================================
+
+// apis/predict/cascade.mjs
+// Каскадное распространение вероятностей по графу событий.
+//
+// Теоретическая основа:
+//   Pearl, J. (1988). "Probabilistic Reasoning in Intelligent Systems".
+//   Morgan Kaufmann. Глава 4.
+//   Koller, D., & Friedman, N. (2009). "Probabilistic Graphical Models".
+//   MIT Press. Глава 3.
+//
+//   Идея: события образуют причинно-следственный граф. Когда вероятность
+//   узла меняется, изменение распространяется по исходящим рёбрам с
+//   коэффициентом условной вероятности (Bayes factor) и задержкой (lag).
+//
+// Применение в Crucix:
+//   Эскалация конфликта → рост цен на энергоносители → рост VIX →
+//   расширение кредитных спредов → риск-офф. Каждое ребро имеет силу
+//   (conditional probability multiplier) и задержку (в часах).
+//
+// Особенности реализации:
+//   * BFS-обход с защитой от циклов
+//   * Ограничение сдвига (maxShift) на каждом узле
+//   * Отложенные эффекты (lag > 0) собираются отдельно
+//   * Предустановленный граф buildCrucixCascadeGraph() с типовыми связями
+
+// ============================================================
+// Граф каскадов
+// ============================================================
+
+class CascadeGraph {
+  constructor() {
+    this.nodes = new Map();   // id -> {id, name, baseProb, currentProb, updated}
+    this.edges = new Map();   // from -> [{target, conditionalProb, lag, description}]
+  }
+
+  /**
+   * Добавление узла.
+   * @param {string} id
+   * @param {string} name
+   * @param {number} baseProb — априорная вероятность (0..1)
+   */
+  addNode(id, name, baseProb = 0.1) {
+    this.nodes.set(id, {
+      id,
+      name,
+      baseProb: Math.max(0.001, Math.min(0.999, baseProb)),
+      currentProb: Math.max(0.001, Math.min(0.999, baseProb)),
+      updated: false,
+    });
+    if (!this.edges.has(id)) this.edges.set(id, []);
+    return this;
+  }
+
+  /**
+   * Добавление причинно-следственной связи.
+   * @param {string} from — ID причины
+   * @param {string} to — ID следствия
+   * @param {number} conditionalProb — множитель (Bayes factor). >1 усиливает, <1 ослабляет.
+   * @param {number} lag — задержка в часах (0 = мгновенная связь)
+   * @param {string} description
+   */
+  addEdge(from, to, conditionalProb = 1.5, lag = 0, description = '') {
+    if (!this.nodes.has(from) || !this.nodes.has(to)) {
+      throw new Error(`Cascade edge ${from} -> ${to}: node not found`);
+    }
+    if (!this.edges.has(from)) this.edges.set(from, []);
+    this.edges.get(from).push({
+      target: to,
+      conditionalProb: Math.max(0.01, conditionalProb),
+      lag: Math.max(0, lag),
+      description,
+    });
+    return this;
+  }
+
+  /**
+   * Обновление вероятности узла и распространение по графу (BFS).
+   *
+   * @param {string} startId — ID узла-источника
+   * @param {number} newProb — новая вероятность
+   * @param {number} maxShift — максимальный сдвиг на один узел
+   * @returns {Object} — {changes: {id: {old, new, shift}}, delayed: [...]}
+   */
+  update(startId, newProb, maxShift = 0.15) {
+    const changes = {};
+    const visited = new Set();
+    const queue = [{ id: startId, prob: newProb, depth: 0 }];
+    const delayed = [];
+
+    while (queue.length > 0) {
+      const { id, prob, depth } = queue.shift();
+      if (visited.has(id)) continue;
+      if (depth > 6) continue; // защита от слишком глубоких обходов
+      visited.add(id);
+
+      const node = this.nodes.get(id);
+      if (!node) continue;
+
+      const oldProb = node.currentProb;
+      let adjusted = prob;
+
+      // Ограничение сдвига
+      const shift = adjusted - oldProb;
+      if (Math.abs(shift) > maxShift) {
+        adjusted = oldProb + Math.sign(shift) * maxShift;
+      }
+      adjusted = Math.max(0.001, Math.min(0.999, adjusted));
+      node.currentProb = adjusted;
+      node.updated = true;
+
+      changes[id] = {
+        old: oldProb,
+        new: adjusted,
+        shift: adjusted - oldProb,
+        name: node.name,
+      };
+
+      // Распространение по исходящим рёбрам
+      const outEdges = this.edges.get(id) || [];
+      for (const edge of outEdges) {
+        const targetNode = this.nodes.get(edge.target);
+        if (!targetNode) continue;
+
+        if (edge.lag > 0) {
+          // Отложенный эффект — сохраняем отдельно, не применяем сразу
+          delayed.push({
+            from: id,
+            to: edge.target,
+            lag: edge.lag,
+            conditionalProb: edge.conditionalProb,
+            fromProb: adjusted,
+            description: edge.description,
+          });
+          continue;
+        }
+
+        // Мгновенное распространение
+        const propagated = targetNode.currentProb * edge.conditionalProb;
+        queue.push({ id: edge.target, prob: propagated, depth: depth + 1 });
+      }
+    }
+
+    return { changes, delayed };
+  }
+
+  /**
+   * Получить все отложенные эффекты (для планирования).
+   */
+  getDelayedEffects() {
+    const delayed = [];
+    for (const [from, edges] of this.edges) {
+      for (const edge of edges) {
+        if (edge.lag > 0) {
+          delayed.push({ from, ...edge });
+        }
+      }
+    }
+    return delayed;
+  }
+
+  /**
+   * Сброс всех вероятностей к базовым.
+   */
+  reset() {
+    for (const node of this.nodes.values()) {
+      node.currentProb = node.baseProb;
+      node.updated = false;
+    }
+  }
+
+  /**
+   * Все узлы в виде Map с текущими вероятностями.
+   */
+  getAllNodes() {
+    const result = new Map();
+    for (const [id, node] of this.nodes) {
+      result.set(id, { ...node });
+    }
+    return result;
+  }
+
+  /**
+   * Топ-узлы по отклонению от базовой вероятности.
+   */
+  topDeviations(limit = 10) {
+    const all = [...this.nodes.values()];
+    all.sort(
+      (a, b) =>
+        Math.abs(b.currentProb - b.baseProb) -
+        Math.abs(a.currentProb - a.baseProb)
+    );
+    return all.slice(0, limit).map((n) => ({
+      id: n.id,
+      name: n.name,
+      baseProb: n.baseProb,
+      currentProb: n.currentProb,
+      shift: n.currentProb - n.baseProb,
+    }));
+  }
+
+  /**
+   * Сериализация графа.
+   */
+  serialize() {
+    const nodesArr = [];
+    for (const [id, node] of this.nodes) {
+      nodesArr.push({ ...node });
+    }
+    const edgesArr = [];
+    for (const [from, edges] of this.edges) {
+      for (const e of edges) {
+        edgesArr.push({ from, ...e });
+      }
+    }
+    return JSON.stringify({ nodes: nodesArr, edges: edgesArr });
+  }
+
+  static deserialize(json) {
+    const data = typeof json === 'string' ? JSON.parse(json) : json;
+    const g = new CascadeGraph();
+    for (const n of data.nodes || []) {
+      g.nodes.set(n.id, {
+        id: n.id,
+        name: n.name,
+        baseProb: n.baseProb,
+        currentProb: n.currentProb,
+        updated: false,
+      });
+      g.edges.set(n.id, []);
+    }
+    for (const e of data.edges || []) {
+      if (g.edges.has(e.from)) {
+        g.edges.get(e.from).push({
+          target: e.target,
+          conditionalProb: e.conditionalProb,
+          lag: e.lag,
+          description: e.description,
+        });
+      }
+    }
+    return g;
+  }
+}
+
+// ============================================================
+// Предустановленный граф Crucix
+// ============================================================
+
+/**
+ * Построение графа каскадов с типовыми геополитико-экономическими
+ * связями. Сила рёбер и задержки подобраны эмпирически.
+ *
+ * @returns {CascadeGraph}
+ */
+function buildCrucixCascadeGraph() {
+  const g = new CascadeGraph();
+
+  // --- Узлы ---
+  g.addNode('conflict_escalation', 'Эскалация конфликта', 0.05);
+  g.addNode('energy_price_spike', 'Рост цен на энергоносители', 0.10);
+  g.addNode('vix_spike', 'Рост VIX > 30', 0.08);
+  g.addNode('hy_spread_widen', 'Расширение HY-спредов', 0.12);
+  g.addNode('risk_off', 'Режим risk-off', 0.15);
+  g.addNode('sanctions_expansion', 'Расширение санкций', 0.10);
+  g.addNode('ruble_depreciation', 'Ослабление рубля', 0.20);
+  g.addNode('supply_chain_disruption', 'Разрыв цепочек поставок', 0.08);
+  g.addNode('radiation_anomaly', 'Радиационная аномалия', 0.02);
+
+  // --- Рёбра (conditionalProb > 1 — усиливает, < 1 — ослабляет) ---
+  g.addEdge('conflict_escalation', 'energy_price_spike', 3.5, 6, 'Конфликт → цены на нефть/газ');
+  g.addEdge('conflict_escalation', 'vix_spike', 4.0, 0, 'VIX реагирует мгновенно');
+  g.addEdge('conflict_escalation', 'sanctions_expansion', 5.0, 12, 'Санкции в течение суток');
+  g.addEdge('conflict_escalation', 'risk_off', 3.0, 0, 'Немедленный risk-off');
+
+  g.addEdge('energy_price_spike', 'vix_spike', 2.0, 0, 'Энергетический шок → VIX');
+  g.addEdge('vix_spike', 'hy_spread_widen', 2.5, 3, 'VIX → расширение спредов');
+  g.addEdge('hy_spread_widen', 'risk_off', 2.0, 0, 'Спреды → risk-off');
+
+  g.addEdge('sanctions_expansion', 'ruble_depreciation', 3.0, 24, 'Санкции → weakening рубля');
+  g.addEdge('sanctions_expansion', 'supply_chain_disruption', 2.5, 48, 'Санкции → цепочки поставок');
+
+  g.addEdge('radiation_anomaly', 'vix_spike', 2.0, 0, 'Радиация → паника');
+  g.addEdge('radiation_anomaly', 'risk_off', 3.0, 0, 'Радиация → массовый risk-off');
+
+  g.addEdge('risk_off', 'hy_spread_widen', 1.8, 0, 'Risk-off усиливает спреды');
+  g.addEdge('supply_chain_disruption', 'energy_price_spike', 1.5, 48, 'Разрыв поставок → цены');
+
+  return g;
+}
+
+// ============================================================
+// Утилиты
+// ============================================================
+
+/**
+ * Применение отложенных эффектов через N часов.
+ * @param {CascadeGraph} graph
+ * @param {Array} delayed — эффекты из update()
+ * @param {number} hoursElapsed — сколько часов прошло
+ * @returns {Object} — {applied: [...], pending: [...]}
+ */
+function applyDelayedEffects(graph, delayed, hoursElapsed) {
+  const applied = [];
+  const pending = [];
+
+  for (const effect of delayed) {
+    if (effect.lag <= hoursElapsed) {
+      const targetNode = graph.nodes.get(effect.to);
+      if (targetNode) {
+        const delta = (effect.fromProb - targetNode.baseProb) *
+          (effect.conditionalProb - 1) * 0.5;
+        const newProb = Math.max(0.001, Math.min(0.999,
+          targetNode.currentProb + delta));
+        targetNode.currentProb = newProb;
+        applied.push({
+          from: effect.from,
+          to: effect.to,
+          delta: newProb - targetNode.currentProb + delta,
+        });
+      }
+    } else {
+      pending.push({ ...effect, remainingLag: effect.lag - hoursElapsed });
+    }
+  }
+
+  return { applied, pending };
+}
+
+export {
+  CascadeGraph,
+  buildCrucixCascadeGraph,
+  applyDelayedEffects,
+};
+
+
+
+========================================================================
+
+FILE: apis/predict/ensemble.mjs
+SIZE: 12949 bytes
+SHA1: f47bfe3bd42373c3
+========================================================================
+
+// apis/predict/ensemble.mjs
+// Ансамблирование прогностических моделей с динамическим взвешиванием.
+//
+// Теоретическая основа:
+//   Bates, J. M., & Granger, C. W. J. (1969). "The Combination of Forecasts".
+//   Operational Research Quarterly, 20(4), 451-468.
+//   Timmermann, A. (2006). "Forecast Combinations". Handbook of Economic
+//   Forecasting, Vol. 1, 135-196. Elsevier.
+//
+//   Ключевая идея: ансамбль прогнозов превосходит любую отдельную модель
+//   при условии, что модели не полностью коррелированы. Классические методы
+//   агрегации:
+//     1. Weighted average — линейная комбинация
+//     2. Logarithmic opinion pool — геометрическое среднее (байесовски оптимальное)
+//     3. Median — устойчивость к выбросам
+//
+// Применение в Crucix:
+//   Объединение прогнозов байесовского ядра, цепей Маркова, Монте-Карло,
+//   временных рядов, каскадов и LLM-агентов в единый ответ.
+
+// ============================================================
+// Базовые методы агрегации
+// ============================================================
+
+/**
+ * Взвешенное среднее прогнозов.
+ * Классический метод Бейтса-Грейнджера.
+ *
+ * @param {Array<{source: string, forecast: number, weight?: number}>} predictions
+ * @returns {number} — итоговая вероятность
+ */
+function weightedAverage(predictions) {
+  if (!Array.isArray(predictions) || predictions.length === 0) return 0.5;
+
+  let totalWeight = 0;
+  let weightedSum = 0;
+
+  for (const p of predictions) {
+    if (!p || typeof p.forecast !== 'number') continue;
+    const w = typeof p.weight === 'number' ? p.weight : 1;
+    weightedSum += p.forecast * w;
+    totalWeight += w;
+  }
+
+  return totalWeight === 0 ? 0.5 : weightedSum / totalWeight;
+}
+
+/**
+ * Logarithmic Opinion Pool.
+ * Геометрическое среднее — байесовски оптимальный метод при
+ * независимых экспертах с собственными распределениями.
+ *
+ * Более консервативен: наказывает за разногласия.
+ *
+ * @param {Array<{forecast: number, weight?: number}>} predictions
+ * @returns {number}
+ */
+function logOpinionPool(predictions) {
+  if (!Array.isArray(predictions) || predictions.length === 0) return 0.5;
+
+  let logNum = 0;      // Σ w · log(p_i)
+  let logDen = 0;      // Σ w · log(1-p_i)
+  let totalWeight = 0;
+
+  for (const p of predictions) {
+    if (!p || typeof p.forecast !== 'number') continue;
+    const w = typeof p.weight === 'number' ? p.weight : 1;
+    const f = Math.max(0.001, Math.min(0.999, p.forecast));
+    logNum += w * Math.log(f);
+    logDen += w * Math.log(1 - f);
+    totalWeight += w;
+  }
+
+  if (totalWeight === 0) return 0.5;
+
+  logNum /= totalWeight;
+  logDen /= totalWeight;
+
+  const expNum = Math.exp(logNum);
+  const expDen = Math.exp(logDen);
+  const prob = expNum / (expNum + expDen);
+  return Math.max(0.001, Math.min(0.999, prob));
+}
+
+/**
+ * Медиана прогнозов — устойчива к выбросам.
+ *
+ * @param {Array<{forecast: number}>} predictions
+ * @returns {number}
+ */
+function medianForecast(predictions) {
+  if (!Array.isArray(predictions) || predictions.length === 0) return 0.5;
+
+  const sorted = predictions
+    .filter((p) => p && typeof p.forecast === 'number')
+    .map((p) => p.forecast)
+    .sort((a, b) => a - b);
+
+  if (sorted.length === 0) return 0.5;
+
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0
+    ? (sorted[mid - 1] + sorted[mid]) / 2
+    : sorted[mid];
+}
+
+/**
+ * Trimmed mean — отбрасываем крайние значения, усредняем центральные.
+ * Robust метод для ансамблей с шумными моделями.
+ *
+ * @param {Array<{forecast: number}>} predictions
+ * @param {number} trimFraction — доля отбрасываемых с каждой стороны (0..0.4)
+ */
+function trimmedMean(predictions, trimFraction = 0.1) {
+  if (!Array.isArray(predictions) || predictions.length < 3) {
+    return weightedAverage(predictions);
+  }
+
+  const sorted = predictions
+    .filter((p) => p && typeof p.forecast === 'number')
+    .map((p) => p.forecast)
+    .sort((a, b) => a - b);
+
+  const n = sorted.length;
+  const k = Math.floor(n * trimFraction);
+  const trimmed = sorted.slice(k, n - k);
+
+  if (trimmed.length === 0) return sorted[Math.floor(n / 2)];
+
+  return trimmed.reduce((a, b) => a + b, 0) / trimmed.length;
+}
+
+// ============================================================
+// Ансамбль с автоматическим выбором метода
+// ============================================================
+
+/**
+ * Полный ансамбль прогнозов.
+ *
+ * @param {Object} params
+ * @param {Array<{source: string, forecast: number, weight?: number}>} params.predictions
+ * @param {Object} params.brierWeights — веса из ForecastTracker
+ * @param {string} params.method — 'weighted' | 'logpool' | 'median' | 'trimmed' | 'auto'
+ * @returns {Object} — {probability, method, disagreement, contributions}
+ */
+function ensembleForecast({ predictions, brierWeights = {}, method = 'auto' }) {
+  if (!Array.isArray(predictions) || predictions.length === 0) {
+    return {
+      probability: 0.5,
+      method: 'default',
+      disagreement: 0,
+      contributions: [],
+    };
+  }
+
+  // --- Применяем веса из Brier Score ---
+  const weighted = predictions.map((p) => ({
+    source: p.source || 'unknown',
+    forecast: typeof p.forecast === 'number' ? p.forecast : 0.5,
+    weight:
+      brierWeights[p.source] !== undefined
+        ? brierWeights[p.source]
+        : typeof p.weight === 'number'
+        ? p.weight
+        : 1,
+  }));
+
+  // --- Мера разногласия (дисперсия прогнозов) ---
+  const forecasts = weighted.map((p) => p.forecast);
+  const mean = forecasts.reduce((a, b) => a + b, 0) / forecasts.length;
+  const disagreement = Math.sqrt(
+    forecasts.reduce((sum, f) => sum + (f - mean) ** 2, 0) / forecasts.length
+  );
+
+  // --- Выбор метода ---
+  let result;
+  let usedMethod = method;
+
+  if (method === 'auto') {
+    if (disagreement > 0.25) {
+      // Сильные разногласия — устойчивость важнее
+      result = trimmedMean(weighted, 0.15);
+      usedMethod = 'trimmed';
+    } else if (disagreement > 0.15) {
+      // Умеренные разногласия — медиана
+      result = medianForecast(weighted);
+      usedMethod = 'median';
+    } else {
+      // Согласие моделей — log pool
+      result = logOpinionPool(weighted);
+      usedMethod = 'logpool';
+    }
+  } else {
+    switch (method) {
+      case 'weighted':
+        result = weightedAverage(weighted);
+        break;
+      case 'logpool':
+        result = logOpinionPool(weighted);
+        break;
+      case 'median':
+        result = medianForecast(weighted);
+        break;
+      case 'trimmed':
+        result = trimmedMean(weighted, 0.15);
+        break;
+      default:
+        result = weightedAverage(weighted);
+        usedMethod = 'weighted';
+    }
+  }
+
+  // --- Вклады каждого источника ---
+  const contributions = weighted
+    .map((p) => ({
+      source: p.source,
+      forecast: p.forecast,
+      weight: p.weight,
+      deviation: p.forecast - result,
+    }))
+    .sort((a, b) => Math.abs(b.deviation) - Math.abs(a.deviation));
+
+  return {
+    probability: Math.max(0.001, Math.min(0.999, result)),
+    method: usedMethod,
+    disagreement,
+    contributions,
+    rawForecasts: forecasts,
+  };
+}
+
+// ============================================================
+// Специализированный ансамбль для события Crucix
+// ============================================================
+
+/**
+ * Ансамбль для конкретного события: собирает прогнозы из всех моделей
+ * и агрегирует их с учётом Brier-весов.
+ *
+ * @param {Object} models — {bayesian, markov, montecarlo, timeseries}
+ * @param {Object} event — {id, name, prior, evidence, ...}
+ * @param {Object} latestSweep — текущие данные
+ * @param {Object} brierWeights — веса из ForecastTracker
+ * @returns {Object}
+ */
+function crucixEventEnsemble(models, event, latestSweep, brierWeights = {}) {
+  const predictions = [];
+
+  // --- 1. Байесовское ядро ---
+  if (models.bayesian && typeof models.bayesian.updateEvent === 'function' && event.evidence) {
+    try {
+      const bayesResult = models.bayesian.updateEvent(event, event.evidence);
+      predictions.push({
+        source: 'bayesian',
+        forecast: bayesResult.posterior,
+      });
+    } catch (e) {
+      // пропускаем
+    }
+  }
+
+  // --- 2. Цепь Маркова ---
+  if (models.markov && event.currentState) {
+    try {
+      const markovResult = models.markov.predictNext(event.currentState);
+      const crisisProb =
+        (markovResult.distribution && markovResult.distribution[event.targetState]) || 0;
+      predictions.push({
+        source: 'markov',
+        forecast: crisisProb,
+      });
+    } catch (e) {
+      // пропускаем
+    }
+  }
+
+  // --- 3. Монте-Карло ---
+  if (models.montecarlo) {
+    try {
+      const mcResult = models.montecarlo(latestSweep);
+      const mcProb =
+        (mcResult.probabilities && mcResult.probabilities[event.outcomeClass]) || 0;
+      predictions.push({
+        source: 'montecarlo',
+        forecast: mcProb,
+      });
+    } catch (e) {
+      // пропускаем
+    }
+  }
+
+  // --- 4. Временной ряд ---
+  if (models.timeseries && event.history) {
+    try {
+      const tsResult = models.timeseries.forecastSeries(event.history, event.horizon || 3);
+      // Нормализация прогноза к вероятности
+      const lastForecast = tsResult.forecast[0] || 0;
+      const tsProb = Math.max(0.001, Math.min(0.999, lastForecast / 100));
+      predictions.push({
+        source: 'timeseries',
+        forecast: tsProb,
+      });
+    } catch (e) {
+      // пропускаем
+    }
+  }
+
+  if (predictions.length === 0) {
+    return {
+      probability: event.prior || 0.5,
+      method: 'prior',
+      disagreement: 0,
+      contributions: [],
+    };
+  }
+
+  return ensembleForecast({
+    predictions,
+    brierWeights,
+    method: 'auto',
+  });
+}
+
+// ============================================================
+// Утилиты
+// ============================================================
+
+/**
+ * Кросс-валидация методов ансамбля на исторических данных.
+ * Возвращает Brier Score каждого метода.
+ */
+function crossValidateEnsemble(historicalPredictions, method = 'auto') {
+  const valid = historicalPredictions.filter(
+    (p) =>
+      p &&
+      Array.isArray(p.predictions) &&
+      typeof p.actual === 'number'
+  );
+
+  if (valid.length === 0) return null;
+
+  let sumSquaredError = 0;
+
+  for (const item of valid) {
+    const result = ensembleForecast({
+      predictions: item.predictions,
+      method,
+    });
+    sumSquaredError += (result.probability - item.actual) ** 2;
+  }
+
+  return sumSquaredError / valid.length;
+}
+
+/**
+ * Утилита: сравнение всех методов на одном наборе.
+ */
+function compareMethods(predictions, actual) {
+  const methods = ['weighted', 'logpool', 'median', 'trimmed'];
+  const results = {};
+
+  for (const method of methods) {
+    const r = ensembleForecast({ predictions, method });
+    results[method] = {
+      probability: r.probability,
+      squaredError: (r.probability - actual) ** 2,
+    };
+  }
+
+  // Auto
+  const rAuto = ensembleForecast({ predictions, method: 'auto' });
+  results.auto = {
+    probability: rAuto.probability,
+    squaredError: (rAuto.probability - actual) ** 2,
+    selectedMethod: rAuto.method,
+  };
+
+  // Лучший по squared error
+  let best = 'auto';
+  let bestError = results.auto.squaredError;
+  for (const m of methods) {
+    if (results[m].squaredError < bestError) {
+      bestError = results[m].squaredError;
+      best = m;
+    }
+  }
+
+  return {
+    results,
+    bestMethod: best,
+    bestError,
+  };
+}
+
+export {
+  weightedAverage,
+  logOpinionPool,
+  medianForecast,
+  trimmedMean,
+  ensembleForecast,
+  crucixEventEnsemble,
+  crossValidateEnsemble,
+  compareMethods,
+};
+
+
+
+========================================================================

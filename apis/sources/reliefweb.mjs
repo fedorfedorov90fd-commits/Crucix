@@ -1,53 +1,39 @@
 #!/usr/bin/env node
 
 // ============================================================
-// RELIEFWEB.MJS — Источник данных ReliefWeb (гуманитарная помощь)
+// RELIEFWEB — Модуль Crucix
+// ============================================================
+// Версия: 1.0
 // ============================================================
 
-import { fetchWithRetry, fetchJSON } from '../utils/fetch.mjs';
+export async function handleReliefwebAPI(req, res) {
+  const url = new URL(req.url, `http://${req.headers.host}`);
+  const path = url.pathname;
 
-const TIMEOUT = 10000;
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-// Основная функция получения данных
-export async function fetchReliefWeb(options = {}) {
-    const { limit = 50 } = options;
-    
-    try {
-        return generateDemoData(limit);
-    } catch (e) {
-        console.error('[ReliefWeb] Ошибка:', e.message);
-        return generateDemoData(limit);
-    }
+  if (req.method === 'OPTIONS') {
+    res.writeHead(200);
+    res.end();
+    return;
+  }
+
+  if (path === '/api/reliefweb/status' && req.method === 'GET') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      success: true,
+      module: 'reliefweb',
+      status: 'online',
+      version: '1.0',
+      timestamp: new Date().toISOString()
+    }));
+    return;
+  }
+
+  res.writeHead(404, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ success: false, error: 'Неизвестный путь' }));
 }
 
-// Генерация демо-данных
-function generateDemoData(count = 30) {
-    const countries = ['Ukraine', 'Syria', 'Yemen', 'Sudan', 'Ethiopia', 'Somalia', 'Afghanistan', 'Myanmar'];
-    const types = ['Emergency', 'Appeal', 'Update', 'Report', 'Analysis'];
-    
-    const data = [];
-    const now = new Date();
-    for (let i = 0; i < Math.min(count, 30); i++) {
-        const date = new Date(now);
-        date.setDate(date.getDate() - Math.floor(Math.random() * 30));
-        data.push({
-            id: `demo_relief_${i}`,
-            title: `Humanitarian situation in ${countries[i % countries.length]}`,
-            country: countries[i % countries.length],
-            type: types[Math.floor(Math.random() * types.length)],
-            date: date.toISOString().slice(0, 10),
-            description: `Demo relief data for ${countries[i % countries.length]}`,
-            url: '#'
-        });
-    }
-    return data;
-}
-
-export async function checkReliefWebAvailability() {
-    return true;
-}
-
-export default {
-    fetchReliefWeb,
-    checkReliefWebAvailability
-};
+export default { handleReliefwebAPI };

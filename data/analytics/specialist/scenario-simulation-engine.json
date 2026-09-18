@@ -1,0 +1,97 @@
+{
+  "_meta": {
+    "id": "scenario-simulation-engine",
+    "category": "specialist",
+    "version": "1.0.0",
+    "schema_version": "1.0.0",
+    "sources": [
+      "infrastructure/objects"
+    ],
+    "calculator": "ScenarioSimulationEngine",
+    "updated_at": "2026-09-12T15:17:26.328Z",
+    "duration_ms": 5,
+    "checksum": "0fbc2b10bc99144c",
+    "stats": {
+      "nodes": 114,
+      "scenarios": 3
+    }
+  },
+  "data": {
+    "results": [
+      {
+        "scenarioId": "taiwan-blockade",
+        "name": "Блокада Тайваня",
+        "severity": 0.95,
+        "nodesAffected": 3,
+        "affected": [
+          {
+            "id": "chokepoint-taiwan",
+            "impact": 1,
+            "depth": 0
+          },
+          {
+            "id": "port-kaohsiung",
+            "impact": 0.7,
+            "depth": 1
+          },
+          {
+            "id": "port-shenzhen",
+            "impact": 0.7,
+            "depth": 1
+          }
+        ]
+      },
+      {
+        "scenarioId": "hormuz-closure",
+        "name": "Закрытие Ормуза",
+        "severity": 0.9,
+        "nodesAffected": 5,
+        "affected": [
+          {
+            "id": "chokepoint-hormuz",
+            "impact": 1,
+            "depth": 0
+          },
+          {
+            "id": "port-jebel-ali",
+            "impact": 0.7,
+            "depth": 1
+          },
+          {
+            "id": "port-kaohsiung",
+            "impact": 0.7,
+            "depth": 1
+          },
+          {
+            "id": "chokepoint-taiwan",
+            "impact": 0.49,
+            "depth": 2
+          },
+          {
+            "id": "port-shenzhen",
+            "impact": 0.34,
+            "depth": 3
+          }
+        ]
+      },
+      {
+        "scenarioId": "sevastopol-strike",
+        "name": "Удар по Севастополю",
+        "severity": 0.85,
+        "nodesAffected": 1,
+        "affected": [
+          {
+            "id": "mil-sevastopol",
+            "impact": 1,
+            "depth": 0
+          }
+        ]
+      }
+    ],
+    "stats": {
+      "nodes": 114,
+      "scenarios": 3
+    },
+    "generated_at": "2026-09-12T15:17:26.328Z"
+  }
+}

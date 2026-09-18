@@ -1,130 +1,161 @@
 #!/usr/bin/env node
 
+/**
+ * ============================================================
+ * КООРДИНАТОР ПРОЕКТА CRUCIX (РАСШИРЕННАЯ ВЕРСИЯ)
+ * ============================================================
+ * Загружает ВСЕ файлы из PROJECT (копия)/ в память
+ * Формирует единый контекст для Ollama
+ * ============================================================
+ */
+
 import { promises as fs } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { execSync } from 'child_process';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
+const PROJECT_DIR = join(ROOT, 'PROJECT (копия)');
+const CONTEXT_FILE = join(ROOT, 'AI_MEMORY', 'FULL_CONTEXT.txt');
 
-const CONFIG = {
-  PROJECT_DIR: join(ROOT, 'PROJECT'),
-  LOGS_DIR: join(ROOT, 'LOGS'),
-  OLLAMA_URL: 'http://localhost:11434/api/generate',
-  OLLAMA_MODEL: 'deepseek-r1:1.5b',
-};
+// ============================================================
+// 1. ЗАГРУЗКА ВСЕХ ФАЙЛОВ ИЗ ПАПКИ
+// ============================================================
 
-class ProjectCoordinator {
-  async loadProjectState() {
-    console.log('[Coordinator] 📂 Сканирую состояние проекта...');
+async function loadAllFiles(dir) {
+    const files = await fs.readdir(dir);
+    const content = {};
     
-    let state = '';
-    
-    // 1. Читаем STATE.txt
-    try {
-      const s = await fs.readFile(join(CONFIG.PROJECT_DIR, 'STATE.txt'), 'utf-8');
-      state += `=== СОСТОЯНИЕ ПРОЕКТА ===\n${s.slice(0, 500)}\n\n`;
-    } catch { state += '=== СОСТОЯНИЕ НЕ НАЙДЕНО ===\n\n'; }
-    
-    // 2. Читаем решения
-    try {
-      const d = await fs.readFile(join(CONFIG.PROJECT_DIR, 'DECISIONS.txt'), 'utf-8');
-      state += `=== ПРИНЯТЫЕ РЕШЕНИЯ ===\n${d.slice(0, 300)}\n\n`;
-    } catch { state += '=== РЕШЕНИЯ НЕ НАЙДЕНЫ ===\n\n'; }
-    
-    // 3. Сканируем код (какие файлы есть)
-    state += '=== ФАЙЛЫ ПРОЕКТА ===\n';
-    try {
-      const files = await fs.readdir(join(ROOT, 'apis'));
-      state += `- apis/: ${files.length} файлов\n`;
-    } catch { state += '- apis/: папка не найдена\n'; }
-    
-    try {
-      const files = await fs.readdir(join(ROOT, 'scripts'));
-      state += `- scripts/: ${files.length} файлов\n`;
-    } catch { state += '- scripts/: папка не найдена\n'; }
-    
-    // 4. Последние изменения в Git
-    try {
-      const log = execSync('git log --oneline -3', { cwd: ROOT, encoding: 'utf-8' });
-      state += `\n=== ПОСЛЕДНИЕ КОММИТЫ ===\n${log}\n`;
-    } catch { state += '\n=== GIT НЕ ИНИЦИАЛИЗИРОВАН ===\n'; }
-    
-    return state;
-  }
-
-  async queryAI(prompt) {
-    console.log('[Coordinator] ⏳ Отправка запроса к Ollama...');
-    
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 120000);
-
-    try {
-      const response = await fetch(CONFIG.OLLAMA_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        signal: controller.signal,
-        body: JSON.stringify({
-          model: CONFIG.OLLAMA_MODEL,
-          prompt: prompt,
-          stream: false,
-          options: { temperature: 0.3, num_predict: 800 },
-        }),
-      });
-
-      clearTimeout(timeout);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const data = await response.json();
-      return data.response || 'Нет ответа';
-    } catch (err) {
-      clearTimeout(timeout);
-      if (err.name === 'AbortError') throw new Error('⏰ Таймаут');
-      throw err;
+    for (const file of files) {
+        if (file.endsWith('.txt')) {
+            const path = join(dir, file);
+            const data = await fs.readFile(path, 'utf-8');
+            content[file] = data;
+        }
     }
-  }
-
-  async run() {
-    console.log('='.repeat(60));
-    console.log('  КООРДИНАТОР ПРОЕКТА CRUCIX');
-    console.log('='.repeat(60));
     
-    const state = await this.loadProjectState();
-    
-    const prompt = `Ты — координатор open-source проекта Crucix.
-
-На основе этой информации:
-${state}
-
-Ответь кратко (3-5 пунктов):
-1. Какой статус проекта?
-2. Что сделано хорошо?
-3. Что требует внимания?
-4. Что делать дальше?
-5. Есть ли риски?
-
-Ответь на русском языке.`;
-
-    try {
-      const response = await this.queryAI(prompt);
-      
-      const ts = new Date().toISOString().replace(/[:.]/g, '-');
-      const logFile = join(CONFIG.LOGS_DIR, `coordinator-${ts}.log`);
-      await fs.mkdir(CONFIG.LOGS_DIR, { recursive: true });
-      await fs.writeFile(logFile, `=== ЗАПРОС ===\n${prompt}\n\n=== ОТВЕТ ===\n${response}`);
-      
-      console.log('\n' + '='.repeat(60));
-      console.log('  📊 АНАЛИЗ КООРДИНАТОРА');
-      console.log('='.repeat(60));
-      console.log(response);
-      console.log('='.repeat(60));
-      console.log(`[Coordinator] ✅ Лог: ${logFile}`);
-      console.log('[Coordinator] ✅ Готово');
-    } catch (error) {
-      console.error(`[Coordinator] ❌ ${error.message}`);
-    }
-  }
+    return content;
 }
 
-const coordinator = new ProjectCoordinator();
-coordinator.run().catch(console.error);
+// ============================================================
+// 2. ФОРМИРОВАНИЕ ЕДИНОГО КОНТЕКСТА
+// ============================================================
+
+function buildContext(content) {
+    let context = '=== CRUCIX — ПОЛНЫЙ КОНТЕКСТ ПРОЕКТА ===\n';
+    context += `Собрано: ${new Date().toISOString()}\n`;
+    context += `Файлов: ${Object.keys(content).length}\n\n`;
+    
+    // Сортируем по имени файла (чтобы был порядок)
+    const sorted = Object.keys(content).sort();
+    
+    for (const file of sorted) {
+        context += `\n${'='.repeat(60)}\n`;
+        context += `ФАЙЛ: ${file}\n`;
+        context += `${'='.repeat(60)}\n\n`;
+        context += content[file];
+        context += '\n';
+    }
+    
+    return context;
+}
+
+// ============================================================
+// 3. СОХРАНЕНИЕ КОНТЕКСТА
+// ============================================================
+
+async function saveContext(context) {
+    await fs.writeFile(CONTEXT_FILE, context);
+    console.log(`✅ Контекст сохранён: ${CONTEXT_FILE}`);
+    console.log(`📊 Размер: ${(context.length / 1024).toFixed(0)} KB`);
+}
+
+// ============================================================
+// 4. ЗАПРОС К ЛОКАЛЬНОМУ AI (Ollama)
+// ============================================================
+
+async function queryLocalAI(prompt, context) {
+    const url = 'http://localhost:11434/api/generate';
+    
+    // Берём только первые 15000 символов контекста (чтобы не перегружать)
+    const shortContext = context.slice(0, 12000);
+    
+    const fullPrompt = `Ты — координатор проекта CRUCIX.
+    
+Вот полная информация о проекте:
+${shortContext}
+
+Вопрос пользователя: ${prompt}
+
+Отвечай кратко, но конкретно, ссылаясь на файлы проекта.`;
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: 'deepseek-r1:1.5b',
+                prompt: fullPrompt,
+                stream: false,
+                options: {
+                    temperature: 0.3,
+                    num_predict: 800
+                }
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Ollama ошибка: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data.response || 'Нет ответа от модели';
+    } catch (e) {
+        return `Ошибка: ${e.message}`;
+    }
+}
+
+// ============================================================
+// 5. ГЛАВНАЯ ФУНКЦИЯ
+// ============================================================
+
+async function main() {
+    console.log('='.repeat(60));
+    console.log('  КООРДИНАТОР CRUCIX (РАСШИРЕННЫЙ)');
+    console.log('='.repeat(60));
+    console.log('');
+    
+    // 1. Загружаем все файлы
+    console.log('📁 Загрузка файлов из PROJECT (копия)/...');
+    const content = await loadAllFiles(PROJECT_DIR);
+    console.log(`✅ Загружено ${Object.keys(content).length} файлов`);
+    
+    // 2. Формируем контекст
+    console.log('🧠 Формирование контекста...');
+    const context = buildContext(content);
+    console.log(`✅ Контекст создан (${(context.length / 1024).toFixed(0)} KB)`);
+    
+    // 3. Сохраняем контекст
+    await saveContext(context);
+    
+    // 4. Если есть аргумент — задаём вопрос
+    const question = process.argv.slice(2).join(' ');
+    if (question) {
+        console.log('');
+        console.log('💬 Вопрос:', question);
+        console.log('');
+        console.log('🤖 Ответ:');
+        const answer = await queryLocalAI(question, context);
+        console.log(answer);
+    } else {
+        console.log('');
+        console.log('💡 Использование: node scripts/coordinator.mjs "Ваш вопрос"');
+        console.log('💡 Без вопроса — просто обновляет контекст');
+    }
+}
+
+// ============================================================
+// 6. ЗАПУСК
+// ============================================================
+
+main().catch(console.error);

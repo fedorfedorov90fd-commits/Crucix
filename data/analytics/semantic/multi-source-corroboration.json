@@ -1,0 +1,607 @@
+{
+  "_meta": {
+    "id": "multi-source-corroboration",
+    "category": "semantic",
+    "version": "1.0.0",
+    "schema_version": "1.0.0",
+    "sources": [
+      "news",
+      "gdelt"
+    ],
+    "calculator": "MultiSourceCorroboration",
+    "updated_at": "2026-09-12T15:02:38.698Z",
+    "duration_ms": 6,
+    "checksum": "c7cd39cd93a6fe7b",
+    "stats": {
+      "total_claims": 32,
+      "byVerdict": {
+        "likely": 32
+      }
+    }
+  },
+  "data": {
+    "claims": [
+      {
+        "id": "claim_news_0.250327736455878",
+        "text": "Jury in Lindsay Clancy trial ends second day of deliberations without a verdict - AP News",
+        "verdict": "likely",
+        "supportingCount": 1,
+        "opposingCount": 0,
+        "totalSources": 1,
+        "avgCredibility": 0.7,
+        "confidence": 0.2,
+        "sources": [
+          {
+            "source": "news",
+            "credibility": 0.7,
+            "timestamp": 1789225358702,
+            "supports": true
+          }
+        ]
+      },
+      {
+        "id": "claim_news_0.07370994421956811",
+        "text": "Meta’s $18 billion settlement puts TikTok and YouTube on notice. Who's next on the firing line? - CNBC",
+        "verdict": "likely",
+        "supportingCount": 1,
+        "opposingCount": 0,
+        "totalSources": 1,
+        "avgCredibility": 0.7,
+        "confidence": 0.2,
+        "sources": [
+          {
+            "source": "news",
+            "credibility": 0.7,
+            "timestamp": 1789225358703,
+            "supports": true
+          }
+        ]
+      },
+      {
+        "id": "claim_news_0.23494594494444665",
+        "text": "Nancy Grace Roman Telescope live updates: SpaceX readying Roman for launch aboard Falcon Heavy rocket - Space",
+        "verdict": "likely",
+        "supportingCount": 1,
+        "opposingCount": 0,
+        "totalSources": 1,
+        "avgCredibility": 0.7,
+        "confidence": 0.2,
+        "sources": [
+          {
+            "source": "news",
+            "credibility": 0.7,
+            "timestamp": 1789225358703,
+            "supports": true
+          }
+        ]
+      },
+      {
+        "id": "claim_news_0.4691082643923936",
+        "text": "Judge throws out confession by alleged 9/11 mastermind Khalid Sheikh Mohammed - CBS News",
+        "verdict": "likely",
+        "supportingCount": 1,
+        "opposingCount": 0,
+        "totalSources": 1,
+        "avgCredibility": 0.7,
+        "confidence": 0.2,
+        "sources": [
+          {
+            "source": "news",
+            "credibility": 0.7,
+            "timestamp": 1789225358703,
+            "supports": true
+          }
+        ]
+      },
+      {
+        "id": "claim_news_0.16367714751058782",
+        "text": "OpenAI says it's ending its deal with Cursor because Elon Musk's companies violate contracts - Business Insider",
+        "verdict": "likely",
+        "supportingCount": 1,
+        "opposingCount": 0,
+        "totalSources": 1,
+        "avgCredibility": 0.7,
+        "confidence": 0.2,
+        "sources": [
+          {
+            "source": "news",
+            "credibility": 0.7,
+            "timestamp": 1789225358703,
+            "supports": true
+          }
+        ]
+      },
+      {
+        "id": "claim_news_0.3945764549773323",
+        "text": "3 instant takeaways from Chiefs’ Preseason Week 3 - Arrowhead Pride",
+        "verdict": "likely",
+        "supportingCount": 1,
+        "opposingCount": 0,
+        "totalSources": 1,
+        "avgCredibility": 0.7,
+        "confidence": 0.2,
+        "sources": [
+          {
+            "source": "news",
+            "credibility": 0.7,
+            "timestamp": 1789225358703,
+            "supports": true
+          }
+        ]
+      },
+      {
+        "id": "claim_news_0.25460529969449475",
+        "text": "Tennessee moves to rename Nashville International Airport in Dolly Parton’s honor - NBC News",
+        "verdict": "likely",
+        "supportingCount": 1,
+        "opposingCount": 0,
+        "totalSources": 1,
+        "avgCredibility": 0.7,
+        "confidence": 0.2,
+        "sources": [
+          {
+            "source": "news",
+            "credibility": 0.7,
+            "timestamp": 1789225358703,
+            "supports": true
+          }
+        ]
+      },
+      {
+        "id": "claim_news_0.7348322384982797",
+        "text": "Trump hails 'historic' deal for US to control 65bn barrels of Venezuela's oil - BBC",
+        "verdict": "likely",
+        "supportingCount": 1,
+        "opposingCount": 0,
+        "totalSources": 1,
+        "avgCredibility": 0.7,
+        "confidence": 0.2,
+        "sources": [
+          {
+            "source": "news",
+            "credibility": 0.7,
+            "timestamp": 1789225358703,
+            "supports": true
+          }
+        ]
+      },
+      {
+        "id": "claim_news_0.0947989101785276",
+        "text": "British far-right provocateur Milo Yiannopoulos detained by ICE - The Washington Post",
+        "verdict": "likely",
+        "supportingCount": 1,
+        "opposingCount": 0,
+        "totalSources": 1,
+        "avgCredibility": 0.7,
+        "confidence": 0.2,
+        "sources": [
+          {
+            "source": "news",
+            "credibility": 0.7,
+            "timestamp": 1789225358703,
+            "supports": true
+          }
+        ]
+      },
+      {
+        "id": "claim_news_0.6060273942958123",
+        "text": "WWE SmackDown Spoilers For 9/4 (Taped On 8/28) - Fightful",
+        "verdict": "likely",
+        "supportingCount": 1,
+        "opposingCount": 0,
+        "totalSources": 1,
+        "avgCredibility": 0.7,
+        "confidence": 0.2,
+        "sources": [
+          {
+            "source": "news",
+            "credibility": 0.7,
+            "timestamp": 1789225358703,
+            "supports": true
+          }
+        ]
+      },
+      {
+        "id": "claim_news_0.4567201098179494",
+        "text": "White House teleprompter operator ordered to pay $172K for placing prediction market bets on Trump’s speeches - NBC News",
+        "verdict": "likely",
+        "supportingCount": 1,
+        "opposingCount": 0,
+        "totalSources": 1,
+        "avgCredibility": 0.7,
+        "confidence": 0.2,
+        "sources": [
+          {
+            "source": "news",
+            "credibility": 0.7,
+            "timestamp": 1789225358703,
+            "supports": true
+          }
+        ]
+      },
+      {
+        "id": "claim_news_0.72179643392308",
+        "text": "Fantasy football rankings 2026: Sleepers, breakouts, busts from computer that hit Daniel Jones' surprise year - CBS Sports",
+        "verdict": "likely",
+        "supportingCount": 1,
+        "opposingCount": 0,
+        "totalSources": 1,
+        "avgCredibility": 0.7,
+        "confidence": 0.2,
+        "sources": [
+          {
+            "source": "news",
+            "credibility": 0.7,
+            "timestamp": 1789225358703,
+            "supports": true
+          }
+        ]
+      },
+      {
+        "id": "claim_news_0.7392633489435496",
+        "text": "California couple recounts surviving deadly Nepal flood: \"I knew I was going to die\" - CBS News",
+        "verdict": "likely",
+        "supportingCount": 1,
+        "opposingCount": 0,
+        "totalSources": 1,
+        "avgCredibility": 0.7,
+        "confidence": 0.2,
+        "sources": [
+          {
+            "source": "news",
+            "credibility": 0.7,
+            "timestamp": 1789225358703,
+            "supports": true
+          }
+        ]
+      },
+      {
+        "id": "claim_news_0.22062364126977374",
+        "text": "Close race as Iceland votes on whether to restart talks on joining EU - BBC",
+        "verdict": "likely",
+        "supportingCount": 1,
+        "opposingCount": 0,
+        "totalSources": 1,
+        "avgCredibility": 0.7,
+        "confidence": 0.2,
+        "sources": [
+          {
+            "source": "news",
+            "credibility": 0.7,
+            "timestamp": 1789225358703,
+            "supports": true
+          }
+        ]
+      },
+      {
+        "id": "claim_news_0.8021771052766453",
+        "text": "Box Office: 'Spider-Man' No. 1, 'Coyote Vs. Acme' $12M+, 'Dog Stars' Tanks - Deadline",
+        "verdict": "likely",
+        "supportingCount": 1,
+        "opposingCount": 0,
+        "totalSources": 1,
+        "avgCredibility": 0.7,
+        "confidence": 0.2,
+        "sources": [
+          {
+            "source": "news",
+            "credibility": 0.7,
+            "timestamp": 1789225358703,
+            "supports": true
+          }
+        ]
+      },
+      {
+        "id": "claim_news_0.2879321261209582",
+        "text": "‘Forever starts now:’ Hillsborough approves final Rays stadium deal - Tampa Bay Times",
+        "verdict": "likely",
+        "supportingCount": 1,
+        "opposingCount": 0,
+        "totalSources": 1,
+        "avgCredibility": 0.7,
+        "confidence": 0.2,
+        "sources": [
+          {
+            "source": "news",
+            "credibility": 0.7,
+            "timestamp": 1789225358703,
+            "supports": true
+          }
+        ]
+      },
+      {
+        "id": "claim_news_0.7398110896075563",
+        "text": "Measles’ role in child’s death ignites fight between RFK Jr. and Pennsylvania governor - The Washington Post",
+        "verdict": "likely",
+        "supportingCount": 1,
+        "opposingCount": 0,
+        "totalSources": 1,
+        "avgCredibility": 0.7,
+        "confidence": 0.2,
+        "sources": [
+          {
+            "source": "news",
+            "credibility": 0.7,
+            "timestamp": 1789225358703,
+            "supports": true
+          }
+        ]
+      },
+      {
+        "id": "claim_news_0.6394153048193791",
+        "text": "Xbox CEO calls Project Helix a ‘family of devices’ - The Verge",
+        "verdict": "likely",
+        "supportingCount": 1,
+        "opposingCount": 0,
+        "totalSources": 1,
+        "avgCredibility": 0.7,
+        "confidence": 0.2,
+        "sources": [
+          {
+            "source": "news",
+            "credibility": 0.7,
+            "timestamp": 1789225358703,
+            "supports": true
+          }
+        ]
+      },
+      {
+        "id": "claim_news_0.7417029902367946",
+        "text": "'Jolene' surges after Dolly Parton’s death as fans stream her biggest hits - WYFF",
+        "verdict": "likely",
+        "supportingCount": 1,
+        "opposingCount": 0,
+        "totalSources": 1,
+        "avgCredibility": 0.7,
+        "confidence": 0.2,
+        "sources": [
+          {
+            "source": "news",
+            "credibility": 0.7,
+            "timestamp": 1789225358703,
+            "supports": true
+          }
+        ]
+      },
+      {
+        "id": "claim_news_0.9459394125617364",
+        "text": "Ebola spreads to two new zones in DRC; 60 areas now affected - Al Jazeera",
+        "verdict": "likely",
+        "supportingCount": 1,
+        "opposingCount": 0,
+        "totalSources": 1,
+        "avgCredibility": 0.7,
+        "confidence": 0.2,
+        "sources": [
+          {
+            "source": "news",
+            "credibility": 0.7,
+            "timestamp": 1789225358703,
+            "supports": true
+          }
+        ]
+      },
+      {
+        "id": "claim_news_0.5815797872699373",
+        "text": "Trump Assails NY’s Hochul After She Rejects ‘Lake America’ Name - Bloomberg.com",
+        "verdict": "likely",
+        "supportingCount": 1,
+        "opposingCount": 0,
+        "totalSources": 1,
+        "avgCredibility": 0.7,
+        "confidence": 0.2,
+        "sources": [
+          {
+            "source": "news",
+            "credibility": 0.7,
+            "timestamp": 1789225358703,
+            "supports": true
+          }
+        ]
+      },
+      {
+        "id": "claim_news_0.30564786911008546",
+        "text": "Potential measles exposure announced at Warren hospital - WKBN.com",
+        "verdict": "likely",
+        "supportingCount": 1,
+        "opposingCount": 0,
+        "totalSources": 1,
+        "avgCredibility": 0.7,
+        "confidence": 0.2,
+        "sources": [
+          {
+            "source": "news",
+            "credibility": 0.7,
+            "timestamp": 1789225358703,
+            "supports": true
+          }
+        ]
+      },
+      {
+        "id": "claim_news_0.11093280032744035",
+        "text": "9th Circuit sides with states in Kalshi gambling fight, potentially reviving Arizona's prosecution - Arizona Mirror",
+        "verdict": "likely",
+        "supportingCount": 1,
+        "opposingCount": 0,
+        "totalSources": 1,
+        "avgCredibility": 0.7,
+        "confidence": 0.2,
+        "sources": [
+          {
+            "source": "news",
+            "credibility": 0.7,
+            "timestamp": 1789225358703,
+            "supports": true
+          }
+        ]
+      },
+      {
+        "id": "claim_news_0.5976780407829905",
+        "text": "Avalanche star Cale Makar signs largest contract in NHL history - The Denver Post",
+        "verdict": "likely",
+        "supportingCount": 1,
+        "opposingCount": 0,
+        "totalSources": 1,
+        "avgCredibility": 0.7,
+        "confidence": 0.2,
+        "sources": [
+          {
+            "source": "news",
+            "credibility": 0.7,
+            "timestamp": 1789225358703,
+            "supports": true
+          }
+        ]
+      },
+      {
+        "id": "claim_news_0.8882707832427617",
+        "text": "Trump administration appeals latest ruling blocking his mail voting order from taking effect - AP News",
+        "verdict": "likely",
+        "supportingCount": 1,
+        "opposingCount": 0,
+        "totalSources": 1,
+        "avgCredibility": 0.7,
+        "confidence": 0.2,
+        "sources": [
+          {
+            "source": "news",
+            "credibility": 0.7,
+            "timestamp": 1789225358703,
+            "supports": true
+          }
+        ]
+      },
+      {
+        "id": "claim_news_0.6740594911021842",
+        "text": "After 6 months of war, Iran's battered regime remains entrenched - NPR",
+        "verdict": "likely",
+        "supportingCount": 1,
+        "opposingCount": 0,
+        "totalSources": 1,
+        "avgCredibility": 0.7,
+        "confidence": 0.2,
+        "sources": [
+          {
+            "source": "news",
+            "credibility": 0.7,
+            "timestamp": 1789225358703,
+            "supports": true
+          }
+        ]
+      },
+      {
+        "id": "claim_news_0.6275894563933333",
+        "text": "Samsung Galaxy S26 series receives seventh One UI 9 beta with Galaxy Z Fold8 series' features - GSMArena.com news - GSMArena.com",
+        "verdict": "likely",
+        "supportingCount": 1,
+        "opposingCount": 0,
+        "totalSources": 1,
+        "avgCredibility": 0.7,
+        "confidence": 0.2,
+        "sources": [
+          {
+            "source": "news",
+            "credibility": 0.7,
+            "timestamp": 1789225358703,
+            "supports": true
+          }
+        ]
+      },
+      {
+        "id": "claim_news_0.36371592489536586",
+        "text": "Apple One and Apple TV subscription prices increase by up to 20 percent - Ars Technica",
+        "verdict": "likely",
+        "supportingCount": 1,
+        "opposingCount": 0,
+        "totalSources": 1,
+        "avgCredibility": 0.7,
+        "confidence": 0.2,
+        "sources": [
+          {
+            "source": "news",
+            "credibility": 0.7,
+            "timestamp": 1789225358703,
+            "supports": true
+          }
+        ]
+      },
+      {
+        "id": "claim_news_0.027640936268257477",
+        "text": "Norway’s King Harald, who fled Nazis as a child and modernized monarchy, dies at 89 - The Washington Post",
+        "verdict": "likely",
+        "supportingCount": 1,
+        "opposingCount": 0,
+        "totalSources": 1,
+        "avgCredibility": 0.7,
+        "confidence": 0.2,
+        "sources": [
+          {
+            "source": "news",
+            "credibility": 0.7,
+            "timestamp": 1789225358703,
+            "supports": true
+          }
+        ]
+      },
+      {
+        "id": "claim_news_0.5929524664617516",
+        "text": "Friday Northern Lights Forecast: 10 States May See The Aurora Borealis Tonight - Forbes",
+        "verdict": "likely",
+        "supportingCount": 1,
+        "opposingCount": 0,
+        "totalSources": 1,
+        "avgCredibility": 0.7,
+        "confidence": 0.2,
+        "sources": [
+          {
+            "source": "news",
+            "credibility": 0.7,
+            "timestamp": 1789225358703,
+            "supports": true
+          }
+        ]
+      },
+      {
+        "id": "claim_gdelt_1",
+        "text": "Новый пакет санкций против России",
+        "verdict": "likely",
+        "supportingCount": 1,
+        "opposingCount": 0,
+        "totalSources": 1,
+        "avgCredibility": 0.6,
+        "confidence": 0.2,
+        "sources": [
+          {
+            "source": "gdelt",
+            "credibility": 0.6,
+            "timestamp": 1789225358703,
+            "supports": true
+          }
+        ]
+      },
+      {
+        "id": "claim_gdelt_2",
+        "text": "Военные учения НАТО в Балтии",
+        "verdict": "likely",
+        "supportingCount": 1,
+        "opposingCount": 0,
+        "totalSources": 1,
+        "avgCredibility": 0.6,
+        "confidence": 0.2,
+        "sources": [
+          {
+            "source": "gdelt",
+            "credibility": 0.6,
+            "timestamp": 1789225358704,
+            "supports": true
+          }
+        ]
+      }
+    ],
+    "byVerdict": {
+      "likely": 32
+    },
+    "total": 32,
+    "generated_at": "2026-09-12T15:02:38.698Z"
+  }
+}

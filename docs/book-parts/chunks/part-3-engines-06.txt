@@ -1,0 +1,744 @@
+===== ЧАСТЬ part-3-engines · КУСОК 06/06 · 22.8 KB =====
+
+FILE: apis/predict/crucix_engine_v4.mjs
+SIZE: 9221 bytes
+SHA1: 9cf36d82b1be15c1
+========================================================================
+
+// apis/predict/crucix_engine_v4.mjs
+// Crucix Engine v4: Ultimate Edition
+//
+// Что нового по сравнению с v3:
+//   - Hook Manager (lifecycle events для плагинов)
+//   - Plugin Loader + Registry
+//   - Integration Manager (Slack, Notion, Obsidian, RSS, Email, Webhook)
+//   - PWA push notifications
+//   - REST API для plugins
+//   - Graceful shutdown
+
+import { runCrucixExtendedV3 } from './crucix_engine_v3.mjs';
+import { getHookManager } from '../../plugins/hooks.mjs';
+import { getPluginLoader } from '../../plugins/loader.mjs';
+import { getPluginRegistry } from '../../plugins/registry.mjs';
+import { getIntegrationManager } from '../../integrations/webhook_manager.mjs';
+import { loadOrCreateVAPIDKeys, SubscriptionStore, notifyPush, createPushHandlers } from '../../dashboard/pwa/push.js';
+import { handlePluginsAPI } from './plugins_api.mjs';
+
+export class CrucixEngineV4 {
+  constructor(config = {}) {
+    this.config = config;
+    this.hooks = getHookManager();
+    this.plugins = getPluginLoader();
+    this.registry = getPluginRegistry();
+    this.integrations = getIntegrationManager(config.integrations || {});
+    this.vapidKeys = loadOrCreateVAPIDKeys();
+    this.pushStore = new SubscriptionStore();
+    this.pushHandlers = createPushHandlers(this.vapidKeys, this.pushStore);
+
+    this.state = {
+      loaded: false,
+      pluginsLoaded: 0,
+      lastCycle: null,
+      cyclesCompleted: 0,
+      startedAt: new Date().toISOString(),
+    };
+  }
+
+  async init() {
+    console.log('[crucix-v4] Initializing...');
+
+    const pluginResults = await this.plugins.loadAll();
+    this.state.pluginsLoaded = pluginResults.filter(r => r.ok).length;
+
+    console.log(`[crucix-v4] Plugins loaded: ${this.state.pluginsLoaded}/${pluginResults.length}`);
+
+    for (const [name, plugin] of this.plugins.plugins) {
+      for (const hookName of plugin.manifest.hooks || []) {
+        if (typeof plugin.module[hookName] === 'function') {
+          this.hooks.on(hookName, plugin.module[hookName], {
+            pluginName: name,
+            priority: plugin.manifest.priority || 0,
+          });
+        }
+      }
+    }
+
+    await this.hooks.emit('onStartup');
+
+    this.hooks.scheduleTimer('onTimer', 60000);
+
+    this.state.loaded = true;
+
+    process.on('SIGTERM', () => this.shutdown());
+    process.on('SIGINT', () => this.shutdown());
+
+    console.log('[crucix-v4] Ready');
+    return this;
+  }
+
+  async runCycle(latest, history) {
+    const t0 = Date.now();
+
+    console.log(`[crucix-v4] Cycle start (${new Date().toISOString()})`);
+
+    await this.hooks.emit('beforePrediction', latest);
+
+    const result = {
+      timestamp: new Date().toISOString(),
+      version: '4.0.0',
+      events: [],
+      extended: {},
+    };
+
+    await runCrucixExtendedV3(latest, history, result);
+
+    const { getExtendedTracker } = await import('./extended_tracker.mjs');
+    const { computeCompositeRisk } = await import('./composite_risk.mjs');
+
+    const tracker = getExtendedTracker();
+    tracker.registerAll(result.extended, result);
+    tracker.autoResolve(latest);
+    result.trackerStats = tracker.getStats();
+
+    result.compositeRisk = computeCompositeRisk(result.extended, result, { useTracker: true });
+
+    await this.hooks.emit('afterPrediction', result);
+
+    for (const sig of result.compositeRisk?.signals || []) {
+      await this.hooks.emit('onSignal', sig, sig.value);
+      if (sig.value > 0.7) {
+        await this.hooks.emit('onSignalHigh', sig);
+      }
+    }
+
+    if (result.extended?.changePointVix?.changeProbability > 0.5) {
+      await this.hooks.emit('onRegimeChange', result.extended.changePointVix);
+    }
+
+    if (result.compositeRisk?.level === 'critical' || result.compositeRisk?.level === 'high') {
+      await this.hooks.emit('onAlert', {
+        level: result.compositeRisk.level,
+        composite: result.compositeRisk.composite,
+        topDrivers: result.compositeRisk.topDrivers,
+      });
+    }
+
+    try {
+      const { publishPrediction } = await import('./ws.mjs');
+      publishPrediction(result);
+    } catch (e) {
+      // ws не запущен — ok
+    }
+
+    try {
+      await this.integrations.dispatch(result);
+    } catch (e) {
+      console.warn('[crucix-v4] Integrations error:', e.message);
+    }
+
+    try {
+      const pushResult = await notifyPush(result, this.pushStore, this.vapidKeys);
+      result.pushResult = pushResult;
+    } catch (e) {
+      console.warn('[crucix-v4] Push error:', e.message);
+    }
+
+    result.durationMs = Date.now() - t0;
+    this.state.cyclesCompleted++;
+    this.state.lastCycle = result.timestamp;
+
+    try {
+      const { writeFileSync, mkdirSync, existsSync } = await import('node:fs');
+      const { join, dirname } = await import('node:path');
+      const { fileURLToPath } = await import('node:url');
+      const __dirname = dirname(fileURLToPath(import.meta.url));
+      const PREDICTIONS_DIR = join(__dirname, '..', '..', 'runs', 'predictions');
+
+      if (!existsSync(PREDICTIONS_DIR)) mkdirSync(PREDICTIONS_DIR, { recursive: true });
+      writeFileSync(join(PREDICTIONS_DIR, 'latest.json'), JSON.stringify(result, null, 2));
+    } catch (e) {
+      console.error('[crucix-v4] Save error:', e.message);
+    }
+
+    console.log(`[crucix-v4] Cycle complete in ${result.durationMs}ms - composite=${result.compositeRisk?.composite?.toFixed(3)} (${result.compositeRisk?.level})`);
+
+    return result;
+  }
+
+  async handleHTTP(req, res) {
+    const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    if (req.method === 'OPTIONS') {
+      res.writeHead(204);
+      res.end();
+      return true;
+    }
+
+    if (url.pathname.startsWith('/api/plugins')) {
+      await handlePluginsAPI(req, res, url);
+      return true;
+    }
+
+    if (url.pathname === '/api/push/vapid-key' && req.method === 'GET') {
+      return this.pushHandlers.getVapidKey(req, res);
+    }
+    if (url.pathname === '/api/push/subscribe' && req.method === 'POST') {
+      return await this.pushHandlers.subscribe(req, res);
+    }
+    if (url.pathname === '/api/push/unsubscribe' && req.method === 'POST') {
+      return await this.pushHandlers.unsubscribe(req, res);
+    }
+    if (url.pathname === '/api/push/test' && req.method === 'POST') {
+      return await this.pushHandlers.test(req, res);
+    }
+
+    if (url.pathname === '/api/integrations/status') {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(this.integrations.status(), null, 2));
+      return true;
+    }
+
+    if (url.pathname === '/api/engine/status') {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        version: '4.0.0',
+        state: this.state,
+        hooks: this.hooks.status(),
+        plugins: {
+          loaded: this.plugins.plugins.size,
+          list: this.plugins.list(),
+        },
+        integrations: this.integrations.status(),
+        push: {
+          subscriptions: this.pushStore.count(),
+        },
+      }, null, 2));
+      return true;
+    }
+
+    return false;
+  }
+
+  async shutdown() {
+    console.log('[crucix-v4] Shutting down...');
+
+    this.hooks.stopTimers();
+    await this.hooks.emit('onShutdown');
+
+    for (const name of this.plugins.plugins.keys()) {
+      await this.plugins.unload(name);
+    }
+
+    process.exit(0);
+  }
+}
+
+export async function runFullCrucixV4Cycle(latestPath, opts = {}) {
+  const { readFileSync, readdirSync } = await import('node:fs');
+  const { join, dirname } = await import('node:path');
+  const { fileURLToPath } = await import('node:url');
+  const __dirname = dirname(fileURLToPath(import.meta.url));
+
+  const MEMORY_DIR = join(__dirname, '..', '..', 'runs', 'memory');
+
+  let latest;
+  try {
+    const lPath = latestPath || join(__dirname, '..', '..', 'runs', 'latest.json');
+    latest = JSON.parse(readFileSync(lPath, 'utf-8'));
+  } catch {
+    return { error: 'cannot_read_latest' };
+  }
+
+  const history = [];
+  try {
+    const files = readdirSync(MEMORY_DIR).filter(f => f.endsWith('.json')).sort().reverse().slice(0, 500);
+    for (const file of files) {
+      try { history.push(JSON.parse(readFileSync(join(MEMORY_DIR, file), 'utf-8'))); } catch {}
+    }
+  } catch {}
+
+  const engine = new CrucixEngineV4(opts.config || {});
+  await engine.init();
+
+  return await engine.runCycle(latest, history);
+}
+
+if (process.argv[1] && process.argv[1].endsWith('crucix_engine_v4.mjs')) {
+  runFullCrucixV4Cycle().then(result => {
+    if (!result) return;
+    console.log('\n========================================');
+    console.log('  Cycle complete');
+    console.log(`  Composite: ${result.compositeRisk?.composite?.toFixed(3)} (${result.compositeRisk?.level})`);
+    console.log(`  Signals: ${result.compositeRisk?.signals?.length || 0}`);
+    console.log(`  Duration: ${result.durationMs}ms`);
+    console.log('========================================\n');
+  }).catch(e => {
+    console.error('Error:', e);
+    process.exit(1);
+  });
+}
+
+export { runCrucixExtendedV3 };
+
+
+
+========================================================================
+
+FILE: apis/predict/register_coordinat_all.mjs
+SIZE: 0 bytes
+SHA1: da39a3ee5e6b4b0d
+========================================================================
+
+
+
+
+========================================================================
+
+FILE: apis/predict/plugins_api.mjs
+SIZE: 10788 bytes
+SHA1: a15a2bd82b3f891d
+========================================================================
+
+// apis/predict/plugins_api.mjs
+// REST API для управления плагинами
+//
+// Endpoints:
+//   GET    /api/plugins                — список установленных
+//   GET    /api/plugins/available      — список доступных в реестре
+//   GET    /api/plugins/:name          — детали плагина
+//   GET    /api/plugins/:name/logs     — логи плагина
+//   POST   /api/plugins/:name/install  — установка
+//   POST   /api/plugins/:name/uninstall — удаление
+//   POST   /api/plugins/:name/enable   — включить
+//   POST   /api/plugins/:name/disable  — выключить
+//   GET    /api/plugins/:name/config   — получить конфиг
+//   PUT    /api/plugins/:name/config   — обновить конфиг
+//   POST   /api/plugins/reload         — перезагрузить все
+//   GET    /api/plugins/status         — общий статус
+
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, rmSync, cpSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { getPluginLoader } from '../../plugins/loader.mjs';
+import { getHookManager } from '../../plugins/hooks.mjs';
+import { getPluginRegistry, FEATURED_PLUGINS } from '../../plugins/registry.mjs';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const ROOT = join(__dirname, '..', '..');
+const PLUGINS_DIR = join(ROOT, 'plugins', 'installed');
+const CONFIG_DIR = join(ROOT, 'runs', 'plugins');
+const LOGS_DIR = join(CONFIG_DIR, 'logs');
+
+for (const d of [PLUGINS_DIR, CONFIG_DIR, LOGS_DIR]) {
+  if (!existsSync(d)) mkdirSync(d, { recursive: true });
+}
+
+class PluginManager {
+  constructor() {
+    this.loader = getPluginLoader({ pluginsDir: PLUGINS_DIR });
+    this.hooks = getHookManager();
+    this.registry = getPluginRegistry();
+    this.pluginStates = this._loadStates();
+  }
+
+  _loadStates() {
+    const file = join(CONFIG_DIR, 'states.json');
+    if (!existsSync(file)) return {};
+    try {
+      return JSON.parse(readFileSync(file, 'utf-8'));
+    } catch {
+      return {};
+    }
+  }
+
+  _saveStates() {
+    const file = join(CONFIG_DIR, 'states.json');
+    writeFileSync(file, JSON.stringify(this.pluginStates, null, 2));
+  }
+
+  getState(name) {
+    return this.pluginStates[name] || { enabled: true, installed: false };
+  }
+
+  setState(name, state) {
+    this.pluginStates[name] = { ...this.getState(name), ...state };
+    this._saveStates();
+  }
+
+  listInstalled() {
+    const installed = this.loader.list();
+    return installed.map(p => {
+      const state = this.getState(p.name);
+      return {
+        ...p,
+        enabled: state.enabled !== false,
+        installed: true,
+        loadedAt: state.loadedAt,
+        configPath: join(CONFIG_DIR, `${p.name}.json`),
+      };
+    });
+  }
+
+  listAvailable() {
+    const installed = new Set(this.loader.list().map(p => p.name));
+    return FEATURED_PLUGINS.map(p => ({
+      ...p,
+      isInstalled: installed.has(p.name),
+    }));
+  }
+
+  getDetails(name) {
+    const info = this.loader.info(name);
+    if (!info) return null;
+
+    const state = this.getState(name);
+
+    return {
+      ...info,
+      enabled: state.enabled !== false,
+      config: this.getConfig(name),
+      stats: this.getStats(name),
+    };
+  }
+
+  async install(name, source = null) {
+    if (this.loader.plugins.has(name)) {
+      return { ok: false, error: 'already_installed' };
+    }
+
+    const examplePath = join(ROOT, 'plugins', 'examples', name);
+
+    if (existsSync(examplePath)) {
+      const targetPath = join(PLUGINS_DIR, name);
+      if (existsSync(targetPath)) {
+        rmSync(targetPath, { recursive: true });
+      }
+      cpSync(examplePath, targetPath, { recursive: true });
+
+      const manifestPath = join(targetPath, 'manifest.json');
+      if (existsSync(manifestPath)) {
+        const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
+        const result = await this.loader.load(targetPath, manifest);
+
+        if (result.ok) {
+          this.setState(name, {
+            enabled: true,
+            installed: true,
+            installedAt: new Date().toISOString(),
+            source: 'examples',
+          });
+          this.registry.register(manifest);
+        }
+
+        return result;
+      }
+    }
+
+    return { ok: false, error: 'not_found_in_registry', name };
+  }
+
+  async uninstall(name) {
+    const plugin = this.loader.plugins.get(name);
+    if (!plugin) return { ok: false, error: 'not_loaded' };
+
+    await this.loader.unload(name);
+
+    const pluginDir = join(PLUGINS_DIR, name);
+    if (existsSync(pluginDir)) {
+      rmSync(pluginDir, { recursive: true });
+    }
+
+    delete this.pluginStates[name];
+    this._saveStates();
+    this.registry.unregister(name);
+
+    return { ok: true };
+  }
+
+  async enable(name) {
+    const plugin = this.loader.plugins.get(name);
+    if (!plugin) return { ok: false, error: 'not_loaded' };
+
+    this.setState(name, { enabled: true });
+    return { ok: true };
+  }
+
+  async disable(name) {
+    const plugin = this.loader.plugins.get(name);
+    if (!plugin) return { ok: false, error: 'not_loaded' };
+
+    for (const hookName of Object.keys(plugin.manifest.hooks || {})) {
+      this.hooks.off(hookName, name);
+    }
+
+    this.setState(name, { enabled: false });
+    return { ok: true };
+  }
+
+  getConfig(name) {
+    const configPath = join(CONFIG_DIR, `${name}.json`);
+    if (existsSync(configPath)) {
+      try {
+        return JSON.parse(readFileSync(configPath, 'utf-8'));
+      } catch {
+        return {};
+      }
+    }
+
+    const plugin = this.loader.plugins.get(name);
+    return plugin?.manifest?.config?.defaults || {};
+  }
+
+  setConfig(name, config) {
+    const configPath = join(CONFIG_DIR, `${name}.json`);
+    writeFileSync(configPath, JSON.stringify(config, null, 2));
+    return { ok: true, config };
+  }
+
+  getLogs(name, limit = 100) {
+    const logPath = join(LOGS_DIR, `${name}.log`);
+    if (!existsSync(logPath)) return { lines: [], total: 0 };
+
+    try {
+      const content = readFileSync(logPath, 'utf-8');
+      const lines = content.split('\n').filter(Boolean);
+      return {
+        lines: lines.slice(-limit),
+        total: lines.length,
+      };
+    } catch {
+      return { lines: [], total: 0 };
+    }
+  }
+
+  getStats(name) {
+    const state = this.getState(name);
+    const info = this.loader.info(name);
+    if (!info) return null;
+
+    return {
+      enabled: state.enabled !== false,
+      hooks: info.hooks || [],
+      permissions: info.permissions || [],
+      exportedFunctions: info.exportedFunctions || [],
+      hasInit: info.hasInit,
+      hasShutdown: info.hasShutdown,
+    };
+  }
+
+  status() {
+    return {
+      installed: this.loader.plugins.size,
+      enabled: this.listInstalled().filter(p => p.enabled).length,
+      errors: this.loader.errors,
+      hooks: this.hooks.status(),
+      registry: this.registry.list(),
+    };
+  }
+
+  async reload() {
+    for (const name of this.loader.plugins.keys()) {
+      await this.loader.unload(name);
+    }
+
+    const results = await this.loader.loadAll();
+    return { reloaded: results.length, results };
+  }
+}
+
+let _manager = null;
+function getManager() {
+  if (!_manager) _manager = new PluginManager();
+  return _manager;
+}
+
+function readBody(req) {
+  return new Promise((resolve) => {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', () => resolve(body));
+  });
+}
+
+function json(res, data, status = 200) {
+  res.writeHead(status, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(data, null, 2));
+}
+
+export async function handlePluginsAPI(req, res, url) {
+  const manager = getManager();
+  const path = url.pathname;
+  const parts = path.split('/').filter(Boolean);
+
+  if (parts.length === 2 && parts[1] === 'plugins') {
+    if (req.method === 'GET') {
+      return json(res, {
+        installed: manager.listInstalled(),
+        available: manager.listAvailable(),
+        status: manager.status(),
+      });
+    }
+  }
+
+  if (parts.length === 3 && parts[1] === 'plugins' && parts[2] === 'reload') {
+    if (req.method === 'POST') {
+      const result = await manager.reload();
+      return json(res, result);
+    }
+  }
+
+  if (parts.length === 3 && parts[1] === 'plugins' && parts[2] === 'status') {
+    return json(res, manager.status());
+  }
+
+  if (parts.length === 3 && parts[1] === 'plugins' && parts[2] === 'available') {
+    return json(res, manager.listAvailable());
+  }
+
+  if (parts.length === 3 && parts[1] === 'plugins') {
+    const name = parts[2];
+
+    if (req.method === 'GET') {
+      const details = manager.getDetails(name);
+      if (!details) return json(res, { error: 'not_found' }, 404);
+      return json(res, details);
+    }
+
+    if (req.method === 'DELETE') {
+      const result = await manager.uninstall(name);
+      return json(res, result, result.ok ? 200 : 400);
+    }
+  }
+
+  if (parts.length === 4 && parts[1] === 'plugins' && parts[3] === 'install') {
+    if (req.method === 'POST') {
+      const body = await readBody(req);
+      let source = null;
+      try { source = JSON.parse(body).source; } catch {}
+      const result = await manager.install(parts[2], source);
+      return json(res, result, result.ok ? 200 : 400);
+    }
+  }
+
+  if (parts.length === 4 && parts[1] === 'plugins' && parts[3] === 'uninstall') {
+    if (req.method === 'POST') {
+      const result = await manager.uninstall(parts[2]);
+      return json(res, result, result.ok ? 200 : 400);
+    }
+  }
+
+  if (parts.length === 4 && parts[1] === 'plugins' && parts[3] === 'enable') {
+    if (req.method === 'POST') {
+      const result = await manager.enable(parts[2]);
+      return json(res, result);
+    }
+  }
+
+  if (parts.length === 4 && parts[1] === 'plugins' && parts[3] === 'disable') {
+    if (req.method === 'POST') {
+      const result = await manager.disable(parts[2]);
+      return json(res, result);
+    }
+  }
+
+  if (parts.length === 4 && parts[1] === 'plugins' && parts[3] === 'config') {
+    if (req.method === 'GET') {
+      return json(res, manager.getConfig(parts[2]));
+    }
+    if (req.method === 'PUT' || req.method === 'POST') {
+      const body = await readBody(req);
+      try {
+        const config = JSON.parse(body);
+        const result = manager.setConfig(parts[2], config);
+        return json(res, result);
+      } catch (e) {
+        return json(res, { error: e.message }, 400);
+      }
+    }
+  }
+
+  if (parts.length === 4 && parts[1] === 'plugins' && parts[3] === 'logs') {
+    const limit = parseInt(url.searchParams.get('limit') || '100');
+    return json(res, manager.getLogs(parts[2], limit));
+  }
+
+  return json(res, { error: 'not_found', path }, 404);
+}
+
+export { PluginManager, getManager as getPluginManager };
+
+
+
+========================================================================
+
+FILE: apis/predict/ws_v4_patch.mjs
+SIZE: 2187 bytes
+SHA1: 4129f6a93a61ff69
+========================================================================
+
+// apis/predict/ws_v4_patch.mjs
+// Патч для ws.mjs — добавление v4 endpoints
+//
+// В ws.mjs добавьте импорт:
+//   import { handlePluginsAPI } from './plugins_api.mjs';
+//   import { loadOrCreateVAPIDKeys, SubscriptionStore, createPushHandlers } from '../../dashboard/pwa/push.js';
+//
+// В createServer callback, перед основной логикой:
+//
+//   // v4 endpoints
+//   const vapidKeys = loadOrCreateVAPIDKeys();
+//   const pushStore = new SubscriptionStore();
+//   const pushHandlers = createPushHandlers(vapidKeys, pushStore);
+//
+//   if (url.pathname.startsWith('/api/plugins')) {
+//     await handlePluginsAPI(req, res, url);
+//     return;
+//   }
+//
+//   if (url.pathname === '/api/push/vapid-key') return pushHandlers.getVapidKey(req, res);
+//   if (url.pathname === '/api/push/subscribe' && req.method === 'POST') {
+//     return await pushHandlers.subscribe(req, res);
+//   }
+//   if (url.pathname === '/api/push/unsubscribe' && req.method === 'POST') {
+//     return await pushHandlers.unsubscribe(req, res);
+//   }
+//   if (url.pathname === '/api/push/test' && req.method === 'POST') {
+//     return await pushHandlers.test(req, res);
+//   }
+
+export const WS_V4_PATCH = `
+Добавьте в ws.mjs:
+
+import { handlePluginsAPI } from './plugins_api.mjs';
+import { loadOrCreateVAPIDKeys, SubscriptionStore, createPushHandlers } from '../../dashboard/pwa/push.js';
+
+// Внутри createServer callback:
+const vapidKeys = loadOrCreateVAPIDKeys();
+const pushStore = new SubscriptionStore();
+const pushHandlers = createPushHandlers(vapidKeys, pushStore);
+
+// Перед общей логикой:
+if (url.pathname.startsWith('/api/plugins')) {
+  await handlePluginsAPI(req, res, url);
+  return;
+}
+
+if (url.pathname === '/api/push/vapid-key') return pushHandlers.getVapidKey(req, res);
+if (url.pathname === '/api/push/subscribe' && req.method === 'POST') return await pushHandlers.subscribe(req, res);
+if (url.pathname === '/api/push/unsubscribe' && req.method === 'POST') return await pushHandlers.unsubscribe(req, res);
+if (url.pathname === '/api/push/test' && req.method === 'POST') return await pushHandlers.test(req, res);
+`;
+
+
+
+========================================================================
+КОНЕЦ ТОМА part-3-engines
+ФАЙЛОВ НАЙДЕНО: 9
+ФАЙЛОВ НЕ НАЙДЕНО: 0
+ФАЙЛОВ ОБРЕЗАНО: 0
+РАЗМЕР ТОМА: 140.0 KB
+========================================================================

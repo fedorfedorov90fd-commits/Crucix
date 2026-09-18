@@ -1,0 +1,59 @@
+============================================================
+SCENARIO ENGINE — SCENARIO MODELING
+============================================================
+Version: 1.0.0
+Port: 3180
+Status: ✅ RUNNING
+
+DESCRIPTION
+-----------
+Global scenario modeling: conflicts, sanctions, tariff shocks,
+energy crises, cyber attacks. Assesses impact on economy,
+security, and logistics.
+
+FEATURES
+--------
+- 5 preset scenarios
+- Impact assessment by category
+- Affected countries list
+- Scenario probability
+- Action recommendations
+
+SCENARIOS
+---------
+1. Conflict          - probability: 40%
+2. Sanctions         - probability: 60%
+3. Tariff Shock      - probability: 30%
+4. Energy Crisis     - probability: 50%
+5. Cyber Attack      - probability: 70%
+
+API ENDPOINTS
+-------------
+GET    /scenario/list           - List scenarios
+POST   /scenario/run            - Run scenario
+
+EXAMPLES
+--------
+# List scenarios
+curl http://localhost:3180/scenario/list
+
+# Run "Sanctions" scenario
+curl -X POST http://localhost:3180/scenario/run \
+  -H "Content-Type: application/json" \
+  -d '{"scenario": "sanctions", "parameters": {"country": "RU"}}'
+
+# Run "Conflict" scenario
+curl -X POST http://localhost:3180/scenario/run \
+  -H "Content-Type: application/json" \
+  -d '{"scenario": "conflict", "parameters": {"region": "Middle East"}}'
+
+DEPENDENCIES
+------------
+- Node.js v22+
+
+INSTALLATION
+------------
+cd /home/ta8_/Рабочий стол/Crucix/crucix-extensions/scenario-engine
+npm install
+node index.mjs
+============================================================

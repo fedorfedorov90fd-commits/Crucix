@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Crucix · Composite Risk</title>
+<style>
+:root{--bg:#06080f;--surface:#0d1220;--surface2:#161d2e;--border:#1a2540;--border2:#2b3a5c;--text:#e8edf5;--text-dim:#8fa1c2;--text-faint:#5a6b8a;--accent:#3b82f6;--accent2:#8b5cf6;--accent3:#ec4899;--green:#22c55e;--yellow:#eab308;--orange:#f97316;--red:#ef4444;--cyan:#06b6d4;--mono:'SF Mono',monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text);padding:20px;min-height:100vh}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px}
+.card-title{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-dim);margin-bottom:16px}
+.orb-wrap{display:flex;align-items:center;gap:28px;flex-wrap:wrap}
+.orb{position:relative;width:180px;height:180px;flex-shrink:0}
+.orb svg{width:100%;height:100%;transform:rotate(-90deg)}
+.orb-bg{fill:none;stroke:var(--surface2);stroke-width:12}
+.orb-fill{fill:none;stroke-width:12;stroke-linecap:round;transition:stroke-dashoffset 1s,stroke 0.6s}
+.orb-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.orb-value{font-family:var(--mono);font-size:42px;font-weight:800;letter-spacing:-2px;line-height:1}
+.orb-label{font-size:10px;color:var(--text-faint);text-transform:uppercase;letter-spacing:1.2px;margin-top:4px}
+.orb-info{flex:1;min-width:220px}
+.orb-level{font-size:24px;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.orb-meta{font-size:12px;color:var(--text-dim);margin-bottom:14px}
+.scale{position:relative;height:10px;border-radius:5px;background:linear-gradient(90deg,var(--cyan) 0%,var(--green) 15%,var(--yellow) 40%,var(--orange) 65%,var(--red) 100%);margin-top:8px}
+.scale-marker{position:absolute;top:-5px;width:4px;height:20px;background:var(--text);border-radius:2px;transform:translateX(-50%);box-shadow:0 0 8px rgba(255,255,255,0.4);transition:left 1s}
+.drivers{display:flex;flex-direction:column;gap:10px}
+.driver{padding:10px 12px;background:var(--surface2);border-radius:8px;border-left:3px solid var(--accent)}
+.driver-head{display:flex;justify-content:space-between;margin-bottom:4px}
+.driver-name{font-size:13px;font-weight:600}
+.driver-value{font-family:var(--mono);font-size:15px;font-weight:700}
+.driver-rationale{font-size:11px;color:var(--text-faint)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:8px 10px;color:var(--text-faint);font-weight:500;font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border)}
+td{padding:10px;border-bottom:1px solid var(--border)}
+.sig-bar{width:80px;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:8px}
+.sig-bar-fill{height:100%;border-radius:3px;transition:width 0.8s}
+.empty{text-align:center;padding:40px;color:var(--text-faint)}
+</style>
+</head>
+<body>
+
+<div class="card">
+<div class="card-title">Композитный индикатор риска</div>
+<div class="orb-wrap">
+<div class="orb">
+<svg viewBox="0 0 180 180">
+<circle class="orb-bg" cx="90" cy="90" r="78"></circle>
+<circle class="orb-fill" id="orb-fill" cx="90" cy="90" r="78" stroke-dasharray="490" stroke-dashoffset="490"></circle>
+</svg>
+<div class="orb-center">
+<div class="orb-value" id="composite-value">—</div>
+<div class="orb-label">risk</div>
+</div>
+</div>
+<div class="orb-info">
+<div class="orb-level" id="composite-level">ожидание</div>
+<div class="orb-meta" id="composite-meta">—</div>
+<div class="scale"><div class="scale-marker" id="scale-marker" style="left:0%"></div></div>
+</div>
+</div>
+</div>
+
+<div class="card">
+<div class="card-title">Топ-5 драйверов</div>
+<div class="drivers" id="drivers"><div class="empty">Загрузка...</div></div>
+</div>
+
+<div class="card">
+<div class="card-title">Все сигналы</div>
+<table>
+<thead><tr><th>Модуль</th><th>Значение</th><th>Вес</th><th>Обоснование</th></tr></thead>
+<tbody id="signals-body"><tr><td colspan="4" class="empty">Загрузка...</td></tr></tbody>
+</table>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const COLORS = {low:'#06b6d4',moderate:'#22c55e',elevated:'#eab308',high:'#f97316',critical:'#ef4444'};
+
+function sigColor(v) { return v > 0.7 ? '#ef4444' : v > 0.5 ? '#f97316' : v > 0.3 ? '#eab308' : v > 0.15 ? '#22c55e' : '#06b6d4'; }
+
+async function load() {
+try {
+const res = await fetch('../runs/predictions/latest_forecast.json');
+if (!res.ok) throw new Error('HTTP ' + res.status);
+const data = await res.json();
+render(data.compositeRisk);
+} catch (e) {
+document.querySelectorAll('.empty').forEach(el => el.textContent = 'Нет данных: ' + e.message);
+}
+}
+
+function render(cr) {
+if (!cr) return;
+const value = Math.max(0, Math.min(1, cr.composite || 0));
+const level = cr.level || 'unknown';
+const color = COLORS[level] || '#64748b';
+
+$('composite-value').textContent = value.toFixed(3);
+$('composite-value').style.color = color;
+$('composite-level').textContent = level;
+$('composite-level').style.color = color;
+$('composite-meta').textContent = 'confidence: ' + (cr.confidence || '—') + ' · signals: ' + ((cr.signals || []).length);
+
+const circ = 2 * Math.PI * 78;
+const offset = circ * (1 - value);
+const fill = $('orb-fill');
+fill.setAttribute('stroke', color);
+fill.setAttribute('stroke-dashoffset', offset);
+
+$('scale-marker').style.left = (value * 100) + '%';
+
+if (cr.topDrivers && cr.topDrivers.length > 0) {
+$('drivers').innerHTML = cr.topDrivers.map(d => {
+const c = sigColor(d.value);
+return '<div class="driver" style="border-left-color:' + c + '">' +
+'<div class="driver-head"><span class="driver-name">' + d.name + '</span>' +
+'<span class="driver-value" style="color:' + c + '">' + (d.value * 100).toFixed(1) + '%</span></div>' +
+'<div class="driver-rationale">' + (d.rationale || '') + '</div></div>';
+}).join('');
+}
+
+if (cr.signals && cr.signals.length > 0) {
+const sorted = [...cr.signals].sort((a, b) => (b.value * b.weight) - (a.value * a.weight));
+$('signals-body').innerHTML = sorted.map((s, i) => {
+const c = sigColor(s.value);
+return '<tr>' +
+'<td><strong>' + s.name + '</strong></td>' +
+'<td><span class="sig-bar"><span class="sig-bar-fill" style="width:' + (s.value * 100) + '%;background:' + c + '"></span></span>' +
+'<span style="font-family:var(--mono);font-weight:700;color:' + c + '">' + (s.value * 100).toFixed(1) + '%</span></td>' +
+'<td style="font-family:var(--mono);color:var(--accent)">×' + (s.weight || 1).toFixed(2) + '</td>' +
+'<td style="color:var(--text-faint);font-size:11px">' + (s.rationale || '') + '</td></tr>';
+}).join('');
+}
+}
+
+load();
+setInterval(load, 60000);
+</script>
+
+</body>
+</html>

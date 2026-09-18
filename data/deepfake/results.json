@@ -1,0 +1,307 @@
+[
+  {
+    "media_id": "media-001",
+    "title": "Заявление политического лидера",
+    "type": "video",
+    "overall_score": 40,
+    "status": "likely_authentic",
+    "severity": "low",
+    "verdict": "✅ ВЕРОЯТНО ПОДЛИННЫЙ",
+    "methods": [
+      {
+        "method": "facial_landmarks",
+        "method_name": "Анализ ключевых точек лица",
+        "score": 58,
+        "confidence": 72,
+        "anomaly": true,
+        "weight": 0.25
+      },
+      {
+        "method": "eye_blink",
+        "method_name": "Анализ моргания",
+        "score": 50,
+        "confidence": 95,
+        "anomaly": true,
+        "weight": 0.2
+      },
+      {
+        "method": "lip_sync",
+        "method_name": "Синхронизация губ",
+        "score": 21,
+        "confidence": 82,
+        "anomaly": true,
+        "weight": 0.2
+      },
+      {
+        "method": "texture",
+        "method_name": "Анализ текстуры",
+        "score": 22,
+        "confidence": 89,
+        "anomaly": false,
+        "weight": 0.15
+      },
+      {
+        "method": "lighting",
+        "method_name": "Анализ освещения",
+        "score": 33,
+        "confidence": 79,
+        "anomaly": false,
+        "weight": 0.1
+      },
+      {
+        "method": "compression",
+        "method_name": "Артефакты сжатия",
+        "score": 42,
+        "confidence": 60,
+        "anomaly": true,
+        "weight": 0.1
+      }
+    ],
+    "timestamp": "2026-08-17T17:17:38.367Z",
+    "hash": "21d3d5dd26231c89e2cb3065fc46a8bb74eeeba523eaa73837ddf2c3afd60958"
+  },
+  {
+    "media_id": "media-002",
+    "title": "Видео с места событий",
+    "type": "video",
+    "overall_score": 52,
+    "status": "uncertain",
+    "severity": "medium",
+    "verdict": "⚠️ СРЕДНЯЯ ВЕРОЯТНОСТЬ ДИПФЕЙКА",
+    "methods": [
+      {
+        "method": "facial_landmarks",
+        "method_name": "Анализ ключевых точек лица",
+        "score": 29,
+        "confidence": 90,
+        "anomaly": true,
+        "weight": 0.25
+      },
+      {
+        "method": "eye_blink",
+        "method_name": "Анализ моргания",
+        "score": 60,
+        "confidence": 82,
+        "anomaly": false,
+        "weight": 0.2
+      },
+      {
+        "method": "lip_sync",
+        "method_name": "Синхронизация губ",
+        "score": 73,
+        "confidence": 83,
+        "anomaly": false,
+        "weight": 0.2
+      },
+      {
+        "method": "texture",
+        "method_name": "Анализ текстуры",
+        "score": 44,
+        "confidence": 75,
+        "anomaly": true,
+        "weight": 0.15
+      },
+      {
+        "method": "lighting",
+        "method_name": "Анализ освещения",
+        "score": 76,
+        "confidence": 81,
+        "anomaly": false,
+        "weight": 0.1
+      },
+      {
+        "method": "compression",
+        "method_name": "Артефакты сжатия",
+        "score": 34,
+        "confidence": 93,
+        "anomaly": false,
+        "weight": 0.1
+      }
+    ],
+    "timestamp": "2026-08-17T17:17:38.368Z",
+    "hash": "e2ae943daae690d3a98e5f65cc41aea1873ad5a1ae7f72075054ceb5a8dc3675"
+  },
+  {
+    "media_id": "media-003",
+    "title": "Интервью эксперта",
+    "type": "audio",
+    "overall_score": 63,
+    "status": "uncertain",
+    "severity": "medium",
+    "verdict": "⚠️ СРЕДНЯЯ ВЕРОЯТНОСТЬ ДИПФЕЙКА",
+    "methods": [
+      {
+        "method": "facial_landmarks",
+        "method_name": "Анализ ключевых точек лица",
+        "score": 61,
+        "confidence": 76,
+        "anomaly": false,
+        "weight": 0.25
+      },
+      {
+        "method": "eye_blink",
+        "method_name": "Анализ моргания",
+        "score": 80,
+        "confidence": 76,
+        "anomaly": false,
+        "weight": 0.2
+      },
+      {
+        "method": "lip_sync",
+        "method_name": "Синхронизация губ",
+        "score": 74,
+        "confidence": 69,
+        "anomaly": true,
+        "weight": 0.2
+      },
+      {
+        "method": "texture",
+        "method_name": "Анализ текстуры",
+        "score": 53,
+        "confidence": 74,
+        "anomaly": false,
+        "weight": 0.15
+      },
+      {
+        "method": "lighting",
+        "method_name": "Анализ освещения",
+        "score": 67,
+        "confidence": 72,
+        "anomaly": false,
+        "weight": 0.1
+      },
+      {
+        "method": "compression",
+        "method_name": "Артефакты сжатия",
+        "score": 24,
+        "confidence": 71,
+        "anomaly": false,
+        "weight": 0.1
+      }
+    ],
+    "timestamp": "2026-08-17T17:17:38.369Z",
+    "hash": "d88547a9ef130a5876a4bd666a70e44a3439ef620cc8faf23a4bb8af4352b34c"
+  },
+  {
+    "media_id": "media-004",
+    "title": "Фото с места конфликта",
+    "type": "image",
+    "overall_score": 59,
+    "status": "uncertain",
+    "severity": "medium",
+    "verdict": "⚠️ СРЕДНЯЯ ВЕРОЯТНОСТЬ ДИПФЕЙКА",
+    "methods": [
+      {
+        "method": "facial_landmarks",
+        "method_name": "Анализ ключевых точек лица",
+        "score": 78,
+        "confidence": 94,
+        "anomaly": true,
+        "weight": 0.25
+      },
+      {
+        "method": "eye_blink",
+        "method_name": "Анализ моргания",
+        "score": 56,
+        "confidence": 72,
+        "anomaly": true,
+        "weight": 0.2
+      },
+      {
+        "method": "lip_sync",
+        "method_name": "Синхронизация губ",
+        "score": 62,
+        "confidence": 85,
+        "anomaly": false,
+        "weight": 0.2
+      },
+      {
+        "method": "texture",
+        "method_name": "Анализ текстуры",
+        "score": 38,
+        "confidence": 70,
+        "anomaly": true,
+        "weight": 0.15
+      },
+      {
+        "method": "lighting",
+        "method_name": "Анализ освещения",
+        "score": 47,
+        "confidence": 69,
+        "anomaly": false,
+        "weight": 0.1
+      },
+      {
+        "method": "compression",
+        "method_name": "Артефакты сжатия",
+        "score": 52,
+        "confidence": 92,
+        "anomaly": false,
+        "weight": 0.1
+      }
+    ],
+    "timestamp": "2026-08-17T17:17:38.369Z",
+    "hash": "32b3b86dfb4c3cdc0f31c03d2fe5a83c88a864b32bd5d90cf5f00cf63cfd8ad3"
+  },
+  {
+    "media_id": "media-005",
+    "title": "Спутниковый снимок",
+    "type": "image",
+    "overall_score": 62,
+    "status": "uncertain",
+    "severity": "medium",
+    "verdict": "⚠️ СРЕДНЯЯ ВЕРОЯТНОСТЬ ДИПФЕЙКА",
+    "methods": [
+      {
+        "method": "facial_landmarks",
+        "method_name": "Анализ ключевых точек лица",
+        "score": 61,
+        "confidence": 64,
+        "anomaly": true,
+        "weight": 0.25
+      },
+      {
+        "method": "eye_blink",
+        "method_name": "Анализ моргания",
+        "score": 57,
+        "confidence": 86,
+        "anomaly": false,
+        "weight": 0.2
+      },
+      {
+        "method": "lip_sync",
+        "method_name": "Синхронизация губ",
+        "score": 68,
+        "confidence": 83,
+        "anomaly": false,
+        "weight": 0.2
+      },
+      {
+        "method": "texture",
+        "method_name": "Анализ текстуры",
+        "score": 77,
+        "confidence": 90,
+        "anomaly": false,
+        "weight": 0.15
+      },
+      {
+        "method": "lighting",
+        "method_name": "Анализ освещения",
+        "score": 20,
+        "confidence": 62,
+        "anomaly": false,
+        "weight": 0.1
+      },
+      {
+        "method": "compression",
+        "method_name": "Артефакты сжатия",
+        "score": 77,
+        "confidence": 84,
+        "anomaly": false,
+        "weight": 0.1
+      }
+    ],
+    "timestamp": "2026-08-17T17:17:38.369Z",
+    "hash": "e6d1f1adbcb834986498de8c302ee5435fb7c9f85ec8719dac5dd2c9f7800b08"
+  }
+]

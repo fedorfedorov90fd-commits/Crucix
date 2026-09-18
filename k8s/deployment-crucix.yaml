@@ -1,0 +1,198 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crucix-core
+  namespace: crucix
+  labels:
+    app: crucix-core
+    version: v14.0.0
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: crucix-core
+  template:
+    metadata:
+      labels:
+        app: crucix-core
+        version: v14.0.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3118"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: crucix-core
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: wait-for-runs
+          image: busybox:latest
+          command:
+            - sh
+            - -c
+            - |
+              until [ -d /app/runs ]; do
+                echo "Waiting for /app/runs..."
+                sleep 2
+              done
+          volumeMounts:
+            - name: runs
+              mountPath: /app/runs
+      containers:
+        - name: crucix-core
+          image: crucix-core:3.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: api
+              containerPort: 3117
+              protocol: TCP
+            - name: websocket
+              containerPort: 3118
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: crucix-config
+          env:
+            - name: DISCORD_WEBHOOK
+              valueFrom:
+                secretKeyRef:
+                  name: crucix-secrets
+                  key: DISCORD_WEBHOOK
+                  optional: true
+            - name: TELEGRAM_BOT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: crucix-secrets
+                  key: TELEGRAM_BOT_TOKEN
+                  optional: true
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "2"
+              memory: "2Gi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3118
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3118
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 2
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 3118
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 30
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: runs
+              mountPath: /app/runs
+            - name: logs
+              mountPath: /app/logs
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: runs
+          persistentVolumeClaim:
+            claimName: crucix-runs-pvc
+        - name: logs
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: crucix-core
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: crucix-core
+                topologyKey: kubernetes.io/hostname
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: crucix-core
+  namespace: crucix
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: crucix-core
+  namespace: crucix
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps", "pods"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: crucix-core
+  namespace: crucix
+subjects:
+  - kind: ServiceAccount
+    name: crucix-core
+    namespace: crucix
+roleRef:
+  kind: Role
+  name: crucix-core
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: crucix-runs-pvc
+  namespace: crucix
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: standard

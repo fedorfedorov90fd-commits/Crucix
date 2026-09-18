@@ -1,491 +1,197 @@
 #!/usr/bin/env node
-
-// ============================================================
-// SERVER.MJS — Главный сервер Crucix
-// ============================================================
-// HTTP-сервер на порту 3117
-// Раздаёт статику из dashboard/public/
-// Обрабатывает API-запросы
-// Версия: 2.1.2
-// ============================================================
+/**
+ * server.mjs — СТАРТОВЫЙ ФАЙЛ CRUCIX SERVER v14.0
+ *
+ * ПЕРЕД СТАРТОМ:
+ *   1. Пересборка реестра (node server/build-registry.mjs)
+ *   2. Валидация контракта (node scripts/lint-contract.mjs) — если хоть один модуль
+ *      нарушает контракт, сервер НЕ поднимается (exit 1).
+ *
+ * Затем:
+ *   - HTTP-сервер на PORT (по умолчанию 3117)
+ *   - Статика из dashboard/public
+ *   - API через ./server/router.mjs (handleAPI)
+ *   - Страничные маршруты через ./server/pages.mjs
+ */
 
 import { createServer } from 'http';
 import { promises as fs } from 'fs';
 import { join, extname, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { exec, execSync } from 'child_process';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3117;
 const PUBLIC_DIR = join(__dirname, 'dashboard', 'public');
 
-// ============================================================
-// 1. ИМПОРТ API-МОДУЛЕЙ
-// ============================================================
-
-// RSS API
-import { handleRSSAPI } from './apis/sources/rss-manager-api.mjs';
-
-// Новости
-import { handleNewsAPI } from './apis/sources/news-api.mjs';
-
-// Корзина
-import { handleBasketAPI } from './apis/sources/basket-api.mjs';
-
-// AI Чат
-import { handleAIChatAPI } from './apis/sources/ai-chat-api.mjs';
-
-// AI Рейтинг
-import { handleAIRatingAPI } from './apis/sources/ai-news-rating.mjs';
-
-// AI Анализатор
-import { handleAIAnalyzerAPI } from './apis/sources/ai-news-analyzer.mjs';
-
-// Хранилище
-import { handleStorageAPI } from './apis/sources/storage-api.mjs';
-
-// Геополитика
-import { handleGeoAPI } from './apis/sources/geo-markers-api.mjs';
-
-// Глобальный индекс (Модуль №5)
-import { handleGlobalIndexAPI } from './apis/sources/global-index-api.mjs';
-
-// Исторический анализ (Модуль №6)
-import { handleHistoricalAnalysisAPI } from './apis/sources/historical-analysis-api.mjs';
-
-// Кросс-корреляция (Модуль №7)
-import { handleCorrelationAPI } from './apis/sources/correlation-api.mjs';
-
-// Критическая инфраструктура (Модуль №8)
-import { handleInfrastructureAPI } from './apis/sources/infrastructure-api.mjs';
-
-// Критическая инфраструктура — EIA (энергетика)
-import { handleEIAApi } from './apis/sources/infrastructure-eia.mjs';
-
-// Критическая инфраструктура — FIRMS (пожары)
-import { handleFIRMSApi } from './apis/sources/infrastructure-firms.mjs';
-
-// Критическая инфраструктура — OFAC (санкции)
-import { handleOFACApi } from './apis/sources/infrastructure-ofac.mjs';
-
-// Критическая инфраструктура — Ships (порты)
-import { handleShipsApi } from './apis/sources/infrastructure-ships.mjs';
-
-// NewsAPI
-import { handleNewsAPIProxy } from './apis/sources/newsapi.mjs';
-import { handleNewsAPIBasket } from './apis/sources/newsapi-basket-integration.mjs';
-
-// Спутниковый мониторинг (Модуль №9)
-import { handleSatelliteAPI } from './apis/sources/satellite-api.mjs';
-
-// Военная авиация (Модуль №10)
-import { handleAviationAPI } from './apis/sources/aviation-api.mjs';
-
-// ============================================================
-// 2. MIME-ТИПЫ
-// ============================================================
-
 const MIME_TYPES = {
-    '.html': 'text/html',
-    '.css': 'text/css',
-    '.js': 'application/javascript',
-    '.mjs': 'application/javascript',
-    '.json': 'application/json',
-    '.png': 'image/png',
-    '.jpg': 'image/jpeg',
+    '.html': 'text/html; charset=utf-8',
+    '.css':  'text/css; charset=utf-8',
+    '.js':   'application/javascript; charset=utf-8',
+    '.mjs':  'application/javascript; charset=utf-8',
+    '.json': 'application/json; charset=utf-8',
+    '.txt':  'text/plain; charset=utf-8',
+    '.png':  'image/png',
+    '.jpg':  'image/jpeg',
     '.jpeg': 'image/jpeg',
-    '.gif': 'image/gif',
-    '.svg': 'image/svg+xml',
-    '.ico': 'image/x-icon',
-    '.txt': 'text/plain',
-    '.xml': 'application/xml',
-    '.opml': 'application/xml',
-    '.pdf': 'application/pdf',
-    '.woff': 'font/woff',
-    '.woff2': 'font/woff2',
-    '.ttf': 'font/ttf',
-    '.eot': 'application/vnd.ms-fontobject',
+    '.svg':  'image/svg+xml',
+    '.ico':  'image/x-icon',
+    '.woff2':'font/woff2',
+    '.map':  'application/json',
 };
 
 // ============================================================
-// 3. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+//  PRESTART: РЕЕСТР + ВАЛИДАЦИЯ КОНТРАКТА
 // ============================================================
 
-async function sendHTML(res, filePath, statusCode = 200) {
+function prestartBuildRegistry() {
+    console.log('[prestart] Пересборка реестра...');
     try {
-        const fullPath = join(PUBLIC_DIR, filePath);
-        const content = await fs.readFile(fullPath, 'utf8');
-        res.writeHead(statusCode, { 'Content-Type': 'text/html' });
-        res.end(content);
-    } catch (error) {
-        console.error(`[Server] Ошибка отправки HTML: ${error.message}`);
-        res.writeHead(404, { 'Content-Type': 'text/html' });
-        res.end(`
-            <!DOCTYPE html>
-            <html>
-            <head><title>404 — Страница не найдена</title></head>
-            <body style="background:#0a0e17;color:#e0e0e0;font-family:sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;flex-direction:column;">
-                <h1 style="font-size:72px;margin:0;background:linear-gradient(135deg,#ff6b6b,#4ecdc4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">404</h1>
-                <p style="font-size:20px;color:#8899aa;">Страница не найдена</p>
-                <a href="/" style="color:#4ecdc4;text-decoration:none;margin-top:20px;padding:10px 30px;border:1px solid #4ecdc4;border-radius:6px;">← На главную</a>
-            </body>
-            </html>
-        `);
+        const out = execSync('node server/build-registry.mjs', { encoding: 'utf8', cwd: __dirname });
+        const tail = out.trim().split('\n').slice(-5).join('\n');
+        console.log(tail);
+    } catch (e) {
+        console.error('[prestart] ОШИБКА сборки реестра:');
+        console.error(e.stdout || e.message);
+        process.exit(1);
     }
 }
 
-async function sendStaticFile(res, filePath) {
+function prestartLintContract() {
+    const strict = process.env.LINT_STRICT === '1';
+    console.log('[prestart] Валидация контракта модулей' + (strict ? ' (STRICT)' : ' (ratchet: warn-only)') + '...');
     try {
-        const fullPath = join(PUBLIC_DIR, filePath);
-        const content = await fs.readFile(fullPath);
-        const ext = extname(filePath);
-        const mimeType = MIME_TYPES[ext] || 'application/octet-stream';
-        res.writeHead(200, { 'Content-Type': mimeType });
-        res.end(content);
-    } catch (error) {
-        console.error(`[Server] Ошибка отправки статики: ${error.message}`);
-        res.writeHead(404);
-        res.end();
+        const out = execSync('node scripts/lint-contract.mjs --quiet', { encoding: 'utf8', cwd: __dirname });
+        const last = out.trim().split('\n').slice(-1)[0] || '';
+        console.log('[prestart] ' + last);
+    } catch (e) {
+        const report = (e.stdout || '').trim();
+        const lines = report.split('\n');
+        const summaryLine = lines.find(l => l.includes('НАРУШЕНИЙ')) || lines[lines.length - 2] || '';
+        if (strict) {
+            console.error('');
+            console.error('================================================================');
+            console.error('  ❌ СТАРТ ПРЕРВАН: модули нарушают контракт CRUCIX v2 (STRICT)');
+            console.error('================================================================');
+            console.error(report);
+            console.error('Запусти автомиграцию: node scripts/migrate-to-contract.mjs --all');
+            console.error('================================================================');
+            process.exit(1);
+        } else {
+            console.warn('');
+            console.warn('================================================================');
+            console.warn('  ⚠️  WARN: часть модулей ещё не в контракте — сервер продолжит работу');
+            console.warn('      (ratchet-режим: новые модули проверяются, старые устраняются постепенно)');
+            console.warn('      Для строгого режима: LINT_STRICT=1 node server.mjs');
+            console.warn('================================================================');
+            console.warn('  ' + (summaryLine.trim() || 'отчёт lint выше'));
+            console.warn('================================================================');
+        }
     }
 }
 
-function logRequest(req, pathname) {
-    const timestamp = new Date().toISOString();
-    console.log(`[${timestamp}] ${req.method} ${pathname}`);
-}
+prestartBuildRegistry();
+prestartLintContract();
 
 // ============================================================
-// 4. ОСНОВНОЙ ОБРАБОТЧИК ЗАПРОСОВ
+//  ПОДКЛЮЧЕНИЕ РОУТЕРОВ
 // ============================================================
+
+const { handleAPI, initRouter } = await import('./server/router.mjs');
+const { getPageFile, getAllRoutes } = await import('./server/pages.mjs');
+
+// ============================================================
+//  СЕРВЕР
+// ============================================================
+
+function runDescriptionGenerator() {
+    console.log('[Startup] Запуск генератора описаний...');
+    exec('node scripts/generate-descriptions.mjs', (error, stdout) => {
+        if (error) { console.warn('[Startup] Генератор описаний: ошибка', error.message); return; }
+        if (stdout) {
+            const lines = stdout.trim().split('\n');
+            const last = lines[lines.length - 1];
+            if (last) console.log('[Startup]', last);
+        }
+    });
+}
+
+console.log('📄 Загружено маршрутов страниц:', Object.keys(getAllRoutes()).length);
 
 const server = createServer(async (req, res) => {
     const url = new URL(req.url, `http://${req.headers.host}`);
     const pathname = url.pathname;
-    const method = req.method || 'GET';
 
-    logRequest(req, pathname);
-
-    // CORS
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-    if (method === 'OPTIONS') {
-        res.writeHead(200);
-        res.end();
+    if (pathname.startsWith('/api/')) {
+        const handled = await handleAPI(req, res, pathname);
+        if (handled) return;
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'api_not_found', path: pathname }));
         return;
     }
 
-    // ============================================================
-    // 4.2. МАРШРУТЫ API
-    // ============================================================
-
-    // --- RSS ---
-    if (pathname.startsWith('/api/rss/')) {
-        await handleRSSAPI(req, res);
-        return;
+    const staticExts = ['.js', '.css', '.mjs', '.json', '.png', '.jpg', '.jpeg', '.svg', '.ico', '.woff2', '.map'];
+    const ext = extname(pathname);
+    if (staticExts.includes(ext)) {
+        const fullPath = join(PUBLIC_DIR, pathname);
+        try {
+            const content = await fs.readFile(fullPath);
+            res.writeHead(200, { 'Content-Type': MIME_TYPES[ext] || 'application/octet-stream' });
+            res.end(content);
+            return;
+        } catch (err) {}
     }
 
-    // --- Новости ---
-    if (pathname.startsWith('/api/news/')) {
-        await handleNewsAPI(req, res);
-        return;
+    let pageFile = getPageFile(pathname);
+    let fullPath;
+
+    if (pageFile) {
+        if (!pageFile.endsWith('.html') && !pageFile.endsWith('.htm')) pageFile += '.html';
+        fullPath = join(PUBLIC_DIR, pageFile);
+    } else {
+        let filePath = pathname;
+        if (filePath.endsWith('/')) filePath += 'index.html';
+        fullPath = join(PUBLIC_DIR, filePath);
     }
 
-    // --- Корзина ---
-    if (pathname.startsWith('/api/basket')) {
-        await handleBasketAPI(req, res);
-        return;
-    }
-
-    // --- AI Чат ---
-    if (pathname.startsWith('/api/ai/chat')) {
-        await handleAIChatAPI(req, res);
-        return;
-    }
-
-    // --- AI Рейтинг ---
-    if (pathname.startsWith('/api/ai/rate')) {
-        await handleAIRatingAPI(req, res);
-        return;
-    }
-
-    // --- AI Анализатор ---
-    if (pathname.startsWith('/api/ai/analyze')) {
-        await handleAIAnalyzerAPI(req, res);
-        return;
-    }
-
-    // --- Хранилище ---
-    if (pathname.startsWith('/api/storage/')) {
-        await handleStorageAPI(req, res);
-        return;
-    }
-
-    // --- Геополитика ---
-    if (pathname.startsWith('/api/geo/')) {
-        await handleGeoAPI(req, res);
-        return;
-    }
-
-    // --- Глобальный индекс (Модуль №5) ---
-    if (pathname.startsWith('/api/geo/index')) {
-        await handleGlobalIndexAPI(req, res);
-        return;
-    }
-
-    // --- Исторический анализ (Модуль №6) ---
-    if (pathname.startsWith('/api/analysis/')) {
-        await handleHistoricalAnalysisAPI(req, res);
-        return;
-    }
-
-    // --- Кросс-корреляция (Модуль №7) ---
-    if (pathname.startsWith('/api/correlation/')) {
-        await handleCorrelationAPI(req, res);
-        return;
-    }
-
-    // --- Критическая инфраструктура — EIA (энергетика) ---
-    if (pathname.startsWith('/api/infrastructure/eia/')) {
-        await handleEIAApi(req, res);
-        return;
-    }
-
-    // --- Критическая инфраструктура — FIRMS (пожары) ---
-    if (pathname.startsWith('/api/infrastructure/firms/')) {
-        await handleFIRMSApi(req, res);
-        return;
-    }
-
-    // --- Критическая инфраструктура — OFAC (санкции) ---
-    if (pathname.startsWith('/api/infrastructure/ofac/')) {
-        await handleOFACApi(req, res);
-        return;
-    }
-
-    // --- Критическая инфраструктура — Ships (порты) ---
-    if (pathname.startsWith('/api/infrastructure/ships/')) {
-        await handleShipsApi(req, res);
-        return;
-    }
-
-    // --- Критическая инфраструктура (Модуль №8) - основной API ---
-    if (pathname.startsWith('/api/infrastructure/')) {
-        await handleInfrastructureAPI(req, res);
-        return;
-    }
-
-    // --- NewsAPI ---
-    if (pathname.startsWith('/api/newsapi/')) {
-        if (pathname === '/api/newsapi/basket') {
-            await handleNewsAPIBasket(req, res);
+    try {
+        const content = await fs.readFile(fullPath);
+        const ext2 = extname(fullPath);
+        res.writeHead(200, { 'Content-Type': MIME_TYPES[ext2] || 'application/octet-stream' });
+        res.end(content);
+    } catch (err) {
+        if (err.code === 'ENOENT') {
+            res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+            res.end('<h1>404 — Страница не найдена</h1>');
         } else {
-            await handleNewsAPIProxy(req, res);
+            console.error('Ошибка:', err);
+            res.writeHead(500, { 'Content-Type': 'text/plain' });
+            res.end('500 Internal Server Error');
         }
-        return;
     }
-
-    // --- Спутниковый мониторинг (Модуль №9) ---
-    if (pathname.startsWith('/api/satellite/')) {
-        await handleSatelliteAPI(req, res);
-        return;
-    }
-
-    // --- Военная авиация (Модуль №10) ---
-    if (pathname.startsWith('/api/aviation/')) {
-        await handleAviationAPI(req, res);
-        return;
-    }
-
-    // ============================================================
-    // 4.3. МАРШРУТЫ СТРАНИЦ
-    // ============================================================
-
-    // --- Главная ---
-    if (pathname === '/' || pathname === '/jarvis') {
-        await sendHTML(res, 'jarvis.html');
-        return;
-    }
-
-    // --- RSS Лента ---
-    if (pathname === '/rss-feed' || pathname === '/rss-feed.html') {
-        await sendHTML(res, 'rss-feed.html');
-        return;
-    }
-
-    // --- RSS Управление ---
-    if (pathname === '/rss-dashboard' || pathname === '/rss-dashboard.html') {
-        await sendHTML(res, 'rss-dashboard.html');
-        return;
-    }
-
-    // --- AI Чат ---
-    if (pathname === '/ai-chat' || pathname === '/ai-chat.html') {
-        await sendHTML(res, 'ai-chat.html');
-        return;
-    }
-
-    // --- Геополитическая карта ---
-    if (pathname === '/geo-map' || pathname === '/geo-map.html') {
-        await sendHTML(res, 'geo-map.html');
-        return;
-    }
-
-    // --- Корзина ---
-    if (pathname === '/basket' || pathname === '/basket.html') {
-        await sendHTML(res, 'basket.html');
-        return;
-    }
-
-    // --- Инструмент "Сетка" ---
-    if (pathname === '/grid-tool' || pathname === '/grid-tool.html') {
-        await sendHTML(res, 'grid-tool.html');
-        return;
-    }
-
-    // --- Глобальный индекс (Модуль №5) ---
-    if (pathname === '/global-index' || pathname === '/global-index.html') {
-        await sendHTML(res, 'global-index.html');
-        return;
-    }
-
-    // --- Исторический анализ (Модуль №6) ---
-    if (pathname === '/historical-analysis' || pathname === '/historical-analysis.html') {
-        await sendHTML(res, 'historical-analysis.html');
-        return;
-    }
-
-    // --- Кросс-корреляция (Модуль №7) ---
-    if (pathname === '/correlation' || pathname === '/correlation.html') {
-        await sendHTML(res, 'correlation.html');
-        return;
-    }
-
-    // --- Критическая инфраструктура (Модуль №8) ---
-    if (pathname === '/infrastructure' || pathname === '/infrastructure.html') {
-        await sendHTML(res, 'infrastructure.html');
-        return;
-    }
-
-    // --- Спутниковый мониторинг (Модуль №9) ---
-    if (pathname === '/satellite' || pathname === '/satellite.html') {
-        await sendHTML(res, 'satellite.html');
-        return;
-    }
-
-    // --- Военная авиация (Модуль №10) ---
-    if (pathname === '/aviation' || pathname === '/aviation.html') {
-        await sendHTML(res, 'aviation.html');
-        return;
-    }
-
-    // ============================================================
-    // 4.4. СТАТИЧЕСКИЕ ФАЙЛЫ
-    // ============================================================
-
-    if (pathname.startsWith('/css/') || pathname.startsWith('/js/') || pathname.startsWith('/images/')) {
-        await sendStaticFile(res, pathname);
-        return;
-    }
-
-    if (pathname === '/favicon.ico') {
-        res.writeHead(204);
-        res.end();
-        return;
-    }
-
-    // ============================================================
-    // 4.5. 404
-    // ============================================================
-
-    res.writeHead(404, { 'Content-Type': 'text/html' });
-    res.end(`
-        <!DOCTYPE html>
-        <html>
-        <head><title>404 — Страница не найдена</title></head>
-        <body style="background:#0a0e17;color:#e0e0e0;font-family:sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;flex-direction:column;">
-            <h1 style="font-size:72px;margin:0;background:linear-gradient(135deg,#ff6b6b,#4ecdc4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">404</h1>
-            <p style="font-size:20px;color:#8899aa;">Страница не найдена</p>
-            <a href="/" style="color:#4ecdc4;text-decoration:none;margin-top:20px;padding:10px 30px;border:1px solid #4ecdc4;border-radius:6px;">← На главную</a>
-        </body>
-        </html>
-    `);
 });
 
-// ============================================================
-// 5. ЗАПУСК СЕРВЕРА
-// ============================================================
+// ═══════════════════════════════════════════════════════════
+//  ИНИЦИАЛИЗАЦИЯ РОУТЕРА: загрузка реестра, подписка на изменения
+// ═══════════════════════════════════════════════════════════
+try {
+    await initRouter();
+} catch (e) {
+    console.error('[server] ОШИБКА инициализации роутера:', e.message);
+    console.error(e.stack);
+    process.exit(1);
+}
 
-server.listen(PORT, '0.0.0.0', () => {
-    console.log('');
-    console.log('╔══════════════════════════════════════════════════════════════════════════╗');
-    console.log('║                                                                          ║');
-    console.log('║   🧠  CRUCIX — Open Source Intelligence Terminal                        ║');
-    console.log('║                                                                          ║');
-    console.log('║   Версия: 2.1.2                                                          ║');
-    console.log('║   Порт:   ' + PORT + '                                                           ║');
-    console.log('║                                                                          ║');
-    console.log('║   🌐  http://localhost:' + PORT + '/                                     ║');
-    console.log('║                                                                          ║');
-    console.log('║   📋  ДОСТУПНЫЕ СТРАНИЦЫ:                                                ║');
-    console.log('║   ├─ /                    — Главная (JARVIS)                            ║');
-    console.log('║   ├─ /rss-feed            — RSS лента                                  ║');
-    console.log('║   ├─ /rss-dashboard       — Управление RSS                             ║');
-    console.log('║   ├─ /ai-chat             — AI помощник                                ║');
-    console.log('║   ├─ /geo-map             — Геополитическая карта                      ║');
-    console.log('║   ├─ /basket              — Корзина данных                             ║');
-    console.log('║   ├─ /grid-tool           — Инструмент "Сетка"                         ║');
-    console.log('║   ├─ /global-index        — Глобальный индекс (Модуль №5)              ║');
-    console.log('║   ├─ /historical-analysis — Исторический анализ (Модуль №6)            ║');
-    console.log('║   ├─ /correlation         — Кросс-корреляция (Модуль №7)               ║');
-    console.log('║   ├─ /infrastructure      — Критическая инфраструктура (Модуль №8)     ║');
-    console.log('║   ├─ /satellite           — Спутниковый мониторинг (Модуль №9)         ║');
-    console.log('║   └─ /aviation            — Военная авиация (Модуль №10)               ║');
-    console.log('║                                                                          ║');
-    console.log('║   📡  API-ЭНДПОИНТЫ:                                                     ║');
-    console.log('║   ├─ /api/rss/*            — RSS управление                             ║');
-    console.log('║   ├─ /api/news/*           — Новости                                    ║');
-    console.log('║   ├─ /api/basket/*         — Корзина                                    ║');
-    console.log('║   ├─ /api/ai/*             — AI (чат/рейтинг/анализ)                   ║');
-    console.log('║   ├─ /api/geo/*            — Геополитика                                ║');
-    console.log('║   ├─ /api/geo/index        — Глобальный индекс (Модуль №5)              ║');
-    console.log('║   ├─ /api/analysis/*       — Исторический анализ (Модуль №6)            ║');
-    console.log('║   ├─ /api/correlation/*    — Кросс-корреляция (Модуль №7)               ║');
-    console.log('║   ├─ /api/infrastructure/* — Критическая инфраструктура (Модуль №8)     ║');
-    console.log('║   │   ├─ /api/infrastructure/eia/*    — Энергетика (EIA)               ║');
-    console.log('║   │   ├─ /api/infrastructure/firms/*  — Пожары (FIRMS)                 ║');
-    console.log('║   │   ├─ /api/infrastructure/ofac/*   — Санкции (OFAC)                 ║');
-    console.log('║   │   └─ /api/infrastructure/ships/*  — Порты (Ships)                  ║');
-    console.log('║   ├─ /api/satellite/*      — Спутниковый мониторинг (Модуль №9)         ║');
-    console.log('║   ├─ /api/aviation/*       — Военная авиация (Модуль №10)               ║');
-    console.log('║   └─ /api/newsapi/*        — NewsAPI                                    ║');
-    console.log('║                                                                          ║');
-    console.log('║   ✅  Сервер запущен и готов к работе!                                  ║');
-    console.log('║                                                                          ║');
-    console.log('╚══════════════════════════════════════════════════════════════════════════╝');
-    console.log('');
+server.listen(PORT, () => {
+    console.log('============================================================');
+    console.log('  🚀 CRUCIX SERVER v14.0 (PRESTART LINT + MODULAR ROUTER)');
+    console.log('  📡 Порт:', PORT);
+    console.log('  🌐 URL: http://localhost:' + PORT);
+    console.log('============================================================');
+    console.log('  ✅ Реестр: /api/registry/');
+    console.log('  ✅ Страница: /registry');
+    console.log('============================================================');
+    console.log('  🎉 СЕРВЕР ГОТОВ');
+    console.log('============================================================');
+    runDescriptionGenerator();
 });
-
-// ============================================================
-// 6. ОБРАБОТКА ОШИБОК
-// ============================================================
-
-process.on('uncaughtException', (error) => {
-    console.error('[Server] Необработанное исключение:', error);
-});
-
-process.on('unhandledRejection', (reason) => {
-    console.error('[Server] Необработанный reject:', reason);
-});
-
-process.on('SIGINT', () => {
-    console.log('\n🛑 Сервер остановлен (Ctrl+C)');
-    process.exit(0);
-});
-
-process.on('SIGTERM', () => {
-    console.log('\n🛑 Сервер остановлен (SIGTERM)');
-    process.exit(0);
-});
-
-export default server;

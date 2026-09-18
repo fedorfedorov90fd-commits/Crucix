@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Граф знаний — Crucix</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0a0a1a; color: #e0e0e0; font-family: -apple-system, 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+
+        .topbar {
+            position: fixed; top: 0; left: 0; right: 0;
+            height: 60px;
+            background: rgba(10,10,20,0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid rgba(91,192,248,0.25);
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        .topbar::after {
+            content: "";
+            position: absolute;
+            bottom: -2px; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #5bc0f8, transparent);
+            opacity: 0.6;
+        }
+        .topbar-left { display: flex; align-items: center; gap: 12px; }
+        .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; }
+        .topbar-right { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+        .topbar-btn {
+            height: 28px; padding: 0 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 4px;
+            background: rgba(255,255,255,0.03);
+            color: #888;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-family: inherit;
+        }
+        .topbar-btn:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+        .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
+        .btn-home:hover { background: rgba(91,192,248,0.15); }
+        .btn-rss { color: #f26522; border-color: rgba(242,101,34,0.2); background: rgba(242,101,34,0.06); }
+        .btn-rss:hover { background: rgba(242,101,34,0.15); }
+        .btn-help { color: #a78bfa; border-color: rgba(167,139,250,0.2); background: rgba(167,139,250,0.06); }
+        .btn-help:hover { background: rgba(167,139,250,0.15); }
+
+        .lang-switch {
+            display: flex; gap: 2px; padding: 2px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .lang-btn {
+            padding: 2px 8px; border: none; background: transparent;
+            color: #666; font-size: 11px; font-weight: 500;
+            cursor: pointer; border-radius: 3px; transition: all 0.2s;
+            font-family: inherit;
+        }
+        .lang-btn:hover { color: #888; background: rgba(255,255,255,0.05); }
+        .lang-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.1); }
+
+        .nav-dashboards {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            height: 38px;
+            background: rgba(6,10,18,0.92);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            z-index: 99;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 4px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .nav-dashboards::-webkit-scrollbar { display: none; }
+
+        .nav-btn {
+            padding: 4px 10px;
+            border: none;
+            border-radius: 4px;
+            background: transparent;
+            color: #666;
+            font-size: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            font-family: inherit;
+            border: 1px solid transparent;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .nav-btn:hover { color: #c8d0d8; background: rgba(255,255,255,0.04); }
+        .nav-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.08); border-color: rgba(91,192,248,0.15); }
+        .nav-btn .icon { margin-right: 3px; }
+
+        .main-content {
+            padding-top: 114px;
+            max-width: 1440px;
+            margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
+            padding-bottom: 40px;
+            min-height: calc(100vh - 114px);
+        }
+
+        .graph-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 12px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+        .stat-card .number {
+            font-size: 28px;
+            font-weight: 700;
+            color: #5bc0f8;
+        }
+        .stat-card .label {
+            font-size: 12px;
+            color: #8892b0;
+            margin-top: 4px;
+        }
+        .entity-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 16px;
+        }
+        .entity-tag {
+            background: rgba(91,192,248,0.08);
+            border: 1px solid rgba(91,192,248,0.12);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 12px;
+            color: #c8d0d8;
+        }
+        .entity-tag .type {
+            color: #8892b0;
+            font-size: 10px;
+        }
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #e0e0e0;
+            margin-bottom: 8px;
+        }
+        .page-subtitle {
+            font-size: 14px;
+            color: #8892b0;
+            margin-bottom: 20px;
+        }
+        .search-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .search-row input {
+            flex: 1;
+            padding: 8px 14px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            background: rgba(255,255,255,0.03);
+            color: #e0e0e0;
+            font-family: inherit;
+            font-size: 14px;
+        }
+        .search-row input:focus { outline: none; border-color: #5bc0f8; }
+        .search-row button {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 6px;
+            background: #5bc0f8;
+            color: #0a0a1a;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 14px;
+        }
+        .search-row button:hover { opacity: 0.8; }
+        .notification {
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            color: #ffffff;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            z-index: 100001;
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: notif-fade 2.5s forwards;
+        }
+        @keyframes notif-fade {
+            0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+            10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            80% { opacity: 1; }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        }
+        @media (max-width: 768px) {
+            .topbar { padding: 0 12px; height: 52px; }
+            .nav-dashboards { top: 52px; height: 34px; }
+            .main-content { padding-top: 102px; }
+            .graph-stats { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="topbar">
+    <div class="topbar-left">
+        <span class="topbar-brand">🕸️ ГРАФ ЗНАНИЙ</span>
+    </div>
+    <div class="topbar-right">
+        <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+        <button class="topbar-btn btn-rss" onclick="window.location.href='/registry'">📡 Реестр</button>
+        <button class="topbar-btn btn-help" onclick="openHelp()">❓ HELP</button>
+        <div class="lang-switch">
+            <button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
+            <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+        </div>
+    </div>
+</header>
+
+<nav class="nav-dashboards" id="navDashboards">
+    <button class="nav-btn" onclick="window.location.href='/dashboard-5in1'"><span class="icon">🎯</span>Центр аналитики</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-economic'"><span class="icon">📊</span>Экономика</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-financial'"><span class="icon">💰</span>Финансы</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-military'"><span class="icon">🛡️</span>Военный</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-geopolitical'"><span class="icon">🌍</span>Геополитика</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-ecological'"><span class="icon">🌿</span>Экология</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-cyber'"><span class="icon">🔒</span>Кибер</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-space'"><span class="icon">🚀</span>Космос</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-news'"><span class="icon">📰</span>Новости</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-ai'"><span class="icon">🧠</span>AI</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-scientific'"><span class="icon">🔬</span>Наука</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-esg'"><span class="icon">🌱</span>ESG</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-threats'"><span class="icon">⚡</span>Угрозы</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-health'"><span class="icon">🏥</span>Здоровье</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-energy'"><span class="icon">⛽</span>Энергетика</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-transport'"><span class="icon">🚛</span>Транспорт</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-regions'"><span class="icon">🌏</span>Регионы</button>
+    <button class="nav-btn active" onclick="window.location.href='/knowledge-graph'"><span class="icon">🕸️</span>Граф знаний</button>
+</nav>
+
+<main class="main-content">
+    <h1 class="page-title">🕸️ Граф знаний Crucix</h1>
+    <p class="page-subtitle">Сущности и связи из данных проекта</p>
+
+    <div class="search-row">
+        <input type="text" id="searchInput" placeholder="Поиск сущностей..." onkeydown="if(event.key==='Enter') searchEntities()" />
+        <button onclick="searchEntities()">🔍 Найти</button>
+        <button onclick="loadGraphStats()" style="background:transparent;border:1px solid rgba(255,255,255,0.1);color:#e0e0e0;">🔄 Обновить</button>
+    </div>
+
+    <div class="graph-stats" id="statsContainer">
+        <div class="stat-card"><div class="number" id="totalEntities">--</div><div class="label">Всего сущностей</div></div>
+        <div class="stat-card"><div class="number" id="totalEvents">--</div><div class="label">Событий</div></div>
+        <div class="stat-card"><div class="number" id="totalCountries">--</div><div class="label">Стран</div></div>
+        <div class="stat-card"><div class="number" id="totalOrgs">--</div><div class="label">Организаций</div></div>
+    </div>
+
+    <div id="searchResults" style="margin-top:16px;"></div>
+</main>
+
+<script>
+// ============================================================
+// 1. ЯЗЫК
+// ============================================================
+let currentLang = localStorage.getItem('crucix-lang') || 'ru';
+
+function switchLang(lang) {
+    currentLang = lang;
+    localStorage.setItem('crucix-lang', lang);
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+    });
+    showNotification('🌐 Язык: ' + lang.toUpperCase());
+}
+
+document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === currentLang);
+});
+
+function showNotification(msg) {
+    document.querySelectorAll('.notification').forEach(el => el.remove());
+    const el = document.createElement('div');
+    el.className = 'notification';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2500);
+}
+
+function openHelp() {
+    alert('🕸️ Граф знаний\n\nПоказывает связи между сущностями в данных Crucix.\nAPI: /api/graph/stats, /api/graph/search');
+}
+
+// ============================================================
+// 2. ЗАГРУЗКА СТАТИСТИКИ
+// ============================================================
+async function loadGraphStats() {
+    try {
+        const response = await fetch('/api/graph/stats');
+        const data = await response.json();
+
+        if (data.success && data.stats) {
+            const stats = data.stats;
+            document.getElementById('totalEntities').textContent = stats.totalEntities || 0;
+            document.getElementById('totalEvents').textContent = stats.entityTypes?.event || 0;
+            document.getElementById('totalCountries').textContent = stats.entityTypes?.country || 0;
+            document.getElementById('totalOrgs').textContent = stats.entityTypes?.organization || 0;
+        } else {
+            showNotification('Ошибка загрузки статистики');
+        }
+    } catch (error) {
+        showNotification('Ошибка сети');
+    }
+}
+
+// ============================================================
+// 3. ПОИСК
+// ============================================================
+async function searchEntities() {
+    const query = document.getElementById('searchInput').value.trim();
+    if (!query) {
+        showNotification('Введите запрос');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/graph/search?q=${encodeURIComponent(query)}`);
+        const data = await response.json();
+
+        const container = document.getElementById('searchResults');
+
+        if (data.success && data.results && data.results.length > 0) {
+            let html = `<div style="margin-top:8px;color:#8892b0;">Найдено: ${data.count} результатов</div><div class="entity-list">`;
+            for (const entity of data.results) {
+                const typeLabels = { event: '📌', country: '🌍', organization: '🏢' };
+                html += `<span class="entity-tag">${typeLabels[entity.type] || '📍'} ${entity.name} <span class="type">(${entity.type})</span></span>`;
+            }
+            html += '</div>';
+            container.innerHTML = html;
+        } else {
+            container.innerHTML = '<div style="color:#8892b0;margin-top:12px;">Ничего не найдено</div>';
+        }
+    } catch (error) {
+        showNotification('Ошибка поиска');
+    }
+}
+
+// ============================================================
+// 4. ЗАПУСК
+// ============================================================
+document.addEventListener('DOMContentLoaded', loadGraphStats);
+</script>
+</body>
+</html>

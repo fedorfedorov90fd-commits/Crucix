@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Crucix · Real-time</title>
+<style>
+:root{--bg:#06080f;--surface:#0d1220;--surface2:#161d2e;--border:#1a2540;--border2:#2b3a5c;--text:#e8edf5;--text-dim:#8fa1c2;--text-faint:#5a6b8a;--accent:#3b82f6;--green:#22c55e;--red:#ef4444;--mono:'SF Mono',monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text);padding:20px;min-height:100vh}
+.header{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:20px}
+.header h1{font-size:18px;font-weight:700}
+.status{display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--surface2);border-radius:8px;font-family:var(--mono);font-size:12px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--text-faint)}
+.dot.connected{background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.settings{display:flex;gap:12px;align-items:center;margin-bottom:16px;font-size:12px;color:var(--text-dim)}
+.settings input{padding:4px 8px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:var(--mono);font-size:11px;width:220px}
+.settings button{padding:5px 12px;background:var(--accent);border:none;border-radius:4px;color:white;font-size:11px;cursor:pointer;font-weight:500}
+.stream{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;max-height:700px;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+.event{padding:10px 12px;background:var(--surface2);border-radius:8px;border-left:3px solid var(--border2);font-size:12px;animation:slideIn 0.3s ease}
+@keyframes slideIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+.event.alert-critical{border-left-color:var(--red);background:rgba(239,68,68,0.08)}
+.event.alert-high{border-left-color:#f97316;background:rgba(249,115,22,0.08)}
+.event-header{display:flex;justify-content:space-between;margin-bottom:4px}
+.event-type{font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.5px}
+.event-time{font-family:var(--mono);font-size:10px;color:var(--text-faint)}
+.event-body{color:var(--text-dim);line-height:1.4}
+.event-body strong{color:var(--text);font-family:var(--mono)}
+.empty{text-align:center;padding:40px;color:var(--text-faint);font-size:12px}
+</style>
+</head>
+<body>
+
+<div class="header">
+<h1>Crucix <span style="color:var(--text-dim);font-weight:400;font-size:13px">· Real-time</span></h1>
+<div class="status">
+<span class="dot" id="status-dot"></span>
+<span id="status-text">не подключено</span>
+</div>
+</div>
+
+<div class="settings">
+<label>WebSocket:</label>
+<input type="text" id="ws-url" value="ws://localhost:3118">
+<button onclick="reconnect()">Подключить</button>
+<span id="event-count" style="font-family:var(--mono);font-size:11px">0 событий</span>
+</div>
+
+<div class="stream" id="stream">
+<div class="empty">Ожидание событий...</div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const state = { ws: null, events: [], maxEvents: 200 };
+
+function connect() {
+const url = $('ws-url').value;
+setStatus('connecting', 'подключение...');
+try { state.ws = new WebSocket(url); } catch (e) { setStatus('error', 'ошибка'); return; }
+state.ws.onopen = () => { setStatus('connected', 'подключено'); state.ws.send(JSON.stringify({action:'subscribe',filters:{}})); };
+state.ws.onmessage = (e) => { try { const msg = JSON.parse(e.data); handleMessage(msg); } catch {} };
+state.ws.onclose = () => { setStatus('error', 'отключено'); setTimeout(connect, 3000); };
+state.ws.onerror = () => { setStatus('error', 'ошибка'); };
+}
+
+function setStatus(type, text) {
+$('status-dot').className = 'dot' + (type === 'connected' ? ' connected' : '');
+$('status-text').textContent = text;
+}
+
+function handleMessage(msg) {
+if (msg.type === 'welcome' || msg.type === 'pong' || msg.type === 'subscribed' || msg.type === 'stats') return;
+state.events.unshift(msg);
+if (state.events.length > state.maxEvents) state.events.pop();
+render();
+}
+
+function render() {
+$('event-count').textContent = state.events.length + ' событий';
+const stream = $('stream');
+if (state.events.length === 0) { stream.innerHTML = '<div class="empty">Ожидание событий...</div>'; return; }
+stream.innerHTML = state.events.slice(0, 50).map(renderEvent).join('');
+}
+
+function renderEvent(e) {
+const time = new Date(e.serverTimestamp || Date.now()).toLocaleTimeString('ru-RU');
+let className = 'event';
+if (e.type === 'alert') className += ' alert-' + e.severity;
+let typeLabel = ({prediction:'Прогноз', alert:'Алерт', signal_high:'Сигнал', regime_change:'Смена режима'})[e.type] || e.type;
+let body = '';
+if (e.type === 'prediction') body = 'Composite: <strong>' + (e.data?.compositeRisk?.composite?.toFixed(3) || '—') + '</strong>';
+else if (e.type === 'alert') body = 'Composite: <strong>' + (e.data?.composite?.toFixed(3) || '—') + '</strong>';
+else if (e.type === 'signal_high') body = '<strong>' + (e.data?.name || '') + '</strong> = ' + ((e.data?.value || 0) * 100).toFixed(1) + '%';
+return '<div class="' + className + '"><div class="event-header"><span class="event-type">' + typeLabel + '</span><span class="event-time">' + time + '</span></div><div class="event-body">' + body + '</div></div>';
+}
+
+function reconnect() { if (state.ws) state.ws.close(); connect(); }
+
+connect();
+</script>
+
+</body>
+</html>

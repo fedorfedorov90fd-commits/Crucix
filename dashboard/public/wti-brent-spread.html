@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Спред WTI-Brent — Crucix</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0a0a1a; color: #e0e0e0; font-family: -apple-system, 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+
+        .topbar {
+            position: fixed; top: 0; left: 0; right: 0;
+            height: 60px;
+            background: rgba(10,10,20,0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid rgba(91,192,248,0.25);
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; }
+        .topbar-right { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+        .topbar-btn {
+            height: 28px; padding: 0 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 4px;
+            background: rgba(255,255,255,0.03);
+            color: #888;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-family: inherit;
+        }
+        .topbar-btn:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+        .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
+        .btn-home:hover { background: rgba(91,192,248,0.15); }
+        .btn-copy { color: #5bc0f8; border-color: rgba(91,192,248,0.15); background: rgba(91,192,248,0.06); }
+        .btn-copy.copied { background: rgba(76,175,80,0.2); border-color: #4caf50; color: #4caf50; }
+        .btn-rss { color: #f26522; border-color: rgba(242,101,34,0.2); background: rgba(242,101,34,0.06); }
+        .btn-help { color: #a78bfa; border-color: rgba(167,139,250,0.2); background: rgba(167,139,250,0.06); }
+
+        .lang-switch {
+            display: flex; gap: 2px; padding: 2px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .lang-btn {
+            padding: 2px 8px; border: none; background: transparent;
+            color: #666; font-size: 11px; font-weight: 500;
+            cursor: pointer; border-radius: 3px;
+            font-family: inherit;
+        }
+        .lang-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.1); }
+
+        .copy-dropdown { position: relative; display: inline-block; }
+        .copy-dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 32px;
+            background: #0a0a1a;
+            min-width: 220px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+            z-index: 200;
+            padding: 6px 0;
+        }
+        .copy-dropdown-content.show { display: block; }
+        .copy-dropdown-content button {
+            display: block; width: 100%; padding: 8px 16px;
+            background: transparent; border: none;
+            color: #c8d0d8; font-size: 12px; text-align: left;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .copy-dropdown-content button:hover { background: rgba(91,192,248,0.08); color: #5bc0f8; }
+        .copy-dropdown-content .divider { height: 1px; background: rgba(255,255,255,0.05); margin: 4px 12px; }
+        .copy-dropdown-content .label { padding: 4px 16px; font-size: 10px; color: #4a5a6a; text-transform: uppercase; }
+
+        .nav-dashboards {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            height: 38px;
+            background: rgba(6,10,18,0.92);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            z-index: 99;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 4px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .nav-dashboards::-webkit-scrollbar { display: none; }
+        .nav-btn {
+            padding: 4px 10px;
+            border: none;
+            border-radius: 4px;
+            background: transparent;
+            color: #666;
+            font-size: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            font-family: inherit;
+            border: 1px solid transparent;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .nav-btn:hover { color: #c8d0d8; background: rgba(255,255,255,0.04); }
+        .nav-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.08); border-color: rgba(91,192,248,0.15); }
+
+        .main-content {
+            padding-top: 114px;
+            max-width: 1440px;
+            margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
+            padding-bottom: 40px;
+            min-height: calc(100vh - 114px);
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            z-index: 100001;
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: notif-fade 2.5s forwards;
+        }
+        @keyframes notif-fade {
+            0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+            10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            80% { opacity: 1; }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #4caf50, #5bc0f8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .page-subtitle { color: #4a5a6a; font-size: 14px; }
+
+        .indicator-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .indicator-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .indicator-card .label { color: #4a5a6a; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .indicator-card .value { font-size: 36px; font-weight: 700; color: #e0e0e0; margin: 8px 0; }
+        .indicator-card .change { font-size: 14px; }
+        .indicator-card .change.up { color: #4caf50; }
+        .indicator-card .change.down { color: #ef5350; }
+        .status {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .status-normal { background: rgba(76,175,80,0.2); color: #4caf50; }
+        .status-warning { background: rgba(255,193,7,0.2); color: #ffc107; }
+        .status-critical { background: rgba(239,83,80,0.2); color: #ef5350; }
+        .status-demo { background: rgba(255,193,7,0.15); color: #f59e0b; }
+
+        .chart-container {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .chart-container .chart-title { color: #4a5a6a; font-size: 14px; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .chart-placeholder {
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2a3a4a;
+            font-size: 14px;
+            border: 1px dashed rgba(255,255,255,0.05);
+            border-radius: 8px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .info-item {
+            background: rgba(255,255,255,0.02);
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.04);
+        }
+        .info-item .label { color: #4a5a6a; font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px; }
+        .info-item .value { color: #c8d0d8; font-size: 14px; margin-top: 4px; }
+
+        @media (max-width: 768px) {
+            .topbar { padding: 0 12px; height: 52px; }
+            .topbar-brand { font-size: 12px; }
+            .topbar-btn { font-size: 10px; padding: 0 8px; height: 24px; }
+            .nav-dashboards { top: 52px; height: 34px; padding: 0 10px; }
+            .nav-btn { font-size: 9px; padding: 2px 6px; }
+            .main-content { padding-top: 102px; padding-left: 12px; padding-right: 12px; }
+            .page-title { font-size: 22px; }
+            .indicator-card .value { font-size: 28px; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="topbar">
+    <div class="topbar-left">
+        <span class="topbar-brand">🛢️ СПРЕД WTI-BRENT</span>
+    </div>
+    <div class="topbar-right">
+        <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+        <div class="copy-dropdown">
+            <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ ▼</button>
+            <div class="copy-dropdown-content" id="copyDropdown">
+                <div class="label">ФОРМАТЫ КОПИРОВАНИЯ</div>
+                <button data-format="text">📄 Как текст</button>
+                <button data-format="json">📊 Как JSON</button>
+                <div class="divider"></div>
+                <button data-format="all">📦 ВСЁ В ОДНОМ</button>
+            </div>
+        </div>
+        <button class="topbar-btn btn-rss" onclick="window.location.href='/registry'">📡 Реестр</button>
+        <button class="topbar-btn btn-help" onclick="openHelp()">❓ HELP</button>
+        <div class="lang-switch">
+            <button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
+            <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+        </div>
+    </div>
+</header>
+
+<nav class="nav-dashboards">
+    <button class="nav-btn" onclick="window.location.href='/dashboard-5in1'"><span class="icon">🎯</span>Центр аналитики</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-economic'"><span class="icon">📊</span>Экономика</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-financial'"><span class="icon">💰</span>Финансы</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-military'"><span class="icon">🛡️</span>Военный</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-geopolitical'"><span class="icon">🌍</span>Геополитика</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-ecological'"><span class="icon">🌿</span>Экология</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-cyber'"><span class="icon">🔒</span>Кибер</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-space'"><span class="icon">🚀</span>Космос</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-news'"><span class="icon">📰</span>Новости</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-ai'"><span class="icon">🧠</span>AI</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-scientific'"><span class="icon">🔬</span>Наука</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-esg'"><span class="icon">🌱</span>ESG</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-threats'"><span class="icon">⚡</span>Угрозы</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-health'"><span class="icon">🏥</span>Здоровье</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-energy'"><span class="icon">⛽</span>Энергетика</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-transport'"><span class="icon">🚛</span>Транспорт</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-regions'"><span class="icon">🌏</span>Регионы</button>
+</nav>
+
+<main class="main-content">
+    <div class="page-header">
+        <div>
+            <div class="page-title">🛢️ Спред WTI-Brent</div>
+            <div class="page-subtitle">WTI-Brent Spread — EIA</div>
+        </div>
+        <div style="color:#4a5a6a;font-size:13px;">Обновлено: <span id="lastUpdated">—</span></div>
+    </div>
+
+    <div class="indicator-grid">
+        <div class="indicator-card">
+            <div class="label">Текущий спред</div>
+            <div class="value" id="currentValue">—</div>
+            <div class="change" id="currentChange">—</div>
+        </div>
+        <div class="indicator-card">
+            <div class="label">Статус</div>
+            <div style="margin-top:8px;"><span class="status" id="statusBadge">⚪ ЗАГРУЗКА</span></div>
+            <div style="margin-top:12px;color:#4a5a6a;font-size:13px;" id="statusDescription">Ожидание данных...</div>
+        </div>
+        <div class="indicator-card">
+            <div class="label">Источник</div>
+            <div style="margin-top:8px;font-size:16px;color:#c8d0d8;">EIA</div>
+            <div style="margin-top:4px;color:#4a5a6a;font-size:12px;">Спред между WTI и Brent</div>
+        </div>
+    </div>
+
+    <div class="chart-container">
+        <div class="chart-title">📈 Динамика спреда (последние 30 дней)</div>
+        <div class="chart-placeholder" id="chartPlaceholder">⚡ Данные загружаются...</div>
+    </div>
+
+    <div class="info-grid">
+        <div class="info-item"><div class="label">Описание</div><div class="value">Разница между ценами Brent и WTI</div></div>
+        <div class="info-item"><div class="label">Частота обновления</div><div class="value">Ежедневно</div></div>
+        <div class="info-item"><div class="label">Единица измерения</div><div class="value">Долларов за баррель</div></div>
+        <div class="info-item"><div class="label">Режим</div><div class="value" id="dataMode">ДЕМО</div></div>
+    </div>
+</main>
+
+<script>
+let currentLang = localStorage.getItem('crucix-lang') || 'ru';
+function switchLang(lang) {
+    currentLang = lang;
+    localStorage.setItem('crucix-lang', lang);
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+    showNotification('🌐 Язык: ' + lang.toUpperCase());
+}
+document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === currentLang));
+
+function showNotification(msg) {
+    document.querySelectorAll('.notification').forEach(el => el.remove());
+    const el = document.createElement('div');
+    el.className = 'notification';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2500);
+}
+
+function openHelp() {
+    const helpFile = `/data/help/${currentLang}/wti-brent-spread.txt`;
+    fetch(helpFile).then(r => r.text()).then(t => alert(t || "Справка не найдена")).catch(() => alert("Справка не найдена"));
+}
+
+document.getElementById('copy-btn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    document.getElementById('copyDropdown').classList.toggle('show');
+});
+document.addEventListener('click', function() { document.getElementById('copyDropdown').classList.remove('show'); });
+
+function copyPageData(format) {
+    const report = '=== CRUCIX — СНАПШОТ ===\nДата: ' + new Date().toLocaleString() + '\nСтраница: Спред WTI-Brent\nЗначение: ' + (document.getElementById('currentValue')?.textContent || '—') + '\nСтатус: ' + (document.getElementById('statusBadge')?.textContent || '—') + '\nИсточник: EIA\n';
+    navigator.clipboard.writeText(report).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = '✅ ' + format.toUpperCase();
+        setTimeout(() => { btn.textContent = '📋 КОПИРОВАТЬ ▼'; }, 2000);
+        showNotification('✅ Скопировано');
+    });
+}
+document.querySelectorAll('#copyDropdown button[data-format]').forEach(b => {
+    b.addEventListener('click', function(e) {
+        e.stopPropagation();
+        document.getElementById('copyDropdown').classList.remove('show');
+        copyPageData(this.dataset.format);
+    });
+});
+
+async function loadData() {
+    try {
+        const res = await fetch('/api/wti-brent-spread');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return await res.json();
+    } catch { return null; }
+}
+
+function renderData(data) {
+    if (!data?.data?.length) {
+        document.getElementById('currentValue').textContent = '—';
+        document.getElementById('statusBadge').textContent = '⚪ НЕТ ДАННЫХ';
+        document.getElementById('statusBadge').className = 'status status-demo';
+        document.getElementById('chartPlaceholder').textContent = '⛔ Нет данных';
+        return;
+    }
+    const latest = data.data[data.data.length - 1];
+    const prev = data.data.length > 1 ? data.data[data.data.length - 2] : null;
+    const isDemo = data.meta?.isDemo || false;
+
+    document.getElementById('currentValue').textContent = latest.value?.toFixed(2) || '—';
+    document.getElementById('lastUpdated').textContent = latest.date ? new Date(latest.date).toLocaleString() : '—';
+
+    if (prev && latest.value !== undefined && prev.value !== undefined) {
+        const diff = latest.value - prev.value;
+        const pct = prev.value !== 0 ? (diff / Math.abs(prev.value) * 100) : 0;
+        document.getElementById('currentChange').textContent = `${diff > 0 ? '+' : ''}${diff.toFixed(2)} (${pct > 0 ? '+' : ''}${pct.toFixed(1)}%)`;
+        document.getElementById('currentChange').className = 'change ' + (diff > 0 ? 'up' : diff < 0 ? 'down' : '');
+    }
+
+    let statusText = '🟢 НОРМАЛЬНЫЙ';
+    let statusClass = 'status-normal';
+    if (isDemo) { statusText = '🟠 ДЕМО-ДАННЫЕ'; statusClass = 'status-demo'; }
+    else if (latest.value > 5) { statusText = '🔴 ВЫСОКИЙ СПРЕД'; statusClass = 'status-critical'; }
+    else if (latest.value > 2) { statusText = '🟡 ПОВЫШЕННЫЙ'; statusClass = 'status-warning'; }
+    document.getElementById('statusBadge').textContent = statusText;
+    document.getElementById('statusBadge').className = 'status ' + statusClass;
+    document.getElementById('dataMode').textContent = isDemo ? 'ДЕМО' : 'РЕАЛЬНЫЕ';
+
+    const values = data.data.slice(-30).map(d => d.value).filter(v => v !== undefined);
+    if (values.length) {
+        const min = Math.min(...values);
+        const max = Math.max(...values);
+        const range = max - min || 1;
+        const chart = values.map(v => '█'.repeat(Math.round(((v - min) / range) * 20))).join('\n');
+        document.getElementById('chartPlaceholder').innerHTML = `<div style="font-family:monospace;font-size:11px;white-space:pre;color:#4caf50;text-align:center;line-height:1.2;">📈 Динамика (${values.length} точек)<br>${chart}<br>Мин: ${min.toFixed(2)} | Макс: ${max.toFixed(2)}</div>`;
+    }
+}
+
+async function init() {
+    const data = await loadData();
+    renderData(data);
+}
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,613 @@
+===== ЧАСТЬ part-6-infra-and-tests · КУСОК 05/23 · 21.5 KB =====
+
+FILE: tests/property/reflexive.property.mjs
+SIZE: 2262 bytes
+SHA1: 926855118f77c36d
+========================================================================
+
+// tests/property/reflexive.property.mjs
+// Property-based тесты для рефлексивной коррекции
+
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
+import { modelReflexiveEffect, recursiveReflexiveCorrection, computeActorSensitivity } from '../../apis/predict/reflexive.mjs';
+
+describe('Reflexive — Properties', () => {
+  it('PROPERTY: adjusted probability всегда в [0, 1]', () => {
+    const actors = {
+      markets: { mediaExposure: 0.9, reactivity: 0.8, rationality: 0.6 },
+      public: { mediaExposure: 0.7, reactivity: 0.6, rationality: 0.3 },
+    };
+
+    for (let i = 0; i < 200; i++) {
+      const forecast = {
+        probability: Math.random(),
+        direction: ['positive', 'negative', 'neutral'][Math.floor(Math.random() * 3)],
+        horizonHours: Math.random() * 200,
+      };
+      const result = modelReflexiveEffect(forecast, actors);
+      assert.ok(result.adjustedProb >= 0 && result.adjustedProb <= 1,
+        `Out of [0,1]: ${result.adjustedProb}`);
+    }
+  });
+
+  it('PROPERTY: sensitivity в [0, 1]', () => {
+    for (let i = 0; i < 100; i++) {
+      const actors = {};
+      const n = Math.floor(Math.random() * 5) + 1;
+      for (let j = 0; j < n; j++) {
+        actors[`actor_${j}`] = {
+          mediaExposure: Math.random(),
+          reactivity: Math.random(),
+          rationality: Math.random(),
+        };
+      }
+      const s = computeActorSensitivity(actors);
+      assert.ok(s >= 0 && s <= 1, `Sensitivity out of [0,1]: ${s}`);
+    }
+  });
+
+  it('PROPERTY: recursive correction сходится', () => {
+    const actors = { markets: { mediaExposure: 0.8, reactivity: 0.7, rationality: 0.5 } };
+    const forecast = { probability: 0.5, direction: 'negative', horizonHours: 24 };
+
+    for (let i = 0; i < 50; i++) {
+      const previous = Array.from({ length: i }, (_, j) => ({
+        timestamp: new Date(Date.now() - j * 86400000).toISOString(),
+        probability: 0.4 + Math.random() * 0.2,
+        direction: 'negative',
+      }));
+
+      const result = recursiveReflexiveCorrection(forecast, previous, actors);
+      assert.ok(result.finalProb >= 0 && result.finalProb <= 1);
+      assert.ok(!isNaN(result.finalProb), 'NaN in finalProb');
+    }
+  });
+});
+
+
+
+========================================================================
+
+FILE: tests/property/regime_signature.property.mjs
+SIZE: 2636 bytes
+SHA1: aa62eed3fd7894c5
+========================================================================
+
+// tests/property/regime_signature.property.mjs
+// Property-based тесты для extractRegimeSignature
+
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
+import { extractRegimeSignature } from '../../apis/predict/meta_ensemble.mjs';
+
+function forAll(numCases, generator, assertion) {
+  const failures = [];
+  for (let i = 0; i < numCases; i++) {
+    const input = generator(i);
+    try { assertion(input); }
+    catch (e) { failures.push({ case: i, input, error: e.message }); }
+  }
+  return failures;
+}
+
+describe('extractRegimeSignature — Properties', () => {
+  it('PROPERTY: всегда возвращает 8 значений в [0, 1]', () => {
+    const failures = forAll(200, () => ({
+      vix: Math.random() * 100 - 20,     // может быть отрицательным
+      hySpread: Math.random() * 20 - 5,
+      conflicts: Math.floor(Math.random() * 50) - 10,
+      sanctions: Math.floor(Math.random() * 30) - 5,
+      alerts: Math.floor(Math.random() * 30) - 5,
+      escalated: Math.floor(Math.random() * 20) - 5,
+    }), ({ vix, hySpread, conflicts, sanctions, alerts, escalated }) => {
+      const latest = {
+        fred: { vix, hySpread },
+        gdelt: { conflictEvents: Array.from({ length: Math.max(0, conflicts) }, () => ({})) },
+        sanctions: { count: Math.max(0, sanctions) },
+        delta: { newAlerts: Math.max(0, alerts), escalatedAlerts: Math.max(0, escalated) },
+      };
+      const history = [];
+      const sig = extractRegimeSignature(latest, history);
+
+      assert.strictEqual(sig.length, 8, `Got ${sig.length} features`);
+      sig.forEach((v, i) => {
+        assert.ok(typeof v === 'number', `Feature ${i} not number: ${typeof v}`);
+        assert.ok(!isNaN(v), `Feature ${i} is NaN`);
+        assert.ok(v >= 0 && v <= 1, `Feature ${i} = ${v} out of [0, 1]`);
+      });
+    });
+
+    assert.strictEqual(failures.length, 0, `Failures: ${JSON.stringify(failures.slice(0, 3))}`);
+  });
+
+  it('PROPERTY: монотонность — рост VIX увеличивает 1-й признак', () => {
+    const latest1 = { fred: { vix: 20 }, gdelt: { conflictEvents: [] } };
+    const latest2 = { fred: { vix: 40 }, gdelt: { conflictEvents: [] } };
+
+    const sig1 = extractRegimeSignature(latest1, []);
+    const sig2 = extractRegimeSignature(latest2, []);
+
+    assert.ok(sig2[0] > sig1[0], `VIX monotonicity violated: ${sig1[0]} vs ${sig2[0]}`);
+  });
+
+  it('PROPERTY: пустые данные не приводят к NaN', () => {
+    const sig = extractRegimeSignature({}, []);
+    sig.forEach(v => assert.ok(!isNaN(v), 'NaN with empty input'));
+  });
+});
+
+
+
+========================================================================
+
+FILE: tests/fuzz/adversarial_coevolution.fuzz.mjs
+SIZE: 2866 bytes
+SHA1: 50d859a84a3d68a4
+========================================================================
+
+// tests/fuzz/adversarial_coevolution.fuzz.mjs
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
+import { OpponentModel, AdversarialCoEvolution, crucixAdversarialCoEvolution } from '../../apis/predict/adversarial_coevolution.mjs';
+
+describe('AdversarialCoEvolution — Fuzz Tests', () => {
+  it('FUZZ: OpponentModel не падает на произвольные observations', () => {
+    for (let trial = 0; trial < 100; trial++) {
+      const om = new OpponentModel({ opponentId: 'test' });
+      const numObs = Math.floor(Math.random() * 50);
+
+      for (let i = 0; i < numObs; i++) {
+        const strategy = Math.random() < 0.1 ? null : ['escalate', 'hold', 'deescalate', 'deceive'][Math.floor(Math.random() * 4)];
+        const context = Math.random() < 0.5 ? {} : { ourPrediction: 'escalation' };
+
+        try {
+          om.observe(strategy, context);
+        } catch (e) {
+          // null strategy может быть допустим
+        }
+      }
+
+      try {
+        om.predictNextStrategy();
+        om.detectAdaptation();
+      } catch (e) {
+        assert.fail(`Trial ${trial} crash: ${e.message}`);
+      }
+    }
+  });
+
+  it('FUZZ: AdversarialCoEvolution с произвольными раундами', () => {
+    for (let trial = 0; trial < 50; trial++) {
+      const ace = new AdversarialCoEvolution();
+      const numOpponents = Math.floor(Math.random() * 5) + 1;
+      for (let i = 0; i < numOpponents; i++) {
+        ace.addOpponent(`opp_${i}`);
+      }
+
+      const numRounds = Math.floor(Math.random() * 20);
+      for (let r = 0; r < numRounds; r++) {
+        const responses = {};
+        for (let i = 0; i < numOpponents; i++) {
+          if (Math.random() > 0.3) {
+            responses[`opp_${i}`] = {
+              strategy: ['escalate', 'hold', 'deescalate', 'deceive'][Math.floor(Math.random() * 4)],
+              context: {},
+            };
+          }
+        }
+        try {
+          ace.round(`strategy_${r}`, responses);
+        } catch (e) {
+          assert.fail(`Round ${r} crash: ${e.message}`);
+        }
+      }
+
+      try {
+        ace.toJSON();
+      } catch (e) {
+        assert.fail(`toJSON crash: ${e.message}`);
+      }
+    }
+  });
+
+  it('FUZZ: crucixAdversarialCoEvolution на пустых/некорректных inputs', () => {
+    const cases = [
+      {},
+      null,
+      undefined,
+      [],
+      { gdelt: null },
+    ];
+
+    for (const latest of cases) {
+      try {
+        const result = crucixAdversarialCoEvolution(latest || {}, []);
+        assert.strictEqual(result.module, 'adversarial_coevolution');
+      } catch (e) {
+        // Только null/undefined допустимо пропустить
+        if (latest === null || latest === undefined) continue;
+        assert.fail(`Crash on ${JSON.stringify(latest)}: ${e.message}`);
+      }
+    }
+  });
+});
+
+
+
+========================================================================
+
+FILE: tests/fuzz/attention_dynamics.fuzz.mjs
+SIZE: 2738 bytes
+SHA1: 3270718ad56c6b65
+========================================================================
+
+// tests/fuzz/attention_dynamics.fuzz.mjs
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
+import { AttentionDynamics, crucixAttentionDynamics, extractTopicsFromSweep } from '../../apis/predict/attention_dynamics.mjs';
+
+describe('AttentionDynamics — Fuzz Tests', () => {
+  it('FUZZ: не падает на произвольные inputs', () => {
+    for (let trial = 0; trial < 200; trial++) {
+      const ad = new AttentionDynamics({ halfLifeHours: 1 + Math.random() * 100 });
+      const numUpdates = Math.floor(Math.random() * 30);
+
+      for (let i = 0; i < numUpdates; i++) {
+        const topicId = `topic_${Math.floor(Math.random() * 10)}`;
+        const mentions = Math.random() < 0.1 ? [0, -1, 1e9, NaN, Infinity][Math.floor(Math.random() * 5)] : Math.random() * 20;
+        const hours = Math.random() < 0.1 ? -1 : Math.random() * 24;
+
+        try {
+          ad.update(topicId, mentions, hours);
+        } catch (e) {
+          // Допустимо для NaN, но не должно крашить
+        }
+      }
+
+      try {
+        ad.getAttentionAllocation();
+        ad.detectShifts();
+        ad.predictExplosive(5, 24);
+      } catch (e) {
+        assert.fail(`Trial ${trial} crash: ${e.message}`);
+      }
+    }
+  });
+
+  it('FUZZ: extractTopicsFromSweep на некорректных событиях', () => {
+    const cases = [
+      {},
+      { gdelt: {} },
+      { gdelt: { conflictEvents: null } },
+      { gdelt: { conflictEvents: [] } },
+      { gdelt: { conflictEvents: [null] } },
+      { gdelt: { conflictEvents: [{}] } },
+      { gdelt: { conflictEvents: [{ summary: null }] } },
+      { gdelt: { conflictEvents: [{ summary: 'a'.repeat(100000) }] } },
+      { gdelt: { conflictEvents: [{ summary: '💥🔴test💥' }] } },
+    ];
+
+    for (const latest of cases) {
+      try {
+        const topics = extractTopicsFromSweep(latest);
+        assert.ok(topics instanceof Map);
+      } catch (e) {
+        assert.fail(`Crash: ${e.message}`);
+      }
+    }
+  });
+
+  it('FUZZ: crucixAttentionDynamics на 50 случайных sweep', () => {
+    for (let trial = 0; trial < 50; trial++) {
+      const latest = {};
+      if (Math.random() > 0.5) {
+        latest.gdelt = {
+          conflictEvents: Array.from({ length: Math.floor(Math.random() * 20) }, () => ({
+            summary: `word${Math.floor(Math.random() * 20)} word${Math.floor(Math.random() * 20)} word${Math.floor(Math.random() * 20)}`,
+          })),
+        };
+      }
+
+      try {
+        const result = crucixAttentionDynamics(latest, []);
+        assert.strictEqual(result.module, 'attention_dynamics');
+      } catch (e) {
+        assert.fail(`Trial ${trial} crash: ${e.message}`);
+      }
+    }
+  });
+});
+
+
+
+========================================================================
+
+FILE: tests/fuzz/hypergraph_contagion.fuzz.mjs
+SIZE: 2692 bytes
+SHA1: 5013e89663d19a23
+========================================================================
+
+// tests/fuzz/hypergraph_contagion.fuzz.mjs
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
+import { Hypergraph, crucixHypergraphContagion } from '../../apis/predict/hypergraph_contagion.mjs';
+
+describe('Hypergraph — Fuzz Tests', () => {
+  it('FUZZ: не падает на произвольные гиперрёбра', () => {
+    for (let trial = 0; trial < 100; trial++) {
+      const hg = new Hypergraph();
+      const numNodes = Math.floor(Math.random() * 10) + 3;
+      for (let i = 0; i < numNodes; i++) {
+        hg.addNode(`n${i}`, `Node ${i}`, 'cyber', Math.random());
+      }
+
+      const numEdges = Math.floor(Math.random() * 10);
+      for (let i = 0; i < numEdges; i++) {
+        const edgeSize = 3 + Math.floor(Math.random() * (numNodes - 2));
+        const nodes = [];
+        const shuffled = [...hg.nodes.keys()].sort(() => Math.random() - 0.5);
+        for (let j = 0; j < Math.min(edgeSize, numNodes); j++) {
+          nodes.push(shuffled[j]);
+        }
+        try {
+          hg.addHyperedge(nodes, { weight: Math.random() * 5 });
+        } catch (e) {
+          // Допустимо, если nodes имеет <3 уникальных
+        }
+      }
+
+      try {
+        hg.propagateAll(5);
+      } catch (e) {
+        assert.fail(`Crash on trial ${trial}: ${e.message}`);
+      }
+    }
+  });
+
+  it('FUZZ: crucixHypergraphContagion на произвольном latest', () => {
+    for (let trial = 0; trial < 100; trial++) {
+      const latest = {};
+      if (Math.random() > 0.3) latest.sanctions = { count: Math.floor(Math.random() * 30) };
+      if (Math.random() > 0.3) latest.gdelt = { conflictEvents: Array.from({ length: Math.floor(Math.random() * 30) }, () => ({})) };
+      if (Math.random() > 0.3) latest.fred = { vix: Math.random() * 100 };
+      if (Math.random() > 0.3) latest.delta = { escalatedAlerts: Math.floor(Math.random() * 20) };
+
+      try {
+        const result = crucixHypergraphContagion(latest, []);
+        assert.strictEqual(result.module, 'hypergraph_contagion');
+      } catch (e) {
+        assert.fail(`Trial ${trial} crash: ${e.message}`);
+      }
+    }
+  });
+
+  it('FUZZ: экстремальные веса гиперрёбер', () => {
+    const hg = new Hypergraph();
+    hg.addNode('a', 'A', 'cyber', 0.5);
+    hg.addNode('b', 'B', 'info', 0.5);
+    hg.addNode('c', 'C', 'finance', 0.5);
+
+    const extremeWeights = [0, -1, 1e6, -1e6, NaN, Infinity, -Infinity];
+    for (const w of extremeWeights) {
+      try {
+        hg.addHyperedge(['a', 'b', 'c'], { weight: w });
+      } catch (e) {
+        // Допустимо
+      }
+    }
+
+    assert.doesNotThrow(() => hg.propagateAll(3));
+  });
+});
+
+
+
+========================================================================
+
+FILE: tests/fuzz/scenario_generator.fuzz.mjs
+SIZE: 4281 bytes
+SHA1: 0747298bc0c8c4bd
+========================================================================
+
+// tests/fuzz/scenario_generator.fuzz.mjs
+// Fuzz-тесты для ScenarioGenerator
+// Цель: найти входные данные, которые ломают парсер или логику
+
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
+import { ScenarioGenerator, crucixScenarioGeneration } from '../../apis/predict/scenario_generator.mjs';
+
+function fuzzCases(numCases, generator) {
+  return Array.from({ length: numCases }, (_, i) => generator(i));
+}
+
+describe('ScenarioGenerator — Fuzz Tests', () => {
+  it('FUZZ: не падает на произвольных строках от LLM', async () => {
+    const malformedResponses = [
+      '',
+      'not json',
+      '{}',
+      '{"scenarios": null}',
+      '{"scenarios": []}',
+      '{"scenarios": "string"}',
+      '{"scenarios": [null]}',
+      '{"scenarios": [{}]}',
+      '{"scenarios": [{"name": null}]}',
+      '{"scenarios": [{"probability": "high"}]}',
+      '{"scenarios": [{"probability": -5}]}',
+      '{"scenarios": [{"probability": 100}]}',
+      '{"scenarios": [{"horizonHours": -10}]}',
+      '{"scenarios": [{"severity": "unknown"}]}',
+      '["array", "instead", "of", "object"]',
+      '{invalid json',
+      '{"scenarios": ' + '[' .repeat(100) + '}',
+      '{"scenarios": [' + '{}'.repeat(1000).split('').join(',') + ']}',
+      '💥🔴not json 💥',
+      '\u0000\u0001\u0002',
+      '{"scenarios": [{"name": "' + 'A'.repeat(100000) + '"}]}',
+    ];
+
+    const latest = { fred: { vix: 25 }, gdelt: { conflictEvents: [{}] } };
+
+    for (const response of malformedResponses) {
+      const mockLLM = { chat: async () => response };
+      const gen = new ScenarioGenerator({ llm: mockLLM });
+
+      try {
+        const scenarios = await gen.generate(latest);
+        assert.ok(Array.isArray(scenarios), `Not array for response: ${response.slice(0, 50)}`);
+        scenarios.forEach((s, i) => {
+          assert.ok(typeof s === 'object', `Scenario ${i} not object`);
+          assert.ok(typeof s.probability === 'number' || s.probability === undefined,
+            `Scenario ${i} probability not number: ${s.probability}`);
+        });
+      } catch (e) {
+        assert.fail(`Threw on response "${response.slice(0, 50)}": ${e.message}`);
+      }
+    }
+  });
+
+  it('FUZZ: обрабатывает 1000 случайных Latest', async () => {
+    const gen = new ScenarioGenerator();
+
+    for (let i = 0; i < 1000; i++) {
+      const latest = {};
+      if (Math.random() > 0.5) latest.fred = { vix: Math.random() * 100 };
+      if (Math.random() > 0.5) latest.gdelt = { conflictEvents: Array.from({ length: Math.floor(Math.random() * 30) }, () => ({})) };
+      if (Math.random() > 0.5) latest.sanctions = { count: Math.floor(Math.random() * 20) };
+
+      try {
+        const scenarios = await gen.generate(latest);
+        assert.ok(Array.isArray(scenarios));
+        const totalProb = scenarios.reduce((s, sc) => s + (sc.probability || 0), 0);
+        if (scenarios.length > 0) {
+          assert.ok(Math.abs(totalProb - 1) < 0.5 || totalProb === 0,
+            `Total probability anomalous: ${totalProb}`);
+        }
+      } catch (e) {
+        assert.fail(`Crash on iteration ${i} with ${JSON.stringify(latest)}: ${e.message}`);
+      }
+    }
+  });
+
+  it('FUZZ: crucixScenarioGeneration не падает на null/undefined', async () => {
+    const cases = [
+      null,
+      undefined,
+      {},
+      { fred: null },
+      { fred: { vix: null } },
+      { gdelt: { conflictEvents: null } },
+      { gdelt: { conflictEvents: 'not array' } },
+      { gdelt: { conflictEvents: [null, undefined] } },
+      { sanctions: { count: -100 } },
+      { fred: { vix: Infinity } },
+      { fred: { vix: -Infinity } },
+      { fred: { vix: NaN } },
+    ];
+
+    for (const latest of cases) {
+      try {
+        const result = await crucixScenarioGeneration(latest, {});
+        assert.ok(result, `Null result for ${JSON.stringify(latest)}`);
+        assert.strictEqual(result.module, 'scenario_generator');
+      } catch (e) {
+        // Ошибки допустимы только для null/undefined
+        if (latest === null || latest === undefined) continue;
+        assert.fail(`Crash on ${JSON.stringify(latest)}: ${e.message}`);
+      }
+    }
+  });
+});
+
+
+
+========================================================================
+
+FILE: tests/fuzz/temporal_causal.fuzz.mjs
+SIZE: 2926 bytes
+SHA1: ea43188131f14729
+========================================================================
+
+// tests/fuzz/temporal_causal.fuzz.mjs
+// Fuzz-тесты для TemporalLagNetwork
+
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
+import { TemporalLagNetwork, crucixTemporalCausalAnalysis } from '../../apis/predict/temporal_causal.mjs';
+
+describe('TemporalLagNetwork — Fuzz Tests', () => {
+  it('FUZZ: не падает на произвольные времена', () => {
+    for (let trial = 0; trial < 100; trial++) {
+      const net = new TemporalLagNetwork();
+      const numEvents = Math.floor(Math.random() * 50);
+
+      for (let i = 0; i < numEvents; i++) {
+        const t = Math.random() * 1e12;
+        const id = `event_${Math.floor(Math.random() * 5)}`;
+        net.recordEvent(id, t, Math.random());
+      }
+
+      try {
+        net.fit();
+        // Пробуем детекцию
+        for (const [from, targets] of net.lagDistributions) {
+          for (const [to] of targets) {
+            net.detectLagShift(from, to);
+            net.predictNextB(from, to);
+          }
+        }
+      } catch (e) {
+        assert.fail(`Crash on trial ${trial} with ${numEvents} events: ${e.message}`);
+      }
+    }
+  });
+
+  it('FUZZ: одинаковые timestamp не ломают логику', () => {
+    const net = new TemporalLagNetwork();
+    const t = 1000000;
+    for (let i = 0; i < 100; i++) net.recordEvent('A', t, 1);
+    for (let i = 0; i < 100; i++) net.recordEvent('B', t, 1);
+
+    assert.doesNotThrow(() => net.fit());
+    assert.doesNotThrow(() => net.detectLagShift('A', 'B'));
+  });
+
+  it('FUZZ: отрицательные и огромные timestamp', () => {
+    const net = new TemporalLagNetwork();
+    net.recordEvent('A', -1000000, 1);
+    net.recordEvent('B', 1000000, 1);
+    net.recordEvent('A', Number.MAX_SAFE_INTEGER, 1);
+    net.recordEvent('B', Number.MAX_SAFE_INTEGER + 1, 1);
+
+    assert.doesNotThrow(() => net.fit());
+  });
+
+  it('FUZZ: crucixTemporalCausalAnalysis на произвольной истории', () => {
+    for (let trial = 0; trial < 50; trial++) {
+      const history = [];
+      const n = Math.floor(Math.random() * 50);
+      for (let i = 0; i < n; i++) {
+        history.push({
+          timestamp: new Date(Date.now() - i * 3600000).toISOString(),
+          fred: Math.random() > 0.3 ? { vix: Math.random() * 100 } : null,
+          gdelt: Math.random() > 0.3 ? { conflictEvents: Array.from({ length: Math.floor(Math.random() * 30) }, () => ({})) } : null,
+          sanctions: Math.random() > 0.5 ? { count: Math.floor(Math.random() * 20) } : null,
+          delta: Math.random() > 0.5 ? { newAlerts: Math.floor(Math.random() * 20), escalatedAlerts: Math.floor(Math.random() * 10) } : null,
+        });
+      }
+
+      try {
+        const result = crucixTemporalCausalAnalysis(history);
+        assert.ok(result);
+      } catch (e) {
+        assert.fail(`Trial ${trial} crash: ${e.message}`);
+      }
+    }
+  });
+});
+
+
+
+========================================================================

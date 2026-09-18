@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧠 Crucix RAG — AI-аналитика</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a1a;
+            color: #e0e0e0;
+            font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .topbar {
+            background: rgba(10,10,20,0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid rgba(91,192,248,0.25);
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .topbar-brand {
+            font-size: 16px;
+            font-weight: 700;
+            color: #5bc0f8;
+        }
+        .topbar-brand span { color: #8899aa; font-weight: 400; font-size: 12px; }
+        .topbar-status {
+            font-size: 12px;
+            color: #8899aa;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .status-dot.online { background: #4ade80; }
+        .status-dot.offline { background: #ef4444; }
+        .status-dot.unknown { background: #f59e0b; }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            animation: fadeIn 0.3s ease;
+        }
+        .message.user {
+            align-self: flex-end;
+            background: rgba(91,192,248,0.15);
+            border: 1px solid rgba(91,192,248,0.2);
+        }
+        .message.assistant {
+            align-self: flex-start;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .message .meta {
+            font-size: 10px;
+            color: #4a5a6a;
+            margin-top: 4px;
+        }
+        .message .meta .engine {
+            color: #5bc0f8;
+        }
+        .message .sources {
+            font-size: 11px;
+            color: #4a5a6a;
+            margin-top: 6px;
+            padding: 4px 8px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 4px;
+        }
+        .message .sources span { background: rgba(91,192,248,0.1); padding: 1px 6px; border-radius: 4px; margin-right: 4px; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .input-area {
+            flex-shrink: 0;
+            padding: 12px 20px;
+            background: rgba(10,10,20,0.95);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            gap: 10px;
+        }
+        .input-area textarea {
+            flex: 1;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.03);
+            color: #e0e0e0;
+            font-size: 14px;
+            resize: none;
+            font-family: inherit;
+            min-height: 50px;
+            max-height: 120px;
+            transition: border-color 0.2s;
+        }
+        .input-area textarea:focus {
+            outline: none;
+            border-color: #5bc0f8;
+        }
+        .input-area button {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            background: #5bc0f8;
+            color: #0a0a1a;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .input-area button:hover { background: #4a9fd4; transform: translateY(-1px); }
+        .input-area button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .thinking {
+            align-self: flex-start;
+            color: #4a5a6a;
+            font-size: 14px;
+            padding: 8px 16px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #4a5a6a;
+            text-align: center;
+            gap: 12px;
+        }
+        .empty-state .icon { font-size: 48px; }
+        .empty-state h2 { font-weight: 400; color: #8899aa; }
+        .empty-state p { font-size: 14px; max-width: 400px; }
+
+        .engine-selector {
+            display: flex;
+            gap: 4px;
+            margin-right: 10px;
+        }
+        .engine-selector button {
+            padding: 4px 10px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 4px;
+            background: transparent;
+            color: #4a5a6a;
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .engine-selector button:hover { background: rgba(255,255,255,0.04); }
+        .engine-selector button.active {
+            border-color: #5bc0f8;
+            color: #5bc0f8;
+            background: rgba(91,192,248,0.08);
+        }
+
+        @media (max-width: 768px) {
+            .message { max-width: 90%; }
+            .topbar { flex-wrap: wrap; gap: 8px; }
+            .input-area { flex-wrap: wrap; }
+            .input-area textarea { min-height: 40px; }
+            .engine-selector { order: -1; width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <div class="topbar-brand">
+        🧠 RAG <span>— AI-аналитика на основе корзины Crucix</span>
+    </div>
+    <div class="topbar-status">
+        <span class="status-dot unknown" id="statusDot"></span>
+        <span id="statusText">Подключение...</span>
+        <span id="engineStatus" style="margin-left:12px;font-size:11px;color:#4a5a6a;"></span>
+    </div>
+</div>
+
+<div class="chat-container" id="chatContainer">
+    <div class="empty-state" id="emptyState">
+        <div class="icon">🧠</div>
+        <h2>Задайте вопрос по данным Crucix</h2>
+        <p>Модуль проанализирует данные из корзины (92+ источника) и даст ответ с указанием источников.</p>
+        <p style="font-size:12px;color:#4a5a6a;">Поддерживает: Ollama, локальный DeepSeek, внешний DeepSeek API</p>
+    </div>
+</div>
+
+<div class="input-area">
+    <div class="engine-selector" id="engineSelector">
+        <button data-engine="auto" class="active">🤖 Авто</button>
+        <button data-engine="ollama">🦙 Ollama</button>
+        <button data-engine="deepseek-local">🧊 DeepSeek (лок.)</button>
+        <button data-engine="deepseek-api">🌐 DeepSeek API</button>
+    </div>
+    <textarea id="chatInput" rows="1" placeholder="Введите вопрос..."></textarea>
+    <button id="sendBtn">Отправить</button>
+</div>
+
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+
+const API_URL = window.location.port === '3120' 
+    ? '' 
+    : 'http://localhost:3120';
+
+// ============================================================
+// STATE
+// ============================================================
+
+let selectedEngine = 'auto';
+let isThinking = false;
+let statusCheckInterval = null;
+
+// ============================================================
+// DOM REFS
+// ============================================================
+
+const chatContainer = document.getElementById('chatContainer');
+const emptyState = document.getElementById('emptyState');
+const chatInput = document.getElementById('chatInput');
+const sendBtn = document.getElementById('sendBtn');
+const statusDot = document.getElementById('statusDot');
+const statusText = document.getElementById('statusText');
+const engineStatus = document.getElementById('engineStatus');
+
+// ============================================================
+// ENGINE SELECTOR
+// ============================================================
+
+document.querySelectorAll('#engineSelector button').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('#engineSelector button').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        selectedEngine = this.dataset.engine;
+    });
+});
+
+// ============================================================
+// CHAT FUNCTIONS
+// ============================================================
+
+function addMessage(role, content, meta = {}) {
+    emptyState.style.display = 'none';
+    
+    const div = document.createElement('div');
+    div.className = `message ${role}`;
+    
+    // Форматируем содержимое (поддерживаем \n)
+    const formatted = content.replace(/\n/g, '<br>');
+    div.innerHTML = formatted;
+
+    if (meta.engine || meta.sources) {
+        const metaDiv = document.createElement('div');
+        metaDiv.className = 'meta';
+        let parts = [];
+        if (meta.engine) {
+            parts.push(`<span class="engine">🤖 ${meta.engine}</span>`);
+        }
+        if (meta.confidence) {
+            parts.push(`Уверенность: ${Math.round(meta.confidence * 100)}%`);
+        }
+        if (meta.sources && meta.sources.length > 0) {
+            const sourceTags = meta.sources.slice(0, 5).map(s => `<span>${s}</span>`).join('');
+            metaDiv.innerHTML += `<div class="sources">📎 Источники: ${sourceTags}</div>`;
+        }
+        if (parts.length > 0) {
+            metaDiv.innerHTML = parts.join(' · ') + metaDiv.innerHTML;
+        }
+        div.appendChild(metaDiv);
+    }
+
+    chatContainer.appendChild(div);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+function addThinking() {
+    const div = document.createElement('div');
+    div.className = 'thinking';
+    div.id = 'thinkingIndicator';
+    div.textContent = '🤔 Анализирую данные...';
+    chatContainer.appendChild(div);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+function removeThinking() {
+    const el = document.getElementById('thinkingIndicator');
+    if (el) el.remove();
+}
+
+// ============================================================
+// SEND MESSAGE
+// ============================================================
+
+async function sendMessage() {
+    const query = chatInput.value.trim();
+    if (!query || isThinking) return;
+
+    chatInput.value = '';
+    chatInput.style.height = 'auto';
+
+    // Добавляем сообщение пользователя
+    addMessage('user', query);
+
+    // Показываем индикатор
+    addThinking();
+    isThinking = true;
+    sendBtn.disabled = true;
+
+    try {
+        const response = await fetch(`${API_URL}/api/rag/query`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                query: query,
+                useEngine: selectedEngine === 'auto' ? 'auto' : selectedEngine,
+                limit: 30
+            })
+        });
+
+        removeThinking();
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            addMessage('assistant', `❌ Ошибка: ${errorData.error || 'Неизвестная ошибка'}`);
+            return;
+        }
+
+        const data = await response.json();
+        
+        addMessage('assistant', data.answer, {
+            engine: data.usedEngine || 'неизвестно',
+            confidence: data.confidence,
+            sources: data.sources || []
+        });
+
+    } catch (error) {
+        removeThinking();
+        addMessage('assistant', `❌ Ошибка подключения к серверу RAG: ${error.message}\n\nПроверьте, запущен ли сервер (node rag-server.mjs)`);
+    } finally {
+        isThinking = false;
+        sendBtn.disabled = false;
+        chatInput.focus();
+    }
+}
+
+// ============================================================
+// CHECK STATUS
+// ============================================================
+
+async function checkStatus() {
+    try {
+        const response = await fetch(`${API_URL}/api/rag/status`);
+        if (!response.ok) throw new Error('Сервер не отвечает');
+        
+        const data = await response.json();
+        
+        statusDot.className = 'status-dot online';
+        statusText.textContent = '✅ Сервер RAG онлайн';
+        
+        // Показываем доступные движки
+        const engines = data.engines || {};
+        const available = Object.entries(engines)
+            .filter(([_, v]) => v)
+            .map(([k]) => k);
+        
+        if (available.length > 0) {
+            engineStatus.textContent = `🔌 Доступны: ${available.join(', ')}`;
+        } else {
+            engineStatus.textContent = '⚠️ Нет доступных AI-движков (работает только fallback)';
+        }
+        
+    } catch (error) {
+        statusDot.className = 'status-dot offline';
+        statusText.textContent = '❌ Сервер RAG недоступен';
+        engineStatus.textContent = 'Запустите: node rag-server.mjs';
+    }
+}
+
+// ============================================================
+// AUTO-RESIZE TEXTAREA
+// ============================================================
+
+chatInput.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+});
+
+// ============================================================
+// KEYBOARD SHORTCUTS
+// ============================================================
+
+chatInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+});
+
+sendBtn.addEventListener('click', sendMessage);
+
+// ============================================================
+// INIT
+// ============================================================
+
+checkStatus();
+statusCheckInterval = setInterval(checkStatus, 30000);
+
+console.log('🧠 Crucix RAG-чат загружен');
+console.log(`📡 API: ${API_URL || 'http://localhost:3120'}`);
+</script>
+</body>
+</html>

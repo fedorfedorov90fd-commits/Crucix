@@ -1,0 +1,1123 @@
+===== ЧАСТЬ part-5-sources-and-ui · КУСОК 06/15 · 30.8 KB =====
+
+FILE: dashboard/attention.html
+SIZE: 17152 bytes
+SHA1: 166f4806eba93335
+========================================================================
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crucix · Attention Dynamics</title>
+<style>
+:root {
+  --bg: #06080f;
+  --surface: #0d1220;
+  --surface2: #161d2e;
+  --surface3: #1f2842;
+  --border: #1a2540;
+  --border2: #2b3a5c;
+  --text: #e8edf5;
+  --text-dim: #8fa1c2;
+  --text-faint: #5a6b8a;
+  --accent: #3b82f6;
+  --accent2: #8b5cf6;
+  --accent3: #ec4899;
+  --green: #22c55e;
+  --yellow: #eab308;
+  --orange: #f97316;
+  --red: #ef4444;
+  --cyan: #06b6d4;
+  --mono: 'SF Mono', monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding: 20px;
+  min-height: 100vh;
+  font-size: 13px;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: linear-gradient(90deg, var(--surface), rgba(6,182,212,0.08));
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.header h1 { font-size: 20px; font-weight: 800; }
+.header h1 span { color: var(--text-dim); font-weight: 400; font-size: 13px; }
+.header-nav { display: flex; gap: 6px; }
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--surface2);
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 600;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+.nav-link:hover { background: var(--surface3); color: var(--text); }
+.nav-link.active {
+  background: rgba(6, 182, 212, 0.15);
+  color: var(--cyan);
+  border-color: var(--cyan);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 14px;
+  max-width: 1900px;
+  margin: 0 auto;
+}
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+}
+.card-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  margin-bottom: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.tag {
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  background: var(--surface2);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+}
+.col-12 { grid-column: span 12; }
+.col-8 { grid-column: span 8; }
+.col-6 { grid-column: span 6; }
+.col-4 { grid-column: span 4; }
+
+/* Allocation chart */
+#allocation-chart {
+  width: 100%;
+  height: 400px;
+  display: block;
+}
+.alloc-slice { transition: opacity 0.2s; cursor: pointer; }
+.alloc-slice:hover { opacity: 0.8; }
+.alloc-label {
+  font-size: 11px;
+  fill: var(--text);
+  pointer-events: none;
+  font-weight: 600;
+}
+.alloc-value {
+  font-size: 10px;
+  fill: var(--text-dim);
+  pointer-events: none;
+  font-family: var(--mono);
+}
+
+/* Timeline chart */
+#timeline-chart {
+  width: 100%;
+  height: 350px;
+  display: block;
+}
+.tl-axis text { fill: var(--text-faint); font-size: 10px; font-family: var(--mono); }
+.tl-axis line { stroke: var(--border2); }
+.tl-grid { stroke: var(--border); stroke-dasharray: 2 3; }
+.tl-line { fill: none; stroke-width: 2; }
+.tl-area { opacity: 0.15; }
+
+/* Explosive topics */
+.explosive-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.explosive-item {
+  padding: 10px 12px;
+  background: var(--surface2);
+  border-radius: 8px;
+  border-left: 3px solid var(--yellow);
+  transition: transform 0.2s;
+}
+.explosive-item:hover { transform: translateX(4px); }
+.explosive-item.exploding {
+  border-left-color: var(--red);
+  background: rgba(239, 68, 68, 0.08);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+}
+.explosive-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.explosive-topic { font-weight: 700; font-size: 12px; }
+.explosive-score { font-family: var(--mono); font-weight: 700; }
+.explosive-meta {
+  font-size: 10px;
+  color: var(--text-faint);
+  font-family: var(--mono);
+}
+
+/* Shifts */
+.shift-item {
+  padding: 10px 12px;
+  background: var(--surface2);
+  border-radius: 8px;
+  border-left: 3px solid var(--cyan);
+  margin-bottom: 8px;
+}
+.shift-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.shift-from { color: var(--red); font-weight: 700; font-size: 11px; }
+.shift-to { color: var(--green); font-weight: 700; font-size: 11px; }
+.shift-magnitude { font-family: var(--mono); font-size: 11px; color: var(--cyan); font-weight: 700; }
+.shift-desc { font-size: 10px; color: var(--text-faint); }
+
+.empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-faint);
+  font-size: 12px;
+}
+
+.tooltip {
+  position: fixed;
+  background: var(--surface3);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 11px;
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.2s;
+  max-width: 320px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+  line-height: 1.5;
+}
+.tooltip.visible { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Crucix <span>· Attention Dynamics</span></h1>
+  <nav class="header-nav">
+    <a href="/crucix.html" class="nav-link">🏠 Crucix</a>
+    <a href="/advanced.html" class="nav-link">🧠 Advanced</a>
+    <a href="/hypergraph.html" class="nav-link">🕸 Hypergraph</a>
+    <a href="/attention.html" class="nav-link active">👁 Attention</a>
+    <a href="/coevolution.html" class="nav-link">⚔ Co-evolution</a>
+  </nav>
+</div>
+
+<div class="grid">
+
+  <!-- Stats -->
+  <div class="card col-12">
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
+      <div style="background: var(--surface2); padding: 12px; border-radius: 10px; text-align: center;">
+        <div style="font-family: var(--mono); font-size: 24px; font-weight: 800; color: var(--cyan);" id="stat-topics">—</div>
+        <div style="font-size: 10px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;">Тем</div>
+      </div>
+      <div style="background: var(--surface2); padding: 12px; border-radius: 10px; text-align: center;">
+        <div style="font-family: var(--mono); font-size: 24px; font-weight: 800; color: var(--cyan);" id="stat-total">—</div>
+        <div style="font-size: 10px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;">Общее внимание</div>
+      </div>
+      <div style="background: var(--surface2); padding: 12px; border-radius: 10px; text-align: center;">
+        <div style="font-family: var(--mono); font-size: 24px; font-weight: 800; color: var(--green);" id="stat-shifts">—</div>
+        <div style="font-size: 10px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;">Сдвигов</div>
+      </div>
+      <div style="background: var(--surface2); padding: 12px; border-radius: 10px; text-align: center;">
+        <div style="font-family: var(--mono); font-size: 24px; font-weight: 800; color: var(--red);" id="stat-explosive">—</div>
+        <div style="font-size: 10px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;">Взрывных тем</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Allocation chart -->
+  <div class="card col-6">
+    <div class="card-title">
+      Распределение внимания
+      <span class="tag">доля каждой темы</span>
+    </div>
+    <svg id="allocation-chart"></svg>
+  </div>
+
+  <!-- Explosive topics -->
+  <div class="card col-6">
+    <div class="card-title">
+      Взрывные темы (прогноз)
+      <span class="tag">24ч горизонт</span>
+    </div>
+    <div class="explosive-list" id="explosive-list">
+      <div class="empty">Ожидание данных...</div>
+    </div>
+  </div>
+
+  <!-- Timeline -->
+  <div class="card col-12">
+    <div class="card-title">
+      Timeline внимания
+      <span class="tag" id="timeline-tag">top-10 тем</span>
+    </div>
+    <svg id="timeline-chart"></svg>
+  </div>
+
+  <!-- Shifts -->
+  <div class="card col-12">
+    <div class="card-title">
+      Сдвиги внимания
+      <span class="tag">от одной темы к другой</span>
+    </div>
+    <div id="shifts-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px;">
+      <div class="empty">Ожидание данных...</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const CONFIG = { dataUrl: '../runs/predictions/latest_forecast.json', refreshMs: 60000 };
+
+const COLORS = [
+  '#3b82f6', '#8b5cf6', '#ec4899', '#ef4444', '#f97316',
+  '#eab308', '#22c55e', '#06b6d4', '#14b8a6', '#a855f7',
+  '#f43f5e', '#84cc16', '#0ea5e9', '#6366f1', '#d946ef',
+];
+
+let DATA = null;
+
+async function load() {
+  try {
+    const res = await fetch(CONFIG.dataUrl);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    DATA = await res.json();
+    render();
+  } catch (e) {
+    console.error('Load error:', e);
+  }
+}
+
+function render() {
+  if (!DATA) return;
+  const ad = DATA.attentionDynamics;
+  if (!ad) {
+    document.querySelectorAll('.empty').forEach(el => el.textContent = 'Нет данных об attention dynamics');
+    return;
+  }
+
+  renderStats(ad);
+  renderAllocation(ad);
+  renderExplosive(ad);
+  renderTimeline(ad);
+  renderShifts(ad);
+}
+
+function renderStats(ad) {
+  $('stat-topics').textContent = ad.totalTopics || 0;
+  $('stat-total').textContent = (ad.totalAttention || 0).toFixed(1);
+  $('stat-shifts').textContent = ad.shifts?.length || 0;
+  $('stat-explosive').textContent = (ad.topExplosive || []).filter(e => e.willExplode).length;
+}
+
+function renderAllocation(ad) {
+  const svg = $('allocation-chart');
+  const w = svg.clientWidth || 600;
+  const h = 400;
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  svg.innerHTML = '';
+
+  const alloc = ad.attentionAllocation || {};
+  const entries = Object.entries(alloc)
+    .map(([id, data]) => ({ id, ...data }))
+    .sort((a, b) => b.share - a.share)
+    .slice(0, 15);
+
+  if (entries.length === 0) {
+    svg.innerHTML = `<text x="${w/2}" y="${h/2}" text-anchor="middle" fill="#5a6b8a" font-size="12">Нет данных</text>`;
+    return;
+  }
+
+  const radius = Math.min(w, h) / 2 - 60;
+  const cx = w / 2;
+  const cy = h / 2;
+
+  // Pie chart
+  const pie = d3.pie().value(d => d.share).sort(null);
+  const arc = d3.arc().innerRadius(radius * 0.5).outerRadius(radius);
+
+  const g = d3.select(svg).append('g')
+    .attr('transform', `translate(${cx},${cy})`);
+
+  g.selectAll('.alloc-slice')
+    .data(pie(entries))
+    .enter()
+    .append('path')
+    .attr('class', 'alloc-slice')
+    .attr('d', arc)
+    .attr('fill', (d, i) => COLORS[i % COLORS.length])
+    .on('mouseenter', (event, d) => {
+      showTooltip(event, `
+        <strong>${d.data.id}</strong><br>
+        Доля: ${(d.data.share * 100).toFixed(1)}%<br>
+        Внимание: ${d.data.attention.toFixed(2)}<br>
+        Momentum: ${d.data.momentum >= 0 ? '+' : ''}${d.data.momentum.toFixed(2)}<br>
+        Velocity: ${d.data.velocity.toFixed(2)}
+      `);
+    })
+    .on('mousemove', moveTooltip)
+    .on('mouseleave', hideTooltip);
+
+  // Labels для топ-5
+  const top5 = pie(entries.slice(0, 5));
+  const labelArc = d3.arc().innerRadius(radius * 0.75).outerRadius(radius * 0.75);
+
+  g.selectAll('.alloc-label')
+    .data(top5)
+    .enter()
+    .append('text')
+    .attr('class', 'alloc-label')
+    .attr('transform', d => `translate(${labelArc.centroid(d)})`)
+    .attr('text-anchor', 'middle')
+    .text(d => d.data.id.substring(0, 10));
+
+  g.selectAll('.alloc-value')
+    .data(top5)
+    .enter()
+    .append('text')
+    .attr('class', 'alloc-value')
+    .attr('transform', d => {
+      const c = labelArc.centroid(d);
+      return `translate(${c[0]},${c[1] + 12})`;
+    })
+    .attr('text-anchor', 'middle')
+    .text(d => `${(d.data.share * 100).toFixed(0)}%`);
+}
+
+function renderExplosive(ad) {
+  const list = $('explosive-list');
+  const explosive = (ad.topExplosive || []).slice(0, 10);
+
+  if (explosive.length === 0) {
+    list.innerHTML = '<div class="empty">Нет данных</div>';
+    return;
+  }
+
+  list.innerHTML = explosive.map(e => {
+    const color = e.willExplode ? '#ef4444' :
+                  e.explosiveness > 0.5 ? '#f97316' :
+                  e.explosiveness > 0.2 ? '#eab308' : '#22c55e';
+    return `
+      <div class="explosive-item ${e.willExplode ? 'exploding' : ''}">
+        <div class="explosive-header">
+          <span class="explosive-topic">${e.topic}</span>
+          <span class="explosive-score" style="color: ${color};">
+            ${e.explosiveness.toFixed(2)}
+          </span>
+        </div>
+        <div class="explosive-meta">
+          attention: ${e.currentAttention.toFixed(1)} → ${e.predictedAttention.toFixed(1)}
+          · velocity: ${e.velocity.toFixed(2)}
+          ${e.willExplode ? ' · ⚡ EXPLODING' : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderTimeline(ad) {
+  const svg = $('timeline-chart');
+  const w = svg.clientWidth || 1200;
+  const h = 350;
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  svg.innerHTML = '';
+
+  // Извлекаем историю из топ-10 тем
+  const topics = (ad.topExplosive || []).slice(0, 10).map(e => e.topic);
+  if (topics.length === 0) {
+    svg.innerHTML = `<text x="${w/2}" y="${h/2}" text-anchor="middle" fill="#5a6b8a" font-size="12">Нет данных</text>`;
+    return;
+  }
+
+  // Проверяем, есть ли история в данных
+  const hasHistory = ad.attentionAllocation && Object.values(ad.attentionAllocation).some(v => v.history);
+
+  if (!hasHistory) {
+    // Fallback: рисуем bars для текущего attention
+    const barData = topics.map(t => ({
+      topic: t,
+      attention: ad.attentionAllocation[t]?.attention || 0,
+    }));
+
+    const margin = { top: 20, right: 30, bottom: 60, left: 60 };
+    const pw = w - margin.left - margin.right;
+    const ph = h - margin.top - margin.bottom;
+
+    const maxA = Math.max(...barData.map(d => d.attention), 1);
+    const xScale = d3.scaleBand().domain(topics).range([0, pw]).padding(0.2);
+    const yScale = d3.scaleLinear().domain([0, maxA]).range([ph, 0]);
+
+    const g = d3.select(svg).append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+
+    g.selectAll('.bar')
+      .data(barData)
+      .enter()
+      .append('rect')
+      .attr('x', d => xScale(d.topic))
+      .attr('y', d => yScale(d.attention))
+      .attr('width', xScale.bandwidth())
+      .attr('height', d => ph - yScale(d.attention))
+      .attr('fill', (d, i) => COLORS[i % COLORS.length])
+      .attr('rx', 4);
+
+    // Labels
+    g.selectAll('.tl-label')
+      .data(barData)
+      .enter()
+      .append('text')
+      .attr('class', 'tl-axis')
+      .attr('x', d => xScale(d.topic) + xScale.bandwidth() / 2)
+      .attr('y', ph + 20)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', '10')
+      .text(d => d.topic.substring(0, 10));
+
+    g.selectAll('.tl-value')
+      .data(barData)
+      .enter()
+      .append('text')
+      .attr('x', d => xScale(d.topic) + xScale.bandwidth() / 2)
+      .attr('y', d => yScale(d.attention) - 6)
+      .attr('text-anchor', 'middle')
+      .attr('font-family', 'var(--mono)')
+      .attr('font-size', '10')
+      .attr('fill', 'var(--text)')
+      .text(d => d.attention.toFixed(1));
+  }
+}
+
+function renderShifts(ad) {
+  const shifts = ad.shifts || [];
+  const list = $('shifts-list');
+
+  if (shifts.length === 0) {
+    list.innerHTML = '<div class="empty">Нет обнаруженных сдвигов</div>';
+    return;
+  }
+
+  list.innerHTML = shifts.map(s => `
+    <div class="shift-item">
+      <div class="shift-header">
+        <span>
+          <span class="shift-from">${s.from}</span>
+          <span style="color: var(--text-faint);"> → </span>
+          <span class="shift-to">${s.to}</span>
+        </span>
+        <span class="shift-magnitude">${s.magnitude.toFixed(2)}</span>
+      </div>
+      <div class="shift-desc">${s.interpretation}</div>
+    </div>
+  `).join('');
+}
+
+function showTooltip(e, html) {
+  const tt = $('tooltip');
+  tt.innerHTML = html;
+  tt.classList.add('visible');
+  moveTooltip(e);
+}
+function moveTooltip(e) {
+  const tt = $('tooltip');
+  tt.style.left = `${Math.min(e.clientX + 14, window.innerWidth - tt.offsetWidth - 10)}px`;
+  tt.style.top = `${Math.min(e.clientY + 14, window.innerHeight - tt.offsetHeight - 10)}px`;
+}
+function hideTooltip() { $('tooltip').classList.remove('visible'); }
+
+load();
+setInterval(load, CONFIG.refreshMs);
+
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(render, 300);
+});
+</script>
+
+</body>
+</html>
+
+
+
+========================================================================
+
+FILE: dashboard/coevolution.html
+SIZE: 13954 bytes
+SHA1: 1636ffa0b414c038
+========================================================================
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crucix · Adversarial Co-evolution</title>
+<style>
+:root {
+  --bg: #06080f;
+  --surface: #0d1220;
+  --surface2: #161d2e;
+  --surface3: #1f2842;
+  --border: #1a2540;
+  --border2: #2b3a5c;
+  --text: #e8edf5;
+  --text-dim: #8fa1c2;
+  --text-faint: #5a6b8a;
+  --accent: #3b82f6;
+  --accent2: #8b5cf6;
+  --accent3: #ec4899;
+  --green: #22c55e;
+  --yellow: #eab308;
+  --orange: #f97316;
+  --red: #ef4444;
+  --cyan: #06b6d4;
+  --mono: 'SF Mono', monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding: 20px;
+  min-height: 100vh;
+  font-size: 13px;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: linear-gradient(90deg, var(--surface), rgba(239,68,68,0.08));
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.header h1 { font-size: 20px; font-weight: 800; }
+.header h1 span { color: var(--text-dim); font-weight: 400; font-size: 13px; }
+.header-nav { display: flex; gap: 6px; }
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--surface2);
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 600;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+.nav-link:hover { background: var(--surface3); color: var(--text); }
+.nav-link.active {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--red);
+  border-color: var(--red);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 14px;
+  max-width: 1900px;
+  margin: 0 auto;
+}
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+}
+.card-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  margin-bottom: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.tag {
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-weight: 600;
+  background: var(--surface2);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+}
+.col-12 { grid-column: span 12; }
+.col-8 { grid-column: span 8; }
+.col-6 { grid-column: span 6; }
+.col-4 { grid-column: span 4; }
+
+.key-insight {
+  padding: 20px;
+  background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(249,115,22,0.1));
+  border: 2px solid var(--red);
+  border-radius: 12px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+.key-insight.safe {
+  background: linear-gradient(135deg, rgba(34,197,94,0.1), rgba(6,182,212,0.1));
+  border-color: var(--green);
+}
+
+.opponent-card {
+  background: var(--surface2);
+  border-radius: 12px;
+  padding: 16px;
+  border-left: 4px solid var(--accent);
+  transition: transform 0.2s;
+}
+.opponent-card:hover { transform: translateY(-2px); }
+.opponent-card.adapting { border-left-color: var(--red); animation: pulse 2s infinite; }
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+}
+
+.opponent-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.opponent-name {
+  font-size: 16px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.opponent-adapt-badge {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.opponent-adapt-badge.yes {
+  background: rgba(239, 68, 68, 0.2);
+  color: var(--red);
+}
+.opponent-adapt-badge.no {
+  background: rgba(34, 197, 94, 0.2);
+  color: var(--green);
+}
+
+.strategy-distribution {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.strategy-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+}
+.strategy-name {
+  width: 90px;
+  color: var(--text-dim);
+  font-weight: 600;
+  text-transform: capitalize;
+}
+.strategy-track {
+  flex: 1;
+  height: 16px;
+  background: var(--surface3);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.strategy-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.8s ease;
+}
+.strategy-value {
+  font-family: var(--mono);
+  font-weight: 700;
+  min-width: 45px;
+  text-align: right;
+  font-size: 11px;
+}
+
+.predicted-next {
+  padding: 10px 12px;
+  background: var(--surface3);
+  border-radius: 8px;
+  margin-top: 10px;
+}
+.predicted-next-label {
+  font-size: 10px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+.predicted-next-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent3);
+  text-transform: capitalize;
+}
+
+.kl-info {
+  font-size: 10px;
+  color: var(--text-faint);
+  font-family: var(--mono);
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+.history-item {
+  padding: 8px 10px;
+  background: var(--surface2);
+  border-radius: 6px;
+  border-left: 3px solid var(--accent2);
+  font-size: 11px;
+}
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  font-family: var(--mono);
+}
+.history-observed { color: var(--yellow); font-weight: 700; }
+.history-predicted { color: var(--accent2); font-weight: 700; }
+.history-meta {
+  font-size: 10px;
+  color: var(--text-faint);
+}
+
+.empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-faint);
+  font-size: 12px;
+}
+
+.tooltip {
+  position: fixed;
+  background: var(--surface3);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 11px;
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.2s;
+  max-width: 320px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+  line-height: 1.5;
+}
+.tooltip.visible { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Crucix <span>· Adversarial Co-evolution</span></h1>
+  <nav class="header-nav">
+    <a href="/crucix.html" class="nav-link">🏠 Crucix</a>
+    <a href="/advanced.html" class="nav-link">🧠 Advanced</a>
+    <a href="/hypergraph.html" class="nav-link">🕸 Hypergraph</a>
+    <a href="/attention.html" class="nav-link">👁 Attention</a>
+    <a href="/coevolution.html" class="nav-link active">⚔ Co-evolution</a>
+  </nav>
+</div>
+
+<div class="grid">
+
+  <!-- Key insight banner -->
+  <div class="card col-12">
+    <div class="key-insight" id="key-insight">
+      Загрузка...
+    </div>
+  </div>
+
+  <!-- Opponents grid -->
+  <div class="card col-12">
+    <div class="card-title">
+      Модели противников
+      <span class="tag" id="opponents-count">—</span>
+    </div>
+    <div id="opponents-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px;">
+      <div class="empty">Ожидание данных...</div>
+    </div>
+  </div>
+
+  <!-- Simulation history -->
+  <div class="card col-12">
+    <div class="card-title">
+      История симуляции
+      <span class="tag">последние раунды</span>
+    </div>
+    <div class="history-list" id="history-list">
+      <div class="empty">Ожидание данных...</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const CONFIG = { dataUrl: '../runs/predictions/latest_forecast.json', refreshMs: 60000 };
+
+const STRATEGY_COLORS = {
+  escalate: '#ef4444',
+  hold: '#eab308',
+  deescalate: '#22c55e',
+  deceive: '#8b5cf6',
+  forecast_high: '#ef4444',
+  forecast_low: '#22c55e',
+  withhold: '#64748b',
+};
+
+const OPPONENT_COLORS = {
+  russia: '#ef4444',
+  china: '#f97316',
+  usa: '#3b82f6',
+  eu: '#22c55e',
+  iran: '#8b5cf6',
+  nato: '#06b6d4',
+};
+
+let DATA = null;
+
+async function load() {
+  try {
+    const res = await fetch(CONFIG.dataUrl);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    DATA = await res.json();
+    render();
+  } catch (e) {
+    console.error('Load error:', e);
+  }
+}
+
+function render() {
+  if (!DATA) return;
+  const ace = DATA.adversarialCoEvolution;
+  if (!ace) {
+    document.querySelectorAll('.empty').forEach(el => el.textContent = 'Нет данных о co-evolution');
+    return;
+  }
+
+  renderKeyInsight(ace);
+  renderOpponents(ace);
+  renderHistory(ace);
+}
+
+function renderKeyInsight(ace) {
+  const el = $('key-insight');
+  const adapting = (ace.adaptations || []).filter(a => a.adaptation?.adapted);
+
+  if (adapting.length > 0) {
+    el.className = 'key-insight';
+    el.innerHTML = `
+      ⚠ <strong>${adapting.length}</strong> противник(ов) адаптируется к нашим прогнозам<br>
+      <span style="font-size: 12px; font-weight: 400; margin-top: 8px; display: block;">
+        ${adapting.map(a => `${a.opponent.toUpperCase()} (KL=${a.adaptation.klDivergence.toFixed(2)})`).join(', ')}
+      </span>
+    `;
+  } else {
+    el.className = 'key-insight safe';
+    el.innerHTML = `
+      ✓ Противники не демонстрируют явной адаптации<br>
+      <span style="font-size: 12px; font-weight: 400; margin-top: 8px; display: block;">
+        Текущая стратегия прогнозирования оптимальна
+      </span>
+    `;
+  }
+}
+
+function renderOpponents(ace) {
+  const grid = $('opponents-grid');
+  const adaptations = ace.adaptations || [];
+
+  $('opponents-count').textContent = `${adaptations.length}`;
+
+  if (adaptations.length === 0) {
+    grid.innerHTML = '<div class="empty">Нет моделей противников</div>';
+    return;
+  }
+
+  grid.innerHTML = adaptations.map(a => {
+    const oppColor = OPPONENT_COLORS[a.opponent] || '#64748b';
+    const isAdapting = a.adaptation?.adapted;
+    const distribution = a.distribution || {};
+
+    const strategyRows = Object.entries(distribution)
+      .sort((x, y) => y[1] - x[1])
+      .map(([strategy, prob]) => {
+        const color = STRATEGY_COLORS[strategy] || '#64748b';
+        return `
+          <div class="strategy-row">
+            <span class="strategy-name">${strategy}</span>
+            <div class="strategy-track">
+              <div class="strategy-fill" style="width: ${prob * 100}%; background: ${color};"></div>
+            </div>
+            <span class="strategy-value" style="color: ${color};">${(prob * 100).toFixed(1)}%</span>
+          </div>
+        `;
+      }).join('');
+
+    return `
+      <div class="opponent-card ${isAdapting ? 'adapting' : ''}" style="border-left-color: ${oppColor};">
+        <div class="opponent-header">
+          <span class="opponent-name" style="color: ${oppColor};">${a.opponent}</span>
+          <span class="opponent-adapt-badge ${isAdapting ? 'yes' : 'no'}">
+            ${isAdapting ? '⚠ Адаптируется' : '✓ Стабилен'}
+          </span>
+        </div>
+        <div class="strategy-distribution">
+          ${strategyRows}
+        </div>
+        <div class="predicted-next">
+          <div class="predicted-next-label">Прогноз следующей стратегии</div>
+          <div class="predicted-next-value" style="color: ${STRATEGY_COLORS[a.predictedStrategy] || oppColor};">
+            ${a.predictedStrategy} (${(a.predictedProbability * 100).toFixed(1)}%)
+          </div>
+        </div>
+        ${a.adaptation?.klDivergence !== undefined ? `
+          <div class="kl-info">
+            KL divergence: ${a.adaptation.klDivergence.toFixed(3)}
+            ${isAdapting ? '(> 0.3 = адаптация)' : ''}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function renderHistory(ace) {
+  const list = $('history-list');
+  const history = ace.evolutionHistory || [];
+
+  if (history.length === 0) {
+    list.innerHTML = '<div class="empty">Нет истории симуляции</div>';
+    return;
+  }
+
+  list.innerHTML = history.reverse().slice(0, 20).map((h, idx) => {
+    const actionsHtml = (h.actions || []).map(a => `
+      <div style="padding: 6px 8px; background: var(--surface3); border-radius: 6px; margin-bottom: 4px;">
+        <div class="history-header">
+          <span style="color: ${OPPONENT_COLORS[a.opponent] || 'var(--text)'};">${a.opponent}</span>
+          <span>наблюдалось: <span class="history-observed">${a.observed}</span></span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-faint);">
+          <span>прогноз: <span class="history-predicted">${a.predicted}</span></span>
+          <span>${a.adaptation?.adapted ? '⚠ адаптация' : 'ok'}</span>
+        </div>
+      </div>
+    `).join('');
+
+    return `
+      <div class="history-item">
+        <div class="history-header">
+          <span style="color: var(--accent2); font-weight: 700;">Раунд #${h.round || idx + 1}</span>
+          <span class="history-meta">${actionsHtml ? '' : '(нет действий)'}</span>
+        </div>
+        ${actionsHtml}
+      </div>
+    `;
+  }).join('');
+}
+
+function showTooltip(e, html) {
+  const tt = $('tooltip');
+  tt.innerHTML = html;
+  tt.classList.add('visible');
+  moveTooltip(e);
+}
+function moveTooltip(e) {
+  const tt = $('tooltip');
+  tt.style.left = `${Math.min(e.clientX + 14, window.innerWidth - tt.offsetWidth - 10)}px`;
+  tt.style.top = `${Math.min(e.clientY + 14, window.innerHeight - tt.offsetHeight - 10)}px`;
+}
+function hideTooltip() { $('tooltip').classList.remove('visible'); }
+
+load();
+setInterval(load, CONFIG.refreshMs);
+
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(render, 300);
+});
+</script>
+
+</body>
+</html>
+
+
+
+========================================================================

@@ -1,0 +1,1858 @@
+{
+  "_meta": {
+    "id": "country-instability",
+    "category": "index",
+    "version": "1.0.0",
+    "schema_version": "1.0.0",
+    "sources": [
+      "country-characteristics",
+      "acled",
+      "social-unrest",
+      "gdelt"
+    ],
+    "calculator": "CountryInstabilityIndex",
+    "updated_at": "2026-09-12T08:00:50.941Z",
+    "period": "manual",
+    "checksum": "a01ca115e6dbd1d1"
+  },
+  "data": {
+    "countries": {
+      "AFG": {
+        "countryCode": "AFG",
+        "countryName": "Afghanistan",
+        "score": 26,
+        "components": {
+          "base": 65,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "ALB": {
+        "countryCode": "ALB",
+        "countryName": "Albania",
+        "score": 12,
+        "components": {
+          "base": 30,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "DZA": {
+        "countryCode": "DZA",
+        "countryName": "Algeria",
+        "score": 14,
+        "components": {
+          "base": 35,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "AGO": {
+        "countryCode": "AGO",
+        "countryName": "Angola",
+        "score": 16,
+        "components": {
+          "base": 40,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "ARG": {
+        "countryCode": "ARG",
+        "countryName": "Argentina",
+        "score": 8,
+        "components": {
+          "base": 20,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "ARM": {
+        "countryCode": "ARM",
+        "countryName": "Armenia",
+        "score": 14,
+        "components": {
+          "base": 35,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "AUS": {
+        "countryCode": "AUS",
+        "countryName": "Australia",
+        "score": 2,
+        "components": {
+          "base": 5,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "AUT": {
+        "countryCode": "AUT",
+        "countryName": "Austria",
+        "score": 2,
+        "components": {
+          "base": 5,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "AZE": {
+        "countryCode": "AZE",
+        "countryName": "Azerbaijan",
+        "score": 14,
+        "components": {
+          "base": 35,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "BHR": {
+        "countryCode": "BHR",
+        "countryName": "Bahrain",
+        "score": 10,
+        "components": {
+          "base": 25,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "BGD": {
+        "countryCode": "BGD",
+        "countryName": "Bangladesh",
+        "score": 16,
+        "components": {
+          "base": 40,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "BLR": {
+        "countryCode": "BLR",
+        "countryName": "Belarus",
+        "score": 16,
+        "components": {
+          "base": 40,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "BEL": {
+        "countryCode": "BEL",
+        "countryName": "Belgium",
+        "score": 2,
+        "components": {
+          "base": 5,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "BOL": {
+        "countryCode": "BOL",
+        "countryName": "Bolivia",
+        "score": 12,
+        "components": {
+          "base": 30,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "BIH": {
+        "countryCode": "BIH",
+        "countryName": "Bosnia and Herzegovina",
+        "score": 14,
+        "components": {
+          "base": 35,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "BRA": {
+        "countryCode": "BRA",
+        "countryName": "Brazil",
+        "score": 6,
+        "components": {
+          "base": 15,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "BGR": {
+        "countryCode": "BGR",
+        "countryName": "Bulgaria",
+        "score": 6,
+        "components": {
+          "base": 15,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "BFA": {
+        "countryCode": "BFA",
+        "countryName": "Burkina Faso",
+        "score": 22,
+        "components": {
+          "base": 55,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "KHM": {
+        "countryCode": "KHM",
+        "countryName": "Cambodia",
+        "score": 14,
+        "components": {
+          "base": 35,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "CMR": {
+        "countryCode": "CMR",
+        "countryName": "Cameroon",
+        "score": 18,
+        "components": {
+          "base": 45,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "CAN": {
+        "countryCode": "CAN",
+        "countryName": "Canada",
+        "score": 2,
+        "components": {
+          "base": 5,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "CAF": {
+        "countryCode": "CAF",
+        "countryName": "Central African Republic",
+        "score": 26,
+        "components": {
+          "base": 65,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "TCD": {
+        "countryCode": "TCD",
+        "countryName": "Chad",
+        "score": 22,
+        "components": {
+          "base": 55,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "CHL": {
+        "countryCode": "CHL",
+        "countryName": "Chile",
+        "score": 6,
+        "components": {
+          "base": 15,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "CHN": {
+        "countryCode": "CHN",
+        "countryName": "China",
+        "score": 10,
+        "components": {
+          "base": 25,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "COL": {
+        "countryCode": "COL",
+        "countryName": "Colombia",
+        "score": 12,
+        "components": {
+          "base": 30,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "COD": {
+        "countryCode": "COD",
+        "countryName": "Democratic Republic of the Congo",
+        "score": 24,
+        "components": {
+          "base": 60,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "COG": {
+        "countryCode": "COG",
+        "countryName": "Republic of the Congo",
+        "score": 18,
+        "components": {
+          "base": 45,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "CRI": {
+        "countryCode": "CRI",
+        "countryName": "Costa Rica",
+        "score": 4,
+        "components": {
+          "base": 10,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "CIV": {
+        "countryCode": "CIV",
+        "countryName": "Cote d'Ivoire",
+        "score": 14,
+        "components": {
+          "base": 35,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "HRV": {
+        "countryCode": "HRV",
+        "countryName": "Croatia",
+        "score": 4,
+        "components": {
+          "base": 10,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "CUB": {
+        "countryCode": "CUB",
+        "countryName": "Cuba",
+        "score": 18,
+        "components": {
+          "base": 45,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "CYP": {
+        "countryCode": "CYP",
+        "countryName": "Cyprus",
+        "score": 8,
+        "components": {
+          "base": 20,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "CZE": {
+        "countryCode": "CZE",
+        "countryName": "Czech Republic",
+        "score": 4,
+        "components": {
+          "base": 10,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "DNK": {
+        "countryCode": "DNK",
+        "countryName": "Denmark",
+        "score": 2,
+        "components": {
+          "base": 5,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "ECU": {
+        "countryCode": "ECU",
+        "countryName": "Ecuador",
+        "score": 14,
+        "components": {
+          "base": 35,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "EGY": {
+        "countryCode": "EGY",
+        "countryName": "Egypt",
+        "score": 8,
+        "components": {
+          "base": 20,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "SLV": {
+        "countryCode": "SLV",
+        "countryName": "El Salvador",
+        "score": 12,
+        "components": {
+          "base": 30,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "ERI": {
+        "countryCode": "ERI",
+        "countryName": "Eritrea",
+        "score": 22,
+        "components": {
+          "base": 55,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "EST": {
+        "countryCode": "EST",
+        "countryName": "Estonia",
+        "score": 4,
+        "components": {
+          "base": 10,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "ETH": {
+        "countryCode": "ETH",
+        "countryName": "Ethiopia",
+        "score": 20,
+        "components": {
+          "base": 50,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "FIN": {
+        "countryCode": "FIN",
+        "countryName": "Finland",
+        "score": 2,
+        "components": {
+          "base": 5,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "FRA": {
+        "countryCode": "FRA",
+        "countryName": "France",
+        "score": 4,
+        "components": {
+          "base": 10,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "GEO": {
+        "countryCode": "GEO",
+        "countryName": "Georgia",
+        "score": 14,
+        "components": {
+          "base": 35,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "DEU": {
+        "countryCode": "DEU",
+        "countryName": "Germany",
+        "score": 2,
+        "components": {
+          "base": 5,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "GHA": {
+        "countryCode": "GHA",
+        "countryName": "Ghana",
+        "score": 12,
+        "components": {
+          "base": 30,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "GRC": {
+        "countryCode": "GRC",
+        "countryName": "Greece",
+        "score": 6,
+        "components": {
+          "base": 15,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "GTM": {
+        "countryCode": "GTM",
+        "countryName": "Guatemala",
+        "score": 14,
+        "components": {
+          "base": 35,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "HND": {
+        "countryCode": "HND",
+        "countryName": "Honduras",
+        "score": 14,
+        "components": {
+          "base": 35,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "HUN": {
+        "countryCode": "HUN",
+        "countryName": "Hungary",
+        "score": 6,
+        "components": {
+          "base": 15,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "IND": {
+        "countryCode": "IND",
+        "countryName": "India",
+        "score": 8,
+        "components": {
+          "base": 20,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "IDN": {
+        "countryCode": "IDN",
+        "countryName": "Indonesia",
+        "score": 10,
+        "components": {
+          "base": 25,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "IRN": {
+        "countryCode": "IRN",
+        "countryName": "Iran",
+        "score": 16,
+        "components": {
+          "base": 40,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "IRQ": {
+        "countryCode": "IRQ",
+        "countryName": "Iraq",
+        "score": 14,
+        "components": {
+          "base": 35,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "IRL": {
+        "countryCode": "IRL",
+        "countryName": "Ireland",
+        "score": 2,
+        "components": {
+          "base": 5,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "ISR": {
+        "countryCode": "ISR",
+        "countryName": "Israel",
+        "score": 14,
+        "components": {
+          "base": 35,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "ITA": {
+        "countryCode": "ITA",
+        "countryName": "Italy",
+        "score": 4,
+        "components": {
+          "base": 10,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "JPN": {
+        "countryCode": "JPN",
+        "countryName": "Japan",
+        "score": 2,
+        "components": {
+          "base": 5,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "JOR": {
+        "countryCode": "JOR",
+        "countryName": "Jordan",
+        "score": 10,
+        "components": {
+          "base": 25,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "KAZ": {
+        "countryCode": "KAZ",
+        "countryName": "Kazakhstan",
+        "score": 10,
+        "components": {
+          "base": 25,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "KEN": {
+        "countryCode": "KEN",
+        "countryName": "Kenya",
+        "score": 14,
+        "components": {
+          "base": 35,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "PRK": {
+        "countryCode": "PRK",
+        "countryName": "North Korea",
+        "score": 18,
+        "components": {
+          "base": 45,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "KOR": {
+        "countryCode": "KOR",
+        "countryName": "South Korea",
+        "score": 6,
+        "components": {
+          "base": 15,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "KWT": {
+        "countryCode": "KWT",
+        "countryName": "Kuwait",
+        "score": 6,
+        "components": {
+          "base": 15,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "KGZ": {
+        "countryCode": "KGZ",
+        "countryName": "Kyrgyzstan",
+        "score": 14,
+        "components": {
+          "base": 35,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "LAO": {
+        "countryCode": "LAO",
+        "countryName": "Laos",
+        "score": 12,
+        "components": {
+          "base": 30,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "LVA": {
+        "countryCode": "LVA",
+        "countryName": "Latvia",
+        "score": 6,
+        "components": {
+          "base": 15,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "LBN": {
+        "countryCode": "LBN",
+        "countryName": "Lebanon",
+        "score": 14,
+        "components": {
+          "base": 35,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "LBY": {
+        "countryCode": "LBY",
+        "countryName": "Libya",
+        "score": 24,
+        "components": {
+          "base": 60,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "LTU": {
+        "countryCode": "LTU",
+        "countryName": "Lithuania",
+        "score": 4,
+        "components": {
+          "base": 10,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "MYS": {
+        "countryCode": "MYS",
+        "countryName": "Malaysia",
+        "score": 8,
+        "components": {
+          "base": 20,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "MLI": {
+        "countryCode": "MLI",
+        "countryName": "Mali",
+        "score": 22,
+        "components": {
+          "base": 55,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "MEX": {
+        "countryCode": "MEX",
+        "countryName": "Mexico",
+        "score": 8,
+        "components": {
+          "base": 20,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "MDA": {
+        "countryCode": "MDA",
+        "countryName": "Moldova",
+        "score": 14,
+        "components": {
+          "base": 35,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "MAR": {
+        "countryCode": "MAR",
+        "countryName": "Morocco",
+        "score": 10,
+        "components": {
+          "base": 25,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "MOZ": {
+        "countryCode": "MOZ",
+        "countryName": "Mozambique",
+        "score": 18,
+        "components": {
+          "base": 45,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "MMR": {
+        "countryCode": "MMR",
+        "countryName": "Myanmar",
+        "score": 18,
+        "components": {
+          "base": 45,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "NPL": {
+        "countryCode": "NPL",
+        "countryName": "Nepal",
+        "score": 12,
+        "components": {
+          "base": 30,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "NLD": {
+        "countryCode": "NLD",
+        "countryName": "Netherlands",
+        "score": 2,
+        "components": {
+          "base": 5,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "NZL": {
+        "countryCode": "NZL",
+        "countryName": "New Zealand",
+        "score": 2,
+        "components": {
+          "base": 5,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "NIC": {
+        "countryCode": "NIC",
+        "countryName": "Nicaragua",
+        "score": 18,
+        "components": {
+          "base": 45,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "NER": {
+        "countryCode": "NER",
+        "countryName": "Niger",
+        "score": 22,
+        "components": {
+          "base": 55,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "NGA": {
+        "countryCode": "NGA",
+        "countryName": "Nigeria",
+        "score": 18,
+        "components": {
+          "base": 45,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "NOR": {
+        "countryCode": "NOR",
+        "countryName": "Norway",
+        "score": 2,
+        "components": {
+          "base": 5,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "OMN": {
+        "countryCode": "OMN",
+        "countryName": "Oman",
+        "score": 6,
+        "components": {
+          "base": 15,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "PAK": {
+        "countryCode": "PAK",
+        "countryName": "Pakistan",
+        "score": 16,
+        "components": {
+          "base": 40,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "PSE": {
+        "countryCode": "PSE",
+        "countryName": "Palestine",
+        "score": 24,
+        "components": {
+          "base": 60,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "PAN": {
+        "countryCode": "PAN",
+        "countryName": "Panama",
+        "score": 8,
+        "components": {
+          "base": 20,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "PNG": {
+        "countryCode": "PNG",
+        "countryName": "Papua New Guinea",
+        "score": 14,
+        "components": {
+          "base": 35,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "PRY": {
+        "countryCode": "PRY",
+        "countryName": "Paraguay",
+        "score": 10,
+        "components": {
+          "base": 25,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "PER": {
+        "countryCode": "PER",
+        "countryName": "Peru",
+        "score": 12,
+        "components": {
+          "base": 30,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "PHL": {
+        "countryCode": "PHL",
+        "countryName": "Philippines",
+        "score": 12,
+        "components": {
+          "base": 30,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "POL": {
+        "countryCode": "POL",
+        "countryName": "Poland",
+        "score": 4,
+        "components": {
+          "base": 10,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "PRT": {
+        "countryCode": "PRT",
+        "countryName": "Portugal",
+        "score": 4,
+        "components": {
+          "base": 10,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "QAT": {
+        "countryCode": "QAT",
+        "countryName": "Qatar",
+        "score": 4,
+        "components": {
+          "base": 10,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "ROU": {
+        "countryCode": "ROU",
+        "countryName": "Romania",
+        "score": 6,
+        "components": {
+          "base": 15,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "RUS": {
+        "countryCode": "RUS",
+        "countryName": "Russia",
+        "score": 16,
+        "components": {
+          "base": 40,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "SAU": {
+        "countryCode": "SAU",
+        "countryName": "Saudi Arabia",
+        "score": 8,
+        "components": {
+          "base": 20,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "SEN": {
+        "countryCode": "SEN",
+        "countryName": "Senegal",
+        "score": 12,
+        "components": {
+          "base": 30,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "SRB": {
+        "countryCode": "SRB",
+        "countryName": "Serbia",
+        "score": 10,
+        "components": {
+          "base": 25,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "SGP": {
+        "countryCode": "SGP",
+        "countryName": "Singapore",
+        "score": 2,
+        "components": {
+          "base": 5,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "SVK": {
+        "countryCode": "SVK",
+        "countryName": "Slovakia",
+        "score": 6,
+        "components": {
+          "base": 15,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "SVN": {
+        "countryCode": "SVN",
+        "countryName": "Slovenia",
+        "score": 4,
+        "components": {
+          "base": 10,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "SOM": {
+        "countryCode": "SOM",
+        "countryName": "Somalia",
+        "score": 30,
+        "components": {
+          "base": 75,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "ZAF": {
+        "countryCode": "ZAF",
+        "countryName": "South Africa",
+        "score": 12,
+        "components": {
+          "base": 30,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "SSD": {
+        "countryCode": "SSD",
+        "countryName": "South Sudan",
+        "score": 28,
+        "components": {
+          "base": 70,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "ESP": {
+        "countryCode": "ESP",
+        "countryName": "Spain",
+        "score": 4,
+        "components": {
+          "base": 10,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "LKA": {
+        "countryCode": "LKA",
+        "countryName": "Sri Lanka",
+        "score": 14,
+        "components": {
+          "base": 35,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "SDN": {
+        "countryCode": "SDN",
+        "countryName": "Sudan",
+        "score": 30,
+        "components": {
+          "base": 75,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "SWE": {
+        "countryCode": "SWE",
+        "countryName": "Sweden",
+        "score": 2,
+        "components": {
+          "base": 5,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "CHE": {
+        "countryCode": "CHE",
+        "countryName": "Switzerland",
+        "score": 2,
+        "components": {
+          "base": 5,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "SYR": {
+        "countryCode": "SYR",
+        "countryName": "Syria",
+        "score": 20,
+        "components": {
+          "base": 50,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "TWN": {
+        "countryCode": "TWN",
+        "countryName": "Taiwan",
+        "score": 4,
+        "components": {
+          "base": 10,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "TJK": {
+        "countryCode": "TJK",
+        "countryName": "Tajikistan",
+        "score": 14,
+        "components": {
+          "base": 35,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "TZA": {
+        "countryCode": "TZA",
+        "countryName": "Tanzania",
+        "score": 12,
+        "components": {
+          "base": 30,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "THA": {
+        "countryCode": "THA",
+        "countryName": "Thailand",
+        "score": 10,
+        "components": {
+          "base": 25,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "TUN": {
+        "countryCode": "TUN",
+        "countryName": "Tunisia",
+        "score": 14,
+        "components": {
+          "base": 35,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "TUR": {
+        "countryCode": "TUR",
+        "countryName": "Turkey",
+        "score": 12,
+        "components": {
+          "base": 30,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "TKM": {
+        "countryCode": "TKM",
+        "countryName": "Turkmenistan",
+        "score": 12,
+        "components": {
+          "base": 30,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "UGA": {
+        "countryCode": "UGA",
+        "countryName": "Uganda",
+        "score": 18,
+        "components": {
+          "base": 45,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "UKR": {
+        "countryCode": "UKR",
+        "countryName": "Ukraine",
+        "score": 20,
+        "components": {
+          "base": 50,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "ARE": {
+        "countryCode": "ARE",
+        "countryName": "United Arab Emirates",
+        "score": 4,
+        "components": {
+          "base": 10,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "GBR": {
+        "countryCode": "GBR",
+        "countryName": "United Kingdom",
+        "score": 2,
+        "components": {
+          "base": 5,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "USA": {
+        "countryCode": "USA",
+        "countryName": "United States",
+        "score": 4,
+        "components": {
+          "base": 5,
+          "disorder": 7.52574989159953,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "URY": {
+        "countryCode": "URY",
+        "countryName": "Uruguay",
+        "score": 4,
+        "components": {
+          "base": 10,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "democracy",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "UZB": {
+        "countryCode": "UZB",
+        "countryName": "Uzbekistan",
+        "score": 12,
+        "components": {
+          "base": 30,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "VEN": {
+        "countryCode": "VEN",
+        "countryName": "Venezuela",
+        "score": 18,
+        "components": {
+          "base": 45,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "VNM": {
+        "countryCode": "VNM",
+        "countryName": "Vietnam",
+        "score": 10,
+        "components": {
+          "base": 25,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "YEM": {
+        "countryCode": "YEM",
+        "countryName": "Yemen",
+        "score": 20,
+        "components": {
+          "base": 50,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "ZMB": {
+        "countryCode": "ZMB",
+        "countryName": "Zambia",
+        "score": 14,
+        "components": {
+          "base": 35,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "hybrid",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      },
+      "ZWE": {
+        "countryCode": "ZWE",
+        "countryName": "Zimbabwe",
+        "score": 18,
+        "components": {
+          "base": 45,
+          "disorder": 0,
+          "security": 0,
+          "info": 0
+        },
+        "regime": "authoritarian",
+        "atWar": false,
+        "timestamp": "2026-09-12T08:00:50.941Z"
+      }
+    },
+    "total": 131,
+    "generated_at": "2026-09-12T08:00:50.941Z"
+  }
+}

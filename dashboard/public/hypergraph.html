@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crucix · Hypergraph Contagion</title>
+<style>
+:root {
+  --bg: #06080f;
+  --surface: #0d1220;
+  --surface2: #161d2e;
+  --surface3: #1f2842;
+  --border: #1a2540;
+  --border2: #2b3a5c;
+  --text: #e8edf5;
+  --text-dim: #8fa1c2;
+  --text-faint: #5a6b8a;
+  --accent: #3b82f6;
+  --accent2: #8b5cf6;
+  --accent3: #ec4899;
+  --green: #22c55e;
+  --yellow: #eab308;
+  --orange: #f97316;
+  --red: #ef4444;
+  --cyan: #06b6d4;
+  --mono: 'SF Mono', monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding: 20px;
+  min-height: 100vh;
+  font-size: 13px;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: linear-gradient(90deg, var(--surface), rgba(139,92,246,0.08));
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.header h1 { font-size: 20px; font-weight: 800; }
+.header h1 span { color: var(--text-dim); font-weight: 400; font-size: 13px; }
+.header-nav { display: flex; gap: 6px; }
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--surface2);
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 600;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+.nav-link:hover { background: var(--surface3); color: var(--text); }
+.nav-link.active {
+  background: rgba(139, 92, 246, 0.15);
+  color: var(--accent2);
+  border-color: var(--accent2);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 14px;
+  max-width: 1900px;
+  margin: 0 auto;
+}
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+}
+.card-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  margin-bottom: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.tag {
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0.3px;
+  background: var(--surface2);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+}
+.col-12 { grid-column: span 12; }
+.col-8 { grid-column: span 8; }
+.col-6 { grid-column: span 6; }
+.col-4 { grid-column: span 4; }
+.col-3 { grid-column: span 3; }
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.stat-card {
+  background: var(--surface2);
+  padding: 12px;
+  border-radius: 10px;
+  text-align: center;
+}
+.stat-value {
+  font-family: var(--mono);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--accent2);
+  letter-spacing: -1px;
+}
+.stat-label {
+  font-size: 10px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+}
+
+/* Hypergraph visualization */
+#hypergraph-svg {
+  width: 100%;
+  height: 600px;
+  display: block;
+  background: var(--surface2);
+  border-radius: 10px;
+  cursor: grab;
+}
+#hypergraph-svg:active { cursor: grabbing; }
+
+.hg-node { cursor: pointer; }
+.hg-node-circle {
+  stroke-width: 2.5;
+  transition: all 0.3s ease;
+}
+.hg-node-circle:hover { stroke-width: 4; }
+.hg-node-label {
+  font-size: 10px;
+  fill: var(--text);
+  text-anchor: middle;
+  pointer-events: none;
+  font-weight: 600;
+}
+.hg-node-prob {
+  font-size: 9px;
+  text-anchor: middle;
+  pointer-events: none;
+  font-family: var(--mono);
+  font-weight: 700;
+}
+.hg-edge {
+  fill: none;
+  stroke-width: 2;
+  opacity: 0.6;
+}
+.hg-edge.AND { stroke: var(--red); }
+.hg-edge.OR { stroke: var(--accent); }
+.hg-edge.MAJORITY { stroke: var(--yellow); }
+.hg-edge.active {
+  stroke-width: 3.5;
+  opacity: 1;
+  filter: drop-shadow(0 0 6px currentColor);
+}
+.hg-edge-label {
+  font-size: 8px;
+  fill: var(--text-faint);
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+/* Hyperedges list */
+.hyperedge-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.hyperedge-item {
+  padding: 10px 12px;
+  background: var(--surface2);
+  border-radius: 8px;
+  border-left: 3px solid var(--accent);
+  transition: transform 0.2s;
+  cursor: pointer;
+}
+.hyperedge-item:hover { transform: translateX(4px); }
+.hyperedge-item.AND { border-left-color: var(--red); }
+.hyperedge-item.OR { border-left-color: var(--accent); }
+.hyperedge-item.MAJORITY { border-left-color: var(--yellow); }
+.hyperedge-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.hyperedge-nodes {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text);
+  font-weight: 600;
+}
+.hyperedge-type {
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--surface3);
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.hyperedge-desc {
+  font-size: 10px;
+  color: var(--text-faint);
+  line-height: 1.4;
+}
+.hyperedge-weight {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--accent2);
+  font-weight: 700;
+}
+
+.empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-faint);
+  font-size: 12px;
+}
+
+.tooltip {
+  position: fixed;
+  background: var(--surface3);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 11px;
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.2s;
+  max-width: 320px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+  line-height: 1.5;
+}
+.tooltip.visible { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Crucix <span>· Hypergraph Contagion</span></h1>
+  <nav class="header-nav">
+    <a href="/crucix.html" class="nav-link">🏠 Crucix</a>
+    <a href="/advanced.html" class="nav-link">🧠 Advanced</a>
+    <a href="/hypergraph.html" class="nav-link active">🕸 Hypergraph</a>
+    <a href="/attention.html" class="nav-link">👁 Attention</a>
+    <a href="/coevolution.html" class="nav-link">⚔ Co-evolution</a>
+  </nav>
+</div>
+
+<div class="grid">
+
+  <!-- Stats -->
+  <div class="card col-12">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value" id="stat-nodes">—</div>
+        <div class="stat-label">Узлов</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-hyperedges">—</div>
+        <div class="stat-label">Гиперрёбер</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-avg-size">—</div>
+        <div class="stat-label">Ср. размер</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-critical">—</div>
+        <div class="stat-label">Критичных</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hypergraph visualization -->
+  <div class="card col-8">
+    <div class="card-title">
+      Гиперграф (d3-force)
+      <span class="tag">перетаскивайте узлы</span>
+    </div>
+    <svg id="hypergraph-svg"></svg>
+  </div>
+
+  <!-- Hyperedges list -->
+  <div class="card col-4">
+    <div class="card-title">
+      Гиперрёбра
+      <span class="tag" id="hyperedge-count">—</span>
+    </div>
+    <div class="hyperedge-list" id="hyperedge-list">
+      <div class="empty">Ожидание данных...</div>
+    </div>
+  </div>
+
+  <!-- Critical updates -->
+  <div class="card col-12">
+    <div class="card-title">
+      Активные обновления
+      <span class="tag" id="updates-count">—</span>
+    </div>
+    <div id="updates-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px;">
+      <div class="empty">Ожидание данных...</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const CONFIG = { dataUrl: '../runs/predictions/latest_forecast.json', refreshMs: 60000 };
+
+const LAYER_COLORS = {
+  cyber: '#ec4899',
+  info: '#8b5cf6',
+  finance: '#3b82f6',
+  physical: '#22c55e',
+};
+
+let DATA = null;
+let simulation = null;
+
+async function load() {
+  try {
+    const res = await fetch(CONFIG.dataUrl);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    DATA = await res.json();
+    render();
+  } catch (e) {
+    console.error('Load error:', e);
+  }
+}
+
+function render() {
+  if (!DATA) return;
+  const hg = DATA.hypergraphContagion;
+  if (!hg) {
+    document.querySelectorAll('.empty').forEach(el => el.textContent = 'Нет данных о гиперграфе');
+    return;
+  }
+
+  renderStats(hg);
+  renderHypergraph(hg);
+  renderHyperedgesList(hg);
+  renderUpdates(hg);
+}
+
+function renderStats(hg) {
+  $('stat-nodes').textContent = hg.stats?.nodeCount || 0;
+  $('stat-hyperedges').textContent = hg.stats?.hyperedgeCount || 0;
+  $('stat-avg-size').textContent = (hg.stats?.avgHyperedgeSize || 0).toFixed(2);
+  $('stat-critical').textContent = hg.criticalHyperedges?.length || 0;
+}
+
+function renderHypergraph(hg) {
+  const svg = $('hypergraph-svg');
+  const w = svg.clientWidth || 900;
+  const h = 600;
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  svg.innerHTML = '';
+
+  const nodes = hg.hyperedges ? extractNodesFromHyperedges(hg.hyperedges) : [];
+  const edges = hg.hyperedges || [];
+
+  if (nodes.length === 0) {
+    svg.innerHTML = `<text x="${w/2}" y="${h/2}" text-anchor="middle" fill="#5a6b8a" font-size="12">Нет данных</text>`;
+    return;
+  }
+
+  // D3 simulation
+  simulation = d3.forceSimulation(nodes)
+    .force('charge', d3.forceManyBody().strength(-400))
+    .force('center', d3.forceCenter(w / 2, h / 2))
+    .force('collision', d3.forceCollide().radius(d => 30 + (d.currentProb || 0.5) * 20))
+    .force('link', d3.forceLink(
+      // Связи: для каждого гиперребра соединяем все пары
+      buildPairwiseLinks(edges)
+    ).id(d => d.id).distance(150).strength(0.3));
+
+  const g = d3.select(svg).append('g');
+
+  // Hyperedges как многоугольники (для 3+ узлов)
+  const hyperedgeGroups = g.selectAll('.hyperedge-group')
+    .data(edges.filter(e => e.nodes.length <= 5)) // для >5 рисуем как линии
+    .enter()
+    .append('g')
+    .attr('class', 'hyperedge-group');
+
+  // Линии для рёбер > 3 узлов (упрощённо)
+  const links = g.selectAll('.hg-edge')
+    .data(buildPairwiseLinks(edges))
+    .enter()
+    .append('line')
+    .attr('class', d => `hg-edge ${d.type}`)
+    .attr('stroke', d => {
+      const color = { AND: '#ef4444', OR: '#3b82f6', MAJORITY: '#eab308' }[d.type];
+      return color || '#64748b';
+    })
+    .attr('stroke-width', d => Math.min(5, 1 + (d.weight || 1) * 1.5))
+    .attr('stroke-opacity', d => d.active ? 0.9 : 0.3);
+
+  // Узлы
+  const nodeGroups = g.selectAll('.hg-node')
+    .data(nodes)
+    .enter()
+    .append('g')
+    .attr('class', 'hg-node')
+    .call(d3.drag()
+      .on('start', dragstarted)
+      .on('drag', dragged)
+      .on('end', dragended));
+
+  nodeGroups.append('circle')
+    .attr('class', 'hg-node-circle')
+    .attr('r', d => 24 + (d.currentProb || 0.5) * 16)
+    .attr('fill', d => {
+      const color = LAYER_COLORS[d.layer] || '#64748b';
+      const alpha = Math.floor((d.currentProb || 0.5) * 100 + 30).toString(16).padStart(2, '0');
+      return `${color}${alpha}`;
+    })
+    .attr('stroke', d => LAYER_COLORS[d.layer] || '#64748b')
+    .on('mouseenter', (event, d) => {
+      showTooltip(event, `
+        <strong>${d.name || d.id}</strong><br>
+        Слой: ${d.layer || '—'}<br>
+        Вероятность: ${((d.currentProb || 0.5) * 100).toFixed(1)}%
+      `);
+    })
+    .on('mousemove', moveTooltip)
+    .on('mouseleave', hideTooltip);
+
+  nodeGroups.append('text')
+    .attr('class', 'hg-node-label')
+    .attr('dy', '-4')
+    .text(d => (d.name || d.id).substring(0, 14));
+
+  nodeGroups.append('text')
+    .attr('class', 'hg-node-prob')
+    .attr('dy', '12')
+    .attr('fill', d => LAYER_COLORS[d.layer] || '#64748b')
+    .text(d => `${((d.currentProb || 0.5) * 100).toFixed(0)}%`);
+
+  // Update positions on tick
+  simulation.on('tick', () => {
+    links
+      .attr('x1', d => d.source.x)
+      .attr('y1', d => d.source.y)
+      .attr('x2', d => d.target.x)
+      .attr('y2', d => d.target.y);
+
+    nodeGroups.attr('transform', d => `translate(${d.x},${d.y})`);
+  });
+
+  function dragstarted(event, d) {
+    if (!event.active) simulation.alphaTarget(0.3).restart();
+    d.fx = d.x;
+    d.fy = d.y;
+  }
+  function dragged(event, d) {
+    d.fx = event.x;
+    d.fy = event.y;
+  }
+  function dragended(event, d) {
+    if (!event.active) simulation.alphaTarget(0);
+    d.fx = null;
+    d.fy = null;
+  }
+}
+
+function extractNodesFromHyperedges(hyperedges) {
+  const nodeMap = new Map();
+  for (const he of hyperedges) {
+    for (const nodeId of he.nodes) {
+      if (!nodeMap.has(nodeId)) {
+        nodeMap.set(nodeId, {
+          id: nodeId,
+          name: nodeId.replace(/_/g, ' '),
+          layer: inferLayer(nodeId),
+          currentProb: 0.5,
+        });
+      }
+    }
+  }
+  return [...nodeMap.values()];
+}
+
+function inferLayer(nodeId) {
+  if (/cyber|ransomware|ddos|data.?leak/i.test(nodeId)) return 'cyber';
+  if (/disinfo|narrative|propaganda|media|info/i.test(nodeId)) return 'info';
+  if (/vix|market|sanction|currency|credit|capital/i.test(nodeId)) return 'finance';
+  if (/conflict|military|naval|radiation|physical|satellite/i.test(nodeId)) return 'physical';
+  return 'unknown';
+}
+
+function buildPairwiseLinks(edges) {
+  const links = [];
+  for (const he of edges) {
+    for (let i = 0; i < he.nodes.length; i++) {
+      for (let j = i + 1; j < he.nodes.length; j++) {
+        links.push({
+          source: he.nodes[i],
+          target: he.nodes[j],
+          type: he.type,
+          weight: he.weight,
+          hyperedgeId: he.id,
+          description: he.description,
+        });
+      }
+    }
+  }
+  return links;
+}
+
+function renderHyperedgesList(hg) {
+  const list = $('hyperedge-list');
+  const edges = hg.hyperedges || [];
+  $('hyperedge-count').textContent = `${edges.length}`;
+
+  if (edges.length === 0) {
+    list.innerHTML = '<div class="empty">Нет гиперрёбер</div>';
+    return;
+  }
+
+  list.innerHTML = edges.map(he => `
+    <div class="hyperedge-item ${he.type}">
+      <div class="hyperedge-header">
+        <span class="hyperedge-nodes">${he.nodes.join(' + ')}</span>
+        <span class="hyperedge-weight">×${he.weight.toFixed(1)}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span class="hyperedge-type">${he.type}</span>
+        <span style="font-size: 10px; color: var(--text-faint); font-family: var(--mono);">
+          lag ${he.lagHours}ч
+        </span>
+      </div>
+      ${he.description ? `<div class="hyperedge-desc">${he.description}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+function renderUpdates(hg) {
+  const updates = hg.updates || [];
+  $('updates-count').textContent = `${updates.length}`;
+
+  const list = $('updates-list');
+  if (updates.length === 0) {
+    list.innerHTML = '<div class="empty">Нет активных обновлений</div>';
+    return;
+  }
+
+  const sorted = [...updates].sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+
+  list.innerHTML = sorted.slice(0, 20).map(u => {
+    const color = u.delta > 0 ? '#ef4444' : '#22c55e';
+    return `
+      <div style="padding: 10px 12px; background: var(--surface2); border-radius: 8px; border-left: 3px solid ${color};">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+          <span style="font-weight: 700; font-size: 12px;">${u.target}</span>
+          <span style="font-family: var(--mono); font-size: 12px; color: ${color}; font-weight: 700;">
+            ${u.delta > 0 ? '+' : ''}${(u.delta * 100).toFixed(1)}%
+          </span>
+        </div>
+        <div style="font-size: 10px; color: var(--text-faint); margin-bottom: 4px;">
+          источники: ${u.sources.join(', ')}
+        </div>
+        <div style="font-size: 10px; color: var(--text-faint); font-family: var(--mono);">
+          type: ${u.type} · activation: ${(u.activation * 100).toFixed(0)}%
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function showTooltip(e, html) {
+  const tt = $('tooltip');
+  tt.innerHTML = html;
+  tt.classList.add('visible');
+  moveTooltip(e);
+}
+function moveTooltip(e) {
+  const tt = $('tooltip');
+  tt.style.left = `${Math.min(e.clientX + 14, window.innerWidth - tt.offsetWidth - 10)}px`;
+  tt.style.top = `${Math.min(e.clientY + 14, window.innerHeight - tt.offsetHeight - 10)}px`;
+}
+function hideTooltip() { $('tooltip').classList.remove('visible'); }
+
+load();
+setInterval(load, CONFIG.refreshMs);
+
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(render, 300);
+});
+</script>
+
+</body>
+</html>

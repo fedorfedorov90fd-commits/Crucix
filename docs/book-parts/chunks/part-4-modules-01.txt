@@ -1,0 +1,871 @@
+===== ЧАСТЬ part-4-modules · КУСОК 01/28 · 30.7 KB =====
+
+========================================================================
+CRUCIX · PREDICT-EXTENSIONS · BOOK
+ТОМ: part-4-modules
+НАЗВАНИЕ: Том 4. Модули ядра apis/predict/*.mjs + v6 + v7 + agent
+СОЗДАН: 2026-09-17T06:28:00.243Z
+ВСЕГО ФАЙЛОВ В МАНИФЕСТЕ: 53
+========================================================================
+
+
+========================================================================
+
+FILE: apis/predict/bayesian.mjs
+SIZE: 8780 bytes
+SHA1: 425d609aa92798e6
+========================================================================
+
+// apis/predict/bayesian.mjs
+// Байесовское ядро прогностического слоя Crucix
+// Обновление вероятностей событий по теореме Байеса после каждого sweep.
+//
+// Теоретическая основа:
+//   Bayes, T. (1763). "An Essay towards solving a Problem in the Doctrine
+//   of Chances". Philosophical Transactions of the Royal Society.
+//
+//   P(H|E) = P(E|H) · P(H) / P(E)
+//
+// где:
+//   P(H)   — априорная вероятность события H
+//   P(E|H) — правдоподобие наблюдения E при условии, что H произойдёт
+//   P(E)   — полная вероятность наблюдения E
+//   P(H|E) — апостериорная вероятность события H после наблюдения E
+//
+// Особенности реализации:
+//   * Работа в лог-пространстве для численной устойчивости
+//   * Ограничение сдвига (maxShift) — не даём вероятности «прыгать»
+//   * Затухание (decay) к базовой частоте при отсутствии новых сигналов
+
+/**
+ * Нормализация массива логарифмических вероятностей (softmax в log-space).
+ * Избегает underflow при работе с очень маленькими вероятностями.
+ *
+ * @param {number[]} logProbs — массив log(p_i)
+ * @returns {number[]} — нормализованный массив p_i, сумма = 1
+ */
+function normalizeLogProbs(logProbs) {
+  if (!logProbs || logProbs.length === 0) return [];
+  const maxLog = Math.max(...logProbs);
+  if (!isFinite(maxLog)) return logProbs.map(() => 1 / logProbs.length);
+  const expVals = logProbs.map((lp) => Math.exp(lp - maxLog));
+  const sum = expVals.reduce((a, b) => a + b, 0);
+  if (sum <= 0) return expVals.map(() => 1 / expVals.length);
+  return expVals.map((v) => v / sum);
+}
+
+/**
+ * Классическое байесовское обновление одной гипотезы.
+ * В продакшене использовать multiEvidenceUpdate для нескольких сигналов.
+ *
+ * @param {number} prior — P(H), априорная вероятность (0..1)
+ * @param {number} likelihood — P(E|H), правдоподобие наблюдения
+ * @param {number} evidenceLikelihood — P(E), полная вероятность наблюдения
+ * @returns {number} — P(H|E), апостериорная вероятность
+ */
+function bayesianUpdate(prior, likelihood, evidenceLikelihood) {
+  if (evidenceLikelihood === 0) return prior;
+  const posterior = (likelihood * prior) / evidenceLikelihood;
+  return Math.max(0.001, Math.min(0.999, posterior));
+}
+
+/**
+ * Обновление по нескольким независимым наблюдениям одновременно.
+ * Использует лог-odds для численной устойчивости:
+ *
+ *   log-odds(P) = log(P / (1-P))
+ *   log-odds_post = log-odds_prior + Σ log(Bayes_factor_i)
+ *   Bayes_factor_i = P(E_i|H) / P(E_i|¬H)
+ *
+ * @param {Object} params
+ * @param {number} params.prior — априорная вероятность (0..1)
+ * @param {Array<{name: string, pGivenH: number, pGivenNotH: number, value?: any}>} params.evidence
+ * @returns {{posterior: number, contributions: Array, shift: number}}
+ */
+function multiEvidenceUpdate({ prior, evidence }) {
+  const priorClamped = Math.max(0.001, Math.min(0.999, prior));
+
+  // Логарифмические шансы априорной вероятности
+  let logOdds = Math.log(priorClamped / (1 - priorClamped));
+  const contributions = [];
+
+  if (!Array.isArray(evidence) || evidence.length === 0) {
+    return { posterior: priorClamped, contributions: [], shift: 0 };
+  }
+
+  for (const ev of evidence) {
+    if (!ev || typeof ev.pGivenH !== 'number' || typeof ev.pGivenNotH !== 'number') {
+      continue;
+    }
+    // Клиппинг для избежания log(0)
+    const pH = Math.max(1e-10, Math.min(1 - 1e-10, ev.pGivenH));
+    const pNotH = Math.max(1e-10, Math.min(1 - 1e-10, ev.pGivenNotH));
+
+    // Bayes factor — во сколько раз наблюдение E увеличивает шансы H
+    const bayesFactor = pH / pNotH;
+    const logBayesFactor = Math.log(bayesFactor);
+    logOdds += logBayesFactor;
+
+    contributions.push({
+      name: ev.name || 'unnamed',
+      value: ev.value !== undefined ? ev.value : null,
+      bayesFactor,
+      logBayesFactor,
+      impact: logBayesFactor,
+    });
+  }
+
+  // Обратно из log-odds в вероятность
+  const posteriorOdds = Math.exp(logOdds);
+  const posterior = posteriorOdds / (1 + posteriorOdds);
+
+  return {
+    posterior: Math.max(0.001, Math.min(0.999, posterior)),
+    contributions,
+    shift: posterior - priorClamped,
+  };
+}
+
+/**
+ * Ограничение сдвига вероятности за один цикл.
+ * Не даём модели резко менять убеждения из-за одного шумного наблюдения.
+ *
+ * @param {number} oldProb
+ * @param {number} newProb
+ * @param {number} maxShift — максимальный сдвиг (по умолчанию 0.15 = 15%)
+ * @returns {number}
+ */
+function clampShift(oldProb, newProb, maxShift = 0.15) {
+  const shift = newProb - oldProb;
+  if (Math.abs(shift) <= maxShift) return newProb;
+  return oldProb + Math.sign(shift) * maxShift;
+}
+
+/**
+ * Затухание (decay) вероятности к базовой частоте.
+ * При отсутствии новых сигналов система не должна «застревать» на высокой
+ * вероятности — она постепенно возвращается к климатологии.
+ *
+ * Формула: p_next = p + (baseRate - p) · decayRate
+ *
+ * @param {number} current — текущая вероятность
+ * @param {number} baseRate — базовая частота события (климатология)
+ * @param {number} decayRate — скорость возврата (0.01 — медленно, 0.1 — быстро)
+ * @returns {number}
+ */
+function decay(current, baseRate, decayRate = 0.02) {
+  return current + (baseRate - current) * decayRate;
+}
+
+/**
+ * Полный цикл обновления одного события после sweep.
+ *
+ * @param {Object} event — { id, name, prior, baseRate, horizon, evidenceRules }
+ * @param {Array} evidence — массив наблюдений из sweep
+ * @param {Object} config — { maxShift, decayRate }
+ * @returns {Object} — обновлённое событие
+ */
+function updateEvent(event, evidence, config = {}) {
+  const { maxShift = 0.15, decayRate = 0.02 } = config;
+
+  const prior = typeof event.prior === 'number' ? event.prior : 0.1;
+  const baseRate = typeof event.baseRate === 'number' ? event.baseRate : prior;
+
+  // Если нет новых наблюдений — затухание к базовой частоте
+  if (!evidence || evidence.length === 0) {
+    const decayed = decay(prior, baseRate, decayRate);
+    return {
+      ...event,
+      prior,
+      posterior: decayed,
+      shift: decayed - prior,
+      contributions: [],
+      updatedAt: new Date().toISOString(),
+      method: 'decay',
+    };
+  }
+
+  const result = multiEvidenceUpdate({ prior, evidence });
+  const clamped = clampShift(prior, result.posterior, maxShift);
+
+  return {
+    ...event,
+    prior,
+    posterior: clamped,
+    rawPosterior: result.posterior,
+    shift: clamped - prior,
+    contributions: result.contributions,
+    updatedAt: new Date().toISOString(),
+    method: 'bayesian_update',
+  };
+}
+
+/**
+ * Сбор правдоподобий для типовых категорий событий.
+ * Утилита для повторного использования в разных модулях.
+ */
+function likelihoodFromThresholds(value, thresholds) {
+  const { high, critical, low } = thresholds || {};
+  if (value === undefined || value === null) {
+    return { pGivenH: 0.3, pGivenNotH: 0.5 };
+  }
+  if (critical !== undefined && value >= critical) {
+    return { pGivenH: 0.85, pGivenNotH: 0.05 };
+  }
+  if (high !== undefined && value >= high) {
+    return { pGivenH: 0.65, pGivenNotH: 0.15 };
+  }
+  if (low !== undefined && value < low) {
+    return { pGivenH: 0.1, pGivenNotH: 0.7 };
+  }
+  return { pGivenH: 0.3, pGivenNotH: 0.5 };
+}
+
+export {
+  normalizeLogProbs,
+  bayesianUpdate,
+  multiEvidenceUpdate,
+  clampShift,
+  decay,
+  updateEvent,
+  likelihoodFromThresholds,
+};
+
+
+
+========================================================================
+
+FILE: apis/predict/naivebayes.mjs
+SIZE: 10387 bytes
+SHA1: 613b3d87941151d4
+========================================================================
+
+// apis/predict/naivebayes.mjs
+// Наивный байесовский классификатор (Gaussian Naive Bayes)
+// для определения режима системы по признакам sweep.
+//
+// Теоретическая основа:
+//   Duda, R. O., Hart, P. E., & Stork, D. G. (2001).
+//   "Pattern Classification" (2nd ed.). Wiley. Глава 3.
+//
+//   Для каждого класса c и признака x_i:
+//     P(c | x) ∝ P(c) · Π P(x_i | c)
+//
+//   Гауссовское предположение:  P(x_i | c) ~ N(μ_ci, σ²_ci)
+//
+// Применение в Crucix:
+//   Классификация текущего режима системы (stable / deescalation /
+//   unstable / escalation / crisis) по вектору признаков из sweep:
+//   VIX, HY-спред, количество конфликтных событий, санкции, алерты.
+//
+// Особенности реализации:
+//   * Обучение на исторических sweep-данных из runs/memory/
+//   * Логарифмические вероятности для численной устойчивости
+//   * Регуляризация дисперсии (var + eps) — защита от нулевой дисперсии
+//   * Сериализация/десериализация модели для сохранения между сессиями
+
+/**
+ * Извлечение признаков из одного sweep в вектор.
+ * Возвращает объект {feature_name: value}, который затем превращается
+ * в числовой вектор в порядке, определяемом классом.
+ *
+ * @param {Object} sweep — запись из runs/memory/ или latest.json
+ * @returns {Object} — {vix, hySpread, conflictCount, sanctionsCount, newAlerts, escalatedAlerts, ...}
+ */
+function sweepToFeatures(sweep) {
+  const features = {};
+
+  // --- Рыночные показатели (FRED) ---
+  if (sweep && sweep.fred) {
+    if (typeof sweep.fred.vix === 'number') features.vix = sweep.fred.vix;
+    if (typeof sweep.fred.hySpread === 'number') features.hySpread = sweep.fred.hySpread;
+    if (typeof sweep.fred.treasury10y === 'number') features.treasury10y = sweep.fred.treasury10y;
+  }
+
+  // --- Геополитические (GDELT) ---
+  if (sweep && sweep.gdelt) {
+    const events = Array.isArray(sweep.gdelt.conflictEvents)
+      ? sweep.gdelt.conflictEvents
+      : [];
+    features.conflictCount = events.length;
+    if (typeof sweep.gdelt.avgGoldsteinScore === 'number') {
+      features.avgGoldsteinScore = sweep.gdelt.avgGoldsteinScore;
+    } else {
+      features.avgGoldsteinScore = 0;
+    }
+  }
+
+  // --- Санкции ---
+  if (sweep && sweep.sanctions) {
+    features.sanctionsCount = sweep.sanctions.count || sweep.sanctions.recentCount || 0;
+  }
+
+  // --- Дельта-алерты (внутренние) ---
+  if (sweep && sweep.delta) {
+    features.newAlerts = sweep.delta.newAlerts || 0;
+    features.escalatedAlerts = sweep.delta.escalatedAlerts || 0;
+  }
+
+  // --- Радиация (максимум по всем станциям) ---
+  if (sweep && sweep.radiation) {
+    const stations = Object.values(sweep.radiation);
+    const cpmValues = stations
+      .map((s) => (s && typeof s.cpm === 'number' ? s.cpm : 0))
+      .filter((v) => v > 0);
+    features.maxRadiation = cpmValues.length > 0 ? Math.max(...cpmValues) : 0;
+  }
+
+  // --- Энергетика ---
+  if (sweep && sweep.energy && typeof sweep.energy.oilPrice === 'number') {
+    features.oilPrice = sweep.energy.oilPrice;
+  }
+
+  // --- Защита от пустого вектора: если нет признаков — ставим нули ---
+  if (Object.keys(features).length === 0) {
+    features.vix = 20;
+    features.conflictCount = 0;
+  }
+
+  return features;
+}
+
+/**
+ * Gaussian Naive Bayes классификатор.
+ * Хранит для каждого класса:
+ *   - prior P(c)
+ *   - для каждого признака: {mean, variance}
+ */
+class GaussianNaiveBayes {
+  constructor(options = {}) {
+    this.classes = [];                  // ['crisis', 'escalation', ...]
+    this.features = [];                 // ['vix', 'hySpread', ...]
+    this.parameters = {};               // { class: { feature: {mean, variance} } }
+    this.priors = {};                   // { class: priorProb }
+    this.trained = false;
+    this.varSmoothing = options.varSmoothing || 1e-6;
+  }
+
+  /**
+   * Обучение на исторических данных.
+   *
+   * @param {Array<{features: Object, label: string}>} trainingData
+   * @returns {GaussianNaiveBayes} — this (fluent interface)
+   */
+  fit(trainingData) {
+    if (!Array.isArray(trainingData) || trainingData.length === 0) {
+      this.trained = false;
+      return this;
+    }
+
+    // --- Группировка по классам ---
+    const byClass = {};
+    for (const row of trainingData) {
+      if (!row || !row.features || !row.label) continue;
+      if (!byClass[row.label]) byClass[row.label] = [];
+      byClass[row.label].push(row.features);
+    }
+
+    this.classes = Object.keys(byClass);
+    if (this.classes.length === 0) {
+      this.trained = false;
+      return this;
+    }
+
+    // --- Собираем множество всех признаков ---
+    const featureSet = new Set();
+    for (const row of trainingData) {
+      if (!row || !row.features) continue;
+      for (const key of Object.keys(row.features)) featureSet.add(key);
+    }
+    this.features = [...featureSet];
+
+    // --- Вычисляем параметры для каждого класса ---
+    const totalSamples = trainingData.length;
+    for (const cls of this.classes) {
+      const samples = byClass[cls];
+      this.priors[cls] = samples.length / totalSamples;
+      this.parameters[cls] = {};
+
+      for (const feat of this.features) {
+        const values = samples
+          .map((s) => s[feat])
+          .filter((v) => typeof v === 'number' && !isNaN(v));
+
+        if (values.length === 0) {
+          this.parameters[cls][feat] = { mean: 0, variance: 1 };
+          continue;
+        }
+
+        // Среднее
+        const mean = values.reduce((a, b) => a + b, 0) / values.length;
+        // Дисперсия (ML-оценка с регуляризацией)
+        const variance =
+          values.reduce((sum, v) => sum + (v - mean) ** 2, 0) / values.length;
+
+        this.parameters[cls][feat] = {
+          mean,
+          variance: Math.max(variance, this.varSmoothing),
+        };
+      }
+    }
+
+    this.trained = true;
+    return this;
+  }
+
+  /**
+   * Гауссовская функция правдоподобия:
+   *   N(x | μ, σ²) = 1 / √(2πσ²) · exp(-(x-μ)² / (2σ²))
+   *
+   * Возвращает логарифм PDF для численной устойчивости.
+   *
+   * @param {number} x
+   * @param {number} mean
+   * @param {number} variance
+   * @returns {number} — log(N(x | μ, σ²))
+   */
+  _logGaussianPdf(x, mean, variance) {
+    const v = Math.max(variance, 1e-10);
+    const diff = x - mean;
+    return -0.5 * Math.log(2 * Math.PI * v) - (diff * diff) / (2 * v);
+  }
+
+  /**
+   * Предсказание класса и вероятностей для вектора признаков.
+   *
+   * @param {Object} features
+   * @returns {{predicted: string, probabilities: Object, logProbs: Object, margin: number}}
+   */
+  predict(features) {
+    if (!this.trained) {
+      return {
+        predicted: 'unknown',
+        probabilities: {},
+        logProbs: {},
+        margin: 0,
+      };
+    }
+
+    const logProbs = {};
+
+    for (const cls of this.classes) {
+      // Начинаем с log-prior
+      let logProb = Math.log(this.priors[cls] || 1e-10);
+
+      for (const feat of this.features) {
+        const value = features[feat];
+        if (typeof value !== 'number' || isNaN(value)) continue;
+
+        const params = this.parameters[cls][feat];
+        if (!params) continue;
+
+        logProb += this._logGaussianPdf(value, params.mean, params.variance);
+      }
+
+      logProbs[cls] = logProb;
+    }
+
+    // --- Нормализация через log-sum-exp ---
+    const maxLog = Math.max(...Object.values(logProbs));
+    const expProbs = {};
+    let sum = 0;
+    for (const cls of this.classes) {
+      expProbs[cls] = Math.exp(logProbs[cls] - maxLog);
+      sum += expProbs[cls];
+    }
+
+    const probabilities = {};
+    for (const cls of this.classes) {
+      probabilities[cls] = sum > 0 ? expProbs[cls] / sum : 1 / this.classes.length;
+    }
+
+    // --- Определение предсказанного класса ---
+    let predicted = this.classes[0];
+    let maxProb = probabilities[predicted];
+    for (const cls of this.classes) {
+      if (probabilities[cls] > maxProb) {
+        maxProb = probabilities[cls];
+        predicted = cls;
+      }
+    }
+
+    // --- Margin: разница между топ-1 и топ-2 ---
+    const sorted = Object.values(probabilities).sort((a, b) => b - a);
+    const margin = sorted.length > 1 ? sorted[0] - sorted[1] : sorted[0];
+
+    return { predicted, probabilities, logProbs, margin };
+  }
+
+  /**
+   * Сериализация модели в JSON-строку.
+   */
+  serialize() {
+    return JSON.stringify({
+      classes: this.classes,
+      features: this.features,
+      parameters: this.parameters,
+      priors: this.priors,
+      trained: this.trained,
+      varSmoothing: this.varSmoothing,
+    });
+  }
+
+  /**
+   * Восстановление модели из JSON-строки.
+   */
+  static deserialize(json) {
+    const data = typeof json === 'string' ? JSON.parse(json) : json;
+    const model = new GaussianNaiveBayes({
+      varSmoothing: data.varSmoothing || 1e-6,
+    });
+    model.classes = data.classes || [];
+    model.features = data.features || [];
+    model.parameters = data.parameters || {};
+    model.priors = data.priors || {};
+    model.trained = !!data.trained;
+    return model;
+  }
+
+  /**
+   * Возвращает человекочитаемое описание модели.
+   */
+  describe() {
+    return {
+      trained: this.trained,
+      classes: this.classes,
+      features: this.features,
+      priors: this.priors,
+    };
+  }
+}
+
+export { GaussianNaiveBayes, sweepToFeatures };
+
+
+
+========================================================================
+
+FILE: apis/predict/markov.mjs
+SIZE: 11112 bytes
+SHA1: 1198394bd22cfb68
+========================================================================
+
+// apis/predict/markov.mjs
+// Цепи Маркова для прогнозирования переходов режима системы.
+//
+// Теоретическая основа:
+//   Markov, A. A. (1906). "Rasprostranenie zakona bol'shih chisel na
+//   velichiny, zavisjasie drug ot druga". Известия Физ.-мат. об-ва.
+//   Norris, J. R. (1997). "Markov Chains". Cambridge University Press.
+//
+//   Дискретная цепь Маркова первого порядка задаётся:
+//     P(X_{n+1} = j | X_n = i, X_{n-1}, ...) = P(X_{n+1} = j | X_n = i) = P_ij
+//
+//   Матрица переходов P = [P_ij] стохастическая: Σ_j P_ij = 1.
+//
+// Применение в Crucix:
+//   1. Классификация текущего состояния системы по sweep.
+//   2. Прогноз вероятности перехода в кризисное состояние через N шагов.
+//   3. Стационарное распределение — долгосрочные вероятности режимов.
+//
+// Классы состояний (5):
+//   stable, deescalation, unstable, escalation, crisis
+//
+// Особенности реализации:
+//   * Обучение на последовательности исторических состояний
+//   * Сглаживание Лапласа для избежания нулевых вероятностей
+//   * Степень матрицы через повторное умножение (без SVD)
+
+// ============================================================
+// Классификатор состояния системы по данным sweep
+// ============================================================
+
+/**
+ * Классификация состояния системы по одному sweep.
+ * Пороги подобраны эмпирически с учётом типичных значений.
+ *
+ * @param {Object} sweep — запись из runs/memory/ или latest.json
+ * @returns {string} — одно из: stable, deescalation, unstable, escalation, crisis
+ */
+function classifyState(sweep) {
+  const vix = sweep && sweep.fred && typeof sweep.fred.vix === 'number'
+    ? sweep.fred.vix
+    : 20;
+  const events = sweep && sweep.gdelt && Array.isArray(sweep.gdelt.conflictEvents)
+    ? sweep.gdelt.conflictEvents
+    : [];
+  const conflictCount = events.length;
+  const newAlerts = sweep && sweep.delta ? (sweep.delta.newAlerts || 0) : 0;
+  const escalated = sweep && sweep.delta ? (sweep.delta.escalatedAlerts || 0) : 0;
+
+  // --- Кризис ---
+  if (vix > 38 || conflictCount > 18 || escalated > 6) return 'crisis';
+
+  // --- Эскалация ---
+  if (vix > 30 || conflictCount > 12 || escalated > 4) return 'escalation';
+
+  // --- Деэскалация (после эскалации, спокойствие с трендом вниз) ---
+  if (vix < 18 && conflictCount < 4 && newAlerts < 3) return 'deescalation';
+
+  // --- Стабильность ---
+  if (vix < 22 && conflictCount < 5 && newAlerts < 5 && escalated < 2) {
+    return 'stable';
+  }
+
+  // --- Всё промежуточное — нестабильность ---
+  return 'unstable';
+}
+
+// ============================================================
+// Цепь Маркова
+// ============================================================
+
+class MarkovChain {
+  constructor() {
+    this.states = [];                    // список уникальных состояний
+    this.transitionMatrix = {};          // {from: {to: probability}}
+    this.stateIndex = {};                // {state: index}
+    this.trained = false;
+    this.laplaceSmoothing = 1;
+  }
+
+  /**
+   * Обучение цепи Маркова на последовательности состояний.
+   *
+   * @param {string[]} sequence — последовательность состояний
+   * @param {number} smoothing — сглаживание Лапласа (default: 1)
+   * @returns {MarkovChain} — this
+   */
+  fit(sequence, smoothing = 1) {
+    if (!Array.isArray(sequence) || sequence.length < 2) {
+      this.trained = false;
+      return this;
+    }
+
+    this.laplaceSmoothing = smoothing;
+    this.states = [...new Set(sequence)];
+    this.stateIndex = {};
+    this.states.forEach((s, i) => {
+      this.stateIndex[s] = i;
+    });
+
+    // --- Инициализация матрицы с сглаживанием ---
+    const counts = {};
+    for (const from of this.states) {
+      counts[from] = {};
+      for (const to of this.states) {
+        counts[from][to] = smoothing;
+      }
+    }
+
+    // --- Подсчёт переходов ---
+    for (let i = 0; i < sequence.length - 1; i++) {
+      const from = sequence[i];
+      const to = sequence[i + 1];
+      counts[from][to] = (counts[from][to] || 0) + 1;
+    }
+
+    // --- Нормализация: строки должны суммироваться в 1 ---
+    this.transitionMatrix = {};
+    for (const from of this.states) {
+      const rowSum = Object.values(counts[from]).reduce((a, b) => a + b, 0);
+      this.transitionMatrix[from] = {};
+      for (const to of this.states) {
+        this.transitionMatrix[from][to] =
+          rowSum > 0 ? counts[from][to] / rowSum : 1 / this.states.length;
+      }
+    }
+
+    this.trained = true;
+    return this;
+  }
+
+  /**
+   * Прогноз следующего состояния (один шаг).
+   *
+   * @param {string} currentState
+   * @returns {{predicted: string, distribution: Object}}
+   */
+  predictNext(currentState) {
+    if (!this.trained) {
+      return { predicted: 'unknown', distribution: {} };
+    }
+
+    // --- Если состояние неизвестно — равномерное распределение ---
+    if (!this.transitionMatrix[currentState]) {
+      const uniform = 1 / Math.max(this.states.length, 1);
+      const distribution = {};
+      for (const s of this.states) distribution[s] = uniform;
+      return {
+        predicted: this.states[0] || 'unknown',
+        distribution,
+      };
+    }
+
+    const distribution = { ...this.transitionMatrix[currentState] };
+
+    // --- Наиболее вероятное следующее состояние ---
+    let predicted = this.states[0];
+    let maxProb = -1;
+    for (const s of this.states) {
+      if (distribution[s] > maxProb) {
+        maxProb = distribution[s];
+        predicted = s;
+      }
+    }
+
+    return { predicted, distribution };
+  }
+
+  /**
+   * Прогноз на N шагов вперёд.
+   * Используется итеративное умножение вектора состояния на матрицу.
+   *
+   * @param {string} currentState
+   * @param {number} steps
+   * @returns {{distribution: Object, path: Array<{step: number, distribution: Object}>}}
+   */
+  predictNSteps(currentState, steps) {
+    if (!this.trained || steps < 1) {
+      return { distribution: {}, path: [] };
+    }
+
+    // Начальное распределение — дельта в currentState
+    let dist = {};
+    for (const s of this.states) {
+      dist[s] = s === currentState ? 1 : 0;
+    }
+
+    const path = [{ step: 0, distribution: { ...dist } }];
+
+    for (let step = 1; step <= steps; step++) {
+      const newDist = {};
+      for (const to of this.states) {
+        let prob = 0;
+        for (const from of this.states) {
+          const transProb =
+            (this.transitionMatrix[from] && this.transitionMatrix[from][to]) || 0;
+          prob += dist[from] * transProb;
+        }
+        newDist[to] = prob;
+      }
+      dist = newDist;
+      path.push({ step, distribution: { ...dist } });
+    }
+
+    return { distribution: dist, path };
+  }
+
+  /**
+   * Стационарное распределение π, такое что π = π · P.
+   * Итеративный метод: многократно применяем переходы до сходимости.
+   *
+   * @param {number} maxIter — максимум итераций
+   * @param {number} tolerance — порог сходимости
+   * @returns {Object} — {state: probability}
+   */
+  stationaryDistribution(maxIter = 1000, tolerance = 1e-8) {
+    if (!this.trained || this.states.length === 0) return {};
+
+    // Начинаем с равномерного распределения
+    let dist = {};
+    for (const s of this.states) {
+      dist[s] = 1 / this.states.length;
+    }
+
+    for (let iter = 0; iter < maxIter; iter++) {
+      const newDist = {};
+      for (const to of this.states) {
+        let prob = 0;
+        for (const from of this.states) {
+          const transProb =
+            (this.transitionMatrix[from] && this.transitionMatrix[from][to]) || 0;
+          prob += dist[from] * transProb;
+        }
+        newDist[to] = prob;
+      }
+
+      // --- Проверка сходимости ---
+      let maxDiff = 0;
+      for (const s of this.states) {
+        maxDiff = Math.max(maxDiff, Math.abs(newDist[s] - dist[s]));
+      }
+      dist = newDist;
+      if (maxDiff < tolerance) break;
+    }
+
+    return dist;
+  }
+
+  /**
+   * Матрица переходов в виде вложенного объекта для сериализации.
+   */
+  getMatrix() {
+    return {
+      states: [...this.states],
+      matrix: JSON.parse(JSON.stringify(this.transitionMatrix)),
+    };
+  }
+
+  /**
+   * Сериализация.
+   */
+  serialize() {
+    return JSON.stringify({
+      states: this.states,
+      transitionMatrix: this.transitionMatrix,
+      stateIndex: this.stateIndex,
+      trained: this.trained,
+      laplaceSmoothing: this.laplaceSmoothing,
+    });
+  }
+
+  /**
+   * Десериализация.
+   */
+  static deserialize(json) {
+    const data = typeof json === 'string' ? JSON.parse(json) : json;
+    const mc = new MarkovChain();
+    mc.states = data.states || [];
+    mc.transitionMatrix = data.transitionMatrix || {};
+    mc.stateIndex = data.stateIndex || {};
+    mc.trained = !!data.trained;
+    mc.laplaceSmoothing = data.laplaceSmoothing || 1;
+    return mc;
+  }
+}
+
+// ============================================================
+// Утилиты
+// ============================================================
+
+/**
+ * Построение последовательности состояний из истории sweep.
+ *
+ * @param {Array} history — массив sweep-записей
+ * @returns {string[]}
+ */
+function buildStateSequence(history) {
+  if (!Array.isArray(history)) return [];
+  return history.map((sweep) => classifyState(sweep));
+}
+
+/**
+ * Утилита: энтропия распределения состояний.
+ * Показывает, насколько система «уверена» в текущем режиме.
+ *
+ * H = -Σ p_i · log2(p_i)
+ */
+function distributionEntropy(distribution) {
+  let entropy = 0;
+  for (const p of Object.values(distribution)) {
+    if (p > 0) entropy -= p * Math.log2(p);
+  }
+  return entropy;
+}
+
+export { MarkovChain, classifyState, buildStateSequence, distributionEntropy };
+
+
+
+========================================================================

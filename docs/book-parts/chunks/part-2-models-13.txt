@@ -1,0 +1,1258 @@
+===== ЧАСТЬ part-2-models · КУСОК 13/13 · 36.6 KB =====
+
+FILE: apis/predict/webgl/gpu.mjs
+SIZE: 11155 bytes
+SHA1: 43d85ffdb955143b
+========================================================================
+
+// apis/predict/webgl/gpu.mjs
+// GPU-вычисления через WebGL / headless-gl
+
+import { SHADER_SOURCES } from './shaders.mjs';
+
+let gl = null;
+let glContextType = 'none';
+let programs = {};
+let initialized = false;
+
+export async function initGPU() {
+  if (initialized) return glContextType;
+
+  if (typeof document !== 'undefined') {
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = 1024;
+      canvas.height = 1024;
+
+      gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+
+      if (gl) {
+        glContextType = 'webgl-browser';
+        console.log('[gpu] WebGL инициализирован в браузере');
+        _compilePrograms();
+        initialized = true;
+        return glContextType;
+      }
+    } catch (e) {
+      console.warn(`[gpu] Browser WebGL ошибка: ${e.message}`);
+    }
+  }
+
+  if (typeof process !== 'undefined' && process.versions && process.versions.node) {
+    try {
+      const headlessModule = await import('gl');
+      const createGL = headlessModule.default || headlessModule;
+
+      gl = createGL(1024, 1024);
+
+      if (gl) {
+        glContextType = 'webgl-headless';
+        console.log('[gpu] Headless WebGL инициализирован (Node.js)');
+        _compilePrograms();
+        initialized = true;
+        return glContextType;
+      }
+    } catch (e) {
+      console.log('[gpu] headless-gl не установлен — используем CPU fallback');
+      console.log('[gpu] Установить: npm install gl');
+    }
+  }
+
+  glContextType = 'cpu-fallback';
+  initialized = true;
+  return glContextType;
+}
+
+function _compilePrograms() {
+  programs = {
+    matmul: _createProgram(SHADER_SOURCES.vertex, SHADER_SOURCES.matmul),
+    elementwise: _createProgram(SHADER_SOURCES.vertex, SHADER_SOURCES.elementwise),
+    activation: _createProgram(SHADER_SOURCES.vertex, SHADER_SOURCES.activation),
+    softmax: _createProgram(SHADER_SOURCES.vertex, SHADER_SOURCES.softmax),
+    axpy: _createProgram(SHADER_SOURCES.vertex, SHADER_SOURCES.axpy),
+    adam: _createProgram(SHADER_SOURCES.vertex, SHADER_SOURCES.adam),
+  };
+
+  if (programs.matmul === null) {
+    console.warn('[gpu] Не удалось скомпилировать программы — fallback на CPU');
+    glContextType = 'cpu-fallback';
+  }
+}
+
+function _compileShader(source, type) {
+  const shader = gl.createShader(type);
+  gl.shaderSource(shader, source);
+  gl.compileShader(shader);
+
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    const info = gl.getShaderInfoLog(shader);
+    console.warn(`[gpu] Shader compile error: ${info}`);
+    gl.deleteShader(shader);
+    return null;
+  }
+  return shader;
+}
+
+function _createProgram(vsSource, fsSource) {
+  const vs = _compileShader(vsSource, gl.VERTEX_SHADER);
+  const fs = _compileShader(fsSource, gl.FRAGMENT_SHADER);
+  if (!vs || !fs) return null;
+
+  const program = gl.createProgram();
+  gl.attachShader(program, vs);
+  gl.attachShader(program, fs);
+  gl.linkProgram(program);
+
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    console.warn(`[gpu] Program link error: ${gl.getProgramInfoLog(program)}`);
+    return null;
+  }
+  return program;
+}
+
+function _createQuad() {
+  const buffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+    -1, -1, 1, -1, -1, 1,
+    -1, 1, 1, -1, 1, 1,
+  ]), gl.STATIC_DRAW);
+  return buffer;
+}
+
+function _createTexture(data, width, height) {
+  const tex = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, tex);
+
+  const hasFloat = gl.getExtension('OES_texture_float');
+  const type = hasFloat ? gl.FLOAT : gl.UNSIGNED_BYTE;
+
+  let pixelData;
+  if (hasFloat) {
+    pixelData = new Float32Array(width * height * 4);
+    for (let i = 0; i < data.length && i < width * height; i++) {
+      pixelData[i * 4] = data[i];
+    }
+  } else {
+    pixelData = new Uint8Array(width * height * 4);
+    for (let i = 0; i < data.length && i < width * height; i++) {
+      pixelData[i * 4] = Math.max(0, Math.min(255, Math.floor(data[i] * 255)));
+    }
+  }
+
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, type, pixelData);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+  return tex;
+}
+
+function _readPixels(width, height, useFloat) {
+  const pixels = useFloat
+    ? new Float32Array(width * height * 4)
+    : new Uint8Array(width * height * 4);
+
+  gl.readPixels(0, 0, width, height, gl.RGBA, useFloat ? gl.FLOAT : gl.UNSIGNED_BYTE, pixels);
+
+  const result = [];
+  for (let i = 0; i < width * height; i++) {
+    const v = useFloat ? pixels[i * 4] : pixels[i * 4] / 255;
+    result.push(v);
+  }
+  return result;
+}
+
+export function gpuMatmul(A, B) {
+  if (glContextType === 'cpu-fallback' || !programs.matmul) {
+    return cpuMatmul(A, B);
+  }
+
+  const n = A.length;
+  const m = A[0].length;
+  const p = B[0].length;
+
+  const aFlat = [];
+  for (let i = 0; i < n; i++) for (let j = 0; j < m; j++) aFlat.push(A[i][j]);
+
+  const bFlat = [];
+  for (let i = 0; i < m; i++) for (let j = 0; j < p; j++) bFlat.push(B[i][j]);
+
+  const aTex = _createTexture(aFlat, m, n);
+  const bTex = _createTexture(bFlat, p, m);
+
+  const cTex = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, cTex);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, p, n, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+
+  const fbo = gl.createFramebuffer();
+  gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, cTex, 0);
+
+  gl.viewport(0, 0, p, n);
+
+  const program = programs.matmul;
+  gl.useProgram(program);
+
+  gl.uniform1i(gl.getUniformLocation(program, 'u_A'), 0);
+  gl.uniform1i(gl.getUniformLocation(program, 'u_B'), 1);
+  gl.uniform1i(gl.getUniformLocation(program, 'u_n'), n);
+  gl.uniform1i(gl.getUniformLocation(program, 'u_m'), m);
+  gl.uniform1i(gl.getUniformLocation(program, 'u_p'), p);
+  gl.uniform1i(gl.getUniformLocation(program, 'u_aWidth'), m);
+  gl.uniform1i(gl.getUniformLocation(program, 'u_bWidth'), p);
+
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, aTex);
+  gl.activeTexture(gl.TEXTURE1);
+  gl.bindTexture(gl.TEXTURE_2D, bTex);
+
+  const quad = _createQuad();
+  const aPos = gl.getAttribLocation(program, 'a_position');
+  gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+  gl.enableVertexAttribArray(aPos);
+  gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+  gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+  const useFloat = !!gl.getExtension('OES_texture_float');
+  const cFlat = _readPixels(p, n, useFloat);
+
+  const C = Array.from({ length: n }, () => new Array(p).fill(0));
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < p; j++) {
+      C[i][j] = cFlat[j * n + i] || 0;
+    }
+  }
+
+  gl.deleteTexture(aTex);
+  gl.deleteTexture(bTex);
+  gl.deleteTexture(cTex);
+  gl.deleteFramebuffer(fbo);
+  gl.deleteBuffer(quad);
+
+  return C;
+}
+
+function cpuMatmul(A, B) {
+  const n = A.length, m = A[0].length, p = B[0].length;
+  const C = Array.from({ length: n }, () => new Array(p).fill(0));
+  for (let i = 0; i < n; i++) {
+    for (let k = 0; k < m; k++) {
+      const aik = A[i][k];
+      if (aik === 0) continue;
+      for (let j = 0; j < p; j++) C[i][j] += aik * B[k][j];
+    }
+  }
+  return C;
+}
+
+export function gpuElementwise(A, B, op = 'add') {
+  if (glContextType === 'cpu-fallback' || !programs.elementwise) {
+    return cpuElementwise(A, B, op);
+  }
+
+  const n = A.length;
+  const width = 1024;
+
+  const aTex = _createTexture(A, width, 1);
+  const bTex = _createTexture(B, width, 1);
+
+  const cTex = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, cTex);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+
+  const fbo = gl.createFramebuffer();
+  gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, cTex, 0);
+
+  gl.viewport(0, 0, width, 1);
+
+  const program = programs.elementwise;
+  gl.useProgram(program);
+
+  const opMap = { add: 0, sub: 1, mul: 2, div: 3 };
+
+  gl.uniform1i(gl.getUniformLocation(program, 'u_A'), 0);
+  gl.uniform1i(gl.getUniformLocation(program, 'u_B'), 1);
+  gl.uniform1i(gl.getUniformLocation(program, 'u_n'), n);
+  gl.uniform1i(gl.getUniformLocation(program, 'u_width'), width);
+  gl.uniform1i(gl.getUniformLocation(program, 'u_op'), opMap[op] || 0);
+
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, aTex);
+  gl.activeTexture(gl.TEXTURE1);
+  gl.bindTexture(gl.TEXTURE_2D, bTex);
+
+  const quad = _createQuad();
+  const aPos = gl.getAttribLocation(program, 'a_position');
+  gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+  gl.enableVertexAttribArray(aPos);
+  gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+  gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+  const useFloat = !!gl.getExtension('OES_texture_float');
+  const result = _readPixels(width, 1, useFloat).slice(0, n);
+
+  gl.deleteTexture(aTex);
+  gl.deleteTexture(bTex);
+  gl.deleteTexture(cTex);
+  gl.deleteFramebuffer(fbo);
+  gl.deleteBuffer(quad);
+
+  return result;
+}
+
+function cpuElementwise(A, B, op) {
+  const result = [];
+  const n = Math.min(A.length, B.length);
+  for (let i = 0; i < n; i++) {
+    if (op === 'add') result.push(A[i] + B[i]);
+    else if (op === 'sub') result.push(A[i] - B[i]);
+    else if (op === 'mul') result.push(A[i] * B[i]);
+    else if (op === 'div') result.push(A[i] / (B[i] + 1e-10));
+  }
+  return result;
+}
+
+export function gpuActivation(X, type = 'relu') {
+  if (glContextType === 'cpu-fallback' || !programs.activation) {
+    return cpuActivation(X, type);
+  }
+  return cpuActivation(X, type);
+}
+
+function cpuActivation(X, type) {
+  if (type === 'relu') return X.map(v => Math.max(0, v));
+  if (type === 'sigmoid') return X.map(v => 1 / (1 + Math.exp(-v)));
+  if (type === 'tanh') return X.map(v => Math.tanh(v));
+  return X;
+}
+
+export function gpuStatus() {
+  return {
+    context: glContextType,
+    available: glContextType !== 'cpu-fallback',
+    hasFloat: gl ? !!gl.getExtension('OES_texture_float') : false,
+    programs: Object.keys(programs).filter(k => programs[k] !== null),
+  };
+}
+
+export function gpuBenchmark(n = 128) {
+  const A = Array.from({ length: n }, () => Array.from({ length: n }, () => Math.random()));
+  const B = Array.from({ length: n }, () => Array.from({ length: n }, () => Math.random()));
+
+  const t0 = performance.now();
+  cpuMatmul(A, B);
+  const cpuTime = performance.now() - t0;
+
+  let gpuTime = null;
+  if (glContextType !== 'cpu-fallback') {
+    const t1 = performance.now();
+    gpuMatmul(A, B);
+    gpuTime = performance.now() - t1;
+  }
+
+  return {
+    size: n,
+    cpuTimeMs: cpuTime.toFixed(2),
+    gpuTimeMs: gpuTime ? gpuTime.toFixed(2) : 'n/a',
+    speedup: gpuTime ? (cpuTime / gpuTime).toFixed(2) : 'n/a',
+    context: glContextType,
+  };
+}
+
+export const GPU_INFO = {
+  name: 'WebGL GPU Acceleration',
+  description: 'GPU matmul и elementwise операции через WebGL',
+  fallback: 'cpu',
+};
+
+
+
+========================================================================
+
+FILE: apis/predict/webgl/shaders.mjs
+SIZE: 4827 bytes
+SHA1: f27f8571c3310a2d
+========================================================================
+
+// apis/predict/webgl/shaders.mjs
+// GLSL шейдеры для GPU-вычислений
+// Работают в браузере (WebGL) и в Node.js (headless-gl)
+
+export const VERTEX_SHADER = `
+attribute vec2 a_position;
+varying vec2 v_texCoord;
+
+void main() {
+    v_texCoord = (a_position + 1.0) * 0.5;
+    gl_Position = vec4(a_position, 0.0, 1.0);
+}
+`;
+
+export const MATMUL_FRAGMENT = `
+precision highp float;
+
+varying vec2 v_texCoord;
+
+uniform sampler2D u_A;
+uniform sampler2D u_B;
+uniform int u_n;
+uniform int u_m;
+uniform int u_p;
+uniform int u_aWidth;
+uniform int u_bWidth;
+
+void main() {
+    int i = int(v_texCoord.y * float(u_n));
+    int j = int(v_texCoord.x * float(u_p));
+
+    if (i >= u_n || j >= u_p) {
+        gl_FragColor = vec4(0.0);
+        return;
+    }
+
+    float sum = 0.0;
+
+    for (int k = 0; k < 1024; k++) {
+        if (k >= u_m) break;
+
+        vec2 aUV = vec2((float(k) + 0.5) / float(u_aWidth), (float(i) + 0.5) / float(u_n));
+        float aVal = texture2D(u_A, aUV).r;
+
+        vec2 bUV = vec2((float(j) + 0.5) / float(u_bWidth), (float(k) + 0.5) / float(u_m));
+        float bVal = texture2D(u_B, bUV).r;
+
+        sum += aVal * bVal;
+    }
+
+    gl_FragColor = vec4(sum, 0.0, 0.0, 1.0);
+}
+`;
+
+export const ELEMENTWISE_FRAGMENT = `
+precision highp float;
+
+varying vec2 v_texCoord;
+
+uniform sampler2D u_A;
+uniform sampler2D u_B;
+uniform int u_op;
+uniform int u_n;
+uniform int u_width;
+
+void main() {
+    int idx = int(v_texCoord.y * float(u_n));
+    if (idx >= u_n) {
+        gl_FragColor = vec4(0.0);
+        return;
+    }
+
+    vec2 uv = vec2((float(idx) + 0.5) / float(u_width), 0.5);
+    float a = texture2D(u_A, uv).r;
+    float b = texture2D(u_B, uv).r;
+
+    float result;
+    if (u_op == 0) result = a + b;
+    else if (u_op == 1) result = a - b;
+    else if (u_op == 2) result = a * b;
+    else if (u_op == 3) result = a / (b + 1e-10);
+    else result = 0.0;
+
+    gl_FragColor = vec4(result, 0.0, 0.0, 1.0);
+}
+`;
+
+export const ACTIVATION_FRAGMENT = `
+precision highp float;
+
+varying vec2 v_texCoord;
+
+uniform sampler2D u_X;
+uniform int u_n;
+uniform int u_width;
+uniform int u_act;
+
+void main() {
+    int idx = int(v_texCoord.y * float(u_n));
+    if (idx >= u_n) {
+        gl_FragColor = vec4(0.0);
+        return;
+    }
+
+    vec2 uv = vec2((float(idx) + 0.5) / float(u_width), 0.5);
+    float x = texture2D(u_X, uv).r;
+
+    float result;
+    if (u_act == 0) result = max(0.0, x);
+    else if (u_act == 1) result = 1.0 / (1.0 + exp(-x));
+    else if (u_act == 2) result = tanh(x);
+    else result = x;
+
+    gl_FragColor = vec4(result, 0.0, 0.0, 1.0);
+}
+`;
+
+export const SOFTMAX_FRAGMENT = `
+precision highp float;
+
+varying vec2 v_texCoord;
+
+uniform sampler2D u_X;
+uniform int u_n;
+uniform int u_width;
+uniform float u_max;
+uniform float u_sum;
+
+void main() {
+    int idx = int(v_texCoord.y * float(u_n));
+    if (idx >= u_n) {
+        gl_FragColor = vec4(0.0);
+        return;
+    }
+
+    vec2 uv = vec2((float(idx) + 0.5) / float(u_width), 0.5);
+    float x = texture2D(u_X, uv).r;
+
+    float result = exp(x - u_max) / u_sum;
+
+    gl_FragColor = vec4(result, 0.0, 0.0, 1.0);
+}
+`;
+
+export const AXPY_FRAGMENT = `
+precision highp float;
+
+varying vec2 v_texCoord;
+
+uniform sampler2D u_X;
+uniform int u_n;
+uniform int u_width;
+uniform float u_a;
+uniform float u_b;
+
+void main() {
+    int idx = int(v_texCoord.y * float(u_n));
+    if (idx >= u_n) {
+        gl_FragColor = vec4(0.0);
+        return;
+    }
+
+    vec2 uv = vec2((float(idx) + 0.5) / float(u_width), 0.5);
+    float x = texture2D(u_X, uv).r;
+
+    gl_FragColor = vec4(u_a * x + u_b, 0.0, 0.0, 1.0);
+}
+`;
+
+export const ADAM_FRAGMENT = `
+precision highp float;
+
+varying vec2 v_texCoord;
+
+uniform sampler2D u_theta;
+uniform sampler2D u_m;
+uniform sampler2D u_v;
+uniform sampler2D u_g;
+uniform int u_n;
+uniform int u_width;
+uniform float u_lr;
+uniform float u_beta1;
+uniform float u_beta2;
+uniform float u_eps;
+uniform float u_bc1;
+uniform float u_bc2;
+
+void main() {
+    int idx = int(v_texCoord.y * float(u_n));
+    if (idx >= u_n) {
+        gl_FragColor = vec4(0.0);
+        return;
+    }
+
+    vec2 uv = vec2((float(idx) + 0.5) / float(u_width), 0.5);
+
+    float theta = texture2D(u_theta, uv).r;
+    float m = texture2D(u_m, uv).r;
+    float v = texture2D(u_v, uv).r;
+    float g = texture2D(u_g, uv).r;
+
+    float mNew = u_beta1 * m + (1.0 - u_beta1) * g;
+    float vNew = u_beta2 * v + (1.0 - u_beta2) * g * g;
+
+    float mHat = mNew / u_bc1;
+    float vHat = vNew / u_bc2;
+
+    float thetaNew = theta - u_lr * mHat / (sqrt(vHat) + u_eps);
+
+    gl_FragColor = vec4(thetaNew, mNew, vNew, 0.0);
+}
+`;
+
+export const SHADER_SOURCES = {
+  vertex: VERTEX_SHADER,
+  matmul: MATMUL_FRAGMENT,
+  elementwise: ELEMENTWISE_FRAGMENT,
+  activation: ACTIVATION_FRAGMENT,
+  softmax: SOFTMAX_FRAGMENT,
+  axpy: AXPY_FRAGMENT,
+  adam: ADAM_FRAGMENT,
+};
+
+
+
+========================================================================
+
+FILE: apis/predict/webgl/example_gpu.mjs
+SIZE: 2136 bytes
+SHA1: 070938831ce36762
+========================================================================
+
+// apis/predict/webgl/example_gpu.mjs
+// Пример использования GPU-ускорения
+
+import { initGPU, gpuMatmul, gpuElementwise, gpuBenchmark, gpuStatus } from './gpu.mjs';
+
+async function main() {
+  console.log('════════════════════════════════════════════════');
+  console.log('  Crucix GPU Acceleration Demo');
+  console.log('════════════════════════════════════════════════');
+
+  const contextType = await initGPU();
+  console.log(`Context: ${contextType}`);
+  console.log('Status:', JSON.stringify(gpuStatus(), null, 2));
+
+  if (contextType === 'cpu-fallback') {
+    console.log('\n⚠ GPU недоступен. Установить headless-gl:');
+    console.log('  npm install gl');
+    console.log('\nДемонстрация CPU-операций:');
+  }
+
+  console.log('\n[1] Матричное умножение 64×64...');
+  const A = Array.from({ length: 64 }, () => Array.from({ length: 64 }, () => Math.random()));
+  const B = Array.from({ length: 64 }, () => Array.from({ length: 64 }, () => Math.random()));
+
+  const t0 = performance.now();
+  const C = gpuMatmul(A, B);
+  const t1 = performance.now();
+
+  console.log(`  Результат: ${C.length}×${C[0].length}`);
+  console.log(`  Время: ${(t1 - t0).toFixed(2)}ms`);
+  console.log(`  C[0][0] = ${C[0][0].toFixed(6)}`);
+
+  console.log('\n[2] Elementwise add...');
+  const x = Array.from({ length: 1000 }, () => Math.random());
+  const y = Array.from({ length: 1000 }, () => Math.random());
+  const z = gpuElementwise(x, y, 'add');
+  console.log(`  z[0] = ${z[0].toFixed(6)} (ожидается ${(x[0] + y[0]).toFixed(6)})`);
+
+  console.log('\n[3] Бенчмарк 128×128...');
+  const bench = gpuBenchmark(128);
+  console.log(JSON.stringify(bench, null, 2));
+}
+
+if (process.argv[1] && process.argv[1].endsWith('example_gpu.mjs')) {
+  main().catch(e => {
+    console.error('Ошибка:', e);
+    process.exit(1);
+  });
+}
+
+export { main };
+
+
+
+========================================================================
+
+FILE: apis/predict/workers/pool.mjs
+SIZE: 6438 bytes
+SHA1: ad00fc6c2696733c
+========================================================================
+
+// apis/predict/workers/pool.mjs
+// Пул Web Workers для параллельных вычислений
+//
+// Использует worker_threads из Node.js, чтобы задействовать все ядра.
+// Автоматически балансирует нагрузку между воркерами.
+
+import { Worker } from 'node:worker_threads';
+import { cpus } from 'node:os';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const N_CPUS = cpus().length;
+const DEFAULT_POOL_SIZE = Math.max(1, Math.min(N_CPUS - 1, 8));
+
+class WorkerPool {
+  constructor({ size = DEFAULT_POOL_SIZE, scriptPath = null } = {}) {
+    this.size = size;
+    this.scriptPath = scriptPath || join(__dirname, 'montecarlo_worker.mjs');
+    this.workers = [];
+    this.queue = [];
+    this.taskId = 0;
+    this.pendingTasks = new Map();
+
+    this._stats = {
+      tasksCompleted: 0,
+      tasksPending: 0,
+      totalTimeMs: 0,
+      startedAt: Date.now(),
+    };
+
+    this._initWorkers();
+  }
+
+  _initWorkers() {
+    for (let i = 0; i < this.size; i++) {
+      const worker = new Worker(this.scriptPath);
+      const workerInfo = {
+        worker,
+        busy: false,
+        currentTask: null,
+        id: i,
+        tasksDone: 0,
+      };
+
+      worker.on('message', (msg) => this._handleMessage(workerInfo, msg));
+      worker.on('error', (err) => this._handleError(workerInfo, err));
+      worker.on('exit', (code) => {
+        if (code !== 0) console.error(`[pool] Worker ${i} exited with code ${code}`);
+      });
+
+      this.workers.push(workerInfo);
+    }
+
+    console.log(`[pool] Инициализировано ${this.size} воркеров (доступно ядер: ${N_CPUS})`);
+  }
+
+  run(action, payload) {
+    return new Promise((resolve, reject) => {
+      const taskId = ++this.taskId;
+      this.pendingTasks.set(taskId, { resolve, reject, action });
+
+      const task = { taskId, action, payload };
+
+      const freeWorker = this.workers.find(w => !w.busy);
+      if (freeWorker) {
+        this._dispatch(freeWorker, task);
+      } else {
+        this.queue.push(task);
+        this._stats.tasksPending++;
+      }
+    });
+  }
+
+  _dispatch(workerInfo, task) {
+    workerInfo.busy = true;
+    workerInfo.currentTask = task.taskId;
+    const t0 = Date.now();
+    this.pendingTasks.get(task.taskId).startedAt = t0;
+    workerInfo.worker.postMessage(task);
+  }
+
+  _handleMessage(workerInfo, msg) {
+    const { taskId, result, error, durationMs } = msg;
+    const pending = this.pendingTasks.get(taskId);
+
+    workerInfo.busy = false;
+    workerInfo.currentTask = null;
+    workerInfo.tasksDone++;
+
+    if (pending) {
+      const duration = durationMs || (Date.now() - (pending.startedAt || Date.now()));
+      this._stats.tasksCompleted++;
+      this._stats.totalTimeMs += duration;
+
+      if (error) {
+        pending.reject(new Error(error));
+      } else {
+        pending.resolve({ result, durationMs: duration, workerId: workerInfo.id });
+      }
+      this.pendingTasks.delete(taskId);
+    }
+
+    if (this.queue.length > 0) {
+      const nextTask = this.queue.shift();
+      this._stats.tasksPending--;
+      this._dispatch(workerInfo, nextTask);
+    }
+  }
+
+  _handleError(workerInfo, err) {
+    const taskId = workerInfo.currentTask;
+    if (taskId && this.pendingTasks.has(taskId)) {
+      const pending = this.pendingTasks.get(taskId);
+      pending.reject(err);
+      this.pendingTasks.delete(taskId);
+    }
+    workerInfo.busy = false;
+    workerInfo.currentTask = null;
+  }
+
+  async runAll(tasks) {
+    return Promise.all(tasks.map(t => this.run(t.action, t.payload)));
+  }
+
+  async mapReduce(items, mapAction, reduceFn) {
+    const tasks = items.map(item => ({ action: mapAction, payload: item }));
+    const results = await this.runAll(tasks);
+    return results.map(r => r.result).reduce(reduceFn);
+  }
+
+  async monteCarloParallel(config, totalIterations = 10000) {
+    const nWorkers = this.size;
+    const iterationsPerWorker = Math.ceil(totalIterations / nWorkers);
+
+    const tasks = [];
+    for (let i = 0; i < nWorkers; i++) {
+      tasks.push({
+        action: 'montecarlo',
+        payload: { ...config, iterations: iterationsPerWorker },
+      });
+    }
+
+    const results = await this.runAll(tasks);
+
+    const mergedOutcomes = {};
+    let totalIters = 0;
+    const allTrajectories = [];
+
+    for (const { result } of results) {
+      for (const [outcome, count] of Object.entries(result.outcomes || {})) {
+        mergedOutcomes[outcome] = (mergedOutcomes[outcome] || 0) + count;
+      }
+      totalIters += result.iterations;
+      allTrajectories.push(...(result.sampleTrajectories || []).slice(0, 2));
+    }
+
+    const probabilities = {};
+    for (const [outcome, count] of Object.entries(mergedOutcomes)) {
+      probabilities[outcome] = count / totalIters;
+    }
+
+    return {
+      probabilities,
+      iterations: totalIters,
+      sampleTrajectories: allTrajectories.slice(0, 10),
+      workersUsed: nWorkers,
+    };
+  }
+
+  stats() {
+    return {
+      ...this._stats,
+      poolSize: this.size,
+      queueLength: this.queue.length,
+      pendingTasks: this.pendingTasks.size,
+      avgTaskTimeMs: this._stats.tasksCompleted > 0
+        ? (this._stats.totalTimeMs / this._stats.tasksCompleted).toFixed(2)
+        : 0,
+      uptimeSeconds: ((Date.now() - this._stats.startedAt) / 1000).toFixed(1),
+      workerStats: this.workers.map(w => ({
+        id: w.id,
+        busy: w.busy,
+        tasksDone: w.tasksDone,
+      })),
+    };
+  }
+
+  async terminate() {
+    await Promise.all(this.workers.map(w => w.worker.terminate()));
+    this.workers = [];
+  }
+}
+
+let _poolInstance = null;
+
+export function getWorkerPool(options = {}) {
+  if (!_poolInstance) {
+    _poolInstance = new WorkerPool(options);
+  }
+  return _poolInstance;
+}
+
+export function resetWorkerPool() {
+  if (_poolInstance) {
+    _poolInstance.terminate();
+    _poolInstance = null;
+  }
+}
+
+export { WorkerPool, N_CPUS, DEFAULT_POOL_SIZE };
+
+export async function parallelMonteCarlo(config, totalIterations = 10000) {
+  const pool = getWorkerPool();
+  return pool.monteCarloParallel(config, totalIterations);
+}
+
+export async function parallelMatrixMultiply(matrices) {
+  const pool = getWorkerPool();
+  return pool.runAll(
+    matrices.map(m => ({
+      action: 'matrix_multiply',
+      payload: { A: m.A, B: m.B },
+    }))
+  );
+}
+
+
+
+========================================================================
+
+FILE: apis/predict/workers/montecarlo_worker.mjs
+SIZE: 3311 bytes
+SHA1: 9fa642045b5ddec4
+========================================================================
+
+// apis/predict/workers/montecarlo_worker.mjs
+// Web Worker для параллельного Monte Carlo и матричных операций
+
+import { parentPort } from 'node:worker_threads';
+
+function gaussianRandom(mean = 0, std = 1) {
+  const u1 = Math.random();
+  const u2 = Math.random();
+  const z = Math.sqrt(-2 * Math.log(u1 + 1e-10)) * Math.cos(2 * Math.PI * u2);
+  return mean + z * std;
+}
+
+function triangularRandom(min, mode, max) {
+  const u = Math.random();
+  const fc = (mode - min) / (max - min);
+  if (u < fc) return min + Math.sqrt(u * (max - min) * (mode - min));
+  return max - Math.sqrt((1 - u) * (max - min) * (max - mode));
+}
+
+function runMonteCarlo({ initialState, variables, transition, iterations, horizon, outcome }) {
+  const outcomes = {};
+  const trajectories = [];
+  const finalStates = [];
+
+  for (let i = 0; i < iterations; i++) {
+    let state = { ...initialState };
+    const trajectory = [{ step: 0, ...state }];
+
+    for (let step = 1; step <= horizon; step++) {
+      const draws = {};
+      for (const v of variables) {
+        let params = v.params;
+        if (v.dependsOn) params = v.dependsOn(state, params);
+
+        switch (v.distribution) {
+          case 'normal':
+            draws[v.name] = gaussianRandom(params.mean, params.std);
+            break;
+          case 'triangular':
+            draws[v.name] = triangularRandom(params.min, params.mode, params.max);
+            break;
+          case 'uniform':
+            draws[v.name] = params.min + Math.random() * (params.max - params.min);
+            break;
+          case 'bernoulli':
+            draws[v.name] = Math.random() < params.p ? 1 : 0;
+            break;
+        }
+      }
+
+      state = transition(state, draws, step);
+      trajectory.push({ step, ...state });
+    }
+
+    const result = outcome(state);
+    outcomes[result] = (outcomes[result] || 0) + 1;
+    if (trajectories.length < 5) trajectories.push(trajectory);
+    if (finalStates.length < 100) finalStates.push(state);
+  }
+
+  return { outcomes, iterations, sampleTrajectories: trajectories, finalStates };
+}
+
+function matrixMultiply(A, B) {
+  const n = A.length, m = A[0].length, p = B[0].length;
+  const C = Array.from({ length: n }, () => new Array(p).fill(0));
+  for (let i = 0; i < n; i++) {
+    for (let k = 0; k < m; k++) {
+      const aik = A[i][k];
+      if (aik === 0) continue;
+      for (let j = 0; j < p; j++) C[i][j] += aik * B[k][j];
+    }
+  }
+  return C;
+}
+
+parentPort.on('message', (task) => {
+  const t0 = Date.now();
+
+  try {
+    let result;
+
+    switch (task.action) {
+      case 'montecarlo':
+        result = runMonteCarlo(task.payload);
+        break;
+
+      case 'matrix_multiply':
+        result = matrixMultiply(task.payload.A, task.payload.B);
+        break;
+
+      case 'ping':
+        result = { pong: true, workerTime: Date.now() };
+        break;
+
+      case 'batch_montecarlo':
+        result = task.payload.configs.map(c => runMonteCarlo(c));
+        break;
+
+      default:
+        throw new Error(`Unknown action: ${task.action}`);
+    }
+
+    parentPort.postMessage({
+      taskId: task.taskId,
+      result,
+      durationMs: Date.now() - t0,
+    });
+  } catch (e) {
+    parentPort.postMessage({
+      taskId: task.taskId,
+      error: e.message,
+      durationMs: Date.now() - t0,
+    });
+  }
+});
+
+
+
+========================================================================
+
+FILE: apis/predict/workers/crucix_worker.mjs
+SIZE: 3579 bytes
+SHA1: 866628c73511218c
+========================================================================
+
+// apis/predict/workers/crucix_worker.mjs
+// Worker для запуска тяжёлых Crucix-модулей параллельно
+// (AutoML, GNN, Diffusion, Transformer training)
+
+import { parentPort } from 'node:worker_threads';
+import { MLP } from '../models/neural.mjs';
+import { GradientBoosting } from '../models/gbm.mjs';
+import { RandomForest } from '../models/random_forest.mjs';
+
+function trainMLP({ X, y, layers, epochs, lr }) {
+  const model = new MLP({
+    layers,
+    activation: 'relu',
+    outputActivation: 'linear',
+  });
+
+  const result = model.fit(X, y, { epochs, batchSize: 16, lr });
+  return {
+    finalLoss: result.finalLoss,
+    history: result.history.slice(-10),
+    weights: model.W.map(Wl => Wl.map(r => Array.from(r))),
+    biases: model.b.map(b => Array.from(b)),
+  };
+}
+
+function trainGBM({ X, y, nEstimators, maxDepth, learningRate }) {
+  const model = new GradientBoosting({
+    nEstimators,
+    maxDepth,
+    learningRate,
+    objective: 'regression',
+  });
+  model.fit(X, y);
+  const preds = model.predict(X.slice(-5));
+  return { predictions: preds, featureImportance: model.featureImportance(X[0].length) };
+}
+
+function trainRF({ X, y, nEstimators, maxDepth }) {
+  const model = new RandomForest({ nEstimators, maxDepth });
+  model.fit(X, y);
+  const preds = model.predict(X.slice(-5));
+  return { predictions: preds, oobScore: model.oobScore };
+}
+
+function crossValidate({ X, y, folds, modelConfig }) {
+  const n = X.length;
+  const indices = Array.from({ length: n }, (_, i) => i);
+  for (let i = n - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
+
+  const foldSize = Math.floor(n / folds);
+  const scores = [];
+
+  for (let f = 0; f < folds; f++) {
+    const valStart = f * foldSize;
+    const valEnd = f === folds - 1 ? n : valStart + foldSize;
+    const valIdx = new Set(indices.slice(valStart, valEnd));
+    const trainIdx = indices.filter(i => !valIdx.has(i));
+
+    const XTrain = trainIdx.map(i => X[i]);
+    const yTrain = trainIdx.map(i => y[i]);
+    const XVal = Array.from(valIdx).map(i => X[i]);
+    const yVal = Array.from(valIdx).map(i => y[i]);
+
+    const model = new MLP({ layers: modelConfig.layers || [X[0].length, 32, 1] });
+    model.fit(XTrain, yTrain, { epochs: modelConfig.epochs || 30, lr: 0.01 });
+    const preds = model.predict(XVal).map(p => p[0]);
+
+    let mse = 0;
+    for (let i = 0; i < preds.length; i++) mse += (preds[i] - yVal[i]) ** 2;
+    scores.push(mse / preds.length);
+  }
+
+  return {
+    scores,
+    meanScore: scores.reduce((a, b) => a + b, 0) / scores.length,
+    stdScore: Math.sqrt(scores.reduce((s, v) => s + (v - scores.reduce((a, b) => a + b, 0) / scores.length) ** 2, 0) / scores.length),
+  };
+}
+
+parentPort.on('message', (task) => {
+  const t0 = Date.now();
+
+  try {
+    let result;
+
+    switch (task.action) {
+      case 'train_mlp': result = trainMLP(task.payload); break;
+      case 'train_gbm': result = trainGBM(task.payload); break;
+      case 'train_rf': result = trainRF(task.payload); break;
+      case 'cross_validate': result = crossValidate(task.payload); break;
+      case 'ping': result = { pong: true, workerTime: Date.now() }; break;
+      default: throw new Error(`Unknown action: ${task.action}`);
+    }
+
+    parentPort.postMessage({
+      taskId: task.taskId,
+      result,
+      durationMs: Date.now() - t0,
+    });
+  } catch (e) {
+    parentPort.postMessage({
+      taskId: task.taskId,
+      error: e.message,
+      stack: e.stack,
+      durationMs: Date.now() - t0,
+    });
+  }
+});
+
+
+
+========================================================================
+
+FILE: apis/predict/workers/example_parallel.mjs
+SIZE: 4197 bytes
+SHA1: e190aeee93c7312a
+========================================================================
+
+// apis/predict/workers/example_parallel.mjs
+// Пример: параллельный Monte Carlo + параллельное обучение моделей
+
+import { getWorkerPool } from './pool.mjs';
+
+async function main() {
+  console.log('════════════════════════════════════════════════');
+  console.log('  Пример: параллельные вычисления');
+  console.log('════════════════════════════════════════════════');
+
+  const pool = getWorkerPool();
+
+  console.log('\n[1] Monte Carlo с 4 воркерами...');
+
+  const mcConfig = {
+    initialState: { vix: 22, conflictLevel: 5, hySpread: 3.2 },
+    variables: [
+      { name: 'vixShock', distribution: 'normal', params: { mean: 0, std: 2 } },
+      { name: 'conflictShock', distribution: 'triangular', params: { min: -2, mode: 0, max: 5 } },
+      { name: 'spreadShock', distribution: 'normal', params: { mean: 0, std: 0.3 } },
+    ],
+    transition: (state, draws) => ({
+      vix: Math.max(10, state.vix + draws.vixShock),
+      conflictLevel: Math.max(0, state.conflictLevel + draws.conflictShock),
+      hySpread: Math.max(0.5, state.hySpread + draws.spreadShock),
+    }),
+    horizon: 5,
+    outcome: (state) => {
+      if (state.vix > 35 || state.hySpread > 6) return 'crisis';
+      if (state.vix > 25 || state.conflictLevel > 10) return 'escalation';
+      if (state.vix < 18 && state.hySpread < 3) return 'stable';
+      return 'unstable';
+    },
+  };
+
+  const t0 = Date.now();
+  const mc = await pool.monteCarloParallel(mcConfig, 100000);
+  const seqTime = Date.now() - t0;
+
+  console.log('  Вероятности:', JSON.stringify(mc.probabilities, null, 4));
+  console.log(`  Итераций: ${mc.iterations}`);
+  console.log(`  Время (параллельно): ${seqTime}ms`);
+  console.log(`  Воркеров: ${mc.workersUsed}`);
+
+  console.log('\n[2] Параллельное обучение 3 моделей...');
+
+  const X = Array.from({ length: 200 }, () =>
+    Array.from({ length: 10 }, () => Math.random() * 2 - 1)
+  );
+  const y = X.map(row => [row[0] * 2 + row[1] - row[2] * 0.5 + Math.random() * 0.1]);
+
+  const t1 = Date.now();
+  const [mlpResult, gbmResult, rfResult] = await Promise.all([
+    pool.run('train_mlp', { X, y, layers: [10, 32, 16, 1], epochs: 50, lr: 0.01 }),
+    pool.run('train_gbm', { X, y, nEstimators: 100, maxDepth: 4, learningRate: 0.1 }),
+    pool.run('train_rf', { X, y, nEstimators: 100, maxDepth: 8 }),
+  ]);
+  const parallelTime = Date.now() - t1;
+
+  console.log(`  MLP: loss=${mlpResult.result.finalLoss.toFixed(6)} (${mlpResult.durationMs}ms)`);
+  console.log(`  GBM: preds=${gbmResult.result.predictions.map(p => p.toFixed(2)).join(', ')} (${gbmResult.durationMs}ms)`);
+  console.log(`  RF:  preds=${rfResult.result.predictions.map(p => p.toFixed(2)).join(', ')} (${rfResult.durationMs}ms)`);
+  console.log(`  Общее время (параллельно): ${parallelTime}ms`);
+
+  console.log('\n[3] Параллельная кросс-валидация (5-fold × 3 модели)...');
+
+  const t2 = Date.now();
+  const cvResults = await pool.runAll([
+    { action: 'cross_validate', payload: { X, y, folds: 5, modelConfig: { layers: [10, 32, 1], epochs: 20 } } },
+    { action: 'cross_validate', payload: { X, y, folds: 5, modelConfig: { layers: [10, 64, 32, 1], epochs: 20 } } },
+    { action: 'cross_validate', payload: { X, y, folds: 5, modelConfig: { layers: [10, 128, 64, 1], epochs: 20 } } },
+  ]);
+  const cvTime = Date.now() - t2;
+
+  cvResults.forEach((r, i) => {
+    console.log(`  Модель ${i + 1}: mean=${r.result.meanScore.toFixed(6)}, std=${r.result.stdScore.toFixed(6)} (${r.durationMs}ms)`);
+  });
+  console.log(`  Общее время: ${cvTime}ms`);
+
+  console.log('\n[Статистика пула]');
+  console.log(JSON.stringify(pool.stats(), null, 2));
+
+  await pool.terminate();
+  console.log('\n✓ Все воркеры завершены');
+}
+
+main().catch(e => {
+  console.error('Ошибка:', e);
+  process.exit(1);
+});
+
+
+
+========================================================================
+КОНЕЦ ТОМА part-2-models
+ФАЙЛОВ НАЙДЕНО: 31
+ФАЙЛОВ НЕ НАЙДЕНО: 0
+ФАЙЛОВ ОБРЕЗАНО: 0
+РАЗМЕР ТОМА: 364.1 KB
+========================================================================

@@ -1,0 +1,116 @@
+#!/usr/bin/env node
+// ============================================================
+// COLLECT-GPS-JAMMING.MJS — Сборщик данных о GPS-глушении
+// ============================================================
+// Анализирует аномалии в авиационных данных для выявления глушения
+// Источник: OpenSky Network (симуляция)
+// Сохраняет в: data/basket/gps-jamming.json
+// ============================================================
+
+import { promises as fs } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const BASKET_DIR = join(__dirname, '..', 'data', 'basket');
+const BASKET_PATH = join(BASKET_DIR, 'gps-jamming.json');
+
+// ============================================================
+// 1. ГЕНЕРАЦИЯ ДАННЫХ (симуляция)
+// ============================================================
+
+function generateJammingData() {
+    const now = new Date();
+    const regions = [
+        { name: 'Восточная Европа', lat: 50, lon: 30, intensity: 'critical' },
+        { name: 'Черное море', lat: 43, lon: 35, intensity: 'critical' },
+        { name: 'Ближний Восток', lat: 30, lon: 45, intensity: 'high' },
+        { name: 'Южно-Китайское море', lat: 15, lon: 115, intensity: 'high' },
+        { name: 'Балтийское море', lat: 58, lon: 20, intensity: 'medium' },
+        { name: 'Средиземное море', lat: 35, lon: 25, intensity: 'medium' },
+        { name: 'Персидский залив', lat: 27, lon: 52, intensity: 'high' },
+        { name: 'Курильские острова', lat: 46, lon: 152, intensity: 'medium' },
+        { name: 'Каспийское море', lat: 40, lon: 51, intensity: 'low' },
+        { name: 'Тихий океан', lat: 20, lon: 170, intensity: 'low' }
+    ];
+
+    const intensityMap = {
+        critical: { color: '#ef4444', label: 'КРИТИЧЕСКИЙ', radius: 200, description: 'Полное глушение GPS' },
+        high: { color: '#f59e0b', label: 'ВЫСОКИЙ', radius: 150, description: 'Частичное глушение GPS' },
+        medium: { color: '#fbbf24', label: 'СРЕДНИЙ', radius: 100, description: 'Периодическое глушение' },
+        low: { color: '#4ade80', label: 'НОРМАЛЬНЫЙ', radius: 50, description: 'Незначительные помехи' }
+    };
+
+    const jamming = [];
+
+    for (const region of regions) {
+        const info = intensityMap[region.intensity];
+        const startTime = new Date(now.getTime() - Math.random() * 86400000);
+        const endTime = new Date(startTime.getTime() + (Math.random() * 48 + 12) * 3600000);
+        const aircraftAffected = Math.floor(Math.random() * 20) + 5;
+
+        jamming.push({
+            id: `JAM-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+            region: region.name,
+            lat: region.lat + (Math.random() - 0.5) * 3,
+            lon: region.lon + (Math.random() - 0.5) * 3,
+            intensity: region.intensity,
+            color: info.color,
+            label: info.label,
+            radius: Math.round(info.radius + Math.random() * 50),
+            description: info.description,
+            aircraftAffected: aircraftAffected,
+            start: startTime.toISOString(),
+            end: endTime.toISOString(),
+            source: 'OpenSky (анализ)',
+            updated: now.toISOString()
+        });
+    }
+
+    return jamming;
+}
+
+// ============================================================
+// 2. СОХРАНЕНИЕ В КОРЗИНУ
+// ============================================================
+
+async function saveToBasket(data) {
+    try {
+        await fs.mkdir(BASKET_DIR, { recursive: true });
+        await fs.writeFile(BASKET_PATH, JSON.stringify(data, null, 2), 'utf8');
+        console.log(`[GPS-JAMMING] ✅ Сохранено ${data.length} зон глушения`);
+        console.log(`[GPS-JAMMING] 📁 Файл: ${BASKET_PATH}`);
+        return true;
+    } catch (error) {
+        console.error(`[GPS-JAMMING] ❌ Ошибка сохранения:`, error.message);
+        return false;
+    }
+}
+
+// ============================================================
+// 3. ОСНОВНАЯ ФУНКЦИЯ
+// ============================================================
+
+async function collectGPSJamming() {
+    console.log('[GPS-JAMMING] 📡 Начинаем сбор данных...');
+    try {
+        const data = generateJammingData();
+        console.log(`[GPS-JAMMING] 📊 Сгенерировано ${data.length} зон`);
+        await saveToBasket(data);
+        console.log('[GPS-JAMMING] ✅ Сбор завершен');
+        return data;
+    } catch (error) {
+        console.error('[GPS-JAMMING] ❌ Ошибка:', error.message);
+        return null;
+    }
+}
+
+// ============================================================
+// 4. ЗАПУСК
+// ============================================================
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+    collectGPSJamming().catch(console.error);
+}
+
+export { collectGPSJamming, generateJammingData };

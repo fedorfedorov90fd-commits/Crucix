@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Мониторинг сборщиков — Crucix</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet.heat.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet.heat.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a1a;
+            color: #e0e0e0;
+            font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+        }
+
+        /* ===== ТОПБАР ===== */
+        .topbar {
+            position: fixed; top: 0; left: 0; right: 0;
+            height: 60px;
+            background: rgba(10,10,20,0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid rgba(91,192,248,0.25);
+            box-shadow: 0 2px 20px rgba(91,192,248,0.08);
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        .topbar::after {
+            content: "";
+            position: absolute;
+            bottom: -2px; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #5bc0f8, transparent);
+            opacity: 0.6;
+        }
+        .topbar-left { display: flex; align-items: center; gap: 12px; }
+        .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; }
+        .topbar-right { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+        .topbar-btn {
+            height: 28px; padding: 0 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 4px;
+            background: rgba(255,255,255,0.03);
+            color: #888;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .topbar-btn:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+        .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
+        .btn-home:hover { background: rgba(91,192,248,0.15); }
+        .btn-copy { color: #5bc0f8; border-color: rgba(91,192,248,0.15); background: rgba(91,192,248,0.06); }
+        .btn-copy.copied { background: rgba(76,175,80,0.2); border-color: #4caf50; color: #4caf50; }
+        .btn-cleanup { color: #fbbf24; border-color: rgba(251,191,36,0.2); background: rgba(251,191,36,0.06); }
+        .btn-cleanup:hover { background: rgba(251,191,36,0.15); }
+        .btn-restart { color: #4ade80; border-color: rgba(74,222,128,0.2); background: rgba(74,222,128,0.06); }
+        .btn-restart:hover { background: rgba(74,222,128,0.15); }
+        .btn-rss { color: #f26522; border-color: rgba(242,101,34,0.2); background: rgba(242,101,34,0.06); }
+        .btn-rss:hover { background: rgba(242,101,34,0.15); }
+        .btn-help { color: #a78bfa; border-color: rgba(167,139,250,0.2); background: rgba(167,139,250,0.06); }
+        .btn-help:hover { background: rgba(167,139,250,0.15); }
+
+        .lang-switch {
+            display: flex; gap: 2px; padding: 2px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .lang-btn {
+            padding: 2px 8px; border: none; background: transparent;
+            color: #666; font-size: 11px; font-weight: 500;
+            cursor: pointer; border-radius: 3px; transition: all 0.2s;
+        }
+        .lang-btn:hover { color: #888; background: rgba(255,255,255,0.05); }
+        .lang-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.1); }
+
+        .copy-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .copy-dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 32px;
+            background: #0a0a1a;
+            min-width: 280px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+            z-index: 200;
+            padding: 6px 0;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .copy-dropdown-content.show { display: block; }
+        .copy-dropdown-content button {
+            display: block; width: 100%; padding: 8px 16px;
+            background: transparent; border: none;
+            color: #c8d0d8; font-size: 12px; text-align: left;
+            cursor: pointer; transition: all 0.15s;
+            font-family: inherit;
+        }
+        .copy-dropdown-content button:hover { background: rgba(91,192,248,0.08); color: #5bc0f8; }
+        .copy-dropdown-content .divider { height: 1px; background: rgba(255,255,255,0.05); margin: 4px 12px; }
+        .copy-dropdown-content .label { padding: 4px 16px; font-size: 10px; color: #4a5a6a; text-transform: uppercase; letter-spacing: 0.5px; }
+        .copy-dropdown-content .info-text { padding: 4px 16px; font-size: 11px; color: #6a7a8a; }
+        .copy-dropdown-content .size-hint { padding: 4px 16px; font-size: 11px; color: #4ade80; font-weight: 600; }
+
+        /* ===== НАВИГАЦИЯ ===== */
+        .nav-dashboards {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            height: 38px;
+            background: rgba(6,10,18,0.92);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            z-index: 99;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 4px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .nav-dashboards::-webkit-scrollbar { display: none; }
+
+        .nav-btn {
+            padding: 4px 10px;
+            border: none;
+            border-radius: 4px;
+            background: transparent;
+            color: #666;
+            font-size: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            font-family: inherit;
+            border: 1px solid transparent;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .nav-btn:hover { color: #c8d0d8; background: rgba(255,255,255,0.04); }
+        .nav-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.08); border-color: rgba(91,192,248,0.15); }
+        .nav-btn .icon { margin-right: 3px; }
+
+        /* ===== ОСНОВНОЙ КОНТЕНТ ===== */
+        .main-content {
+            padding-top: 114px;
+            max-width: 1440px;
+            margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
+            padding-bottom: 40px;
+            min-height: calc(100vh - 114px);
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #e8f0f8;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .page-title .badge {
+            font-size: 12px; font-weight: 400;
+            background: rgba(251,191,36,0.15); color: #fbbf24;
+            padding: 2px 12px; border-radius: 20px;
+            border: 1px solid rgba(251,191,36,0.2);
+        }
+        .page-subtitle {
+            color: #8899aa;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+        .page-subtitle a {
+            color: #5bc0f8;
+            text-decoration: none;
+        }
+        .page-subtitle a:hover { text-decoration: underline; }
+
+        /* ===== СТАТИСТИКА ===== */
+        .summary {
+            display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px;
+        }
+        .summary-item {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .summary-item.ok { background: rgba(74,222,128,0.15); color: #4ade80; border: 1px solid rgba(74,222,128,0.2); }
+        .summary-item.demo { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.2); }
+        .summary-item.warning { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.2); }
+        .summary-item.error { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
+        .summary-item.inactive { background: rgba(74,90,106,0.15); color: #8899aa; border: 1px solid rgba(74,90,106,0.2); }
+        .summary-item.unknown { background: rgba(74,90,106,0.15); color: #8899aa; border: 1px solid rgba(74,90,106,0.2); }
+        .summary-item.total { background: rgba(91,192,248,0.1); color: #5bc0f8; border: 1px solid rgba(91,192,248,0.15); }
+
+        .btn-refresh {
+            padding: 8px 20px;
+            border: 1px solid rgba(91,192,248,0.2);
+            border-radius: 6px;
+            background: rgba(91,192,248,0.06);
+            color: #5bc0f8;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .btn-refresh:hover { background: rgba(91,192,248,0.12); }
+
+        /* ===== ТАБЛИЦА ===== */
+        .table-wrap {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        th {
+            text-align: left;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.03);
+            color: #8899aa;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        td {
+            padding: 10px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            cursor: pointer;
+        }
+        tr:hover td { background: rgba(255,255,255,0.02); }
+
+        /* Цветовая индикация строк */
+        .row-ok { border-left: 3px solid #4ade80; }
+        .row-demo { border-left: 3px solid #f59e0b; }
+        .row-warning { border-left: 3px solid #f59e0b; }
+        .row-error { border-left: 3px solid #ef4444; }
+        .row-inactive { border-left: 3px solid #4a5a6a; opacity: 0.6; }
+        .row-unknown { border-left: 3px solid #4a5a6a; }
+
+        /* ВЫДЕЛЕНИЕ СТРОК */
+        tr.selected {
+            background: rgba(91,192,248,0.15) !important;
+            border-left: 3px solid #5bc0f8 !important;
+        }
+        tr.selected td {
+            background: rgba(91,192,248,0.05) !important;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .status-badge.ok { background: rgba(74,222,128,0.15); color: #4ade80; }
+        .status-badge.demo { background: rgba(245,158,11,0.15); color: #f59e0b; }
+        .status-badge.warning { background: rgba(245,158,11,0.15); color: #f59e0b; }
+        .status-badge.error { background: rgba(239,68,68,0.15); color: #ef4444; }
+        .status-badge.inactive { background: rgba(74,90,106,0.15); color: #8899aa; }
+        .status-badge.unknown { background: rgba(74,90,106,0.15); color: #8899aa; }
+
+        .mode-badge {
+            display: inline-block;
+            padding: 1px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 500;
+        }
+        .mode-badge.real { background: rgba(74,222,128,0.1); color: #4ade80; border: 1px solid rgba(74,222,128,0.15); }
+        .mode-badge.demo { background: rgba(245,158,11,0.1); color: #f59e0b; border: 1px solid rgba(245,158,11,0.15); }
+        .mode-badge.inactive { background: rgba(74,90,106,0.1); color: #8899aa; border: 1px solid rgba(74,90,106,0.15); }
+
+        .mono { font-family: monospace; font-size: 12px; color: #5bc0f8; }
+        .timestamp { color: #4a5a6a; font-size: 12px; }
+        .error-count { color: #ef4444; font-weight: 600; }
+        .age-warning { color: #f59e0b; }
+        .age-ok { color: #4ade80; }
+        .age-critical { color: #ef4444; }
+
+        /* ===== КНОПКА ЛОГА ===== */
+        .log-btn {
+            background: rgba(91,192,248,0.1);
+            border: 1px solid rgba(91,192,248,0.2);
+            border-radius: 4px;
+            color: #5bc0f8;
+            cursor: pointer;
+            padding: 2px 8px;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+        .log-btn:hover { background: rgba(91,192,248,0.2); }
+
+        /* ===== МОДАЛЬНОЕ ОКНО ДЛЯ ЛОГА ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.show { display: flex; }
+        .modal-content {
+            background: #0a0a1a;
+            border: 1px solid rgba(91,192,248,0.2);
+            border-radius: 10px;
+            padding: 20px;
+            max-width: 800px;
+            max-height: 80vh;
+            width: 90%;
+            overflow-y: auto;
+        }
+        .modal-content .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .modal-content .header h3 { color: #5bc0f8; font-family: monospace; font-size: 16px; }
+        .modal-content .close {
+            cursor: pointer;
+            color: #888;
+            font-size: 28px;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+        .modal-content .close:hover { color: #fff; }
+        .modal-content .log-text {
+            font-family: monospace;
+            font-size: 12px;
+            color: #aaa;
+            white-space: pre-wrap;
+            background: rgba(0,0,0,0.3);
+            padding: 12px;
+            border-radius: 4px;
+            max-height: 60vh;
+            overflow-y: auto;
+            line-height: 1.6;
+        }
+        .modal-content .log-error {
+            color: #ef4444;
+            font-weight: 600;
+        }
+        .modal-content .log-warn {
+            color: #f59e0b;
+        }
+        .modal-content .log-info {
+            color: #5bc0f8;
+        }
+
+        /* ===== МОДАЛЬНОЕ ОКНО ДЛЯ НАСТРОЕК ===== */
+        .modal-settings .modal-content { max-width: 500px; }
+        .modal-settings input[type="number"] {
+            width: 100%;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 4px;
+            color: #e0e0e0;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        .modal-settings input[type="checkbox"] {
+            accent-color: #5bc0f8;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        .modal-settings .setting-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+        }
+        .modal-settings .setting-label {
+            color: #8899aa;
+            font-size: 13px;
+        }
+        .modal-settings .setting-value {
+            color: #5bc0f8;
+            font-weight: 600;
+        }
+
+        /* ===== КОНТЕКСТНОЕ МЕНЮ ===== */
+        .context-menu {
+            display: none;
+            position: fixed;
+            background: #0a0a1a;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+            z-index: 300;
+            padding: 6px 0;
+            min-width: 200px;
+        }
+        .context-menu.show { display: block; }
+        .context-menu button {
+            display: block; width: 100%; padding: 8px 16px;
+            background: transparent; border: none;
+            color: #c8d0d8; font-size: 12px; text-align: left;
+            cursor: pointer; transition: all 0.15s;
+            font-family: inherit;
+        }
+        .context-menu button:hover { background: rgba(91,192,248,0.08); color: #5bc0f8; }
+        .context-menu .divider { height: 1px; background: rgba(255,255,255,0.05); margin: 4px 12px; }
+
+        /* ===== ОТЧЁТ ПО ОШИБКАМ ===== */
+        .error-report {
+            background: rgba(239,68,68,0.05);
+            border: 1px solid rgba(239,68,68,0.15);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+            display: none;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            color: #e0e0e0;
+            line-height: 1.5;
+        }
+        .error-report.show { display: block; }
+        .error-report .error-header {
+            color: #ef4444;
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        /* ===== УВЕДОМЛЕНИЯ ===== */
+        .notification {
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            color: #ffffff;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            z-index: 100001;
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: notif-fade 3s forwards;
+        }
+        @keyframes notif-fade {
+            0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+            10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            80% { opacity: 1; }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        }
+
+        /* ===== АДАПТИВНОСТЬ ===== */
+        @media (max-width: 768px) {
+            .topbar { padding: 0 12px; height: 52px; }
+            .topbar-brand { font-size: 12px; }
+            .topbar-btn { font-size: 10px; padding: 0 8px; height: 24px; }
+            .nav-dashboards { top: 52px; height: 34px; padding: 0 10px; gap: 2px; }
+            .nav-btn { font-size: 9px; padding: 2px 6px; }
+            .main-content { padding-top: 102px; padding-left: 12px; padding-right: 12px; }
+            .page-title { font-size: 20px; }
+            .summary { gap: 8px; }
+            .table-wrap { overflow-x: auto; }
+            td, th { padding: 8px 10px; font-size: 12px; }
+            .modal-content { padding: 14px; max-width: 95%; }
+            .copy-dropdown-content { min-width: 240px; right: -60px; }
+        }
+        @media (max-width: 480px) {
+            .topbar { padding: 0 8px; height: 46px; }
+            .topbar-brand { font-size: 10px; letter-spacing: 1px; }
+            .topbar-btn { font-size: 9px; padding: 0 6px; height: 20px; }
+            .lang-btn { font-size: 9px; padding: 1px 5px; }
+            .nav-dashboards { top: 46px; height: 30px; padding: 0 6px; gap: 2px; }
+            .nav-btn { font-size: 8px; padding: 2px 5px; }
+            .main-content { padding-top: 92px; padding-left: 8px; padding-right: 8px; }
+            .page-title { font-size: 16px; }
+            .copy-dropdown-content { min-width: 200px; right: -80px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== ТОПБАР ===== -->
+<header class="topbar">
+    <div class="topbar-left"><span class="topbar-brand">📊 МОНИТОРИНГ СБОРЩИКОВ</span></div>
+    <div class="topbar-right">
+        <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+
+        <!-- КНОПКА КОПИРОВАТЬ -->
+        <div class="copy-dropdown">
+            <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ ▼</button>
+            <div class="copy-dropdown-content" id="copyDropdown">
+                <div class="label">📄 ДЛЯ ЧАТА С AI</div>
+                <button data-format="txt">📄 Полный дамп (TXT, ~150 КБ)</button>
+                <button data-format="markdown">📝 Markdown (для документации)</button>
+                <button data-format="json">📊 JSON (для локального AI)</button>
+                <div class="divider"></div>
+                <div class="label">📊 ДЛЯ АНАЛИТИКИ</div>
+                <button data-format="csv">📋 CSV (для Excel)</button>
+                <button data-format="errors">❌ Отчёт по ошибкам</button>
+                <div class="divider"></div>
+                <div class="label">🔧 ДЛЯ РАЗРАБОТЧИКОВ</div>
+                <button data-format="dom">🌳 DOM-дерево</button>
+                <button data-format="storage">💾 localStorage</button>
+                <button data-format="api">📡 API-запросы</button>
+                <div class="divider"></div>
+                <button data-format="all">📦 ВСЁ В ОДНОМ (без лимита)</button>
+                <div class="divider"></div>
+                <div class="info-text" id="copyHint">💡 Выделите строки для детального дампа</div>
+                <div class="size-hint" id="sizeHint">📏 Ожидаемый размер: —</div>
+            </div>
+        </div>
+
+        <!-- КНОПКА ОЧИСТКИ -->
+        <div class="copy-dropdown">
+            <button class="topbar-btn btn-cleanup" id="cleanup-btn">🧹 ОЧИСТКА ▼</button>
+            <div class="copy-dropdown-content" id="cleanupDropdown">
+                <div class="label">🗑️ УПРАВЛЕНИЕ ЛОГАМИ</div>
+                <button data-action="clear-logs">🗑️ Очистить все логи</button>
+                <button data-action="clear-history">📜 Очистить историю</button>
+                <button data-action="auto-cleanup">♻️ Автоочистка (сейчас)</button>
+                <div class="divider"></div>
+                <button data-action="settings">⚙️ Настройка лимита</button>
+                <div class="divider"></div>
+                <div class="info-text" id="logSizeDisplay">📦 Размер логов: загрузка...</div>
+                <div class="info-text" id="lastCleanupDisplay">🕐 Последняя очистка: никогда</div>
+                <div class="info-text" id="logsCountDisplay">📄 Файлов логов: 0</div>
+            </div>
+        </div>
+
+        <!-- КНОПКА ПЕРЕЗАПУСКА -->
+        <div class="copy-dropdown">
+            <button class="topbar-btn btn-restart" id="restart-btn">🔄 ПЕРЕЗАПУСК ▼</button>
+            <div class="copy-dropdown-content" id="restartDropdown">
+                <div class="label">🔄 УПРАВЛЕНИЕ ЗАПУСКОМ</div>
+                <button data-action="restart-selected">🔄 Перезапустить выделенные</button>
+                <button data-action="restart-warning">🟠 Перезапустить все (жёлтые)</button>
+                <button data-action="restart-error">🔴 Перезапустить все (красные)</button>
+                <div class="divider"></div>
+                <button data-action="restart-all">📦 Перезапустить все</button>
+            </div>
+        </div>
+
+        <button class="topbar-btn btn-rss" onclick="window.location.href='/registry'">📡 Реестр</button>
+        <button class="topbar-btn btn-help" onclick="openHelp()">❓ HELP</button>
+        <div class="lang-switch">
+            <button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
+            <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+        </div>
+    </div>
+</header>
+
+<!-- ===== НАВИГАЦИЯ ===== -->
+<nav class="nav-dashboards" id="navDashboards">
+    <button class="nav-btn" onclick="window.location.href='/dashboard-5in1'"><span class="icon">🎯</span>Центр аналитики</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-economic'"><span class="icon">📊</span>Экономика</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-financial'"><span class="icon">💰</span>Финансы</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-military'"><span class="icon">🛡️</span>Военный</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-geopolitical'"><span class="icon">🌍</span>Геополитика</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-ecological'"><span class="icon">🌿</span>Экология</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-cyber'"><span class="icon">🔒</span>Кибер</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-space'"><span class="icon">🚀</span>Космос</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-news'"><span class="icon">📰</span>Новости</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-ai'"><span class="icon">🧠</span>AI</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-scientific'"><span class="icon">🔬</span>Наука</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-esg'"><span class="icon">🌱</span>ESG</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-threats'"><span class="icon">⚡</span>Угрозы</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-health'"><span class="icon">🏥</span>Здоровье</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-energy'"><span class="icon">⛽</span>Энергетика</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-transport'"><span class="icon">🚛</span>Транспорт</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-regions'"><span class="icon">🌏</span>Регионы</button>
+</nav>
+
+<!-- ===== ОСНОВНОЙ КОНТЕНТ ===== -->
+<main class="main-content">
+    <div class="page-title">
+        📊 Мониторинг сборщиков
+        <span class="badge" id="statusBadge">🟢 ONLINE</span>
+    </div>
+    <div class="page-subtitle">
+        Автоматическая диагностика состояния сборщиков данных
+        <span style="margin-left:12px;font-size:12px;color:#4a5a6a;">
+            <a href="/registry" target="_blank">📋 Полный реестр</a>
+        </span>
+        <span style="margin-left:12px;font-size:11px;color:#4a5a6a;">
+            💡 Выделите строки кликом (Ctrl+Клик — множественный выбор)
+        </span>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+        <div class="summary" id="summary">
+            <span class="summary-item total">📦 Загрузка...</span>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <span class="timestamp" id="lastUpdate">—</span>
+            <button class="btn-refresh" onclick="loadStatus()">🔄 Обновить</button>
+            <button class="btn-refresh" onclick="scanCollectors()">🔍 Пересканировать</button>
+            <button class="btn-refresh" onclick="showErrors()">❌ Показать ошибки</button>
+        </div>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Сборщик</th>
+                    <th>Статус</th>
+                    <th>Режим</th>
+                    <th>Записей</th>
+                    <th>Ожидается</th>
+                    <th>Возраст</th>
+                    <th>Размер</th>
+                    <th>Ошибок</th>
+                    <th>Последний запуск</th>
+                    <th>Лог</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <tr><td colspan="10" style="text-align:center;color:#4a5a6a;padding:40px;">Загрузка данных...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="error-report" id="errorReport"></div>
+</main>
+
+<!-- ===== КОНТЕКСТНОЕ МЕНЮ ===== -->
+<div class="context-menu" id="contextMenu">
+    <button onclick="restartSelected()">🔄 Перезапустить выделенные</button>
+    <div class="divider"></div>
+    <button onclick="restartByStatus('warning')">🟠 Перезапустить все (жёлтые)</button>
+    <button onclick="restartByStatus('error')">🔴 Перезапустить все (красные)</button>
+    <div class="divider"></div>
+    <button onclick="restartAll()">📦 Перезапустить все</button>
+</div>
+
+<!-- ===== МОДАЛЬНОЕ ОКНО ДЛЯ ЛОГА ===== -->
+<div class="modal" id="logModal">
+    <div class="modal-content">
+        <div class="header">
+            <h3 id="logTitle">📋 Лог сборщика</h3>
+            <span class="close" onclick="closeLog()">×</span>
+        </div>
+        <div class="log-text" id="logContent">Загрузка...</div>
+    </div>
+</div>
+
+<!-- ===== МОДАЛЬНОЕ ОКНО ДЛЯ НАСТРОЕК ОЧИСТКИ ===== -->
+<div class="modal modal-settings" id="settingsModal">
+    <div class="modal-content">
+        <div class="header">
+            <h3>⚙️ Настройки очистки логов</h3>
+            <span class="close" onclick="closeSettings()">×</span>
+        </div>
+        <div style="margin-top:16px;">
+            <div class="setting-row">
+                <span class="setting-label">📦 Максимальный размер логов:</span>
+                <input type="number" id="maxSizeInput" value="100" min="1" max="10000" style="width:80px;" />
+                <span class="setting-label">МБ</span>
+            </div>
+            <div class="setting-row">
+                <span class="setting-label">Текущий размер:</span>
+                <span class="setting-value" id="currentSizeDisplay">0 МБ</span>
+            </div>
+            <div class="setting-row">
+                <input type="checkbox" id="autoCleanupCheck" checked />
+                <span class="setting-label">Включить автоматическую очистку</span>
+            </div>
+            <div style="margin-top:16px;display:flex;gap:8px;">
+                <button onclick="saveSettings()" class="btn-refresh" style="flex:1;">💾 Сохранить</button>
+                <button onclick="closeSettings()" class="btn-refresh" style="flex:1;border-color:rgba(239,68,68,0.2);color:#ef4444;">Отмена</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ============================================================
+// 1. ПЕРЕКЛЮЧАТЕЛЬ ЯЗЫКА
+// ============================================================
+let currentLang = localStorage.getItem('crucix-lang') || 'ru';
+
+function switchLang(lang) {
+    currentLang = lang;
+    localStorage.setItem('crucix-lang', lang);
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+    });
+    showNotification('🌐 Язык: ' + lang.toUpperCase());
+}
+
+document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === currentLang);
+});
+
+// ============================================================
+// 2. УВЕДОМЛЕНИЯ И HELP
+// ============================================================
+function showNotification(msg) {
+    document.querySelectorAll('.notification').forEach(el => el.remove());
+    const el = document.createElement('div');
+    el.className = 'notification';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 3000);
+}
+
+function openHelp() {
+    const pageId = window.location.pathname.replace(/^\/+/, "").replace(/\.html$/, "") || "collector-monitor";
+    const lang = currentLang || "ru";
+    const helpFile = `/data/help/${lang}/${pageId}.txt`;
+    fetch(helpFile)
+        .then(res => res.text())
+        .then(text => alert(text || "Справка не найдена"))
+        .catch(() => alert("📊 Мониторинг сборщиков\n\nПоказывает состояние всех сборщиков данных Crucix.\nНажмите 📋 для просмотра лога сборщика.\nНажмите ❌ Показать ошибки для просмотра отчёта.\nНажмите 🧹 Очистка для управления логами.\nНажмите 🔄 Перезапуск для управления запуском сборщиков."));
+}
+
+// ============================================================
+// 3. КНОПКА КОПИРОВАТЬ (РАСШИРЕННАЯ ВЕРСИЯ)
+// ============================================================
+document.getElementById('copy-btn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    document.getElementById('copyDropdown').classList.toggle('show');
+    updateCopyHint();
+});
+
+document.addEventListener('click', function() {
+    document.getElementById('copyDropdown').classList.remove('show');
+});
+
+// Обновление подсказки о размере
+function updateCopyHint() {
+    const selected = document.querySelectorAll('#tableBody tr.selected');
+    const hint = document.getElementById('copyHint');
+    const sizeHint = document.getElementById('sizeHint');
+
+    if (selected.length === 0) {
+        hint.textContent = '💡 Общий дамп (все сборщики, ~150 КБ)';
+        sizeHint.textContent = '📏 Ожидаемый размер: ~100-150 КБ';
+    } else if (selected.length === 1) {
+        hint.textContent = `💡 Детальный дамп (${selected.length} сборщик, полный лог)`;
+        sizeHint.textContent = '📏 Ожидаемый размер: ~150 КБ';
+    } else if (selected.length <= 5) {
+        hint.textContent = `💡 Детальный дамп (${selected.length} сборщика, по 100 строк лога)`;
+        sizeHint.textContent = '📏 Ожидаемый размер: ~150 КБ';
+    } else {
+        hint.textContent = `💡 Сжатый дамп (${selected.length} сборщиков, только таблица)`;
+        sizeHint.textContent = '📏 Ожидаемый размер: ~150 КБ';
+    }
+}
+
+async function copyPageData(format) {
+    const timestamp = new Date().toLocaleString();
+    const pageTitle = document.querySelector('.page-title')?.textContent || document.title || 'Без заголовка';
+    const url = window.location.href;
+    const windowSize = window.innerWidth + '×' + window.innerHeight;
+
+    let report = '=== CRUCIX — МОНИТОРИНГ СБОРЩИКОВ ===\n';
+    report += 'Дата: ' + timestamp + '\n';
+    report += 'URL: ' + url + '\n';
+    report += 'Размер окна: ' + windowSize + '\n';
+    report += 'Страница: ' + pageTitle + '\n\n';
+
+    // --- 1. СТАТИСТИКА ---
+    const summaryItems = document.querySelectorAll('.summary-item');
+    if (summaryItems.length > 0) {
+        report += '--- СТАТИСТИКА ---\n';
+        summaryItems.forEach(el => { report += el.textContent + '\n'; });
+        report += '\n';
+    }
+
+    // --- 2. ДОПОЛНИТЕЛЬНАЯ АНАЛИТИКА ---
+    if (typeof statusData !== 'undefined' && statusData.length > 0) {
+        const total = statusData.length;
+        const withData = statusData.filter(d => d.count > 0).length;
+        const noData = statusData.filter(d => d.count === 0).length;
+        const recent = statusData.filter(d => d.ageHours < 24).length;
+        const weekOld = statusData.filter(d => d.ageHours >= 168).length;
+        const avgAge = Math.round(statusData.reduce((s, d) => s + d.ageHours, 0) / total * 10) / 10;
+
+        report += '--- ДОПОЛНИТЕЛЬНАЯ СТАТИСТИКА ---\n';
+        report += `  Сборщиков с данными: ${withData} (${Math.round(withData/total*100)}%)\n`;
+        report += `  Сборщиков без данных: ${noData} (${Math.round(noData/total*100)}%)\n`;
+        report += `  Обновлены за 24 часа: ${recent} (${Math.round(recent/total*100)}%)\n`;
+        report += `  Старше 7 дней: ${weekOld} (${Math.round(weekOld/total*100)}%)\n`;
+        report += `  Средний возраст данных: ${avgAge} ч\n`;
+        report += '\n';
+
+        // --- 3. ПРОБЛЕМНЫЕ СБОРЩИКИ (>24ч) ---
+        const stale = statusData.filter(d => d.ageHours >= 24 && d.count > 0);
+        if (stale.length > 0) {
+            report += '--- СБОРЩИКИ С УСТАРЕВШИМИ ДАННЫМИ (>24ч) ---\n';
+            stale.sort((a, b) => b.ageHours - a.ageHours);
+            stale.slice(0, 20).forEach(d => {
+                report += `  ${d.name} — ${Math.round(d.ageHours)} ч, ${d.count} записей\n`;
+            });
+            if (stale.length > 20) report += `  ... и ещё ${stale.length - 20}\n`;
+            report += '\n';
+        }
+
+        // --- 4. ТОП-10 ПО ЗАПИСЯМ ---
+        const byCount = [...statusData].sort((a, b) => b.count - a.count);
+        report += '--- ТОП-10 ПО КОЛИЧЕСТВУ ЗАПИСЕЙ ---\n';
+        byCount.slice(0, 10).forEach((d, i) => {
+            report += `  ${i+1}. ${d.name} — ${d.count} записей\n`;
+        });
+        report += '\n';
+
+        // --- 5. ТОП-10 ПО РАЗМЕРУ ---
+        const bySize = [...statusData].sort((a, b) => b.size - a.size);
+        report += '--- ТОП-10 ПО РАЗМЕРУ ФАЙЛА ---\n';
+        bySize.slice(0, 10).forEach((d, i) => {
+            report += `  ${i+1}. ${d.name} — ${(d.size/1024).toFixed(1)} КБ\n`;
+        });
+        report += '\n';
+    }
+
+    // --- 6. ИНФОРМАЦИЯ О ЛОГАХ ---
+    try {
+        const settingsRes = await fetch('/api/collector-monitor/settings');
+        const settingsData = await settingsRes.json();
+        if (settingsData.success) {
+            const sizeRes = await fetch('/api/collector-monitor/cleanup/auto?maxMB=' + settingsData.data.maxLogSizeMB);
+            const sizeData = await sizeRes.json();
+            if (sizeData.success) {
+                report += '--- ИНФОРМАЦИЯ О ЛОГАХ ---\n';
+                report += `  Размер логов: ${sizeData.data.sizeMB.toFixed(1)} МБ\n`;
+                report += `  Лимит: ${sizeData.data.maxSizeMB} МБ\n`;
+                report += `  Автоочистка: ${settingsData.data.autoCleanup ? 'включена' : 'выключена'}\n`;
+                if (settingsData.data.lastCleanup) {
+                    report += `  Последняя очистка: ${new Date(settingsData.data.lastCleanup).toLocaleString()}\n`;
+                }
+                report += '\n';
+            }
+        }
+    } catch (e) {
+        // Не критично
+    }
+
+    // --- 7. ОСНОВНАЯ ТАБЛИЦА ---
+    const rows = document.querySelectorAll('#tableBody tr');
+    if (rows.length > 0 && rows[0].cells.length > 1) {
+        report += '--- СБОРЩИКИ ---\n';
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            if (cells.length > 0) {
+                const name = cells[0]?.textContent || '';
+                const status = cells[1]?.textContent || '';
+                const mode = cells[2]?.textContent || '';
+                const count = cells[3]?.textContent || '';
+                const age = cells[5]?.textContent || '';
+                report += `${name} | ${status} | ${mode} | ${count} записей | ${age}\n`;
+            }
+        });
+        report += '\n';
+    }
+
+    // --- 8. ДЕТАЛЬНЫЙ АНАЛИЗ ВЫДЕЛЕННЫХ (если есть) ---
+    const selected = document.querySelectorAll('#tableBody tr.selected');
+    if (selected.length > 0 && selected.length <= 5) {
+        report += '--- ДЕТАЛЬНЫЙ АНАЛИЗ ВЫДЕЛЕННЫХ СБОРЩИКОВ ---\n';
+        for (const row of selected) {
+            const name = row.dataset.name;
+            if (!name) continue;
+            const d = statusData.find(s => s.name === name);
+            if (!d) continue;
+            report += `\n📁 ${d.name}\n`;
+            report += `  Статус: ${d.status}\n`;
+            report += `  Режим: ${d.mode}\n`;
+            report += `  Записей: ${d.count} (ожидается ${d.expected || 50})\n`;
+            report += `  Возраст: ${d.ageHours} ч\n`;
+            report += `  Ошибок в логе: ${d.errorCount}\n`;
+            report += `  Размер файла: ${(d.size/1024).toFixed(1)} КБ\n`;
+            report += `  Последний запуск: ${d.lastRun ? new Date(d.lastRun).toLocaleString() : '—'}\n`;
+
+            // Лог для одного сборщика — полный, для 2-5 — сокращённый
+            const lines = selected.length === 1 ? 200 : 50;
+            try {
+                const logRes = await fetch(`/api/collector/logs/${d.name}?lines=${lines}`);
+                const logData = await logRes.json();
+                if (logData.success && logData.log) {
+                    report += `  📋 ЛОГ (последние ${lines} строк):\n`;
+                    report += '  ' + '─'.repeat(40) + '\n';
+                    const logLines = logData.log.split('\n');
+                    logLines.forEach(line => {
+                        report += '  ' + line + '\n';
+                    });
+                    report += '  ' + '─'.repeat(40) + '\n';
+                }
+            } catch (e) {
+                report += '  ❌ Не удалось загрузить лог\n';
+            }
+        }
+        report += '\n';
+    }
+
+    // --- 9. ЗАВЕРШЕНИЕ ---
+    report += '--- CRUCIX OSINT TERMINAL ---\n';
+    report += '🌐 ' + window.location.origin;
+
+    // Ограничение размера до 150 КБ (кроме формата "all")
+    if (format !== 'all') {
+        const maxBytes = 150 * 1024;
+        if (report.length > maxBytes) {
+            report = report.slice(0, maxBytes - 200) + '\n\n... (дамп обрезан до 150 КБ)';
+        }
+    }
+
+    // Копирование
+    try {
+        await navigator.clipboard.writeText(report);
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = '✅ ' + format.toUpperCase();
+        btn.classList.add('copied');
+        setTimeout(() => {
+            btn.textContent = '📋 КОПИРОВАТЬ ▼';
+            btn.classList.remove('copied');
+        }, 3000);
+        showNotification(`✅ Скопировано ${Math.round(report.length/1024)} КБ (${format.toUpperCase()})`);
+    } catch (err) {
+        const textarea = document.createElement('textarea');
+        textarea.value = report;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        showNotification(`✅ Скопировано ${Math.round(report.length/1024)} КБ (${format.toUpperCase()})`);
+    }
+}
+
+document.querySelectorAll('#copyDropdown button[data-format]').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        document.getElementById('copyDropdown').classList.remove('show');
+        copyPageData(this.dataset.format);
+    });
+});
+
+// ============================================================
+// 4. ЛОГИ (МОДАЛЬНОЕ ОКНО)
+// ============================================================
+function showLog(name) {
+    const modal = document.getElementById('logModal');
+    const title = document.getElementById('logTitle');
+    const content = document.getElementById('logContent');
+
+    title.textContent = '📋 Лог: ' + name;
+    content.textContent = 'Загрузка...';
+    content.className = 'log-text';
+    modal.classList.add('show');
+
+    fetch('/api/collector/logs/' + name + '?lines=200')
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && data.log) {
+                content.textContent = data.log;
+            } else {
+                content.textContent = '❌ Лог не найден или пуст\n\n' + (data.error || '');
+                content.classList.add('log-error');
+            }
+        })
+        .catch(() => {
+            content.textContent = '❌ Ошибка загрузки лога. Проверьте, что сервер запущен и API доступен.';
+            content.classList.add('log-error');
+        });
+}
+
+function closeLog() {
+    document.getElementById('logModal').classList.remove('show');
+}
+
+document.getElementById('logModal').addEventListener('click', function(e) {
+    if (e.target === this) closeLog();
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeLog();
+    if (e.key === 'Escape') closeSettings();
+});
+
+// ============================================================
+// 5. ОСНОВНАЯ ЛОГИКА
+// ============================================================
+let statusData = [];
+let selectedCollectors = new Set();
+
+function getAgeText(hours) {
+    if (hours < 1) return '<span class="age-ok">менее часа</span>';
+    if (hours < 24) return `<span class="age-warning">${hours} ч</span>`;
+    return `<span class="age-critical">${Math.round(hours/24)} д</span>`;
+}
+
+function getStatusBadge(status) {
+    const labels = {
+        ok: '✅ Норма',
+        demo: '🟠 Демо',
+        warning: '⚠️ Предупреждение',
+        error: '❌ Ошибка',
+        inactive: '⚪ Неактивен',
+        unknown: '❓ Неизвестно'
+    };
+    return `<span class="status-badge ${status}">${labels[status] || status}</span>`;
+}
+
+function getModeBadge(mode) {
+    const labels = {
+        real: '🟢 Реальный',
+        demo: '🟠 Демо',
+        inactive: '⚪ Неактивен'
+    };
+    return `<span class="mode-badge ${mode}">${labels[mode] || mode}</span>`;
+}
+
+function getRowClass(status) {
+    const mapping = {
+        'ok': 'row-ok',
+        'demo': 'row-demo',
+        'warning': 'row-warning',
+        'error': 'row-error',
+        'inactive': 'row-inactive',
+        'unknown': 'row-unknown'
+    };
+    return mapping[status] || 'row-unknown';
+}
+
+function renderSummary(data) {
+    const container = document.getElementById('summary');
+    if (!data || data.length === 0) {
+        container.innerHTML = '<span class="summary-item total">📦 Нет данных</span>';
+        return;
+    }
+    const total = data.length;
+    const ok = data.filter(d => d.status === 'ok').length;
+    const demo = data.filter(d => d.status === 'demo').length;
+    const warning = data.filter(d => d.status === 'warning').length;
+    const error = data.filter(d => d.status === 'error').length;
+    const inactive = data.filter(d => d.status === 'inactive').length;
+    const unknown = data.filter(d => d.status === 'unknown').length;
+
+    container.innerHTML = `
+        <span class="summary-item total">📦 Всего: ${total}</span>
+        <span class="summary-item ok">✅ Норма: ${ok}</span>
+        <span class="summary-item demo">🟠 Демо: ${demo}</span>
+        <span class="summary-item warning">⚠️ Предупреждения: ${warning}</span>
+        <span class="summary-item error">❌ Ошибки: ${error}</span>
+        <span class="summary-item inactive">⚪ Неактивны: ${inactive}</span>
+        ${unknown > 0 ? `<span class="summary-item unknown">❓ Неизвестно: ${unknown}</span>` : ''}
+    `;
+}
+
+function renderTable(data) {
+    const tbody = document.getElementById('tableBody');
+    if (!data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#4a5a6a;padding:40px;">Нет данных</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = data.map(d => `
+        <tr class="${getRowClass(d.status)}" data-name="${d.name}">
+            <td><span class="mono">${d.name}</span></td>
+            <td>${getStatusBadge(d.status)}</td>
+            <td>${getModeBadge(d.mode)}</td>
+            <td><strong>${d.count}</strong> ${d.count < (d.expected || 50) * 0.5 ? '⚠️' : ''}</td>
+            <td>${d.expected || 50}</td>
+            <td>${getAgeText(d.ageHours)}</td>
+            <td>${(d.size / 1024).toFixed(1)} КБ</td>
+            <td>${d.errorCount > 0 ? `<span class="error-count">${d.errorCount}</span>` : '—'}</td>
+            <td class="timestamp">${d.lastRun ? new Date(d.lastRun).toLocaleString('ru-RU') : '—'}</td>
+            <td><button class="log-btn" onclick="event.stopPropagation(); showLog('${d.name}')">📋</button></td>
+        </tr>
+    `).join('');
+}
+
+// ============================================================
+// 6. ВЫДЕЛЕНИЕ СТРОК
+// ============================================================
+
+document.addEventListener('click', function(e) {
+    const row = e.target.closest('tr');
+    if (!row || !row.closest('#tableBody')) return;
+    if (e.target.closest('.log-btn')) return;
+
+    if (e.ctrlKey || e.metaKey) {
+        row.classList.toggle('selected');
+        const name = row.dataset.name;
+        if (name) {
+            if (row.classList.contains('selected')) {
+                selectedCollectors.add(name);
+            } else {
+                selectedCollectors.delete(name);
+            }
+        }
+    } else if (e.shiftKey) {
+        const rows = document.querySelectorAll('#tableBody tr');
+        const firstSelected = document.querySelector('#tableBody tr.selected');
+        if (firstSelected) {
+            const start = Array.from(rows).indexOf(firstSelected);
+            const end = Array.from(rows).indexOf(row);
+            const [from, to] = start < end ? [start, end] : [end, start];
+            document.querySelectorAll('#tableBody tr.selected').forEach(r => {
+                r.classList.remove('selected');
+                selectedCollectors.delete(r.dataset.name);
+            });
+            for (let i = from; i <= to; i++) {
+                rows[i].classList.add('selected');
+                const name = rows[i].dataset.name;
+                if (name) selectedCollectors.add(name);
+            }
+        }
+    } else {
+        document.querySelectorAll('#tableBody tr.selected').forEach(r => {
+            r.classList.remove('selected');
+        });
+        selectedCollectors.clear();
+        row.classList.add('selected');
+        const name = row.dataset.name;
+        if (name) selectedCollectors.add(name);
+    }
+    updateCopyHint();
+});
+
+// ============================================================
+// 7. КОНТЕКСТНОЕ МЕНЮ
+// ============================================================
+
+document.addEventListener('contextmenu', function(e) {
+    const row = e.target.closest('tr');
+    if (!row || !row.closest('#tableBody')) return;
+    if (e.target.closest('.log-btn')) return;
+
+    e.preventDefault();
+
+    if (!row.classList.contains('selected')) {
+        document.querySelectorAll('#tableBody tr.selected').forEach(r => {
+            r.classList.remove('selected');
+            selectedCollectors.delete(r.dataset.name);
+        });
+        row.classList.add('selected');
+        const name = row.dataset.name;
+        if (name) selectedCollectors.add(name);
+    }
+
+    const menu = document.getElementById('contextMenu');
+    menu.style.left = Math.min(e.clientX, window.innerWidth - 200) + 'px';
+    menu.style.top = Math.min(e.clientY, window.innerHeight - 200) + 'px';
+    menu.classList.add('show');
+});
+
+document.addEventListener('click', function() {
+    document.getElementById('contextMenu').classList.remove('show');
+});
+
+// ============================================================
+// 8. ОЧИСТКА ЛОГОВ И УПРАВЛЕНИЕ
+// ============================================================
+
+document.getElementById('cleanup-btn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    document.getElementById('cleanupDropdown').classList.toggle('show');
+    updateCleanupInfo();
+});
+
+document.addEventListener('click', function() {
+    document.getElementById('cleanupDropdown').classList.remove('show');
+});
+
+async function updateCleanupInfo() {
+    try {
+        const res = await fetch('/api/collector-monitor/settings');
+        const json = await res.json();
+        if (json.success) {
+            const settings = json.data;
+            const sizeRes = await fetch('/api/collector-monitor/cleanup/auto?maxMB=' + settings.maxLogSizeMB);
+            const sizeJson = await sizeRes.json();
+            if (sizeJson.success) {
+                const sizeMB = sizeJson.data.sizeMB || 0;
+                document.getElementById('logSizeDisplay').textContent =
+                    `📦 Размер логов: ${sizeMB.toFixed(1)} МБ (лимит: ${settings.maxLogSizeMB} МБ)`;
+                document.getElementById('logsCountDisplay').textContent =
+                    `📄 Файлов логов: ${sizeJson.data.fileCount || 0}`;
+            }
+            if (settings.lastCleanup) {
+                document.getElementById('lastCleanupDisplay').textContent =
+                    `🕐 Последняя очистка: ${new Date(settings.lastCleanup).toLocaleString('ru-RU')}`;
+            }
+        }
+    } catch (e) {
+        console.error('Ошибка получения информации:', e);
+    }
+}
+
+document.querySelectorAll('#cleanupDropdown button[data-action]').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        document.getElementById('cleanupDropdown').classList.remove('show');
+        const action = this.dataset.action;
+        switch(action) {
+            case 'clear-logs': confirmClearLogs(); break;
+            case 'clear-history': confirmClearHistory(); break;
+            case 'auto-cleanup': runAutoCleanup(); break;
+            case 'settings': openSettings(); break;
+        }
+    });
+});
+
+function confirmClearLogs() {
+    if (confirm('🗑️ Удалить все логи из папки logs/?\nЭто действие необратимо!')) {
+        showNotification('⏳ Удаление логов...');
+        fetch('/api/collector-monitor/cleanup/logs', { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(`✅ Удалено ${data.data.count} файлов логов`);
+                    updateCleanupInfo();
+                    loadStatus();
+                } else {
+                    showNotification('❌ Ошибка очистки: ' + data.error);
+                }
+            })
+            .catch(() => showNotification('❌ Ошибка соединения с сервером'));
+    }
+}
+
+function confirmClearHistory() {
+    if (confirm('📜 Удалить историю статусов сборщиков?\nЭто действие необратимо!')) {
+        showNotification('⏳ Удаление истории...');
+        fetch('/api/collector-monitor/cleanup/history', { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('✅ История удалена');
+                    updateCleanupInfo();
+                } else {
+                    showNotification('❌ Ошибка: ' + data.error);
+                }
+            })
+            .catch(() => showNotification('❌ Ошибка соединения с сервером'));
+    }
+}
+
+async function runAutoCleanup() {
+    try {
+        showNotification('🔄 Запуск автоочистки...');
+        const res = await fetch('/api/collector-monitor/cleanup/auto');
+        const data = await res.json();
+        if (data.success) {
+            if (data.data.cleaned) {
+                showNotification(`✅ Очищено ${data.data.deletedCount} файлов. Размер: ${data.data.currentSizeMB} МБ`);
+            } else {
+                showNotification(`✅ Логи в норме: ${data.data.sizeMB.toFixed(1)} МБ (лимит ${data.data.maxSizeMB} МБ)`);
+            }
+            updateCleanupInfo();
+        } else {
+            showNotification('❌ Ошибка: ' + data.error);
+        }
+    } catch (e) {
+        showNotification('❌ Ошибка: ' + e.message);
+    }
+}
+
+async function openSettings() {
+    const modal = document.getElementById('settingsModal');
+    modal.classList.add('show');
+    try {
+        const res = await fetch('/api/collector-monitor/settings');
+        const json = await res.json();
+        if (json.success) {
+            document.getElementById('maxSizeInput').value = json.data.maxLogSizeMB || 100;
+            document.getElementById('autoCleanupCheck').checked = json.data.autoCleanup !== false;
+        }
+        const sizeRes = await fetch('/api/collector-monitor/cleanup/auto?maxMB=99999');
+        const sizeJson = await sizeRes.json();
+        if (sizeJson.success) {
+            document.getElementById('currentSizeDisplay').textContent =
+                `${sizeJson.data.sizeMB.toFixed(1)} МБ`;
+        }
+    } catch (e) {
+        console.error('Ошибка загрузки настроек:', e);
+    }
+}
+
+function closeSettings() {
+    document.getElementById('settingsModal').classList.remove('show');
+}
+
+async function saveSettings() {
+    const maxSize = parseInt(document.getElementById('maxSizeInput').value, 10);
+    const autoCleanup = document.getElementById('autoCleanupCheck').checked;
+    if (isNaN(maxSize) || maxSize < 1) {
+        showNotification('❌ Введите корректный размер (от 1 МБ)');
+        return;
+    }
+    try {
+        const res = await fetch('/api/collector-monitor/settings/set', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ maxLogSizeMB: maxSize, autoCleanup })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showNotification('✅ Настройки сохранены');
+            closeSettings();
+            updateCleanupInfo();
+        } else {
+            showNotification('❌ Ошибка: ' + data.error);
+        }
+    } catch (e) {
+        showNotification('❌ Ошибка: ' + e.message);
+    }
+}
+
+document.getElementById('settingsModal').addEventListener('click', function(e) {
+    if (e.target === this) closeSettings();
+});
+
+// ============================================================
+// 9. ПЕРЕЗАПУСК СБОРЩИКОВ
+// ============================================================
+
+document.getElementById('restart-btn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    document.getElementById('restartDropdown').classList.toggle('show');
+});
+
+document.addEventListener('click', function() {
+    document.getElementById('restartDropdown').classList.remove('show');
+});
+
+document.querySelectorAll('#restartDropdown button[data-action]').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        document.getElementById('restartDropdown').classList.remove('show');
+        const action = this.dataset.action;
+        switch(action) {
+            case 'restart-selected': restartSelected(); break;
+            case 'restart-warning': restartByStatus('warning'); break;
+            case 'restart-error': restartByStatus('error'); break;
+            case 'restart-all': restartAll(); break;
+        }
+    });
+});
+
+async function restartSelected() {
+    const names = Array.from(selectedCollectors);
+    if (names.length === 0) {
+        showNotification('⚠️ Нет выделенных сборщиков');
+        return;
+    }
+    showNotification(`🔄 Перезапуск ${names.length} сборщиков...`);
+    try {
+        const res = await fetch('/api/collector/restart/batch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ names })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showNotification(`✅ Перезапущено: ${data.data.success}, ошибок: ${data.data.failed}`);
+            document.querySelectorAll('#tableBody tr.selected').forEach(r => r.classList.remove('selected'));
+            selectedCollectors.clear();
+            setTimeout(loadStatus, 3000);
+        } else {
+            showNotification('❌ Ошибка: ' + data.error);
+        }
+    } catch (e) {
+        showNotification('❌ Ошибка: ' + e.message);
+    }
+}
+
+async function restartByStatus(status) {
+    const label = { warning: 'жёлтые', error: 'красные' }[status] || status;
+    if (!confirm(`🔄 Перезапустить все ${label} сборщики?`)) return;
+    showNotification(`🔄 Перезапуск всех ${label}...`);
+    try {
+        const res = await fetch(`/api/collector/restart/status?status=${status}`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            showNotification(`✅ Перезапущено: ${data.data.success}, ошибок: ${data.data.failed}`);
+            setTimeout(loadStatus, 3000);
+        } else {
+            showNotification('❌ Ошибка: ' + data.error);
+        }
+    } catch (e) {
+        showNotification('❌ Ошибка: ' + e.message);
+    }
+}
+
+async function restartAll() {
+    if (!confirm('🔄 Перезапустить ВСЕ сборщики?')) return;
+    showNotification('🔄 Перезапуск всех сборщиков...');
+    try {
+        const res = await fetch('/api/collector/restart/all', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            showNotification(`✅ Перезапущено: ${data.data.success}, ошибок: ${data.data.failed}`);
+            setTimeout(loadStatus, 3000);
+        } else {
+            showNotification('❌ Ошибка: ' + data.error);
+        }
+    } catch (e) {
+        showNotification('❌ Ошибка: ' + e.message);
+    }
+}
+
+// ============================================================
+// 10. ОСНОВНЫЕ ФУНКЦИИ
+// ============================================================
+
+async function loadStatus() {
+    try {
+        document.getElementById('lastUpdate').textContent = '⏳ загрузка...';
+        const res = await fetch('/api/collector-monitor/status');
+        const json = await res.json();
+        if (json.success && json.data) {
+            statusData = json.data;
+            renderSummary(statusData);
+            renderTable(statusData);
+            document.getElementById('lastUpdate').textContent = '🔄 ' + new Date().toLocaleString('ru-RU');
+        } else {
+            document.getElementById('lastUpdate').textContent = '❌ Ошибка получения данных';
+        }
+    } catch (e) {
+        document.getElementById('lastUpdate').textContent = '❌ Ошибка: ' + e.message;
+        document.getElementById('tableBody').innerHTML = `
+            <tr><td colspan="10" style="text-align:center;color:#ef4444;padding:40px;">
+                ❌ Ошибка загрузки: ${e.message}<br>
+                <span style="color:#4a5a6a;font-size:12px;">Проверьте, что сервер запущен и модуль collector-monitor-api зарегистрирован</span>
+            </td></tr>
+        `;
+    }
+}
+
+async function scanCollectors() {
+    try {
+        showNotification('🔍 Сканирование сборщиков...');
+        const res = await fetch('/api/collector-monitor/scan');
+        const json = await res.json();
+        if (json.success) {
+            showNotification(`✅ Найдено ${json.total} сборщиков`);
+            loadStatus();
+        } else {
+            showNotification('❌ Ошибка сканирования: ' + (json.error || 'неизвестно'));
+        }
+    } catch (e) {
+        showNotification('❌ Ошибка: ' + e.message);
+    }
+}
+
+async function showErrors() {
+    const reportDiv = document.getElementById('errorReport');
+    try {
+        showNotification('🔍 Сбор ошибок...');
+        const res = await fetch('/api/collector-monitor/errors');
+        const json = await res.json();
+        if (json.success && json.data) {
+            let text = '═══════════ ОШИБКИ СБОРЩИКОВ ═══════════\n';
+            text += '📅 ' + new Date().toLocaleString() + '\n\n';
+            if (json.data.collectors.length === 0) {
+                text += '✅ Ошибок не найдено! Все сборщики работают нормально.\n';
+            } else {
+                text += `📊 Найдено ошибок в ${json.data.collectors.length} сборщиках\n\n`;
+                json.data.collectors.forEach(c => {
+                    text += `📁 ${c.name} (${c.errorCount} ошибок, всего ${c.totalLines} строк)\n`;
+                    if (c.lastError) {
+                        text += `  🔴 Последняя: ${c.lastError}\n`;
+                    }
+                    text += `  ────────────────────────\n`;
+                    c.errors.forEach(e => {
+                        text += `  ${e}\n`;
+                    });
+                    text += '\n';
+                });
+            }
+            reportDiv.textContent = text;
+            reportDiv.classList.toggle('show');
+            showNotification(`✅ Найдено ошибок: ${json.data.collectors.length}`);
+        } else {
+            showNotification('❌ Ошибка получения отчёта');
+        }
+    } catch (e) {
+        showNotification('❌ Ошибка: ' + e.message);
+    }
+}
+
+// ============================================================
+// 11. АВТОМАТИЧЕСКАЯ ФОНОВАЯ ОЧИСТКА
+// ============================================================
+
+async function backgroundCleanup() {
+    try {
+        const res = await fetch('/api/collector-monitor/settings');
+        const json = await res.json();
+        if (json.success && json.data.autoCleanup) {
+            await runAutoCleanup();
+        }
+    } catch (e) {
+        console.error('Фоновая очистка:', e);
+    }
+}
+
+setTimeout(backgroundCleanup, 10000);
+setInterval(backgroundCleanup, 1800000);
+
+// ============================================================
+// 12. ЗАПУСК
+// ============================================================
+
+loadStatus();
+setInterval(loadStatus, 30000);
+setInterval(updateCleanupInfo, 120000);
+</script>
+</body>
+</html>

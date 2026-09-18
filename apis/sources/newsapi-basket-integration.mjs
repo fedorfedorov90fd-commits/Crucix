@@ -1,214 +1,185 @@
 #!/usr/bin/env node
 
 // ============================================================
-// NEWSAPI-BASKET-INTEGRATION — Сбор новостей в корзину
-// ============================================================
-// Собирает новости из NewsAPI и добавляет их в корзину данных
-// Версия: 2.0
+// NEWSAPI BASKET INTEGRATION — Сбор новостей в корзину
 // ============================================================
 
-import { searchNews, getTopNews } from './newsapi.mjs';
-import { addToBasket } from './basket-api.mjs';
+import { promises as fs } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import { handleNewsAPIProxy } from './newsapi.mjs';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const ROOT = join(__dirname, '..', '..');
+const BASKET_DIR = join(ROOT, 'data', 'basket');
 
 // ============================================================
-// 1. ОСНОВНАЯ ФУНКЦИЯ — СБОР НОВОСТЕЙ В КОРЗИНУ
+// 1. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 // ============================================================
 
-export async function collectNewsToBasket(options = {}) {
-  const {
-    query = 'world',
-    country = null,
-    category = null,
-    maxItems = 20,
-    addToBasket = true
-  } = options;
+async function ensureBasketDir() {
+    try {
+        await fs.mkdir(BASKET_DIR, { recursive: true });
+    } catch (e) {}
+}
 
-  try {
-    console.log('[NewsAPI Basket] Начинаю сбор новостей...');
-
-    let result;
-
-    // Если указана страна — используем топ-новости
-    if (country) {
-      result = await getTopNews(country, {
-        category: category,
-        pageSize: maxItems
-      });
-    } else {
-      // Иначе — поиск по запросу
-      result = await searchNews(query, {
-        category: category,
-        pageSize: maxItems
-      });
+async function loadBasket() {
+    await ensureBasketDir();
+    const file = join(BASKET_DIR, 'news.json');
+    try {
+        const data = await fs.readFile(file, 'utf-8');
+        return JSON.parse(data);
+    } catch {
+        return [];
     }
+}
 
-    if (!result.success || !result.articles || result.articles.length === 0) {
-      console.warn('[NewsAPI Basket] Новостей не найдено');
-      return {
-        success: true,
-        collected: 0,
-        items: [],
-        message: 'Новостей не найдено'
-      };
-    }
-
-    let addedCount = 0;
-    const addedItems = [];
-
-    // Добавляем каждую новость в корзину
-    for (const article of result.articles) {
-      try {
-        const basketItem = {
-          id: article.id || `newsapi-${Date.now()}-${Math.random()}`,
-          title: article.title || 'Без заголовка',
-          description: article.description || '',
-          url: article.url || '#',
-          source: article.source || 'NewsAPI',
-          date: article.publishedAt || new Date().toISOString(),
-          category: article.category || category || 'general',
-          country: article.country || country || 'world',
-          type: 'news',
-          origin: 'NewsAPI',
-          tags: ['NewsAPI', category || 'general'],
-          imageUrl: article.imageUrl || null,
-          rating: null,
-          analyzed: false,
-          collectedAt: new Date().toISOString()
-        };
-
-        if (addToBasket) {
-          // Используем функцию добавления в корзину
-          const addResult = await addToBasket(basketItem);
-          if (addResult.success) {
-            addedCount++;
-            addedItems.push(basketItem);
-          }
-        } else {
-          addedItems.push(basketItem);
-          addedCount++;
-        }
-      } catch (e) {
-        console.warn('[NewsAPI Basket] Ошибка добавления новости:', e.message);
-      }
-    }
-
-    console.log(`[NewsAPI Basket] Добавлено ${addedCount} новостей в корзину`);
-
-    return {
-      success: true,
-      collected: addedCount,
-      items: addedItems,
-      totalFound: result.total || result.articles.length,
-      timestamp: new Date().toISOString()
-    };
-
-  } catch (error) {
-    console.error('[NewsAPI Basket] Ошибка:', error.message);
-    return {
-      success: false,
-      error: error.message,
-      collected: 0,
-      items: []
-    };
-  }
+async function saveBasket(items) {
+    await ensureBasketDir();
+    const file = join(BASKET_DIR, 'news.json');
+    await fs.writeFile(file, JSON.stringify(items, null, 2));
 }
 
 // ============================================================
-// 2. API-ОБРАБОТЧИК
+// 2. ОСНОВНОЙ ОБРАБОТЧИК
 // ============================================================
 
 export async function handleNewsAPIBasket(req, res) {
-  const url = new URL(req.url, `http://${req.headers.host}`);
-  const path = url.pathname;
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    const path = url.pathname;
 
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  if (req.method === 'OPTIONS') {
-    res.writeHead(200);
-    res.end();
-    return;
-  }
+    if (req.method === 'OPTIONS') {
+        res.writeHead(200);
+        res.end();
+        return;
+    }
 
-  try {
-    // POST /api/newsapi/basket — сбор новостей в корзину
-    if (path === '/api/newsapi/basket' && req.method === 'POST') {
-      let body = '';
-      req.on('data', chunk => body += chunk);
-      req.on('end', async () => {
-        try {
-          const data = JSON.parse(body || '{}');
-          const result = await collectNewsToBasket({
-            query: data.query || 'world',
-            country: data.country || null,
-            category: data.category || null,
-            maxItems: data.maxItems || 20,
-            addToBasket: data.addToBasket !== false
-          });
+    try {
+        const params = new URLSearchParams(url.search);
+        const q = params.get('q') || 'global';
+        const maxItems = parseInt(params.get('max')) || 10;
+        const action = params.get('action') || 'collect';
 
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify(result));
-        } catch (e) {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({
-            success: false,
-            error: e.message
-          }));
+        // --- GET /api/newsapi/basket?q=...&action=collect ---
+        if (path === '/api/newsapi/basket' && req.method === 'GET') {
+            if (action === 'collect') {
+                // Сначала получаем новости через прокси
+                const proxyReq = {
+                    url: `/api/newsapi/search?q=${encodeURIComponent(q)}&pageSize=${maxItems}`,
+                    method: 'GET',
+                    headers: req.headers
+                };
+
+                // Создаём фейковый ответ для сбора данных
+                let responseData = null;
+                const proxyRes = {
+                    writeHead: () => {},
+                    end: (data) => {
+                        try {
+                            responseData = JSON.parse(data);
+                        } catch (e) {
+                            responseData = { success: false, error: 'Ошибка парсинга' };
+                        }
+                    },
+                    setHeader: () => {}
+                };
+
+                await handleNewsAPIProxy(proxyReq, proxyRes);
+
+                if (!responseData || !responseData.success) {
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({
+                        success: false,
+                        error: 'Не удалось получить новости из NewsAPI'
+                    }));
+                    return;
+                }
+
+                // Сохраняем в корзину
+                const basket = await loadBasket();
+                const articles = responseData.articles || [];
+
+                let added = 0;
+                for (const article of articles) {
+                    const item = {
+                        id: `newsapi-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+                        title: article.title || 'Без заголовка',
+                        description: article.description || '',
+                        url: article.url || '',
+                        source: article.source?.name || 'NewsAPI',
+                        date: article.publishedAt || new Date().toISOString(),
+                        category: 'news',
+                        type: 'news',
+                        origin: `NewsAPI (${q})`,
+                        tags: ['NewsAPI', q],
+                        imageUrl: article.urlToImage || null,
+                        rating: null,
+                        analyzed: false,
+                        collectedAt: new Date().toISOString()
+                    };
+
+                    // Проверяем, нет ли уже такой новости
+                    const exists = basket.some(b => b.url === item.url);
+                    if (!exists) {
+                        basket.push(item);
+                        added++;
+                    }
+                }
+
+                await saveBasket(basket);
+
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({
+                    success: true,
+                    message: `Добавлено ${added} новостей в корзину`,
+                    total: basket.length,
+                    added: added,
+                    query: q,
+                    timestamp: new Date().toISOString()
+                }));
+                return;
+            }
+
+            // --- GET /api/newsapi/basket?action=list ---
+            if (action === 'list') {
+                const basket = await loadBasket();
+                const newsItems = basket.filter(item => item.type === 'news' || item.origin?.includes('NewsAPI'));
+
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({
+                    success: true,
+                    count: newsItems.length,
+                    items: newsItems,
+                    timestamp: new Date().toISOString()
+                }));
+                return;
+            }
+
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                success: false,
+                error: 'Неизвестное действие. Используйте action=collect или action=list'
+            }));
+            return;
         }
-      });
-      return;
-    }
 
-    // GET /api/newsapi/basket — сбор новостей в корзину (GET версия)
-    if (path === '/api/newsapi/basket' && req.method === 'GET') {
-      const params = url.searchParams;
-      const query = params.get('q') || 'world';
-      const country = params.get('country') || null;
-      const category = params.get('category') || null;
-      const maxItems = parseInt(params.get('max')) || 20;
-      const action = params.get('action') || 'collect';
+        // 404
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: false, error: 'Неизвестный путь' }));
 
-      if (action === 'collect') {
-        const result = await collectNewsToBasket({
-          query: query,
-          country: country,
-          category: category,
-          maxItems: maxItems,
-          addToBasket: true
-        });
-
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(result));
-      } else {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
+    } catch (error) {
+        console.error('[NewsAPI Basket] Ошибка:', error);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
-          success: false,
-          error: 'Неизвестное действие. Используйте action=collect'
+            success: false,
+            error: 'Внутренняя ошибка сервера',
+            details: error.message
         }));
-      }
-      return;
     }
-
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ success: false, error: 'Неизвестный путь' }));
-
-  } catch (error) {
-    console.error('[NewsAPI Basket] Ошибка:', error);
-    res.writeHead(500, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({
-      success: false,
-      error: 'Внутренняя ошибка сервера',
-      details: error.message
-    }));
-  }
 }
 
-// ============================================================
-// 3. ЭКСПОРТЫ
-// ============================================================
-
-export default {
-  collectNewsToBasket,
-  handleNewsAPIBasket
-};
+export default { handleNewsAPIBasket };

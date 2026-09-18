@@ -1,0 +1,512 @@
+[
+  {
+    "timestamp": "2026-08-17T10:04:18.420Z",
+    "data": {
+      "acled": {
+        "events": 84,
+        "fatalities": 6,
+        "regions": {}
+      },
+      "gdelt": {
+        "events": 63,
+        "tone": 9.143564519698153
+      },
+      "news": {
+        "total": 100,
+        "conflictRatio": 0.3
+      },
+      "index": {
+        "value": 50,
+        "trend": 0
+      }
+    },
+    "predictions": [
+      {
+        "region": "Ближний Восток",
+        "id": "middle-east",
+        "coordinates": {
+          "lat": 30,
+          "lon": 45
+        },
+        "risk": 6,
+        "level": "normal",
+        "label": "🟢 НОРМАЛЬНЫЙ",
+        "color": "#22c55e",
+        "predictions": {
+          "day7": 7,
+          "day14": 6,
+          "day30": 7
+        },
+        "factors": {
+          "acled_events": 0,
+          "conflict_news": "30%",
+          "index_value": 50
+        },
+        "recommendation": "🟢 СИТУАЦИЯ СТАБИЛЬНА. Продолжать стандартный мониторинг."
+      },
+      {
+        "region": "Украина",
+        "id": "ukraine",
+        "coordinates": {
+          "lat": 49,
+          "lon": 31
+        },
+        "risk": 8,
+        "level": "normal",
+        "label": "🟢 НОРМАЛЬНЫЙ",
+        "color": "#22c55e",
+        "predictions": {
+          "day7": 8,
+          "day14": 8,
+          "day30": 9
+        },
+        "factors": {
+          "acled_events": 0,
+          "conflict_news": "30%",
+          "index_value": 50
+        },
+        "recommendation": "🟢 СИТУАЦИЯ СТАБИЛЬНА. Продолжать стандартный мониторинг."
+      },
+      {
+        "region": "Россия",
+        "id": "russia",
+        "coordinates": {
+          "lat": 60,
+          "lon": 90
+        },
+        "risk": 5,
+        "level": "normal",
+        "label": "🟢 НОРМАЛЬНЫЙ",
+        "color": "#22c55e",
+        "predictions": {
+          "day7": 5,
+          "day14": 5,
+          "day30": 5
+        },
+        "factors": {
+          "acled_events": 0,
+          "conflict_news": "30%",
+          "index_value": 50
+        },
+        "recommendation": "🟢 СИТУАЦИЯ СТАБИЛЬНА. Продолжать стандартный мониторинг."
+      },
+      {
+        "region": "Китай",
+        "id": "china",
+        "coordinates": {
+          "lat": 35,
+          "lon": 105
+        },
+        "risk": 8,
+        "level": "normal",
+        "label": "🟢 НОРМАЛЬНЫЙ",
+        "color": "#22c55e",
+        "predictions": {
+          "day7": 8,
+          "day14": 8,
+          "day30": 9
+        },
+        "factors": {
+          "acled_events": 0,
+          "conflict_news": "30%",
+          "index_value": 50
+        },
+        "recommendation": "🟢 СИТУАЦИЯ СТАБИЛЬНА. Продолжать стандартный мониторинг."
+      },
+      {
+        "region": "США",
+        "id": "usa",
+        "coordinates": {
+          "lat": 39,
+          "lon": -98
+        },
+        "risk": 7,
+        "level": "normal",
+        "label": "🟢 НОРМАЛЬНЫЙ",
+        "color": "#22c55e",
+        "predictions": {
+          "day7": 7,
+          "day14": 7,
+          "day30": 7
+        },
+        "factors": {
+          "acled_events": 0,
+          "conflict_news": "30%",
+          "index_value": 50
+        },
+        "recommendation": "🟢 СИТУАЦИЯ СТАБИЛЬНА. Продолжать стандартный мониторинг."
+      },
+      {
+        "region": "Европа",
+        "id": "europe",
+        "coordinates": {
+          "lat": 50,
+          "lon": 10
+        },
+        "risk": 7,
+        "level": "normal",
+        "label": "🟢 НОРМАЛЬНЫЙ",
+        "color": "#22c55e",
+        "predictions": {
+          "day7": 7,
+          "day14": 7,
+          "day30": 7
+        },
+        "factors": {
+          "acled_events": 0,
+          "conflict_news": "30%",
+          "index_value": 50
+        },
+        "recommendation": "🟢 СИТУАЦИЯ СТАБИЛЬНА. Продолжать стандартный мониторинг."
+      },
+      {
+        "region": "Африка",
+        "id": "africa",
+        "coordinates": {
+          "lat": 0,
+          "lon": 20
+        },
+        "risk": 5,
+        "level": "normal",
+        "label": "🟢 НОРМАЛЬНЫЙ",
+        "color": "#22c55e",
+        "predictions": {
+          "day7": 6,
+          "day14": 5,
+          "day30": 5
+        },
+        "factors": {
+          "acled_events": 0,
+          "conflict_news": "30%",
+          "index_value": 50
+        },
+        "recommendation": "🟢 СИТУАЦИЯ СТАБИЛЬНА. Продолжать стандартный мониторинг."
+      },
+      {
+        "region": "Южная Америка",
+        "id": "south-america",
+        "coordinates": {
+          "lat": -15,
+          "lon": -60
+        },
+        "risk": 9,
+        "level": "normal",
+        "label": "🟢 НОРМАЛЬНЫЙ",
+        "color": "#22c55e",
+        "predictions": {
+          "day7": 8,
+          "day14": 9,
+          "day30": 8
+        },
+        "factors": {
+          "acled_events": 0,
+          "conflict_news": "30%",
+          "index_value": 50
+        },
+        "recommendation": "🟢 СИТУАЦИЯ СТАБИЛЬНА. Продолжать стандартный мониторинг."
+      },
+      {
+        "region": "Азиатско-Тихоокеанский",
+        "id": "asia-pacific",
+        "coordinates": {
+          "lat": 20,
+          "lon": 120
+        },
+        "risk": 5,
+        "level": "normal",
+        "label": "🟢 НОРМАЛЬНЫЙ",
+        "color": "#22c55e",
+        "predictions": {
+          "day7": 5,
+          "day14": 5,
+          "day30": 6
+        },
+        "factors": {
+          "acled_events": 0,
+          "conflict_news": "30%",
+          "index_value": 50
+        },
+        "recommendation": "🟢 СИТУАЦИЯ СТАБИЛЬНА. Продолжать стандартный мониторинг."
+      },
+      {
+        "region": "Индия",
+        "id": "india",
+        "coordinates": {
+          "lat": 20,
+          "lon": 78
+        },
+        "risk": 6,
+        "level": "normal",
+        "label": "🟢 НОРМАЛЬНЫЙ",
+        "color": "#22c55e",
+        "predictions": {
+          "day7": 6,
+          "day14": 6,
+          "day30": 6
+        },
+        "factors": {
+          "acled_events": 0,
+          "conflict_news": "30%",
+          "index_value": 50
+        },
+        "recommendation": "🟢 СИТУАЦИЯ СТАБИЛЬНА. Продолжать стандартный мониторинг."
+      }
+    ],
+    "summary": "🟢 Все регионы стабильны. Конфликтов не прогнозируется."
+  },
+  {
+    "timestamp": "2026-08-17T12:27:32.284Z",
+    "data": {
+      "acled": {
+        "events": 82,
+        "fatalities": 29,
+        "regions": {}
+      },
+      "gdelt": {
+        "events": 79,
+        "tone": 3.5773264247198067
+      },
+      "news": {
+        "total": 100,
+        "conflictRatio": 0.3
+      },
+      "index": {
+        "value": 50,
+        "trend": 0
+      }
+    },
+    "predictions": [
+      {
+        "region": "Ближний Восток",
+        "id": "middle-east",
+        "coordinates": {
+          "lat": 30,
+          "lon": 45
+        },
+        "risk": 8,
+        "level": "normal",
+        "label": "🟢 НОРМАЛЬНЫЙ",
+        "color": "#22c55e",
+        "predictions": {
+          "day7": 8,
+          "day14": 9,
+          "day30": 9
+        },
+        "factors": {
+          "acled_events": 0,
+          "conflict_news": "30%",
+          "index_value": 50
+        },
+        "recommendation": "🟢 СИТУАЦИЯ СТАБИЛЬНА. Продолжать стандартный мониторинг."
+      },
+      {
+        "region": "Украина",
+        "id": "ukraine",
+        "coordinates": {
+          "lat": 49,
+          "lon": 31
+        },
+        "risk": 5,
+        "level": "normal",
+        "label": "🟢 НОРМАЛЬНЫЙ",
+        "color": "#22c55e",
+        "predictions": {
+          "day7": 5,
+          "day14": 5,
+          "day30": 5
+        },
+        "factors": {
+          "acled_events": 0,
+          "conflict_news": "30%",
+          "index_value": 50
+        },
+        "recommendation": "🟢 СИТУАЦИЯ СТАБИЛЬНА. Продолжать стандартный мониторинг."
+      },
+      {
+        "region": "Россия",
+        "id": "russia",
+        "coordinates": {
+          "lat": 60,
+          "lon": 90
+        },
+        "risk": 9,
+        "level": "normal",
+        "label": "🟢 НОРМАЛЬНЫЙ",
+        "color": "#22c55e",
+        "predictions": {
+          "day7": 9,
+          "day14": 10,
+          "day30": 9
+        },
+        "factors": {
+          "acled_events": 0,
+          "conflict_news": "30%",
+          "index_value": 50
+        },
+        "recommendation": "🟢 СИТУАЦИЯ СТАБИЛЬНА. Продолжать стандартный мониторинг."
+      },
+      {
+        "region": "Китай",
+        "id": "china",
+        "coordinates": {
+          "lat": 35,
+          "lon": 105
+        },
+        "risk": 7,
+        "level": "normal",
+        "label": "🟢 НОРМАЛЬНЫЙ",
+        "color": "#22c55e",
+        "predictions": {
+          "day7": 7,
+          "day14": 8,
+          "day30": 7
+        },
+        "factors": {
+          "acled_events": 0,
+          "conflict_news": "30%",
+          "index_value": 50
+        },
+        "recommendation": "🟢 СИТУАЦИЯ СТАБИЛЬНА. Продолжать стандартный мониторинг."
+      },
+      {
+        "region": "США",
+        "id": "usa",
+        "coordinates": {
+          "lat": 39,
+          "lon": -98
+        },
+        "risk": 7,
+        "level": "normal",
+        "label": "🟢 НОРМАЛЬНЫЙ",
+        "color": "#22c55e",
+        "predictions": {
+          "day7": 6,
+          "day14": 7,
+          "day30": 6
+        },
+        "factors": {
+          "acled_events": 0,
+          "conflict_news": "30%",
+          "index_value": 50
+        },
+        "recommendation": "🟢 СИТУАЦИЯ СТАБИЛЬНА. Продолжать стандартный мониторинг."
+      },
+      {
+        "region": "Европа",
+        "id": "europe",
+        "coordinates": {
+          "lat": 50,
+          "lon": 10
+        },
+        "risk": 8,
+        "level": "normal",
+        "label": "🟢 НОРМАЛЬНЫЙ",
+        "color": "#22c55e",
+        "predictions": {
+          "day7": 8,
+          "day14": 9,
+          "day30": 8
+        },
+        "factors": {
+          "acled_events": 0,
+          "conflict_news": "30%",
+          "index_value": 50
+        },
+        "recommendation": "🟢 СИТУАЦИЯ СТАБИЛЬНА. Продолжать стандартный мониторинг."
+      },
+      {
+        "region": "Африка",
+        "id": "africa",
+        "coordinates": {
+          "lat": 0,
+          "lon": 20
+        },
+        "risk": 7,
+        "level": "normal",
+        "label": "🟢 НОРМАЛЬНЫЙ",
+        "color": "#22c55e",
+        "predictions": {
+          "day7": 7,
+          "day14": 7,
+          "day30": 7
+        },
+        "factors": {
+          "acled_events": 0,
+          "conflict_news": "30%",
+          "index_value": 50
+        },
+        "recommendation": "🟢 СИТУАЦИЯ СТАБИЛЬНА. Продолжать стандартный мониторинг."
+      },
+      {
+        "region": "Южная Америка",
+        "id": "south-america",
+        "coordinates": {
+          "lat": -15,
+          "lon": -60
+        },
+        "risk": 5,
+        "level": "normal",
+        "label": "🟢 НОРМАЛЬНЫЙ",
+        "color": "#22c55e",
+        "predictions": {
+          "day7": 5,
+          "day14": 5,
+          "day30": 5
+        },
+        "factors": {
+          "acled_events": 0,
+          "conflict_news": "30%",
+          "index_value": 50
+        },
+        "recommendation": "🟢 СИТУАЦИЯ СТАБИЛЬНА. Продолжать стандартный мониторинг."
+      },
+      {
+        "region": "Азиатско-Тихоокеанский",
+        "id": "asia-pacific",
+        "coordinates": {
+          "lat": 20,
+          "lon": 120
+        },
+        "risk": 8,
+        "level": "normal",
+        "label": "🟢 НОРМАЛЬНЫЙ",
+        "color": "#22c55e",
+        "predictions": {
+          "day7": 9,
+          "day14": 9,
+          "day30": 8
+        },
+        "factors": {
+          "acled_events": 0,
+          "conflict_news": "30%",
+          "index_value": 50
+        },
+        "recommendation": "🟢 СИТУАЦИЯ СТАБИЛЬНА. Продолжать стандартный мониторинг."
+      },
+      {
+        "region": "Индия",
+        "id": "india",
+        "coordinates": {
+          "lat": 20,
+          "lon": 78
+        },
+        "risk": 9,
+        "level": "normal",
+        "label": "🟢 НОРМАЛЬНЫЙ",
+        "color": "#22c55e",
+        "predictions": {
+          "day7": 9,
+          "day14": 9,
+          "day30": 9
+        },
+        "factors": {
+          "acled_events": 0,
+          "conflict_news": "30%",
+          "index_value": 50
+        },
+        "recommendation": "🟢 СИТУАЦИЯ СТАБИЛЬНА. Продолжать стандартный мониторинг."
+      }
+    ],
+    "summary": "🟢 Все регионы стабильны. Конфликтов не прогнозируется."
+  }
+]

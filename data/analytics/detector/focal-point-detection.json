@@ -1,0 +1,50 @@
+{
+  "_meta": {
+    "id": "focal-point-detection",
+    "category": "detector",
+    "version": "1.0.0",
+    "schema_version": "1.0.0",
+    "sources": [
+      "acled",
+      "earthquakes"
+    ],
+    "calculator": "FocalPointDetection",
+    "updated_at": "2026-09-12T15:04:20.711Z",
+    "duration_ms": 2,
+    "checksum": "61292def25f61f18",
+    "stats": {
+      "total_points": 15,
+      "focal_points": 2
+    }
+  },
+  "data": {
+    "focalPoints": [
+      {
+        "id": "10_31",
+        "lat": 27.75,
+        "lon": 85.5,
+        "signalCount": 2,
+        "streamCount": 1,
+        "streams": [
+          "earthquake"
+        ],
+        "avgSeverity": 0.88,
+        "focalScore": 1.75
+      },
+      {
+        "id": "16_-47",
+        "lat": 44.75,
+        "lon": -124.9,
+        "signalCount": 2,
+        "streamCount": 1,
+        "streams": [
+          "earthquake"
+        ],
+        "avgSeverity": 0.76,
+        "focalScore": 1.53
+      }
+    ],
+    "total": 2,
+    "generated_at": "2026-09-12T15:04:20.711Z"
+  }
+}

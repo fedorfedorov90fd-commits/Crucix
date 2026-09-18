@@ -1,0 +1,79 @@
+name: Nightly Property Tests
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Каждую ночь в 2:00 UTC
+  workflow_dispatch:
+    inputs:
+      num_cases:
+        description: 'Number of property test cases'
+        required: false
+        default: '10000'
+
+jobs:
+  property-deep:
+    name: Property Tests (10K cases)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      PROPERTY_CASES: ${{ github.event.inputs.num_cases || '10000' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          # Увеличиваем heap для больших прогонов
+          node-version-file: '.nvmrc'
+
+      - name: Set Node heap size
+        run: echo "NODE_OPTIONS=--max-old-space-size=4096" >> $GITHUB_ENV
+
+      - name: Install wabt (для WASM)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wabt
+
+      - name: Build WASM
+        run: bash scripts/compile-wasm-simd.sh || echo "WASM build skipped"
+
+      - name: Deep property tests — MetaLearner
+        run: |
+          node --test tests/property/meta_ensemble.property.mjs
+        env:
+          PROPERTY_CASES: ${{ env.PROPERTY_CASES }}
+
+      - name: Deep property tests — Regime Signature
+        run: node --test tests/property/regime_signature.property.mjs
+
+      - name: Deep property tests — Reflexive
+        run: node --test tests/property/reflexive.property.mjs
+
+      - name: Deep property tests — Multilayer Causal
+        run: node --test tests/property/multilayer_causal.property.mjs
+
+      - name: Deep property tests — Temporal Causal
+        run: node --test tests/property/temporal_causal.property.mjs
+
+      - name: Deep fuzz tests
+        run: |
+          node --test tests/fuzz/scenario_generator.fuzz.mjs
+          node --test tests/fuzz/temporal_causal.fuzz.mjs
+          node --test tests/fuzz/multilayer_causal.fuzz.mjs
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: property-test-results-${{ github.run_id }}
+          path: |
+            runs/tests/
+            *.log
+          retention-days: 30
+
+      - name: Notify on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            console.log('Property tests failed — investigation needed');
+            // Здесь можно добавить уведомление в Slack/Discord

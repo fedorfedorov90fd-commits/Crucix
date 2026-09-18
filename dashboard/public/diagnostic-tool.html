@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Диагностический инструмент Crucix</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a1a;
+      color: #c8d0d8;
+      font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+      font-size: 14px;
+      padding: 30px 20px;
+    }
+    .container { max-width: 800px; margin: 0 auto; }
+    .card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    h1 { color: #5bc0f8; font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+    .subtitle { color: #8899aa; font-size: 14px; margin-bottom: 24px; }
+    label { display: block; margin-bottom: 6px; font-weight: 500; color: #aabbcc; }
+    .checkbox-group { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+    .checkbox-group label { display: flex; align-items: center; gap: 6px; font-weight: 400; cursor: pointer; font-size: 13px; }
+    .checkbox-group input[type="checkbox"] { accent-color: #5bc0f8; width: 16px; height: 16px; }
+    .input-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+    .input-row > div { flex: 1; min-width: 150px; }
+    input[type="number"], select {
+      width: 100%;
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 6px;
+      color: #c8d0d8;
+      font-size: 13px;
+      font-family: inherit;
+    }
+    button {
+      padding: 10px 28px;
+      background: #5bc0f8;
+      border: none;
+      border-radius: 6px;
+      color: #0a0a1a;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-family: inherit;
+    }
+    button:hover { background: #4aa8e0; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .result-area {
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 16px;
+      max-height: 500px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      margin-top: 16px;
+      display: none;
+    }
+    .result-area.active { display: block; }
+    .part-selector { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    .part-btn {
+      padding: 4px 12px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 4px;
+      color: #8899aa;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    .part-btn:hover { background: rgba(255,255,255,0.08); }
+    .part-btn.active { background: #5bc0f8; color: #0a0a1a; border-color: #5bc0f8; }
+    .status { padding: 4px 12px; border-radius: 4px; font-size: 12px; display: inline-block; }
+    .status.loading { background: rgba(245,158,11,0.2); color: #f59e0b; }
+    .status.done { background: rgba(74,222,128,0.2); color: #4ade80; }
+    .status.error { background: rgba(239,68,68,0.2); color: #ef4444; }
+    .meta { color: #4a5a6a; font-size: 12px; margin-top: 8px; }
+    .btn-download { margin-top: 12px; background: #4a5a6a; }
+    .btn-download:hover { background: #5a6a7a; }
+    @media (max-width: 600px) {
+      .input-row { flex-direction: column; }
+      .checkbox-group { gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="card">
+    <h1>🔍 Диагностический инструмент Crucix</h1>
+    <div class="subtitle">Сбор информации о состоянии проекта с настройкой объёма отчёта</div>
+
+    <div class="checkbox-group">
+      <label><input type="checkbox" value="pages" checked> Страницы</label>
+      <label><input type="checkbox" value="api" checked> API-модули</label>
+      <label><input type="checkbox" value="layers" checked> Слои карты</label>
+      <label><input type="checkbox" value="collectors" checked> Сборщики</label>
+    </div>
+
+    <div class="input-row">
+      <div>
+        <label>Максимальный размер части (КБ)</label>
+        <input type="number" id="maxSize" value="100" min="10" max="500">
+      </div>
+      <div>
+        <label>Количество частей</label>
+        <input type="number" id="parts" value="1" min="1" max="10">
+      </div>
+    </div>
+
+    <button id="runBtn">🚀 Запустить диагностику</button>
+    <span id="status" class="status" style="margin-left:12px;"></span>
+  </div>
+
+  <div class="card result-area" id="resultArea">
+    <div id="resultContent"></div>
+    <div class="part-selector" id="partSelector"></div>
+    <button class="btn-download" id="downloadBtn">📥 Скачать текущую часть</button>
+    <div class="meta" id="metaInfo"></div>
+  </div>
+</div>
+
+<script>
+  let currentParts = [];
+  let currentPartIndex = 0;
+
+  document.getElementById('runBtn').addEventListener('click', async function() {
+    const btn = this;
+    const status = document.getElementById('status');
+    const resultArea = document.getElementById('resultArea');
+    const resultContent = document.getElementById('resultContent');
+    const partSelector = document.getElementById('partSelector');
+    const metaInfo = document.getElementById('metaInfo');
+
+    btn.disabled = true;
+    status.textContent = '⏳ Загрузка...';
+    status.className = 'status loading';
+    resultArea.classList.remove('active');
+
+    // Собираем выбранные типы
+    const checkboxes = document.querySelectorAll('.checkbox-group input[type="checkbox"]:checked');
+    const types = Array.from(checkboxes).map(cb => cb.value);
+    if (types.length === 0) {
+      status.textContent = '❌ Выберите хотя бы один раздел';
+      status.className = 'status error';
+      btn.disabled = false;
+      return;
+    }
+
+    const maxSizeKB = parseInt(document.getElementById('maxSize').value) || 100;
+    const partsCount = parseInt(document.getElementById('parts').value) || 1;
+
+    try {
+      const response = await fetch('/api/diagnostic-tool/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ types, maxSizeKB, parts: partsCount })
+      });
+
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Ошибка при генерации отчёта');
+      }
+
+      currentParts = data.parts || [];
+      currentPartIndex = 0;
+
+      if (currentParts.length === 0) {
+        resultContent.textContent = 'Отчёт пуст.';
+        status.textContent = '⚠️ Отчёт пуст';
+        status.className = 'status error';
+        btn.disabled = false;
+        return;
+      }
+
+      // Показываем первую часть
+      showPart(0);
+      status.textContent = `✅ Готово (${formatSize(data.totalSize || 0)})`;
+      status.className = 'status done';
+      resultArea.classList.add('active');
+
+      // Обновляем мета-информацию
+      metaInfo.textContent = `Всего частей: ${currentParts.length}, общий размер: ${formatSize(data.totalSize || 0)}`;
+
+    } catch (err) {
+      status.textContent = '❌ Ошибка: ' + err.message;
+      status.className = 'status error';
+      resultContent.textContent = 'Ошибка: ' + err.message;
+      resultArea.classList.add('active');
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  function showPart(index) {
+    const resultContent = document.getElementById('resultContent');
+    const partSelector = document.getElementById('partSelector');
+    if (index < 0 || index >= currentParts.length) return;
+    currentPartIndex = index;
+    resultContent.textContent = currentParts[index];
+
+    // Обновляем кнопки-переключатели частей
+    partSelector.innerHTML = '';
+    for (let i = 0; i < currentParts.length; i++) {
+      const btn = document.createElement('button');
+      btn.className = 'part-btn' + (i === index ? ' active' : '');
+      btn.textContent = `Часть ${i+1}`;
+      btn.dataset.index = i;
+      btn.addEventListener('click', () => showPart(i));
+      partSelector.appendChild(btn);
+    }
+  }
+
+  document.getElementById('downloadBtn').addEventListener('click', function() {
+    if (currentParts.length === 0) return;
+    const content = currentParts[currentPartIndex];
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `diagnostic-part-${currentPartIndex+1}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  function formatSize(bytes) {
+    if (!bytes) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  }
+</script>
+</body>
+</html>

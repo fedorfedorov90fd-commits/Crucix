@@ -1,474 +1,568 @@
-#!/usr/bin/env node
-
-// ============================================================
-// GEO-MARKERS-API — Геополитические маркеры
-// ============================================================
-// Данные: статусы стран, маркеры новостей, координаты
-// Версия: 2.0
-// ============================================================
+/**
+ * apis/sources/geo-markers-api.mjs — API-МОДУЛЬ: АГРЕГАТОР ГЕОДАННЫХ
+ *
+ * КОНТРАКТ CRUCIX v2 (Layer, агрегатор).
+ * ИСТОЧНИКИ:
+ *   - data/basket/geo-markers.json     — маркеры (NOTAM, пожары, прочее).
+ *   - data/geo/country-status.json     — статусы стран (SSI/CII).
+ *   - data/geo/world.geojson           — границы стран мира.
+ *   - data/geo/index-history.json      — история глобального индекса.
+ * Сборщик: scripts/collectors/collect-geo-markers.mjs.
+ *
+ * Агрегатор геоданных для карты: объединяет маркеры событий, статусы стран,
+ * границы и историю индекса под единым namespace. Корень отдаёт сводку,
+ * подпути — отдельные типы данных.
+ *
+ * ПУБЛИЧНЫЕ ЭНДПОИНТЫ:
+ *   GET /                    — сводка (FC маркеров + stats + counts)
+ *   GET /markers             — все маркеры (фильтры: status, layer, q, since, bbox, top, limit)
+ *   GET /markers/:id         — конкретный маркер
+ *   GET /layers              — группировка маркеров по слою (notam, fires, ...)
+ *   GET /statuses            — группировка по статусам (critical/high/medium/low)
+ *   GET /status              — статусы стран (совместимо с /api/geo/status)
+ *   GET /countries           — топ стран по статусам
+ *   GET /boundaries          — world.geojson (границы стран)
+ *   GET /index               — история глобального индекса (совместимо с /api/geo/index)
+ *   GET /stats               — расширенная статистика
+ *   GET /health              — health-check подсистем
+ *   GET /latest              — последние маркеры
+ *   GET /featurecollection   — чистый GeoJSON маркеров
+ *   GET /render              — рендер-конфиг (маркеры + choropleth + legend)
+ *
+ * ФОРМАТЫ: json (FC + series + stats), csv, series, stats, raw, geojson, markers.
+ */
 
 import { promises as fs } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT = join(__dirname, '..', '..');
-const DATA_DIR = join(ROOT, 'data', 'geo');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname  = dirname(__filename);
+const PROJECT_ROOT = join(__dirname, '..', '..');
+const MARKERS_FILE = join(PROJECT_ROOT, 'data', 'basket', 'geo-markers.json');
+const STATUS_FILE  = join(PROJECT_ROOT, 'data', 'geo', 'country-status.json');
+const STATUS_FALLBACK = join(PROJECT_ROOT, 'data', 'geo', 'status.json');
+const BOUNDARIES_FILE = join(PROJECT_ROOT, 'data', 'geo', 'world.geojson');
+const INDEX_FILE = join(PROJECT_ROOT, 'data', 'geo', 'index-history.json');
+
+export const route = '/api/layers/geo-markers';
+export const method = 'GET';
+
+export const meta = {
+  category: 'infrastructure',
+  icon: '📍',
+  color: '#0891b2',
+  vizType: 'marker',
+  source: 'basket/geo-markers.json',
+  collector: 'collect-geo-markers.mjs',
+  cache: 300,
+  description: 'Агрегатор геоданных: маркеры событий (NOTAM, пожары), статусы стран, границы мира, история индекса',
+  unit: 'markers',
+};
 
 // ============================================================
-// 1. КОНСТАНТЫ
+//  СПРАВОЧНИКИ
 // ============================================================
 
-// Статусы стран (из data/geo/country-status.json)
-// critical — красный (война, кризис)
-// high — оранжевый (высокая напряжённость)
-// medium — жёлтый (средняя напряжённость)
-// normal — зелёный (нормальный)
+const STATUS_META = {
+  critical: { color: '#dc2626', label: 'Критический', weight: 4 },
+  high:     { color: '#f97316', label: 'Высокий',     weight: 3 },
+  medium:   { color: '#eab308', label: 'Средний',     weight: 2 },
+  low:      { color: '#84cc16', label: 'Низкий',      weight: 1 },
+  info:     { color: '#64748b', label: 'Информация',  weight: 0 },
+  unknown:  { color: '#94a3b8', label: 'Неизвестно',  weight: 0 },
+};
 
-// ============================================================
-// 2. ЗАГРУЗКА ДАННЫХ
-// ============================================================
+const LAYER_META = {
+  notam:    { color: '#3b82f6', label: 'NOTAM (воздушное пространство)', icon: '✈️' },
+  fires:    { color: '#dc2626', label: 'Пожары',                          icon: '🔥' },
+  acled:    { color: '#7c2d12', label: 'ACLED (конфликты)',               icon: '⚔️' },
+  weather:  { color: '#0891b2', label: 'Погода',                          icon: '⛅' },
+  thermal:  { color: '#e11d48', label: 'Тепловые аномалии',               icon: '🌡️' },
+  flight:   { color: '#8b5cf6', label: 'Авиация',                         icon: '🛫' },
+  ship:     { color: '#0ea5e9', label: 'Судоходство',                     icon: '🚢' },
+  event:    { color: '#ec4899', label: 'События',                         icon: '📢' },
+  other:    { color: '#64748b', label: 'Прочее',                          icon: '📍' },
+};
 
-async function loadCountryStatus() {
-  try {
-    const file = join(DATA_DIR, 'country-status.json');
-    const data = await fs.readFile(file, 'utf-8');
-    return JSON.parse(data);
-  } catch (e) {
-    console.warn('[Geo API] Не удалось загрузить country-status.json, использую демо');
-    return getDemoStatus();
-  }
+function statusOf(s) {
+  const k = String(s || '').toLowerCase();
+  return STATUS_META[k] || STATUS_META.unknown;
 }
 
-async function loadCountryCoords() {
-  try {
-    const file = join(DATA_DIR, 'country-coords.json');
-    const data = await fs.readFile(file, 'utf-8');
-    return JSON.parse(data);
-  } catch (e) {
-    console.warn('[Geo API] Не удалось загрузить country-coords.json, использую демо');
-    return getDemoCoords();
-  }
+function layerMetaOf(name) {
+  const k = String(name || '').toLowerCase();
+  return LAYER_META[k] || { color: '#64748b', label: name || 'Прочее', icon: '📍' };
 }
+
+// ============================================================
+//  ЗАГРУЗКА
+// ============================================================
 
 async function loadMarkers() {
-  try {
-    const file = join(DATA_DIR, 'markers.json');
-    const data = await fs.readFile(file, 'utf-8');
-    return JSON.parse(data);
-  } catch (e) {
-    console.warn('[Geo API] Не удалось загрузить markers.json, использую демо');
-    return [];
+  let raw;
+  try { raw = await fs.readFile(MARKERS_FILE, 'utf8'); }
+  catch (e) {
+    if (e.code === 'ENOENT') {
+      const err = new Error('no_data'); err.statusCode = 503;
+      err.hint = 'run scripts/collectors/collect-geo-markers.mjs'; throw err;
+    }
+    throw e;
   }
+  let parsed;
+  try { parsed = JSON.parse(raw); }
+  catch (e) { const err = new Error('invalid_json_in_markers: ' + e.message); err.statusCode = 500; throw err; }
+
+  let arr = null;
+  if (Array.isArray(parsed)) arr = parsed;
+  else if (parsed && Array.isArray(parsed.markers)) arr = parsed.markers;
+  else if (parsed && Array.isArray(parsed.data)) arr = parsed.data;
+  else if (parsed && Array.isArray(parsed.items)) arr = parsed.items;
+  if (!arr) { const err = new Error('unrecognized_markers_format'); err.statusCode = 500; throw err; }
+  return arr;
 }
 
-// ============================================================
-// 3. ДЕМО-ДАННЫЕ
-// ============================================================
-
-function getDemoStatus() {
-  return {
-    Ukraine: 'critical',
-    Russia: 'high',
-    USA: 'normal',
-    China: 'medium',
-    India: 'medium',
-    Iran: 'critical',
-    Israel: 'critical',
-    Syria: 'critical',
-    Yemen: 'critical',
-    Sudan: 'critical',
-    Palestine: 'critical',
-    'North Korea': 'critical',
-    'South Korea': 'high',
-    Japan: 'high',
-    Turkey: 'high',
-    Poland: 'high',
-    Germany: 'medium',
-    France: 'medium',
-    UK: 'medium',
-    Italy: 'medium',
-    Spain: 'medium',
-    Brazil: 'medium',
-    Argentina: 'medium',
-    Mexico: 'high',
-    Canada: 'normal',
-    Australia: 'normal',
-    'New Zealand': 'normal',
-    Singapore: 'normal',
-    Taiwan: 'normal',
-    Thailand: 'medium',
-    Vietnam: 'medium',
-    Indonesia: 'medium',
-    Malaysia: 'medium',
-    Philippines: 'medium',
-    Egypt: 'high',
-    Algeria: 'high',
-    Morocco: 'high',
-    Tunisia: 'high',
-    Nigeria: 'high',
-    'South Africa': 'medium',
-    Kenya: 'medium',
-    Tanzania: 'medium',
-    Uganda: 'medium',
-    Ethiopia: 'critical',
-    Somalia: 'critical',
-    'South Sudan': 'critical',
-    Mali: 'critical',
-    Niger: 'critical',
-    Libya: 'critical',
-    'Central African Republic': 'critical',
-    'Democratic Republic of the Congo': 'critical',
-    Afghanistan: 'critical',
-    Pakistan: 'high',
-    Iraq: 'critical',
-    Lebanon: 'critical',
-    Jordan: 'medium',
-    'Saudi Arabia': 'medium',
-    UAE: 'medium',
-    Qatar: 'medium',
-    Kuwait: 'medium',
-    Oman: 'medium',
-    Bahrain: 'medium',
-    Belarus: 'high',
-    Kazakhstan: 'high',
-    Uzbekistan: 'high',
-    Turkmenistan: 'high',
-    Kyrgyzstan: 'high',
-    Tajikistan: 'high',
-    Mongolia: 'high',
-    Armenia: 'high',
-    Azerbaijan: 'high',
-    Georgia: 'high',
-    Moldova: 'high',
-    Serbia: 'high',
-    Kosovo: 'high',
-    'Bosnia and Herzegovina': 'medium',
-    Albania: 'medium',
-    Greece: 'medium',
-    Bulgaria: 'medium',
-    Romania: 'medium',
-    Hungary: 'medium',
-    Czechia: 'medium',
-    Slovakia: 'medium',
-    Slovenia: 'medium',
-    Croatia: 'medium',
-    'North Macedonia': 'medium',
-    Montenegro: 'medium',
-    Cyprus: 'medium',
-    Malta: 'medium',
-    Estonia: 'medium',
-    Latvia: 'medium',
-    Lithuania: 'medium',
-    Finland: 'medium',
-    Sweden: 'medium',
-    Norway: 'medium',
-    Denmark: 'medium',
-    Iceland: 'medium',
-    Ireland: 'medium',
-    Portugal: 'medium',
-    Netherlands: 'medium',
-    Belgium: 'medium',
-    Luxembourg: 'medium',
-    Switzerland: 'medium',
-    Austria: 'medium',
-    'Vatican City': 'medium',
-    Monaco: 'medium',
-    Liechtenstein: 'medium',
-    Andorra: 'medium',
-    'San Marino': 'medium',
-    'Costa Rica': 'medium',
-    Panama: 'medium',
-    Guatemala: 'medium',
-    Honduras: 'medium',
-    Nicaragua: 'medium',
-    'El Salvador': 'medium',
-    Belize: 'medium',
-    Guyana: 'medium',
-    Suriname: 'medium',
-    Ecuador: 'medium',
-    Peru: 'medium',
-    Chile: 'medium',
-    Colombia: 'high',
-    Venezuela: 'high',
-    Bolivia: 'medium',
-    Paraguay: 'medium',
-    Uruguay: 'medium',
-    Cuba: 'medium',
-    Haiti: 'medium',
-    'Dominican Republic': 'medium',
-    Jamaica: 'medium',
-    Bahamas: 'medium',
-    Barbados: 'medium',
-    Trinidad: 'medium',
-    Nepal: 'high',
-    Bangladesh: 'high',
-    'Sri Lanka': 'high',
-    Myanmar: 'critical',
-    Cambodia: 'high',
-    Laos: 'high',
-    Brunei: 'normal',
-    'Papua New Guinea': 'normal',
-    Fiji: 'normal',
-    'Solomon Islands': 'normal',
-    Vanuatu: 'normal',
-    'New Caledonia': 'normal',
-    Samoa: 'normal',
-    Tonga: 'normal',
-    'Marshall Islands': 'normal',
-    Palau: 'normal',
-    Micronesia: 'normal',
-    'Sao Tome and Principe': 'normal',
-    'Cape Verde': 'normal',
-    Seychelles: 'normal',
-    Mauritius: 'normal',
-    Maldives: 'normal',
-    'Antigua and Barbuda': 'normal',
-    'Saint Kitts and Nevis': 'normal',
-    'Saint Lucia': 'normal',
-    Grenada: 'normal',
-    'Saint Vincent and the Grenadines': 'normal',
-    Dominica: 'normal'
-  };
-}
-
-function getDemoCoords() {
-  return {
-    Ukraine: { lat: 49.0, lon: 32.0 },
-    Russia: { lat: 61.0, lon: 90.0 },
-    USA: { lat: 39.8, lon: -98.6 },
-    China: { lat: 35.0, lon: 105.0 },
-    India: { lat: 21.0, lon: 78.0 },
-    Iran: { lat: 32.0, lon: 53.0 },
-    Israel: { lat: 31.0, lon: 34.8 },
-    Syria: { lat: 35.0, lon: 38.0 },
-    Yemen: { lat: 15.5, lon: 48.0 },
-    Sudan: { lat: 15.0, lon: 30.0 },
-    'North Korea': { lat: 40.0, lon: 127.0 },
-    'South Korea': { lat: 37.0, lon: 127.5 },
-    Japan: { lat: 36.0, lon: 138.0 },
-    Turkey: { lat: 39.0, lon: 35.0 },
-    Poland: { lat: 52.0, lon: 20.0 },
-    Germany: { lat: 51.0, lon: 10.0 },
-    France: { lat: 47.0, lon: 2.0 },
-    UK: { lat: 55.0, lon: -3.0 },
-    Italy: { lat: 42.0, lon: 12.5 },
-    Spain: { lat: 40.0, lon: -4.0 },
-    Brazil: { lat: -14.0, lon: -52.0 },
-    Argentina: { lat: -35.0, lon: -64.0 },
-    Mexico: { lat: 23.0, lon: -102.0 },
-    Canada: { lat: 56.0, lon: -106.0 },
-    Australia: { lat: -25.0, lon: 134.0 },
-    Egypt: { lat: 27.0, lon: 30.0 },
-    Nigeria: { lat: 10.0, lon: 8.0 },
-    'South Africa': { lat: -30.0, lon: 25.0 },
-    Ethiopia: { lat: 9.0, lon: 40.0 },
-    Somalia: { lat: 6.0, lon: 47.0 },
-    Afghanistan: { lat: 34.0, lon: 67.0 },
-    Pakistan: { lat: 30.0, lon: 70.0 },
-    Iraq: { lat: 33.0, lon: 44.0 },
-    Lebanon: { lat: 34.0, lon: 36.0 },
-    'Saudi Arabia': { lat: 24.0, lon: 45.0 },
-    UAE: { lat: 24.0, lon: 54.0 },
-    Qatar: { lat: 25.3, lon: 51.2 },
-    Kuwait: { lat: 29.3, lon: 47.9 },
-    Oman: { lat: 21.0, lon: 57.0 },
-    Belarus: { lat: 53.0, lon: 28.0 },
-    Kazakhstan: { lat: 48.0, lon: 68.0 },
-    Uzbekistan: { lat: 41.0, lon: 64.0 },
-    Turkmenistan: { lat: 39.0, lon: 60.0 },
-    Armenia: { lat: 40.0, lon: 45.0 },
-    Azerbaijan: { lat: 40.5, lon: 47.5 },
-    Georgia: { lat: 42.0, lon: 43.5 },
-    Moldova: { lat: 47.0, lon: 28.5 },
-    Serbia: { lat: 44.0, lon: 21.0 },
-    Greece: { lat: 39.0, lon: 22.0 },
-    Bulgaria: { lat: 43.0, lon: 25.0 },
-    Romania: { lat: 46.0, lon: 25.0 },
-    Hungary: { lat: 47.0, lon: 19.0 },
-    Czechia: { lat: 50.0, lon: 14.5 },
-    Slovakia: { lat: 48.7, lon: 19.5 },
-    Slovenia: { lat: 46.0, lon: 15.0 },
-    Croatia: { lat: 45.0, lon: 15.5 },
-    'North Macedonia': { lat: 41.6, lon: 21.7 },
-    Montenegro: { lat: 42.4, lon: 19.3 },
-    Cyprus: { lat: 35.0, lon: 33.0 },
-    Malta: { lat: 35.9, lon: 14.5 },
-    Estonia: { lat: 59.0, lon: 26.0 },
-    Latvia: { lat: 57.0, lon: 25.0 },
-    Lithuania: { lat: 55.0, lon: 24.0 },
-    Finland: { lat: 64.0, lon: 26.0 },
-    Sweden: { lat: 60.0, lon: 15.0 },
-    Norway: { lat: 62.0, lon: 10.0 },
-    Denmark: { lat: 56.0, lon: 10.0 },
-    Iceland: { lat: 65.0, lon: -18.0 },
-    Ireland: { lat: 53.0, lon: -8.0 },
-    Portugal: { lat: 39.5, lon: -8.0 },
-    Netherlands: { lat: 52.3, lon: 5.3 },
-    Belgium: { lat: 50.8, lon: 4.0 },
-    Luxembourg: { lat: 49.8, lon: 6.1 },
-    Switzerland: { lat: 46.8, lon: 8.2 },
-    Austria: { lat: 47.5, lon: 14.0 },
-    Colombia: { lat: 4.0, lon: -73.0 },
-    Venezuela: { lat: 8.0, lon: -66.0 },
-    Peru: { lat: -10.0, lon: -76.0 },
-    Chile: { lat: -30.0, lon: -71.0 },
-    Bolivia: { lat: -17.0, lon: -65.0 },
-    Paraguay: { lat: -23.0, lon: -58.0 },
-    Uruguay: { lat: -32.5, lon: -56.0 },
-    Ecuador: { lat: -1.0, lon: -78.0 },
-    'Costa Rica': { lat: 10.0, lon: -84.0 },
-    Panama: { lat: 8.0, lon: -80.0 },
-    Guatemala: { lat: 15.5, lon: -90.3 },
-    Honduras: { lat: 15.0, lon: -86.5 },
-    Nicaragua: { lat: 13.0, lon: -85.0 },
-    'El Salvador': { lat: 13.8, lon: -88.9 },
-    Cuba: { lat: 22.0, lon: -79.0 },
-    Haiti: { lat: 19.0, lon: -72.4 },
-    'Dominican Republic': { lat: 19.0, lon: -70.7 },
-    Jamaica: { lat: 18.1, lon: -77.3 },
-    Bahamas: { lat: 25.0, lon: -77.0 },
-    Barbados: { lat: 13.1, lon: -59.5 },
-    'New Zealand': { lat: -41.0, lon: 174.0 },
-    Singapore: { lat: 1.3, lon: 103.8 },
-    Taiwan: { lat: 23.6, lon: 121.0 },
-    Thailand: { lat: 15.0, lon: 101.0 },
-    Vietnam: { lat: 16.0, lon: 108.0 },
-    Indonesia: { lat: -5.0, lon: 120.0 },
-    Malaysia: { lat: 3.0, lon: 102.0 },
-    Philippines: { lat: 13.0, lon: 122.0 },
-    'Papua New Guinea': { lat: -6.0, lon: 147.0 },
-    Fiji: { lat: -18.0, lon: 178.0 },
-    'Solomon Islands': { lat: -9.5, lon: 160.0 },
-    Vanuatu: { lat: -16.0, lon: 167.0 },
-    Samoa: { lat: -13.8, lon: -172.0 },
-    Tonga: { lat: -21.0, lon: -175.0 },
-    'Marshall Islands': { lat: 7.1, lon: 171.1 },
-    Palau: { lat: 7.5, lon: 134.6 },
-    Micronesia: { lat: 6.9, lon: 158.2 },
-    'Seychelles': { lat: -4.6, lon: 55.5 },
-    Mauritius: { lat: -20.2, lon: 57.5 },
-    Maldives: { lat: 3.2, lon: 73.0 },
-    'Cape Verde': { lat: 16.0, lon: -24.0 },
-    'Sao Tome and Principe': { lat: 0.2, lon: 6.6 },
-    'Antigua and Barbuda': { lat: 17.1, lon: -61.8 },
-    'Saint Kitts and Nevis': { lat: 17.3, lon: -62.7 },
-    'Saint Lucia': { lat: 13.9, lon: -61.0 },
-    Grenada: { lat: 12.1, lon: -61.7 },
-    'Saint Vincent and the Grenadines': { lat: 13.2, lon: -61.2 },
-    Dominica: { lat: 15.4, lon: -61.3 }
-  };
-}
-
-// ============================================================
-// 4. ОСНОВНАЯ ФУНКЦИЯ — ПОЛУЧИТЬ ВСЕ ГЕО-ДАННЫЕ
-// ============================================================
-
-export async function getGeoData() {
-  const [status, coords, markers] = await Promise.all([
-    loadCountryStatus(),
-    loadCountryCoords(),
-    loadMarkers()
-  ]);
-
-  return {
-    success: true,
-    countries: Object.keys(status).map(name => ({
-      name: name,
-      status: status[name] || 'normal',
-      lat: coords[name]?.lat || 0,
-      lon: coords[name]?.lon || 0
-    })),
-    markers: markers,
-    timestamp: new Date().toISOString()
-  };
-}
-
-// ============================================================
-// 5. API-ОБРАБОТЧИК
-// ============================================================
-
-export async function handleGeoAPI(req, res) {
-  const url = new URL(req.url, `http://${req.headers.host}`);
-  const path = url.pathname;
-
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
-    res.writeHead(200);
-    res.end();
-    return;
+async function loadStatuses() {
+  for (const file of [STATUS_FILE, STATUS_FALLBACK]) {
+    try {
+      const raw = await fs.readFile(file, 'utf8');
+      const parsed = JSON.parse(raw);
+      return parsed;
+    } catch { continue; }
   }
+  return null;
+}
 
+async function loadBoundariesRaw() {
+  try { return await fs.readFile(BOUNDARIES_FILE, 'utf8'); }
+  catch { return null; }
+}
+
+async function loadIndex() {
   try {
-    // GET /api/geo/status — статусы стран
-    if (path === '/api/geo/status' && req.method === 'GET') {
-      const status = await loadCountryStatus();
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ success: true, status }));
-      return;
+    const raw = await fs.readFile(INDEX_FILE, 'utf8');
+    return JSON.parse(raw);
+  } catch { return null; }
+}
+
+// ============================================================
+//  НОРМАЛИЗАЦИЯ
+// ============================================================
+
+function normalizeMarker(m, i) {
+  const lat = Number(m.lat ?? m.latitude);
+  const lng = Number(m.lng ?? m.lon ?? m.longitude);
+  const status = String(m.status || 'unknown').toLowerCase();
+  const layer = String(m.layer || m.type || 'other').toLowerCase();
+  const st = statusOf(status);
+  const ly = layerMetaOf(layer);
+
+  return {
+    id: String(m.id || `marker-${i}`),
+    name: m.name || m.title || `Marker ${i}`,
+    description: m.description || null,
+    lat: Number.isFinite(lat) ? Number(lat.toFixed(4)) : null,
+    lng: Number.isFinite(lng) ? Number(lng.toFixed(4)) : null,
+    status,
+    statusLabel: st.label,
+    statusColor: st.color,
+    statusWeight: st.weight,
+    layer,
+    layerLabel: ly.label,
+    layerColor: ly.color,
+    layerIcon: ly.icon,
+    date: String(m.date || m.timestamp || '').slice(0, 10) || null,
+    country: m.country || null,
+    region: m.region || null,
+    category: 'infrastructure',
+    icon: meta.icon,
+  };
+}
+
+function normalizeCountryStatus(c, i) {
+  if (!c || typeof c !== 'object') return null;
+  const name = c.country || c.name || c.id || `country-${i}`;
+  const code = c.code || c.iso || c.iso2 || null;
+  const ssi = Number(c.ssi ?? c.cii ?? c.index ?? c.score ?? 0);
+  const level = c.level || c.status || null;
+  const lv = level ? statusOf(level) : statusOf(ssi >= 70 ? 'critical' : ssi >= 50 ? 'high' : ssi >= 30 ? 'medium' : ssi >= 10 ? 'low' : 'info');
+  return {
+    id: String(code || name).toLowerCase(),
+    name: String(name),
+    code,
+    ssi: Number.isFinite(ssi) ? Number(ssi.toFixed(2)) : null,
+    level: lv.label,
+    levelColor: lv.color,
+    lat: Number(c.lat) || null,
+    lng: Number(c.lng ?? c.lon) || null,
+    region: c.region || null,
+    updated: c.updated || c.date || null,
+  };
+}
+
+// ============================================================
+//  ФИЛЬТРЫ
+// ============================================================
+
+function applyMarkerFilters(rows, query) {
+  let r = rows.slice();
+  if (query.status) r = r.filter(x => x.status === String(query.status).toLowerCase());
+  if (query.layer)  r = r.filter(x => x.layer === String(query.layer).toLowerCase());
+  if (query.country) r = r.filter(x => String(x.country || '').toLowerCase().includes(String(query.country).toLowerCase()));
+  if (query.q) {
+    const s = String(query.q).toLowerCase();
+    r = r.filter(x => (x.name + ' ' + (x.description || '')).toLowerCase().includes(s));
+  }
+  if (query.since) r = r.filter(x => !x.date || x.date >= String(query.since).slice(0, 10));
+  if (query.until) r = r.filter(x => !x.date || x.date <= String(query.until).slice(0, 10));
+  if (query.bbox) {
+    const [w, s, e, n] = String(query.bbox).split(',').map(Number);
+    if ([w, s, e, n].every(Number.isFinite)) {
+      r = r.filter(x => x.lat != null && x.lng != null && x.lat >= s && x.lat <= n && x.lng >= w && x.lng <= e);
     }
+  }
+  const sortKey = query.sort;
+  if (sortKey === 'status') r.sort((a, b) => b.statusWeight - a.statusWeight);
+  else if (sortKey === 'name') r.sort((a, b) => a.name.localeCompare(b.name));
+  else if (sortKey === 'layer') r.sort((a, b) => a.layer.localeCompare(b.layer));
+  if (query.top)   { const n = parseInt(query.top, 10);   if (n > 0) r = r.slice(0, n); }
+  if (query.limit) { const n = parseInt(query.limit, 10); if (n > 0) r = r.slice(0, n); }
+  return r;
+}
 
-    // GET /api/geo/coords — координаты стран
-    if (path === '/api/geo/coords' && req.method === 'GET') {
-      const coords = await loadCountryCoords();
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ success: true, coords }));
-      return;
-    }
+// ============================================================
+//  СТАТИСТИКА
+// ============================================================
 
-    // GET /api/geo/markers — маркеры новостей
-    if (path === '/api/geo/markers' && req.method === 'GET') {
-      const markers = await loadMarkers();
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ success: true, markers }));
-      return;
-    }
+function computeMarkerStats(rows) {
+  const byStatus = {};
+  const byLayer = {};
+  const byCountry = {};
+  const dates = [];
+  for (const r of rows) {
+    byStatus[r.status] = (byStatus[r.status] || 0) + 1;
+    byLayer[r.layer] = (byLayer[r.layer] || 0) + 1;
+    if (r.country) byCountry[r.country] = (byCountry[r.country] || 0) + 1;
+    if (r.date) dates.push(r.date);
+  }
+  const top = (obj, n = 10) => Object.entries(obj).sort((a, b) => b[1] - a[1]).slice(0, n).map(([name, count]) => ({ name, count }));
+  return {
+    count: rows.length,
+    with_position: rows.filter(r => r.lat != null && r.lng != null).length,
+    by_status: byStatus,
+    by_layer: byLayer,
+    top_countries: top(byCountry, 10),
+    date_from: dates.sort()[0] || null,
+    date_to: dates.sort().slice(-1)[0] || null,
+  };
+}
 
-    // GET /api/geo/all — все данные (статус + координаты + маркеры)
-    if (path === '/api/geo/all' && req.method === 'GET') {
-      const data = await getGeoData();
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(data));
-      return;
-    }
+// ============================================================
+//  ФОРМАТЫ
+// ============================================================
 
-    // GET /api/geo/status — статус модуля (для совместимости)
-    if (path === '/api/geo/status' && req.method === 'GET') {
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({
-        success: true,
-        module: 'Geo-Markers',
-        status: 'active',
-        timestamp: new Date().toISOString()
-      }));
-      return;
-    }
-
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ success: false, error: 'Неизвестный путь' }));
-
-  } catch (error) {
-    console.error('[Geo API] Ошибка:', error);
-    res.writeHead(500, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({
-      success: false,
-      error: 'Внутренняя ошибка сервера',
-      details: error.message
+function toFeatureCollection(rows) {
+  const features = rows
+    .filter(r => Number.isFinite(r.lat) && Number.isFinite(r.lng))
+    .map(r => ({
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: [r.lng, r.lat] },
+      properties: {
+        id: r.id, name: r.name, description: r.description,
+        status: r.status, statusLabel: r.statusLabel, statusColor: r.statusColor,
+        layer: r.layer, layerLabel: r.layerLabel, layerColor: r.layerColor, layerIcon: r.layerIcon,
+        date: r.date, country: r.country, region: r.region,
+        category: r.category, icon: r.icon,
+      },
     }));
+  return {
+    type: 'FeatureCollection',
+    features,
+    legend: {
+      statuses: Object.entries(STATUS_META).map(([key, def]) => ({ key, ...def })),
+      layers: Object.entries(LAYER_META).map(([key, def]) => ({ key, ...def })),
+    },
+    meta: { total: rows.length, mapped: features.length, unmapped: rows.length - features.length },
+  };
+}
+
+function toSeries(rows) {
+  return rows.map(r => ({
+    id: r.id, name: r.name, status: r.status, layer: r.layer,
+    lat: r.lat, lng: r.lng, date: r.date, country: r.country,
+  }));
+}
+
+function toCSV(rows) {
+  const lines = ['id,name,status,layer,lat,lng,country,region,date,description'];
+  const esc = v => { if (v == null) return ''; const s = String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+  for (const r of rows) {
+    lines.push([r.id, r.name, r.status, r.layer, r.lat, r.lng, r.country, r.region, r.date, r.description].map(esc).join(','));
   }
+  return lines.join('\n') + '\n';
+}
+
+function sendJSON(res, status, payload, extra = {}) {
+  const body = JSON.stringify(payload);
+  res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Content-Length': String(Buffer.byteLength(body)), ...extra });
+  res.end(body);
+}
+
+function sendText(res, status, text, ct = 'text/plain; charset=utf-8') {
+  res.writeHead(status, { 'Content-Type': ct, 'Content-Length': String(Buffer.byteLength(text)) });
+  res.end(text);
 }
 
 // ============================================================
-// 6. ЭКСПОРТЫ ДЛЯ СОВМЕСТИМОСТИ
+//  HANDLER
 // ============================================================
 
-export default {
-  getGeoData,
-  handleGeoAPI,
-  loadCountryStatus,
-  loadCountryCoords,
-  loadMarkers
-};
+export async function handler(req, res) {
+  try {
+    const urlObj = new URL(req.url, 'http://x');
+    const sub = urlObj.pathname.replace(/^\/api\/layers\/geo-markers/, '') || '/';
+    const query = Object.fromEntries(urlObj.searchParams.entries());
+    const format = (query.format || 'json').toLowerCase();
+
+    const extra = {
+      'X-Module': 'geo-markers-api',
+      'X-Module-Version': '2.0.0',
+      'Cache-Control': `public, max-age=${meta.cache}`,
+    };
+
+    // ============================================================
+    //  /boundaries — отдаём geojson как есть (большой файл)
+    // ============================================================
+    if (sub === '/boundaries') {
+      const raw = await loadBoundariesRaw();
+      if (!raw) return sendJSON(res, 503, { error: 'no_data', message: 'world.geojson missing', hint: 'check data/geo/world.geojson' }, extra);
+      return sendText(res, 200, raw, 'application/geo+json; charset=utf-8');
+    }
+
+    // ============================================================
+    //  /index — совместимость с /api/geo/index
+    // ============================================================
+    if (sub === '/index') {
+      const idx = await loadIndex();
+      if (!idx) return sendJSON(res, 503, { error: 'no_data', message: 'index-history.json missing' }, extra);
+      return sendJSON(res, 200, { success: true, index: idx }, extra);
+    }
+
+    // ============================================================
+    //  /status — статусы стран (совместимо с /api/geo/status)
+    // ============================================================
+    if (sub === '/status') {
+      const statuses = await loadStatuses();
+      if (!statuses) return sendJSON(res, 503, { error: 'no_data', message: 'country-status.json missing' }, extra);
+      return sendJSON(res, 200, { success: true, status: statuses }, extra);
+    }
+
+    // ============================================================
+    //  Загружаем маркеры для остальных эндпоинтов
+    // ============================================================
+    let rawMarkers = [];
+    let markersError = null;
+    try { rawMarkers = await loadMarkers(); }
+    catch (e) { markersError = e; }
+
+    if (markersError && !['/', '/status', '/health', '/stats'].includes(sub)) {
+      const status = markersError.statusCode || 500;
+      return sendJSON(res, status, { error: status === 503 ? 'no_data' : 'handler_error', message: markersError.message, hint: markersError.hint }, extra);
+    }
+
+    const all = (rawMarkers || []).map(normalizeMarker);
+
+    // ============================================================
+    //  /markers
+    // ============================================================
+    if (sub === '/markers') {
+      const rows = applyMarkerFilters(all, query);
+      if (format === 'csv') return sendText(res, 200, toCSV(rows), 'text/csv; charset=utf-8');
+      if (format === 'series') return sendJSON(res, 200, { series: toSeries(rows), meta: { count: rows.length } }, extra);
+      if (format === 'raw') return sendJSON(res, 200, { data: rows, total: all.length }, extra);
+      if (format === 'geojson') return sendJSON(res, 200, toFeatureCollection(rows), extra);
+      return sendJSON(res, 200, { markers: rows, count: rows.length, total: all.length }, extra);
+    }
+
+    if (sub.startsWith('/markers/')) {
+      const id = decodeURIComponent(sub.slice('/markers/'.length));
+      const m = all.find(x => x.id === id);
+      if (!m) return sendJSON(res, 404, { error: 'marker_not_found', id }, extra);
+      return sendJSON(res, 200, { marker: m }, extra);
+    }
+
+    // ============================================================
+    //  /layers — группировка по слою
+    // ============================================================
+    if (sub === '/layers') {
+      const byLayer = {};
+      for (const r of all) {
+        if (!byLayer[r.layer]) byLayer[r.layer] = { name: r.layer, label: r.layerLabel, color: r.layerColor, icon: r.layerIcon, count: 0, by_status: {} };
+        byLayer[r.layer].count++;
+        byLayer[r.layer].by_status[r.status] = (byLayer[r.layer].by_status[r.status] || 0) + 1;
+      }
+      const layers = Object.values(byLayer).sort((a, b) => b.count - a.count);
+      return sendJSON(res, 200, { layers, total: layers.length }, extra);
+    }
+
+    // ============================================================
+    //  /statuses — группировка по статусам
+    // ============================================================
+    if (sub === '/statuses') {
+      const byStatus = {};
+      for (const r of all) {
+        if (!byStatus[r.status]) byStatus[r.status] = { name: r.status, label: r.statusLabel, color: r.statusColor, weight: r.statusWeight, count: 0, by_layer: {} };
+        byStatus[r.status].count++;
+        byStatus[r.status].by_layer[r.layer] = (byStatus[r.status].by_layer[r.layer] || 0) + 1;
+      }
+      const statuses = Object.values(byStatus).sort((a, b) => b.weight - a.weight);
+      return sendJSON(res, 200, { statuses, total: statuses.length }, extra);
+    }
+
+    // ============================================================
+    //  /countries — топ стран по маркерам + статусы
+    // ============================================================
+    if (sub === '/countries') {
+      const byCountry = {};
+      for (const r of all) {
+        if (!r.country) continue;
+        if (!byCountry[r.country]) byCountry[r.country] = { name: r.country, count: 0, by_status: {} };
+        byCountry[r.country].count++;
+        byCountry[r.country].by_status[r.status] = (byCountry[r.country].by_status[r.status] || 0) + 1;
+      }
+      const statuses = await loadStatuses();
+      let statusRows = [];
+      if (statuses) {
+        const list = Array.isArray(statuses) ? statuses : (statuses.countries || statuses.data || Object.values(statuses));
+        statusRows = list.map(normalizeCountryStatus).filter(Boolean);
+      }
+      return sendJSON(res, 200, {
+        countries: Object.values(byCountry).sort((a, b) => b.count - a.count),
+        total_countries: Object.keys(byCountry).length,
+        country_statuses: statusRows.slice(0, 50),
+      }, extra);
+    }
+
+    // ============================================================
+    //  /stats
+    // ============================================================
+    if (sub === '/stats' || format === 'stats') {
+      const stats = computeMarkerStats(all);
+      const statuses = await loadStatuses();
+      const hasStatuses = !!statuses;
+      const hasBoundaries = (await loadBoundariesRaw()) !== null;
+      const hasIndex = (await loadIndex()) !== null;
+      return sendJSON(res, 200, {
+        markers_stats: stats,
+        sources: {
+          markers: rawMarkers.length > 0,
+          statuses: hasStatuses,
+          boundaries: hasBoundaries,
+          index_history: hasIndex,
+        },
+      }, extra);
+    }
+
+    // ============================================================
+    //  /health — health-check
+    // ============================================================
+    if (sub === '/health') {
+      const statuses = await loadStatuses();
+      const hasBoundaries = (await loadBoundariesRaw()) !== null;
+      const hasIndex = (await loadIndex()) !== null;
+      const checks = {
+        markers: { ok: !markersError, count: all.length, error: markersError ? markersError.message : null },
+        statuses: { ok: !!statuses },
+        boundaries: { ok: hasBoundaries },
+        index_history: { ok: hasIndex },
+      };
+      const failed = Object.values(checks).filter(c => !c.ok).length;
+      return sendJSON(res, 200, { ok: failed === 0, checks_count: Object.keys(checks).length, failed_count: failed, checks, timestamp: new Date().toISOString() }, extra);
+    }
+
+    // ============================================================
+    //  /latest — последние маркеры
+    // ============================================================
+    if (sub === '/latest') {
+      const latest = all.slice().sort((a, b) => b.statusWeight - a.statusWeight).slice(0, 20);
+      return sendJSON(res, 200, { latest, count: latest.length }, extra);
+    }
+
+    // ============================================================
+    //  /featurecollection — чистый GeoJSON
+    // ============================================================
+    if (sub === '/featurecollection') {
+      const rows = applyMarkerFilters(all, query);
+      return sendJSON(res, 200, toFeatureCollection(rows), extra);
+    }
+
+    // ============================================================
+    //  /render — рендер-конфиг для карты
+    // ============================================================
+    if (sub === '/render') {
+      const rows = applyMarkerFilters(all, query);
+      const stats = computeMarkerStats(rows);
+      const markers = rows
+        .filter(r => Number.isFinite(r.lat) && Number.isFinite(r.lng))
+        .map(r => ({
+          id: r.id, lat: r.lat, lng: r.lng,
+          color: r.statusColor, icon: r.layerIcon,
+          popup: { name: r.name, status: r.statusLabel, layer: r.layerLabel, description: r.description, date: r.date },
+        }));
+      return sendJSON(res, 200, {
+        render: {
+          markers,
+          legend: {
+            statuses: Object.entries(STATUS_META).map(([key, def]) => ({ key, ...def })),
+            layers: Object.entries(LAYER_META).map(([key, def]) => ({ key, ...def })),
+          },
+          stats,
+          totals: { markers: markers.length },
+        },
+      }, extra);
+    }
+
+    // ============================================================
+    //  Корень — сводка
+    // ============================================================
+    const rows = applyMarkerFilters(all, query);
+
+    if (format === 'csv')     return sendText(res, 200, toCSV(rows), 'text/csv; charset=utf-8');
+    if (format === 'series')  return sendJSON(res, 200, { series: toSeries(rows), meta: { count: rows.length } }, extra);
+    if (format === 'geojson') return sendJSON(res, 200, toFeatureCollection(rows), extra);
+    if (format === 'markers') return sendJSON(res, 200, { markers: rows, count: rows.length, total: all.length }, extra);
+    if (format === 'raw')     return sendJSON(res, 200, { data: rows, total: all.length, sources: { markers: rawMarkers.length } }, extra);
+
+    const stats = computeMarkerStats(rows);
+    const statuses = await loadStatuses();
+    const hasBoundaries = (await loadBoundariesRaw()) !== null;
+    const hasIndex = (await loadIndex()) !== null;
+    const fc = toFeatureCollection(rows);
+
+    return sendJSON(res, 200, {
+      type: 'FeatureCollection',
+      meta: {
+        source: meta.source, category: meta.category, unit: meta.unit,
+        total_markers: all.length, returned_markers: rows.length,
+        generated_at: new Date().toISOString(),
+        sources: {
+          markers: rawMarkers.length > 0,
+          statuses: !!statuses,
+          boundaries: hasBoundaries,
+          index_history: hasIndex,
+        },
+      },
+      features: fc.features,
+      legend: fc.legend,
+      series: toSeries(rows),
+      stats,
+      markers_count: rows.length,
+    }, extra);
+
+  } catch (e) {
+    const status = e.statusCode || 500;
+    const payload = { error: status === 503 ? 'no_data' : 'handler_error', message: e.message };
+    if (e.hint) payload.hint = e.hint;
+    try { sendJSON(res, status, payload); } catch {}
+  }
+}

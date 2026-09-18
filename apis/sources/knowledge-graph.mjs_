@@ -1,0 +1,133 @@
+/**
+ * knowledge-graph.mjs — Граф знаний Crucix
+ */
+
+import { readFileSync, readdirSync, existsSync, writeFileSync } from 'fs';
+import { join } from 'path';
+
+const BASKET_DIR = '/home/ta8_/Рабочий стол/Crucix/data/basket';
+const GRAPH_FILE = '/home/ta8_/Рабочий стол/Crucix/data/knowledge-graph.json';
+
+let graphCache = null;
+
+export function buildKnowledgeGraph() {
+  const allEntities = new Map();
+
+  if (!existsSync(BASKET_DIR)) {
+    return { success: false, error: 'Корзина не найдена' };
+  }
+
+  const files = readdirSync(BASKET_DIR).filter(f => f.endsWith('.json'));
+
+  for (const file of files.slice(0, 50)) {
+    try {
+      const content = readFileSync(join(BASKET_DIR, file), 'utf8');
+      const data = JSON.parse(content);
+      const items = Array.isArray(data) ? data : (data.data || data.items || []);
+
+      for (const item of items) {
+        const country = item.country || item.region || item.location;
+        const org = item.organization || item.org || item.actor;
+        const event = item.event || item.title || item.name;
+
+        if (country && country.length > 1) {
+          const id = `country_${country.toLowerCase().replace(/\s+/g, '_')}`;
+          if (!allEntities.has(id)) {
+            allEntities.set(id, { id, name: country, type: 'country', source: file });
+          }
+        }
+        if (org && org.length > 1) {
+          const id = `org_${org.toLowerCase().replace(/\s+/g, '_')}`;
+          if (!allEntities.has(id)) {
+            allEntities.set(id, { id, name: org, type: 'organization', source: file });
+          }
+        }
+        if (event && event.length > 1) {
+          const id = `event_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+          allEntities.set(id, { id, name: event, type: 'event', source: file });
+        }
+      }
+    } catch (e) {}
+  }
+
+  const graph = {
+    timestamp: new Date().toISOString(),
+    entities: Array.from(allEntities.values()),
+    relations: [],
+    stats: {
+      totalEntities: allEntities.size,
+      totalRelations: 0,
+      entityTypes: {}
+    }
+  };
+
+  for (const entity of graph.entities) {
+    graph.stats.entityTypes[entity.type] = (graph.stats.entityTypes[entity.type] || 0) + 1;
+  }
+
+  graphCache = graph;
+  try {
+    writeFileSync(GRAPH_FILE, JSON.stringify(graph, null, 2));
+  } catch (e) {}
+
+  return { success: true, graph };
+}
+
+export function getGraphStats() {
+  if (!graphCache) buildKnowledgeGraph();
+  if (!graphCache) return { success: false, error: 'Граф не построен' };
+  return { success: true, stats: graphCache.stats };
+}
+
+export function searchEntities(query) {
+  if (!graphCache) buildKnowledgeGraph();
+  if (!graphCache) return { success: false, error: 'Граф не построен' };
+  const q = query.toLowerCase();
+  const results = graphCache.entities.filter(e =>
+    e.name.toLowerCase().includes(q) || e.id.toLowerCase().includes(q)
+  );
+  return { success: true, query, results: results.slice(0, 50), count: results.length };
+}
+
+// ===== HTTP-ОБРАБОТЧИКИ ДЛЯ SERVER.MJS =====
+export async function handleKnowledgeGraph(req, res) {
+  const url = new URL(req.url, `http://${req.headers.host}`);
+  const pathname = url.pathname;
+
+  try {
+    if (pathname === '/api/graph/stats' || pathname === '/api/graph/stats/') {
+      const result = getGraphStats();
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(result));
+      return;
+    }
+
+    if (pathname.startsWith('/api/graph/search')) {
+      const query = url.searchParams.get('q') || '';
+      const result = searchEntities(query);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(result));
+      return;
+    }
+
+    if (pathname === '/api/graph/build' || pathname === '/api/graph/build/') {
+      const result = buildKnowledgeGraph();
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(result));
+      return;
+    }
+
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Graph endpoint not found' }));
+  } catch (error) {
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: error.message }));
+  }
+}
+
+export default {
+  buildKnowledgeGraph,
+  getGraphStats,
+  searchEntities,
+  handleKnowledgeGraph
+};

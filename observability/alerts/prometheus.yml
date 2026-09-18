@@ -1,0 +1,128 @@
+groups:
+  - name: crucix.availability
+    interval: 30s
+    rules:
+      - alert: CrucixDown
+        expr: up{job="crucix-monitor"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: availability
+        annotations:
+          summary: "Crucix instance down"
+          description: "{{ $labels.instance }} has been down for more than 2 minutes"
+          runbook: "https://github.com/crucix/monitor-monitor/wiki/Runbooks#instance-down"
+
+      - alert: CrucixHighLatency
+        expr: |
+          histogram_quantile(0.95,
+            rate(crucix_cycle_duration_seconds_bucket[5m])
+          ) > 30
+        for: 10m
+        labels:
+          severity: warning
+          component: performance
+        annotations:
+          summary: "Prediction cycle p95 latency > 30s"
+          description: "Current p95: {{ $value }}s"
+
+      - alert: CrucixCycleErrors
+        expr: rate(crucix_cycle_errors_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          component: reliability
+        annotations:
+          summary: "High rate of cycle errors"
+
+  - name: crucix.risk
+    interval: 30s
+    rules:
+      - alert: CrucixCriticalRisk
+        expr: crucix_composite_risk > 0.7
+        for: 5m
+        labels:
+          severity: critical
+          component: risk
+          category: market
+        annotations:
+          summary: "Composite risk in CRITICAL zone"
+          description: "Current: {{ $value }}"
+          runbook: "https://github.com/crucix/monitor-monitor/wiki/Runbooks#critical-risk"
+
+      - alert: CrucixHighRisk
+        expr: crucix_composite_risk > 0.5
+        for: 15m
+        labels:
+          severity: warning
+          component: risk
+        annotations:
+          summary: "Composite risk HIGH"
+          description: "Current: {{ $value }}"
+
+      - alert: CrucixManyHighSignals
+        expr: sum(crucix_signals_high_total) > 10
+        for: 5m
+        labels:
+          severity: warning
+          component: risk
+        annotations:
+          summary: "Many signals above threshold"
+
+  - name: crucix.websocket
+    interval: 30s
+    rules:
+      - alert: CrucixWSCapacityHigh
+        expr: crucix_ws_connections > 1500
+        for: 5m
+        labels:
+          severity: warning
+          component: websocket
+        annotations:
+          summary: "WS connections approaching capacity"
+          description: "Current: {{ $value }} / limit: 2000"
+
+      - alert: CrucixWSHighErrorRate
+        expr: rate(crucix_ws_errors_total[5m]) > 1
+        for: 5m
+        labels:
+          severity: warning
+          component: websocket
+        annotations:
+          summary: "High WS error rate"
+          description: "Errors/sec: {{ $value }}"
+
+  - name: crucix.quality
+    interval: 1h
+    rules:
+      - alert: CrucixBrierDegraded
+        expr: crucix_brier_score > 0.25
+        for: 1h
+        labels:
+          severity: warning
+          component: quality
+        annotations:
+          summary: "Brier score degraded (worse than random)"
+          description: "Current: {{ $value }} — models need retraining"
+          runbook: "https://github.com/crucix/monitor-monitor/wiki/Runbooks#brier-degraded"
+
+      - alert: CrucixLowResolutionRate
+        expr: rate(crucix_predictions_resolved_total[6h]) < 1
+        for: 6h
+        labels:
+          severity: warning
+          component: quality
+        annotations:
+          summary: "Low prediction resolution rate"
+
+  - name: crucix.federated
+    interval: 1m
+    rules:
+      - alert: CrucixFewFLClients
+        expr: crucix_fl_clients < 3
+        for: 15m
+        labels:
+          severity: warning
+          component: federated
+        annotations:
+          summary: "Too few FL clients"

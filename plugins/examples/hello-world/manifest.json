@@ -1,0 +1,25 @@
+{
+  "name": "hello-world",
+  "version": "1.0.0",
+  "description": "Minimal example plugin that logs predictions",
+  "author": "Crucix Team",
+  "license": "MIT",
+  "entryPoint": "index.mjs",
+  "crucixVersion": ">=3.0.0",
+  "type": "analyzer",
+  "hooks": ["afterPrediction", "onSignalHigh"],
+  "permissions": ["read:predictions"],
+  "config": {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "verbose": { "type": "boolean" },
+        "logLevel": { "type": "string", "enum": ["info", "warn", "error"] }
+      }
+    },
+    "defaults": {
+      "verbose": true,
+      "logLevel": "info"
+    }
+  }
+}

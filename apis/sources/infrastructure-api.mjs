@@ -1,536 +1,443 @@
-#!/usr/bin/env node
+/**
+ * apis/sources/infrastructure-api.mjs — SERVICE-МОДУЛЬ: ИНФРАСТРУКТУРА
+ *
+ * КОНТРАКТ CRUCIX v2 (SERVICE).
+ * ИСТОЧНИК: data/infrastructure/objects.json — { version, lastUpdated, objects: [{ id, name, type, layer, country, coordinates:{lat,lng}, status, capacity, unit, owner, operational, vulnerability, risks[], cascade[], sanctions }] }.
+ * ДОПОЛНИТЕЛЬНЫЕ ИСТОЧНИКИ: data/basket/acled.json, earthquakes.json, firms.json, ofac.json, inflation.json, cargo.json.
+ * ЗАВИСИМОСТИ: 12 подмодулей (graph-core, propagation, pagerank-critical, temporal, vulnerability-calc, monte-carlo, scenario-engine, military-monitor, chokepoint-monitor, nuclear-monitor, supply-chain, cargo-anomaly).
+ *
+ * ЭНДПОИНТЫ (внутренние, маппятся от route):
+ *   GET  /                                   — сводка (все объекты + vulnerabilities)
+ *   GET  /vulnerability                      — оценки уязвимости всех узлов
+ *   GET  /cascade?node=&decay=&threshold=    — каскадный эффект от узла
+ *   GET  /simulate?node=&runs=&threshold=    — Monte Carlo симуляция
+ *   GET  /critical-paths?top=                — критические пути через PageRank
+ *   GET  /pagerank?damping=&top=             — PageRank ранжирование
+ *   GET  /sensitivity?runs=                  — чувствительность к параметрам
+ *   GET  /featurecollection                  — GeoJSON FeatureCollection
+ *   GET  /stats                              — сводная статистика
+ *   GET  /military                           — военная концентрация
+ *   GET  /chokepoints                        — чокпоинты
+ *   GET  /nuclear                            — АЭС + риски
+ *   GET  /supply-chain                       — анализ цепочек поставок
+ *   GET  /cargo-anomalies?z=                 — аномалии грузов
+ *   GET  /scenarios?run=&region=&runs=       — сценарии
+ *
+ * ФОРМАТЫ: json, csv, stats, raw.
+ */
 
-// ============================================================
-// МОДУЛЬ №8: СЛОИ КРИТИЧЕСКОЙ ИНФРАСТРУКТУРЫ — API
-// ============================================================
-// Стратегическая цель: превзойти WorldMonitor
-// Качество > скорость
-// ============================================================
+import { InfrastructureGraph, haversine } from './infrastructure-graph-core.mjs';
+import { CascadePropagation } from './infrastructure-propagation.mjs';
+import { PageRankAnalyzer } from './infrastructure-pagerank-critical.mjs';
+import { TemporalDecay } from './infrastructure-temporal.mjs';
+import { VulnerabilityCalculator } from './infrastructure-vulnerability-calc.mjs';
+import { MonteCarloSimulator } from './infrastructure-monte-carlo.mjs';
+import { ScenarioEngine } from './infrastructure-scenario-engine.mjs';
+import { MilitaryConcentration } from './infrastructure-military-monitor.mjs';
+import { ChokepointMonitor } from './infrastructure-chokepoint-monitor.mjs';
+import { NuclearFacilityMonitor } from './infrastructure-nuclear-monitor.mjs';
+import { SupplyChainAnalysis } from './infrastructure-supply-chain.mjs';
+import { CargoAnomalyDetector } from './infrastructure-cargo-anomaly.mjs';
 
 import { promises as fs } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { createHash } from 'crypto';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT = join(__dirname, '..', '..');
-
-// Пути к данным
-const OBJECTS_FILE = join(ROOT, 'data', 'infrastructure', 'objects.json');
-const HISTORY_FILE = join(ROOT, 'data', 'infrastructure', 'history.json');
-const RISK_FILE = join(ROOT, 'data', 'infrastructure', 'risks.json');
-
-// Убеждаемся, что папка существует
-async function ensureDir(dir) {
-    try {
-        await fs.mkdir(dir, { recursive: true });
-    } catch (e) {
-        // Игнорируем, если папка уже есть
-    }
-}
+const __filename = fileURLToPath(import.meta.url);
+const __dirname  = dirname(__filename);
+const PROJECT_ROOT = join(__dirname, '..', '..');
+const DATA_DIR = join(PROJECT_ROOT, 'data');
+const BASKET_DIR = join(DATA_DIR, 'basket');
+const INFRA_FILE = join(DATA_DIR, 'infrastructure', 'objects.json');
 
 // ============================================================
-// 1. ЗАГРУЗКА И СОХРАНЕНИЕ ДАННЫХ
+//  КОНТРАКТ
 // ============================================================
 
-async function loadObjects() {
-    try {
-        const data = await fs.readFile(OBJECTS_FILE, 'utf-8');
-        return JSON.parse(data);
-    } catch (e) {
-        console.error('[Infrastructure] Ошибка загрузки объектов:', e.message);
-        return { objects: [], lastUpdated: null };
-    }
-}
-
-async function saveObjects(data) {
-    await ensureDir(join(ROOT, 'data', 'infrastructure'));
-    await fs.writeFile(OBJECTS_FILE, JSON.stringify(data, null, 2));
-}
-
-async function loadHistory() {
-    try {
-        const data = await fs.readFile(HISTORY_FILE, 'utf-8');
-        return JSON.parse(data);
-    } catch (e) {
-        return { history: [] };
-    }
-}
-
-async function saveHistory(data) {
-    await ensureDir(join(ROOT, 'data', 'infrastructure'));
-    await fs.writeFile(HISTORY_FILE, JSON.stringify(data, null, 2));
-}
-
-// ============================================================
-// 2. РАСЧЁТ ИНДЕКСА УЯЗВИМОСТИ
-// ============================================================
-
-function calculateVulnerability(object, externalData = {}) {
-    let score = 0;
-    let factors = [];
-
-    // 1. Военные угрозы (0-3)
-    let militaryRisk = 0;
-    if (object.risks?.includes('military_attack')) militaryRisk += 2;
-    if (object.risks?.includes('sabotage')) militaryRisk += 1.5;
-    if (externalData.conflictNearby) militaryRisk += externalData.conflictNearby;
-    militaryRisk = Math.min(militaryRisk, 3);
-    factors.push({ name: 'Военные угрозы', value: militaryRisk, weight: 0.25 });
-
-    // 2. Погодные риски (0-2)
-    let weatherRisk = 0;
-    if (object.risks?.includes('earthquake')) weatherRisk += 1.5;
-    if (object.risks?.includes('typhoon')) weatherRisk += 1.5;
-    if (object.risks?.includes('flood')) weatherRisk += 1;
-    if (externalData.stormNearby) weatherRisk += externalData.stormNearby;
-    weatherRisk = Math.min(weatherRisk, 2);
-    factors.push({ name: 'Погодные риски', value: weatherRisk, weight: 0.2 });
-
-    // 3. Санкции (0-2)
-    let sanctionsRisk = 0;
-    if (object.sanctions) sanctionsRisk += 1.5;
-    if (externalData.sanctionsIntensity) sanctionsRisk += externalData.sanctionsIntensity;
-    sanctionsRisk = Math.min(sanctionsRisk, 2);
-    factors.push({ name: 'Санкции', value: sanctionsRisk, weight: 0.15 });
-
-    // 4. Износ и состояние (0-1.5)
-    let degradationRisk = 0;
-    if (object.status === 'critical') degradationRisk += 1;
-    if (object.status === 'warning') degradationRisk += 0.5;
-    if (!object.operational) degradationRisk += 0.5;
-    degradationRisk = Math.min(degradationRisk, 1.5);
-    factors.push({ name: 'Износ/состояние', value: degradationRisk, weight: 0.15 });
-
-    // 5. Каскадные эффекты (0-1.5)
-    let cascadeRisk = 0;
-    if (object.cascade && object.cascade.length > 0) {
-        cascadeRisk = Math.min(object.cascade.length * 0.15, 1.5);
-    }
-    factors.push({ name: 'Каскадные эффекты', value: cascadeRisk, weight: 0.15 });
-
-    // 6. Пожары рядом (0-1)
-    let fireRisk = 0;
-    if (externalData.fireNearby) {
-        fireRisk = Math.min(externalData.fireNearby * 0.5, 1);
-    }
-    factors.push({ name: 'Пожары рядом', value: fireRisk, weight: 0.1 });
-
-    // Расчёт общего индекса (0-10)
-    const maxScore = 3 + 2 + 2 + 1.5 + 1.5 + 1; // = 11
-    let total = 0;
-    for (const f of factors) {
-        total += f.value * f.weight * 10;
-    }
-
-    return {
-        score: Math.min(10, Math.round(total * 10) / 10),
-        factors: factors,
-        details: {
-            military: militaryRisk,
-            weather: weatherRisk,
-            sanctions: sanctionsRisk,
-            degradation: degradationRisk,
-            cascade: cascadeRisk,
-            fire: fireRisk
-        }
-    };
-}
-
-// ============================================================
-// 3. РАСЧЁТ КАСКАДНЫХ ЭФФЕКТОВ
-// ============================================================
-
-function getCascadeEffects(object, allObjects) {
-    if (!object.cascade || object.cascade.length === 0) {
-        return { affected: [], totalImpact: 0 };
-    }
-
-    const affected = [];
-    let totalImpact = 0;
-
-    for (const id of object.cascade) {
-        const target = allObjects.find(o => o.id === id);
-        if (target) {
-            const impact = target.vulnerability || 5;
-            affected.push({
-                id: target.id,
-                name: target.name,
-                type: target.type,
-                layer: target.layer,
-                status: target.status,
-                impact: Math.round(impact * 10) / 10
-            });
-            totalImpact += impact;
-        }
-    }
-
-    return {
-        affected: affected,
-        totalImpact: Math.round(totalImpact * 10) / 10,
-        riskLevel: totalImpact > 20 ? 'high' : totalImpact > 10 ? 'medium' : 'low'
-    };
-}
-
-// ============================================================
-// 4. AI-ПРОГНОЗ (ПРОСТАЯ ВЕРСИЯ, ИНТЕГРАЦИЯ С OLLAMA БУДЕТ ПОТОМ)
-// ============================================================
-
-function predictRisk(object, externalData = {}) {
-    const vulnerability = calculateVulnerability(object, externalData);
-    const baseRisk = vulnerability.score / 10;
-
-    // Факторы, повышающие риск в ближайшие 48 часов
-    let factor = 1;
-    if (object.status === 'critical') factor += 0.3;
-    if (externalData.conflictNearby > 1) factor += 0.15;
-    if (externalData.fireNearby > 2) factor += 0.15;
-    if (externalData.stormNearby > 1) factor += 0.1;
-
-    const probability = Math.min(95, Math.round(baseRisk * factor * 100));
-
-    let recommendation = 'Наблюдение';
-    if (probability > 70) {
-        recommendation = '🔴 НЕМЕДЛЕННЫЕ ДЕЙСТВИЯ: Усилить охрану, эвакуировать персонал';
-    } else if (probability > 40) {
-        recommendation = '🟡 ПОВЫШЕННОЕ ВНИМАНИЕ: Проверить системы защиты';
-    } else {
-        recommendation = '🟢 ШТАТНЫЙ РЕЖИМ: Плановый мониторинг';
-    }
-
-    return {
-        objectId: object.id,
-        probability: probability,
-        timeframe: '48 часов',
-        recommendation: recommendation,
-        riskFactors: vulnerability.factors.filter(f => f.value > 1).map(f => f.name),
-        confidence: Math.round((1 - (probability / 100)) * 70 + 20)
-    };
-}
-
-// ============================================================
-// 5. СТАТИСТИКА ПО ОБЪЕКТАМ
-// ============================================================
-
-function getStatistics(objects) {
-    const stats = {
-        total: objects.length,
-        byLayer: {},
-        byStatus: {
-            normal: 0,
-            warning: 0,
-            critical: 0
-        },
-        byType: {},
-        sanctions: 0,
-        averageVulnerability: 0,
-        criticalVulnerability: 0,
-        highRiskObjects: []
-    };
-
-    let totalVuln = 0;
-    let criticalVulnCount = 0;
-
-    for (const obj of objects) {
-        // По слоям
-        if (!stats.byLayer[obj.layer]) stats.byLayer[obj.layer] = 0;
-        stats.byLayer[obj.layer]++;
-
-        // По статусам
-        if (obj.status === 'normal') stats.byStatus.normal++;
-        else if (obj.status === 'warning') stats.byStatus.warning++;
-        else if (obj.status === 'critical') stats.byStatus.critical++;
-
-        // По типам
-        if (!stats.byType[obj.type]) stats.byType[obj.type] = 0;
-        stats.byType[obj.type]++;
-
-        // Санкции
-        if (obj.sanctions) stats.sanctions++;
-
-        // Уязвимость
-        const vuln = obj.vulnerability || 0;
-        totalVuln += vuln;
-        if (vuln > 7) {
-            criticalVulnCount++;
-            stats.highRiskObjects.push({
-                id: obj.id,
-                name: obj.name,
-                vulnerability: vuln,
-                status: obj.status
-            });
-        }
-    }
-
-    stats.averageVulnerability = objects.length > 0 ? Math.round((totalVuln / objects.length) * 10) / 10 : 0;
-    stats.criticalVulnerability = criticalVulnCount;
-
-    // Сортировка по уязвимости
-    stats.highRiskObjects.sort((a, b) => b.vulnerability - a.vulnerability);
-
-    return stats;
-}
-
-// ============================================================
-// 6. HTTP-ОБРАБОТЧИК
-// ============================================================
-
-export async function handleInfrastructureAPI(req, res) {
-    const url = new URL(req.url, `http://${req.headers.host}`);
-    const path = url.pathname;
-
-    // CORS
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-    if (req.method === 'OPTIONS') {
-        res.writeHead(200);
-        res.end();
-        return;
-    }
-
-    try {
-        // Загружаем данные
-        const data = await loadObjects();
-        const objects = data.objects || [];
-
-        // --- GET /api/infrastructure/objects ---
-        if (path === '/api/infrastructure/objects' && req.method === 'GET') {
-            const layer = url.searchParams.get('layer');
-            const status = url.searchParams.get('status');
-            let filtered = objects;
-
-            if (layer) {
-                filtered = filtered.filter(o => o.layer === layer);
-            }
-            if (status) {
-                filtered = filtered.filter(o => o.status === status);
-            }
-
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({
-                success: true,
-                count: filtered.length,
-                objects: filtered,
-                lastUpdated: data.lastUpdated || null
-            }));
-            return;
-        }
-
-        // --- GET /api/infrastructure/object/:id ---
-        if (path.startsWith('/api/infrastructure/object/') && req.method === 'GET') {
-            const id = path.split('/').pop();
-            const object = objects.find(o => o.id === id);
-
-            if (!object) {
-                res.writeHead(404, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ success: false, error: 'Объект не найден' }));
-                return;
-            }
-
-            // Добавляем каскадные эффекты
-            const cascade = getCascadeEffects(object, objects);
-
-            // Добавляем прогноз
-            const predict = predictRisk(object, {
-                conflictNearby: 0.5,
-                fireNearby: 0
-            });
-
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({
-                success: true,
-                object: {
-                    ...object,
-                    cascade: cascade,
-                    predict: predict
-                }
-            }));
-            return;
-        }
-
-        // --- GET /api/infrastructure/layers ---
-        if (path === '/api/infrastructure/layers' && req.method === 'GET') {
-            const layers = {};
-            for (const obj of objects) {
-                if (!layers[obj.layer]) {
-                    layers[obj.layer] = {
-                        name: obj.layer,
-                        count: 0,
-                        objects: []
-                    };
-                }
-                layers[obj.layer].count++;
-                layers[obj.layer].objects.push({
-                    id: obj.id,
-                    name: obj.name,
-                    status: obj.status
-                });
-            }
-
-            const result = Object.values(layers);
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({
-                success: true,
-                layers: result
-            }));
-            return;
-        }
-
-        // --- GET /api/infrastructure/status ---
-        if (path === '/api/infrastructure/status' && req.method === 'GET') {
-            const stats = getStatistics(objects);
-
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({
-                success: true,
-                ...stats,
-                lastUpdated: data.lastUpdated || null
-            }));
-            return;
-        }
-
-        // --- GET /api/infrastructure/risks ---
-        if (path === '/api/infrastructure/risks' && req.method === 'GET') {
-            const riskData = objects.map(obj => {
-                const vuln = calculateVulnerability(obj);
-                return {
-                    id: obj.id,
-                    name: obj.name,
-                    layer: obj.layer,
-                    status: obj.status,
-                    coordinates: obj.coordinates,
-                    vulnerability: vuln,
-                    riskLevel: vuln.score > 7 ? 'critical' :
-                               vuln.score > 5 ? 'high' :
-                               vuln.score > 3 ? 'medium' : 'low'
-                };
-            });
-
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({
-                success: true,
-                risks: riskData
-            }));
-            return;
-        }
-
-        // --- GET /api/infrastructure/cascade/:id ---
-        if (path.startsWith('/api/infrastructure/cascade/') && req.method === 'GET') {
-            const id = path.split('/').pop();
-            const object = objects.find(o => o.id === id);
-
-            if (!object) {
-                res.writeHead(404, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ success: false, error: 'Объект не найден' }));
-                return;
-            }
-
-            const cascade = getCascadeEffects(object, objects);
-
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({
-                success: true,
-                objectId: id,
-                objectName: object.name,
-                ...cascade
-            }));
-            return;
-        }
-
-        // --- GET /api/infrastructure/predict/:id ---
-        if (path.startsWith('/api/infrastructure/predict/') && req.method === 'GET') {
-            const id = path.split('/').pop();
-            const object = objects.find(o => o.id === id);
-
-            if (!object) {
-                res.writeHead(404, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ success: false, error: 'Объект не найден' }));
-                return;
-            }
-
-            const predict = predictRisk(object);
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({
-                success: true,
-                ...predict
-            }));
-            return;
-        }
-
-        // --- POST /api/infrastructure/update (принудительное обновление) ---
-        if (path === '/api/infrastructure/update' && req.method === 'POST') {
-            // Здесь будет обновление из внешних источников
-            // Пока просто отмечаем время обновления
-            data.lastUpdated = new Date().toISOString();
-            await saveObjects(data);
-
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({
-                success: true,
-                message: 'Данные обновлены',
-                lastUpdated: data.lastUpdated
-            }));
-            return;
-        }
-
-        // --- GET /api/infrastructure/export ---
-        if (path === '/api/infrastructure/export' && req.method === 'GET') {
-            const format = url.searchParams.get('format') || 'json';
-
-            if (format === 'json') {
-                res.writeHead(200, {
-                    'Content-Type': 'application/json',
-                    'Content-Disposition': `attachment; filename="infrastructure_${new Date().toISOString().slice(0,10)}.json"`
-                });
-                res.end(JSON.stringify(data, null, 2));
-                return;
-            }
-
-            if (format === 'csv') {
-                let csv = 'id,name,type,layer,country,lat,lng,status,operational,vulnerability,sanctions\n';
-                for (const obj of objects) {
-                    csv += `${obj.id},"${obj.name}",${obj.type},${obj.layer},${obj.country},${obj.coordinates.lat},${obj.coordinates.lng},${obj.status},${obj.operational},${obj.vulnerability || 0},${obj.sanctions}\n`;
-                }
-                res.writeHead(200, {
-                    'Content-Type': 'text/csv',
-                    'Content-Disposition': `attachment; filename="infrastructure_${new Date().toISOString().slice(0,10)}.csv"`
-                });
-                res.end(csv);
-                return;
-            }
-
-            res.writeHead(400, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ success: false, error: 'Неизвестный формат' }));
-            return;
-        }
-
-        // 404
-        res.writeHead(404, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ success: false, error: 'Неизвестный путь' }));
-
-    } catch (error) {
-        console.error('[Infrastructure] Ошибка:', error);
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-            success: false,
-            error: 'Внутренняя ошибка сервера',
-            details: error.message
-        }));
-    }
-}
-
-// ============================================================
-// 7. ЭКСПОРТ
-// ============================================================
-
-export default {
-    handleInfrastructureAPI,
-    loadObjects,
-    saveObjects,
-    calculateVulnerability,
-    getCascadeEffects,
-    predictRisk,
-    getStatistics
+export const route  = '/api/services/infrastructure';
+export const method = 'GET';
+
+export const meta = {
+  service: true,
+  description: 'Infrastructure analysis service: cascade, PageRank, Monte Carlo, chokepoints, nuclear, supply chain, cargo anomalies, scenarios. Based on data/infrastructure/objects.json (89 critical objects).',
+  cache: 60,
+  version: '2.0.0',
 };
+
+// ============================================================
+//  ЗАГРУЗКА ДАННЫХ
+// ============================================================
+
+async function readJSON(path, fallback = null) {
+  try { return JSON.parse(await fs.readFile(path, 'utf8')); }
+  catch (e) {
+    if (e.code === 'ENOENT') return fallback;
+    throw e;
+  }
+}
+
+async function loadBasket() {
+  const [acled, earthquakes, firms, ofac, inflation] = await Promise.all([
+    readJSON(join(BASKET_DIR, 'acled.json'), []),
+    readJSON(join(BASKET_DIR, 'earthquakes.json'), []),
+    readJSON(join(BASKET_DIR, 'firms.json'), []),
+    readJSON(join(BASKET_DIR, 'ofac.json'), []),
+    readJSON(join(BASKET_DIR, 'inflation.json'), null),
+  ]);
+  return {
+    acled: acled?.events || acled || [],
+    earthquakes: Array.isArray(earthquakes) ? earthquakes : (earthquakes?.features || []),
+    fires: Array.isArray(firms) ? firms : (firms?.features || []),
+    ofac: Array.isArray(ofac) ? ofac : (ofac?.data || []),
+    inflation,
+  };
+}
+
+async function loadInfrastructure() {
+  const data = await readJSON(INFRA_FILE, null);
+  if (!data) {
+    const err = new Error('no_data');
+    err.statusCode = 503;
+    err.hint = 'data/infrastructure/objects.json отсутствует';
+    throw err;
+  }
+  if (Array.isArray(data)) return { version: null, lastUpdated: null, objects: data };
+  if (!data.objects) return { version: data.version, lastUpdated: data.lastUpdated, objects: [] };
+  return data;
+}
+
+// ============================================================
+//  ЯДРО АНАЛИЗА
+// ============================================================
+
+function buildGraph(infraData) {
+  const graph = new InfrastructureGraph();
+  graph.buildFromData(infraData);
+  return graph;
+}
+
+function computeVulnerabilities(graph, basket) {
+  const vulnCalc = new VulnerabilityCalculator();
+  const nodes = graph.getAllNodes();
+  const vulnScores = {};
+  const vulnDetails = {};
+
+  for (const node of nodes) {
+    if (node.vulnerabilityNormalized != null) {
+      const adaptive = vulnCalc.calculate(node, basket);
+      vulnScores[node.id] = Math.min(node.vulnerabilityNormalized * 0.6 + adaptive.score * 0.4, 1);
+      vulnDetails[node.id] = {
+        base: node.vulnerabilityNormalized,
+        adaptive: adaptive.score,
+        combined: vulnScores[node.id],
+        components: adaptive.components,
+      };
+    } else {
+      const result = vulnCalc.calculate(node, basket);
+      vulnScores[node.id] = result.score;
+      vulnDetails[node.id] = result;
+    }
+  }
+  return { vulnScores, vulnDetails, nodes };
+}
+
+// ============================================================
+//  ЭНДПОИНТЫ
+// ============================================================
+
+async function epRoot(infraData, ctx) {
+  const { vulnScores } = ctx;
+  return {
+    total: ctx.nodes.length,
+    version: infraData.version || null,
+    lastUpdated: infraData.lastUpdated || null,
+    objects: ctx.nodes.map((n) => ({ ...n, calculatedVulnerability: vulnScores[n.id] || 0 })),
+  };
+}
+
+async function epVulnerability(_infra, ctx) {
+  const { vulnScores, vulnDetails, nodes } = ctx;
+  const values = Object.values(vulnScores);
+  const mean = values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0;
+  return {
+    total: nodes.length,
+    scores: vulnScores,
+    details: vulnDetails,
+    summary: {
+      mean,
+      max: values.length ? Math.max(...values) : 0,
+      min: values.length ? Math.min(...values) : 1,
+    },
+  };
+}
+
+async function epCascade(_infra, ctx, query) {
+  const { graph, vulnScores, nodes } = ctx;
+  const nodeId = query.node || nodes[0]?.id;
+  if (!nodeId) { const e = new Error('no_nodes'); e.statusCode = 400; throw e; }
+  const propagation = new CascadePropagation(graph);
+  return propagation.assessImpact(nodeId, vulnScores, {
+    decayFactor: parseFloat(query.decay) || 0.7,
+    threshold: parseFloat(query.threshold) || 0.15,
+  });
+}
+
+async function epSimulate(_infra, ctx, query) {
+  const { graph, vulnScores } = ctx;
+  const mc = new MonteCarloSimulator(graph);
+  const opts = {
+    runs: parseInt(query.runs, 10) || 1000,
+    threshold: parseFloat(query.threshold) || 0.15,
+    decayFactor: parseFloat(query.decay) || 0.7,
+  };
+  return query.node
+    ? mc.simulateFromNode(query.node, vulnScores, opts)
+    : mc.simulate(vulnScores, opts);
+}
+
+async function epCriticalPaths(_infra, ctx, query) {
+  const pr = new PageRankAnalyzer(ctx.graph);
+  const paths = pr.criticalPaths(ctx.vulnScores, parseInt(query.top, 10) || 5);
+  return { paths, count: paths.length };
+}
+
+async function epPagerank(_infra, ctx, query) {
+  const pr = new PageRankAnalyzer(ctx.graph);
+  const scores = pr.compute({ damping: parseFloat(query.damping) || 0.85 });
+  const critical = pr.identifyCriticalNodes(ctx.vulnScores, { topN: parseInt(query.top, 10) || 10 });
+  return { pagerank: scores, criticalNodes: critical };
+}
+
+async function epSensitivity(_infra, ctx, query) {
+  const mc = new MonteCarloSimulator(ctx.graph);
+  const result = mc.sensitivityAnalysis(ctx.vulnScores, { runs: parseInt(query.runs, 10) || 200 });
+  return { sensitivity: result };
+}
+
+async function epFeatureCollection(_infra, ctx) {
+  const { nodes, vulnScores, vulnDetails } = ctx;
+  const features = nodes.map((node) => ({
+    type: 'Feature',
+    geometry: { type: 'Point', coordinates: [node.lng || 0, node.lat || 0] },
+    properties: {
+      id: node.id, name: node.name, type: node.type, layer: node.layer,
+      country: node.country, status: node.status, operational: node.operational,
+      vulnerability: vulnScores[node.id] || 0,
+      baseVulnerability: node.vulnerability,
+      risks: node.risks, sanctions: node.sanctions, capacity: node.capacity, unit: node.unit,
+      components: vulnDetails[node.id]?.components || {},
+    },
+  }));
+  return {
+    type: 'FeatureCollection',
+    features,
+    metadata: { total: features.length, generated: new Date().toISOString() },
+  };
+}
+
+async function epStats(infra, ctx, _query, basket) {
+  const pr = new PageRankAnalyzer(ctx.graph);
+  const prResult = pr.compute();
+  const supplyChain = new SupplyChainAnalysis(ctx.graph);
+  const values = Object.values(ctx.vulnScores);
+  const mean = values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0;
+  const topEntry = Object.entries(ctx.vulnScores).sort((a, b) => b[1] - a[1])[0];
+  return {
+    graph: ctx.graph.size(),
+    vulnerability: { mean, max: values.length ? Math.max(...values) : 0, maxNode: topEntry?.[0] },
+    pagerank: { topNode: prResult.ranked?.[0]?.id, topScore: prResult.ranked?.[0]?.score },
+    supplyChain: supplyChain.analyze().summary,
+    basket: {
+      acled: basket.acled.length,
+      earthquakes: basket.earthquakes.length,
+      fires: basket.fires.length,
+      ofac: basket.ofac.length,
+      inflation: basket.inflation?.features?.length || 0,
+    },
+    objects: { version: infra.version || null, lastUpdated: infra.lastUpdated || null },
+  };
+}
+
+async function epMilitary(_infra, _ctx, _query, basket) {
+  const monitor = new MilitaryConcentration();
+  return monitor.analyze(basket.acled);
+}
+
+async function epChokepoints(_infra, ctx, _query, basket) {
+  const monitor = new ChokepointMonitor();
+  const result = monitor.analyze(basket.acled, ctx.graph);
+  return { chokepoints: result, count: result.length };
+}
+
+async function epNuclear(_infra, _ctx, _query, basket) {
+  const monitor = new NuclearFacilityMonitor();
+  const result = monitor.analyze(basket.acled, basket.earthquakes);
+  return { facilities: result, count: result.length };
+}
+
+async function epSupplyChain(_infra, ctx) {
+  const analysis = new SupplyChainAnalysis(ctx.graph);
+  return analysis.analyze();
+}
+
+async function epCargoAnomalies(_infra, _ctx, query) {
+  const detector = new CargoAnomalyDetector({ zThreshold: parseFloat(query.z) || 2.5 });
+  const cargoData = await readJSON(join(BASKET_DIR, 'cargo.json'), []);
+  return detector.detect(cargoData);
+}
+
+async function epScenarios(_infra, ctx, query) {
+  const engine = new ScenarioEngine(ctx.graph);
+  if (query.run) {
+    return engine.runScenario(query.run, ctx.vulnScores, {
+      runs: parseInt(query.runs, 10) || 500,
+      region: query.region,
+    });
+  }
+  const list = engine.listScenarios();
+  return { scenarios: list, count: list.length };
+}
+
+const ENDPOINTS = {
+  '':                epRoot,
+  '/':               epRoot,
+  '/vulnerability':  epVulnerability,
+  '/cascade':        epCascade,
+  '/simulate':       epSimulate,
+  '/critical-paths': epCriticalPaths,
+  '/pagerank':       epPagerank,
+  '/sensitivity':    epSensitivity,
+  '/featurecollection': epFeatureCollection,
+  '/stats':          epStats,
+  '/military':       epMilitary,
+  '/chokepoints':    epChokepoints,
+  '/nuclear':        epNuclear,
+  '/supply-chain':   epSupplyChain,
+  '/cargo-anomalies':epCargoAnomalies,
+  '/scenarios':      epScenarios,
+};
+
+// ============================================================
+//  ФОРМАТЫ ОТВЕТА
+// ============================================================
+
+function toCSV(data) {
+  if (!data || typeof data !== 'object') return null;
+  const arr = Array.isArray(data) ? data
+    : Array.isArray(data.objects) ? data.objects
+    : Array.isArray(data.features) ? data.features.map(f => ({ ...f.properties, lat: f.geometry?.coordinates?.[1], lng: f.geometry?.coordinates?.[0] }))
+    : Array.isArray(data.facilities) ? data.facilities
+    : Array.isArray(data.chokepoints) ? data.chokepoints
+    : null;
+  if (!arr || arr.length === 0) return '';
+  const keys = new Set();
+  for (const row of arr) Object.keys(row || {}).forEach(k => keys.add(k));
+  const cols = [...keys];
+  const esc = (v) => {
+    if (v == null) return '';
+    const s = typeof v === 'object' ? JSON.stringify(v) : String(v);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const header = cols.join(',');
+  const body = arr.map(row => cols.map(c => esc(row[c])).join(',')).join('\n');
+  return header + '\n' + body + '\n';
+}
+
+function sendJSON(res, status, payload, extra = {}) {
+  const body = JSON.stringify(payload);
+  res.writeHead(status, {
+    'Content-Type': 'application/json; charset=utf-8',
+    'Content-Length': String(Buffer.byteLength(body)),
+    ...extra,
+  });
+  res.end(body);
+}
+
+function sendText(res, status, text, ct = 'text/plain; charset=utf-8') {
+  res.writeHead(status, { 'Content-Type': ct, 'Content-Length': String(Buffer.byteLength(text)) });
+  res.end(text);
+}
+
+// ============================================================
+//  HANDLER
+// ============================================================
+
+export async function handler(req, res) {
+  const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+  const query = Object.fromEntries(url.searchParams.entries());
+  const format = (query.format || 'json').toLowerCase();
+
+  // Отрезаем префикс route, оставляем только под-путь внутри сервиса
+  const subPath = url.pathname.replace(/^\/api\/services\/infrastructure/, '') || '/';
+
+  if (req.method === 'OPTIONS') {
+    res.writeHead(200, {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    });
+    res.end();
+    return;
+  }
+
+  try {
+    const infraData = await loadInfrastructure();
+    const basket = await loadBasket();
+    const graph = buildGraph(infraData);
+    const { vulnScores, vulnDetails, nodes } = computeVulnerabilities(graph, basket);
+    const ctx = { graph, vulnScores, vulnDetails, nodes };
+
+    const ep = ENDPOINTS[subPath];
+    if (!ep) {
+      return sendJSON(res, 404, {
+        error: 'endpoint_not_found',
+        path: url.pathname,
+        available: Object.keys(ENDPOINTS).filter(k => k && k !== '/'),
+      });
+    }
+
+    const result = await ep(infraData, ctx, query, basket);
+
+    const extra = {
+      'X-Service': 'infrastructure',
+      'X-Service-Version': meta.version,
+      'Cache-Control': `public, max-age=${meta.cache}`,
+    };
+
+    if (format === 'csv') {
+      const csv = toCSV(result);
+      if (csv === null) return sendJSON(res, 400, { error: 'csv_not_supported_for_endpoint', endpoint: subPath }, extra);
+      return sendText(res, 200, csv, 'text/csv; charset=utf-8');
+    }
+    if (format === 'stats') {
+      return sendJSON(res, 200, { stats: await epStats(infraData, ctx, {}, basket) }, extra);
+    }
+    if (format === 'raw') {
+      return sendJSON(res, 200, { data: result }, extra);
+    }
+
+    // json (по умолчанию)
+    return sendJSON(res, 200, {
+      service: 'infrastructure',
+      endpoint: subPath,
+      meta: {
+        version: meta.version,
+        generated_at: new Date().toISOString(),
+        objects_total: nodes.length,
+        objects_version: infraData.version || null,
+        objects_lastUpdated: infraData.lastUpdated || null,
+      },
+      data: result,
+    }, extra);
+
+  } catch (e) {
+    const status = e.statusCode || 500;
+    const payload = {
+      error: status === 503 ? 'no_data' : 'service_error',
+      message: e.message,
+      endpoint: url.pathname,
+    };
+    if (e.hint) payload.hint = e.hint;
+    try { sendJSON(res, status, payload); } catch {}
+  }
+}

@@ -1,0 +1,117 @@
+name: Nightly Neo4j Export
+
+on:
+  schedule:
+    - cron: '0 3 * * *'  # Каждую ночь в 3:00 UTC
+  workflow_dispatch:
+
+jobs:
+  export-neo4j:
+    name: Export Causal Graph to Neo4j
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      neo4j:
+        image: neo4j:5
+        env:
+          NEO4J_AUTH: neo4j/testpassword
+          NEO4J_PLUGINS: '["apoc"]'
+        ports:
+          - 7474:7474
+          - 7687:7687
+        options: >-
+          --health-cmd "wget --no-verbose --tries=1 --spider localhost:7474 || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python deps
+        run: pip install -r scripts/neo4j_requirements.txt
+
+      - name: Generate latest forecast
+        run: |
+          mkdir -p runs/memory runs/predictions
+          node -e "
+            const { writeFileSync } = require('fs');
+            const history = [];
+            for (let i = 0; i < 100; i++) {
+              history.push({
+                timestamp: new Date(Date.now() - (100 - i) * 15 * 60 * 1000).toISOString(),
+                fred: { vix: 20 + Math.random() * 15, hySpread: 3 + Math.random() * 3 },
+                gdelt: { conflictEvents: Array.from({ length: Math.floor(Math.random() * 15) }, () => ({})) },
+                sanctions: { count: Math.floor(Math.random() * 6) },
+                delta: { newAlerts: Math.floor(Math.random() * 6), escalatedAlerts: Math.floor(Math.random() * 3) },
+              });
+            }
+            writeFileSync('runs/history.json', JSON.stringify(history));
+          "
+          node -e "
+            import('./apis/predict/engine.mjs').then(async m => {
+              const history = JSON.parse(require('fs').readFileSync('runs/history.json'));
+              const latest = history[99];
+              await m.runForecastPipeline(latest, { skipSources: true, skipMetaScenarios: true });
+              console.log('✓ Forecast generated');
+            });
+          "
+
+      - name: Wait for Neo4j
+        run: |
+          for i in $(seq 1 30); do
+            if nc -z localhost 7687 2>/dev/null; then
+              echo "✓ Neo4j ready"
+              break
+            fi
+            sleep 2
+          done
+
+      - name: Export to Neo4j
+        env:
+          NEO4J_URI: bolt://localhost:7687
+          NEO4J_USER: neo4j
+          NEO4J_PASSWORD: testpassword
+        run: |
+          python scripts/neo4j_export.py --clear --analyze
+
+      - name: Verify graph
+        env:
+          NEO4J_URI: bolt://localhost:7687
+          NEO4J_USER: neo4j
+          NEO4J_PASSWORD: testpassword
+        run: |
+          python -c "
+            from neo4j import GraphDatabase
+            driver = GraphDatabase.driver('bolt://localhost:7687', auth=('neo4j', 'testpassword'))
+            with driver.session() as s:
+              nodes = s.run('MATCH (n:CrucixNode) RETURN count(n) AS c').single()['c']
+              edges = s.run('MATCH ()-[r:CAUSES]->() RETURN count(r) AS c').single()['c']
+              layers = s.run('MATCH (l:CrucixLayer) RETURN count(l) AS c').single()['c']
+              print(f'Nodes: {nodes}, Edges: {edges}, Layers: {layers}')
+              assert nodes > 0, 'No nodes'
+              assert edges > 0, 'No edges'
+              assert layers == 4, f'Expected 4 layers, got {layers}'
+              print('✓ Graph validation passed')
+            driver.close()
+          "
+
+      - name: Dump Neo4j data as artifact
+        if: always()
+        run: |
+          mkdir -p neo4j-dump
+          docker exec $(docker ps -q -f name=neo4j) neo4j-admin database dump neo4j --to-path=/tmp 2>/dev/null || true
+          docker cp $(docker ps -q -f name=neo4j):/tmp/neo4j.dump neo4j-dump/ 2>/dev/null || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: neo4j-dump-${{ github.run_id }}
+          path: neo4j-dump/
+          retention-days: 30

@@ -1,0 +1,45 @@
+{
+  "_meta": {
+    "id": "snapshot-system",
+    "category": "detector",
+    "version": "1.0.0",
+    "schema_version": "1.0.0",
+    "sources": [
+      "vix",
+      "gold",
+      "oil",
+      "dxy",
+      "earthquakes"
+    ],
+    "calculator": "SnapshotSystem",
+    "updated_at": "2026-09-12T15:06:15.885Z",
+    "duration_ms": 3,
+    "checksum": "2a9fffec6bca94ec",
+    "stats": {
+      "snapshots": 1,
+      "current_checksum": "2ebd8e26"
+    }
+  },
+  "data": {
+    "snapshots": [
+      {
+        "id": "snapshot_1789225575888",
+        "timestamp": 1789225575888,
+        "checksum": "2ebd8e26"
+      }
+    ],
+    "current": {
+      "id": "snapshot_1789225575888",
+      "checksum": "2ebd8e26",
+      "data": {
+        "vix": null,
+        "gold": null,
+        "oil": null,
+        "dxy": null,
+        "earthquakes_count": 15
+      }
+    },
+    "total": 1,
+    "generated_at": "2026-09-12T15:06:15.885Z"
+  }
+}

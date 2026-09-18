@@ -1,0 +1,523 @@
+// apis/predict/v7/simulation_engine.mjs
+// Simulation Engine v7.0 — оркестратор непрерывного мира
+//
+// Назначение:
+//   Объединяет 4 модуля v7.0 в единый интерфейс:
+//     - world_model.mjs       — VAE + MDN-RNN (imagination)
+//     - neural_ode.mjs        — непрерывная динамика + counterfactual
+//     - dreamer.mjs           — actor-critic в latent space
+//     — continuous_causal.mjs — SCM + do-operator + ATE
+//
+// Ключевая идея:
+//   Четыре независимых предсказателя дают четыре точки зрения:
+//     1. World Model — "что будет, если ничего не менять"
+//     2. Neural ODE — "как быстро меняется состояние"
+//     3. Dreamer — "какое действие оптимально"
+//     4. Continuous Causal — "какие переменные настоящие причины"
+//
+//   Synthesis: если все 4 согласны по направлению → confidence высокий.
+//   Если расходятся → confidence низкий (система в неопределённости).
+//
+// Версия: 7.0.0
+
+import { writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { WorldModel, crucixWorldModel } from './world_model.mjs';
+import { crucixNeuralODE } from './neural_ode.mjs';
+import { crucixDreamer } from './dreamer.mjs';
+import { crucixContinuousCausal } from './continuous_causal.mjs';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// ═══════════════════════════════════════════════════
+// УТИЛИТЫ
+// ═══════════════════════════════════════════════════
+
+function ensureDir(d) {
+  if (!existsSync(d)) mkdirSync(d, { recursive: true });
+}
+
+function saveJSON(fp, data) {
+  ensureDir(dirname(fp));
+  writeFileSync(fp, JSON.stringify(data, null, 2));
+}
+
+function mean(arr) {
+  if (arr.length === 0) return 0;
+  return arr.reduce((a, b) => a + b, 0) / arr.length;
+}
+
+// ═══════════════════════════════════════════════════
+// SECTION 1: Согласование сигналов
+// ═══════════════════════════════════════════════════
+//
+// Каждый модуль даёт своё направление:
+//   world_model — "escalation" | "deescalation" | "stable"
+//   neural_ode — trend.tension.delta → знак
+//   dreamer — bestAction
+//   continuous_causal — forecast.direction
+//
+// Согласованность = доля модулей, показывающих то же направление.
+
+function consensusDirection(directions) {
+  const valid = directions.filter(d => d !== null && d !== undefined);
+  if (valid.length === 0) return { direction: 'unknown', agreement: 0, votes: {} };
+
+  const counts = {};
+  for (const d of valid) counts[d] = (counts[d] || 0) + 1;
+
+  let topDir = null;
+  let topCount = 0;
+  for (const [dir, c] of Object.entries(counts)) {
+    if (c > topCount) { topCount = c; topDir = dir; }
+  }
+
+  return {
+    direction: topDir,
+    agreement: topCount / valid.length,
+    votes: counts,
+    nVoters: valid.length,
+  };
+}
+
+/**
+ * Извлечение направления из каждого модуля.
+ */
+function extractDirections(v7Results) {
+  const directions = {};
+
+  // World Model
+  if (v7Results.worldModel && v7Results.worldModel.available) {
+    directions.worldModel = v7Results.worldModel.direction;
+  }
+
+  // Neural ODE — по знаку дельты tension
+  if (v7Results.neuralODE && v7Results.neuralODE.available) {
+    const delta = v7Results.neuralODE.forecast?.trend?.tension?.delta ?? 0;
+    directions.neuralODE = delta > 0.05 ? 'escalation'
+      : delta < -0.05 ? 'deescalation'
+      : 'stable';
+  }
+
+  // Dreamer — bestAction → интерпретация
+  if (v7Results.dreamer && v7Results.dreamer.available) {
+    const action = v7Results.dreamer.bestAction?.name || 'unknown';
+    // Интерпретация действий
+    if (action === 'intervention' || action === 'sanctions_high') {
+      directions.dreamer = 'deescalation'; // сильное действие → снижение
+    } else if (action === 'observe') {
+      directions.dreamer = 'stable'; // ничего не делать → стабильно
+    } else {
+      directions.dreamer = 'stable'; // monitor/sanctions_low → осторожное
+    }
+  }
+
+  // Continuous Causal
+  if (v7Results.continuousCausal && v7Results.continuousCausal.available) {
+    directions.continuousCausal = v7Results.continuousCausal.forecast?.direction;
+  }
+
+  return directions;
+}
+
+// ═══════════════════════════════════════════════════
+// SECTION 2: Synthesis
+// ═══════════════════════════════════════════════════
+
+/**
+ * Объединение результатов 4 модулей в единый вывод.
+ */
+function synthesize(v7Results) {
+  const directions = extractDirections(v7Results);
+  const consensus = consensusDirection(Object.values(directions));
+
+  // Confidence: сколько модулей согласны
+  // Плюс бонус за каждый модуль который отработал
+  const activeModules = Object.keys(v7Results).filter(k => {
+    const r = v7Results[k];
+    return r && r.available;
+  }).length;
+
+  const baseConfidence = consensus.agreement;
+  const coverageBonus = activeModules / 4; // 0..1
+  const confidence = Math.round((baseConfidence * 0.7 + coverageBonus * 0.3) * 1000) / 1000;
+
+  // Мера уверенности
+  let confidenceLevel;
+  if (confidence > 0.8) confidenceLevel = 'high';
+  else if (confidence > 0.6) confidenceLevel = 'moderate';
+  else if (confidence > 0.4) confidenceLevel = 'low';
+  else confidenceLevel = 'very_low';
+
+  // Reasoning steps — что каждый модуль сказал
+  const reasoningSteps = [];
+  if (v7Results.worldModel?.available) {
+    reasoningSteps.push({
+      module: 'world_model',
+      signal: directions.worldModel || 'unknown',
+      text: v7Results.worldModel.interpretation || 'Imagination rollout выполнен',
+      weight: 0.25,
+    });
+  }
+  if (v7Results.neuralODE?.available) {
+    reasoningSteps.push({
+      module: 'neural_ode',
+      signal: directions.neuralODE || 'unknown',
+      text: v7Results.neuralODE.interpretation || 'Непрерывная динамика рассчитана',
+      weight: 0.25,
+    });
+  }
+  if (v7Results.dreamer?.available) {
+    reasoningSteps.push({
+      module: 'dreamer',
+      signal: directions.dreamer || 'unknown',
+      text: v7Results.dreamer.interpretation || 'Actor-Critic в latent space',
+      weight: 0.25,
+    });
+  }
+  if (v7Results.continuousCausal?.available) {
+    reasoningSteps.push({
+      module: 'continuous_causal',
+      signal: directions.continuousCausal || 'unknown',
+      text: v7Results.continuousCausal.interpretation || 'SCM с do-operator',
+      weight: 0.25,
+    });
+  }
+
+  // Итоговый вывод
+  const summary = consensus.direction === 'unknown'
+    ? 'Недостаточно данных для синтеза'
+    : consensus.agreement > 0.75
+    ? `Консенсус: ${consensus.direction} (${consensus.nVoters} из ${activeModules} модулей согласны)`
+    : `Разногласие: ${consensus.direction} доминирует, но только ${Math.round(consensus.agreement * 100)}% согласия`;
+
+  return {
+    consensus,
+    directions,
+    confidence,
+    confidenceLevel,
+    activeModules,
+    totalModules: 4,
+    reasoningSteps,
+    summary,
+  };
+}
+
+// ═══════════════════════════════════════════════════
+// SECTION 3: Question Answering
+// ═══════════════════════════════════════════════════
+//
+// Набор предопределённых вопросов, на которые система
+// автоматически отвечает на основе результатов v7.
+
+function answerQuestions(v7Results, synthesis) {
+  const answers = [];
+
+  // 1. "Что будет через N часов?"
+  if (v7Results.worldModel?.available) {
+    const wm = v7Results.worldModel;
+    const trend = wm.imagination?.trend || {};
+    answers.push({
+      question: `Что будет через ${wm.config?.horizon * 0.25 || 3}ч?`,
+      answer: `Тренд ${wm.direction}. ` +
+        `tension ${trend.tension?.before ?? '?'} → ${trend.tension?.after ?? '?'}, ` +
+        `vix ${trend.vix?.before ?? '?'} → ${trend.vix?.after ?? '?'}.`,
+      confidence: wm.quality?.reconQuality === 'excellent' ? 'high'
+        : wm.quality?.reconQuality === 'good' ? 'moderate'
+        : 'low',
+      source: 'world_model',
+    });
+  }
+
+  // 2. "Как быстро меняется состояние?"
+  if (v7Results.neuralODE?.available) {
+    const no = v7Results.neuralODE;
+    const rate = no.forecast?.initialRate ?? 0;
+    const rateChange = no.forecast?.rateChange ?? 0;
+    answers.push({
+      question: 'Как быстро меняется состояние?',
+      answer: `Скорость эскалации в начале: ${rate.toFixed(4)}, ` +
+        `в конце: ${(rate + rateChange).toFixed(4)} ` +
+        `(${rateChange > 0 ? 'ускоряется' : 'замедляется'}).`,
+      confidence: Math.abs(rateChange) > 0.01 ? 'moderate' : 'low',
+      source: 'neural_ode',
+    });
+  }
+
+  // 3. "Что если ввести санкции?"
+  if (v7Results.continuousCausal?.available) {
+    const cc = v7Results.continuousCausal;
+    const ate = cc.ate;
+    if (ate && ate.perVar) {
+      const effects = Object.entries(ate.perVar)
+        .filter(([name]) => name !== Object.keys(ate.intervention)[0])
+        .map(([name, data]) => `${name}: ${data.ate}`)
+        .join(', ');
+      answers.push({
+        question: `Что если ${Object.keys(ate.intervention)[0]}=${Object.values(ate.intervention)[0]}?`,
+        answer: `Прямой эффект: ${ate.totalMagnitude.toFixed(3)}. ` +
+          `Косвенные эффекты: ${effects || 'нет'}.`,
+        confidence: ate.nSamples >= 15 ? 'moderate' : 'low',
+        source: 'continuous_causal',
+      });
+    }
+  }
+
+  // 4. "Какое действие оптимально?"
+  if (v7Results.dreamer?.available) {
+    const dr = v7Results.dreamer;
+    const action = dr.bestAction?.name || 'unknown';
+    const prob = dr.bestAction?.actionDistribution?.find(a => a.action === action)?.probability ?? 0;
+    answers.push({
+      question: 'Какое действие оптимально?',
+      answer: `${action} (P=${prob.toFixed(3)}). ` +
+        `Return политики: ${dr.finalRollout?.totalReturn?.toFixed(3) ?? '?'}.`,
+      confidence: prob > 0.4 ? 'moderate' : 'low',
+      source: 'dreamer',
+    });
+  }
+
+  // 5. "Какие переменные — настоящие причины?"
+  if (v7Results.continuousCausal?.available) {
+    const cc = v7Results.continuousCausal;
+    const edges = cc.dag?.edges || [];
+    const edgeStr = edges.slice(0, 5)
+      .map(e => `${e.from}→${e.to}`)
+      .join(', ');
+    answers.push({
+      question: 'Какие переменные — настоящие причины?',
+      answer: edges.length > 0
+        ? `Найдено ${edges.length} причинных связей: ${edgeStr}.`
+        : 'Причинных связей не обнаружено.',
+      confidence: edges.length >= 2 ? 'moderate' : 'low',
+      source: 'continuous_causal',
+    });
+  }
+
+  return answers;
+}
+
+// ═══════════════════════════════════════════════════
+// SECTION 4: ГЛАВНАЯ ФУНКЦИЯ
+// ═══════════════════════════════════════════════════
+
+/**
+ * Полная симуляция v7.0: запускает все 4 модуля и синтезирует результат.
+ *
+ * @param {Array} history — sweep'ы
+ * @param {Object} options — параметры запуска
+ * @param {number} options.horizon — горизонт прогноза (в sweep'ах)
+ * @param {Object} options.interventions — { varName: value } для counterfactual
+ * @param {Object} options.modules — переопределение параметров каждого модуля
+ * @param {Array} options.disabled — какие модули отключить
+ */
+export async function crucixSimulationEngine(history, options = {}) {
+  if (!history || history.length < 30) {
+    return {
+      module: 'simulation_engine',
+      available: false,
+      reason: 'insufficient_history',
+      minimumRequired: 30,
+      actual: history.length,
+    };
+  }
+
+  const t0 = Date.now();
+  console.log(`[simulation_engine] Запуск v7.0 на ${history.length} sweep'ах`);
+
+  const disabled = new Set(options.disabled || []);
+  const horizon = options.horizon || 12;
+
+  const v7Results = {};
+
+  // ═══════════════════════════════════════════════════
+  // Запускаем 4 модуля. World Model первым — его результат
+  // используется Dreamer'ом (для переиспользования обученного WM).
+  // ═══════════════════════════════════════════════════
+
+  // 1. World Model
+  let worldModelInstance = null;
+  if (!disabled.has('world_model')) {
+    try {
+      const wmOpts = {
+        latentDim: options.modules?.worldModel?.latentDim || 8,
+        hiddenDim: options.modules?.worldModel?.hiddenDim || 16,
+        vaeEpochs: options.modules?.worldModel?.vaeEpochs || 3,
+        rnnEpochs: options.modules?.worldModel?.rnnEpochs || 2,
+        horizon,
+        ...options.modules?.worldModel,
+      };
+      v7Results.worldModel = crucixWorldModel(history, wmOpts);
+      console.log(`[simulation_engine] world_model: ${v7Results.worldModel.available ? 'OK' : 'FAIL'}`);
+
+      // Сохраняем инстанс для Dreamer — переиспользует обученный WM
+      if (v7Results.worldModel.available) {
+        worldModelInstance = new WorldModel({
+          inputDim: 11,
+          latentDim: wmOpts.latentDim,
+          hiddenDim: wmOpts.hiddenDim,
+          actionDim: options.modules?.dreamer?.nActions || 5,
+          nMixtures: 3,
+        });
+        worldModelInstance.train(history, {
+          vaeEpochs: wmOpts.vaeEpochs,
+          rnnEpochs: wmOpts.rnnEpochs,
+          verbose: false,
+        });
+      }
+    } catch (e) {
+      v7Results.worldModel = {
+        module: 'world_model',
+        available: false,
+        error: e.message,
+      };
+    }
+  }
+
+  // 2. Neural ODE
+  if (!disabled.has('neural_ode')) {
+    try {
+      v7Results.neuralODE = crucixNeuralODE(history, {
+        epochs: options.modules?.neuralODE?.epochs || 3,
+        horizon,
+        hiddenDim: options.modules?.neuralODE?.hiddenDim || 16,
+        sampleRate: options.modules?.neuralODE?.sampleRate || 0.3,
+        ...options.modules?.neuralODE,
+      });
+      console.log(`[simulation_engine] neural_ode: ${v7Results.neuralODE.available ? 'OK' : 'FAIL'}`);
+    } catch (e) {
+      v7Results.neuralODE = {
+        module: 'neural_ode',
+        available: false,
+        error: e.message,
+      };
+    }
+  }
+
+  // 3. Dreamer (переиспользует WorldModel instance, если есть)
+  if (!disabled.has('dreamer')) {
+    try {
+      const drOpts = {
+        latentDim: options.modules?.worldModel?.latentDim || 8,
+        hiddenDim: options.modules?.worldModel?.hiddenDim || 16,
+        nActions: options.modules?.dreamer?.nActions || 5,
+        vaeEpochs: options.modules?.worldModel?.vaeEpochs || 2,
+        rnnEpochs: options.modules?.worldModel?.rnnEpochs || 1,
+        trainSteps: options.modules?.dreamer?.trainSteps || 15,
+        horizon: options.modules?.dreamer?.horizon || 8,
+        ...options.modules?.dreamer,
+      };
+
+      if (worldModelInstance) {
+        drOpts.worldModel = worldModelInstance;
+      }
+
+      v7Results.dreamer = crucixDreamer(history, drOpts);
+      console.log(`[simulation_engine] dreamer: ${v7Results.dreamer.available ? 'OK' : 'FAIL'}`);
+    } catch (e) {
+      v7Results.dreamer = {
+        module: 'dreamer',
+        available: false,
+        error: e.message,
+      };
+    }
+  }
+
+  // 4. Continuous Causal
+  if (!disabled.has('continuous_causal')) {
+    try {
+      const ccOpts = {
+        epochs: options.modules?.continuousCausal?.epochs || 3,
+        horizon,
+        hiddenDim: options.modules?.continuousCausal?.hiddenDim || 16,
+        sampleRate: options.modules?.continuousCausal?.sampleRate || 0.3,
+        interventionVar: options.interventions
+          ? Object.keys(options.interventions)[0]
+          : 'tension',
+        treatmentValue: options.interventions
+          ? Object.values(options.interventions)[0]
+          : 0.8,
+        ...options.modules?.continuousCausal,
+      };
+      v7Results.continuousCausal = crucixContinuousCausal(history, ccOpts);
+      console.log(`[simulation_engine] continuous_causal: ${v7Results.continuousCausal.available ? 'OK' : 'FAIL'}`);
+    } catch (e) {
+      v7Results.continuousCausal = {
+        module: 'continuous_causal',
+        available: false,
+        error: e.message,
+      };
+    }
+  }
+
+  // ═══════════════════════════════════════════════════
+  // Синтез
+  // ═══════════════════════════════════════════════════
+
+  const synthesis = synthesize(v7Results);
+  const answers = answerQuestions(v7Results, synthesis);
+
+  const activeModules = ['worldModel', 'neuralODE', 'dreamer', 'continuousCausal']
+    .filter(k => v7Results[k]?.available);
+
+  const moduleStatus = {
+    worldModel: v7Results.worldModel?.available ? 'ok' : (v7Results.worldModel?.error ? 'error' : 'skipped'),
+    neuralODE: v7Results.neuralODE?.available ? 'ok' : (v7Results.neuralODE?.error ? 'error' : 'skipped'),
+    dreamer: v7Results.dreamer?.available ? 'ok' : (v7Results.dreamer?.error ? 'error' : 'skipped'),
+    continuousCausal: v7Results.continuousCausal?.available ? 'ok' : (v7Results.continuousCausal?.error ? 'error' : 'skipped'),
+  };
+
+  const result = {
+    module: 'simulation_engine',
+    version: '7.0.0',
+    available: true,
+    elapsedMs: Date.now() - t0,
+    nSweeps: history.length,
+    horizon,
+    horizonHours: horizon * 0.25,
+
+    moduleStatus,
+    activeModules: activeModules.length,
+    totalModules: 4,
+
+    // Синтез
+    synthesis,
+
+    // Ответы на вопросы
+    answers,
+
+    // Сырые результаты каждого модуля (для downstream интеграции)
+    results: {
+      world_model: v7Results.worldModel,
+      neural_ode: v7Results.neuralODE,
+      dreamer: v7Results.dreamer,
+      continuous_causal: v7Results.continuousCausal,
+    },
+
+    // Сводная интерпретация
+    interpretation:
+      `Simulation Engine v7.0: ${activeModules.length}/4 модулей активно. ` +
+      `Консенсус: ${synthesis.consensus.direction} (agreement=${Math.round(synthesis.consensus.agreement * 100)}%). ` +
+      `Confidence: ${synthesis.confidence} (${synthesis.confidenceLevel}). ` +
+      `${synthesis.summary}`,
+  };
+
+  const outFile = join(__dirname, '..', '..', '..', 'runs', 'predictions', 'simulation_engine.json');
+  saveJSON(outFile, result);
+
+  console.log(`[simulation_engine] Завершено за ${result.elapsedMs}ms, confidence=${synthesis.confidence}`);
+  return result;
+}
+
+// ═══════════════════════════════════════════════════
+// SECTION 5: ЭКСПОРТ
+// ═══════════════════════════════════════════════════
+
+export {
+  synthesize,
+  extractDirections,
+  consensusDirection,
+  answerQuestions,
+};

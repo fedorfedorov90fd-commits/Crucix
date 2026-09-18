@@ -1,0 +1,975 @@
+===== ЧАСТЬ part-1-foundation · КУСОК 02/04 · 37.1 KB =====
+
+FILE: apis/predict/core/stats.mjs
+SIZE: 10543 bytes
+SHA1: ec2501f7dc870c08
+========================================================================
+
+// apis/predict/core/stats.mjs
+// Статистические распределения и функции на чистом JS
+
+function logGamma(z) { if (z < 0.5) return Math.log(Math.PI / Math.sin(Math.PI * z)) - logGamma(1 - z); z -= 1; const g = 7; const c = [0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7]; let x = c[0]; for (let i = 1; i < g + 2; i++) x += c[i] / (z + i); const t = z + g + 0.5; return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(x); }
+function gamma(z) { return Math.exp(logGamma(z)); }
+function beta(a, b) { return Math.exp(logGamma(a) + logGamma(b) - logGamma(a + b)); }
+function logBeta(a, b) { return logGamma(a) + logGamma(b) - logGamma(a + b); }
+function gammaP(s, x) { if (x <= 0) return 0; if (x < s + 1) { let sum = 1 / s; let term = sum; for (let n = 1; n < 200; n++) { term *= x / (s + n); sum += term; if (Math.abs(term) < 1e-14 * Math.abs(sum)) break; } return sum * Math.exp(-x + s * Math.log(x) - logGamma(s)); } return 1 - gammaQ(s, x); }
+function gammaQ(s, x) { const tiny = 1e-30; let b = x + 1 - s; let c = 1 / tiny; let d = 1 / b; let h = d; for (let i = 1; i < 200; i++) { const an = -i * (i - s); b += 2; d = an * d + b; if (Math.abs(d) < tiny) d = tiny; c = b + an / c; if (Math.abs(c) < tiny) c = tiny; d = 1 / d; const del = d * c; h *= del; if (Math.abs(del - 1) < 1e-14) break; } return Math.exp(-x + s * Math.log(x) - logGamma(s)) * h; }
+function incompleteBeta(x, a, b) { if (x <= 0) return 0; if (x >= 1) return 1; const bt = Math.exp(logGamma(a + b) - logGamma(a) - logGamma(b) + a * Math.log(x) + b * Math.log(1 - x)); if (x < (a + 1) / (a + b + 2)) return bt * betaCF(x, a, b) / a; return 1 - bt * betaCF(1 - x, b, a) / b; }
+function betaCF(x, a, b) { const maxIter = 200, eps = 1e-14; const qab = a + b, qap = a + 1, qam = a - 1; let c = 1; let d = 1 - qab * x / qap; if (Math.abs(d) < 1e-30) d = 1e-30; d = 1 / d; let h = d; for (let m = 1; m <= maxIter; m++) { const m2 = 2 * m; let aa = m * (b - m) * x / ((qam + m2) * (a + m2)); d = 1 + aa * d; if (Math.abs(d) < 1e-30) d = 1e-30; c = 1 + aa / c; if (Math.abs(c) < 1e-30) c = 1e-30; d = 1 / d; h *= d * c; aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2)); d = 1 + aa * d; if (Math.abs(d) < 1e-30) d = 1e-30; c = 1 + aa / c; if (Math.abs(c) < 1e-30) c = 1e-30; d = 1 / d; const del = d * c; h *= del; if (Math.abs(del - 1) < eps) break; } return h; }
+function erf(x) { const sign = x < 0 ? -1 : 1; x = Math.abs(x); const t = 1 / (1 + 0.3275911 * x); const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x); return sign * y; }
+function erfc(x) { return 1 - erf(x); }
+function erfInv(x) { if (x === 0) return 0; const a = [0, 0.886226899, -1.645349621, 0.914624893, -0.140543331]; const b = [1, -2.118377725, 1.442710462, -0.329097515, 0.012229801]; const c = [-1.970840454, -1.624906493, 3.429567803, 1.641345311]; const d = [1, 3.543889200, 1.637067800]; const sign = x < 0 ? -1 : 1; x = Math.abs(x); let result; if (x <= 0.7) { const x2 = x * x; result = x * (((a[4] * x2 + a[3]) * x2 + a[2]) * x2 + a[1]) / ((((b[4] * x2 + b[3]) * x2 + b[2]) * x2 + b[1]) * x2 + b[0]); } else if (x < 1) { const y = Math.sqrt(-Math.log((1 - x) / 2)); result = (((c[3] * y + c[2]) * y + c[1]) * y + c[0]) / ((d[2] * y + d[1]) * y + d[0]); } else return sign * Infinity; for (let i = 0; i < 2; i++) result = result - (erf(result) - sign * x) / (2 / Math.sqrt(Math.PI) * Math.exp(-result * result)); return sign * result; }
+function normalCDF(x, mu = 0, sigma = 1) { return 0.5 * (1 + erf((x - mu) / (sigma * Math.SQRT2))); }
+function normalPDF(x, mu = 0, sigma = 1) { const z = (x - mu) / sigma; return Math.exp(-0.5 * z * z) / (sigma * Math.sqrt(2 * Math.PI)); }
+function normalQuantile(p, mu = 0, sigma = 1) { return mu + sigma * Math.SQRT2 * erfInv(2 * p - 1); }
+function studentTCDF(t, df) { const x = df / (df + t * t); const p = 0.5 * incompleteBeta(x, df / 2, 0.5); return t > 0 ? 1 - p : p; }
+function studentTPDF(t, df) { return Math.exp(logGamma((df + 1) / 2) - logGamma(df / 2)) / Math.sqrt(df * Math.PI) * Math.pow(1 + t * t / df, -(df + 1) / 2); }
+function chiSquareCDF(x, k) { return gammaP(k / 2, x / 2); }
+function chiSquareQuantile(p, k) { let x = k; for (let i = 0; i < 20; i++) { const cdf = chiSquareCDF(x, k); const pdf = Math.exp((k / 2 - 1) * Math.log(x / 2) - x / 2 - logGamma(k / 2)) / 2; if (pdf < 1e-15) break; const delta = (cdf - p) / pdf; x = Math.max(0.001, x - delta); if (Math.abs(delta) < 1e-8) break; } return x; }
+function fCDF(x, d1, d2) { return incompleteBeta(d1 * x / (d1 * x + d2), d1 / 2, d2 / 2); }
+function gammaCDF(x, shape, scale = 1) { return gammaP(shape, x / scale); }
+function gammaQuantile(p, shape, scale = 1) { let x = shape * scale; for (let i = 0; i < 30; i++) { const cdf = gammaCDF(x, shape, scale); const pdf = Math.exp((shape - 1) * Math.log(x) - x / scale - logGamma(shape) - shape * Math.log(scale)); if (pdf < 1e-15) break; const delta = (cdf - p) / pdf; x = Math.max(0.001, x - delta); if (Math.abs(delta / x) < 1e-8) break; } return x; }
+function betaCDF(x, a, b) { return incompleteBeta(x, a, b); }
+function betaQuantile(p, a, b) { let x = a / (a + b); for (let i = 0; i < 30; i++) { const cdf = betaCDF(x, a, b); const pdf = Math.exp((a - 1) * Math.log(x) + (b - 1) * Math.log(1 - x) - logBeta(a, b)); if (pdf < 1e-15) break; const delta = (cdf - p) / pdf; x = Math.max(0.001, Math.min(0.999, x - delta)); if (Math.abs(delta) < 1e-8) break; } return x; }
+function mean(arr) { if (arr.length === 0) return 0; return arr.reduce((a, b) => a + b, 0) / arr.length; }
+function variance(arr, ddof = 1) { const n = arr.length; if (n <= ddof) return 0; const m = mean(arr); return arr.reduce((s, v) => s + (v - m) ** 2, 0) / (n - ddof); }
+function std(arr, ddof = 1) { return Math.sqrt(variance(arr, ddof)); }
+function median(arr) { if (arr.length === 0) return 0; const sorted = [...arr].sort((a, b) => a - b); const n = sorted.length; return n % 2 === 0 ? (sorted[n / 2 - 1] + sorted[n / 2]) / 2 : sorted[(n - 1) / 2]; }
+function quantile(arr, p) { if (arr.length === 0) return 0; const sorted = [...arr].sort((a, b) => a - b); const idx = p * (sorted.length - 1); const lo = Math.floor(idx), hi = Math.ceil(idx); if (lo === hi) return sorted[lo]; return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo); }
+function skewness(arr) { const n = arr.length; if (n < 3) return 0; const m = mean(arr), s = std(arr); return (n / ((n - 1) * (n - 2))) * arr.reduce((sum, v) => sum + ((v - m) / s) ** 3, 0); }
+function kurtosis(arr) { const n = arr.length; if (n < 4) return 0; const m = mean(arr), s = std(arr); const sum = arr.reduce((acc, v) => acc + ((v - m) / s) ** 4, 0); return (n * (n + 1) / ((n - 1) * (n - 2) * (n - 3))) * sum - 3 * (n - 1) ** 2 / ((n - 2) * (n - 3)); }
+function covariance(x, y, ddof = 1) { const n = x.length; if (n <= ddof) return 0; const mx = mean(x), my = mean(y); return x.reduce((s, xi, i) => s + (xi - mx) * (y[i] - my), 0) / (n - ddof); }
+function correlation(x, y) { const sx = std(x), sy = std(y); if (sx === 0 || sy === 0) return 0; return covariance(x, y) / (sx * sy); }
+function spearman(x, y) { const rank = (arr) => { const sorted = arr.map((v, i) => ({ v, i })).sort((a, b) => a.v - b.v); const ranks = new Array(arr.length); sorted.forEach((item, idx) => { ranks[item.i] = idx + 1; }); return ranks; }; return correlation(rank(x), rank(y)); }
+function kendallTau(x, y) { const n = x.length; let c = 0, d = 0; for (let i = 0; i < n - 1; i++) { for (let j = i + 1; j < n; j++) { const dx = x[i] - x[j], dy = y[i] - y[j]; if (dx * dy > 0) c++; else if (dx * dy < 0) d++; } } return (c - d) / (0.5 * n * (n - 1)); }
+function histogram(arr, bins = 20) { if (arr.length === 0) return { edges: [], counts: [] }; const min = Math.min(...arr), max = Math.max(...arr); const width = (max - min) / bins || 1; const edges = []; const counts = new Array(bins).fill(0); for (let i = 0; i <= bins; i++) edges.push(min + i * width); for (const v of arr) { const idx = Math.min(bins - 1, Math.floor((v - min) / width)); counts[idx]++; } return { edges, counts, width }; }
+function kde(arr, bandwidth = null, points = 100) { const n = arr.length; if (n === 0) return { x: [], y: [] }; if (bandwidth === null) { const s = std(arr); const iqr = quantile(arr, 0.75) - quantile(arr, 0.25); bandwidth = 0.9 * Math.min(s, iqr / 1.34) * Math.pow(n, -0.2); if (bandwidth === 0) bandwidth = 1; } const min = Math.min(...arr) - 3 * bandwidth; const max = Math.max(...arr) + 3 * bandwidth; const step = (max - min) / (points - 1); const x = [], y = []; for (let i = 0; i < points; i++) { const xi = min + i * step; let yi = 0; for (const v of arr) { const z = (xi - v) / bandwidth; yi += Math.exp(-0.5 * z * z) / Math.sqrt(2 * Math.PI); } x.push(xi); y.push(yi / (n * bandwidth)); } return { x, y, bandwidth }; }
+function tTestOneSample(arr, mu0 = 0) { const n = arr.length; const m = mean(arr), s = std(arr); const t = (m - mu0) / (s / Math.sqrt(n)); const p = 2 * (1 - studentTCDF(Math.abs(t), n - 1)); return { t, df: n - 1, pValue: p, mean: m, std: s }; }
+function tTestTwoSample(x, y) { const nx = x.length, ny = y.length; const mx = mean(x), my = mean(y); const sx = variance(x), sy = variance(y); const pooledVar = ((nx - 1) * sx + (ny - 1) * sy) / (nx + ny - 2); const t = (mx - my) / Math.sqrt(pooledVar * (1 / nx + 1 / ny)); const df = nx + ny - 2; const p = 2 * (1 - studentTCDF(Math.abs(t), df)); return { t, df, pValue: p, meanDiff: mx - my }; }
+function chiSquareTest(observed, expected) { let chi2 = 0; for (let i = 0; i < observed.length; i++) chi2 += (observed[i] - expected[i]) ** 2 / (expected[i] || 1); const df = observed.length - 1; const p = 1 - chiSquareCDF(chi2, df); return { chi2, df, pValue: p }; }
+function aic(logLikelihood, nParams) { return -2 * logLikelihood + 2 * nParams; }
+function bic(logLikelihood, nParams, n) { return -2 * logLikelihood + nParams * Math.log(n); }
+export { logGamma, gamma, beta, logBeta, gammaP, gammaQ, incompleteBeta, erf, erfc, erfInv, normalCDF, normalPDF, normalQuantile, studentTCDF, studentTPDF, chiSquareCDF, chiSquareQuantile, fCDF, gammaCDF, gammaQuantile, betaCDF, betaQuantile, mean, variance, std, median, quantile, skewness, kurtosis, covariance, correlation, spearman, kendallTau, histogram, kde, tTestOneSample, tTestTwoSample, chiSquareTest, aic, bic };
+
+
+
+========================================================================
+
+FILE: apis/predict/models/hawkes.mjs
+SIZE: 6974 bytes
+SHA1: 35fc5a38413c1eb7
+========================================================================
+
+// apis/predict/models/hawkes.mjs
+// Процесс Хоукса (Hawkes process) — самовозбуждающийся точечный процесс.
+//
+// Теоретическая основа:
+//   Hawkes, A. G. (1971). "Spectra of some self-exciting and mutually
+//   exciting point processes". Biometrika, 58(1), 83-90.
+//   Ogata, Y. (1988). "Statistical models for earthquake occurrences and
+//   residual analysis for point processes". JASA, 83(401), 9-27.
+//
+//   λ(t) = μ + Σ θ · exp(-β · (t - t_i))  для t > t_i
+//   где:
+//     μ — фоновая интенсивность
+//     θ — сила возбуждения (продуктивность события)
+//     β — скорость затухания возбуждения
+//     n = θ/β — branching factor (n ≥ 1 = взрывной режим)
+//
+// Применение в Crucix:
+//   Конфликты GDELT рассматриваются как афтершоки. Эскалация →
+//   всплеск новых конфликтов → новые афтершоки. Branching factor
+//   показывает, затухает кластер или взрывается.
+
+// ============================================================
+// Процесс Хоукса с экспоненциальным ядром
+// ============================================================
+
+class HawkesProcess {
+  constructor({ mu = 0.5, theta = 0.8, beta = 1.0 } = {}) {
+    this.mu = mu;
+    this.theta = theta;
+    this.beta = beta;
+    this.events = [];
+  }
+
+  /**
+   * Условная интенсивность λ(t) в момент t.
+   * O(N) — полный перебор прошлых событий.
+   * Для больших N использовать рекурсивную форму (см. intensityRecursive).
+   */
+  intensity(t) {
+    let lambda = this.mu;
+    for (let i = this.events.length - 1; i >= 0; i--) {
+      const ti = this.events[i];
+      if (ti >= t) continue;
+      lambda += this.theta * Math.exp(-this.beta * (t - ti));
+    }
+    return lambda;
+  }
+
+  /**
+   * Рекурсивная версия интенсивности — O(1) при потоковой обработке.
+   * state = {A, tLast}, где A — накопленное возбуждение.
+   */
+  intensityRecursive(t, state) {
+    const decay = Math.exp(-this.beta * (t - state.tLast));
+    const A = state.A * decay;
+    return { lambda: this.mu + A, A };
+  }
+
+  /**
+   * Добавление наблюдаемого события с поддержанием сортировки.
+   */
+  addEvent(t) {
+    let i = this.events.length;
+    while (i > 0 && this.events[i - 1] > t) i--;
+    this.events.splice(i, 0, t);
+  }
+
+  /**
+   * Лог-правдоподобие:
+   *   L = Σ log λ(t_i) − ∫₀ᵀ λ(t) dt
+   *   Компенсатор = μT + Σ (θ/β)(1 - exp(-β(T - t_i)))
+   */
+  logLikelihood() {
+    if (this.events.length === 0) return 0;
+    const T = this.events[this.events.length - 1];
+
+    let logL = 0;
+    for (let i = 0; i < this.events.length; i++) {
+      const ti = this.events[i];
+      let lambda = this.mu;
+      for (let j = 0; j < i; j++) {
+        lambda += this.theta * Math.exp(-this.beta * (ti - this.events[j]));
+      }
+      logL += Math.log(Math.max(lambda, 1e-10));
+    }
+
+    let integral = this.mu * T;
+    for (const ti of this.events) {
+      integral += (this.theta / this.beta) *
+        (1 - Math.exp(-this.beta * (T - ti)));
+    }
+    logL -= integral;
+
+    return logL;
+  }
+
+  /**
+   * Оценка параметров методом сеточного поиска (grid search).
+   * В продакшене заменить на L-BFGS или Adam.
+   */
+  fit(events, opts = {}) {
+    const {
+      muRange = [0.01, 0.05, 0.1, 0.3, 0.5, 1.0, 2.0],
+      thetaRange = [0.1, 0.3, 0.5, 0.8, 1.0, 1.5],
+      betaRange = [0.5, 1.0, 2.0, 3.0, 5.0, 10.0],
+    } = opts;
+
+    this.events = [...events].sort((a, b) => a - b);
+    let bestParams = { mu: this.mu, theta: this.theta, beta: this.beta };
+    let bestLL = -Infinity;
+
+    for (const mu of muRange) {
+      for (const theta of thetaRange) {
+        for (const beta of betaRange) {
+          this.mu = mu;
+          this.theta = theta;
+          this.beta = beta;
+          const ll = this.logLikelihood();
+          if (ll > bestLL) {
+            bestLL = ll;
+            bestParams = { mu, theta, beta };
+          }
+        }
+      }
+    }
+
+    this.mu = bestParams.mu;
+    this.theta = bestParams.theta;
+    this.beta = bestParams.beta;
+    return { ...bestParams, logLikelihood: bestLL };
+  }
+
+  /**
+   * Прогноз ожидаемого числа событий в [T, T+horizon].
+   */
+  forecastCount(horizon) {
+    if (this.events.length === 0) return this.mu * horizon;
+
+    const T = this.events[this.events.length - 1];
+    let expected = this.mu * horizon;
+
+    for (const ti of this.events) {
+      const dt = T - ti;
+      const residual = this.theta * Math.exp(-this.beta * dt) *
+        (1 - Math.exp(-this.beta * horizon)) / this.beta;
+      expected += residual;
+    }
+
+    return expected;
+  }
+
+  /**
+   * Вероятность хотя бы одного события (Пуассоновское приближение).
+   */
+  forecastProbability(horizon) {
+    const expected = this.forecastCount(horizon);
+    return 1 - Math.exp(-expected);
+  }
+
+  /**
+   * Branching factor n = θ/β.
+   *   n < 1 — стационарный режим (события затухают)
+   *   n ≥ 1 — взрывной режим (каскад)
+   */
+  branchingFactor() {
+    return this.theta / this.beta;
+  }
+
+  serialize() {
+    return JSON.stringify({
+      mu: this.mu,
+      theta: this.theta,
+      beta: this.beta,
+      events: this.events,
+      branchingFactor: this.branchingFactor(),
+    });
+  }
+
+  static deserialize(json) {
+    const data = typeof json === 'string' ? JSON.parse(json) : json;
+    const hp = new HawkesProcess(data);
+    hp.events = data.events || [];
+    return hp;
+  }
+}
+
+// ============================================================
+// Конвертация sweep в события
+// ============================================================
+
+/**
+ * Каждое конфликтное событие GDELT превращается в отдельную временную
+ * метку (в секундах Unix). Внутри одного sweep небольшой разброс,
+ * чтобы избежать коллизий.
+ */
+function sweepToHawkesEvents(history) {
+  const events = [];
+  for (const sweep of history) {
+    if (!sweep || !sweep.timestamp) continue;
+    const timestamp = new Date(sweep.timestamp).getTime() / 1000;
+    const count = sweep.gdelt?.conflictEvents?.length || 0;
+    for (let i = 0; i < Math.min(count, 20); i++) {
+      events.push(timestamp + i * 0.1);
+    }
+  }
+  return events;
+}
+
+export { HawkesProcess, sweepToHawkesEvents };
+
+
+
+========================================================================
+
+FILE: apis/predict/models/hmm.mjs
+SIZE: 11412 bytes
+SHA1: fff5387bdc10363d
+========================================================================
+
+// apis/predict/models/hmm.mjs
+// Hidden Markov Model — скрытые состояния системы по зашумлённым наблюдениям.
+//
+// Теоретическая основа:
+//   Rabiner, L. R. (1989). "A Tutorial on Hidden Markov Models and Selected
+//   Applications in Speech Recognition". Proceedings of the IEEE, 77(2), 257-286.
+//   Baum, L. E., Petrie, T., Soules, G., & Weiss, N. (1970). "A Maximization
+//   Technique Occurring in the Statistical Analysis of Probabilistic Functions
+//   of Markov Chains". Annals of Mathematical Statistics, 41(1), 164-171.
+//
+// Три классических задачи HMM:
+//   1. Evaluation: P(O | λ) — forward algorithm
+//   2. Decoding:   оптимальная последовательность состояний — Viterbi
+//   3. Learning:   оценка параметров λ = (A, B, π) — Baum-Welch (EM)
+//
+// Применение в Crucix:
+//   Скрытые состояния = режим мира (stable/escalation/crisis)
+//   Наблюдения = дискретизированный композитный индекс (low/medium/high)
+
+// ============================================================
+// HMM
+// ============================================================
+
+class HMM {
+  constructor({ states, observations, A, B, pi }) {
+    this.states = states;
+    this.observations = observations;
+    this.A = A;
+    this.B = B;
+    this.pi = pi;
+    this.N = states.length;
+    this.M = observations.length;
+  }
+
+  /**
+   * Forward algorithm — P(O_1..O_T | model).
+   * alpha_t(i) = P(O_1..O_t, q_t=i)
+   * Возвращает нормализованные alpha и logProb.
+   */
+  forward(obsSeq) {
+    const T = obsSeq.length;
+    const alpha = Array.from({ length: T }, () => new Array(this.N).fill(0));
+    const scale = new Array(T).fill(0);
+
+    // Инициализация
+    for (let i = 0; i < this.N; i++) {
+      alpha[0][i] = this.pi[i] * this.B[i][obsSeq[0]];
+      scale[0] += alpha[0][i];
+    }
+    if (scale[0] > 0) {
+      for (let i = 0; i < this.N; i++) alpha[0][i] /= scale[0];
+    } else {
+      scale[0] = 1;
+    }
+
+    // Рекурсия
+    for (let t = 1; t < T; t++) {
+      let c = 0;
+      for (let j = 0; j < this.N; j++) {
+        let sum = 0;
+        for (let i = 0; i < this.N; i++) {
+          sum += alpha[t - 1][i] * this.A[i][j];
+        }
+        alpha[t][j] = sum * this.B[j][obsSeq[t]];
+        c += alpha[t][j];
+      }
+      c = c || 1;
+      for (let j = 0; j < this.N; j++) alpha[t][j] /= c;
+      scale[t] = c;
+    }
+
+    let logProb = 0;
+    for (let t = 0; t < T; t++) {
+      logProb += Math.log(Math.max(scale[t], 1e-300));
+    }
+
+    return { alpha, logProb, scale };
+  }
+
+  /**
+   * Backward algorithm — β_t(i) = P(O_{t+1}..O_T | q_t=i).
+   */
+  backward(obsSeq) {
+    const T = obsSeq.length;
+    const beta = Array.from({ length: T }, () => new Array(this.N).fill(0));
+
+    for (let i = 0; i < this.N; i++) beta[T - 1][i] = 1;
+
+    for (let t = T - 2; t >= 0; t--) {
+      for (let i = 0; i < this.N; i++) {
+        let sum = 0;
+        for (let j = 0; j < this.N; j++) {
+          sum += this.A[i][j] * this.B[j][obsSeq[t + 1]] * beta[t + 1][j];
+        }
+        beta[t][i] = sum;
+      }
+    }
+
+    return beta;
+  }
+
+  /**
+   * Viterbi — наиболее вероятная последовательность скрытых состояний.
+   * Работает в log-space.
+   */
+  viterbi(obsSeq) {
+    const T = obsSeq.length;
+    const delta = Array.from({ length: T }, () => new Array(this.N).fill(0));
+    const psi = Array.from({ length: T }, () => new Array(this.N).fill(0));
+
+    for (let i = 0; i < this.N; i++) {
+      delta[0][i] = Math.log(Math.max(this.pi[i] * this.B[i][obsSeq[0]], 1e-300));
+    }
+
+    for (let t = 1; t < T; t++) {
+      for (let j = 0; j < this.N; j++) {
+        let maxVal = -Infinity;
+        let maxIdx = 0;
+        for (let i = 0; i < this.N; i++) {
+          const val = delta[t - 1][i] + Math.log(Math.max(this.A[i][j], 1e-300));
+          if (val > maxVal) {
+            maxVal = val;
+            maxIdx = i;
+          }
+        }
+        delta[t][j] = maxVal + Math.log(Math.max(this.B[j][obsSeq[t]], 1e-300));
+        psi[t][j] = maxIdx;
+      }
+    }
+
+    const path = new Array(T);
+    let maxFinal = 0;
+    let maxProb = -Infinity;
+    for (let i = 0; i < this.N; i++) {
+      if (delta[T - 1][i] > maxProb) {
+        maxProb = delta[T - 1][i];
+        maxFinal = i;
+      }
+    }
+    path[T - 1] = this.states[maxFinal];
+
+    for (let t = T - 2; t >= 0; t--) {
+      maxFinal = psi[t + 1][maxFinal];
+      path[t] = this.states[maxFinal];
+    }
+
+    return { path, prob: Math.exp(maxProb) };
+  }
+
+  /**
+   * Baum-Welch — обучение параметров EM-алгоритмом.
+   * Обучается на массиве последовательностей наблюдений.
+   */
+  fit(obsSeqs, maxIter = 100, tolerance = 1e-4) {
+    let prevLL = -Infinity;
+
+    for (let iter = 0; iter < maxIter; iter++) {
+      const newA = Array.from({ length: this.N }, () => new Array(this.N).fill(0));
+      const newB = Array.from({ length: this.N }, () => new Array(this.M).fill(0));
+      const newPi = new Array(this.N).fill(0);
+      let totalLL = 0;
+
+      for (const obsSeq of obsSeqs) {
+        const { alpha, logProb } = this.forward(obsSeq);
+        const beta = this.backward(obsSeq);
+        totalLL += logProb;
+
+        const T = obsSeq.length;
+
+        // γ_t(i) = P(q_t = i | O)
+        const gamma = Array.from({ length: T }, () => new Array(this.N).fill(0));
+        for (let t = 0; t < T; t++) {
+          let denom = 0;
+          for (let j = 0; j < this.N; j++) {
+            gamma[t][j] = alpha[t][j] * beta[t][j];
+            denom += gamma[t][j];
+          }
+          if (denom > 0) {
+            for (let j = 0; j < this.N; j++) gamma[t][j] /= denom;
+          }
+        }
+
+        // ξ_t(i, j) = P(q_t=i, q_{t+1}=j | O)
+        const xi = Array.from({ length: Math.max(T - 1, 0) }, () =>
+          Array.from({ length: this.N }, () => new Array(this.N).fill(0))
+        );
+        for (let t = 0; t < T - 1; t++) {
+          let denom = 0;
+          for (let i = 0; i < this.N; i++) {
+            for (let j = 0; j < this.N; j++) {
+              xi[t][i][j] = alpha[t][i] * this.A[i][j] *
+                this.B[j][obsSeq[t + 1]] * beta[t + 1][j];
+              denom += xi[t][i][j];
+            }
+          }
+          if (denom > 0) {
+            for (let i = 0; i < this.N; i++) {
+              for (let j = 0; j < this.N; j++) xi[t][i][j] /= denom;
+            }
+          }
+        }
+
+        // Обновление параметров
+        for (let i = 0; i < this.N; i++) newPi[i] += gamma[0][i];
+
+        for (let i = 0; i < this.N; i++) {
+          for (let j = 0; j < this.N; j++) {
+            let num = 0;
+            let den = 0;
+            for (let t = 0; t < T - 1; t++) {
+              num += xi[t][i][j];
+              den += gamma[t][i];
+            }
+            newA[i][j] += den > 0 ? num / den : 0;
+          }
+        }
+
+        for (let i = 0; i < this.N; i++) {
+          for (let k = 0; k < this.M; k++) {
+            let num = 0;
+            let den = 0;
+            for (let t = 0; t < T; t++) {
+              if (obsSeq[t] === k) num += gamma[t][i];
+              den += gamma[t][i];
+            }
+            newB[i][k] += den > 0 ? num / den : 0;
+          }
+        }
+      }
+
+      // Усреднение по последовательностям
+      const nSeqs = Math.max(obsSeqs.length, 1);
+      for (let i = 0; i < this.N; i++) {
+        newPi[i] /= nSeqs;
+        let rowSum = newA[i].reduce((a, b) => a + b, 0);
+        if (rowSum > 0) {
+          for (let j = 0; j < this.N; j++) newA[i][j] /= rowSum;
+        }
+        let bRowSum = newB[i].reduce((a, b) => a + b, 0);
+        if (bRowSum > 0) {
+          for (let k = 0; k < this.M; k++) newB[i][k] /= bRowSum;
+        }
+      }
+
+      this.A = newA;
+      this.B = newB;
+      this.pi = newPi;
+
+      if (Math.abs(totalLL - prevLL) < tolerance) break;
+      prevLL = totalLL;
+    }
+
+    return { logLikelihood: prevLL };
+  }
+
+  /**
+   * Прогноз следующего состояния и наблюдения.
+   */
+  predictNext(obsSeq) {
+    const { alpha } = this.forward(obsSeq);
+    const lastAlpha = alpha[obsSeq.length - 1];
+
+    let sum = lastAlpha.reduce((a, b) => a + b, 0);
+    const stateDist = lastAlpha.map((a) => (sum > 0 ? a / sum : 1 / this.N));
+
+    const nextStateDist = new Array(this.N).fill(0);
+    for (let j = 0; j < this.N; j++) {
+      for (let i = 0; i < this.N; i++) {
+        nextStateDist[j] += stateDist[i] * this.A[i][j];
+      }
+    }
+
+    const obsDist = new Array(this.M).fill(0);
+    for (let k = 0; k < this.M; k++) {
+      for (let j = 0; j < this.N; j++) {
+        obsDist[k] += nextStateDist[j] * this.B[j][k];
+      }
+    }
+
+    const predictedState =
+      this.states[nextStateDist.indexOf(Math.max(...nextStateDist))];
+    const predictedObs =
+      this.observations[obsDist.indexOf(Math.max(...obsDist))];
+
+    return {
+      predictedState,
+      stateDistribution: Object.fromEntries(
+        this.states.map((s, i) => [s, nextStateDist[i]])
+      ),
+      predictedObservation: predictedObs,
+      observationDistribution: Object.fromEntries(
+        this.observations.map((o, i) => [o, obsDist[i]])
+      ),
+    };
+  }
+
+  serialize() {
+    return JSON.stringify({
+      states: this.states,
+      observations: this.observations,
+      A: this.A,
+      B: this.B,
+      pi: this.pi,
+      N: this.N,
+      M: this.M,
+    });
+  }
+
+  static deserialize(json) {
+    const d = typeof json === 'string' ? JSON.parse(json) : json;
+    return new HMM(d);
+  }
+}
+
+// ============================================================
+// Готовый HMM для Crucix
+// ============================================================
+
+/**
+ * Экспертно-инициализированный HMM для классификации режима.
+ * Параметры подобраны эмпирически.
+ */
+function createCrucixHMM() {
+  return new HMM({
+    states: ['stable', 'escalation', 'crisis'],
+    observations: ['low', 'medium', 'high'],
+    A: [
+      [0.85, 0.13, 0.02], // stable → ...
+      [0.30, 0.55, 0.15], // escalation → ...
+      [0.05, 0.35, 0.60], // crisis → ...
+    ],
+    B: [
+      [0.70, 0.25, 0.05], // stable → low/medium/high
+      [0.15, 0.55, 0.30], // escalation
+      [0.05, 0.20, 0.75], // crisis
+    ],
+    pi: [0.6, 0.3, 0.1],
+  });
+}
+
+/**
+ * Конвертация sweep-истории в последовательность дискретных наблюдений.
+ * score < 0.33 → 'low' (0), < 0.66 → 'medium' (1), иначе 'high' (2)
+ */
+function sweepToObservations(history) {
+  return history.map((sweep) => {
+    const vix = (sweep.fred && sweep.fred.vix) || 20;
+    const conflicts =
+      (sweep.gdelt && sweep.gdelt.conflictEvents && sweep.gdelt.conflictEvents.length) || 0;
+    const alerts = (sweep.delta && sweep.delta.newAlerts) || 0;
+
+    const score =
+      (vix / 40) * 0.4 +
+      Math.min(conflicts / 20, 1) * 0.35 +
+      Math.min(alerts / 15, 1) * 0.25;
+
+    if (score < 0.33) return 0;
+    if (score < 0.66) return 1;
+    return 2;
+  });
+}
+
+export { HMM, createCrucixHMM, sweepToObservations };
+
+
+
+========================================================================
+
+FILE: apis/predict/models/kalman.mjs
+SIZE: 8160 bytes
+SHA1: 2e0533ff482f82c7
+========================================================================
+
+// apis/predict/models/kalman.mjs
+// Фильтр Калмана — оптимальная линейная оценка состояния по зашумлённым
+// измерениям.
+//
+// Теоретическая основа:
+//   Kalman, R. E. (1960). "A New Approach to Linear Filtering and Prediction
+//   Problems". Journal of Basic Engineering, 82(1), 35-45.
+//   Welch, G., & Bishop, G. (2006). "An Introduction to the Kalman Filter".
+//   UNC-Chapel Hill, TR 95-041.
+//
+//   Модель:
+//     x_{t+1} = F · x_t + w,   w ~ N(0, Q)   — процесс
+//     z_t     = H · x_t + v,   v ~ N(0, R)   — наблюдение
+//
+//   Predict:
+//     x̂⁻ = F · x̂
+//     P⁻ = F · P · Fᵀ + Q
+//
+//   Update:
+//     K = P⁻ · Hᵀ · (H · P⁻ · Hᵀ + R)⁻¹
+//     x̂ = x̂⁻ + K · (z - H · x̂⁻)
+//     P = (I - K · H) · P⁻
+//
+// Применение в Crucix:
+//   Сглаживание VIX, HY-спреда. Модель «local level + trend»:
+//     state = [level, trend]
+//     F = [[1, 1], [0, 1]]
+//     H = [[1, 0]]  — наблюдаем только level
+
+// ============================================================
+// Матричные операции
+// ============================================================
+
+function matMul(a, b) {
+  const rows = a.length;
+  const cols = b[0].length;
+  const inner = b.length;
+  const result = Array.from({ length: rows }, () => new Array(cols).fill(0));
+  for (let i = 0; i < rows; i++) {
+    for (let j = 0; j < cols; j++) {
+      let sum = 0;
+      for (let k = 0; k < inner; k++) {
+        sum += a[i][k] * b[k][j];
+      }
+      result[i][j] = sum;
+    }
+  }
+  return result;
+}
+
+function matVecMul(m, v) {
+  return m.map((row) => row.reduce((s, val, i) => s + val * v[i], 0));
+}
+
+function matAdd(a, b) {
+  return a.map((row, i) => row.map((val, j) => val + b[i][j]));
+}
+
+function matSub(a, b) {
+  return a.map((row, i) => row.map((val, j) => val - b[i][j]));
+}
+
+function transpose(m) {
+  if (!m.length) return [];
+  return m[0].map((_, i) => m.map((row) => row[i]));
+}
+
+function matInv(m) {
+  const n = m.length;
+  const aug = m.map((row, i) => [
+    ...row,
+    ...Array(n).fill(0).map((_, j) => (i === j ? 1 : 0)),
+  ]);
+
+  for (let i = 0; i < n; i++) {
+    let maxRow = i;
+    for (let k = i + 1; k < n; k++) {
+      if (Math.abs(aug[k][i]) > Math.abs(aug[maxRow][i])) maxRow = k;
+    }
+    [aug[i], aug[maxRow]] = [aug[maxRow], aug[i]];
+    if (Math.abs(aug[i][i]) < 1e-12) aug[i][i] += 1e-8;
+
+    for (let k = 0; k < n; k++) {
+      if (k === i) continue;
+      const f = aug[k][i] / aug[i][i];
+      for (let j = i; j < 2 * n; j++) aug[k][j] -= f * aug[i][j];
+    }
+
+    const d = aug[i][i];
+    for (let j = n; j < 2 * n; j++) aug[i][j] /= d;
+  }
+
+  return aug.map((row) => row.slice(n));
+}
+
+function identity(n) {
+  return Array.from({ length: n }, (_, i) =>
+    Array.from({ length: n }, (_, j) => (i === j ? 1 : 0))
+  );
+}
+
+function vecSub(a, b) {
+  return a.map((v, i) => v - b[i]);
+}
+
+function vecAdd(a, b) {
+  return a.map((v, i) => v + b[i]);
+}
+
+// ============================================================
+// Линейный фильтр Калмана
+// ============================================================
+
+class KalmanFilter {
+  constructor({ F, H, Q, R, x0, P0 }) {
+    this.F = F;
+    this.H = H;
+    this.Q = Q;
+    this.R = R;
+    this.x = [...x0];
+    this.P = P0.map((row) => [...row]);
+  }
+
+  /**
+   * Шаг предсказания.
+   */
+  predict() {
+    this.x = matVecMul(this.F, this.x);
+    this.P = matAdd(matMul(matMul(this.F, this.P), transpose(this.F)), this.Q);
+    return {
+      state: [...this.x],
+      covariance: this.P.map((row) => [...row]),
+    };
+  }
+
+  /**
+   * Шаг обновления.
+   */
+  update(z) {
+    const y = vecSub(z, matVecMul(this.H, this.x));
+    const S = matAdd(matMul(matMul(this.H, this.P), transpose(this.H)), this.R);
+    const SInv = matInv(S);
+    const K = matMul(matMul(this.P, transpose(this.H)), SInv);
+
+    this.x = vecAdd(this.x, matVecMul(K, y));
+
+    const I = identity(this.x.length);
+    this.P = matMul(matSub(I, matMul(K, this.H)), this.P);
+
+    return {
+      state: [...this.x],
+      covariance: this.P.map((row) => [...row]),
+      innovation: y,
+      kalmanGain: K,
+    };
+  }
+
+  /**
+   * Полный цикл predict → update.
+   */
+  step(z) {
+    this.predict();
+    return this.update(z);
+  }
+
+  filter(observations) {
+    return observations.map((z) => this.step(z));
+  }
+
+  /**
+   * Прогноз на N шагов без обновлений.
+   */
+  forecast(steps) {
+    const predictions = [];
+    let x = [...this.x];
+    let P = this.P.map((row) => [...row]);
+
+    for (let i = 0; i < steps; i++) {
+      x = matVecMul(this.F, x);
+      P = matAdd(matMul(matMul(this.F, P), transpose(this.F)), this.Q);
+      predictions.push({
+        state: [...x],
+        covariance: P.map((row) => [...row]),
+      });
+    }
+
+    return predictions;
+  }
+
+  serialize() {
+    return JSON.stringify({
+      F: this.F,
+      H: this.H,
+      Q: this.Q,
+      R: this.R,
+      x: this.x,
+      P: this.P,
+    });
+  }
+
+  static deserialize(json) {
+    const d = typeof json === 'string' ? JSON.parse(json) : json;
+    return new KalmanFilter(d);
+  }
+}
+
+// ============================================================
+// 1D-обёртка: local level + trend
+// ============================================================
+
+class Kalman1D {
+  constructor({
+    processNoise = 0.1,
+    measurementNoise = 1.0,
+    initialValue = 0,
+    initialTrend = 0,
+  } = {}) {
+    this.kf = new KalmanFilter({
+      F: [[1, 1], [0, 1]],
+      H: [[1, 0]],
+      Q: [
+        [processNoise, 0],
+        [0, processNoise * 0.1],
+      ],
+      R: [[measurementNoise]],
+      x0: [initialValue, initialTrend],
+      P0: [
+        [10, 0],
+        [0, 10],
+      ],
+    });
+  }
+
+  step(z) {
+    const r = this.kf.step([z]);
+    return {
+      value: r.state[0],
+      trend: r.state[1],
+      variance: r.covariance[0][0],
+    };
+  }
+
+  filter(series) {
+    return series.map((z) => this.step(z));
+  }
+
+  /**
+   * Прогноз на N шагов с 95% доверительными интервалами.
+   */
+  forecast(steps) {
+    const preds = this.kf.forecast(steps);
+    return preds.map((p) => ({
+      value: p.state[0],
+      trend: p.state[1],
+      lower: p.state[0] - 1.96 * Math.sqrt(p.covariance[0][0]),
+      upper: p.state[0] + 1.96 * Math.sqrt(p.covariance[0][0]),
+    }));
+  }
+}
+
+// ============================================================
+// Готовый сценарий Crucix: сглаживание VIX
+// ============================================================
+
+/**
+ * Прогон VIX через фильтр Калмана + прогноз.
+ *
+ * @param {number[]} vixSeries
+ * @param {Object} opts
+ * @param {number} opts.processNoise — шум процесса (default 0.5)
+ * @param {number} opts.measurementNoise — шум измерения (default 2.0)
+ * @param {number} opts.horizon — горизонт прогноза (default 5)
+ * @returns {Object}
+ */
+function crucixVixKalman(vixSeries, opts = {}) {
+  const {
+    processNoise = 0.5,
+    measurementNoise = 2.0,
+    horizon = 5,
+  } = opts;
+
+  const clean = (vixSeries || []).filter((v) => typeof v === 'number' && isFinite(v));
+  if (clean.length < 2) {
+    return {
+      available: false,
+      reason: 'insufficient_data',
+      count: clean.length,
+    };
+  }
+
+  const kf = new Kalman1D({
+    processNoise,
+    measurementNoise,
+    initialValue: clean[0],
+    initialTrend: clean[1] - clean[0],
+  });
+
+  const filtered = kf.filter(clean);
+  const forecast = kf.forecast(horizon);
+  const lastFiltered = filtered[filtered.length - 1];
+
+  return {
+    available: true,
+    currentValue: clean[clean.length - 1],
+    smoothedValue: lastFiltered.value,
+    trend: lastFiltered.trend,
+    variance: lastFiltered.variance,
+    forecast,
+    regime: lastFiltered.trend > 0.5
+      ? 'accelerating_up'
+      : lastFiltered.trend < -0.5
+      ? 'accelerating_down'
+      : 'stable',
+  };
+}
+
+export { KalmanFilter, Kalman1D, crucixVixKalman };
+
+
+
+========================================================================

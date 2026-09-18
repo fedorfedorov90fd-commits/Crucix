@@ -1,0 +1,233 @@
+{
+  "_meta": {
+    "id": "threat-classification",
+    "category": "detector",
+    "version": "1.0.0",
+    "schema_version": "1.0.0",
+    "sources": [
+      "acled",
+      "cyber-attacks"
+    ],
+    "calculator": "ThreatClassification",
+    "updated_at": "2026-09-12T14:59:34.762Z",
+    "period": "latest",
+    "duration_ms": 2,
+    "checksum": "e050e9dbef1b45a6",
+    "stats": {
+      "total": 7,
+      "byLevel": {
+        "minimal": 2,
+        "moderate": 5
+      }
+    },
+    "description": "Классификация угроз по типам и уровням опасности."
+  },
+  "data": {
+    "classifications": [
+      {
+        "id": "1",
+        "region": "Ukraine",
+        "types": [
+          "military"
+        ],
+        "severity": 0.1,
+        "weightedSeverity": 10,
+        "level": "minimal",
+        "labels": [
+          "Военная"
+        ],
+        "timestamp": 1788652800000
+      },
+      {
+        "id": "2",
+        "region": "Georgia",
+        "types": [
+          "military"
+        ],
+        "severity": 0,
+        "weightedSeverity": 0,
+        "level": "minimal",
+        "labels": [
+          "Военная"
+        ],
+        "timestamp": 1788652800000
+      },
+      {
+        "id": "cyber_1",
+        "region": "GLOBAL",
+        "types": [
+          "cyber"
+        ],
+        "severity": 0.6,
+        "weightedSeverity": 51,
+        "level": "moderate",
+        "labels": [
+          "Кибер"
+        ],
+        "timestamp": "2026-09-05T14:57:07.553Z"
+      },
+      {
+        "id": "cyber_2",
+        "region": "GLOBAL",
+        "types": [
+          "cyber"
+        ],
+        "severity": 0.6,
+        "weightedSeverity": 51,
+        "level": "moderate",
+        "labels": [
+          "Кибер"
+        ],
+        "timestamp": "2026-09-05T13:57:07.553Z"
+      },
+      {
+        "id": "cyber_3",
+        "region": "GLOBAL",
+        "types": [
+          "cyber"
+        ],
+        "severity": 0.6,
+        "weightedSeverity": 51,
+        "level": "moderate",
+        "labels": [
+          "Кибер"
+        ],
+        "timestamp": "2026-09-05T12:57:07.553Z"
+      },
+      {
+        "id": "cyber_4",
+        "region": "GLOBAL",
+        "types": [
+          "cyber"
+        ],
+        "severity": 0.6,
+        "weightedSeverity": 51,
+        "level": "moderate",
+        "labels": [
+          "Кибер"
+        ],
+        "timestamp": "2026-09-05T11:57:07.553Z"
+      },
+      {
+        "id": "cyber_5",
+        "region": "GLOBAL",
+        "types": [
+          "cyber"
+        ],
+        "severity": 0.6,
+        "weightedSeverity": 51,
+        "level": "moderate",
+        "labels": [
+          "Кибер"
+        ],
+        "timestamp": "2026-09-05T10:57:07.553Z"
+      }
+    ],
+    "top": [
+      {
+        "id": "cyber_1",
+        "region": "GLOBAL",
+        "types": [
+          "cyber"
+        ],
+        "severity": 0.6,
+        "weightedSeverity": 51,
+        "level": "moderate",
+        "labels": [
+          "Кибер"
+        ],
+        "timestamp": "2026-09-05T14:57:07.553Z"
+      },
+      {
+        "id": "cyber_2",
+        "region": "GLOBAL",
+        "types": [
+          "cyber"
+        ],
+        "severity": 0.6,
+        "weightedSeverity": 51,
+        "level": "moderate",
+        "labels": [
+          "Кибер"
+        ],
+        "timestamp": "2026-09-05T13:57:07.553Z"
+      },
+      {
+        "id": "cyber_3",
+        "region": "GLOBAL",
+        "types": [
+          "cyber"
+        ],
+        "severity": 0.6,
+        "weightedSeverity": 51,
+        "level": "moderate",
+        "labels": [
+          "Кибер"
+        ],
+        "timestamp": "2026-09-05T12:57:07.553Z"
+      },
+      {
+        "id": "cyber_4",
+        "region": "GLOBAL",
+        "types": [
+          "cyber"
+        ],
+        "severity": 0.6,
+        "weightedSeverity": 51,
+        "level": "moderate",
+        "labels": [
+          "Кибер"
+        ],
+        "timestamp": "2026-09-05T11:57:07.553Z"
+      },
+      {
+        "id": "cyber_5",
+        "region": "GLOBAL",
+        "types": [
+          "cyber"
+        ],
+        "severity": 0.6,
+        "weightedSeverity": 51,
+        "level": "moderate",
+        "labels": [
+          "Кибер"
+        ],
+        "timestamp": "2026-09-05T10:57:07.553Z"
+      },
+      {
+        "id": "1",
+        "region": "Ukraine",
+        "types": [
+          "military"
+        ],
+        "severity": 0.1,
+        "weightedSeverity": 10,
+        "level": "minimal",
+        "labels": [
+          "Военная"
+        ],
+        "timestamp": 1788652800000
+      },
+      {
+        "id": "2",
+        "region": "Georgia",
+        "types": [
+          "military"
+        ],
+        "severity": 0,
+        "weightedSeverity": 0,
+        "level": "minimal",
+        "labels": [
+          "Военная"
+        ],
+        "timestamp": 1788652800000
+      }
+    ],
+    "total": 7,
+    "byLevel": {
+      "minimal": 2,
+      "moderate": 5
+    },
+    "generated_at": "2026-09-12T14:59:34.762Z"
+  }
+}

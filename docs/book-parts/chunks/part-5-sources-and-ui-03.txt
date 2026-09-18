@@ -1,0 +1,1557 @@
+===== ЧАСТЬ part-5-sources-and-ui · КУСОК 03/15 · 47.7 KB =====
+
+FILE: dashboard/cockpit.html
+SIZE: 48589 bytes
+SHA1: e200d891ddb23de7
+========================================================================
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crucix · Unified Cockpit v5.0</title>
+<link rel="manifest" href="/pwa/manifest.json">
+<meta name="theme-color" content="#06080f">
+<style>
+:root {
+  --bg: #06080f;
+  --surface: #0d1220;
+  --surface2: #161d2e;
+  --surface3: #1f2842;
+  --border: #1a2540;
+  --border2: #2b3a5c;
+  --text: #e8edf5;
+  --text-dim: #8fa1c2;
+  --text-faint: #5a6b8a;
+  --accent: #3b82f6;
+  --accent2: #8b5cf6;
+  --accent3: #ec4899;
+  --green: #22c55e;
+  --yellow: #eab308;
+  --orange: #f97316;
+  --red: #ef4444;
+  --cyan: #06b6d4;
+  --magenta: #d946ef;
+  --mono: 'SF Mono', 'Cascadia Code', monospace;
+  --sans: 'Inter', -apple-system, sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.4;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+.cockpit-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 12px 24px;
+  background: rgba(13, 18, 32, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.brand-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 15px;
+  color: white;
+  letter-spacing: -1px;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+}
+
+.brand-name {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+
+.brand-version {
+  font-size: 10px;
+  color: var(--text-faint);
+  font-family: var(--mono);
+  font-weight: 600;
+}
+
+.global-status {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  font-size: 11px;
+  font-family: var(--mono);
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.status-pill.critical {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: var(--red);
+  color: var(--red);
+  animation: pulse-critical 2s infinite;
+}
+
+.status-pill.high {
+  background: rgba(249, 115, 22, 0.15);
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+.status-pill.elevated {
+  background: rgba(234, 179, 8, 0.15);
+  border-color: var(--yellow);
+  color: var(--yellow);
+}
+
+@keyframes pulse-critical {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+}
+
+.status-dot.warning { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+.status-dot.critical { background: var(--red); box-shadow: 0 0 8px var(--red); animation: pulse-critical 1s infinite; }
+
+.cockpit-timer {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  padding: 5px 12px;
+  border-radius: 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+}
+
+.cockpit-timer .timer-value {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.action-btn:hover {
+  background: var(--surface3);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.action-btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.action-btn.primary:hover {
+  background: #2563eb;
+}
+
+.action-btn.danger {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.cockpit-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr 340px;
+  gap: 12px;
+  padding: 12px 24px 24px;
+  max-width: 2400px;
+  margin: 0 auto;
+  min-height: calc(100vh - 60px);
+}
+
+@media (max-width: 1800px) {
+  .cockpit-grid { grid-template-columns: 240px 1fr 280px; }
+}
+@media (max-width: 1400px) {
+  .cockpit-grid { grid-template-columns: 1fr; }
+}
+
+.sidebar-left, .sidebar-right {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: sticky;
+  top: 72px;
+  max-height: calc(100vh - 84px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.sidebar-left::-webkit-scrollbar, .sidebar-right::-webkit-scrollbar { width: 4px; }
+.sidebar-left::-webkit-scrollbar-thumb, .sidebar-right::-webkit-scrollbar-thumb {
+  background: var(--border2); border-radius: 2px;
+}
+
+.cockpit-main {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.widget {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  transition: all 0.2s;
+}
+
+.widget.clickable { cursor: pointer; }
+
+.widget.clickable:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.15);
+}
+
+.widget.critical {
+  border-color: var(--red);
+  background: linear-gradient(135deg, var(--surface), rgba(239, 68, 68, 0.05));
+}
+
+.widget-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.widget-title a {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 9px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(59, 130, 246, 0.1);
+  transition: all 0.2s;
+}
+
+.widget-title a:hover { background: rgba(59, 130, 246, 0.2); }
+
+.composite-hero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.composite-orb {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.composite-orb svg {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  transform: rotate(-90deg);
+}
+
+.composite-orb-value {
+  font-family: var(--mono);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  z-index: 1;
+}
+
+.composite-info h2 {
+  font-size: 15px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.composite-info p {
+  font-size: 11px;
+  color: var(--text-faint);
+  font-family: var(--mono);
+}
+
+.top-risk-item {
+  padding: 8px 10px;
+  border-radius: 7px;
+  background: var(--surface2);
+  margin-bottom: 6px;
+  border-left: 3px solid var(--accent);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.top-risk-item:hover {
+  background: var(--surface3);
+  transform: translateX(3px);
+}
+
+.top-risk-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2px;
+}
+
+.top-risk-name { font-size: 11px; font-weight: 600; }
+.top-risk-prob { font-family: var(--mono); font-size: 12px; font-weight: 800; }
+
+.top-risk-bar {
+  height: 3px;
+  background: var(--surface3);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.top-risk-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.6s;
+}
+
+.signal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 6px;
+}
+
+.signal-cell {
+  padding: 8px 10px;
+  border-radius: 7px;
+  background: var(--surface2);
+  border-left: 3px solid var(--accent);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.signal-cell:hover {
+  background: var(--surface3);
+  transform: translateY(-2px);
+}
+
+.signal-cell.critical { animation: pulse-critical 2s infinite; }
+.signal-cell-icon { font-size: 13px; }
+.signal-cell-label {
+  font-size: 9px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 3px 0 1px;
+}
+.signal-cell-value {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mission-control {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.mission-card {
+  background: var(--surface2);
+  border-radius: 10px;
+  padding: 14px;
+  border: 1px solid var(--border2);
+  transition: all 0.2s;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+}
+
+.mission-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);
+}
+
+.mission-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.mission-card-icon { font-size: 20px; }
+
+.mission-card-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+
+.mission-card-desc {
+  font-size: 10px;
+  color: var(--text-faint);
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.mission-card-metrics {
+  display: flex;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.mission-card-metric {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.metric-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--green);
+}
+
+.metric-dot.warn { background: var(--yellow); }
+.metric-dot.crit { background: var(--red); }
+
+.live-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.live-feed-item {
+  padding: 6px 9px;
+  border-radius: 6px;
+  background: var(--surface2);
+  border-left: 3px solid var(--accent);
+  font-size: 11px;
+  animation: slideIn 0.3s ease;
+}
+
+.live-feed-item.alert { border-left-color: var(--red); background: rgba(239, 68, 68, 0.05); }
+.live-feed-item.signal { border-left-color: var(--accent2); }
+.live-feed-item.regime { border-left-color: var(--cyan); }
+
+.live-feed-time {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-faint);
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.alert-banner {
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
+  border: 1px solid var(--red);
+  display: none;
+  align-items: center;
+  gap: 12px;
+  animation: pulse-critical 2s infinite;
+}
+
+.alert-banner.visible { display: flex; }
+.alert-banner-icon { font-size: 24px; }
+.alert-banner-content { flex: 1; }
+
+.alert-banner-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--red);
+}
+
+.alert-banner-desc {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.tab {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+
+.tab:hover { color: var(--text); }
+.tab.active {
+  background: var(--surface2);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.kbd {
+  display: inline-block;
+  padding: 2px 5px;
+  border-radius: 3px;
+  background: var(--surface3);
+  border: 1px solid var(--border2);
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-dim);
+}
+
+.empty {
+  text-align: center;
+  padding: 20px 12px;
+  color: var(--text-faint);
+  font-size: 11px;
+}
+
+.command-palette-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 15vh;
+  z-index: 1000;
+}
+
+.command-palette-overlay.active { display: flex; }
+
+.command-palette {
+  width: 100%;
+  max-width: 560px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.command-palette-input {
+  width: 100%;
+  padding: 16px 20px;
+  background: var(--surface2);
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+}
+
+.command-palette-input::placeholder { color: var(--text-faint); }
+
+.command-palette-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.command-item {
+  padding: 12px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-left: 3px solid transparent;
+  transition: all 0.15s;
+}
+
+.command-item:hover,
+.command-item.selected {
+  background: var(--surface2);
+  border-left-color: var(--accent);
+}
+
+.command-icon { font-size: 16px; }
+.command-label { flex: 1; font-size: 13px; }
+.command-shortcut {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-faint);
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--surface3);
+}
+</style>
+</head>
+<body>
+
+<div class="cockpit-header">
+  <div class="brand">
+    <div class="brand-logo">Cx</div>
+    <div>
+      <div class="brand-name">Crucix Cockpit</div>
+      <div class="brand-version">v5.0 · Unified Control</div>
+    </div>
+  </div>
+
+  <div class="global-status" id="global-status">
+    <div class="status-pill" id="status-composite">
+      <span class="status-dot"></span>
+      <span>COMPOSITE: —</span>
+    </div>
+    <div class="status-pill" id="status-regime">
+      <span class="status-dot"></span>
+      <span>REGIME: —</span>
+    </div>
+    <div class="status-pill" id="status-alerts">
+      <span class="status-dot"></span>
+      <span>ALERTS: —</span>
+    </div>
+    <div class="status-pill" id="status-layers">
+      <span class="status-dot"></span>
+      <span>LAYERS: —</span>
+    </div>
+  </div>
+
+  <div class="cockpit-timer">
+    <span>Next cycle: </span><span class="timer-value" id="timer-value">—</span>
+  </div>
+
+  <div class="action-buttons">
+    <button class="action-btn primary" onclick="openCommandPalette()" title="Command Palette (Ctrl+K)">
+      <span>⌘</span><span>Command</span>
+    </button>
+    <button class="action-btn" onclick="runPipeline()" title="Run full pipeline now">
+      <span>▶</span><span>Run</span>
+    </button>
+    <button class="action-btn" onclick="toggleAutoRefresh()" id="refresh-toggle" title="Auto-refresh">
+      <span>⚡</span><span id="refresh-label">Auto: ON</span>
+    </button>
+    <button class="action-btn danger" onclick="emergencyStop()" title="Emergency stop">
+      <span>⏹</span>
+    </button>
+  </div>
+</div>
+
+<div style="padding: 0 24px;">
+  <div class="alert-banner" id="alert-banner">
+    <div class="alert-banner-icon">🚨</div>
+    <div class="alert-banner-content">
+      <div class="alert-banner-title" id="alert-banner-title">Критический уровень риска</div>
+      <div class="alert-banner-desc" id="alert-banner-desc">—</div>
+    </div>
+  </div>
+</div>
+
+<div class="cockpit-grid">
+
+  <aside class="sidebar-left">
+
+    <div class="widget" id="composite-widget">
+      <div class="widget-title">
+        Composite Risk
+        <a href="/predictions_composite.html">→</a>
+      </div>
+      <div class="composite-hero">
+        <div class="composite-orb">
+          <svg viewBox="0 0 80 80">
+            <circle cx="40" cy="40" r="34" fill="none" stroke="#1a2540" stroke-width="6"></circle>
+            <circle id="composite-arc" cx="40" cy="40" r="34"
+                    fill="none" stroke="#3b82f6" stroke-width="6"
+                    stroke-dasharray="213.6" stroke-dashoffset="213.6"
+                    stroke-linecap="round" style="transition: all 0.8s;"></circle>
+          </svg>
+          <div class="composite-orb-value" id="composite-value">—</div>
+        </div>
+        <div class="composite-info">
+          <h2 id="composite-level">—</h2>
+          <p id="composite-meta">conf: — · signals: —</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-title">
+        Top Risks
+        <span id="top-risks-count" style="font-family: var(--mono); font-size: 10px;">—</span>
+      </div>
+      <div id="top-risks-list">
+        <div class="empty">Загрузка...</div>
+      </div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-title">
+        Layer Health (13)
+        <a href="/advanced.html">→</a>
+      </div>
+      <div class="signal-grid" id="layer-health">
+        <div class="empty">Загрузка...</div>
+      </div>
+    </div>
+
+  </aside>
+
+  <main class="cockpit-main">
+
+    <div class="widget">
+      <div class="widget-title">
+        Mission Control
+        <span style="font-size: 9px; color: var(--text-faint);">
+          <span class="kbd">Ctrl+K</span> палитра команд
+        </span>
+      </div>
+      <div class="mission-control" id="mission-control">
+        <a href="/crucix.html" class="mission-card">
+          <div class="mission-card-header">
+            <span class="mission-card-icon">🏠</span>
+            <span class="mission-card-title">Crucix</span>
+          </div>
+          <div class="mission-card-desc">Главный прогностический дашборд</div>
+          <div class="mission-card-metrics">
+            <span class="mission-card-metric">
+              <span class="metric-dot" id="mc-crucix-dot"></span>
+              <span id="mc-crucix-count">—</span>
+            </span>
+          </div>
+        </a>
+
+        <a href="/advanced.html" class="mission-card">
+          <div class="mission-card-header">
+            <span class="mission-card-icon">🧠</span>
+            <span class="mission-card-title">Advanced</span>
+          </div>
+          <div class="mission-card-desc">Продвинутая аналитика фаз J, K, L, M</div>
+          <div class="mission-card-metrics">
+            <span class="mission-card-metric">
+              <span class="metric-dot" id="mc-advanced-dot"></span>
+              <span id="mc-advanced-count">—</span>
+            </span>
+          </div>
+        </a>
+
+        <a href="/hypergraph.html" class="mission-card">
+          <div class="mission-card-header">
+            <span class="mission-card-icon">🕸</span>
+            <span class="mission-card-title">Hypergraph</span>
+          </div>
+          <div class="mission-card-desc">N-арные причинные связи</div>
+          <div class="mission-card-metrics">
+            <span class="mission-card-metric">
+              <span class="metric-dot" id="mc-hypergraph-dot"></span>
+              <span id="mc-hypergraph-count">—</span>
+            </span>
+          </div>
+        </a>
+
+        <a href="/attention.html" class="mission-card">
+          <div class="mission-card-header">
+            <span class="mission-card-icon">👁</span>
+            <span class="mission-card-title">Attention</span>
+          </div>
+          <div class="mission-card-desc">Динамика коллективного внимания</div>
+          <div class="mission-card-metrics">
+            <span class="mission-card-metric">
+              <span class="metric-dot" id="mc-attention-dot"></span>
+              <span id="mc-attention-count">—</span>
+            </span>
+          </div>
+        </a>
+
+        <a href="/coevolution.html" class="mission-card">
+          <div class="mission-card-header">
+            <span class="mission-card-icon">⚔</span>
+            <span class="mission-card-title">Co-evolution</span>
+          </div>
+          <div class="mission-card-desc">Моделирование адаптации противника</div>
+          <div class="mission-card-metrics">
+            <span class="mission-card-metric">
+              <span class="metric-dot" id="mc-coevo-dot"></span>
+              <span id="mc-coevo-count">—</span>
+            </span>
+          </div>
+        </a>
+
+        <a href="/realtime.html" class="mission-card">
+          <div class="mission-card-header">
+            <span class="mission-card-icon">⚡</span>
+            <span class="mission-card-title">Real-time</span>
+          </div>
+          <div class="mission-card-desc">События в реальном времени (WebSocket)</div>
+          <div class="mission-card-metrics">
+            <span class="mission-card-metric">
+              <span class="metric-dot" id="mc-realtime-dot"></span>
+              <span id="mc-realtime-count">—</span>
+            </span>
+          </div>
+        </a>
+
+        <a href="/plugins.html" class="mission-card">
+          <div class="mission-card-header">
+            <span class="mission-card-icon">🔌</span>
+            <span class="mission-card-title">Plugins</span>
+          </div>
+          <div class="mission-card-desc">Менеджер плагинов и расширений</div>
+          <div class="mission-card-metrics">
+            <span class="mission-card-metric">
+              <span class="metric-dot" id="mc-plugins-dot"></span>
+              <span id="mc-plugins-count">—</span>
+            </span>
+          </div>
+        </a>
+
+        <a href="/predictions_composite.html" class="mission-card">
+          <div class="mission-card-header">
+            <span class="mission-card-icon">📊</span>
+            <span class="mission-card-title">Composite</span>
+          </div>
+          <div class="mission-card-desc">Композитный индикатор риска</div>
+          <div class="mission-card-metrics">
+            <span class="mission-card-metric">
+              <span class="metric-dot" id="mc-composite-dot"></span>
+              <span id="mc-composite-count">—</span>
+            </span>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-title">
+        All Signals
+        <span id="signals-count" style="font-family: var(--mono); font-size: 10px;">—</span>
+      </div>
+      <div class="signal-grid" id="signals-grid">
+        <div class="empty">Загрузка...</div>
+      </div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-title">
+        Live Feed
+        <span style="font-size: 9px; color: var(--text-faint);" id="live-feed-count">0 событий</span>
+      </div>
+      <div class="live-feed" id="live-feed">
+        <div class="empty">Ожидание событий...</div>
+      </div>
+    </div>
+
+  </main>
+
+  <aside class="sidebar-right">
+
+    <div class="widget">
+      <div class="widget-title">
+        Regime (Meta-Ensemble)
+        <a href="/advanced.html">→</a>
+      </div>
+      <div id="regime-widget">
+        <div class="empty">Загрузка...</div>
+      </div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-title">
+        Phase J, K, L, M
+        <span style="font-size: 9px; color: var(--text-faint);">11 signals</span>
+      </div>
+      <div id="phase-signals">
+        <div class="empty">Загрузка...</div>
+      </div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-title">
+        Key Metrics
+      </div>
+      <div id="key-metrics">
+        <div class="empty">Загрузка...</div>
+      </div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-title">
+        System
+      </div>
+      <div id="system-status" style="font-family: var(--mono); font-size: 10px; color: var(--text-dim); line-height: 1.8;">
+        <div class="empty">Загрузка...</div>
+      </div>
+    </div>
+
+  </aside>
+
+</div>
+
+<div class="command-palette-overlay" id="command-palette" onclick="if(event.target===this)closeCommandPalette()">
+  <div class="command-palette">
+    <input type="text" class="command-palette-input" id="command-input"
+           placeholder="Введите команду или навигацию..." autocomplete="off">
+    <div class="command-palette-list" id="command-list"></div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+const CONFIG = {
+  dataUrl: './runs/predictions/latest_forecast.json',
+  refreshMs: 30000,
+  autoRefresh: true,
+};
+
+const STATE = {
+  data: null,
+  lastUpdate: null,
+  autoRefreshTimer: null,
+  liveEvents: [],
+  maxLiveEvents: 50,
+};
+
+const COMMANDS = [
+  { id: 'crucix', icon: '🏠', label: 'Открыть Crucix Dashboard', action: () => location.href = '/crucix.html', shortcut: '1' },
+  { id: 'advanced', icon: '🧠', label: 'Открыть Advanced Analytics', action: () => location.href = '/advanced.html', shortcut: '2' },
+  { id: 'hypergraph', icon: '🕸', label: 'Открыть Hypergraph', action: () => location.href = '/hypergraph.html', shortcut: '3' },
+  { id: 'attention', icon: '👁', label: 'Открыть Attention Dynamics', action: () => location.href = '/attention.html', shortcut: '4' },
+  { id: 'coevolution', icon: '⚔', label: 'Открыть Co-evolution', action: () => location.href = '/coevolution.html', shortcut: '5' },
+  { id: 'realtime', icon: '⚡', label: 'Открыть Real-time Feed', action: () => location.href = '/realtime.html', shortcut: '6' },
+  { id: 'plugins', icon: '🔌', label: 'Открыть Plugin Manager', action: () => location.href = '/plugins.html', shortcut: '7' },
+  { id: 'composite', icon: '📊', label: 'Открыть Composite Risk', action: () => location.href = '/predictions_composite.html', shortcut: '8' },
+  { id: 'run-pipeline', icon: '▶', label: 'Запустить pipeline сейчас', action: () => runPipeline(), shortcut: 'R' },
+  { id: 'reload-data', icon: '🔄', label: 'Перезагрузить данные', action: () => load(), shortcut: 'F5' },
+  { id: 'toggle-refresh', icon: '⚡', label: 'Toggle auto-refresh', action: () => toggleAutoRefresh(), shortcut: 'A' },
+  { id: 'export-json', icon: '💾', label: 'Скачать latest_forecast.json', action: () => downloadJSON(), shortcut: 'E' },
+  { id: 'theme-dark', icon: '🌙', label: 'Тёмная тема', action: () => setTheme('dark') },
+  { id: 'theme-light', icon: '☀️', label: 'Светлая тема (WIP)', action: () => setTheme('light') },
+];
+
+async function load() {
+  try {
+    const res = await fetch(CONFIG.dataUrl + '?t=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    STATE.data = await res.json();
+    STATE.lastUpdate = new Date();
+    render();
+    addLiveEvent({
+      type: 'prediction',
+      message: `Обновлён прогноз · composite=${STATE.data.compositeRisk?.composite?.toFixed(3) || '—'}`,
+    });
+  } catch (e) {
+    console.error('[cockpit] Load error:', e);
+    renderError(e.message);
+  }
+}
+
+function renderError(msg) {
+  $('status-composite').innerHTML = `<span class="status-dot critical"></span><span>ERROR: ${msg}</span>`;
+}
+
+function render() {
+  if (!STATE.data) return;
+  const d = STATE.data;
+  renderGlobalStatus(d);
+  renderComposite(d.compositeRisk);
+  renderTopRisks(d.topRisks);
+  renderLayerHealth(d);
+  renderMissionControl(d);
+  renderSignalsGrid(d);
+  renderRegime(d.metaEnsemble);
+  renderPhaseSignals(d);
+  renderKeyMetrics(d);
+  renderSystemStatus(d);
+  renderAlertBanner(d);
+}
+
+function renderGlobalStatus(d) {
+  const cr = d.compositeRisk || {};
+  const level = cr.level || 'unknown';
+  const compositeEl = $('status-composite');
+  compositeEl.className = `status-pill ${level}`;
+  compositeEl.querySelector('span:last-child').textContent =
+    `COMPOSITE: ${(cr.composite || 0).toFixed(3)}`;
+  compositeEl.querySelector('.status-dot').className =
+    'status-dot ' + (level === 'critical' ? 'critical' : level === 'high' || level === 'elevated' ? 'warning' : '');
+
+  const regime = d.metaEnsemble?.currentRegime || 'unknown';
+  const regimeEl = $('status-regime');
+  regimeEl.className = `status-pill ${regime === 'crisis' ? 'critical' : regime === 'elevated' ? 'high' : ''}`;
+  regimeEl.querySelector('span:last-child').textContent = `REGIME: ${regime}`;
+
+  const alertCount = (d.narrativeWarfare?.campaignsDetected || 0) +
+                     (d.temporalCausal?.shiftDetections?.length || 0) +
+                     (d.hypergraphContagion?.criticalHyperedges?.length || 0);
+  $('status-alerts').querySelector('span:last-child').textContent = `ALERTS: ${alertCount}`;
+
+  const layers = [
+    d.temporalCausal, d.multiLayerCausal, d.narrativeWarfare, d.resourceExhaustion,
+    d.metaEnsemble, d.hypergraphContagion, d.attentionDynamics, d.adversarialCoEvolution,
+    d.multiscaleAttention, d.hypergraphDiscovery, d.bayesianCausal, d.opponentPPO,
+    d.federatedHypergraph,
+  ].filter(Boolean).length;
+  $('status-layers').querySelector('span:last-child').textContent = `LAYERS: ${layers}/13`;
+}
+
+function renderComposite(cr) {
+  if (!cr) return;
+  const value = Math.max(0, Math.min(1, cr.composite || 0));
+  const level = cr.level || 'unknown';
+  const colors = {
+    low: '#06b6d4', moderate: '#22c55e', elevated: '#eab308',
+    high: '#f97316', critical: '#ef4444', unknown: '#64748b',
+  };
+  const color = colors[level] || colors.unknown;
+
+  $('composite-value').textContent = value.toFixed(3);
+  $('composite-value').style.color = color;
+  $('composite-level').textContent = level;
+  $('composite-level').style.color = color;
+  $('composite-meta').textContent =
+    `conf: ${cr.confidence || '—'} · signals: ${cr.signals?.length || 0}`;
+
+  const circumference = 2 * Math.PI * 34;
+  $('composite-arc').setAttribute('stroke', color);
+  $('composite-arc').setAttribute('stroke-dashoffset', circumference * (1 - value));
+}
+
+function renderTopRisks(risks) {
+  const container = $('top-risks-list');
+  const list = risks || [];
+  $('top-risks-count').textContent = `${list.length}`;
+  if (list.length === 0) {
+    container.innerHTML = '<div class="empty">Нет данных</div>';
+    return;
+  }
+  const colors = {
+    economic: '#f97316', geopolitical: '#ef4444', military: '#8b5cf6',
+    nuclear: '#ec4899', structural: '#06b6d4',
+  };
+  container.innerHTML = list.slice(0, 5).map(r => {
+    const color = colors[r.category] || '#3b82f6';
+    return `
+      <div class="top-risk-item" style="border-left-color: ${color};"
+           onclick="location.href='/advanced.html'">
+        <div class="top-risk-header">
+          <span class="top-risk-name">${r.name}</span>
+          <span class="top-risk-prob" style="color: ${color};">
+            ${(r.probability * 100).toFixed(1)}%
+          </span>
+        </div>
+        <div class="top-risk-bar">
+          <div class="top-risk-bar-fill"
+               style="width: ${r.probability * 100}%; background: ${color};"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderLayerHealth(d) {
+  const container = $('layer-health');
+  const layers = [
+    { key: 'temporalCausal', icon: '⏱', label: 'Temporal' },
+    { key: 'multiLayerCausal', icon: '🌐', label: 'Multi-Layer' },
+    { key: 'narrativeWarfare', icon: '📢', label: 'Narrative' },
+    { key: 'resourceExhaustion', icon: '⛽', label: 'Resources' },
+    { key: 'metaEnsemble', icon: '🎯', label: 'Meta' },
+    { key: 'scenarios', icon: '🌳', label: 'Scenarios' },
+    { key: 'hypergraphContagion', icon: '🕸', label: 'Hypergraph' },
+    { key: 'attentionDynamics', icon: '👁', label: 'Attention' },
+    { key: 'adversarialCoEvolution', icon: '⚔', label: 'Co-evo' },
+    { key: 'multiscaleAttention', icon: '📊', label: 'Multiscale' },
+    { key: 'hypergraphDiscovery', icon: '🔍', label: 'Discovery' },
+    { key: 'bayesianCausal', icon: '🧬', label: 'Bayesian' },
+    { key: 'opponentPPO', icon: '🤖', label: 'PPO' },
+  ];
+  container.innerHTML = layers.map(l => {
+    const data = d[l.key];
+    const present = !!data;
+    const hasError = data?.error;
+    const dotClass = !present ? '' : hasError ? 'critical' : '';
+    let value = '—';
+    if (present && !hasError) {
+      if (l.key === 'temporalCausal') value = `${data.shiftDetections?.length || 0} shifts`;
+      else if (l.key === 'multiLayerCausal') value = `${data.graphStats?.nodeCount || 0} nodes`;
+      else if (l.key === 'narrativeWarfare') value = `${data.campaignsDetected || 0} campaigns`;
+      else if (l.key === 'resourceExhaustion') value = data.overallStatus || '—';
+      else if (l.key === 'metaEnsemble') value = data.currentRegime || '—';
+      else if (l.key === 'scenarios') value = `${data.scenarioCount || 0} scenarios`;
+      else if (l.key === 'hypergraphContagion') value = `${data.stats?.hyperedgeCount || 0} edges`;
+      else if (l.key === 'attentionDynamics') value = `${data.totalTopics || 0} topics`;
+      else if (l.key === 'adversarialCoEvolution') value = `${data.opponentsCount || 0} opps`;
+      else if (l.key === 'multiscaleAttention') value = `${data.totalTopics || 0} topics`;
+      else if (l.key === 'hypergraphDiscovery') value = `${data.naryCount || 0} nary`;
+      else if (l.key === 'bayesianCausal') value = `${data.significantEdges?.length || 0} edges`;
+      else if (l.key === 'opponentPPO') value = data.dominantStrategy || '—';
+    }
+    return `
+      <div class="signal-cell ${dotClass}" onclick="location.href='/advanced.html'">
+        <div class="signal-cell-icon">${l.icon}</div>
+        <div class="signal-cell-label">${l.label}</div>
+        <div class="signal-cell-value" style="color: ${present ? 'var(--green)' : 'var(--text-faint)'};">
+          ${present ? value : 'inactive'}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderMissionControl(d) {
+  const metrics = {
+    'mc-crucix-count': `${(d.compositeRisk?.signals?.length || 0)} signals`,
+    'mc-crucix-dot': d.compositeRisk?.level === 'critical' ? 'crit' : d.compositeRisk?.level === 'high' ? 'warn' : '',
+    'mc-advanced-count': `${[d.temporalCausal, d.multiLayerCausal, d.narrativeWarfare, d.resourceExhaustion, d.metaEnsemble, d.scenarios].filter(Boolean).length}/6 active`,
+    'mc-advanced-dot': '',
+    'mc-hypergraph-count': `${d.hypergraphContagion?.stats?.hyperedgeCount || 0} edges`,
+    'mc-hypergraph-dot': (d.hypergraphContagion?.criticalHyperedges?.length || 0) > 0 ? 'warn' : '',
+    'mc-attention-count': `${d.attentionDynamics?.totalTopics || 0} topics`,
+    'mc-attention-dot': '',
+    'mc-coevo-count': `${d.adversarialCoEvolution?.opponentsCount || 0} opps`,
+    'mc-coevo-dot': d.adversarialCoEvolution?.adaptations?.some(a => a.adaptation?.adapted) ? 'crit' : '',
+    'mc-realtime-count': `${STATE.liveEvents.length} events`,
+    'mc-realtime-dot': '',
+    'mc-plugins-count': 'manage',
+    'mc-plugins-dot': '',
+    'mc-composite-count': `${(d.compositeRisk?.composite || 0).toFixed(3)}`,
+    'mc-composite-dot': d.compositeRisk?.level === 'critical' ? 'crit' : '',
+  };
+  for (const [id, val] of Object.entries(metrics)) {
+    const el = $(id);
+    if (!el) continue;
+    if (id.endsWith('-dot')) el.className = 'metric-dot ' + val;
+    else el.textContent = val;
+  }
+}
+
+function renderSignalsGrid(d) {
+  const container = $('signals-grid');
+  const signals = d.compositeRisk?.signals || [];
+  $('signals-count').textContent = `${signals.length} signals`;
+  if (signals.length === 0) {
+    container.innerHTML = '<div class="empty">Нет сигналов</div>';
+    return;
+  }
+  const sorted = [...signals].sort((a, b) => (b.value * b.weight) - (a.value * a.weight));
+  container.innerHTML = sorted.slice(0, 24).map(s => {
+    const color = s.value > 0.7 ? '#ef4444' : s.value > 0.5 ? '#f97316' : s.value > 0.3 ? '#eab308' : '#22c55e';
+    const isCritical = s.value > 0.7;
+    return `
+      <div class="signal-cell ${isCritical ? 'critical' : ''}"
+           style="border-left-color: ${color};"
+           title="${s.name}: ${(s.value * 100).toFixed(1)}% · вес ×${s.weight?.toFixed(2)}">
+        <div class="signal-cell-label">${s.name.substring(0, 14)}</div>
+        <div class="signal-cell-value" style="color: ${color};">
+          ${(s.value * 100).toFixed(0)}%
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderRegime(me) {
+  const container = $('regime-widget');
+  if (!me) {
+    container.innerHTML = '<div class="empty">Meta-ensemble неактивен</div>';
+    return;
+  }
+  const colors = { calm: '#22c55e', normal: '#06b6d4', elevated: '#eab308', crisis: '#ef4444' };
+  const color = colors[me.currentRegime] || '#64748b';
+  const topModels = Object.entries(me.modelWeights || {}).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  container.innerHTML = `
+    <div style="text-align: center; margin-bottom: 12px;">
+      <div style="font-family: var(--mono); font-size: 24px; font-weight: 800; color: ${color}; text-transform: uppercase; letter-spacing: 2px;">
+        ${me.currentRegime || '—'}
+      </div>
+      <div style="font-size: 10px; color: var(--text-faint); margin-top: 4px;">
+        ${me.trainedSignals || 0} trained models
+      </div>
+    </div>
+    ${topModels.map(([name, w]) => `
+      <div style="margin-bottom: 6px;">
+        <div style="display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 3px;">
+          <span style="color: var(--text-dim);">${name}</span>
+          <span style="font-family: var(--mono); font-weight: 700; color: var(--accent);">
+            ${(w * 100).toFixed(1)}%
+          </span>
+        </div>
+        <div style="height: 3px; background: var(--surface3); border-radius: 2px; overflow: hidden;">
+          <div style="width: ${w * 100}%; height: 100%; background: var(--accent); border-radius: 2px;"></div>
+        </div>
+      </div>
+    `).join('')}
+  `;
+}
+
+function renderPhaseSignals(d) {
+  const container = $('phase-signals');
+  const signals = [];
+  if (d.temporalCausal?.shiftDetections?.length > 0) {
+    signals.push({ icon: '⏱', label: 'Lag Shifts', value: `${d.temporalCausal.shiftDetections.length}`, color: '#f97316' });
+  }
+  if (d.combinedCausalSignal) {
+    signals.push({ icon: '🔗', label: 'Causal Chain', value: d.combinedCausalSignal.type, color: '#8b5cf6' });
+  }
+  if (d.narrativeWarfare?.campaignsDetected > 0) {
+    signals.push({ icon: '📢', label: 'Info Ops', value: `${d.narrativeWarfare.campaignsDetected}`, color: '#ec4899' });
+  }
+  if (d.resourceExhaustion?.overallStatus) {
+    signals.push({ icon: '⛽', label: 'Resources', value: d.resourceExhaustion.overallStatus, color: '#f97316' });
+  }
+  if (d.scenarios?.scenarioCount > 0) {
+    signals.push({ icon: '🌳', label: 'Scenarios', value: `${d.scenarios.scenarioCount}`, color: '#22c55e' });
+  }
+  if (d.hypergraphContagion?.stats) {
+    signals.push({ icon: '🕸', label: 'Hypergraph', value: `${d.hypergraphContagion.stats.hyperedgeCount}`, color: '#8b5cf6' });
+  }
+  if (d.attentionDynamics?.totalTopics) {
+    signals.push({ icon: '👁', label: 'Attention', value: `${d.attentionDynamics.totalTopics}`, color: '#06b6d4' });
+  }
+  if (d.adversarialCoEvolution?.opponentsCount) {
+    const adapting = (d.adversarialCoEvolution.adaptations || []).filter(a => a.adaptation?.adapted).length;
+    signals.push({ icon: '⚔', label: 'Co-evolution', value: `${adapting} adapting`, color: '#ef4444' });
+  }
+  if (d.multiscaleAttention?.totalTopics) {
+    signals.push({ icon: '📊', label: 'Multiscale', value: `${d.multiscaleAttention.totalTopics}`, color: '#06b6d4' });
+  }
+  if (d.hypergraphDiscovery?.naryCount) {
+    signals.push({ icon: '🔍', label: 'Discovery', value: `${d.hypergraphDiscovery.naryCount} nary`, color: '#a855f7' });
+  }
+  if (d.bayesianCausal?.significantEdges?.length) {
+    signals.push({ icon: '🧬', label: 'Bayes DAG', value: `${d.bayesianCausal.significantEdges.length} edges`, color: '#8b5cf6' });
+  }
+  if (d.opponentPPO?.dominantStrategy) {
+    signals.push({ icon: '🤖', label: 'PPO', value: d.opponentPPO.dominantStrategy, color: '#06b6d4' });
+  }
+  if (signals.length === 0) {
+    container.innerHTML = '<div class="empty">Advanced layers неактивны</div>';
+    return;
+  }
+  container.innerHTML = signals.map(s => `
+    <div style="display: flex; align-items: center; gap: 8px; padding: 6px 8px; margin-bottom: 4px; background: var(--surface2); border-radius: 6px; border-left: 3px solid ${s.color};">
+      <span style="font-size: 13px;">${s.icon}</span>
+      <span style="flex: 1; font-size: 11px; color: var(--text-dim);">${s.label}</span>
+      <span style="font-family: var(--mono); font-size: 11px; font-weight: 700; color: ${s.color};">
+        ${s.value}
+      </span>
+    </div>
+  `).join('');
+}
+
+function renderKeyMetrics(d) {
+  const container = $('key-metrics');
+  const metrics = [
+    { label: 'VIX', value: d.fred?.vix || d.models?.timeseries?.vix?.forecast?.[0], unit: '' },
+    { label: 'Conflicts', value: d.gdelt?.conflictEvents?.length, unit: '' },
+    { label: 'Sanctions', value: d.sanctions?.count, unit: '' },
+    { label: 'Signals', value: d.compositeRisk?.signals?.length, unit: '' },
+    { label: 'Top Risk', value: d.topRisks?.[0] ? `${d.topRisks[0].name} (${(d.topRisks[0].probability * 100).toFixed(0)}%)` : '—', unit: '' },
+  ];
+  container.innerHTML = metrics.map(m => `
+    <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--border); font-size: 11px;">
+      <span style="color: var(--text-dim);">${m.label}</span>
+      <span style="font-family: var(--mono); font-weight: 700; color: var(--text);">
+        ${m.value ?? '—'}${m.unit}
+      </span>
+    </div>
+  `).join('');
+}
+
+function renderSystemStatus(d) {
+  const container = $('system-status');
+  const uptime = STATE.lastUpdate
+    ? Math.floor((Date.now() - STATE.lastUpdate.getTime()) / 1000)
+    : null;
+  container.innerHTML = `
+    <div>Version: <span style="color: var(--text);">${d.version || '3.0'}</span></div>
+    <div>Cycle: <span style="color: var(--text);">${d.elapsedMs || '—'}ms</span></div>
+    <div>Last update: <span style="color: var(--text);">${STATE.lastUpdate ? STATE.lastUpdate.toLocaleTimeString('ru-RU') : '—'}</span></div>
+    <div>Age: <span style="color: var(--text);">${uptime !== null ? uptime + 's' : '—'}</span></div>
+    <div>Auto-refresh: <span style="color: ${CONFIG.autoRefresh ? 'var(--green)' : 'var(--red)'};">
+      ${CONFIG.autoRefresh ? 'ON' : 'OFF'}</span></div>
+  `;
+}
+
+function renderAlertBanner(d) {
+  const cr = d.compositeRisk;
+  const banner = $('alert-banner');
+  if (cr?.level === 'critical' || cr?.level === 'high') {
+    banner.classList.add('visible');
+    $('alert-banner-title').textContent = `Уровень риска: ${cr.level.toUpperCase()}`;
+    const top = cr.topDrivers?.[0];
+    $('alert-banner-desc').textContent = top
+      ? `${top.name}: ${(top.value * 100).toFixed(1)}% — ${top.rationale || ''}`
+      : `Composite risk: ${cr.composite.toFixed(3)}`;
+  } else {
+    banner.classList.remove('visible');
+  }
+}
+
+function addLiveEvent(event) {
+  STATE.liveEvents.unshift({ ...event, timestamp: new Date() });
+  if (STATE.liveEvents.length > STATE.maxLiveEvents) {
+    STATE.liveEvents = STATE.liveEvents.slice(0, STATE.maxLiveEvents);
+  }
+  renderLiveFeed();
+}
+
+function renderLiveFeed() {
+  const container = $('live-feed');
+  $('live-feed-count').textContent = `${STATE.liveEvents.length} событий`;
+  if (STATE.liveEvents.length === 0) {
+    container.innerHTML = '<div class="empty">Ожидание событий...</div>';
+    return;
+  }
+  container.innerHTML = STATE.liveEvents.slice(0, 15).map(e => `
+    <div class="live-feed-item ${e.type || ''}">
+      <div class="live-feed-time">${e.timestamp.toLocaleTimeString('ru-RU')}</div>
+      <div>${e.message}</div>
+    </div>
+  `).join('');
+}
+
+async function runPipeline() {
+  addLiveEvent({ type: 'signal', message: 'Запуск pipeline вручную...' });
+  try {
+    const res = await fetch('/api/pipeline/run', { method: 'POST' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    addLiveEvent({ type: 'prediction', message: 'Pipeline запущен' });
+    setTimeout(load, 5000);
+  } catch (e) {
+    addLiveEvent({ type: 'alert', message: `Ошибка запуска: ${e.message}` });
+  }
+}
+
+function toggleAutoRefresh() {
+  CONFIG.autoRefresh = !CONFIG.autoRefresh;
+  $('refresh-label').textContent = `Auto: ${CONFIG.autoRefresh ? 'ON' : 'OFF'}`;
+  if (CONFIG.autoRefresh) {
+    startAutoRefresh();
+    addLiveEvent({ type: 'signal', message: 'Auto-refresh включён' });
+  } else {
+    stopAutoRefresh();
+    addLiveEvent({ type: 'signal', message: 'Auto-refresh выключен' });
+  }
+}
+
+function startAutoRefresh() {
+  stopAutoRefresh();
+  STATE.autoRefreshTimer = setInterval(load, CONFIG.refreshMs);
+}
+
+function stopAutoRefresh() {
+  if (STATE.autoRefreshTimer) {
+    clearInterval(STATE.autoRefreshTimer);
+    STATE.autoRefreshTimer = null;
+  }
+}
+
+function emergencyStop() {
+  if (!confirm('Emergency stop: остановить auto-refresh и все фоновые процессы?')) return;
+  stopAutoRefresh();
+  CONFIG.autoRefresh = false;
+  addLiveEvent({ type: 'alert', message: 'EMERGENCY STOP' });
+  $('refresh-label').textContent = 'Auto: OFF';
+}
+
+function downloadJSON() {
+  if (!STATE.data) return;
+  const blob = new Blob([JSON.stringify(STATE.data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `crucix_forecast_${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  addLiveEvent({ type: 'signal', message: 'Прогноз скачан' });
+}
+
+function setTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  addLiveEvent({ type: 'signal', message: `Тема: ${theme}` });
+}
+
+let paletteSelection = 0;
+let filteredCommands = [...COMMANDS];
+
+function openCommandPalette() {
+  $('command-palette').classList.add('active');
+  $('command-input').value = '';
+  $('command-input').focus();
+  paletteSelection = 0;
+  filterCommands('');
+}
+
+function closeCommandPalette() {
+  $('command-palette').classList.remove('active');
+}
+
+function filterCommands(query) {
+  const q = query.toLowerCase().trim();
+  filteredCommands = q
+    ? COMMANDS.filter(c => c.label.toLowerCase().includes(q) || c.id.toLowerCase().includes(q))
+    : COMMANDS;
+  paletteSelection = 0;
+  renderCommandList();
+}
+
+function renderCommandList() {
+  const container = $('command-list');
+  if (filteredCommands.length === 0) {
+    container.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-faint);">Ничего не найдено</div>';
+    return;
+  }
+  container.innerHTML = filteredCommands.map((cmd, i) => `
+    <div class="command-item ${i === paletteSelection ? 'selected' : ''}" onclick="executeCommand(${i})">
+      <span class="command-icon">${cmd.icon}</span>
+      <span class="command-label">${cmd.label}</span>
+      ${cmd.shortcut ? `<span class="command-shortcut">${cmd.shortcut}</span>` : ''}
+    </div>
+  `).join('');
+}
+
+function executeCommand(index) {
+  const cmd = filteredCommands[index];
+  if (!cmd) return;
+  closeCommandPalette();
+  cmd.action();
+}
+
+document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault();
+    if ($('command-palette').classList.contains('active')) closeCommandPalette();
+    else openCommandPalette();
+    return;
+  }
+  if ($('command-palette').classList.contains('active')) {
+    if (e.key === 'Escape') { closeCommandPalette(); return; }
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      paletteSelection = Math.min(paletteSelection + 1, filteredCommands.length - 1);
+      renderCommandList();
+      return;
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      paletteSelection = Math.max(paletteSelection - 1, 0);
+      renderCommandList();
+      return;
+    }
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      executeCommand(paletteSelection);
+      return;
+    }
+    return;
+  }
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'r' && !e.ctrlKey && !e.metaKey) runPipeline();
+  if (e.key === 'a' && !e.ctrlKey && !e.metaKey) toggleAutoRefresh();
+  if (e.key === 'e' && !e.ctrlKey && !e.metaKey) downloadJSON();
+});
+
+let nextCycle = Date.now() + 900000;
+
+function updateTimer() {
+  const remaining = Math.max(0, nextCycle - Date.now());
+  const mins = Math.floor(remaining / 60000);
+  const secs = Math.floor((remaining % 60000) / 1000);
+  $('timer-value').textContent = `${mins}:${String(secs).padStart(2, '0')}`;
+  if (remaining <= 0) nextCycle = Date.now() + 900000;
+}
+
+$('command-input').addEventListener('input', (e) => filterCommands(e.target.value));
+
+load();
+startAutoRefresh();
+setInterval(updateTimer, 1000);
+
+addLiveEvent({ type: 'signal', message: 'Cockpit v5.0 запущен' });
+</script>
+
+</body>
+</html>
+
+
+
+========================================================================

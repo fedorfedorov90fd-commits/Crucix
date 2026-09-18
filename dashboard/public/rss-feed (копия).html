@@ -1,445 +1,228 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RSS Лента новостей — Crucix</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-            background: #0a0a1a;
-            color: #e0e0e0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .rss-feed-container {
-            max-width: 1200px;
-            width: 100%;
-            background: rgba(20, 20, 40, 0.9);
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.06);
-            padding: 24px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-        }
-        .feed-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
-        .feed-header h1 { font-size: 22px; font-weight: 700; color: #fff; }
-        .lang-selector { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
-        .lang-selector .lang-btn {
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 3px;
-            color: #e0e0e0;
-            padding: 2px 8px;
-            font-size: 10px;
-            cursor: pointer;
-        }
-        .lang-selector .lang-btn.active { background: rgba(33,150,243,0.2); border-color: #2196f3; color: #fff; }
-        .feed-controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-        .feed-control-group { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #aaa; }
-        .feed-control-group select { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; color: #e0e0e0; padding: 2px 6px; font-size: 12px; }
-        .btn-header { display: inline-flex; align-items: center; gap: 3px; padding: 4px 10px; border: none; border-radius: 3px; font-size: 11px; font-weight: 600; color: #fff; text-decoration: none; }
-        .btn-home { background: #2196f3; }
-        .btn-manage { background: #f26522; }
-        .feed-filters { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 12px; padding: 6px 0; border-top: 1px solid rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.04); }
-        .filter-btn { padding: 3px 8px; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; background: rgba(255,255,255,0.04); color: #999; cursor: pointer; font-size: 10px; }
-        .filter-btn:hover { background: rgba(255,255,255,0.08); color: #e0e0e0; }
-        .filter-btn.active { background: #2196f3; border-color: #2196f3; color: #fff; }
-        .feed-window { height: 420px; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid rgba(255,255,255,0.04); margin-bottom: 12px; }
-        .feed-window::-webkit-scrollbar { width: 6px; }
-        .feed-window::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
-        .feed-window::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
-        .feed-item {
-            display: flex; align-items: center; padding: 6px 12px; border-bottom: 1px solid rgba(255,255,255,0.04);
-            font-size: 13px; cursor: pointer; border-left: 4px solid #444; border-radius: 0 4px 4px 0; margin: 1px 0;
-        }
-        .feed-item:hover { filter: brightness(1.15); }
-        .feed-item.critical { border-left-color: #ff1744; background: rgba(255,23,68,0.12); }
-        .feed-item.critical .feed-title { color: #ff6b7a; }
-        .feed-item.critical .feed-score { background: #ff1744; color: #fff; }
-        .feed-item.important { border-left-color: #ff9100; background: rgba(255,145,0,0.10); }
-        .feed-item.important .feed-title { color: #ffb74d; }
-        .feed-item.important .feed-score { background: #ff9100; color: #fff; }
-        .feed-item.normal { border-left-color: #4caf50; background: rgba(76,175,80,0.06); }
-        .feed-item.normal .feed-title { color: #81c784; }
-        .feed-item.normal .feed-score { background: #4caf50; color: #fff; }
-        .feed-item.unknown { border-left-color: #555; background: rgba(255,255,255,0.02); }
-        .feed-item.unknown .feed-title { color: #999; }
-        .feed-item.unknown .feed-score { background: #444; color: #888; }
-        .feed-item .feed-icon { flex-shrink: 0; margin-right: 8px; font-size: 14px; opacity: 0.7; }
-        .feed-item .feed-title { flex: 1; font-weight: 500; font-size: 13px; }
-        .feed-item .feed-source { flex-shrink: 0; font-size: 10px; color: #888; margin-left: 8px; background: rgba(255,255,255,0.06); padding: 1px 8px; border-radius: 10px; }
-        .feed-item .feed-time { flex-shrink: 0; font-size: 10px; color: #555; margin-left: 8px; }
-        .feed-item .feed-score { flex-shrink: 0; font-size: 10px; font-weight: 700; margin-left: 8px; padding: 1px 8px; border-radius: 10px; min-width: 28px; text-align: center; }
-        .feed-loading { padding: 40px; text-align: center; color: #666; font-size: 14px; }
-        .feed-empty { padding: 40px; text-align: center; color: #666; font-size: 14px; }
-        .feed-footer { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 12px; color: #666; border-top: 1px solid rgba(255,255,255,0.04); flex-wrap: wrap; gap: 6px; }
-        .feed-footer .footer-links { display: flex; gap: 12px; }
-        .feed-footer .footer-links a { color: #888; text-decoration: none; font-size: 12px; }
-        .feed-footer .footer-links a:hover { color: #e0e0e0; }
-        .feed-footer .footer-links .manage-link { color: #f26522; font-weight: 600; }
-        .feed-footer .footer-links .home-link { color: #2196f3; font-weight: 600; }
-        .feed-legend { display: flex; gap: 12px; margin-bottom: 10px; padding: 4px 12px; font-size: 10px; color: #888; background: rgba(255,255,255,0.03); border-radius: 4px; flex-wrap: wrap; align-items: center; border: 1px solid rgba(255,255,255,0.04); }
-        .feed-legend .legend-item { display: flex; align-items: center; gap: 4px; }
-        .feed-legend .legend-color { width: 16px; height: 3px; border-radius: 2px; display: inline-block; }
-        .feed-legend .legend-color.critical { background: #ff1744; }
-        .feed-legend .legend-color.important { background: #ff9100; }
-        .feed-legend .legend-color.normal { background: #4caf50; }
-        .feed-legend .legend-color.unknown { background: #555; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RSS Лента — Crucix</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}body{background:#0a0a1a;color:#e0e0e0;font-family:-apple-system,Segoe UI,system-ui,sans-serif;min-height:100vh}
+.topbar{position:fixed;top:0;left:0;right:0;height:60px;background:rgba(10,10,20,0.95);backdrop-filter:blur(12px);border-bottom:2px solid rgba(91,192,248,0.25);z-index:100;display:flex;justify-content:space-between;align-items:center;padding:0 20px}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.topbar-brand{font-size:14px;font-weight:700;color:#5bc0f8;text-transform:uppercase;letter-spacing:2px}
+.topbar-right{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.topbar-btn{height:28px;padding:0 12px;border:1px solid rgba(255,255,255,0.08);border-radius:4px;background:rgba(255,255,255,0.03);color:#888;font-size:11px;font-weight:500;text-transform:uppercase;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:4px}
+.topbar-btn:hover{background:rgba(255,255,255,0.06);transform:translateY(-1px)}
+.btn-home{color:#5bc0f8;border-color:rgba(91,192,248,0.2);background:rgba(91,192,248,0.06)}
+.btn-home:hover{background:rgba(91,192,248,0.15)}
+.btn-copy{color:#5bc0f8;border-color:rgba(91,192,248,0.15);background:rgba(91,192,248,0.06)}
+.btn-copy.copied{background:rgba(76,175,80,0.2);border-color:#4caf50;color:#4caf50}
+.btn-rss{color:#f26522;border-color:rgba(242,101,34,0.2);background:rgba(242,101,34,0.06)}
+.btn-rss:hover{background:rgba(242,101,34,0.15)}
+.btn-help{color:#a78bfa;border-color:rgba(167,139,250,0.2);background:rgba(167,139,250,0.06)}
+.btn-help:hover{background:rgba(167,139,250,0.15)}
+.btn-debug{color:#fbbf24;border-color:rgba(251,191,36,0.2);background:rgba(251,191,36,0.06)}
+.btn-debug:hover{background:rgba(251,191,36,0.15)}
+.btn-debug.active{background:rgba(251,191,36,0.2)}
+.lang-switch{display:flex;gap:2px;padding:2px;background:rgba(255,255,255,0.03);border-radius:4px;border:1px solid rgba(255,255,255,0.06)}
+.lang-btn{padding:2px 8px;border:none;background:transparent;color:#666;font-size:11px;font-weight:500;cursor:pointer;border-radius:3px;transition:all .2s}
+.lang-btn:hover{color:#888;background:rgba(255,255,255,0.05)}
+.lang-btn.active{color:#5bc0f8;background:rgba(91,192,248,0.1)}
+.copy-dropdown{position:relative;display:inline-block}
+.copy-dropdown-content{display:none;position:absolute;right:0;top:32px;background:#0a0a1a;min-width:220px;border:1px solid rgba(255,255,255,0.08);border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,0.6);z-index:200;padding:6px 0}
+.copy-dropdown-content.show{display:block}
+.copy-dropdown-content button{display:block;width:100%;padding:8px 16px;background:transparent;border:none;color:#c8d0d8;font-size:12px;text-align:left;cursor:pointer;transition:all .15s;font-family:inherit}
+.copy-dropdown-content button:hover{background:rgba(91,192,248,0.08);color:#5bc0f8}
+.copy-dropdown-content .divider{height:1px;background:rgba(255,255,255,0.05);margin:4px 12px}
+.copy-dropdown-content .label{padding:4px 16px;font-size:10px;color:#4a5a6a;text-transform:uppercase;letter-spacing:.5px}
+.nav-dashboards{position:fixed;top:60px;left:0;right:0;height:38px;background:rgba(6,10,18,0.92);backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.04);z-index:99;display:flex;align-items:center;padding:0 20px;gap:4px;overflow-x:auto;scrollbar-width:none}
+.nav-dashboards::-webkit-scrollbar{display:none}
+.nav-btn{padding:4px 10px;border:none;border-radius:4px;background:transparent;color:#666;font-size:10px;font-weight:500;cursor:pointer;white-space:nowrap;font-family:inherit;border:1px solid transparent;display:inline-flex;align-items:center;gap:3px;transition:all .2s}
+.nav-btn:hover{color:#c8d0d8;background:rgba(255,255,255,0.04)}
+.nav-btn.active{color:#5bc0f8;background:rgba(91,192,248,0.08);border-color:rgba(91,192,248,0.15)}
+.main-content{padding-top:114px;max-width:1440px;margin:0 auto;padding:114px 20px 40px;min-height:calc(100vh - 114px)}
+.page-title{font-size:28px;font-weight:700;color:#e8f0f8;margin-bottom:8px;display:flex;align-items:center;gap:12px}
+.page-title .badge{font-size:12px;font-weight:400;background:rgba(74,222,128,0.15);color:#4ade80;padding:2px 12px;border-radius:20px;border:1px solid rgba(74,222,128,0.2)}
+.page-subtitle{color:#8899aa;font-size:14px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.rss-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.rss-controls .count-badge{background:rgba(255,255,255,0.05);padding:4px 14px;border-radius:20px;font-size:13px;color:#8899aa}
+.rss-controls .count-badge strong{color:#e0e0e0}
+.rss-controls .refresh-btn{background:rgba(91,192,248,0.06);border:1px solid rgba(91,192,248,0.2);color:#5bc0f8;padding:4px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-family:inherit;transition:all .2s}
+.rss-controls .refresh-btn:hover{background:rgba(91,192,248,0.12)}
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.filter-btn{padding:4px 14px;border:1px solid rgba(255,255,255,0.08);border-radius:20px;background:rgba(255,255,255,0.02);color:#8899aa;font-size:12px;cursor:pointer;font-family:inherit;transition:all .2s}
+.filter-btn:hover{background:rgba(255,255,255,0.06);color:#c0d0e0}
+.filter-btn.active{background:rgba(91,192,248,0.15);border-color:rgba(91,192,248,0.3);color:#5bc0f8}
+.feed-container{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:16px 16px 8px;max-height:70vh;overflow-y:auto}
+.feed-container::-webkit-scrollbar{width:4px}
+.feed-container::-webkit-scrollbar-track{background:rgba(255,255,255,0.02)}
+.feed-container::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px}
+.feed-item{display:flex;gap:14px;padding:10px 12px;margin-bottom:6px;background:rgba(255,255,255,0.02);border-radius:8px;border-left:3px solid rgba(91,192,248,0.2);cursor:pointer;transition:all .2s}
+.feed-item:hover{background:rgba(255,255,255,0.04);border-left-color:#5bc0f8}
+.feed-item .icon{font-size:18px;min-width:32px;display:flex;align-items:center;justify-content:center}
+.feed-item .content{flex:1;min-width:0}
+.feed-item .content .title{font-size:15px;font-weight:500;color:#e8f0f8;margin-bottom:3px;line-height:1.4}
+.feed-item .content .summary{font-size:13px;color:#8899aa;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.feed-item .meta{display:flex;gap:12px;margin-top:4px;font-size:11px;color:#4a5a6a;flex-wrap:wrap}
+.feed-item .meta .source{color:#5bc0f8}
+.feed-item .meta .time{color:#4a5a6a}
+.feed-item .meta .region{background:rgba(255,255,255,0.04);padding:1px 8px;border-radius:12px;color:#8899aa}
+.loading{display:flex;justify-content:center;align-items:center;padding:40px;color:#4a5a6a;font-size:14px}
+.scroll-controls{display:flex;align-items:center;gap:16px;margin-top:12px;padding:8px 4px;border-top:1px solid rgba(255,255,255,0.04);flex-wrap:wrap}
+.scroll-controls label{font-size:12px;color:#8899aa;display:flex;align-items:center;gap:6px;cursor:pointer}
+.scroll-controls input[type=range]{width:100px;height:4px;-webkit-appearance:none;background:rgba(255,255,255,0.1);border-radius:4px;outline:none}
+.scroll-controls input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:#5bc0f8;cursor:pointer}
+.scroll-controls .speed-label{font-size:12px;color:#8899aa;min-width:40px}
+.scroll-controls .auto-scroll-toggle{color:#5bc0f8;font-weight:500}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);z-index:200;justify-content:center;align-items:center}
+.modal-overlay.active{display:flex}
+.modal-box{background:#14142a;border:1px solid rgba(255,255,255,0.08);border-radius:16px;max-width:640px;width:90%;max-height:80vh;padding:24px;overflow-y:auto;position:relative}
+.modal-box .close{position:absolute;top:12px;right:16px;font-size:24px;color:#4a5a6a;cursor:pointer;background:none;border:none;transition:color .2s}
+.modal-box .close:hover{color:#e0e0e0}
+.modal-box .modal-title{font-size:20px;font-weight:600;color:#e8f0f8;margin-bottom:8px;padding-right:30px}
+.modal-box .modal-meta{font-size:13px;color:#4a5a6a;margin-bottom:12px}
+.modal-box .modal-body{font-size:15px;line-height:1.7;color:#c0d0e0}
+.modal-box .modal-link{display:inline-block;margin-top:16px;color:#5bc0f8;font-weight:500}
+.notification{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:#fff;padding:8px 20px;border-radius:6px;font-size:13px;z-index:100001;border:1px solid rgba(255,255,255,0.1);animation:notif-fade 2.5s forwards}
+@keyframes notif-fade{0%{opacity:0;transform:translateX(-50%) translateY(10px)}10%{opacity:1;transform:translateX(-50%) translateY(0)}80%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-20px)}}
+.debug-panel{display:none;background:rgba(255,255,255,0.02);border:1px solid rgba(251,191,36,0.2);border-radius:12px;padding:16px;margin-bottom:16px;max-height:500px;overflow-y:auto}
+.debug-panel.open{display:block}
+.debug-panel .title{font-size:13px;font-weight:600;color:#fbbf24;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.debug-panel .title .badge{font-size:10px;background:rgba(251,191,36,0.1);padding:2px 10px;border-radius:12px;color:#fbbf24}
+.debug-panel .section{margin-bottom:12px}
+.debug-panel .section .section-title{font-size:11px;font-weight:600;color:#4a5a6a;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.debug-panel pre,.debug-panel .json-view{background:rgba(0,0,0,0.4);padding:8px 12px;border-radius:6px;font-size:11px;font-family:Monaco,Menlo,monospace;color:#a0b0c0;white-space:pre-wrap;word-break:break-all;max-height:200px;overflow-y:auto;margin:0}
+@media(max-width:768px){.topbar{padding:0 12px;height:52px}.topbar-brand{font-size:12px}.topbar-btn{font-size:10px;padding:0 8px;height:24px}.nav-dashboards{top:52px;height:34px;padding:0 10px;gap:2px}.nav-btn{font-size:9px;padding:2px 6px}.main-content{padding-top:102px;padding-left:12px;padding-right:12px}.page-title{font-size:20px}}
+@media(max-width:480px){.topbar{padding:0 8px;height:46px}.topbar-brand{font-size:10px;letter-spacing:1px}.topbar-btn{font-size:9px;padding:0 6px;height:20px}.lang-btn{font-size:9px;padding:1px 5px}.nav-dashboards{top:46px;height:30px;padding:0 6px;gap:2px;overflow-x:auto}.nav-btn{font-size:8px;padding:2px 5px}.main-content{padding-top:92px;padding-left:8px;padding-right:8px}.page-title{font-size:16px}.filters{gap:4px}.filter-btn{font-size:10px;padding:3px 10px}.scroll-controls{gap:10px}}
+</style>
 </head>
 <body>
-<div class="rss-feed-container">
-    <header class="feed-header">
-        <h1 id="feed-title">📰 Лента новостей</h1>
-        <div class="feed-controls">
-            <div class="lang-selector">
-                <button class="lang-btn active" data-lang="ru" onclick="setLanguage('ru')">🇷🇺 RU</button>
-                <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">🇬🇧 EN</button>
-                <button class="lang-btn" data-lang="zh" onclick="setLanguage('zh')">🇨🇳 中文</button>
-                <button class="lang-btn" data-lang="hi" onclick="setLanguage('hi')">🇮🇳 हिंदी</button>
-            </div>
-            <div class="feed-control-group">
-                <label id="label-news-count">Новостей:</label>
-                <select id="feed-count">
-                    <option value="10">10</option>
-                    <option value="20" selected>20</option>
-                    <option value="30">30</option>
-                </select>
-            </div>
-            <a href="/jarvis" class="btn-header btn-home" id="btn-home">🏠 Главная</a>
-            <a href="/rss-dashboard" class="btn-header btn-manage" id="btn-manage">⚙️ Управление</a>
-        </div>
-    </header>
-
-    <div class="feed-legend">
-        <span class="legend-item"><span class="legend-color critical"></span> <span id="legend-critical">Критические (8-10)</span></span>
-        <span class="legend-item"><span class="legend-color important"></span> <span id="legend-important">Важные (5-7)</span></span>
-        <span class="legend-item"><span class="legend-color normal"></span> <span id="legend-normal">Обычные (0-4)</span></span>
-        <span class="legend-item"><span class="legend-color unknown"></span> <span id="legend-unknown">Ожидают оценки</span></span>
-        <span style="color:#555;margin-left:4px;" id="legend-ai-label">| Оценка от ИИ</span>
-    </div>
-
-    <div class="feed-filters">
-        <button class="filter-btn active" data-region="all" id="filter-all">🌍 МИР</button>
-        <button class="filter-btn" data-region="us" id="filter-us">🇺🇸 США</button>
-        <button class="filter-btn" data-region="europe" id="filter-europe">🇪🇺 ЕВРОПА</button>
-        <button class="filter-btn" data-region="africa" id="filter-africa">🌍 АФРИКА</button>
-        <button class="filter-btn" data-region="middle-east" id="filter-middle-east">🏛 БЛИЖНИЙ ВОСТОК</button>
-        <button class="filter-btn" data-region="latin-america" id="filter-latin-america">🌎 ЛАТИНСКАЯ АМЕРИКА</button>
-        <button class="filter-btn" data-region="asia-pacific" id="filter-asia-pacific">🌏 АЗИАТСКО-ТИХООКЕАНСКИЙ</button>
-        <button class="filter-btn" data-region="energy" id="filter-energy">⚡ ЭНЕРГЕТИКА</button>
-        <button class="filter-btn" data-region="government" id="filter-government">🏛 ПРАВИТЕЛЬСТВО</button>
-        <button class="filter-btn" data-region="think-tanks" id="filter-think-tanks">🧠 АНАЛИТИКА</button>
-        <button class="filter-btn" data-region="forecasts" id="filter-forecasts">📊 ПРОГНОЗЫ</button>
-        <button class="filter-btn" data-region="critical" id="filter-critical">🔥 ТОЛЬКО ВАЖНЫЕ</button>
-        <button class="filter-btn" data-region="russia" id="filter-russia">🇷🇺 РОССИЯ</button>
-        <button class="filter-btn" data-region="china" id="filter-china">🇨🇳 КИТАЙ</button>
-        <button class="filter-btn" data-region="india" id="filter-india">🇮🇳 ИНДИЯ</button>
-        <button class="filter-btn" data-region="japan" id="filter-japan">🇯🇵 ЯПОНИЯ</button>
-        <button class="filter-btn" data-region="south-korea" id="filter-south-korea">🇰🇷 КОРЕЯ</button>
-        <button class="filter-btn" data-region="north-korea" id="filter-north-korea">🇰🇵 СЕВ. КОРЕЯ</button>
-        <button class="filter-btn" data-region="iran" id="filter-iran">🇮🇷 ИРАН</button>
-        <button class="filter-btn" data-region="israel" id="filter-israel">🇮🇱 ИЗРАИЛЬ</button>
-        <button class="filter-btn" data-region="turkey" id="filter-turkey">🇹🇷 ТУРЦИЯ</button>
-        <button class="filter-btn" data-region="ukraine" id="filter-ukraine">🇺🇦 УКРАИНА</button>
-        <button class="filter-btn" data-region="uk" id="filter-uk">🇬🇧 ВЕЛИКОБРИТАНИЯ</button>
-        <button class="filter-btn" data-region="germany" id="filter-germany">🇩🇪 ГЕРМАНИЯ</button>
-        <button class="filter-btn" data-region="france" id="filter-france">🇫🇷 ФРАНЦИЯ</button>
-    </div>
-
-    <div class="feed-window" id="feed-window">
-        <div id="feed-track"><div class="feed-loading" id="loading-text">Загрузка новостей...</div></div>
-    </div>
-
-    <div class="feed-footer">
-        <span id="feed-counter">Новостей за сегодня: 0</span>
-        <div class="footer-links">
-            <a href="/jarvis" class="home-link" id="footer-home">🏠 Главная</a>
-            <a href="/rss-dashboard" class="manage-link" id="footer-manage">⚙️ Управление RSS</a>
-        </div>
-    </div>
+<header class="topbar">
+<div class="topbar-left"><span class="topbar-brand">📡 RSS ЛЕНТА</span></div>
+<div class="topbar-right">
+<button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+<div class="copy-dropdown">
+<button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ ▼</button>
+<div class="copy-dropdown-content" id="copyDropdown">
+<div class="label">ФОРМАТЫ КОПИРОВАНИЯ</div>
+<button data-format="text">📄 Как текст</button>
+<button data-format="markdown">📝 Как Markdown</button>
+<button data-format="json">📊 Как JSON</button>
+<button data-format="csv">📋 Как CSV</button>
+<div class="divider"></div>
+<button data-format="dom">🌳 DOM-дерево</button>
+<button data-format="storage">💾 localStorage</button>
+<button data-format="api">📡 API-запросы</button>
+<div class="divider"></div>
+<button data-format="all">📦 ВСЁ В ОДНОМ</button>
 </div>
-
+</div>
+<button class="topbar-btn btn-rss" onclick="window.location.href='/registry'">📡 Реестр</button>
+<button class="topbar-btn btn-debug" id="debugToggle" onclick="toggleDebug()">🔧 ОТЛАДКА</button>
+<button class="topbar-btn btn-help" onclick="openHelp()">❓ HELP</button>
+<div class="lang-switch">
+<button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
+<button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+</div>
+</div>
+</header>
+<nav class="nav-dashboards">
+<button class="nav-btn" onclick="window.location.href='/dashboard-5in1'"><span class="icon">🎯</span>Центр аналитики</button>
+<button class="nav-btn" onclick="window.location.href='/dashboard-economic'"><span class="icon">📊</span>Экономика</button>
+<button class="nav-btn" onclick="window.location.href='/dashboard-financial'"><span class="icon">💰</span>Финансы</button>
+<button class="nav-btn" onclick="window.location.href='/dashboard-military'"><span class="icon">🛡️</span>Военный</button>
+<button class="nav-btn" onclick="window.location.href='/dashboard-geopolitical'"><span class="icon">🌍</span>Геополитика</button>
+<button class="nav-btn" onclick="window.location.href='/dashboard-ecological'"><span class="icon">🌿</span>Экология</button>
+<button class="nav-btn" onclick="window.location.href='/dashboard-cyber'"><span class="icon">🔒</span>Кибер</button>
+<button class="nav-btn" onclick="window.location.href='/dashboard-space'"><span class="icon">🚀</span>Космос</button>
+<button class="nav-btn active" onclick="window.location.href='/rss-feed'"><span class="icon">📡</span>RSS</button>
+<button class="nav-btn" onclick="window.location.href='/dashboard-ai'"><span class="icon">🧠</span>AI</button>
+<button class="nav-btn" onclick="window.location.href='/dashboard-scientific'"><span class="icon">🔬</span>Наука</button>
+<button class="nav-btn" onclick="window.location.href='/dashboard-esg'"><span class="icon">🌱</span>ESG</button>
+<button class="nav-btn" onclick="window.location.href='/dashboard-threats'"><span class="icon">⚡</span>Угрозы</button>
+<button class="nav-btn" onclick="window.location.href='/dashboard-health'"><span class="icon">🏥</span>Здоровье</button>
+<button class="nav-btn" onclick="window.location.href='/dashboard-energy'"><span class="icon">⛽</span>Энергетика</button>
+<button class="nav-btn" onclick="window.location.href='/dashboard-transport'"><span class="icon">🚛</span>Транспорт</button>
+<button class="nav-btn" onclick="window.location.href='/dashboard-regions'"><span class="icon">🌏</span>Регионы</button>
+</nav>
+<main class="main-content">
+<div class="page-title">📡 RSS Лента <span class="badge" id="statusBadge">🟢 ONLINE</span></div>
+<div class="page-subtitle">
+<span>Новости из 400+ источников в реальном времени</span>
+<div class="rss-controls">
+<span class="count-badge">Новостей за сегодня: <strong id="newsCount">0</strong></span>
+<button class="refresh-btn" onclick="refreshFeed()">⟳ ОБНОВИТЬ</button>
+</div>
+</div>
+<div class="debug-panel" id="debugPanel">
+<div class="title"><span>🔧 Отладка RSS-модуля</span><span class="badge" id="debugBadge">живой</span></div>
+<div class="section"><div class="section-title">📡 Статус API</div><pre id="debugApiStatus">⏳ Загрузка...</pre></div>
+<div class="section"><div class="section-title">📦 Сырые данные (первый элемент)</div><div class="json-view" id="debugRawData">⏳ Загрузка...</div></div>
+<div class="section"><div class="section-title">📋 Количество записей</div><pre id="debugCount">⏳ Загрузка...</pre></div>
+<div class="section"><div class="section-title">🏷️ Поля в данных</div><pre id="debugFields">⏳ Загрузка...</pre></div>
+</div>
+<div class="filters">
+<button class="filter-btn active" data-filter="all">🌍 МИР</button>
+<button class="filter-btn" data-filter="us">🇺🇸 США</button>
+<button class="filter-btn" data-filter="europe">🇪🇺 ЕВРОПА</button>
+<button class="filter-btn" data-filter="africa">🌍 АФРИКА</button>
+<button class="filter-btn" data-filter="middle-east">🏛 БЛИЖНИЙ ВОСТОК</button>
+<button class="filter-btn" data-filter="latin-america">🌎 ЛАТИНСКАЯ АМЕРИКА</button>
+<button class="filter-btn" data-filter="asia-pacific">🌏 АЗИАТСКО-ТИХООКЕАНСКИЙ</button>
+<button class="filter-btn" data-filter="energy">⚡ ЭНЕРГЕТИКА</button>
+<button class="filter-btn" data-filter="government">🏛 ПРАВИТЕЛЬСТВО</button>
+<button class="filter-btn" data-filter="thinktank">🧠 АНАЛИТИЧЕСКИЕ ЦЕНТРЫ</button>
+<button class="filter-btn" data-filter="forecast">📊 ПРОГНОЗЫ</button>
+</div>
+<div class="feed-container" id="feedContainer">
+<div class="loading" id="loadingIndicator">⏳ Загрузка новостей...</div>
+<div id="feedList"></div>
+<div class="scroll-controls">
+<label><input type="checkbox" id="autoScrollToggle" checked><span class="auto-scroll-toggle">▶ Автопрокрутка</span></label>
+<label>Скорость: <input type="range" id="speedSlider" min="1" max="10" value="5"><span class="speed-label" id="speedLabel">5</span></label>
+<span style="font-size:11px;color:#4a5a6a;margin-left:auto;">Пауза при наведении</span>
+</div>
+</div>
+</main>
+<div class="modal-overlay" id="modalOverlay">
+<div class="modal-box">
+<button class="close" id="modalClose">&times;</button>
+<div class="modal-title" id="modalTitle">Заголовок</div>
+<div class="modal-meta" id="modalMeta">Источник • Дата</div>
+<div class="modal-body" id="modalBody">Содержание...</div>
+<a class="modal-link" id="modalLink" href="#" target="_blank">Читать полностью →</a>
+</div>
+</div>
 <script>
-console.log('✅ RSS скрипт запущен!');
-
-let currentLang = localStorage.getItem('rss-lang') || 'ru';
-
-// ======== МНОГОЯЗЫЧНОСТЬ ========
-const langData = {
-    ru: {
-        title: '📰 Лента новостей', newsLabel: 'Новостей:', home: '🏠 Главная', manage: '⚙️ Управление',
-        critical: 'Критические (8-10)', important: 'Важные (5-7)', normal: 'Обычные (0-4)',
-        unknown: 'Ожидают оценки', aiLabel: '| Оценка от ИИ', loading: 'Загрузка новостей...',
-        empty: 'Нет новостей', counter: 'Новостей за сегодня:', footerHome: '🏠 Главная', footerManage: '⚙️ Управление RSS',
-        filters: {
-            all: '🌍 МИР', us: '🇺🇸 США', europe: '🇪🇺 ЕВРОПА', africa: '🌍 АФРИКА',
-            'middle-east': '🏛 БЛИЖНИЙ ВОСТОК', 'latin-america': '🌎 ЛАТИНСКАЯ АМЕРИКА',
-            'asia-pacific': '🌏 АЗИАТСКО-ТИХООКЕАНСКИЙ', energy: '⚡ ЭНЕРГЕТИКА',
-            government: '🏛 ПРАВИТЕЛЬСТВО', 'think-tanks': '🧠 АНАЛИТИКА', forecasts: '📊 ПРОГНОЗЫ',
-            critical: '🔥 ТОЛЬКО ВАЖНЫЕ', russia: '🇷🇺 РОССИЯ', china: '🇨🇳 КИТАЙ',
-            india: '🇮🇳 ИНДИЯ', japan: '🇯🇵 ЯПОНИЯ', 'south-korea': '🇰🇷 КОРЕЯ',
-            'north-korea': '🇰🇵 СЕВ. КОРЕЯ', iran: '🇮🇷 ИРАН', israel: '🇮🇱 ИЗРАИЛЬ',
-            turkey: '🇹🇷 ТУРЦИЯ', ukraine: '🇺🇦 УКРАИНА', uk: '🇬🇧 ВЕЛИКОБРИТАНИЯ',
-            germany: '🇩🇪 ГЕРМАНИЯ', france: '🇫🇷 ФРАНЦИЯ'
-        }
-    },
-    en: {
-        title: '📰 News Feed', newsLabel: 'News:', home: '🏠 Home', manage: '⚙️ Manage',
-        critical: 'Critical (8-10)', important: 'Important (5-7)', normal: 'Normal (0-4)',
-        unknown: 'Awaiting rating', aiLabel: '| AI Score', loading: 'Loading news...',
-        empty: 'No news', counter: 'News today:', footerHome: '🏠 Home', footerManage: '⚙️ Manage RSS',
-        filters: {
-            all: '🌍 WORLD', us: '🇺🇸 USA', europe: '🇪🇺 EUROPE', africa: '🌍 AFRICA',
-            'middle-east': '🏛 MIDDLE EAST', 'latin-america': '🌎 LATIN AMERICA',
-            'asia-pacific': '🌏 ASIA-PACIFIC', energy: '⚡ ENERGY',
-            government: '🏛 GOVERNMENT', 'think-tanks': '🧠 THINK TANKS', forecasts: '📊 FORECASTS',
-            critical: '🔥 ONLY IMPORTANT', russia: '🇷🇺 RUSSIA', china: '🇨🇳 CHINA',
-            india: '🇮🇳 INDIA', japan: '🇯🇵 JAPAN', 'south-korea': '🇰🇷 S. KOREA',
-            'north-korea': '🇰🇵 N. KOREA', iran: '🇮🇷 IRAN', israel: '🇮🇱 ISRAEL',
-            turkey: '🇹🇷 TURKEY', ukraine: '🇺🇦 UKRAINE', uk: '🇬🇧 UK',
-            germany: '🇩🇪 GERMANY', france: '🇫🇷 FRANCE'
-        }
-    },
-    zh: {
-        title: '📰 新闻提要', newsLabel: '新闻:', home: '🏠 主页', manage: '⚙️ 管理',
-        critical: '关键 (8-10)', important: '重要 (5-7)', normal: '普通 (0-4)',
-        unknown: '等待评分', aiLabel: '| AI 评分', loading: '加载新闻...',
-        empty: '没有新闻', counter: '今日新闻:', footerHome: '🏠 主页', footerManage: '⚙️ 管理 RSS',
-        filters: {
-            all: '🌍 世界', us: '🇺🇸 美国', europe: '🇪🇺 欧洲', africa: '🌍 非洲',
-            'middle-east': '🏛 中东', 'latin-america': '🌎 拉丁美洲',
-            'asia-pacific': '🌏 亚太地区', energy: '⚡ 能源',
-            government: '🏛 政府', 'think-tanks': '🧠 智库', forecasts: '📊 预测',
-            critical: '🔥 仅重要', russia: '🇷🇺 俄罗斯', china: '🇨🇳 中国',
-            india: '🇮🇳 印度', japan: '🇯🇵 日本', 'south-korea': '🇰🇷 韩国',
-            'north-korea': '🇰🇵 朝鲜', iran: '🇮🇷 伊朗', israel: '🇮🇱 以色列',
-            turkey: '🇹🇷 土耳其', ukraine: '🇺🇦 乌克兰', uk: '🇬🇧 英国',
-            germany: '🇩🇪 德国', france: '🇫🇷 法国'
-        }
-    },
-    hi: {
-        title: '📰 समाचार फ़ीड', newsLabel: 'समाचार:', home: '🏠 होम', manage: '⚙️ प्रबंधन',
-        critical: 'गंभीर (8-10)', important: 'महत्वपूर्ण (5-7)', normal: 'सामान्य (0-4)',
-        unknown: 'रेटिंग की प्रतीक्षा', aiLabel: '| AI स्कोर', loading: 'समाचार लोड हो रहा है...',
-        empty: 'कोई समाचार नहीं', counter: 'आज के समाचार:', footerHome: '🏠 होम', footerManage: '⚙️ RSS प्रबंधन',
-        filters: {
-            all: '🌍 विश्व', us: '🇺🇸 अमेरिका', europe: '🇪🇺 यूरोप', africa: '🌍 अफ्रीका',
-            'middle-east': '🏛 मध्य पूर्व', 'latin-america': '🌎 लैटिन अमेरिका',
-            'asia-pacific': '🌏 एशिया-प्रशांत', energy: '⚡ ऊर्जा',
-            government: '🏛 सरकार', 'think-tanks': '🧠 थिंक टैंक', forecasts: '📊 पूर्वानुमान',
-            critical: '🔥 केवल महत्वपूर्ण', russia: '🇷🇺 रूस', china: '🇨🇳 चीन',
-            india: '🇮🇳 भारत', japan: '🇯🇵 जापान', 'south-korea': '🇰🇷 दक्षिण कोरिया',
-            'north-korea': '🇰🇵 उत्तर कोरिया', iran: '🇮🇷 ईरान', israel: '🇮🇱 इज़राइल',
-            turkey: '🇹🇷 तुर्की', ukraine: '🇺🇦 यूक्रेन', uk: '🇬🇧 यूके',
-            germany: '🇩🇪 जर्मनी', france: '🇫🇷 फ्रांस'
-        }
-    }
-};
-
-function setLanguage(lang) {
-    currentLang = lang;
-    localStorage.setItem('rss-lang', lang);
-    document.querySelectorAll('.lang-selector .lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
-    updateLanguage();
-}
-
-function updateLanguage() {
-    const d = langData[currentLang];
-    if (!d) return;
-    document.getElementById('feed-title').textContent = d.title;
-    document.getElementById('label-news-count').textContent = d.newsLabel;
-    document.getElementById('btn-home').textContent = d.home;
-    document.getElementById('btn-manage').textContent = d.manage;
-    document.getElementById('legend-critical').textContent = d.critical;
-    document.getElementById('legend-important').textContent = d.important;
-    document.getElementById('legend-normal').textContent = d.normal;
-    document.getElementById('legend-unknown').textContent = d.unknown;
-    document.getElementById('legend-ai-label').textContent = d.aiLabel;
-    document.getElementById('loading-text').textContent = d.loading;
-    document.getElementById('footer-home').textContent = d.footerHome;
-    document.getElementById('footer-manage').textContent = d.footerManage;
-    const f = d.filters;
-    ['all','us','europe','africa','middle-east','latin-america','asia-pacific','energy','government','think-tanks','forecasts','critical','russia','china','india','japan','south-korea','north-korea','iran','israel','turkey','ukraine','uk','germany','france'].forEach(id => {
-        const el = document.getElementById('filter-' + id);
-        if (el && f[id]) el.textContent = f[id];
-    });
-    updateCounter();
-}
-
-// ======== КАРТА РЕГИОНОВ (РАСШИРЕННАЯ) ========
-function detectRegion(source) {
-    if (!source) return 'world';
-    const s = source.toLowerCase();
-    if (s.includes('reuters') || s.includes('ap') || s.includes('tass') || s.includes('ria') || s.includes('interfax')) return 'world';
-    if (s.includes('bbc') || s.includes('guardian') || s.includes('economist') || s.includes('ft') || s.includes('financial times')) return 'uk';
-    if (s.includes('cnn') || s.includes('bloomberg') || s.includes('washington post') || s.includes('wall street journal') || s.includes('politico') || s.includes('axios')) return 'us';
-    if (s.includes('france 24') || s.includes('le monde') || s.includes('liberation')) return 'france';
-    if (s.includes('deutsche welle') || s.includes('spiegel') || s.includes('zeit') || s.includes('bild')) return 'germany';
-    if (s.includes('al jazeera') || s.includes('alarabiya')) return 'middle-east';
-    if (s.includes('nikkei') || s.includes('kyodo') || s.includes('asahi')) return 'japan';
-    if (s.includes('xinhua') || s.includes('scmp') || s.includes('south china morning post') || s.includes('cgtn')) return 'china';
-    if (s.includes('yonhap') || s.includes('chosun')) return 'south-korea';
-    if (s.includes('kcna')) return 'north-korea';
-    if (s.includes('irna') || s.includes('mehr') || s.includes('fars')) return 'iran';
-    if (s.includes('haaretz') || s.includes('times of israel') || s.includes('jpost')) return 'israel';
-    if (s.includes('hurriyet') || s.includes('sabah') || s.includes('haber')) return 'turkey';
-    if (s.includes('ukrinform') || s.includes('pravda')) return 'ukraine';
-    if (s.includes('europa') || s.includes('euobserver') || s.includes('politico.eu')) return 'europe';
-    if (s.includes('africa') || s.includes('allafrica') || s.includes('nairobi')) return 'africa';
-    if (s.includes('latino') || s.includes('mexico') || s.includes('clarin')) return 'latin-america';
-    if (s.includes('india') || s.includes('hindu') || s.includes('times of india') || s.includes('indiatoday')) return 'india';
-    return 'world';
-}
-
-function getRegionEmoji(r) {
-    const m = {
-        'world':'🌍','us':'🇺🇸','europe':'🇪🇺','africa':'🌍','middle-east':'🏛',
-        'latin-america':'🌎','asia-pacific':'🌏','energy':'⚡','government':'🏛',
-        'think-tanks':'🧠','forecasts':'📊','russia':'🇷🇺','china':'🇨🇳',
-        'india':'🇮🇳','japan':'🇯🇵','south-korea':'🇰🇷','north-korea':'🇰🇵',
-        'iran':'🇮🇷','israel':'🇮🇱','turkey':'🇹🇷','ukraine':'🇺🇦',
-        'uk':'🇬🇧','germany':'🇩🇪','france':'🇫🇷'
-    };
-    return m[r] || '📰';
-}
-
-function getScoreClass(s) {
-    if (s === null || s === undefined) return 'unknown';
-    if (s >= 8) return 'critical';
-    if (s >= 5) return 'important';
-    return 'normal';
-}
-
-function getScoreDisplay(s) {
-    if (s === null || s === undefined) return '⏳';
-    return s;
-}
-
-function openArticle(url) {
-    if (url && url !== '#') window.open(url, '_blank');
-    else alert('Ссылка на статью отсутствует');
-}
-
-// ======== ОСНОВНАЯ ЛОГИКА ========
-const track = document.getElementById('feed-track');
-const counter = document.getElementById('feed-counter');
-let allNews = [], currentRegion = 'all', maxItems = 20;
-
-function renderNews() {
-    let filtered = allNews;
-    if (currentRegion === 'critical') {
-        filtered = allNews.filter(i => i.ai_score !== null && i.ai_score >= 7);
-    } else if (currentRegion !== 'all') {
-        filtered = allNews.filter(i => i.region === currentRegion);
-        if (filtered.length === 0) filtered = allNews;
-    }
-    const display = filtered.slice(0, maxItems);
-    if (display.length === 0) {
-        track.innerHTML = `<div class="feed-empty">${langData[currentLang].empty}</div>`;
-        return;
-    }
-    let html = '';
-    for (const item of display) {
-        const score = item.ai_score;
-        const scoreClass = getScoreClass(score);
-        const scoreDisplay = getScoreDisplay(score);
-        const regionEmoji = getRegionEmoji(item.region);
-        const time = new Date(item.date);
-        const timeStr = time.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-        const url = item.url || '#';
-        html += `<div class="feed-item ${scoreClass}" onclick="openArticle('${url}')">
-            <span class="feed-icon">${regionEmoji}</span>
-            <span class="feed-title">${item.title}</span>
-            <span class="feed-source">${item.source}</span>
-            <span class="feed-time">${timeStr}</span>
-            <span class="feed-score">${scoreDisplay}</span>
-        </div>`;
-    }
-    track.innerHTML = html;
-    updateCounter();
-}
-
-function updateCounter() {
-    const today = new Date().toISOString().slice(0, 10);
-    const todayItems = allNews.filter(i => i.date && i.date.startsWith(today));
-    const data = langData[currentLang];
-    counter.textContent = `${data.counter} ${todayItems.length}`;
-}
-
-// ======== ЗАГРУЗКА НОВОСТЕЙ ========
-console.log('📡 Загрузка новостей...');
-fetch('/api/news/latest?limit=80')
-    .then(r => r.json())
-    .then(data => {
-        console.log('📰 Получено:', data.total);
-        if (data.news && data.news.length > 0) {
-            allNews = data.news.slice(0, 50).map(item => {
-                let date = item.collectedAt || item.pubDate || new Date().toISOString();
-                if (item.pubDate) {
-                    try {
-                        const d = new Date(item.pubDate);
-                        if (!isNaN(d)) date = d.toISOString();
-                    } catch(e) {}
-                }
-                return {
-                    id: item.id || 'news-' + Math.random(),
-                    title: item.title || 'Без заголовка',
-                    source: item.source || 'Источник',
-                    region: detectRegion(item.source),
-                    date: date,
-                    url: item.link || '#',
-                    summary: item.description || '',
-                    ai_score: null
-                };
-            });
-            renderNews();
-            fetch('/api/ai/rate', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ news: allNews.slice(0, 15) })
-            })
-            .then(r => r.json())
-            .then(aiData => {
-                if (aiData.success && aiData.news) {
-                    for (const rated of aiData.news) {
-                        const item = allNews.find(i => i.id === rated.id);
-                        if (item) item.ai_score = rated.ai_score;
-                    }
-                    renderNews();
-                    console.log('✅ AI оценки получены');
-                }
-            })
-            .catch(e => console.error('AI ошибка:', e));
-        }
-    })
-    .catch(e => {
-        console.error('❌ Ошибка:', e);
-        track.innerHTML = '<div class="feed-empty">Ошибка загрузки</div>';
-    });
-
-// ======== ФИЛЬТРЫ ========
-document.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
-        currentRegion = this.dataset.region;
-        renderNews();
-    });
-});
-
-document.getElementById('feed-count').addEventListener('change', function() {
-    maxItems = parseInt(this.value);
-    renderNews();
-});
-
-// ======== ИНИЦИАЛИЗАЦИЯ ========
-document.querySelectorAll('.lang-selector .lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === currentLang));
-updateLanguage();
+var currentLang = localStorage.getItem('crucix-lang') || 'ru';
+function switchLang(l){currentLang=l;localStorage.setItem('crucix-lang',l);document.querySelectorAll('.lang-btn').forEach(function(b){b.classList.toggle('active',b.dataset.lang===l)});showNotification('🌐 Язык: '+l.toUpperCase())}
+document.querySelectorAll('.lang-btn').forEach(function(b){b.classList.toggle('active',b.dataset.lang===currentLang)});
+function showNotification(m){document.querySelectorAll('.notification').forEach(function(e){e.remove()});var e=document.createElement('div');e.className='notification';e.textContent=m;document.body.appendChild(e);setTimeout(function(){e.remove()},2500)}
+function openHelp(){var p=window.location.pathname.replace(/^\/+/,"").replace(/\.html$/,"")||"rss-feed";var l=currentLang||"ru";fetch('/data/help/'+l+'/'+p+'.txt').then(function(r){return r.text()}).then(function(t){alert(t||"Справка не найдена")}).catch(function(){alert("Справка не найдена")})}
+document.getElementById('copy-btn').addEventListener('click',function(e){e.stopPropagation();document.getElementById('copyDropdown').classList.toggle('show')});
+document.addEventListener('click',function(){document.getElementById('copyDropdown').classList.remove('show')});
+function copyPageData(f){var ts=new Date().toLocaleString();var pt=document.querySelector('.page-title')?.textContent||document.title||'Без заголовка';var url=window.location.href;var ws=window.innerWidth+'×'+window.innerHeight;var r='=== CRUCIX — СНАПШОТ RSS ===\nДата: '+ts+'\nURL: '+url+'\nРазмер окна: '+ws+'\nСтраница: '+pt+'\n\n';var items=window._feedItems||[];r+='--- НОВОСТИ ('+items.length+') ---\n';if(items.length===0){r+='Нет новостей для отображения\n'}else{items.forEach(function(item,i){var title=item.title||item.name||'Без названия';var source=item.source||'Неизвестный источник';var date=item.date?new Date(item.date).toLocaleString('ru-RU'):'—';var summary=item.summary||item.description||item.content||'';var link=item.url||item.link||'#';r+=(i+1)+'. '+title+'\n   Источник: '+source+'\n   Дата: '+date+'\n';if(summary)r+='   Описание: '+summary+'\n';r+='   Ссылка: '+link+'\n\n'})}r+='--- СТАТИСТИКА ---\nВсего новостей: '+items.length+'\nТекущий фильтр: '+currentFilter+'\nАвтопрокрутка: '+(document.getElementById('autoScrollToggle').checked?'Вкл':'Выкл')+'\nСкорость прокрутки: '+document.getElementById('speedSlider').value+'\n\n--- СИСТЕМА ---\n🌐 '+window.location.origin+'\n🖥️ '+navigator.userAgent+'\n📐 '+window.innerWidth+'×'+window.innerHeight+'\n🕒 '+new Date().toISOString()+'\n\n=== CRUCIX OSINT TERMINAL ===\nhttps://github.com/fedorfedorov90fd-commits/Crucix';var out=r;if(f==='markdown'){var md='# CRUCIX — СНАПШОТ RSS\n\n**Дата:** '+ts+'\n**URL:** '+url+'\n**Размер окна:** '+ws+'\n\n## Новости ('+items.length+')\n\n';items.forEach(function(item,i){var title=item.title||item.name||'Без названия';var source=item.source||'Неизвестный источник';var date=item.date?new Date(item.date).toLocaleString('ru-RU'):'—';var summary=item.summary||item.description||item.content||'';var link=item.url||item.link||'#';md+='### '+(i+1)+'. '+title+'\n- **Источник:** '+source+'\n- **Дата:** '+date+'\n';if(summary)md+='- **Описание:** '+summary+'\n';md+='- **Ссылка:** '+link+'\n\n'});out=md}else if(f==='json'){out=JSON.stringify({timestamp:ts,url:url,windowSize:ws,pageTitle:pt,items:items.map(function(item){return{title:item.title||item.name||'Без названия',source:item.source||'Неизвестный источник',date:item.date||null,summary:item.summary||item.description||item.content||'',url:item.url||item.link||'#'}}),stats:{total:items.length,filter:currentFilter,autoScroll:document.getElementById('autoScrollToggle').checked,speed:parseInt(document.getElementById('speedSlider').value)}},null,2)}else if(f==='csv'){var csv='№,Заголовок,Источник,Дата,Описание,Ссылка\n';items.forEach(function(item,i){var title=(item.title||item.name||'Без названия').replace(/,/g,';');var source=(item.source||'Неизвестный источник').replace(/,/g,';');var date=item.date?new Date(item.date).toLocaleString('ru-RU'):'—';var summary=(item.summary||item.description||item.content||'').replace(/,/g,';');var link=item.url||item.link||'#';csv+=(i+1)+',"'+title+'","'+source+'","'+date+'","'+summary+'","'+link+'"\n'});out=csv}else if(f==='dom'){out='=== DOM-ДЕРЕВО ===\n'+document.documentElement.outerHTML}else if(f==='storage'){var s='=== localStorage ===\n';for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);s+=k+': '+localStorage.getItem(k)+'\n'}out=s}else if(f==='api'){out='=== API-ЗАПРОСЫ СТРАНИЦЫ ===\nОсновной запрос: /api/rss/feeds\nДополнительные: /data/help/* (справка)\n'}else if(f==='all'){var all='=== CRUCIX — ПОЛНЫЙ СНАПШОТ ===\n\n'+r+'\n\n--- DOM-ДЕРЕВО ---\n'+document.documentElement.outerHTML+'\n\n--- LOCALSTORAGE ---\n';for(var j=0;j<localStorage.length;j++){var k2=localStorage.key(j);all+=k2+': '+localStorage.getItem(k2)+'\n'}out=all}navigator.clipboard.writeText(out).then(function(){var btn=document.getElementById('copy-btn');btn.textContent='✅ '+f.toUpperCase();btn.classList.add('copied');setTimeout(function(){btn.textContent='📋 КОПИРОВАТЬ ▼';btn.classList.remove('copied')},3000);showNotification('✅ Скопировано в формате '+f.toUpperCase())}).catch(function(){var ta=document.createElement('textarea');ta.value=out;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showNotification('✅ Скопировано в формате '+f.toUpperCase())})}
+document.querySelectorAll('#copyDropdown button[data-format]').forEach(function(b){b.addEventListener('click',function(e){e.stopPropagation();document.getElementById('copyDropdown').classList.remove('show');copyPageData(this.dataset.format)})});
+var debugOpen=false;
+function toggleDebug(){debugOpen=!debugOpen;var panel=document.getElementById('debugPanel');var btn=document.getElementById('debugToggle');if(debugOpen){panel.classList.add('open');btn.classList.add('active');updateDebugInfo()}else{panel.classList.remove('open');btn.classList.remove('active')}}
+async function updateDebugInfo(){try{var res=await fetch('/api/rss/feeds');var data=await res.json();document.getElementById('debugApiStatus').innerHTML='✅ API доступен | Статус: '+res.status+' | Время: '+new Date().toLocaleTimeString();var items=[];if(data.feeds)items=data.feeds;else if(Array.isArray(data))items=data;else if(data.data)items=data.data;else if(data.items)items=data.items;document.getElementById('debugCount').textContent='Всего записей: '+items.length;if(items.length>0){var first=items[0];document.getElementById('debugRawData').textContent=JSON.stringify(first,null,2);document.getElementById('debugFields').textContent='Поля: '+Object.keys(first).join(', ')}else{document.getElementById('debugRawData').textContent='⚠️ Данные отсутствуют';document.getElementById('debugFields').textContent='—'}var badge=document.getElementById('debugBadge');if(items.length>0){badge.textContent='✅ '+items.length+' записей';badge.style.color='#4ade80'}else{badge.textContent='⚠️ Нет данных';badge.style.color='#fbbf24'}}catch(e){document.getElementById('debugApiStatus').innerHTML='❌ Ошибка: '+e.message;document.getElementById('debugRawData').textContent='Ошибка загрузки: '+e.message;document.getElementById('debugCount').textContent='—';document.getElementById('debugFields').textContent='—'}}
+async function fetchRSS(){try{var res=await fetch('/api/rss/feeds');if(!res.ok)throw new Error('API ответил ошибкой');var data=await res.json();var items=[];if(data.feeds)items=data.feeds;else if(Array.isArray(data))items=data;else if(data.data)items=data.data;else if(data.items)items=data.items;return items}catch(e){console.error('Ошибка загрузки RSS:',e);return[]}}
+function getRegion(item){if(item.region)return item.region;if(item.categories){if(item.categories.includes('us'))return'us';if(item.categories.includes('europe'))return'europe';if(item.categories.includes('africa'))return'africa';if(item.categories.includes('middle-east'))return'middle-east';if(item.categories.includes('latin-america'))return'latin-america';if(item.categories.includes('asia-pacific'))return'asia-pacific'}return'world'}
+function getIcon(region){var icons={'us':'🇺🇸','europe':'🇪🇺','africa':'🌍','middle-east':'🏛','latin-america':'🌎','asia-pacific':'🌏','energy':'⚡','government':'🏛','thinktank':'🧠','forecast':'📊'};return icons[region]||'📰'}
+function renderFeed(items){var list=document.getElementById('feedList');var loading=document.getElementById('loadingIndicator');loading.style.display='none';if(!items||items.length===0){list.innerHTML='<div style="padding:30px;text-align:center;color:#4a5a6a;">Нет новостей для отображения</div>';return}var sorted=[...items].sort(function(a,b){var da=a.date?new Date(a.date):new Date(0);var db=b.date?new Date(b.date):new Date(0);return db-da});list.innerHTML=sorted.map(function(item,idx){var region=getRegion(item);var icon=getIcon(region);var title=item.title||item.name||'Без названия';var summary=item.summary||item.description||item.content||'';var source=item.source||item.author||'Неизвестный источник';var date=item.date?new Date(item.date).toLocaleString('ru-RU'):'';var url=item.url||item.link||'#';return'<div class="feed-item" data-index="'+idx+'" onclick="openModal('+idx+')"><div class="icon">'+icon+'</div><div class="content"><div class="title">'+escapeHtml(title)+'</div>'+(summary?'<div class="summary">'+escapeHtml(summary)+'</div>':'')+'<div class="meta"><span class="source">'+escapeHtml(source)+'</span>'+(date?'<span class="time">'+date+'</span>':'')+(region!=='world'?'<span class="region">'+region.toUpperCase()+'</span>':'')+'</div></div></div>'}).join('');document.getElementById('newsCount').textContent=sorted.length;window._feedItems=sorted;if(debugOpen)updateDebugInfo()}
+function escapeHtml(text){var div=document.createElement('div');div.textContent=text;return div.innerHTML}
+function openModal(index){var items=window._feedItems||[];var item=items[index];if(!item)return;document.getElementById('modalTitle').textContent=item.title||item.name||'Без названия';document.getElementById('modalMeta').textContent=(item.source||'Неизвестный источник')+' • '+(item.date?new Date(item.date).toLocaleString('ru-RU'):'');document.getElementById('modalBody').textContent=item.summary||item.description||item.content||'Нет полного текста.';document.getElementById('modalLink').href=item.url||item.link||'#';document.getElementById('modalLink').textContent='Читать полностью →';document.getElementById('modalOverlay').classList.add('active')}
+document.getElementById('modalClose').addEventListener('click',function(){document.getElementById('modalOverlay').classList.remove('active')});
+document.getElementById('modalOverlay').addEventListener('click',function(e){if(e.target===e.currentTarget){document.getElementById('modalOverlay').classList.remove('active')}});
+document.querySelectorAll('.filter-btn').forEach(function(btn){btn.addEventListener('click',function(){document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active')});this.classList.add('active');currentFilter=this.dataset.filter;applyFilter()})});
+var currentFilter='all';var allItems=[];
+function applyFilter(){var items=allItems||[];if(currentFilter==='all'){renderFeed(items);return}var filtered=items.filter(function(item){var region=getRegion(item);return region===currentFilter});renderFeed(filtered)}
+async function refreshFeed(){document.getElementById('loadingIndicator').style.display='block';document.getElementById('feedList').innerHTML='';var items=await fetchRSS();allItems=items;applyFilter();stopAutoScroll();startAutoScroll()}
+var autoScrollInterval=null;
+function startAutoScroll(){var container=document.getElementById('feedContainer');var toggle=document.getElementById('autoScrollToggle');if(!toggle.checked)return;var speed=parseInt(document.getElementById('speedSlider').value);var delay=Math.max(200,6000-speed*500);stopAutoScroll();autoScrollInterval=setInterval(function(){if(document.querySelector('.feed-item:hover'))return;container.scrollBy({top:1,behavior:'smooth'});if(container.scrollTop+container.clientHeight>=container.scrollHeight-10){container.scrollTop=0}},delay)}
+function stopAutoScroll(){if(autoScrollInterval){clearInterval(autoScrollInterval);autoScrollInterval=null}}
+document.getElementById('autoScrollToggle').addEventListener('change',function(){if(this.checked)startAutoScroll();else stopAutoScroll()});
+document.getElementById('speedSlider').addEventListener('input',function(){document.getElementById('speedLabel').textContent=this.value;if(document.getElementById('autoScrollToggle').checked){stopAutoScroll();startAutoScroll()}});
+document.addEventListener('DOMContentLoaded',async function(){var items=await fetchRSS();allItems=items;applyFilter();startAutoScroll();setInterval(refreshFeed,60000)});
 </script>
 </body>
 </html>

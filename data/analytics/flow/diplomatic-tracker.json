@@ -1,0 +1,247 @@
+{
+  "_meta": {
+    "id": "diplomatic-tracker",
+    "category": "flow",
+    "version": "1.0.0",
+    "schema_version": "1.0.0",
+    "sources": [
+      "events.json"
+    ],
+    "calculator": "DiplomaticTracker",
+    "updated_at": "2026-09-12T15:12:13.909Z",
+    "duration_ms": 1,
+    "checksum": "8bd3a0786bd5f191",
+    "stats": {
+      "items_processed": 10,
+      "total_result": 10
+    }
+  },
+  "data": {
+    "items": [
+      {
+        "id": "evt_001",
+        "timestamp": "2026-08-21T13:00:00Z",
+        "source": "NOTAM",
+        "severity": "critical",
+        "region": "Восточная Европа",
+        "title": "Закрытие воздушного пространства",
+        "description": "Военная операция в регионе, запрет полетов на 48 часов",
+        "impact": "Высокий",
+        "added": 1789225933911
+      },
+      {
+        "id": "evt_002",
+        "timestamp": "2026-08-21T13:00:00Z",
+        "source": "GPS",
+        "severity": "critical",
+        "region": "Восточная Европа",
+        "title": "Массовое глушение GPS",
+        "description": "Аномалии в GPS-сигналах в радиусе 500 км",
+        "impact": "Критический",
+        "added": 1789225933911
+      },
+      {
+        "id": "evt_003",
+        "timestamp": "2026-08-21T13:00:00Z",
+        "source": "TRENDS",
+        "severity": "high",
+        "region": "Россия",
+        "title": "Рост запросов 'война'",
+        "description": "Google Trends: +45% за последние 24 часа",
+        "impact": "Средний",
+        "added": 1789225933911
+      },
+      {
+        "id": "evt_004",
+        "timestamp": "2026-08-21T11:00:00Z",
+        "source": "NOTAM",
+        "severity": "high",
+        "region": "Ближний Восток",
+        "title": "Закрытие неба над регионом",
+        "description": "Учения ВВС, закрытие на 12 часов",
+        "impact": "Средний",
+        "added": 1789225933911
+      },
+      {
+        "id": "evt_005",
+        "timestamp": "2026-08-21T11:00:00Z",
+        "source": "GPS",
+        "severity": "critical",
+        "region": "Черное море",
+        "title": "Аномалии GPS в судоходных каналах",
+        "description": "Помехи в навигационных системах",
+        "impact": "Высокий",
+        "added": 1789225933911
+      },
+      {
+        "id": "evt_006",
+        "timestamp": "2026-08-21T11:00:00Z",
+        "source": "TRENDS",
+        "severity": "high",
+        "region": "Украина",
+        "title": "Рост запросов 'эвакуация'",
+        "description": "Google Trends: +38% за последние 24 часа",
+        "impact": "Средний",
+        "added": 1789225933911
+      },
+      {
+        "id": "evt_007",
+        "timestamp": "2026-08-21T09:00:00Z",
+        "source": "VIX",
+        "severity": "high",
+        "region": "Глобально",
+        "title": "Индекс страха достиг 34.20",
+        "description": "Рынки паникуют, VIX выше 30",
+        "impact": "Высокий",
+        "added": 1789225933911
+      },
+      {
+        "id": "evt_008",
+        "timestamp": "2026-08-21T08:00:00Z",
+        "source": "YIELD",
+        "severity": "low",
+        "region": "США",
+        "title": "Кривая доходности нормализуется",
+        "description": "Спред 10Y-2Y вернулся к 0.50%",
+        "impact": "Низкий",
+        "added": 1789225933911
+      },
+      {
+        "id": "evt_009",
+        "timestamp": "2026-08-21T07:00:00Z",
+        "source": "GOLD/OIL",
+        "severity": "medium",
+        "region": "Глобально",
+        "title": "Соотношение Золото/Нефть на уровне 27.56",
+        "description": "Умеренный геополитический риск",
+        "impact": "Средний",
+        "added": 1789225933911
+      },
+      {
+        "id": "evt_010",
+        "timestamp": "2026-08-21T06:00:00Z",
+        "source": "BDI",
+        "severity": "low",
+        "region": "Глобально",
+        "title": "Балтийский индекс на уровне 2070",
+        "description": "Нормальный уровень мировой торговли",
+        "impact": "Низкий",
+        "added": 1789225933911
+      }
+    ],
+    "top": [
+      {
+        "id": "evt_001",
+        "timestamp": "2026-08-21T13:00:00Z",
+        "source": "NOTAM",
+        "severity": "critical",
+        "region": "Восточная Европа",
+        "title": "Закрытие воздушного пространства",
+        "description": "Военная операция в регионе, запрет полетов на 48 часов",
+        "impact": "Высокий",
+        "added": 1789225933911
+      },
+      {
+        "id": "evt_002",
+        "timestamp": "2026-08-21T13:00:00Z",
+        "source": "GPS",
+        "severity": "critical",
+        "region": "Восточная Европа",
+        "title": "Массовое глушение GPS",
+        "description": "Аномалии в GPS-сигналах в радиусе 500 км",
+        "impact": "Критический",
+        "added": 1789225933911
+      },
+      {
+        "id": "evt_003",
+        "timestamp": "2026-08-21T13:00:00Z",
+        "source": "TRENDS",
+        "severity": "high",
+        "region": "Россия",
+        "title": "Рост запросов 'война'",
+        "description": "Google Trends: +45% за последние 24 часа",
+        "impact": "Средний",
+        "added": 1789225933911
+      },
+      {
+        "id": "evt_004",
+        "timestamp": "2026-08-21T11:00:00Z",
+        "source": "NOTAM",
+        "severity": "high",
+        "region": "Ближний Восток",
+        "title": "Закрытие неба над регионом",
+        "description": "Учения ВВС, закрытие на 12 часов",
+        "impact": "Средний",
+        "added": 1789225933911
+      },
+      {
+        "id": "evt_005",
+        "timestamp": "2026-08-21T11:00:00Z",
+        "source": "GPS",
+        "severity": "critical",
+        "region": "Черное море",
+        "title": "Аномалии GPS в судоходных каналах",
+        "description": "Помехи в навигационных системах",
+        "impact": "Высокий",
+        "added": 1789225933911
+      },
+      {
+        "id": "evt_006",
+        "timestamp": "2026-08-21T11:00:00Z",
+        "source": "TRENDS",
+        "severity": "high",
+        "region": "Украина",
+        "title": "Рост запросов 'эвакуация'",
+        "description": "Google Trends: +38% за последние 24 часа",
+        "impact": "Средний",
+        "added": 1789225933911
+      },
+      {
+        "id": "evt_007",
+        "timestamp": "2026-08-21T09:00:00Z",
+        "source": "VIX",
+        "severity": "high",
+        "region": "Глобально",
+        "title": "Индекс страха достиг 34.20",
+        "description": "Рынки паникуют, VIX выше 30",
+        "impact": "Высокий",
+        "added": 1789225933911
+      },
+      {
+        "id": "evt_008",
+        "timestamp": "2026-08-21T08:00:00Z",
+        "source": "YIELD",
+        "severity": "low",
+        "region": "США",
+        "title": "Кривая доходности нормализуется",
+        "description": "Спред 10Y-2Y вернулся к 0.50%",
+        "impact": "Низкий",
+        "added": 1789225933911
+      },
+      {
+        "id": "evt_009",
+        "timestamp": "2026-08-21T07:00:00Z",
+        "source": "GOLD/OIL",
+        "severity": "medium",
+        "region": "Глобально",
+        "title": "Соотношение Золото/Нефть на уровне 27.56",
+        "description": "Умеренный геополитический риск",
+        "impact": "Средний",
+        "added": 1789225933911
+      },
+      {
+        "id": "evt_010",
+        "timestamp": "2026-08-21T06:00:00Z",
+        "source": "BDI",
+        "severity": "low",
+        "region": "Глобально",
+        "title": "Балтийский индекс на уровне 2070",
+        "description": "Нормальный уровень мировой торговли",
+        "impact": "Низкий",
+        "added": 1789225933911
+      }
+    ],
+    "total": 10,
+    "generated_at": "2026-09-12T15:12:13.909Z"
+  }
+}

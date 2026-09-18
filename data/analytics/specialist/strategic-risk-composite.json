@@ -1,0 +1,3775 @@
+{
+  "_meta": {
+    "id": "strategic-risk-composite",
+    "category": "specialist",
+    "version": "1.0.0",
+    "schema_version": "1.0.0",
+    "sources": [
+      "country-characteristics",
+      "resilience-index",
+      "country-instability",
+      "infrastructure/objects"
+    ],
+    "calculator": "StrategicRiskComposite",
+    "updated_at": "2026-09-12T14:37:16.144Z",
+    "period": "manual",
+    "checksum": "7d28e138be20fbd9",
+    "stats": {
+      "from_cii": 131,
+      "from_resilience": 197,
+      "from_infra": 44,
+      "from_baseRisk_fallback": 153,
+      "from_defaults": 0
+    },
+    "description": "Композитный стратегический риск: инстабильность (CII) + дефицит устойчивости (Resilience) + инфраструктурный риск + геополитика (baseRisk/regime). Взвешенная сумма с tier-множителем."
+  },
+  "data": {
+    "countries": {
+      "AFG": {
+        "countryCode": "AFG",
+        "countryName": "Afghanistan",
+        "score": 44.46,
+        "tier": 2,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 26,
+          "resilienceDeficit": 45,
+          "infrastructure": 65,
+          "geopolitical": 85
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "ALB": {
+        "countryCode": "ALB",
+        "countryName": "Albania",
+        "score": 19.01,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 12,
+          "resilienceDeficit": 25,
+          "infrastructure": 30,
+          "geopolitical": 40
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "DZA": {
+        "countryCode": "DZA",
+        "countryName": "Algeria",
+        "score": 27.8,
+        "tier": 2,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 14,
+          "resilienceDeficit": 35,
+          "infrastructure": 35,
+          "geopolitical": 55
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "AND": {
+        "countryCode": "AND",
+        "countryName": "Andorra",
+        "score": 15.38,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 13,
+          "infrastructure": 5,
+          "geopolitical": 5
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "AGO": {
+        "countryCode": "AGO",
+        "countryName": "Angola",
+        "score": 24.98,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 16,
+          "resilienceDeficit": 34,
+          "infrastructure": 40,
+          "geopolitical": 50
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "ATG": {
+        "countryCode": "ATG",
+        "countryName": "Antigua and Barbuda",
+        "score": 19.31,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 16,
+          "infrastructure": 15,
+          "geopolitical": 15
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "ARG": {
+        "countryCode": "ARG",
+        "countryName": "Argentina",
+        "score": 19.25,
+        "tier": 2,
+        "regime": "democracy",
+        "components": {
+          "instability": 8,
+          "resilienceDeficit": 25,
+          "infrastructure": 40,
+          "geopolitical": 20
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "ARM": {
+        "countryCode": "ARM",
+        "countryName": "Armenia",
+        "score": 24.4,
+        "tier": 2,
+        "regime": "hybrid",
+        "components": {
+          "instability": 14,
+          "resilienceDeficit": 27,
+          "infrastructure": 35,
+          "geopolitical": 45
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "AUS": {
+        "countryCode": "AUS",
+        "countryName": "Australia",
+        "score": 5.85,
+        "tier": 1,
+        "regime": "democracy",
+        "components": {
+          "instability": 2,
+          "resilienceDeficit": 12,
+          "infrastructure": 5,
+          "geopolitical": 5
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "AUT": {
+        "countryCode": "AUT",
+        "countryName": "Austria",
+        "score": 4.97,
+        "tier": 2,
+        "regime": "democracy",
+        "components": {
+          "instability": 2,
+          "resilienceDeficit": 12,
+          "infrastructure": 5,
+          "geopolitical": 5
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "AZE": {
+        "countryCode": "AZE",
+        "countryName": "Azerbaijan",
+        "score": 28.01,
+        "tier": 2,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 14,
+          "resilienceDeficit": 36,
+          "infrastructure": 35,
+          "geopolitical": 55
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "BHS": {
+        "countryCode": "BHS",
+        "countryName": "Bahamas",
+        "score": 19.13,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 15,
+          "infrastructure": 15,
+          "geopolitical": 15
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "BHR": {
+        "countryCode": "BHR",
+        "countryName": "Bahrain",
+        "score": 26.35,
+        "tier": 2,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 10,
+          "resilienceDeficit": 32,
+          "infrastructure": 44,
+          "geopolitical": 45
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "BGD": {
+        "countryCode": "BGD",
+        "countryName": "Bangladesh",
+        "score": 27.46,
+        "tier": 2,
+        "regime": "hybrid",
+        "components": {
+          "instability": 16,
+          "resilienceDeficit": 30,
+          "infrastructure": 40,
+          "geopolitical": 50
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "BRB": {
+        "countryCode": "BRB",
+        "countryName": "Barbados",
+        "score": 17.25,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 14,
+          "infrastructure": 10,
+          "geopolitical": 10
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "BLR": {
+        "countryCode": "BLR",
+        "countryName": "Belarus",
+        "score": 32.77,
+        "tier": 2,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 16,
+          "resilienceDeficit": 35,
+          "infrastructure": 52,
+          "geopolitical": 60
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "BEL": {
+        "countryCode": "BEL",
+        "countryName": "Belgium",
+        "score": 9.01,
+        "tier": 2,
+        "regime": "democracy",
+        "components": {
+          "instability": 2,
+          "resilienceDeficit": 12,
+          "infrastructure": 24,
+          "geopolitical": 5
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "BLZ": {
+        "countryCode": "BLZ",
+        "countryName": "Belize",
+        "score": 23.06,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 18,
+          "infrastructure": 25,
+          "geopolitical": 25
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "BEN": {
+        "countryCode": "BEN",
+        "countryName": "Benin",
+        "score": 33.56,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 30,
+          "infrastructure": 45,
+          "geopolitical": 55
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "BTN": {
+        "countryCode": "BTN",
+        "countryName": "Bhutan",
+        "score": 19.5,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 17,
+          "infrastructure": 15,
+          "geopolitical": 15
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "BOL": {
+        "countryCode": "BOL",
+        "countryName": "Bolivia",
+        "score": 20.14,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 12,
+          "resilienceDeficit": 31,
+          "infrastructure": 30,
+          "geopolitical": 40
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "BIH": {
+        "countryCode": "BIH",
+        "countryName": "Bosnia and Herzegovina",
+        "score": 21.71,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 14,
+          "resilienceDeficit": 28,
+          "infrastructure": 35,
+          "geopolitical": 45
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "BWA": {
+        "countryCode": "BWA",
+        "countryName": "Botswana",
+        "score": 21.38,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 18,
+          "infrastructure": 20,
+          "geopolitical": 20
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "BRA": {
+        "countryCode": "BRA",
+        "countryName": "Brazil",
+        "score": 18.7,
+        "tier": 1,
+        "regime": "democracy",
+        "components": {
+          "instability": 6,
+          "resilienceDeficit": 18,
+          "infrastructure": 37.6,
+          "geopolitical": 15
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "BRN": {
+        "countryCode": "BRN",
+        "countryName": "Brunei",
+        "score": 24.94,
+        "tier": 3,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 30,
+          "infrastructure": 15,
+          "geopolitical": 35
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "BGR": {
+        "countryCode": "BGR",
+        "countryName": "Bulgaria",
+        "score": 14.28,
+        "tier": 2,
+        "regime": "democracy",
+        "components": {
+          "instability": 6,
+          "resilienceDeficit": 16,
+          "infrastructure": 32,
+          "geopolitical": 15
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "BFA": {
+        "countryCode": "BFA",
+        "countryName": "Burkina Faso",
+        "score": 38.55,
+        "tier": 2,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 22,
+          "resilienceDeficit": 40,
+          "infrastructure": 55,
+          "geopolitical": 75
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "BDI": {
+        "countryCode": "BDI",
+        "countryName": "Burundi",
+        "score": 43.88,
+        "tier": 3,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 50,
+          "infrastructure": 60,
+          "geopolitical": 80
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "CPV": {
+        "countryCode": "CPV",
+        "countryName": "Cabo Verde",
+        "score": 19.69,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 18,
+          "infrastructure": 15,
+          "geopolitical": 15
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "KHM": {
+        "countryCode": "KHM",
+        "countryName": "Cambodia",
+        "score": 24.71,
+        "tier": 3,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 14,
+          "resilienceDeficit": 36,
+          "infrastructure": 35,
+          "geopolitical": 55
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "CMR": {
+        "countryCode": "CMR",
+        "countryName": "Cameroon",
+        "score": 26.55,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 18,
+          "resilienceDeficit": 31,
+          "infrastructure": 45,
+          "geopolitical": 55
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "CAN": {
+        "countryCode": "CAN",
+        "countryName": "Canada",
+        "score": 10.6,
+        "tier": 1,
+        "regime": "democracy",
+        "components": {
+          "instability": 2,
+          "resilienceDeficit": 12,
+          "infrastructure": 24,
+          "geopolitical": 5
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "CAF": {
+        "countryCode": "CAF",
+        "countryName": "Central African Republic",
+        "score": 38.85,
+        "tier": 3,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 26,
+          "resilienceDeficit": 43,
+          "infrastructure": 65,
+          "geopolitical": 85
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "TCD": {
+        "countryCode": "TCD",
+        "countryName": "Chad",
+        "score": 34.2,
+        "tier": 3,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 22,
+          "resilienceDeficit": 41,
+          "infrastructure": 55,
+          "geopolitical": 75
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "CHL": {
+        "countryCode": "CHL",
+        "countryName": "Chile",
+        "score": 10.88,
+        "tier": 2,
+        "regime": "democracy",
+        "components": {
+          "instability": 6,
+          "resilienceDeficit": 26,
+          "infrastructure": 10,
+          "geopolitical": 10
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "CHN": {
+        "countryCode": "CHN",
+        "countryName": "China",
+        "score": 29.68,
+        "tier": 1,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 10,
+          "resilienceDeficit": 31,
+          "infrastructure": 39.73,
+          "geopolitical": 45
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "COL": {
+        "countryCode": "COL",
+        "countryName": "Colombia",
+        "score": 16.87,
+        "tier": 2,
+        "regime": "democracy",
+        "components": {
+          "instability": 12,
+          "resilienceDeficit": 20,
+          "infrastructure": 25,
+          "geopolitical": 25
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "COM": {
+        "countryCode": "COM",
+        "countryName": "Comoros",
+        "score": 31.69,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 29,
+          "infrastructure": 40,
+          "geopolitical": 50
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "COD": {
+        "countryCode": "COD",
+        "countryName": "DR Congo",
+        "score": 35.87,
+        "tier": 2,
+        "regime": "hybrid",
+        "components": {
+          "instability": 24,
+          "resilienceDeficit": 33,
+          "infrastructure": 55,
+          "geopolitical": 65
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "COG": {
+        "countryCode": "COG",
+        "countryName": "Republic of the Congo",
+        "score": 29.36,
+        "tier": 3,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 18,
+          "resilienceDeficit": 38,
+          "infrastructure": 45,
+          "geopolitical": 65
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "CRI": {
+        "countryCode": "CRI",
+        "countryName": "Costa Rica",
+        "score": 7.09,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 4,
+          "resilienceDeficit": 15,
+          "infrastructure": 10,
+          "geopolitical": 10
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "CIV": {
+        "countryCode": "CIV",
+        "countryName": "Ivory Coast",
+        "score": 23.59,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 14,
+          "resilienceDeficit": 29,
+          "infrastructure": 40,
+          "geopolitical": 50
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "HRV": {
+        "countryCode": "HRV",
+        "countryName": "Croatia",
+        "score": 6.9,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 4,
+          "resilienceDeficit": 14,
+          "infrastructure": 10,
+          "geopolitical": 10
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "CUB": {
+        "countryCode": "CUB",
+        "countryName": "Cuba",
+        "score": 26.55,
+        "tier": 3,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 18,
+          "resilienceDeficit": 36,
+          "infrastructure": 32,
+          "geopolitical": 65
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "CYP": {
+        "countryCode": "CYP",
+        "countryName": "Cyprus",
+        "score": 9.49,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 8,
+          "resilienceDeficit": 14,
+          "infrastructure": 15,
+          "geopolitical": 15
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "CZE": {
+        "countryCode": "CZE",
+        "countryName": "Czechia",
+        "score": 8.67,
+        "tier": 2,
+        "regime": "democracy",
+        "components": {
+          "instability": 4,
+          "resilienceDeficit": 12,
+          "infrastructure": 20,
+          "geopolitical": 5
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "DNK": {
+        "countryCode": "DNK",
+        "countryName": "Denmark",
+        "score": 14.96,
+        "tier": 2,
+        "regime": "democracy",
+        "components": {
+          "instability": 2,
+          "resilienceDeficit": 12,
+          "infrastructure": 52,
+          "geopolitical": 5
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "DJI": {
+        "countryCode": "DJI",
+        "countryName": "Djibouti",
+        "score": 34.5,
+        "tier": 3,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 36,
+          "infrastructure": 40,
+          "geopolitical": 60
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "DMA": {
+        "countryCode": "DMA",
+        "countryName": "Dominica",
+        "score": 19.5,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 17,
+          "infrastructure": 15,
+          "geopolitical": 15
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "DOM": {
+        "countryCode": "DOM",
+        "countryName": "Dominican Republic",
+        "score": 23.25,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 19,
+          "infrastructure": 25,
+          "geopolitical": 25
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "ECU": {
+        "countryCode": "ECU",
+        "countryName": "Ecuador",
+        "score": 18.9,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 14,
+          "resilienceDeficit": 21,
+          "infrastructure": 35,
+          "geopolitical": 35
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "EGY": {
+        "countryCode": "EGY",
+        "countryName": "Egypt",
+        "score": 29.88,
+        "tier": 2,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 8,
+          "resilienceDeficit": 37,
+          "infrastructure": 50,
+          "geopolitical": 55
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "SLV": {
+        "countryCode": "SLV",
+        "countryName": "El Salvador",
+        "score": 19.2,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 12,
+          "resilienceDeficit": 26,
+          "infrastructure": 30,
+          "geopolitical": 40
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "GNQ": {
+        "countryCode": "GNQ",
+        "countryName": "Equatorial Guinea",
+        "score": 36.38,
+        "tier": 3,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 37,
+          "infrastructure": 45,
+          "geopolitical": 65
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "ERI": {
+        "countryCode": "ERI",
+        "countryName": "Eritrea",
+        "score": 33.64,
+        "tier": 3,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 22,
+          "resilienceDeficit": 38,
+          "infrastructure": 55,
+          "geopolitical": 75
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "EST": {
+        "countryCode": "EST",
+        "countryName": "Estonia",
+        "score": 6.9,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 4,
+          "resilienceDeficit": 14,
+          "infrastructure": 10,
+          "geopolitical": 10
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "SWZ": {
+        "countryCode": "SWZ",
+        "countryName": "Eswatini",
+        "score": 36.56,
+        "tier": 3,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 38,
+          "infrastructure": 45,
+          "geopolitical": 65
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "ETH": {
+        "countryCode": "ETH",
+        "countryName": "Ethiopia",
+        "score": 35.91,
+        "tier": 2,
+        "regime": "hybrid",
+        "components": {
+          "instability": 20,
+          "resilienceDeficit": 34,
+          "infrastructure": 63,
+          "geopolitical": 60
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "FJI": {
+        "countryCode": "FJI",
+        "countryName": "Fiji",
+        "score": 21.19,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 17,
+          "infrastructure": 20,
+          "geopolitical": 20
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "FIN": {
+        "countryCode": "FIN",
+        "countryName": "Finland",
+        "score": 4.97,
+        "tier": 2,
+        "regime": "democracy",
+        "components": {
+          "instability": 2,
+          "resilienceDeficit": 12,
+          "infrastructure": 5,
+          "geopolitical": 5
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "FRA": {
+        "countryCode": "FRA",
+        "countryName": "France",
+        "score": 12.7,
+        "tier": 1,
+        "regime": "democracy",
+        "components": {
+          "instability": 4,
+          "resilienceDeficit": 13,
+          "infrastructure": 25,
+          "geopolitical": 10
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "GAB": {
+        "countryCode": "GAB",
+        "countryName": "Gabon",
+        "score": 34.31,
+        "tier": 3,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 35,
+          "infrastructure": 40,
+          "geopolitical": 60
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "GMB": {
+        "countryCode": "GMB",
+        "countryName": "Gambia",
+        "score": 32.44,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 33,
+          "infrastructure": 40,
+          "geopolitical": 50
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "GEO": {
+        "countryCode": "GEO",
+        "countryName": "Georgia",
+        "score": 21.53,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 14,
+          "resilienceDeficit": 27,
+          "infrastructure": 35,
+          "geopolitical": 45
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "DEU": {
+        "countryCode": "DEU",
+        "countryName": "Germany",
+        "score": 13.05,
+        "tier": 1,
+        "regime": "democracy",
+        "components": {
+          "instability": 2,
+          "resilienceDeficit": 13,
+          "infrastructure": 28.8,
+          "geopolitical": 10
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "GHA": {
+        "countryCode": "GHA",
+        "countryName": "Ghana",
+        "score": 19.01,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 12,
+          "resilienceDeficit": 24,
+          "infrastructure": 35,
+          "geopolitical": 35
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "GRC": {
+        "countryCode": "GRC",
+        "countryName": "Greece",
+        "score": 15.34,
+        "tier": 2,
+        "regime": "democracy",
+        "components": {
+          "instability": 6,
+          "resilienceDeficit": 21,
+          "infrastructure": 32,
+          "geopolitical": 15
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "GRD": {
+        "countryCode": "GRD",
+        "countryName": "Grenada",
+        "score": 19.31,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 16,
+          "infrastructure": 15,
+          "geopolitical": 15
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "GTM": {
+        "countryCode": "GTM",
+        "countryName": "Guatemala",
+        "score": 23.59,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 14,
+          "resilienceDeficit": 29,
+          "infrastructure": 40,
+          "geopolitical": 50
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "GIN": {
+        "countryCode": "GIN",
+        "countryName": "Guinea",
+        "score": 38.25,
+        "tier": 3,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 38,
+          "infrastructure": 50,
+          "geopolitical": 70
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "GNB": {
+        "countryCode": "GNB",
+        "countryName": "Guinea-Bissau",
+        "score": 35.44,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 31,
+          "infrastructure": 50,
+          "geopolitical": 60
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "GUY": {
+        "countryCode": "GUY",
+        "countryName": "Guyana",
+        "score": 23.06,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 18,
+          "infrastructure": 25,
+          "geopolitical": 25
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "HTI": {
+        "countryCode": "HTI",
+        "countryName": "Haiti",
+        "score": 44.44,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 43,
+          "infrastructure": 70,
+          "geopolitical": 80
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "HND": {
+        "countryCode": "HND",
+        "countryName": "Honduras",
+        "score": 25.65,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 14,
+          "resilienceDeficit": 31,
+          "infrastructure": 45,
+          "geopolitical": 55
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "HUN": {
+        "countryCode": "HUN",
+        "countryName": "Hungary",
+        "score": 18.96,
+        "tier": 2,
+        "regime": "hybrid",
+        "components": {
+          "instability": 6,
+          "resilienceDeficit": 22,
+          "infrastructure": 40,
+          "geopolitical": 25
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "ISL": {
+        "countryCode": "ISL",
+        "countryName": "Iceland",
+        "score": 15.19,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 12,
+          "infrastructure": 5,
+          "geopolitical": 5
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "IND": {
+        "countryCode": "IND",
+        "countryName": "India",
+        "score": 22.57,
+        "tier": 1,
+        "regime": "democracy",
+        "components": {
+          "instability": 8,
+          "resilienceDeficit": 18,
+          "infrastructure": 42.67,
+          "geopolitical": 25
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "IDN": {
+        "countryCode": "IDN",
+        "countryName": "Indonesia",
+        "score": 21.25,
+        "tier": 1,
+        "regime": "democracy",
+        "components": {
+          "instability": 10,
+          "resilienceDeficit": 28,
+          "infrastructure": 25,
+          "geopolitical": 25
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "IRN": {
+        "countryCode": "IRN",
+        "countryName": "Iran",
+        "score": 50.3,
+        "tier": 1,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 16,
+          "resilienceDeficit": 54,
+          "infrastructure": 76,
+          "geopolitical": 65
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "IRQ": {
+        "countryCode": "IRQ",
+        "countryName": "Iraq",
+        "score": 32.9,
+        "tier": 2,
+        "regime": "hybrid",
+        "components": {
+          "instability": 14,
+          "resilienceDeficit": 31,
+          "infrastructure": 55,
+          "geopolitical": 65
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "IRL": {
+        "countryCode": "IRL",
+        "countryName": "Ireland",
+        "score": 4.97,
+        "tier": 2,
+        "regime": "democracy",
+        "components": {
+          "instability": 2,
+          "resilienceDeficit": 12,
+          "infrastructure": 5,
+          "geopolitical": 5
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "ISR": {
+        "countryCode": "ISR",
+        "countryName": "Israel",
+        "score": 23.12,
+        "tier": 2,
+        "regime": "democracy",
+        "components": {
+          "instability": 14,
+          "resilienceDeficit": 20,
+          "infrastructure": 40,
+          "geopolitical": 40
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "ITA": {
+        "countryCode": "ITA",
+        "countryName": "Italy",
+        "score": 12.45,
+        "tier": 1,
+        "regime": "democracy",
+        "components": {
+          "instability": 4,
+          "resilienceDeficit": 13,
+          "infrastructure": 24,
+          "geopolitical": 10
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "JAM": {
+        "countryCode": "JAM",
+        "countryName": "Jamaica",
+        "score": 23.25,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 19,
+          "infrastructure": 25,
+          "geopolitical": 25
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "JPN": {
+        "countryCode": "JPN",
+        "countryName": "Japan",
+        "score": 20.15,
+        "tier": 1,
+        "regime": "democracy",
+        "components": {
+          "instability": 2,
+          "resilienceDeficit": 24,
+          "infrastructure": 46.2,
+          "geopolitical": 10
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "JOR": {
+        "countryCode": "JOR",
+        "countryName": "Jordan",
+        "score": 24.65,
+        "tier": 2,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 10,
+          "resilienceDeficit": 34,
+          "infrastructure": 30,
+          "geopolitical": 50
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "KAZ": {
+        "countryCode": "KAZ",
+        "countryName": "Kazakhstan",
+        "score": 24.65,
+        "tier": 2,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 10,
+          "resilienceDeficit": 34,
+          "infrastructure": 30,
+          "geopolitical": 50
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "KEN": {
+        "countryCode": "KEN",
+        "countryName": "Kenya",
+        "score": 26.95,
+        "tier": 2,
+        "regime": "hybrid",
+        "components": {
+          "instability": 14,
+          "resilienceDeficit": 30,
+          "infrastructure": 40,
+          "geopolitical": 50
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "KIR": {
+        "countryCode": "KIR",
+        "countryName": "Kiribati",
+        "score": 23.25,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 19,
+          "infrastructure": 25,
+          "geopolitical": 25
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "PRK": {
+        "countryCode": "PRK",
+        "countryName": "North Korea",
+        "score": 39.23,
+        "tier": 2,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 18,
+          "resilienceDeficit": 39,
+          "infrastructure": 60,
+          "geopolitical": 80
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "KOR": {
+        "countryCode": "KOR",
+        "countryName": "South Korea",
+        "score": 17.22,
+        "tier": 1,
+        "regime": "democracy",
+        "components": {
+          "instability": 6,
+          "resilienceDeficit": 15,
+          "infrastructure": 34.67,
+          "geopolitical": 15
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "KWT": {
+        "countryCode": "KWT",
+        "countryName": "Kuwait",
+        "score": 19.17,
+        "tier": 2,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 6,
+          "resilienceDeficit": 31,
+          "infrastructure": 20,
+          "geopolitical": 40
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "KGZ": {
+        "countryCode": "KGZ",
+        "countryName": "Kyrgyzstan",
+        "score": 23.78,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 14,
+          "resilienceDeficit": 30,
+          "infrastructure": 40,
+          "geopolitical": 50
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "LAO": {
+        "countryCode": "LAO",
+        "countryName": "Laos",
+        "score": 24.45,
+        "tier": 3,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 12,
+          "resilienceDeficit": 37,
+          "infrastructure": 35,
+          "geopolitical": 55
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "LVA": {
+        "countryCode": "LVA",
+        "countryName": "Latvia",
+        "score": 9.23,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 6,
+          "resilienceDeficit": 15,
+          "infrastructure": 15,
+          "geopolitical": 15
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "LBN": {
+        "countryCode": "LBN",
+        "countryName": "Lebanon",
+        "score": 35.87,
+        "tier": 2,
+        "regime": "hybrid",
+        "components": {
+          "instability": 14,
+          "resilienceDeficit": 36,
+          "infrastructure": 60,
+          "geopolitical": 70
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "LSO": {
+        "countryCode": "LSO",
+        "countryName": "Lesotho",
+        "score": 33.94,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 32,
+          "infrastructure": 45,
+          "geopolitical": 55
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "LBR": {
+        "countryCode": "LBR",
+        "countryName": "Liberia",
+        "score": 33.19,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 27,
+          "infrastructure": 50,
+          "geopolitical": 50
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "LBY": {
+        "countryCode": "LBY",
+        "countryName": "Libya",
+        "score": 39.91,
+        "tier": 2,
+        "regime": "hybrid",
+        "components": {
+          "instability": 24,
+          "resilienceDeficit": 34,
+          "infrastructure": 65,
+          "geopolitical": 75
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "LIE": {
+        "countryCode": "LIE",
+        "countryName": "Liechtenstein",
+        "score": 15.19,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 12,
+          "infrastructure": 5,
+          "geopolitical": 5
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "LTU": {
+        "countryCode": "LTU",
+        "countryName": "Lithuania",
+        "score": 8.77,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 4,
+          "resilienceDeficit": 15,
+          "infrastructure": 15,
+          "geopolitical": 15
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "LUX": {
+        "countryCode": "LUX",
+        "countryName": "Luxembourg",
+        "score": 15.19,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 12,
+          "infrastructure": 5,
+          "geopolitical": 5
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "MDG": {
+        "countryCode": "MDG",
+        "countryName": "Madagascar",
+        "score": 40.8,
+        "tier": 2,
+        "regime": "hybrid",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 34,
+          "infrastructure": 50,
+          "geopolitical": 60
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "MWI": {
+        "countryCode": "MWI",
+        "countryName": "Malawi",
+        "score": 35.06,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 38,
+          "infrastructure": 45,
+          "geopolitical": 55
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "MYS": {
+        "countryCode": "MYS",
+        "countryName": "Malaysia",
+        "score": 21.38,
+        "tier": 2,
+        "regime": "hybrid",
+        "components": {
+          "instability": 8,
+          "resilienceDeficit": 24,
+          "infrastructure": 43,
+          "geopolitical": 30
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "MDV": {
+        "countryCode": "MDV",
+        "countryName": "Maldives",
+        "score": 24,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 24,
+          "infrastructure": 20,
+          "geopolitical": 30
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "MLI": {
+        "countryCode": "MLI",
+        "countryName": "Mali",
+        "score": 40.67,
+        "tier": 2,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 22,
+          "resilienceDeficit": 41,
+          "infrastructure": 60,
+          "geopolitical": 80
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "MLT": {
+        "countryCode": "MLT",
+        "countryName": "Malta",
+        "score": 17.06,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 13,
+          "infrastructure": 10,
+          "geopolitical": 10
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "MHL": {
+        "countryCode": "MHL",
+        "countryName": "Marshall Islands",
+        "score": 19.31,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 16,
+          "infrastructure": 15,
+          "geopolitical": 15
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "MRT": {
+        "countryCode": "MRT",
+        "countryName": "Mauritania",
+        "score": 33.56,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 30,
+          "infrastructure": 45,
+          "geopolitical": 55
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "MUS": {
+        "countryCode": "MUS",
+        "countryName": "Mauritius",
+        "score": 19.31,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 16,
+          "infrastructure": 15,
+          "geopolitical": 15
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "MEX": {
+        "countryCode": "MEX",
+        "countryName": "Mexico",
+        "score": 21.15,
+        "tier": 1,
+        "regime": "democracy",
+        "components": {
+          "instability": 8,
+          "resilienceDeficit": 19,
+          "infrastructure": 36,
+          "geopolitical": 25
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "FSM": {
+        "countryCode": "FSM",
+        "countryName": "Micronesia",
+        "score": 21.75,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 20,
+          "infrastructure": 20,
+          "geopolitical": 20
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "MDA": {
+        "countryCode": "MDA",
+        "countryName": "Moldova",
+        "score": 23.59,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 14,
+          "resilienceDeficit": 29,
+          "infrastructure": 40,
+          "geopolitical": 50
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "MCO": {
+        "countryCode": "MCO",
+        "countryName": "Monaco",
+        "score": 15.19,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 12,
+          "infrastructure": 5,
+          "geopolitical": 5
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "MNG": {
+        "countryCode": "MNG",
+        "countryName": "Mongolia",
+        "score": 23.44,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 20,
+          "infrastructure": 25,
+          "geopolitical": 25
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "MNE": {
+        "countryCode": "MNE",
+        "countryName": "Montenegro",
+        "score": 25.88,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 25,
+          "infrastructure": 25,
+          "geopolitical": 35
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "MAR": {
+        "countryCode": "MAR",
+        "countryName": "Morocco",
+        "score": 19.34,
+        "tier": 2,
+        "regime": "hybrid",
+        "components": {
+          "instability": 10,
+          "resilienceDeficit": 26,
+          "infrastructure": 25,
+          "geopolitical": 35
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "MOZ": {
+        "countryCode": "MOZ",
+        "countryName": "Mozambique",
+        "score": 28.8,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 18,
+          "resilienceDeficit": 34,
+          "infrastructure": 50,
+          "geopolitical": 60
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "MMR": {
+        "countryCode": "MMR",
+        "countryName": "Myanmar",
+        "score": 41.57,
+        "tier": 2,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 18,
+          "resilienceDeficit": 41,
+          "infrastructure": 65,
+          "geopolitical": 85
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "NAM": {
+        "countryCode": "NAM",
+        "countryName": "Namibia",
+        "score": 23.44,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 20,
+          "infrastructure": 25,
+          "geopolitical": 25
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "NRU": {
+        "countryCode": "NRU",
+        "countryName": "Nauru",
+        "score": 23.06,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 18,
+          "infrastructure": 25,
+          "geopolitical": 25
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "NPL": {
+        "countryCode": "NPL",
+        "countryName": "Nepal",
+        "score": 23.14,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 12,
+          "resilienceDeficit": 38,
+          "infrastructure": 35,
+          "geopolitical": 45
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "NLD": {
+        "countryCode": "NLD",
+        "countryName": "Netherlands",
+        "score": 10.6,
+        "tier": 1,
+        "regime": "democracy",
+        "components": {
+          "instability": 2,
+          "resilienceDeficit": 12,
+          "infrastructure": 24,
+          "geopolitical": 5
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "NZL": {
+        "countryCode": "NZL",
+        "countryName": "New Zealand",
+        "score": 7.52,
+        "tier": 2,
+        "regime": "democracy",
+        "components": {
+          "instability": 2,
+          "resilienceDeficit": 24,
+          "infrastructure": 5,
+          "geopolitical": 5
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "NIC": {
+        "countryCode": "NIC",
+        "countryName": "Nicaragua",
+        "score": 29.36,
+        "tier": 3,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 18,
+          "resilienceDeficit": 38,
+          "infrastructure": 45,
+          "geopolitical": 65
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "NER": {
+        "countryCode": "NER",
+        "countryName": "Niger",
+        "score": 36.08,
+        "tier": 3,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 22,
+          "resilienceDeficit": 42,
+          "infrastructure": 60,
+          "geopolitical": 80
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "NGA": {
+        "countryCode": "NGA",
+        "countryName": "Nigeria",
+        "score": 37.4,
+        "tier": 1,
+        "regime": "hybrid",
+        "components": {
+          "instability": 18,
+          "resilienceDeficit": 36,
+          "infrastructure": 48,
+          "geopolitical": 55
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "MKD": {
+        "countryCode": "MKD",
+        "countryName": "North Macedonia",
+        "score": 21.19,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 17,
+          "infrastructure": 20,
+          "geopolitical": 20
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "NOR": {
+        "countryCode": "NOR",
+        "countryName": "Norway",
+        "score": 18.15,
+        "tier": 2,
+        "regime": "democracy",
+        "components": {
+          "instability": 2,
+          "resilienceDeficit": 12,
+          "infrastructure": 67,
+          "geopolitical": 5
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "OMN": {
+        "countryCode": "OMN",
+        "countryName": "Oman",
+        "score": 19.17,
+        "tier": 2,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 6,
+          "resilienceDeficit": 31,
+          "infrastructure": 20,
+          "geopolitical": 40
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "PAK": {
+        "countryCode": "PAK",
+        "countryName": "Pakistan",
+        "score": 33.83,
+        "tier": 2,
+        "regime": "hybrid",
+        "components": {
+          "instability": 16,
+          "resilienceDeficit": 33,
+          "infrastructure": 55,
+          "geopolitical": 65
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "PLW": {
+        "countryCode": "PLW",
+        "countryName": "Palau",
+        "score": 17.44,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 15,
+          "infrastructure": 10,
+          "geopolitical": 10
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "PAN": {
+        "countryCode": "PAN",
+        "countryName": "Panama",
+        "score": 20.55,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 8,
+          "resilienceDeficit": 17,
+          "infrastructure": 67,
+          "geopolitical": 20
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "PNG": {
+        "countryCode": "PNG",
+        "countryName": "Papua New Guinea",
+        "score": 25.84,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 14,
+          "resilienceDeficit": 32,
+          "infrastructure": 45,
+          "geopolitical": 55
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "PRY": {
+        "countryCode": "PRY",
+        "countryName": "Paraguay",
+        "score": 17.06,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 10,
+          "resilienceDeficit": 26,
+          "infrastructure": 25,
+          "geopolitical": 35
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "PER": {
+        "countryCode": "PER",
+        "countryName": "Peru",
+        "score": 18.57,
+        "tier": 2,
+        "regime": "democracy",
+        "components": {
+          "instability": 12,
+          "resilienceDeficit": 19,
+          "infrastructure": 30,
+          "geopolitical": 30
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "PHL": {
+        "countryCode": "PHL",
+        "countryName": "Philippines",
+        "score": 20.91,
+        "tier": 2,
+        "regime": "democracy",
+        "components": {
+          "instability": 12,
+          "resilienceDeficit": 21,
+          "infrastructure": 35,
+          "geopolitical": 35
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "POL": {
+        "countryCode": "POL",
+        "countryName": "Poland",
+        "score": 12.07,
+        "tier": 2,
+        "regime": "democracy",
+        "components": {
+          "instability": 4,
+          "resilienceDeficit": 16,
+          "infrastructure": 20,
+          "geopolitical": 20
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "PRT": {
+        "countryCode": "PRT",
+        "countryName": "Portugal",
+        "score": 7.82,
+        "tier": 2,
+        "regime": "democracy",
+        "components": {
+          "instability": 4,
+          "resilienceDeficit": 14,
+          "infrastructure": 10,
+          "geopolitical": 10
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "QAT": {
+        "countryCode": "QAT",
+        "countryName": "Qatar",
+        "score": 21.42,
+        "tier": 2,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 4,
+          "resilienceDeficit": 28,
+          "infrastructure": 40,
+          "geopolitical": 35
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "ROU": {
+        "countryCode": "ROU",
+        "countryName": "Romania",
+        "score": 12.79,
+        "tier": 2,
+        "regime": "democracy",
+        "components": {
+          "instability": 6,
+          "resilienceDeficit": 17,
+          "infrastructure": 20,
+          "geopolitical": 20
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "RUS": {
+        "countryCode": "RUS",
+        "countryName": "Russia",
+        "score": 44.68,
+        "tier": 1,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 16,
+          "resilienceDeficit": 38,
+          "infrastructure": 65.5,
+          "geopolitical": 70
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "RWA": {
+        "countryCode": "RWA",
+        "countryName": "Rwanda",
+        "score": 36.75,
+        "tier": 3,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 39,
+          "infrastructure": 45,
+          "geopolitical": 65
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "KNA": {
+        "countryCode": "KNA",
+        "countryName": "Saint Kitts and Nevis",
+        "score": 19.5,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 17,
+          "infrastructure": 15,
+          "geopolitical": 15
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "LCA": {
+        "countryCode": "LCA",
+        "countryName": "Saint Lucia",
+        "score": 19.5,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 17,
+          "infrastructure": 15,
+          "geopolitical": 15
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "VCT": {
+        "countryCode": "VCT",
+        "countryName": "Saint Vincent and the Grenadines",
+        "score": 19.31,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 16,
+          "infrastructure": 15,
+          "geopolitical": 15
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "WSM": {
+        "countryCode": "WSM",
+        "countryName": "Samoa",
+        "score": 19.5,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 17,
+          "infrastructure": 15,
+          "geopolitical": 15
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "SMR": {
+        "countryCode": "SMR",
+        "countryName": "San Marino",
+        "score": 15.38,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 13,
+          "infrastructure": 5,
+          "geopolitical": 5
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "STP": {
+        "countryCode": "STP",
+        "countryName": "Sao Tome and Principe",
+        "score": 27.38,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 23,
+          "infrastructure": 35,
+          "geopolitical": 35
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "SAU": {
+        "countryCode": "SAU",
+        "countryName": "Saudi Arabia",
+        "score": 30.65,
+        "tier": 1,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 8,
+          "resilienceDeficit": 33,
+          "infrastructure": 40,
+          "geopolitical": 50
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "SEN": {
+        "countryCode": "SEN",
+        "countryName": "Senegal",
+        "score": 18.45,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 12,
+          "resilienceDeficit": 21,
+          "infrastructure": 35,
+          "geopolitical": 35
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "SRB": {
+        "countryCode": "SRB",
+        "countryName": "Serbia",
+        "score": 21.25,
+        "tier": 2,
+        "regime": "hybrid",
+        "components": {
+          "instability": 10,
+          "resilienceDeficit": 26,
+          "infrastructure": 30,
+          "geopolitical": 40
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "SYC": {
+        "countryCode": "SYC",
+        "countryName": "Seychelles",
+        "score": 19.13,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 15,
+          "infrastructure": 15,
+          "geopolitical": 15
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "SLE": {
+        "countryCode": "SLE",
+        "countryName": "Sierra Leone",
+        "score": 35.81,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 33,
+          "infrastructure": 50,
+          "geopolitical": 60
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "SGP": {
+        "countryCode": "SGP",
+        "countryName": "Singapore",
+        "score": 13.47,
+        "tier": 2,
+        "regime": "hybrid",
+        "components": {
+          "instability": 2,
+          "resilienceDeficit": 21,
+          "infrastructure": 24,
+          "geopolitical": 20
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "SVK": {
+        "countryCode": "SVK",
+        "countryName": "Slovakia",
+        "score": 9.23,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 6,
+          "resilienceDeficit": 15,
+          "infrastructure": 15,
+          "geopolitical": 15
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "SVN": {
+        "countryCode": "SVN",
+        "countryName": "Slovenia",
+        "score": 6.71,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 4,
+          "resilienceDeficit": 13,
+          "infrastructure": 10,
+          "geopolitical": 10
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "SLB": {
+        "countryCode": "SLB",
+        "countryName": "Solomon Islands",
+        "score": 23.63,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 21,
+          "infrastructure": 25,
+          "geopolitical": 25
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "SOM": {
+        "countryCode": "SOM",
+        "countryName": "Somalia",
+        "score": 38.81,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 30,
+          "resilienceDeficit": 37,
+          "infrastructure": 70,
+          "geopolitical": 80
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "ZAF": {
+        "countryCode": "ZAF",
+        "countryName": "South Africa",
+        "score": 31.77,
+        "tier": 1,
+        "regime": "democracy",
+        "components": {
+          "instability": 12,
+          "resilienceDeficit": 21,
+          "infrastructure": 67.67,
+          "geopolitical": 30
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "SSD": {
+        "countryCode": "SSD",
+        "countryName": "South Sudan",
+        "score": 39.3,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 28,
+          "resilienceDeficit": 42,
+          "infrastructure": 70,
+          "geopolitical": 80
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "ESP": {
+        "countryCode": "ESP",
+        "countryName": "Spain",
+        "score": 14.7,
+        "tier": 1,
+        "regime": "democracy",
+        "components": {
+          "instability": 4,
+          "resilienceDeficit": 14,
+          "infrastructure": 32,
+          "geopolitical": 10
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "LKA": {
+        "countryCode": "LKA",
+        "countryName": "Sri Lanka",
+        "score": 22.84,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 14,
+          "resilienceDeficit": 29,
+          "infrastructure": 36,
+          "geopolitical": 50
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "SDN": {
+        "countryCode": "SDN",
+        "countryName": "Sudan",
+        "score": 50.79,
+        "tier": 2,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 30,
+          "resilienceDeficit": 52,
+          "infrastructure": 75,
+          "geopolitical": 95
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "SUR": {
+        "countryCode": "SUR",
+        "countryName": "Suriname",
+        "score": 25.31,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 21,
+          "infrastructure": 30,
+          "geopolitical": 30
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "SWE": {
+        "countryCode": "SWE",
+        "countryName": "Sweden",
+        "score": 4.97,
+        "tier": 2,
+        "regime": "democracy",
+        "components": {
+          "instability": 2,
+          "resilienceDeficit": 12,
+          "infrastructure": 5,
+          "geopolitical": 5
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "CHE": {
+        "countryCode": "CHE",
+        "countryName": "Switzerland",
+        "score": 4.76,
+        "tier": 2,
+        "regime": "democracy",
+        "components": {
+          "instability": 2,
+          "resilienceDeficit": 11,
+          "infrastructure": 5,
+          "geopolitical": 5
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "SYR": {
+        "countryCode": "SYR",
+        "countryName": "Syria",
+        "score": 45.05,
+        "tier": 2,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 20,
+          "resilienceDeficit": 42,
+          "infrastructure": 74,
+          "geopolitical": 90
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "TWN": {
+        "countryCode": "TWN",
+        "countryName": "Taiwan",
+        "score": 27.3,
+        "tier": 2,
+        "regime": "democracy",
+        "components": {
+          "instability": 4,
+          "resilienceDeficit": 19,
+          "infrastructure": 80.67,
+          "geopolitical": 30
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "TJK": {
+        "countryCode": "TJK",
+        "countryName": "Tajikistan",
+        "score": 27.53,
+        "tier": 3,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 14,
+          "resilienceDeficit": 36,
+          "infrastructure": 46,
+          "geopolitical": 60
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "TZA": {
+        "countryCode": "TZA",
+        "countryName": "Tanzania",
+        "score": 23.33,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 12,
+          "resilienceDeficit": 30,
+          "infrastructure": 40,
+          "geopolitical": 50
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "THA": {
+        "countryCode": "THA",
+        "countryName": "Thailand",
+        "score": 21.25,
+        "tier": 2,
+        "regime": "hybrid",
+        "components": {
+          "instability": 10,
+          "resilienceDeficit": 26,
+          "infrastructure": 30,
+          "geopolitical": 40
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "TLS": {
+        "countryCode": "TLS",
+        "countryName": "Timor-Leste",
+        "score": 27.19,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 22,
+          "infrastructure": 35,
+          "geopolitical": 35
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "TGO": {
+        "countryCode": "TGO",
+        "countryName": "Togo",
+        "score": 36.38,
+        "tier": 3,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 37,
+          "infrastructure": 45,
+          "geopolitical": 65
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "TON": {
+        "countryCode": "TON",
+        "countryName": "Tonga",
+        "score": 21.38,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 18,
+          "infrastructure": 20,
+          "geopolitical": 20
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "TTO": {
+        "countryCode": "TTO",
+        "countryName": "Trinidad and Tobago",
+        "score": 21.19,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 17,
+          "infrastructure": 20,
+          "geopolitical": 20
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "TUN": {
+        "countryCode": "TUN",
+        "countryName": "Tunisia",
+        "score": 21.71,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 14,
+          "resilienceDeficit": 28,
+          "infrastructure": 35,
+          "geopolitical": 45
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "TUR": {
+        "countryCode": "TUR",
+        "countryName": "Turkey",
+        "score": 39.35,
+        "tier": 1,
+        "regime": "hybrid",
+        "components": {
+          "instability": 12,
+          "resilienceDeficit": 44,
+          "infrastructure": 67,
+          "geopolitical": 40
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "TKM": {
+        "countryCode": "TKM",
+        "countryName": "Turkmenistan",
+        "score": 24.08,
+        "tier": 3,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 12,
+          "resilienceDeficit": 35,
+          "infrastructure": 35,
+          "geopolitical": 55
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "TUV": {
+        "countryCode": "TUV",
+        "countryName": "Tuvalu",
+        "score": 21.38,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 18,
+          "infrastructure": 20,
+          "geopolitical": 20
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "UGA": {
+        "countryCode": "UGA",
+        "countryName": "Uganda",
+        "score": 26.74,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 18,
+          "resilienceDeficit": 32,
+          "infrastructure": 45,
+          "geopolitical": 55
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "UKR": {
+        "countryCode": "UKR",
+        "countryName": "Ukraine",
+        "score": 56,
+        "tier": 1,
+        "regime": "hybrid",
+        "components": {
+          "instability": 20,
+          "resilienceDeficit": 36,
+          "infrastructure": 100,
+          "geopolitical": 80
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "ARE": {
+        "countryCode": "ARE",
+        "countryName": "United Arab Emirates",
+        "score": 16.11,
+        "tier": 2,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 4,
+          "resilienceDeficit": 28,
+          "infrastructure": 15,
+          "geopolitical": 35
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "GBR": {
+        "countryCode": "GBR",
+        "countryName": "United Kingdom",
+        "score": 14.6,
+        "tier": 1,
+        "regime": "democracy",
+        "components": {
+          "instability": 2,
+          "resilienceDeficit": 14,
+          "infrastructure": 34,
+          "geopolitical": 10
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "USA": {
+        "countryCode": "USA",
+        "countryName": "United States",
+        "score": 18.7,
+        "tier": 1,
+        "regime": "democracy",
+        "components": {
+          "instability": 4,
+          "resilienceDeficit": 16,
+          "infrastructure": 38,
+          "geopolitical": 20
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "URY": {
+        "countryCode": "URY",
+        "countryName": "Uruguay",
+        "score": 7.09,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 4,
+          "resilienceDeficit": 15,
+          "infrastructure": 10,
+          "geopolitical": 10
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "UZB": {
+        "countryCode": "UZB",
+        "countryName": "Uzbekistan",
+        "score": 22.39,
+        "tier": 3,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 12,
+          "resilienceDeficit": 35,
+          "infrastructure": 30,
+          "geopolitical": 50
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "VUT": {
+        "countryCode": "VUT",
+        "countryName": "Vanuatu",
+        "score": 24.94,
+        "tier": 3,
+        "regime": "democracy",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 19,
+          "infrastructure": 30,
+          "geopolitical": 30
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "VAT": {
+        "countryCode": "VAT",
+        "countryName": "Vatican City",
+        "score": 21.19,
+        "tier": 3,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 28,
+          "infrastructure": 5,
+          "geopolitical": 25
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "VEN": {
+        "countryCode": "VEN",
+        "countryName": "Venezuela",
+        "score": 44.97,
+        "tier": 2,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 18,
+          "resilienceDeficit": 41,
+          "infrastructure": 81,
+          "geopolitical": 85
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "VNM": {
+        "countryCode": "VNM",
+        "countryName": "Vietnam",
+        "score": 22.53,
+        "tier": 2,
+        "regime": "authoritarian",
+        "components": {
+          "instability": 10,
+          "resilienceDeficit": 33,
+          "infrastructure": 25,
+          "geopolitical": 45
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "YEM": {
+        "countryCode": "YEM",
+        "countryName": "Yemen",
+        "score": 45.05,
+        "tier": 2,
+        "regime": "hybrid",
+        "components": {
+          "instability": 20,
+          "resilienceDeficit": 35,
+          "infrastructure": 85,
+          "geopolitical": 85
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "ZMB": {
+        "countryCode": "ZMB",
+        "countryName": "Zambia",
+        "score": 26.4,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 14,
+          "resilienceDeficit": 35,
+          "infrastructure": 45,
+          "geopolitical": 55
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "ZWE": {
+        "countryCode": "ZWE",
+        "countryName": "Zimbabwe",
+        "score": 31.8,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 18,
+          "resilienceDeficit": 41,
+          "infrastructure": 55,
+          "geopolitical": 65
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "XKX": {
+        "countryCode": "XKX",
+        "countryName": "Kosovo",
+        "score": 33.56,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 50,
+          "resilienceDeficit": 30,
+          "infrastructure": 45,
+          "geopolitical": 55
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      },
+      "PSE": {
+        "countryCode": "PSE",
+        "countryName": "Palestine",
+        "score": 35.03,
+        "tier": 3,
+        "regime": "hybrid",
+        "components": {
+          "instability": 24,
+          "resilienceDeficit": 33,
+          "infrastructure": 65,
+          "geopolitical": 75
+        },
+        "weights": {
+          "instability": 0.3,
+          "resilienceDeficit": 0.25,
+          "infrastructure": 0.25,
+          "geopolitical": 0.2
+        }
+      }
+    },
+    "total": 197,
+    "generated_at": "2026-09-12T14:37:16.144Z"
+  }
+}

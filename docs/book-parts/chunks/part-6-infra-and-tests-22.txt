@@ -1,0 +1,3786 @@
+===== ЧАСТЬ part-6-infra-and-tests · КУСОК 22/23 · 106.2 KB =====
+
+FILE: runs/predictions/latest_forecast.json
+SIZE: 108541 bytes
+SHA1: 3e769baf3543558d
+========================================================================
+
+{
+  "timestamp": "2026-09-15T11:35:49.096Z",
+  "elapsedMs": 1030,
+  "version": "3.0",
+  "events": {
+    "market_crash": {
+      "name": "Рыночный обвал (VIX > 40)",
+      "category": "economic",
+      "horizonHours": 72,
+      "baseRate": 0.02,
+      "ensemble": 0.12866031997641666,
+      "finalProbability": 0.12866031997641666,
+      "shift": 0.10866031997641666,
+      "disagreement": 0.18479826811267344,
+      "sourceCount": 6,
+      "sourceBreakdown": [
+        {
+          "source": "bayesian",
+          "probability": 0.007293354943273906,
+          "weight": 1
+        },
+        {
+          "source": "cascade",
+          "probability": 0.007293354943273906,
+          "weight": 0.85
+        },
+        {
+          "source": "monte_carlo",
+          "probability": 0.20833333333333334,
+          "weight": 0.8
+        },
+        {
+          "source": "markov",
+          "probability": 0,
+          "weight": 0.7
+        },
+        {
+          "source": "timeseries",
+          "probability": 0.15,
+          "weight": 0.7
+        },
+        {
+          "source": "naive_bayes",
+          "probability": 0.5218518576310233,
+          "weight": 0.6
+        }
+      ],
+      "reflexive": {
+        "type": "neutral",
+        "shift": 0,
+        "analysis": {
+          "description": "Neutral forecast: publication will not significantly affect probability",
+          "recommendedAction": "Publication neutral. Standard protocol."
+        }
+      },
+      "calibratedProbability": 0.12866031997641666
+    },
+    "conflict_escalation": {
+      "name": "Эскалация конфликтов",
+      "category": "geopolitical",
+      "horizonHours": 168,
+      "baseRate": 0.05,
+      "ensemble": 0.2,
+      "finalProbability": 0.2,
+      "shift": 0.15000000000000002,
+      "disagreement": 0.29337919944024626,
+      "sourceCount": 7,
+      "sourceBreakdown": [
+        {
+          "source": "bayesian",
+          "probability": 0.1203703703703704,
+          "weight": 1
+        },
+        {
+          "source": "cascade",
+          "probability": 0.1203703703703704,
+          "weight": 0.85
+        },
+        {
+          "source": "monte_carlo",
+          "probability": 0.20833333333333334,
+          "weight": 0.8
+        },
+        {
+          "source": "markov",
+          "probability": 0,
+          "weight": 0.7
+        },
+        {
+          "source": "naive_bayes",
+          "probability": 0.5218518576310233,
+          "weight": 0.6
+        },
+        {
+          "source": "swarm",
+          "probability": 0.8,
+          "weight": 0.6
+        },
+        {
+          "source": "game_theory",
+          "probability": 0.7,
+          "weight": 0.5
+        }
+      ],
+      "reflexive": {
+        "type": "neutral",
+        "shift": 0,
+        "analysis": {
+          "description": "Neutral forecast: publication will not significantly affect probability",
+          "recommendedAction": "Publication neutral. Standard protocol."
+        }
+      },
+      "calibratedProbability": 0.2
+    },
+    "nuclear_incident": {
+      "name": "Радиационный инцидент",
+      "category": "nuclear",
+      "horizonHours": 24,
+      "baseRate": 0.001,
+      "ensemble": 0.12193108385956473,
+      "finalProbability": 0.12193108385956473,
+      "shift": 0.12093108385956473,
+      "disagreement": 0.20421317700737393,
+      "sourceCount": 5,
+      "sourceBreakdown": [
+        {
+          "source": "bayesian",
+          "probability": 0.001,
+          "weight": 1
+        },
+        {
+          "source": "cascade",
+          "probability": 0.001,
+          "weight": 0.85
+        },
+        {
+          "source": "monte_carlo",
+          "probability": 0.20833333333333334,
+          "weight": 0.8
+        },
+        {
+          "source": "markov",
+          "probability": 0,
+          "weight": 0.7
+        },
+        {
+          "source": "naive_bayes",
+          "probability": 0.5218518576310233,
+          "weight": 0.6
+        }
+      ],
+      "reflexive": {
+        "type": "neutral",
+        "shift": 0,
+        "analysis": {
+          "description": "Neutral forecast: publication will not significantly affect probability",
+          "recommendedAction": "Publication neutral. Standard protocol."
+        }
+      },
+      "calibratedProbability": 0.12193108385956473
+    },
+    "sanctions_expansion": {
+      "name": "Расширение санкций",
+      "category": "geopolitical",
+      "horizonHours": 120,
+      "baseRate": 0.08,
+      "ensemble": 0.22999999999999998,
+      "finalProbability": 0.22999999999999998,
+      "shift": 0.14999999999999997,
+      "disagreement": 0.2719404426074465,
+      "sourceCount": 7,
+      "sourceBreakdown": [
+        {
+          "source": "bayesian",
+          "probability": 0.22999999999999998,
+          "weight": 1
+        },
+        {
+          "source": "cascade",
+          "probability": 0.22999999999999998,
+          "weight": 0.85
+        },
+        {
+          "source": "monte_carlo",
+          "probability": 0.20833333333333334,
+          "weight": 0.8
+        },
+        {
+          "source": "markov",
+          "probability": 0,
+          "weight": 0.7
+        },
+        {
+          "source": "naive_bayes",
+          "probability": 0.5218518576310233,
+          "weight": 0.6
+        },
+        {
+          "source": "swarm",
+          "probability": 0.8,
+          "weight": 0.6
+        },
+        {
+          "source": "game_theory",
+          "probability": 0.7,
+          "weight": 0.5
+        }
+      ],
+      "reflexive": {
+        "type": "neutral",
+        "shift": 0,
+        "analysis": {
+          "description": "Neutral forecast: publication will not significantly affect probability",
+          "recommendedAction": "Publication neutral. Standard protocol."
+        }
+      },
+      "calibratedProbability": 0.22999999999999998
+    },
+    "naval_incident": {
+      "name": "Морской инцидент",
+      "category": "military",
+      "horizonHours": 48,
+      "baseRate": 0.03,
+      "ensemble": 0.13551336234057737,
+      "finalProbability": 0.13551336234057737,
+      "shift": 0.10551336234057737,
+      "disagreement": 0.196292440958307,
+      "sourceCount": 5,
+      "sourceBreakdown": [
+        {
+          "source": "bayesian",
+          "probability": 0.03,
+          "weight": 1
+        },
+        {
+          "source": "cascade",
+          "probability": 0.03,
+          "weight": 0.85
+        },
+        {
+          "source": "monte_carlo",
+          "probability": 0.20833333333333334,
+          "weight": 0.8
+        },
+        {
+          "source": "markov",
+          "probability": 0,
+          "weight": 0.7
+        },
+        {
+          "source": "naive_bayes",
+          "probability": 0.5218518576310233,
+          "weight": 0.6
+        }
+      ],
+      "reflexive": {
+        "type": "neutral",
+        "shift": 0,
+        "analysis": {
+          "description": "Neutral forecast: publication will not significantly affect probability",
+          "recommendedAction": "Publication neutral. Standard protocol."
+        }
+      },
+      "calibratedProbability": 0.13551336234057737
+    },
+    "regime_change": {
+      "name": "Смена геополитического режима",
+      "category": "structural",
+      "horizonHours": 336,
+      "baseRate": 0.01,
+      "ensemble": 0.12614627373298246,
+      "finalProbability": 0.12614627373298246,
+      "shift": 0.11614627373298246,
+      "disagreement": 0.20168122120925483,
+      "sourceCount": 5,
+      "sourceBreakdown": [
+        {
+          "source": "bayesian",
+          "probability": 0.01,
+          "weight": 1
+        },
+        {
+          "source": "cascade",
+          "probability": 0.01,
+          "weight": 0.85
+        },
+        {
+          "source": "monte_carlo",
+          "probability": 0.20833333333333334,
+          "weight": 0.8
+        },
+        {
+          "source": "markov",
+          "probability": 0,
+          "weight": 0.7
+        },
+        {
+          "source": "naive_bayes",
+          "probability": 0.5218518576310233,
+          "weight": 0.6
+        }
+      ],
+      "reflexive": {
+        "type": "neutral",
+        "shift": 0,
+        "analysis": {
+          "description": "Neutral forecast: publication will not significantly affect probability",
+          "recommendedAction": "Publication neutral. Standard protocol."
+        }
+      },
+      "calibratedProbability": 0.12614627373298246
+    }
+  },
+  "explanations": {
+    "market_crash": {
+      "module": "explainability",
+      "forecast": {
+        "probability": 0.12866031997641666,
+        "horizonHours": 72
+      },
+      "shap": [
+        {
+          "feature": "vix",
+          "importance": 0.10906253991325278
+        },
+        {
+          "feature": "hySpread",
+          "importance": 0.10586667971355201
+        },
+        {
+          "feature": "newAlerts",
+          "importance": 0.09881743431590222
+        },
+        {
+          "feature": "treasury10y",
+          "importance": 0.09807704653496085
+        },
+        {
+          "feature": "avgGoldsteinScore",
+          "importance": 0.09807704653496085
+        }
+      ],
+      "counterfactual": [
+        {
+          "description": "VIX drops to 15",
+          "changes": {
+            "vix": 15
+          },
+          "basePrediction": 0.748,
+          "counterfactualPrediction": 0.68,
+          "delta": -0.06799999999999995,
+          "direction": "risk_down"
+        },
+        {
+          "description": "VIX spikes to 40",
+          "changes": {
+            "vix": 40
+          },
+          "basePrediction": 0.748,
+          "counterfactualPrediction": 0.9800000000000001,
+          "delta": 0.2320000000000001,
+          "direction": "risk_up"
+        },
+        {
+          "description": "Conflicts drop to 0",
+          "changes": {
+            "conflictCount": 0
+          },
+          "basePrediction": 0.748,
+          "counterfactualPrediction": 0.608,
+          "delta": -0.14,
+          "direction": "risk_down"
+        },
+        {
+          "description": "Conflicts double",
+          "changes": {
+            "conflictCount": 24
+          },
+          "basePrediction": 0.748,
+          "counterfactualPrediction": 0.988,
+          "delta": 0.24,
+          "direction": "risk_up"
+        }
+      ],
+      "uncertainty": {
+        "total": 0.12415039989744356,
+        "epistemic": 0.03415039989744354,
+        "aleatoric": 0.09000000000000002,
+        "mean": 0.1491286501418174,
+        "disagreement": 0.18479826811267344,
+        "interpretation": "inherent_noise_in_system",
+        "modelCount": 6
+      },
+      "reasoning": [
+        {
+          "step": 1,
+          "title": "Current signals",
+          "description": "Top contributing factors: vix, hySpread, newAlerts"
+        },
+        {
+          "step": 2,
+          "title": "Model confidence",
+          "description": "Disagreement: 18%, Models agreeing: 0/0"
+        }
+      ],
+      "timestamp": "2026-09-15T11:35:50.115Z"
+    },
+    "conflict_escalation": {
+      "module": "explainability",
+      "forecast": {
+        "probability": 0.2,
+        "horizonHours": 168
+      },
+      "shap": [
+        {
+          "feature": "hySpread",
+          "importance": 0.10663402577221247
+        },
+        {
+          "feature": "vix",
+          "importance": 0.10550305160985954
+        },
+        {
+          "feature": "conflictCount",
+          "importance": 0.09959181864094072
+        },
+        {
+          "feature": "newAlerts",
+          "importance": 0.09944649861909405
+        },
+        {
+          "feature": "treasury10y",
+          "importance": 0.0981374342263155
+        }
+      ],
+      "counterfactual": [
+        {
+          "description": "VIX drops to 15",
+          "changes": {
+            "vix": 15
+          },
+          "basePrediction": 0.748,
+          "counterfactualPrediction": 0.68,
+          "delta": -0.06799999999999995,
+          "direction": "risk_down"
+        },
+        {
+          "description": "VIX spikes to 40",
+          "changes": {
+            "vix": 40
+          },
+          "basePrediction": 0.748,
+          "counterfactualPrediction": 0.9800000000000001,
+          "delta": 0.2320000000000001,
+          "direction": "risk_up"
+        },
+        {
+          "description": "Conflicts drop to 0",
+          "changes": {
+            "conflictCount": 0
+          },
+          "basePrediction": 0.748,
+          "counterfactualPrediction": 0.608,
+          "delta": -0.14,
+          "direction": "risk_down"
+        },
+        {
+          "description": "Conflicts double",
+          "changes": {
+            "conflictCount": 24
+          },
+          "basePrediction": 0.748,
+          "counterfactualPrediction": 0.988,
+          "delta": 0.24,
+          "direction": "risk_up"
+        }
+      ],
+      "uncertainty": {
+        "total": 0.17607135466419982,
+        "epistemic": 0.08607135466419981,
+        "aleatoric": 0.09000000000000001,
+        "mean": 0.3529894188150139,
+        "disagreement": 0.29337919944024626,
+        "interpretation": "inherent_noise_in_system",
+        "modelCount": 7
+      },
+      "reasoning": [
+        {
+          "step": 1,
+          "title": "Current signals",
+          "description": "Top contributing factors: hySpread, vix, conflictCount"
+        },
+        {
+          "step": 2,
+          "title": "Model confidence",
+          "description": "Disagreement: 29%, Models agreeing: 0/0"
+        }
+      ],
+      "timestamp": "2026-09-15T11:35:50.115Z"
+    },
+    "nuclear_incident": {
+      "module": "explainability",
+      "forecast": {
+        "probability": 0.12193108385956473,
+        "horizonHours": 24
+      },
+      "shap": [
+        {
+          "feature": "vix",
+          "importance": 0.10667018374695422
+        },
+        {
+          "feature": "hySpread",
+          "importance": 0.1051565802009414
+        },
+        {
+          "feature": "conflictCount",
+          "importance": 0.09993949147320987
+        },
+        {
+          "feature": "newAlerts",
+          "importance": 0.09910292381476607
+        },
+        {
+          "feature": "treasury10y",
+          "importance": 0.09818847012735478
+        }
+      ],
+      "counterfactual": [
+        {
+          "description": "VIX drops to 15",
+          "changes": {
+            "vix": 15
+          },
+          "basePrediction": 0.748,
+          "counterfactualPrediction": 0.68,
+          "delta": -0.06799999999999995,
+          "direction": "risk_down"
+        },
+        {
+          "description": "VIX spikes to 40",
+          "changes": {
+            "vix": 40
+          },
+          "basePrediction": 0.748,
+          "counterfactualPrediction": 0.9800000000000001,
+          "delta": 0.2320000000000001,
+          "direction": "risk_up"
+        },
+        {
+          "description": "Conflicts drop to 0",
+          "changes": {
+            "conflictCount": 0
+          },
+          "basePrediction": 0.748,
+          "counterfactualPrediction": 0.608,
+          "delta": -0.14,
+          "direction": "risk_down"
+        },
+        {
+          "description": "Conflicts double",
+          "changes": {
+            "conflictCount": 24
+          },
+          "basePrediction": 0.748,
+          "counterfactualPrediction": 0.988,
+          "delta": 0.24,
+          "direction": "risk_up"
+        }
+      ],
+      "uncertainty": {
+        "total": 0.13170302166344508,
+        "epistemic": 0.04170302166344505,
+        "aleatoric": 0.09000000000000002,
+        "mean": 0.14643703819287132,
+        "disagreement": 0.20421317700737396,
+        "interpretation": "inherent_noise_in_system",
+        "modelCount": 5
+      },
+      "reasoning": [
+        {
+          "step": 1,
+          "title": "Current signals",
+          "description": "Top contributing factors: vix, hySpread, conflictCount"
+        },
+        {
+          "step": 2,
+          "title": "Model confidence",
+          "description": "Disagreement: 20%, Models agreeing: 0/0"
+        }
+      ],
+      "timestamp": "2026-09-15T11:35:50.117Z"
+    },
+    "sanctions_expansion": {
+      "module": "explainability",
+      "forecast": {
+        "probability": 0.22999999999999998,
+        "horizonHours": 120
+      },
+      "shap": [
+        {
+          "feature": "vix",
+          "importance": 0.11387486090929268
+        },
+        {
+          "feature": "hySpread",
+          "importance": 0.10528034003372956
+        },
+        {
+          "feature": "newAlerts",
+          "importance": 0.09848214256720793
+        },
+        {
+          "feature": "treasury10y",
+          "importance": 0.09822049492508468
+        },
+        {
+          "feature": "avgGoldsteinScore",
+          "importance": 0.09822049492508468
+        }
+      ],
+      "counterfactual": [
+        {
+          "description": "VIX drops to 15",
+          "changes": {
+            "vix": 15
+          },
+          "basePrediction": 0.748,
+          "counterfactualPrediction": 0.68,
+          "delta": -0.06799999999999995,
+          "direction": "risk_down"
+        },
+        {
+          "description": "VIX spikes to 40",
+          "changes": {
+            "vix": 40
+          },
+          "basePrediction": 0.748,
+          "counterfactualPrediction": 0.9800000000000001,
+          "delta": 0.2320000000000001,
+          "direction": "risk_up"
+        },
+        {
+          "description": "Conflicts drop to 0",
+          "changes": {
+            "conflictCount": 0
+          },
+          "basePrediction": 0.748,
+          "counterfactualPrediction": 0.608,
+          "delta": -0.14,
+          "direction": "risk_down"
+        },
+        {
+          "description": "Conflicts double",
+          "changes": {
+            "conflictCount": 24
+          },
+          "basePrediction": 0.748,
+          "counterfactualPrediction": 0.988,
+          "delta": 0.24,
+          "direction": "risk_up"
+        }
+      ],
+      "uncertainty": {
+        "total": 0.1639516043255339,
+        "epistemic": 0.07395160432553391,
+        "aleatoric": 0.09000000000000001,
+        "mean": 0.38431217013776525,
+        "disagreement": 0.2719404426074465,
+        "interpretation": "inherent_noise_in_system",
+        "modelCount": 7
+      },
+      "reasoning": [
+        {
+          "step": 1,
+          "title": "Current signals",
+          "description": "Top contributing factors: vix, hySpread, newAlerts"
+        },
+        {
+          "step": 2,
+          "title": "Model confidence",
+          "description": "Disagreement: 27%, Models agreeing: 0/0"
+        }
+      ],
+      "timestamp": "2026-09-15T11:35:50.117Z"
+    },
+    "naval_incident": {
+      "module": "explainability",
+      "forecast": {
+        "probability": 0.13551336234057737,
+        "horizonHours": 48
+      },
+      "shap": [
+        {
+          "feature": "vix",
+          "importance": 0.10894774061487955
+        },
+        {
+          "feature": "hySpread",
+          "importance": 0.10525145057562608
+        },
+        {
+          "feature": "conflictCount",
+          "importance": 0.09859143879379714
+        },
+        {
+          "feature": "treasury10y",
+          "importance": 0.09818125681244223
+        },
+        {
+          "feature": "avgGoldsteinScore",
+          "importance": 0.09818125681244223
+        }
+      ],
+      "counterfactual": [
+        {
+          "description": "VIX drops to 15",
+          "changes": {
+            "vix": 15
+          },
+          "basePrediction": 0.748,
+          "counterfactualPrediction": 0.68,
+          "delta": -0.06799999999999995,
+          "direction": "risk_down"
+        },
+        {
+          "description": "VIX spikes to 40",
+          "changes": {
+            "vix": 40
+          },
+          "basePrediction": 0.748,
+          "counterfactualPrediction": 0.9800000000000001,
+          "delta": 0.2320000000000001,
+          "direction": "risk_up"
+        },
+        {
+          "description": "Conflicts drop to 0",
+          "changes": {
+            "conflictCount": 0
+          },
+          "basePrediction": 0.748,
+          "counterfactualPrediction": 0.608,
+          "delta": -0.14,
+          "direction": "risk_down"
+        },
+        {
+          "description": "Conflicts double",
+          "changes": {
+            "conflictCount": 24
+          },
+          "basePrediction": 0.748,
+          "counterfactualPrediction": 0.988,
+          "delta": 0.24,
+          "direction": "risk_up"
+        }
+      ],
+      "uncertainty": {
+        "total": 0.12853072237737045,
+        "epistemic": 0.038530722377370444,
+        "aleatoric": 0.09000000000000002,
+        "mean": 0.15803703819287132,
+        "disagreement": 0.196292440958307,
+        "interpretation": "inherent_noise_in_system",
+        "modelCount": 5
+      },
+      "reasoning": [
+        {
+          "step": 1,
+          "title": "Current signals",
+          "description": "Top contributing factors: vix, hySpread, conflictCount"
+        },
+        {
+          "step": 2,
+          "title": "Model confidence",
+          "description": "Disagreement: 20%, Models agreeing: 0/0"
+        }
+      ],
+      "timestamp": "2026-09-15T11:35:50.117Z"
+    },
+    "regime_change": {
+      "module": "explainability",
+      "forecast": {
+        "probability": 0.12614627373298246,
+        "horizonHours": 336
+      },
+      "shap": [
+        {
+          "feature": "vix",
+          "importance": 0.10953920286885571
+        },
+        {
+          "feature": "hySpread",
+          "importance": 0.10759133072535308
+        },
+        {
+          "feature": "newAlerts",
+          "importance": 0.09829675154905446
+        },
+        {
+          "feature": "treasury10y",
+          "importance": 0.09798132181378914
+        },
+        {
+          "feature": "avgGoldsteinScore",
+          "importance": 0.09798132181378914
+        }
+      ],
+      "counterfactual": [
+        {
+          "description": "VIX drops to 15",
+          "changes": {
+            "vix": 15
+          },
+          "basePrediction": 0.748,
+          "counterfactualPrediction": 0.68,
+          "delta": -0.06799999999999995,
+          "direction": "risk_down"
+        },
+        {
+          "description": "VIX spikes to 40",
+          "changes": {
+            "vix": 40
+          },
+          "basePrediction": 0.748,
+          "counterfactualPrediction": 0.9800000000000001,
+          "delta": 0.2320000000000001,
+          "direction": "risk_up"
+        },
+        {
+          "description": "Conflicts drop to 0",
+          "changes": {
+            "conflictCount": 0
+          },
+          "basePrediction": 0.748,
+          "counterfactualPrediction": 0.608,
+          "delta": -0.14,
+          "direction": "risk_down"
+        },
+        {
+          "description": "Conflicts double",
+          "changes": {
+            "conflictCount": 24
+          },
+          "basePrediction": 0.748,
+          "counterfactualPrediction": 0.988,
+          "delta": 0.24,
+          "direction": "risk_up"
+        }
+      ],
+      "uncertainty": {
+        "total": 0.13067531498845641,
+        "epistemic": 0.04067531498845638,
+        "aleatoric": 0.09000000000000002,
+        "mean": 0.15003703819287134,
+        "disagreement": 0.20168122120925483,
+        "interpretation": "inherent_noise_in_system",
+        "modelCount": 5
+      },
+      "reasoning": [
+        {
+          "step": 1,
+          "title": "Current signals",
+          "description": "Top contributing factors: vix, hySpread, newAlerts"
+        },
+        {
+          "step": 2,
+          "title": "Model confidence",
+          "description": "Disagreement: 20%, Models agreeing: 0/0"
+        }
+      ],
+      "timestamp": "2026-09-15T11:35:50.118Z"
+    }
+  },
+  "topRisks": [
+    {
+      "id": "sanctions_expansion",
+      "name": "Расширение санкций",
+      "probability": 0.22999999999999998,
+      "horizonHours": 120,
+      "category": "geopolitical",
+      "disagreement": 0.2719404426074465,
+      "reflexivityType": "neutral"
+    },
+    {
+      "id": "conflict_escalation",
+      "name": "Эскалация конфликтов",
+      "probability": 0.2,
+      "horizonHours": 168,
+      "category": "geopolitical",
+      "disagreement": 0.29337919944024626,
+      "reflexivityType": "neutral"
+    },
+    {
+      "id": "naval_incident",
+      "name": "Морской инцидент",
+      "probability": 0.13551336234057737,
+      "horizonHours": 48,
+      "category": "military",
+      "disagreement": 0.196292440958307,
+      "reflexivityType": "neutral"
+    },
+    {
+      "id": "market_crash",
+      "name": "Рыночный обвал (VIX > 40)",
+      "probability": 0.12866031997641666,
+      "horizonHours": 72,
+      "category": "economic",
+      "disagreement": 0.18479826811267344,
+      "reflexivityType": "neutral"
+    },
+    {
+      "id": "regime_change",
+      "name": "Смена геополитического режима",
+      "probability": 0.12614627373298246,
+      "horizonHours": 336,
+      "category": "structural",
+      "disagreement": 0.20168122120925483,
+      "reflexivityType": "neutral"
+    }
+  ],
+  "stateClassification": {
+    "predicted": "unstable",
+    "naiveBayes": {
+      "predicted": "escalation",
+      "probabilities": {
+        "unstable": 0.4781481423689767,
+        "escalation": 0.5218518576310233
+      },
+      "logProbs": {
+        "unstable": -14591272.155730959,
+        "escalation": -14591272.068267815
+      },
+      "margin": 0.04370371526204658
+    }
+  },
+  "markov": {
+    "currentState": "unstable",
+    "next": "unstable",
+    "nextDistribution": {
+      "unstable": 0.7058823529411765,
+      "escalation": 0.29411764705882354
+    },
+    "weekAhead": {
+      "unstable": 0.7391302922790606,
+      "escalation": 0.2608697077209396
+    },
+    "stationary": {
+      "unstable": 0.7391304345121718,
+      "escalation": 0.26086956548782875
+    }
+  },
+  "monteCarlo": {
+    "probabilities": {
+      "escalation": 0.7666666666666667,
+      "crisis": 0.20833333333333334,
+      "unstable": 0.025
+    },
+    "metrics": {
+      "vix": {
+        "min": 8.42055413741367,
+        "max": 64.17437261389398,
+        "p5": 18.203369893547762,
+        "p25": 22.394790733150753,
+        "p50": 26.41902702228459,
+        "p75": 33.37833392377368,
+        "p95": 44.67014615728141,
+        "mean": 28.50266300288577
+      },
+      "hySpread": {
+        "min": 2.3772655405978806,
+        "max": 7.418680991100061,
+        "p5": 3.3544065078738545,
+        "p25": 3.861031091512789,
+        "p50": 4.216715864978206,
+        "p75": 4.557052946092842,
+        "p95": 5.078195826709671,
+        "mean": 4.215688895607994
+      },
+      "conflictLevel": {
+        "min": 7.000760231017237,
+        "max": 31.689141133773678,
+        "p5": 11.648895459597986,
+        "p25": 14.539181754362318,
+        "p50": 16.833537865965937,
+        "p75": 19.242057204448532,
+        "p95": 22.504029148164452,
+        "mean": 16.942039448407254
+      }
+    },
+    "iterations": 3000,
+    "horizon": 5,
+    "sampleTrajectories": [
+      [
+        {
+          "step": 0,
+          "vix": 28.4,
+          "hySpread": 4.2,
+          "conflictLevel": 12
+        },
+        {
+          "step": 1,
+          "vix": 27.390424728644426,
+          "hySpread": 4.2508526667502196,
+          "conflictLevel": 11.935102580032753
+        },
+        {
+          "step": 2,
+          "vix": 24.60043098084658,
+          "hySpread": 4.386826703537445,
+          "conflictLevel": 11.930611689331904
+        },
+        {
+          "step": 3,
+          "vix": 26.96114752962107,
+          "hySpread": 4.435781335664859,
+          "conflictLevel": 13.27500572932664
+        },
+        {
+          "step": 4,
+          "vix": 31.866265148925507,
+          "hySpread": 5.258505355281581,
+          "conflictLevel": 13.39713477432981
+        },
+        {
+          "step": 5,
+          "vix": 30.682277083756322,
+          "hySpread": 4.717459553732749,
+          "conflictLevel": 12.683833565858237
+        }
+      ],
+      [
+        {
+          "step": 0,
+          "vix": 28.4,
+          "hySpread": 4.2,
+          "conflictLevel": 12
+        },
+        {
+          "step": 1,
+          "vix": 37.45941650121217,
+          "hySpread": 4.113817219549674,
+          "conflictLevel": 12.248156878213969
+        },
+        {
+          "step": 2,
+          "vix": 33.95802228875238,
+          "hySpread": 4.327428116856937,
+          "conflictLevel": 13.462141378296556
+        },
+        {
+          "step": 3,
+          "vix": 28.349040692627447,
+          "hySpread": 3.995064018542017,
+          "conflictLevel": 14.740250918646488
+        },
+        {
+          "step": 4,
+          "vix": 30.13527776793057,
+          "hySpread": 3.82674411797651,
+          "conflictLevel": 16.914099451119828
+        },
+        {
+          "step": 5,
+          "vix": 25.83118584353341,
+          "hySpread": 3.9849467564542573,
+          "conflictLevel": 21.32684846293521
+        }
+      ],
+      [
+        {
+          "step": 0,
+          "vix": 28.4,
+          "hySpread": 4.2,
+          "conflictLevel": 12
+        },
+        {
+          "step": 1,
+          "vix": 30.4846713463744,
+          "hySpread": 4.230703538059496,
+          "conflictLevel": 12.502532711045527
+        },
+        {
+          "step": 2,
+          "vix": 21.33483410210642,
+          "hySpread": 4.340291522087626,
+          "conflictLevel": 14.234908447711582
+        },
+        {
+          "step": 3,
+          "vix": 23.495561544911645,
+          "hySpread": 4.511699080820218,
+          "conflictLevel": 14.347455073545227
+        },
+        {
+          "step": 4,
+          "vix": 27.818352706329268,
+          "hySpread": 4.300210410889236,
+          "conflictLevel": 15.237468919851517
+        },
+        {
+          "step": 5,
+          "vix": 21.823606929154632,
+          "hySpread": 3.953588276780116,
+          "conflictLevel": 15.665987093639016
+        }
+      ],
+      [
+        {
+          "step": 0,
+          "vix": 28.4,
+          "hySpread": 4.2,
+          "conflictLevel": 12
+        },
+        {
+          "step": 1,
+          "vix": 33.705033128835005,
+          "hySpread": 4.466440965224069,
+          "conflictLevel": 15.968744060064036
+        },
+        {
+          "step": 2,
+          "vix": 30.175861797110315,
+          "hySpread": 4.205921611386688,
+          "conflictLevel": 16.230830907040843
+        },
+        {
+          "step": 3,
+          "vix": 25.38308388452383,
+          "hySpread": 4.390520995101346,
+          "conflictLevel": 16.814155275451213
+        },
+        {
+          "step": 4,
+          "vix": 22.57288225165621,
+          "hySpread": 4.351563569904928,
+          "conflictLevel": 18.116666709897206
+        },
+        {
+          "step": 5,
+          "vix": 23.102267231359743,
+          "hySpread": 4.798520045271228,
+          "conflictLevel": 17.399351910955975
+        }
+      ],
+      [
+        {
+          "step": 0,
+          "vix": 28.4,
+          "hySpread": 4.2,
+          "conflictLevel": 12
+        },
+        {
+          "step": 1,
+          "vix": 31.418454309566826,
+          "hySpread": 3.923685117364002,
+          "conflictLevel": 11.230340860531804
+        },
+        {
+          "step": 2,
+          "vix": 39.652041828448326,
+          "hySpread": 3.6882523468826847,
+          "conflictLevel": 14.718401058233972
+        },
+        {
+          "step": 3,
+          "vix": 37.42760848740298,
+          "hySpread": 3.972724537989381,
+          "conflictLevel": 17.110585839655176
+        },
+        {
+          "step": 4,
+          "vix": 41.649095062472554,
+          "hySpread": 3.613812744521151,
+          "conflictLevel": 17.936346752063052
+        },
+        {
+          "step": 5,
+          "vix": 33.57283903375624,
+          "hySpread": 3.669285224668413,
+          "conflictLevel": 17.661786354303725
+        }
+      ],
+      [
+        {
+          "step": 0,
+          "vix": 28.4,
+          "hySpread": 4.2,
+          "conflictLevel": 12
+        },
+        {
+          "step": 1,
+          "vix": 26.37296527041011,
+          "hySpread": 4.42219707762375,
+          "conflictLevel": 12.779175748698318
+        },
+        {
+          "step": 2,
+          "vix": 28.556531726806554,
+          "hySpread": 4.505021472504743,
+          "conflictLevel": 11.690395106938364
+        },
+        {
+          "step": 3,
+          "vix": 37.186668487526944,
+          "hySpread": 4.691880739823359,
+          "conflictLevel": 11.049059464963342
+        },
+        {
+          "step": 4,
+          "vix": 34.109689289985134,
+          "hySpread": 4.411379344889177,
+          "conflictLevel": 10.147139904678541
+        },
+        {
+          "step": 5,
+          "vix": 34.1384778480703,
+          "hySpread": 4.199356943239322,
+          "conflictLevel": 12.994070977166851
+        }
+      ],
+      [
+        {
+          "step": 0,
+          "vix": 28.4,
+          "hySpread": 4.2,
+          "conflictLevel": 12
+        },
+        {
+          "step": 1,
+          "vix": 28.619889678236927,
+          "hySpread": 4.185375320529867,
+          "conflictLevel": 15.092242043501258
+        },
+        {
+          "step": 2,
+          "vix": 31.92426444272489,
+          "hySpread": 4.374224541076148,
+          "conflictLevel": 18.915129252870447
+        },
+        {
+          "step": 3,
+          "vix": 32.80173292815622,
+          "hySpread": 4.329250101212804,
+          "conflictLevel": 21.30181351707765
+        },
+        {
+          "step": 4,
+          "vix": 36.02533616708572,
+          "hySpread": 4.2792291873396175,
+          "conflictLevel": 22.93272152047971
+        },
+        {
+          "step": 5,
+          "vix": 31.60899043973513,
+          "hySpread": 4.087491257342689,
+          "conflictLevel": 22.731687192111465
+        }
+      ],
+      [
+        {
+          "step": 0,
+          "vix": 28.4,
+          "hySpread": 4.2,
+          "conflictLevel": 12
+        },
+        {
+          "step": 1,
+          "vix": 26.036579133229022,
+          "hySpread": 4.303946144730041,
+          "conflictLevel": 11.44197116205443
+        },
+        {
+          "step": 2,
+          "vix": 32.27738767327164,
+          "hySpread": 4.304949639829577,
+          "conflictLevel": 12.907775161942935
+        },
+        {
+          "step": 3,
+          "vix": 32.63934830007724,
+          "hySpread": 4.201959548228388,
+          "conflictLevel": 13.236824620931841
+        },
+        {
+          "step": 4,
+          "vix": 37.49891460388013,
+          "hySpread": 4.259728706513788,
+          "conflictLevel": 15.494720650207844
+        },
+        {
+          "step": 5,
+          "vix": 33.22866092316117,
+          "hySpread": 4.428791166008419,
+          "conflictLevel": 17.438964864606103
+        }
+      ],
+      [
+        {
+          "step": 0,
+          "vix": 28.4,
+          "hySpread": 4.2,
+          "conflictLevel": 12
+        },
+        {
+          "step": 1,
+          "vix": 23.559222905704445,
+          "hySpread": 4.303951419854319,
+          "conflictLevel": 16.05380914834647
+        },
+        {
+          "step": 2,
+          "vix": 22.971992129125184,
+          "hySpread": 4.2398618587996255,
+          "conflictLevel": 16.600157662283287
+        },
+        {
+          "step": 3,
+          "vix": 23.03674991463896,
+          "hySpread": 3.837616778492192,
+          "conflictLevel": 16.637416498688943
+        },
+        {
+          "step": 4,
+          "vix": 23.181789935459925,
+          "hySpread": 3.637845432516594,
+          "conflictLevel": 16.3037431079334
+        },
+        {
+          "step": 5,
+          "vix": 22.292051684769106,
+          "hySpread": 3.781421573143487,
+          "conflictLevel": 15.127331819630548
+        }
+      ],
+      [
+        {
+          "step": 0,
+          "vix": 28.4,
+          "hySpread": 4.2,
+          "conflictLevel": 12
+        },
+        {
+          "step": 1,
+          "vix": 29.435378266121784,
+          "hySpread": 4.176470968573362,
+          "conflictLevel": 11.912732036800117
+        },
+        {
+          "step": 2,
+          "vix": 31.140170064349675,
+          "hySpread": 4.304816161402137,
+          "conflictLevel": 12.639780024807646
+        },
+        {
+          "step": 3,
+          "vix": 32.56129598460824,
+          "hySpread": 4.053516559696976,
+          "conflictLevel": 12.397501970901173
+        },
+        {
+          "step": 4,
+          "vix": 38.49715022794722,
+          "hySpread": 4.248703946668733,
+          "conflictLevel": 12.891558871817786
+        },
+        {
+          "step": 5,
+          "vix": 46.148113375597255,
+          "hySpread": 4.013730334543946,
+          "conflictLevel": 14.26725188635569
+        }
+      ]
+    ],
+    "seed": null
+  },
+  "timeseries": {
+    "vix": {
+      "metric": "vix",
+      "horizon": 5,
+      "bestModel": "ses",
+      "bestRmse": 2.7520253154402456,
+      "forecast": [
+        27.136436456570294,
+        27.136436456570294,
+        27.136436456570294,
+        27.136436456570294,
+        27.136436456570294
+      ],
+      "intervals": [
+        {
+          "value": 27.136436456570294,
+          "lower": 21.602340396427557,
+          "upper": 32.67053251671303,
+          "std": 2.8235183980320095
+        },
+        {
+          "value": 27.136436456570294,
+          "lower": 21.332227542069013,
+          "upper": 32.940645371071575,
+          "std": 2.961331078827184
+        },
+        {
+          "value": 27.136436456570294,
+          "lower": 21.074137961489008,
+          "upper": 33.19873495165158,
+          "std": 3.0930094362659637
+        },
+        {
+          "value": 27.136436456570294,
+          "lower": 20.82659612865758,
+          "upper": 33.446276784483004,
+          "std": 3.2193062897513838
+        },
+        {
+          "value": 27.136436456570294,
+          "lower": 20.588405692741958,
+          "upper": 33.68446722039863,
+          "std": 3.3408320223613974
+        }
+      ],
+      "allModels": {
+        "ses": {
+          "forecast": [
+            27.136436456570294,
+            27.136436456570294,
+            27.136436456570294,
+            27.136436456570294,
+            27.136436456570294
+          ],
+          "rmse": 2.7520253154402456,
+          "residuals": [
+            0,
+            -5.635000000000002,
+            -1.6694999999999993,
+            2.023350000000004,
+            -3.553654999999992,
+            -3.061558499999993,
+            3.183909050000004,
+            -2.3772636649999974,
+            1.9549154345000055,
+            -2.684559195849996,
+            3.160808562905004,
+            -2.8694340059664967,
+            2.1003961958234534,
+            -3.8147226629235824,
+            2.684694135953496,
+            1.8092858951674486,
+            1.0145001266172144,
+            -0.5288499113679492,
+            3.640805062042439,
+            -1.3364364565702935
+          ]
+        },
+        "holt": {
+          "forecast": [
+            22.336547998658627,
+            21.528799337170597,
+            20.721050675682566,
+            19.913302014194535,
+            19.105553352706508
+          ],
+          "rmse": 13.5520589506677,
+          "residuals": [
+            0,
+            0,
+            10.227500000000003,
+            17.860125000000004,
+            14.718158750000008,
+            16.497837612500007,
+            22.921377687875008,
+            16.994614410001255,
+            20.405941683189596,
+            14.683392523925743,
+            19.114106336723275,
+            11.737982815579851,
+            15.237456866312058,
+            8.062464995835244,
+            13.208596736626413,
+            10.992631053081439,
+            8.940476143007519,
+            6.301853421665545,
+            9.3438619140762,
+            3.4634520013413734
+          ]
+        },
+        "ar": {
+          "forecast": [
+            4924.946534713135,
+            -6290.638087525065,
+            19416.415164528375,
+            -39506.20257717895,
+            95549.14016391292
+          ],
+          "rmse": 4899.65749169757,
+          "residuals": [
+            -4909.569336879489,
+            -4897.517612723089,
+            -4894.199276705179,
+            -4911.302406895164,
+            -4905.524160806307,
+            -4894.677441588164,
+            -4904.619671859477,
+            -4898.531930309795,
+            -4904.620001227827,
+            -4895.360066792868,
+            -4906.156386549351,
+            -4900.221790585577,
+            -4909.893487463623,
+            -4892.432105018366,
+            -4893.070016127235,
+            -4895.6635189045155,
+            -4893.983250613016,
+            -4886.404306863726
+          ]
+        }
+      }
+    },
+    "conflicts": {
+      "metric": "conflicts",
+      "horizon": 5,
+      "bestModel": "ses",
+      "bestRmse": 2.9570264570375033,
+      "forecast": [
+        8.516025444279066,
+        8.516025444279066,
+        8.516025444279066,
+        8.516025444279066,
+        8.516025444279066
+      ],
+      "intervals": [
+        {
+          "value": 8.516025444279066,
+          "lower": 2.5696889866105295,
+          "upper": 14.462361901947602,
+          "std": 3.033845131463539
+        },
+        {
+          "value": 8.516025444279066,
+          "lower": 2.2794551532795486,
+          "upper": 14.752595735278582,
+          "std": 3.1819236178568966
+        },
+        {
+          "value": 8.516025444279066,
+          "lower": 2.0021402195182247,
+          "upper": 15.029910669039907,
+          "std": 3.323410828959613
+        },
+        {
+          "value": 8.516025444279066,
+          "lower": 1.7361587458743397,
+          "upper": 15.295892142683792,
+          "std": 3.4591156624513912
+        },
+        {
+          "value": 8.516025444279066,
+          "lower": 1.4802252641348632,
+          "upper": 15.55182562442327,
+          "std": 3.589693969461328
+        }
+      ],
+      "allModels": {
+        "ses": {
+          "forecast": [
+            8.516025444279066,
+            8.516025444279066,
+            8.516025444279066,
+            8.516025444279066,
+            8.516025444279066
+          ],
+          "rmse": 2.9570264570375033,
+          "residuals": [
+            0,
+            7.7,
+            1.8900000000000006,
+            -1.4769999999999994,
+            -1.0338999999999992,
+            -0.023729999999998697,
+            5.583389,
+            1.108372300000001,
+            1.4758606100000016,
+            3.1331024270000007,
+            -4.106828301099998,
+            -0.7747798107699992,
+            -2.6423458675389995,
+            3.050357892722701,
+            0.03525052490589076,
+            -3.4753246325658766,
+            0.36727275720388697,
+            -2.542909069957279,
+            3.119963651029905,
+            1.483974555720934
+          ]
+        },
+        "holt": {
+          "forecast": [
+            15.440035498607712,
+            16.781660863871657,
+            18.123286229135605,
+            19.464911594399553,
+            20.8065369596635
+          ],
+          "rmse": 18.205585913495238,
+          "residuals": [
+            0,
+            0,
+            -14.349999999999998,
+            -23.1445,
+            -25.806314999999998,
+            -26.22539605,
+            -21.0719909035,
+            -25.112447573845003,
+            -23.717393815871155,
+            -20.71933437081332,
+            -26.12911272814844,
+            -20.822084196438567,
+            -20.592501698348503,
+            -13.024018898735005,
+            -14.2453603720435,
+            -15.922938592198147,
+            -10.439555188540453,
+            -11.768000150323855,
+            -4.854871619062521,
+            -5.4400354986077115
+          ]
+        },
+        "ar": {
+          "forecast": [
+            401.32301498369685,
+            10894.726537007971,
+            292235.3122861374,
+            7835309.717600575,
+            210074070.72835138
+          ],
+          "rmse": 366.44519261302287,
+          "residuals": [
+            -500.3880772023233,
+            -369.206086257467,
+            -262.4496452692926,
+            -261.8522979555856,
+            -280.6672371670957,
+            -499.0860876876036,
+            -390.02102546897714,
+            -414.2386173667802,
+            -503.5827718297374,
+            -258.94632941142646,
+            -343.297115590116,
+            -255.55030844086588,
+            -446.55687243615654,
+            -370.40741260061344,
+            -232.6347060577825,
+            -344.3977787616892,
+            -229.73536922935574,
+            -418.8425963962196
+          ]
+        }
+      }
+    }
+  },
+  "cascade": {
+    "nodes": [
+      {
+        "id": "market_crash",
+        "name": "market_crash",
+        "baseProb": 0.007293354943273906,
+        "currentProb": 0.007293354943273906,
+        "shift": 0
+      },
+      {
+        "id": "conflict_escalation",
+        "name": "conflict_escalation",
+        "baseProb": 0.1203703703703704,
+        "currentProb": 0.1203703703703704,
+        "shift": 0
+      },
+      {
+        "id": "nuclear_incident",
+        "name": "nuclear_incident",
+        "baseProb": 0.001,
+        "currentProb": 0.001,
+        "shift": 0
+      },
+      {
+        "id": "sanctions_expansion",
+        "name": "sanctions_expansion",
+        "baseProb": 0.22999999999999998,
+        "currentProb": 0.22999999999999998,
+        "shift": 0
+      },
+      {
+        "id": "naval_incident",
+        "name": "naval_incident",
+        "baseProb": 0.03,
+        "currentProb": 0.03,
+        "shift": 0
+      },
+      {
+        "id": "regime_change",
+        "name": "regime_change",
+        "baseProb": 0.01,
+        "currentProb": 0.01,
+        "shift": 0
+      }
+    ]
+  },
+  "scientific": {
+    "hawkes": {
+      "branchingFactor": 0.5,
+      "regime": "stationary",
+      "forecastProbability24h": 1,
+      "forecastProbability72h": 1,
+      "params": {
+        "mu": 0.01,
+        "theta": 1.5,
+        "beta": 3
+      }
+    },
+    "hmm": {
+      "currentState": "escalation",
+      "pathProbability": 6.123429393536901e-12,
+      "nextState": "stable",
+      "stateDistribution": {
+        "stable": 0.44996895399158876,
+        "escalation": 0.40414013028685064,
+        "crisis": 0.14589091572156057
+      }
+    },
+    "kalman": {
+      "smoothedVix": 27.714172170564773,
+      "trend": 0.24066898080926152,
+      "forecast5": [
+        {
+          "value": 27.954841151374033,
+          "lower": 25.026432942199083,
+          "upper": 30.883249360548984
+        },
+        {
+          "value": 28.195510132183294,
+          "lower": 24.302573554423304,
+          "upper": 32.088446709943284
+        },
+        {
+          "value": 28.436179112992555,
+          "lower": 23.519395149165657,
+          "upper": 33.35296307681945
+        },
+        {
+          "value": 28.676848093801816,
+          "lower": 22.67525141583234,
+          "upper": 34.6784447717713
+        },
+        {
+          "value": 28.917517074611077,
+          "lower": 21.771027753785887,
+          "upper": 36.064006395436266
+        }
+      ]
+    },
+    "ising": {
+      "flipProbability": 0.11159847739037411,
+      "temperature": 2.2199999999999998,
+      "criticalTemperature": 1.5833333333333333,
+      "ratio": 1.402,
+      "magnetization": -0.3333333333333333,
+      "susceptibility": 4.804804804804805,
+      "nearPhaseTransition": false
+    },
+    "transferEntropy": {
+      "matrix": {
+        "vix→conflicts": {
+          "te": 0,
+          "normalized": 0
+        },
+        "vix→hySpread": {
+          "te": 0,
+          "normalized": 0
+        },
+        "conflicts→vix": {
+          "te": 0,
+          "normalized": 0
+        },
+        "conflicts→hySpread": {
+          "te": 0,
+          "normalized": 0
+        },
+        "hySpread→vix": {
+          "te": 0,
+          "normalized": 0
+        },
+        "hySpread→conflicts": {
+          "te": 0,
+          "normalized": 0
+        }
+      },
+      "ranked": [
+        {
+          "pair": "vix→conflicts",
+          "transferEntropy": 0,
+          "normalized": 0
+        },
+        {
+          "pair": "vix→hySpread",
+          "transferEntropy": 0,
+          "normalized": 0
+        },
+        {
+          "pair": "conflicts→vix",
+          "transferEntropy": 0,
+          "normalized": 0
+        },
+        {
+          "pair": "conflicts→hySpread",
+          "transferEntropy": 0,
+          "normalized": 0
+        },
+        {
+          "pair": "hySpread→vix",
+          "transferEntropy": 0,
+          "normalized": 0
+        },
+        {
+          "pair": "hySpread→conflicts",
+          "transferEntropy": 0,
+          "normalized": 0
+        }
+      ],
+      "topInfluence": {
+        "pair": "vix→conflicts",
+        "transferEntropy": 0,
+        "normalized": 0
+      }
+    },
+    "contagion": {
+      "reproductionNumber": 5.839999999999999,
+      "peak": {
+        "step": 17,
+        "value": 30.115159084480208,
+        "fraction": 0.5576881311940779
+      },
+      "outbreakProbability": 0.9999999999999999
+    },
+    "evt": {
+      "probability": 0,
+      "method": "frequency",
+      "rate": 0,
+      "exceedances": 0
+    },
+    "ornsteinUhlenbeck": {
+      "longRunMean": 25.641973271881813,
+      "theta": 1.4665366675934206,
+      "halfLife": 0.4726422433728823,
+      "forecast5": [
+        {
+          "h": 1,
+          "mean": 26.278313952857665,
+          "lower": 23.086672115500654,
+          "upper": 29.469955790214676,
+          "std": 1.6283886925290871
+        },
+        {
+          "h": 2,
+          "mean": 25.78879181360824,
+          "lower": 22.51330077116148,
+          "upper": 29.064282856054998,
+          "std": 1.6711688992075298
+        },
+        {
+          "h": 3,
+          "mean": 25.675847711846295,
+          "lower": 22.395953200534418,
+          "upper": 28.955742223158172,
+          "std": 1.6734155669958553
+        },
+        {
+          "h": 4,
+          "mean": 25.649788890191424,
+          "lower": 22.369660133935696,
+          "upper": 28.92991764644715,
+          "std": 1.6735350797223094
+        },
+        {
+          "h": 5,
+          "mean": 25.643776516145795,
+          "lower": 22.363635290755038,
+          "upper": 28.923917741536552,
+          "std": 1.6735414415258965
+        }
+      ]
+    },
+    "copula": {
+      "vix_conflicts": {
+        "kendallTau": -0.21052631578947367,
+        "tailDependence": {
+          "lambdaLower": 0,
+          "lambdaUpper": 0,
+          "q": 0.1
+        },
+        "claytonTheta": 0.01,
+        "gumbelTheta": 1.01,
+        "lowerTail": 0,
+        "upperTail": 0,
+        "asymmetric": false
+      }
+    },
+    "bocpd": {
+      "changeProbability": 0.004066812437779366,
+      "regimeAge": 20,
+      "changepointsDetected": 0
+    },
+    "particleFilter": {
+      "currentEstimate": 27.160305726504554,
+      "currentStd": 0.6146315413074677
+    }
+  },
+  "neural": {
+    "mlp": {
+      "error": "need_30+_sweeps"
+    },
+    "gcn": {
+      "available": true,
+      "nNodes": 10,
+      "nodePredictions": [
+        "low",
+        "low",
+        "low",
+        "low",
+        "low",
+        "low",
+        "low",
+        "low",
+        "low",
+        "low"
+      ],
+      "highImpactCount": 0,
+      "outputShape": "10x3",
+      "overallSeverity": "low"
+    },
+    "dqn": {
+      "error": "failed"
+    }
+  },
+  "advanced": {
+    "swarm": {
+      "module": "swarm",
+      "outcome": {
+        "type": "escalation",
+        "probability": 0.8,
+        "description": "High tension + polarization -> escalation"
+      },
+      "agentCount": 300,
+      "rounds": 15,
+      "finalTension": 1,
+      "finalMood": 0,
+      "polarization": {
+        "p25": 0,
+        "p50": 0,
+        "p75": 1
+      },
+      "trajectory": {
+        "mood": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "tension": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "economic": [
+          0.39274999999999993,
+          0.34311249999999993,
+          0.2959568749999999,
+          0.25115903124999994,
+          0.20860107968749994,
+          0.16817102570312495,
+          0.1297624744179687,
+          0.09327435069707027,
+          0.05861063316221675,
+          0.025680101504105914,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "injectedEvents": [
+        {
+          "round": 0,
+          "type": "conflict",
+          "severity": 0.8799999999999999,
+          "direction": "negative",
+          "source": "crucix_sweep"
+        }
+      ],
+      "timestamp": "2026-09-15T11:35:50.085Z"
+    },
+    "causal": {
+      "module": "causal",
+      "available": true,
+      "nSamples": 20,
+      "intervention": {
+        "y": "tension",
+        "doX": 35,
+        "probability": 0,
+        "adjustmentSet": []
+      },
+      "counterfactual": {
+        "factual": {
+          "x": 28.4,
+          "probability": 0
+        },
+        "counterfactual": {
+          "x": 35,
+          "probability": 0
+        },
+        "effect": 0,
+        "adjustmentSet": []
+      },
+      "causalGraph": {
+        "nodes": [
+          "vix",
+          "hySpread",
+          "conflictCount",
+          "sanctionsCount",
+          "newAlerts",
+          "escalatedAlerts"
+        ],
+        "edges": [
+          {
+            "from": "vix",
+            "to": "conflictCount",
+            "strength": 0.8
+          },
+          {
+            "from": "vix",
+            "to": "sanctionsCount",
+            "strength": 0.8
+          },
+          {
+            "from": "vix",
+            "to": "newAlerts",
+            "strength": 0.8
+          },
+          {
+            "from": "vix",
+            "to": "escalatedAlerts",
+            "strength": 0.8
+          },
+          {
+            "from": "hySpread",
+            "to": "newAlerts",
+            "strength": 0.8
+          },
+          {
+            "from": "hySpread",
+            "to": "escalatedAlerts",
+            "strength": 0.8
+          },
+          {
+            "from": "conflictCount",
+            "to": "sanctionsCount",
+            "strength": 0.8
+          },
+          {
+            "from": "conflictCount",
+            "to": "escalatedAlerts",
+            "strength": 0.8
+          },
+          {
+            "from": "sanctionsCount",
+            "to": "newAlerts",
+            "strength": 0.8
+          },
+          {
+            "from": "sanctionsCount",
+            "to": "escalatedAlerts",
+            "strength": 0.8
+          },
+          {
+            "from": "newAlerts",
+            "to": "escalatedAlerts",
+            "strength": 0.8
+          }
+        ]
+      },
+      "skeleton": {
+        "vix": [
+          "conflictCount",
+          "sanctionsCount",
+          "newAlerts",
+          "escalatedAlerts"
+        ],
+        "hySpread": [
+          "newAlerts",
+          "escalatedAlerts"
+        ],
+        "conflictCount": [
+          "vix",
+          "sanctionsCount",
+          "escalatedAlerts"
+        ],
+        "sanctionsCount": [
+          "vix",
+          "conflictCount",
+          "newAlerts",
+          "escalatedAlerts"
+        ],
+        "newAlerts": [
+          "vix",
+          "hySpread",
+          "sanctionsCount",
+          "escalatedAlerts"
+        ],
+        "escalatedAlerts": [
+          "vix",
+          "hySpread",
+          "conflictCount",
+          "sanctionsCount",
+          "newAlerts"
+        ]
+      },
+      "timestamp": "2026-09-15T11:35:50.089Z"
+    },
+    "gametheory": {
+      "module": "gametheory",
+      "currentState": "crisis",
+      "stackelberg": {
+        "type": "stackelberg",
+        "leaderStrategy": "withhold",
+        "followerResponse": "escalate",
+        "leaderPayoff": 0.5,
+        "allScenarios": [
+          {
+            "leaderAction": "forecast_high",
+            "followerResponse": "deceive",
+            "leaderPayoff": 0.5
+          },
+          {
+            "leaderAction": "forecast_medium",
+            "followerResponse": "escalate",
+            "leaderPayoff": 0.5
+          },
+          {
+            "leaderAction": "forecast_low",
+            "followerResponse": "deceive",
+            "leaderPayoff": 0.5
+          },
+          {
+            "leaderAction": "withhold",
+            "followerResponse": "escalate",
+            "leaderPayoff": 0.5
+          }
+        ]
+      },
+      "stochasticGame": {
+        "values": {
+          "peace": {
+            "red": 44766.75105418252,
+            "blue": 44766.75105418252,
+            "neutral": -15459.776301165944
+          },
+          "tension": {
+            "red": 35423.35912835834,
+            "blue": 35423.35912835834,
+            "neutral": -12233.139121053893
+          },
+          "crisis": {
+            "red": 44766.874510972644,
+            "blue": 44766.874510972644,
+            "neutral": -15460.270128326438
+          },
+          "war": {
+            "red": 44766.75105418252,
+            "blue": 44766.75105418252,
+            "neutral": -15460.517041906687
+          },
+          "ceasefire": {
+            "red": 44766.75105418252,
+            "blue": 44766.75105418252,
+            "neutral": -15459.776301165944
+          }
+        },
+        "policy": {
+          "peace": {
+            "red": "hold",
+            "blue": "hold",
+            "neutral": "mediate"
+          },
+          "tension": {
+            "red": "hold",
+            "blue": "hold",
+            "neutral": "mediate"
+          },
+          "crisis": {
+            "red": "retreat",
+            "blue": "retreat",
+            "neutral": "mediate"
+          },
+          "war": {
+            "red": "retreat",
+            "blue": "retreat",
+            "neutral": "mediate"
+          },
+          "ceasefire": {
+            "red": "hold",
+            "blue": "hold",
+            "neutral": "mediate"
+          }
+        },
+        "recommendedAction": {
+          "red": "retreat",
+          "blue": "retreat",
+          "neutral": "mediate"
+        }
+      },
+      "deception": {
+        "trueIntent": "retreat",
+        "observedAction": "hold",
+        "deceptionProb": 0.3,
+        "inferenceConfidence": 0.7,
+        "adjustedBelief": 0.21999999999999997
+      },
+      "timestamp": "2026-09-15T11:35:50.103Z"
+    },
+    "narrative": {
+      "module": "narrative",
+      "narrativeCount": 0,
+      "narratives": [],
+      "forecasts": [],
+      "topNarrative": null,
+      "timestamp": "2026-09-15T11:35:50.103Z"
+    },
+    "regimeShift": {
+      "module": "regime_shift",
+      "available": true,
+      "results": {
+        "vixCUSUM": {
+          "changePoints": [
+            {
+              "index": 5,
+              "type": "downward_shift",
+              "magnitude": 6.684999999999995,
+              "cusum": 6.684999999999995
+            },
+            {
+              "index": 13,
+              "type": "downward_shift",
+              "magnitude": 6.017499999999998,
+              "cusum": 6.017499999999998
+            },
+            {
+              "index": 18,
+              "type": "upward_shift",
+              "magnitude": 8.54750000000001,
+              "cusum": 8.54750000000001
+            }
+          ],
+          "statistics": [
+            {
+              "index": 0,
+              "cusumPos": 3.4075000000000024,
+              "cusumNeg": 0,
+              "value": 29.69
+            },
+            {
+              "index": 1,
+              "cusumPos": 0,
+              "cusumNeg": 3.6424999999999983,
+              "value": 21.64
+            },
+            {
+              "index": 2,
+              "cusumPos": 0,
+              "cusumNeg": 4.034999999999997,
+              "value": 24.89
+            },
+            {
+              "index": 3,
+              "cusumPos": 3.1675000000000004,
+              "cusumNeg": 0,
+              "value": 29.45
+            },
+            {
+              "index": 4,
+              "cusumPos": 0,
+              "cusumNeg": 2.9324999999999974,
+              "value": 22.35
+            },
+            {
+              "index": 5,
+              "cusumPos": 0,
+              "cusumNeg": 6.684999999999995,
+              "value": 21.53
+            },
+            {
+              "index": 6,
+              "cusumPos": 2.8575000000000017,
+              "cusumNeg": 0,
+              "value": 29.14
+            },
+            {
+              "index": 7,
+              "cusumPos": 0,
+              "cusumNeg": 2.7225,
+              "value": 22.56
+            },
+            {
+              "index": 8,
+              "cusumPos": 1.4475000000000016,
+              "cusumNeg": 0.2749999999999986,
+              "value": 27.73
+            },
+            {
+              "index": 9,
+              "cusumPos": 0,
+              "cusumNeg": 3.617499999999996,
+              "value": 21.94
+            },
+            {
+              "index": 10,
+              "cusumPos": 2.8575000000000017,
+              "cusumNeg": 0,
+              "value": 29.14
+            },
+            {
+              "index": 11,
+              "cusumPos": 0,
+              "cusumNeg": 3.4025,
+              "value": 21.88
+            },
+            {
+              "index": 12,
+              "cusumPos": 1.4675000000000011,
+              "cusumNeg": 0.9349999999999987,
+              "value": 27.75
+            },
+            {
+              "index": 13,
+              "cusumPos": 0,
+              "cusumNeg": 6.017499999999998,
+              "value": 20.2
+            },
+            {
+              "index": 14,
+              "cusumPos": 1.5675000000000026,
+              "cusumNeg": 0,
+              "value": 27.85
+            },
+            {
+              "index": 15,
+              "cusumPos": 3.0350000000000037,
+              "cusumNeg": 0,
+              "value": 27.75
+            },
+            {
+              "index": 16,
+              "cusumPos": 4.142500000000005,
+              "cusumNeg": 0,
+              "value": 27.39
+            },
+            {
+              "index": 17,
+              "cusumPos": 3.4800000000000075,
+              "cusumNeg": 0,
+              "value": 25.62
+            },
+            {
+              "index": 18,
+              "cusumPos": 8.54750000000001,
+              "cusumNeg": 0,
+              "value": 31.35
+            },
+            {
+              "index": 19,
+              "cusumPos": 0,
+              "cusumNeg": 0,
+              "value": 25.8
+            }
+          ],
+          "baselineMean": 25.7825
+        },
+        "conflictPageHinkley": {
+          "changePoints": [],
+          "detectionIndex": -1,
+          "statistics": [
+            {
+              "index": 0,
+              "cumSum": -5.385110539728121,
+              "testStatistic": 0,
+              "minCumSum": -5.385110539728121
+            },
+            {
+              "index": 1,
+              "cumSum": 0.22977892054375815,
+              "testStatistic": 5.614889460271879,
+              "minCumSum": -5.385110539728121
+            },
+            {
+              "index": 2,
+              "cumSum": 0.844668380815637,
+              "testStatistic": 6.229778920543758,
+              "minCumSum": -5.385110539728121
+            },
+            {
+              "index": 3,
+              "cumSum": -2.5404421589124846,
+              "testStatistic": 2.8446683808156363,
+              "minCumSum": -5.385110539728121
+            },
+            {
+              "index": 4,
+              "cumSum": -5.925552698640606,
+              "testStatistic": 0,
+              "minCumSum": -5.925552698640606
+            },
+            {
+              "index": 5,
+              "cumSum": -8.310663238368727,
+              "testStatistic": 0,
+              "minCumSum": -8.310663238368727
+            },
+            {
+              "index": 6,
+              "cumSum": -2.6957737780968483,
+              "testStatistic": 5.614889460271879,
+              "minCumSum": -8.310663238368727
+            },
+            {
+              "index": 7,
+              "cumSum": -1.0808843178249694,
+              "testStatistic": 7.229778920543758,
+              "minCumSum": -8.310663238368727
+            },
+            {
+              "index": 8,
+              "cumSum": 1.5340051424469092,
+              "testStatistic": 9.844668380815637,
+              "minCumSum": -8.310663238368727
+            },
+            {
+              "index": 9,
+              "cumSum": 7.148894602718788,
+              "testStatistic": 15.459557841087516,
+              "minCumSum": -8.310663238368727
+            },
+            {
+              "index": 10,
+              "cumSum": 3.7637840629906667,
+              "testStatistic": 12.074447301359394,
+              "minCumSum": -8.310663238368727
+            },
+            {
+              "index": 11,
+              "cumSum": 3.3786735232625453,
+              "testStatistic": 11.689336761631273,
+              "minCumSum": -8.310663238368727
+            },
+            {
+              "index": 12,
+              "cumSum": -0.00643701646557604,
+              "testStatistic": 8.304226221903152,
+              "minCumSum": -8.310663238368727
+            },
+            {
+              "index": 13,
+              "cumSum": 3.6084524438063026,
+              "testStatistic": 11.919115682175029,
+              "minCumSum": -8.310663238368727
+            },
+            {
+              "index": 14,
+              "cumSum": 4.223341904078182,
+              "testStatistic": 12.534005142446908,
+              "minCumSum": -8.310663238368727
+            },
+            {
+              "index": 15,
+              "cumSum": -0.16176863564993926,
+              "testStatistic": 8.148894602718787,
+              "minCumSum": -8.310663238368727
+            },
+            {
+              "index": 16,
+              "cumSum": -0.5468791753780604,
+              "testStatistic": 7.763784062990667,
+              "minCumSum": -8.310663238368727
+            },
+            {
+              "index": 17,
+              "cumSum": -4.931989715106181,
+              "testStatistic": 3.378673523262546,
+              "minCumSum": -8.310663238368727
+            },
+            {
+              "index": 18,
+              "cumSum": -2.3171002548343025,
+              "testStatistic": 5.993562983534424,
+              "minCumSum": -8.310663238368727
+            },
+            {
+              "index": 19,
+              "cumSum": -0.7022107945624236,
+              "testStatistic": 7.6084524438063035,
+              "minCumSum": -8.310663238368727
+            }
+          ],
+          "threshold": 50
+        },
+        "tensionBOCPD": {
+          "changePoints": [],
+          "runLengthProbs": [
+            {
+              "index": 0,
+              "runLengthProbs": [
+                0.01,
+                0.99
+              ]
+            },
+            {
+              "index": 1,
+              "runLengthProbs": [
+                0.010000000000000002,
+                0.008585153422097687,
+                0.9814148465779023
+              ]
+            },
+            {
+              "index": 2,
+              "runLengthProbs": [
+                0.01,
+                0.008102162001538273,
+                0.008031901088574742,
+                0.9738659369098871
+              ]
+            },
+            {
+              "index": 3,
+              "runLengthProbs": [
+                0.010000000000000002,
+                0.007850623107760977,
+                0.0073447060506704985,
+                0.007722681240571772,
+                0.9670819896009968
+              ]
+            },
+            {
+              "index": 4,
+              "runLengthProbs": [
+                0.01,
+                0.00769633529286943,
+                0.006976819320916411,
+                0.006923154574548137,
+                0.007518168937034888,
+                0.9608855218746312
+              ]
+            },
+            {
+              "index": 5,
+              "runLengthProbs": [
+                0.010000000000000002,
+                0.00759208658410392,
+                0.0067470588816934485,
+                0.006487304123902404,
+                0.006648522946249559,
+                0.007368814221701094,
+                0.9551562132423497
+              ]
+            },
+            {
+              "index": 6,
+              "runLengthProbs": [
+                0.01,
+                0.00751696998403014,
+                0.006589816732797848,
+                0.006211592342070441,
+                0.0061683224077233945,
+                0.0064519703491667255,
+                0.007252404631315792,
+                0.9498089235528956
+              ]
+            },
+            {
+              "index": 7,
+              "runLengthProbs": [
+                0.01,
+                0.00746029869152911,
+                0.00647542682825066,
+                0.006021090877471795,
+                0.0058616401469810085,
+                0.0059408372659710456,
+                0.006302170983011375,
+                0.007157432595539737,
+                0.9447811026112453
+              ]
+            },
+            {
+              "index": 8,
+              "runLengthProbs": [
+                0.01,
+                0.007416040746837214,
+                0.006388482235993083,
+                0.005881473399056466,
+                0.00564816377134487,
+                0.005611973805138587,
+                0.005768479671805376,
+                0.006182744694420856,
+                0.00707730823616847,
+                0.940025333439235
+              ]
+            },
+            {
+              "index": 9,
+              "runLengthProbs": [
+                0.009999999999999998,
+                0.007380533750342832,
+                0.006320177074109661,
+                0.005774722130818844,
+                0.005490778178051384,
+                0.0053816992761788595,
+                0.005423067484138659,
+                0.005632071523410977,
+                0.0060842607849234944,
+                0.007007968383460151,
+                0.9355047214145652
+              ]
+            },
+            {
+              "index": 10,
+              "runLengthProbs": [
+                0.010000000000000002,
+                0.007351425618427818,
+                0.006265110082549795,
+                0.005690447791320593,
+                0.005369856132056829,
+                0.005211105206888957,
+                0.005180033836402168,
+                0.005273945050436864,
+                0.005520500650936166,
+                0.0060008896491815,
+                0.006946760985017389,
+                0.931189924996782
+              ]
+            },
+            {
+              "index": 11,
+              "runLengthProbs": [
+                0.01,
+                0.007327136895718081,
+                0.006219783120625063,
+                0.005622230431072604,
+                0.005274007464951383,
+                0.005079504282973545,
+                0.004999260298642939,
+                0.0050209503477386085,
+                0.0051523889820060936,
+                0.0054268650697557605,
+                0.005928824590139818,
+                0.006891874804408963,
+                0.9270571737119672
+              ]
+            },
+            {
+              "index": 12,
+              "runLengthProbs": [
+                0.01,
+                0.007306567725266818,
+                0.006181830432100242,
+                0.005565885720633668,
+                0.0051961543958161755,
+                0.004974833259219276,
+                0.004859329493915109,
+                0.004832125312923326,
+                0.004891455168127216,
+                0.005050778342531354,
+                0.005346641845825751,
+                0.005865468854972446,
+                0.006842026287798922,
+                0.9230869031608696
+              ]
+            },
+            {
+              "index": 13,
+              "runLengthProbs": [
+                0.01,
+                0.007288928755176835,
+                0.006149594614848094,
+                0.005518568313533597,
+                0.005131661269111292,
+                0.00488956391060798,
+                0.004747706217084046,
+                0.004685533827700791,
+                0.004696135618931292,
+                0.004783414715703672,
+                0.004964101697245512,
+                0.005276737812880775,
+                0.00580898671239214,
+                0.006796277446440805,
+                0.9192627890883431
+              ]
+            },
+            {
+              "index": 14,
+              "runLengthProbs": [
+                0.01,
+                0.007273638857034505,
+                0.006121879934252688,
+                0.005478275278843894,
+                0.005077362234963269,
+                0.004818746618765852,
+                0.004656541354238712,
+                0.004568299785880107,
+                0.004544117455348545,
+                0.004582775862738588,
+                0.004691464394594228,
+                0.004888922148894154,
+                0.005214962557306375,
+                0.005758041270454139,
+                0.00675392479044332,
+                0.9155710474562416
+              ]
+            },
+            {
+              "index": 15,
+              "runLengthProbs": [
+                0.01,
+                0.007260260763790606,
+                0.006097802047485302,
+                0.005443555518235058,
+                0.0050310202119464185,
+                0.004758989456300365,
+                0.004580658477115871,
+                0.004472338923812338,
+                0.0044222730256877835,
+                0.0044262712045111995,
+                0.004486415492166483,
+                0.004611915711069483,
+                0.004822800371351287,
+                0.005159719233487077,
+                0.005711634113775349,
+                0.0067144288407163825,
+                0.9119999166085491
+              ]
+            },
+            {
+              "index": 16,
+              "runLengthProbs": [
+                0.01,
+                0.007248459182698465,
+                0.006076692851285272,
+                0.0054133318225474325,
+                0.0049910089148311985,
+                0.004707888130907497,
+                0.004516500298666814,
+                0.004392306469561429,
+                0.004322342152059642,
+                0.004300584666118366,
+                0.0043261579653348274,
+                0.004403174597050321,
+                0.004542145099945279,
+                0.004763954879090092,
+                0.005109814729987925,
+                0.005669003335664824,
+                0.006677367848647952,
+                0.9085392670556026
+              ]
+            },
+            {
+              "index": 17,
+              "runLengthProbs": [
+                0.010000000000000002,
+                0.007237972732241765,
+                0.006058038215262067,
+                0.005386787671521738,
+                0.004956117372702643,
+                0.004663689874538014,
+                0.004461538861927929,
+                0.004324520998844528,
+                0.0042388525944446285,
+                0.004197322480912343,
+                0.0041972332051554845,
+                0.004239747895289995,
+                0.004330288125022716,
+                0.0044802330200492705,
+                0.0047110527629198725,
+                0.0050643385746593625,
+                0.0056295565187293615,
+                0.006642406506181183,
+                0.905180302589597
+              ]
+            },
+            {
+              "index": 18,
+              "runLengthProbs": [
+                0.009999999999999998,
+                0.007228594658958494,
+                0.00604143606011274,
+                0.005363292842800781,
+                0.0049254251240205315,
+                0.004625086188993269,
+                0.004413926921739478,
+                0.004266360768156197,
+                0.004168027919306854,
+                0.0041109144533130835,
+                0.004091144933653391,
+                0.004108068625459026,
+                0.004164164241548353,
+                0.004265729601586212,
+                0.004424741067565646,
+                0.0046630758182430315,
+                0.005022583129770289,
+                0.005592825408294268,
+                0.006609274243124843,
+                0.9019153279933534
+              ]
+            },
+            {
+              "index": 19,
+              "runLengthProbs": [
+                0.010000000000000002,
+                0.007220159289036773,
+                0.00602656742463778,
+                0.005342353135022603,
+                0.004898219928823152,
+                0.004591080154847045,
+                0.004372282476007491,
+                0.004215906221475577,
+                0.004107173910744671,
+                0.00403751037106619,
+                0.004002246869224216,
+                0.003999561337194417,
+                0.004030124043669839,
+                0.004097295489119295,
+                0.004207978263506234,
+                0.004374569051813965,
+                0.004619232096815426,
+                0.004983989497616808,
+                0.005558434482657092,
+                0.006577749831652385,
+                0.898737566125069
+              ]
+            }
+          ],
+          "hazardRate": 0.01
+        }
+      },
+      "allChangePoints": [
+        {
+          "index": 5,
+          "type": "downward_shift",
+          "magnitude": 6.684999999999995,
+          "cusum": 6.684999999999995,
+          "source": "cusum_vix"
+        },
+        {
+          "index": 13,
+          "type": "downward_shift",
+          "magnitude": 6.017499999999998,
+          "cusum": 6.017499999999998,
+          "source": "cusum_vix"
+        },
+        {
+          "index": 18,
+          "type": "upward_shift",
+          "magnitude": 8.54750000000001,
+          "cusum": 8.54750000000001,
+          "source": "cusum_vix"
+        }
+      ],
+      "consensusShifts": [],
+      "regimeShiftDetected": false,
+      "severity": "low",
+      "timestamp": "2026-09-15T11:35:50.106Z"
+    }
+  },
+  "sources": {
+    "predictionMarkets": {
+      "timestamp": "2026-09-15T11:35:49.942Z",
+      "source": "prediction_markets",
+      "totalMarkets": 50,
+      "byPlatform": {
+        "polymarket": 50,
+        "metaculus": 0,
+        "kalshi": 0,
+        "manifold": 0
+      },
+      "markets": [
+        {
+          "platform": "polymarket",
+          "id": "4512240",
+          "question": "Game Spread: Dusan Lajovic (-2.5) vs Diego Dedura-Palomero (+2.5)",
+          "category": "general",
+          "probability": 0,
+          "volume": 999.99,
+          "liquidity": 2955.6716,
+          "endDate": "2026-09-21T08:30:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/atp-lajovic-dedurap-2026-09-14-game-handicap-home-2pt5"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4111736",
+          "question": "FK Kryvbas Kryvyi Rih vs. FK Kharkiv: 1st Half O/U 1.5",
+          "category": "general",
+          "probability": 0.38,
+          "volume": 99.998422,
+          "liquidity": 150,
+          "endDate": "2026-09-12T10:00:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/ukr1-kry-met-2026-09-12-first-half-total-1pt5"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4528874",
+          "question": "Game Spread: Alicia Herrero Linana (-4.5) vs Lucia Cortez Llorca (+4.5)",
+          "category": "general",
+          "probability": 0,
+          "volume": 999.95,
+          "liquidity": 226.053,
+          "endDate": "2026-09-21T08:00:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/wta-linana-llorca-2026-09-14-game-handicap-home-4pt5"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4513715",
+          "question": "Exact Score: Gamba Osaka 1 - 0 Cong An Ha Noi FC?",
+          "category": "general",
+          "probability": 0.1,
+          "volume": 99.994518,
+          "liquidity": 2767.51552,
+          "endDate": "2026-09-15T10:00:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/acle-gam-con-2026-09-15-exact-score-1-0"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4546038",
+          "question": "Sao Paulo Open: Xiaodi You vs Alina Charaeva",
+          "category": "general",
+          "probability": 0.31,
+          "volume": 9999.431315,
+          "liquidity": 85980.8567,
+          "endDate": "2026-09-21T17:00:12Z",
+          "active": true,
+          "url": "https://polymarket.com/event/wta-you-charaev-2026-09-14"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4513730",
+          "question": "Gamba Osaka to score first vs. Cong An Ha Noi FC?",
+          "category": "general",
+          "probability": 0.999,
+          "volume": 99.99200300000001,
+          "liquidity": 785.5041,
+          "endDate": "2026-09-15T10:00:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/acle-gam-con-2026-09-15-first-to-score-home"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4297433",
+          "question": "Will Instituto AC Córdoba win on 2026-09-19?",
+          "category": "general",
+          "probability": 0.51,
+          "volume": 99.99039300000003,
+          "liquidity": 2504.3114,
+          "endDate": "2026-09-20T00:15:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/arg-iac-tal-2026-09-19-iac"
+        },
+        {
+          "platform": "polymarket",
+          "id": "3343882",
+          "question": "Will the Republican Party candidate win the 2026 Michigan Senate election by 12% or more?",
+          "category": "general",
+          "probability": 0.005,
+          "volume": 99.99000000000001,
+          "liquidity": 9074.92228,
+          "endDate": "2026-11-03T12:00:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/will-the-republican-party-candidate-win-the-2026-michigan-senate-election-by-12-or-more"
+        },
+        {
+          "platform": "polymarket",
+          "id": "3848204",
+          "question": "Will Al-Fateh be relegated from the 2026-27 Saudi Professional League?",
+          "category": "general",
+          "probability": 0.09,
+          "volume": 99.99000000000001,
+          "liquidity": 22.5338,
+          "endDate": "2027-07-01T03:59:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/will-al-fateh-be-relegated-from-saudi-professional-league-2026-27"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4276047",
+          "question": "Le Mans FC vs. FC Lorient: 1st Half O/U 1.5",
+          "category": "general",
+          "probability": 0.32,
+          "volume": 99.99,
+          "liquidity": 2824.4149,
+          "endDate": "2026-09-19T18:45:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/fl1-lmf-lor-2026-09-19-first-half-total-1pt5"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4522439",
+          "question": "Exact Score: SK Super Nova 2 - 2 Riga FC?",
+          "category": "general",
+          "probability": 0,
+          "volume": 99.989575,
+          "liquidity": 24501.85553,
+          "endDate": "2026-09-15T16:00:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/lva1-sun-rfc-2026-09-15-exact-score-2-2"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4223180",
+          "question": "Will Juventus FC vs. NEC end in a draw?",
+          "category": "general",
+          "probability": 0,
+          "volume": 99.988371,
+          "liquidity": 24389.993,
+          "endDate": "2026-09-17T19:00:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/uel-juv-nec-2026-09-17-draw"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4251018",
+          "question": "Exact Score: Kasımpaşa SK 1 - 0 Konyaspor?",
+          "category": "general",
+          "probability": 0,
+          "volume": 9.998633,
+          "liquidity": 1204.0607,
+          "endDate": "2026-09-18T17:00:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/tur-kas-kon-2026-09-18-exact-score-1-0"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4161378",
+          "question": "Exact Score: Clube Náutico Capibaribe 1 - 1 Operário Ferroviário EC?",
+          "category": "general",
+          "probability": 0,
+          "volume": 9.998371,
+          "liquidity": 3623.7577,
+          "endDate": "2026-09-15T22:30:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/bra2-nau-ope-2026-09-15-exact-score-1-1"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4562029",
+          "question": "Exact Score: Deportivo Tachira 1 - 1 Academia Puerto Cabello?",
+          "category": "general",
+          "probability": 0,
+          "volume": 9.998371,
+          "liquidity": 3899.4334,
+          "endDate": "2026-09-15T22:30:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/ven1-tac-apc-2026-09-15-exact-score-1-1"
+        },
+        {
+          "platform": "polymarket",
+          "id": "3523665",
+          "question": "Will the Republican Party candidate win the 2026 TX-34 House election by 12% or more?",
+          "category": "general",
+          "probability": 0,
+          "volume": 99.98,
+          "liquidity": 8614.8215,
+          "endDate": "2026-11-03T12:00:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/will-the-republican-party-candidate-win-the-2026-tx-34-house-election-by-12-or-more"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4038728",
+          "question": "Will Jan Holásek be the next Mayor of Hradec Králové?",
+          "category": "general",
+          "probability": 0,
+          "volume": 99.98,
+          "liquidity": 8446.93583,
+          "endDate": "2027-06-30T23:59:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/will-jan-holasek-be-the-next-mayor-of-hradec-kralove"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4161476",
+          "question": "Exact Score: Londrina EC 0 - 3 AA Ponte Preta?",
+          "category": "general",
+          "probability": 0,
+          "volume": 99.9796,
+          "liquidity": 2682.85705,
+          "endDate": "2026-09-15T22:30:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/bra2-lon-pop-2026-09-15-exact-score-0-3"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4328286",
+          "question": "Spread: CA Unión (-1.5)",
+          "category": "general",
+          "probability": 0,
+          "volume": 9.997952,
+          "liquidity": 414.2612,
+          "endDate": "2026-09-19T19:45:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/arg-uni-ind-2026-09-19-spread-home-1pt5"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4513794",
+          "question": "Exact Score: Al Hilal SFC 1 - 0 Al Gharafa SC?",
+          "category": "general",
+          "probability": 0,
+          "volume": 99.9787,
+          "liquidity": 7688.6843,
+          "endDate": "2026-09-15T18:15:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/acle-hil-alg-2026-09-15-exact-score-1-0"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4254945",
+          "question": "Will FC Baník Ostrava win on 2026-09-19?",
+          "category": "general",
+          "probability": 0,
+          "volume": 9.997163,
+          "liquidity": 3516.9273,
+          "endDate": "2026-09-19T16:00:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/cze1-fcs-fbo-2026-09-19-fbo"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4536697",
+          "question": "Raufoss IL vs. Stroemsgodset IF: O/U 0.5",
+          "category": "general",
+          "probability": 0.97,
+          "volume": 99.96879100000001,
+          "liquidity": 311.1332,
+          "endDate": "2026-09-20T15:00:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/nor2-rau-sif-2026-09-20-total-0pt5"
+        },
+        {
+          "platform": "polymarket",
+          "id": "3520711",
+          "question": "Will the Democratic Party candidate win the 2026 RI-02 House election by 10%-15%?",
+          "category": "general",
+          "probability": 0.14,
+          "volume": 99.96000000000001,
+          "liquidity": 157.7873,
+          "endDate": "2026-11-03T12:00:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/will-the-democratic-party-candidate-win-the-2026-ri-02-house-election-by-10-15"
+        },
+        {
+          "platform": "polymarket",
+          "id": "3582091",
+          "question": "Will Tsao Erh-chang win the next Lienchiang County Magistrate election?",
+          "category": "general",
+          "probability": 0.001,
+          "volume": 999.5899999999999,
+          "liquidity": 894.90928,
+          "endDate": "2027-06-30T23:59:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/will-tsao-erh-chang-win-the-next-lienchiang-county-magistrate-election-202608131357161602"
+        },
+        {
+          "platform": "polymarket",
+          "id": "1830343",
+          "question": "Will Chengdu Rongcheng win Chinese Super League?",
+          "category": "general",
+          "probability": 0.99,
+          "volume": 999.3136360000001,
+          "liquidity": 571.66537,
+          "endDate": "2026-12-01T03:59:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/2026-soccer-chinese-super-league-winner-chengdu-rongcheng"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4511500",
+          "question": "Rennes: Mickael Kaouk vs Anton Matusevich",
+          "category": "general",
+          "probability": 0.26,
+          "volume": 99.92894100000001,
+          "liquidity": 45958.2186,
+          "endDate": "2026-09-21T08:00:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/atp-kaouk-matusev-2026-09-14"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4554644",
+          "question": "Exact Score: Portadown FC 3 - 1 Linfield FC?",
+          "category": "general",
+          "probability": 0,
+          "volume": 9.992700000000001,
+          "liquidity": 2982.16234,
+          "endDate": "2026-09-15T18:45:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/nirl1-por-lin-2026-09-15-exact-score-3-1"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4512856",
+          "question": "San Martin de San Juan vs. CSD Tristan Suarez: San Martin de San Juan O/U 1.5",
+          "category": "general",
+          "probability": 0.36,
+          "volume": 9.992223,
+          "liquidity": 236.3467,
+          "endDate": "2026-09-16T18:00:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/argpn-sma-tri-2026-09-16-team-total-home-1pt5"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4121727",
+          "question": "Will Woking FC win on 2026-09-15?",
+          "category": "general",
+          "probability": 0,
+          "volume": 9.991303,
+          "liquidity": 27313.6553,
+          "endDate": "2026-09-15T18:45:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/enl-bos-wok-2026-09-15-wok"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4246808",
+          "question": "SpVgg Greuther Fürth vs. 1. FC Magdeburg: Both Teams to Score",
+          "category": "general",
+          "probability": 0.65,
+          "volume": 9.990304,
+          "liquidity": 1514.2153,
+          "endDate": "2026-09-18T16:30:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/bl2-fur-fcm-2026-09-18-btts"
+        },
+        {
+          "platform": "polymarket",
+          "id": "3031321",
+          "question": "Will Los Angeles Chargers finish the 2026-27 NFL regular season with the most return yards?",
+          "category": "general",
+          "probability": 0,
+          "volume": 9.99,
+          "liquidity": 207.46188,
+          "endDate": "2027-01-12T23:59:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/will-los-angeles-chargers-finish-the-2026-27-nfl-regular-season-with-the-most-return-yards-20260716001414218"
+        },
+        {
+          "platform": "polymarket",
+          "id": "3031324",
+          "question": "Will Philadelphia Eagles finish the 2026-27 NFL regular season with the most return yards?",
+          "category": "general",
+          "probability": 0,
+          "volume": 9.99,
+          "liquidity": 213.11197,
+          "endDate": "2027-01-12T23:59:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/will-philadelphia-eagles-finish-the-2026-27-nfl-regular-season-with-the-most-return-yards-20260716001414220"
+        },
+        {
+          "platform": "polymarket",
+          "id": "3074621",
+          "question": "Will Michael Penix Jr. win the 2026 NFL Comeback Player of the Year award for the 2026-27 NFL season?",
+          "category": "general",
+          "probability": 0,
+          "volume": 9.99,
+          "liquidity": 218.38441,
+          "endDate": "2027-02-11T23:59:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/will-michael-penix-jrpt-win-the-2026-nfl-comeback-player-of-the-year-award-for-the-2026-27-nfl-season-20260716005217475"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4138275",
+          "question": "AFC Ajax vs. Willem II Tilburg: Neither team to score first?",
+          "category": "general",
+          "probability": 0,
+          "volume": 9.99,
+          "liquidity": 8996.06688,
+          "endDate": "2026-09-15T18:00:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/ere-aja-wii-2026-09-15-first-to-score-neither"
+        },
+        {
+          "platform": "polymarket",
+          "id": "3966135",
+          "question": "Exact Score: Everton FC 0 - 3 Wolverhampton Wanderers FC?",
+          "category": "general",
+          "probability": 0,
+          "volume": 9.9898,
+          "liquidity": 4307.62467,
+          "endDate": "2026-09-16T18:45:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/efl-eve-wol-2026-09-09-exact-score-0-3"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4193653",
+          "question": "Spread: Jagiellonia Białystok (-2.5)",
+          "category": "general",
+          "probability": 0,
+          "volume": 9.9898,
+          "liquidity": 7722.02427,
+          "endDate": "2026-09-16T19:00:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/uel-oly-jag-2026-09-16-spread-away-2pt5"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4208356",
+          "question": "Exact Score: Real Betis Balompié 0 - 3 Getafe CF?",
+          "category": "general",
+          "probability": 0,
+          "volume": 9.9898,
+          "liquidity": 4976.45105,
+          "endDate": "2026-09-17T17:00:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/lal-bet-get-2026-09-17-exact-score-0-3"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4208365",
+          "question": "Exact Score: Real Betis Balompié 3 - 3 Getafe CF?",
+          "category": "general",
+          "probability": 0,
+          "volume": 9.9898,
+          "liquidity": 4957.82965,
+          "endDate": "2026-09-17T17:00:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/lal-bet-get-2026-09-17-exact-score-3-3"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4251058",
+          "question": "Exact Score: Çorum FK 3 - 3 Alanyaspor?",
+          "category": "general",
+          "probability": 0,
+          "volume": 9.9898,
+          "liquidity": 432.36274,
+          "endDate": "2026-09-19T14:00:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/tur-cf-ala-2026-09-19-exact-score-3-3"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4253198",
+          "question": "Exact Score: CD Nacional 3 - 3 FC Famalicão?",
+          "category": "general",
+          "probability": 0,
+          "volume": 9.9898,
+          "liquidity": 323.7946,
+          "endDate": "2026-09-19T14:30:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/por-nac-fam-2026-09-19-exact-score-3-3"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4255107",
+          "question": "Exact Score: Águilas Doradas Rionegro 0 - 3 Deportivo Pereira?",
+          "category": "general",
+          "probability": 0,
+          "volume": 9.9898,
+          "liquidity": 15.5674,
+          "endDate": "2026-09-18T21:00:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/col1-gdr-dep-2026-09-18-exact-score-0-3"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4255118",
+          "question": "Exact Score: Águilas Doradas Rionegro 1 - 3 Deportivo Pereira?",
+          "category": "general",
+          "probability": 0,
+          "volume": 9.9898,
+          "liquidity": 11.69372,
+          "endDate": "2026-09-18T21:00:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/col1-gdr-dep-2026-09-18-exact-score-1-3"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4255121",
+          "question": "Exact Score: Águilas Doradas Rionegro 2 - 3 Deportivo Pereira?",
+          "category": "general",
+          "probability": 0,
+          "volume": 9.9898,
+          "liquidity": 14.87926,
+          "endDate": "2026-09-18T21:00:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/col1-gdr-dep-2026-09-18-exact-score-2-3"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4255123",
+          "question": "Exact Score: Águilas Doradas Rionegro 3 - 3 Deportivo Pereira?",
+          "category": "general",
+          "probability": 0,
+          "volume": 9.9898,
+          "liquidity": 10.87192,
+          "endDate": "2026-09-18T21:00:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/col1-gdr-dep-2026-09-18-exact-score-3-3"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4256851",
+          "question": "Exact Score: Molde FK 0 - 3 Aalesunds FK?",
+          "category": "general",
+          "probability": 0,
+          "volume": 9.9898,
+          "liquidity": 515.84457,
+          "endDate": "2026-09-19T16:00:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/nor-mol-aal-2026-09-19-exact-score-0-3"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4264840",
+          "question": "Exact Score: Ventforet Kōfu 3 - 3 Tokushima Vortis?",
+          "category": "general",
+          "probability": 0,
+          "volume": 9.9898,
+          "liquidity": 425.6211,
+          "endDate": "2026-09-19T10:00:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/ja2-ven-tok-2026-09-19-exact-score-3-3"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4264944",
+          "question": "Exact Score: Shōnan Bellmāre 3 - 3 Blaublitz Akita?",
+          "category": "general",
+          "probability": 0,
+          "volume": 9.9898,
+          "liquidity": 432.22146,
+          "endDate": "2026-09-19T10:00:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/ja2-sho-bla-2026-09-19-exact-score-3-3"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4264961",
+          "question": "Exact Score: Yokohama FC 0 - 3 FC Imabari?",
+          "category": "general",
+          "probability": 0,
+          "volume": 9.9898,
+          "liquidity": 426.68245,
+          "endDate": "2026-09-19T10:00:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/ja2-yok-imb-2026-09-19-exact-score-0-3"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4279074",
+          "question": "Exact Score: Puntarenas FC 0 - 3 Escorpiones de Belén?",
+          "category": "general",
+          "probability": 0,
+          "volume": 9.9898,
+          "liquidity": 215.59251,
+          "endDate": "2026-09-19T23:00:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/fpd-pun-esc-2026-09-19-exact-score-0-3"
+        },
+        {
+          "platform": "polymarket",
+          "id": "4279951",
+          "question": "Exact Score: US Cremonese 3 - 3 Virtus Entella?",
+          "category": "general",
+          "probability": 0,
+          "volume": 9.9898,
+          "liquidity": 377.12513,
+          "endDate": "2026-09-19T13:00:00Z",
+          "active": true,
+          "url": "https://polymarket.com/event/itsb-cre-ent-2026-09-19-exact-score-3-3"
+        }
+      ],
+      "crossAnalysis": {
+        "groups": [
+          {
+            "question": "Will the Republican Party candidate win the 2026 Michigan Senate election by 12% or more?",
+            "platforms": [
+              "polymarket",
+              "polymarket"
+            ],
+            "probabilities": [
+              0.005,
+              0
+            ],
+            "mean": 0.0025,
+            "std": 0.0025,
+            "maxDisagreement": 0.005,
+            "weightedProb": 0.002500125018752813,
+            "consensus": "strong",
+            "signal": "low_uncertainty"
+          },
+          {
+            "question": "Will Los Angeles Chargers finish the 2026-27 NFL regular season with the most return yards?",
+            "platforms": [
+              "polymarket",
+              "polymarket"
+            ],
+            "probabilities": [
+              0,
+              0
+            ],
+            "mean": 0,
+            "std": 0,
+            "maxDisagreement": 0,
+            "weightedProb": 0,
+            "consensus": "strong",
+            "signal": "low_uncertainty"
+          },
+          {
+            "question": "Exact Score: Real Betis Balompié 0 - 3 Getafe CF?",
+            "platforms": [
+              "polymarket",
+              "polymarket"
+            ],
+            "probabilities": [
+              0,
+              0
+            ],
+            "mean": 0,
+            "std": 0,
+            "maxDisagreement": 0,
+            "weightedProb": 0,
+            "consensus": "strong",
+            "signal": "low_uncertainty"
+          },
+          {
+            "question": "Exact Score: Águilas Doradas Rionegro 0 - 3 Deportivo Pereira?",
+            "platforms": [
+              "polymarket",
+              "polymarket",
+              "polymarket",
+              "polymarket"
+            ],
+            "probabilities": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "mean": 0,
+            "std": 0,
+            "maxDisagreement": 0,
+            "weightedProb": 0,
+            "consensus": "strong",
+            "signal": "low_uncertainty"
+          }
+        ],
+        "totalMarkets": 50,
+        "crossPlatformGroups": 4,
+        "highUncertaintyCount": 0
+      }
+    },
+    "multilang": {
+      "timestamp": "2026-09-15T11:35:49.132Z",
+      "source": "multilang",
+      "languageCount": 0,
+      "byLanguage": {},
+      "anomalies": [],
+      "totalEvents": 0,
+      "threatLevel": 0
+    },
+    "satellite": {
+      "timestamp": "2026-09-15T11:35:49.132Z",
+      "source": "satellite",
+      "monitoredAOIs": 6,
+      "satellites": [
+        "sentinel2",
+        "landsat89",
+        "sentinel1"
+      ],
+      "detections": [],
+      "changes": [],
+      "radarInterference": null,
+      "alerts": []
+    }
+  },
+  "knowledgeGraph": {
+    "entityCount": 30,
+    "relationCount": 15,
+    "stats": {
+      "entityCount": 30,
+      "relationCount": 15,
+      "typeCounts": {
+        "Event": 12,
+        "Location": 12,
+        "Document": 3,
+        "Actor": 3
+      },
+      "relationCounts": {
+        "OCCURRED_AT": 12,
+        "TARGETS": 3
+      }
+    }
+  },
+  "calibration": {
+    "brierScores": {},
+    "ensembleWeights": {},
+    "trackerStats": {
+      "total": 6,
+      "resolved": 0,
+      "pending": 6
+    }
+  },
+  "activeLearning": {
+    "action": "collect_data",
+    "source": "Yahoo Finance",
+    "sourceId": "yahoo",
+    "reason": "Max uncertainty reduction for \"marketStability\" (utility=10.500)",
+    "acquisitionMethod": "UCB",
+    "currentUncertainty": 0.8,
+    "expectedInfoGain": 0.4,
+    "allRecommendations": [
+      {
+        "sourceId": "yahoo",
+        "sourceName": "Yahoo Finance",
+        "targetId": "marketStability",
+        "utility": 10.5,
+        "acquisitionType": "UCB",
+        "currentEstimate": 0.5,
+        "currentUncertainty": 0.8,
+        "observationCount": 0,
+        "expectedInfoGain": 0.4,
+        "priority": 10.5
+      },
+      {
+        "sourceId": "polymarket",
+        "sourceName": "Polymarket",
+        "targetId": "conflictLevel",
+        "utility": 7.000000000000001,
+        "acquisitionType": "UCB",
+        "currentEstimate": 0.5,
+        "currentUncertainty": 0.8,
+        "observationCount": 0,
+        "expectedInfoGain": 0.4,
+        "priority": 7.000000000000001
+      },
+      {
+        "sourceId": "metaculus",
+        "sourceName": "Metaculus",
+        "targetId": "marketStability",
+        "utility": 7.000000000000001,
+        "acquisitionType": "UCB",
+        "currentEstimate": 0.5,
+        "currentUncertainty": 0.8,
+        "observationCount": 0,
+        "expectedInfoGain": 0.4,
+        "priority": 7.000000000000001
+      },
+      {
+        "sourceId": "flightaware",
+        "sourceName": "FlightAware",
+        "targetId": "conflictLevel",
+        "utility": 4.2,
+        "acquisitionType": "UCB",
+        "currentEstimate": 0.5,
+        "currentUncertainty": 0.8,
+        "observationCount": 0,
+        "expectedInfoGain": 0.4,
+        "priority": 4.2
+      },
+      {
+        "sourceId": "ais",
+        "sourceName": "AIS Maritime",
+        "targetId": "militaryActivity",
+        "utility": 4.2,
+        "acquisitionType": "UCB",
+        "currentEstimate": 0.5,
+        "currentUncertainty": 0.8,
+        "observationCount": 0,
+        "expectedInfoGain": 0.4,
+        "priority": 4.2
+      },
+      {
+        "sourceId": "satellite",
+        "sourceName": "Satellite Imagery",
+        "targetId": "conflictLevel",
+        "utility": 2.3333333333333335,
+        "acquisitionType": "UCB",
+        "currentEstimate": 0.5,
+        "currentUncertainty": 0.8,
+        "observationCount": 0,
+        "expectedInfoGain": 0.4,
+        "priority": 2.3333333333333335
+      },
+      {
+        "sourceId": "fred",
+        "sourceName": "FRED Economic",
+        "targetId": "marketStability",
+        "utility": 1.4666666666666666,
+        "acquisitionType": "UCB",
+        "currentEstimate": 0.41999999999999993,
+        "currentUncertainty": 0.01,
+        "observationCount": 1,
+        "expectedInfoGain": 0.005,
+        "priority": 1.4666666666666666
+      },
+      {
+        "sourceId": "sanctions",
+        "sourceName": "Sanctions Tracker",
+        "targetId": "geopolitical",
+        "utility": 1.0999999999999999,
+        "acquisitionType": "UCB",
+        "currentEstimate": 0.41999999999999993,
+        "currentUncertainty": 0.01,
+        "observationCount": 1,
+        "expectedInfoGain": 0.005,
+        "priority": 1.0999999999999999
+      },
+      {
+        "sourceId": "gdelt",
+        "sourceName": "GDELT Events",
+        "targetId": "conflictLevel",
+        "utility": 0.8799999999999999,
+        "acquisitionType": "UCB",
+        "currentEstimate": 0.41999999999999993,
+        "currentUncertainty": 0.01,
+        "observationCount": 1,
+        "expectedInfoGain": 0.005,
+        "priority": 0.8799999999999999
+      }
+    ]
+  },
+  "pythonBridge": {
+    "url": "http://localhost:8090",
+    "available": false,
+    "models": [],
+    "lastCheck": "2026-09-15T11:35:50.121Z"
+  },
+  "summary": {
+    "topRisk": "Расширение санкций: 23.0%",
+    "regimeShift": "stable",
+    "signalsProcessed": 6,
+    "elapsedMs": 1030
+  }
+}
+
+
+========================================================================

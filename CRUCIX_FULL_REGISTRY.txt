@@ -1,0 +1,171 @@
+================================================================================
+=== CRUCIX — ПОЛНЫЙ РЕЕСТР ВСЕХ КОМПОНЕНТОВ ===
+Версия: 2.3.0
+Дата: 2026-08-20
+================================================================================
+
+1. СТРАНИЦЫ (ДОЛЖНЫ БЫТЬ В SERVER.MJS)
+
+№   Путь                    Файл                        Статус
+--- ----------------------- -------------------------- ------------------------
+1   /                       index.html                  ✅
+2   /jarvis                 jarvis.html                 ✅
+3   /rss-feed               rss-feed.html               ✅
+4   /rss-dashboard          rss-dashboard.html          ✅
+5   /ai-chat                ai-chat.html                ✅
+6   /geo-map                geo-map.html                ✅
+7   /basket                 basket.html                 ✅
+8   /grid-tool              grid-tool.html              ✅
+9   /global-index           global-index.html           ✅
+10  /historical-analysis    historical-analysis.html    ✅
+11  /correlation            correlation.html            ✅
+12  /infrastructure         infrastructure.html         ✅
+13  /usgs                   usgs.html                   ✅
+14  /local                  local.html                  ✅
+15  /scheduler              scheduler.html              ✅
+16  /trust                  trust.html                  ✅
+17  /diagnostics            diagnostics.html            ✅
+18  /ai-gateway             ai-gateway.html             ✅
+19  /hidden-links           hidden-links.html           ✅
+20  /market-predictor       market-predictor.html       ✅
+21  /help                   help.html                   ✅
+22  /registry               registry.html               ❌ (НЕТ В SERVER.MJS!)
+23  /safecast               safecast.html               ✅
+24  /firms                  firms.html                  ✅
+25  /opensky                opensky.html                ✅
+26  /ships                  ships.html                  ✅
+27  /acled                  acled.html                  ❌ (НЕТ ФАЙЛА)
+28  /kartochki              kartochki.html              ⚠️ (ЕСТЬ, НО УСТАРЕЛ)
+29  /profile                profile.html                ❌ (НЕТ В SERVER.MJS)
+30  /silence                silence.html                ❌ (НЕТ В SERVER.MJS)
+31  /live                   live.html                   ❌ (НЕТ В SERVER.MJS)
+32  /lenses                 lenses.html                 ❌ (НЕТ В SERVER.MJS)
+33  /noaa                   noaa.html                   ❌ (НЕТ В SERVER.MJS)
+34  /ofac                   ofac.html                   ❌ (НЕТ В SERVER.MJS)
+35  /eia                    eia.html                    ❌ (НЕТ В SERVER.MJS)
+36  /cisa                   cisa.html                   ❌ (НЕТ В SERVER.MJS)
+37  /who                    who.html                    ❌ (НЕТ В SERVER.MJS)
+38  /news                   news.html                   ❌ (НЕТ В SERVER.MJS)
+39  /scenarios              scenarios.html              ❌ (НЕТ В SERVER.MJS)
+40  /sentiment              sentiment.html              ❌ (НЕТ В SERVER.MJS)
+41  /kiwisdr                kiwisdr.html                ❌ (НЕТ В SERVER.MJS)
+
+================================================================================
+
+2. API-МОДУЛИ (ДОЛЖНЫ БЫТЬ В SERVER.MJS)
+
+№   Модуль                      Файл                        Эндпоинт            Статус
+--- --------------------------- -------------------------- ------------------- --------
+1   rss-manager                 rss-manager-api.mjs         /api/rss/*          ✅
+2   geo-markers                 geo-markers-api.mjs         /api/geo/*          ✅
+3   basket                      basket-api.mjs              /api/basket*        ✅
+4   ai-chat                     ai-chat-api.mjs             /api/ai/chat*       ✅
+5   ai-rating                   ai-news-rating.mjs          /api/ai/rate*       ✅
+6   news                        news-api.mjs                /api/news/*         ✅
+7   newsapi-basket              newsapi-basket-integration  /api/newsapi/basket ✅
+8   newsapi-proxy               newsapi.mjs                 /api/newsapi/*      ✅
+9   storage                     storage-api.mjs             /api/storage/*      ✅
+10  global-index                global-index-api.mjs        /api/geo/index*     ✅
+11  historical-analysis         historical-analysis-api.mjs /api/analysis/*     ✅
+12  correlation                 correlation-api.mjs         /api/correlation/*  ✅
+13  infrastructure              infrastructure-api.mjs      /api/infrastructure ✅
+14  ofac                        ofac.mjs                    /api/ofac/*         ✅
+15  eia                         eia.mjs                     /api/eia/*          ✅
+16  who                         who.mjs                     /api/who/*          ✅
+17  cisa                        cisa-kev.mjs                /api/cisa/*         ✅
+18  noaa                        noaa.mjs                    /api/noaa/*         ✅
+19  space                       space.mjs                   /api/space/*        ✅
+20  comtrade                    comtrade.mjs                /api/comtrade/*     ✅
+21  epa                         epa.mjs                     /api/epa/*          ✅
+22  gscpi                       gscpi.mjs                   /api/gscpi/*        ✅
+23  tass                        tass.mjs                    /api/tass/*         ✅
+24  opensanctions               opensanctions.mjs           /api/opensanctions  ✅
+25  usgs                        usgs.mjs                    /api/usgs/*         ✅
+26  local                       local.mjs                   /api/local/*        ✅
+27  scheduler                   scheduler-api.mjs           /api/scheduler/*    ✅
+28  trust                       trust-api.mjs               /api/trust/*        ✅
+29  diagnostics                 diagnostics-api.mjs         /api/diagnostics/*  ✅
+30  ai-gateway                  ai-gateway.mjs              /api/ai-gateway/*   ✅
+31  hidden-links                hidden-links.mjs            /api/hidden-links/* ✅
+32  market-predictor            market-predictor.mjs        /api/market/*       ✅
+33  ai-processor                ai-processor.mjs            /api/ai-processor/* ✅
+34  safecast                    safecast-api.mjs            /api/safecast/*     ✅
+35  firms                       firms-api.mjs               /api/firms/*        ✅
+36  opensky                     opensky-api.mjs             /api/opensky/*      ✅
+37  ships                       ships-api.mjs               /api/ships/*        ✅
+38  scenario-generator          scenario-generator-api.mjs  /api/scenarios/*    ❌ (НЕ ДОБАВЛЕН)
+39  sentiment                   sentiment-api.mjs           /api/sentiment/*    ❌ (НЕ ДОБАВЛЕН)
+40  early-warning               early-warning.mjs           /api/early-warning/* ❌ (НЕ ДОБАВЛЕН)
+41  conflict-predictor          conflict-predictor.mjs      /api/conflict/*     ❌ (НЕ ДОБАВЛЕН)
+42  anomaly-detector            anomaly-detector.mjs        /api/anomaly/*      ❌ (НЕ ДОБАВЛЕН)
+43  semantic                    semantic-api.mjs            /api/semantic/*     ❌ (НЕ ДОБАВЛЕН)
+44  strategic-intel             strategic-intel.mjs         /api/strategic/*    ❌ (НЕ ДОБАВЛЕН)
+45  cyber-intel                 cyber-intel.mjs             /api/cyber-intel/*  ❌ (НЕ ДОБАВЛЕН)
+
+================================================================================
+
+3. СБОРЩИКИ (ДОЛЖНЫ БЫТЬ В CRON)
+
+№   Сборщик                        Файл                            Статус
+--- ------------------------------ ------------------------------ --------
+1   ACLED                          collect-acled.mjs               ✅
+2   RIA                            collect-ria.mjs                 ✅
+3   Frostbyte                      collect-frostbyte.mjs           ✅
+4   FRED                           collect-fred.mjs                ✅
+5   Yahoo                          collect-yahoo.mjs               ✅
+6   Russian Sources                collect-russian-sources.mjs     ✅
+7   Open-Meteo                     collect-openmeteo.mjs           ✅
+8   RSS Extra                      collect-rss-extra.mjs           ✅
+9   Safecast                       collect-safecast.mjs            ✅
+10  OpenSky                        collect-opensky.mjs             ✅
+11  Ships                          collect-ships.mjs               ✅
+12  OFAC                           collect-ofac.mjs                ✅
+13  FIRMS                          collect-firms.mjs               ✅
+14  Geo Data                       collect-geo-data.mjs            ✅
+15  Clean Basket                   clean-basket.mjs                ✅
+16  Collect All                    collect-all.mjs                 ✅
+
+================================================================================
+
+4. НЕДОСТАЮЩИЕ КОМПОНЕНТЫ (НУЖНО ДОБАВИТЬ)
+
+A. СТРАНИЦЫ В SERVER.MJS
+- /registry  (registry.html)
+- /profile   (profile.html)  
+- /silence   (silence.html)
+- /live      (live.html)
+- /lenses    (lenses.html)
+- /noaa      (noaa.html)
+- /ofac      (ofac.html)
+- /eia       (eia.html)
+- /cisa      (cisa.html)
+- /who       (who.html)
+- /news      (news.html)
+- /scenarios (scenarios.html)
+- /sentiment (sentiment.html)
+- /kiwisdr   (kiwisdr.html)
+
+B. API В SERVER.MJS
+- /api/scenarios/*
+- /api/sentiment/*
+- /api/early-warning/*
+- /api/conflict/*
+- /api/anomaly/*
+- /api/semantic/*
+- /api/strategic/*
+- /api/cyber-intel/*
+
+================================================================================
+
+5. ИНСТРУКЦИЯ ПО ПРОВЕРКЕ
+
+# Проверить все страницы в server.mjs
+grep -E "'/[a-z-]+':" server.mjs | wc -l
+
+# Проверить все API в server.mjs  
+grep -E "pathname.startsWith\('/api" server.mjs | wc -l
+
+# Запустить проверку страниц
+node scripts/check-pages.mjs
+
+================================================================================

@@ -1,0 +1,1423 @@
+===== ЧАСТЬ part-6-infra-and-tests · КУСОК 20/23 · 28.7 KB =====
+
+FILE: runs/latest.json
+SIZE: 2534 bytes
+SHA1: 3469a523490b5a59
+========================================================================
+
+{
+  "sweepId": "smoke_test_2026_09_15",
+  "timestamp": "2026-09-15T12:50:00.000Z",
+  "fred": {
+    "vix": 28.4,
+    "hySpread": 4.2,
+    "treasury10y": 4.35
+  },
+  "gdelt": {
+    "conflictEvents": [
+      { "id": "ev1", "summary": "Conflict escalation in region A", "countryCode": "UA", "severity": 0.7, "goldsteinScore": -6.5 },
+      { "id": "ev2", "summary": "Military build-up near border", "countryCode": "RU", "severity": 0.8, "goldsteinScore": -7.2 },
+      { "id": "ev3", "summary": "Naval exercise in Black Sea", "countryCode": "RU", "severity": 0.6, "goldsteinScore": -4.1 },
+      { "id": "ev4", "summary": "Diplomatic tensions rise", "countryCode": "CN", "severity": 0.5, "goldsteinScore": -3.5 },
+      { "id": "ev5", "summary": "Sanctions threat discussed", "countryCode": "US", "severity": 0.6, "goldsteinScore": -4.8 },
+      { "id": "ev6", "summary": "Border incident reported", "countryCode": "IL", "severity": 0.7, "goldsteinScore": -5.5 },
+      { "id": "ev7", "summary": "Cyber attack on infrastructure", "countryCode": "IR", "severity": 0.6, "goldsteinScore": -4.2 },
+      { "id": "ev8", "summary": "Military mobilization announced", "countryCode": "RU", "severity": 0.9, "goldsteinScore": -8.1 },
+      { "id": "ev9", "summary": "Airspace violation reported", "countryCode": "TW", "severity": 0.7, "goldsteinScore": -5.9 },
+      { "id": "ev10", "summary": "Trade restrictions imposed", "countryCode": "CN", "severity": 0.5, "goldsteinScore": -3.8 },
+      { "id": "ev11", "summary": "Naval blockade threatened", "countryCode": "CN", "severity": 0.8, "goldsteinScore": -7.0 },
+      { "id": "ev12", "summary": "Refugee flow reported", "countryCode": "UA", "severity": 0.5, "goldsteinScore": -3.2 }
+    ],
+    "avgGoldsteinScore": -5.4
+  },
+  "sanctions": {
+    "count": 3,
+    "recentCount": 3,
+    "entries": [
+      { "title": "Sanction on entity A", "target": "Entity A", "targetCountry": "RU", "date": "2026-09-14", "source": "ofac" },
+      { "title": "Sanction on entity B", "target": "Entity B", "targetCountry": "IR", "date": "2026-09-14", "source": "eu" },
+      { "title": "Export control on tech", "target": "Tech sector", "targetCountry": "CN", "date": "2026-09-13", "source": "us" }
+    ]
+  },
+  "radiation": {
+    "station_moscow": { "cpm": 18 },
+    "station_kyiv": { "cpm": 15 },
+    "station_tokyo": { "cpm": 22 }
+  },
+  "delta": {
+    "newAlerts": 8,
+    "escalatedAlerts": 3
+  },
+  "energy": {
+    "oilPrice": 89.5
+  },
+  "gold": {
+    "price": 2380
+  },
+  "dxy": {
+    "value": 104.2
+  }
+}
+
+
+
+========================================================================
+
+FILE: runs/history.json
+SIZE: 26410 bytes
+SHA1: 9bef1c8389d43976
+========================================================================
+
+[
+  {
+    "sweepId": "history_0",
+    "timestamp": "2026-09-15T08:00:00.000Z",
+    "fred": {
+      "vix": 29.69,
+      "hySpread": 3.36,
+      "treasury10y": 4.2
+    },
+    "gdelt": {
+      "conflictEvents": [
+        {
+          "id": "h0_0",
+          "severity": 0.39869002057661773
+        },
+        {
+          "id": "h0_1",
+          "severity": 0.7283882953608538
+        },
+        {
+          "id": "h0_2",
+          "severity": 0.09030756888592495
+        }
+      ]
+    },
+    "sanctions": {
+      "count": 2
+    },
+    "delta": {
+      "newAlerts": 4,
+      "escalatedAlerts": 1
+    },
+    "radiation": {
+      "station1": {
+        "cpm": 15.828655929817605
+      }
+    },
+    "energy": {
+      "oilPrice": 81.22370150967512
+    },
+    "gold": {
+      "price": 2343.5765050273317
+    },
+    "dxy": {
+      "value": 103.12818410044515
+    }
+  },
+  {
+    "sweepId": "history_1",
+    "timestamp": "2026-09-15T08:15:00.000Z",
+    "fred": {
+      "vix": 21.64,
+      "hySpread": 3.2,
+      "treasury10y": 4.2
+    },
+    "gdelt": {
+      "conflictEvents": [
+        {
+          "id": "h1_0",
+          "severity": 0.7584562395117114
+        },
+        {
+          "id": "h1_1",
+          "severity": 0.7893421849211235
+        },
+        {
+          "id": "h1_2",
+          "severity": 0.3004454694776004
+        },
+        {
+          "id": "h1_3",
+          "severity": 0.3798192626568129
+        },
+        {
+          "id": "h1_4",
+          "severity": 0.09009983891693985
+        },
+        {
+          "id": "h1_5",
+          "severity": 0.19437197219208802
+        },
+        {
+          "id": "h1_6",
+          "severity": 0.24484468646667534
+        },
+        {
+          "id": "h1_7",
+          "severity": 0.8662969854956133
+        },
+        {
+          "id": "h1_8",
+          "severity": 0.6895404252833166
+        },
+        {
+          "id": "h1_9",
+          "severity": 0.9959742518695311
+        },
+        {
+          "id": "h1_10",
+          "severity": 0.5368629428893217
+        },
+        {
+          "id": "h1_11",
+          "severity": 0.5054022031649812
+        },
+        {
+          "id": "h1_12",
+          "severity": 0.7915788603299756
+        },
+        {
+          "id": "h1_13",
+          "severity": 0.5937278104107548
+        }
+      ]
+    },
+    "sanctions": {
+      "count": 2
+    },
+    "delta": {
+      "newAlerts": 4,
+      "escalatedAlerts": 1
+    },
+    "radiation": {
+      "station1": {
+        "cpm": 15.329579353228615
+      }
+    },
+    "energy": {
+      "oilPrice": 87.77726489441011
+    },
+    "gold": {
+      "price": 2366.938631310023
+    },
+    "dxy": {
+      "value": 103.93543625524045
+    }
+  },
+  {
+    "sweepId": "history_2",
+    "timestamp": "2026-09-15T08:30:00.000Z",
+    "fred": {
+      "vix": 24.89,
+      "hySpread": 3.3,
+      "treasury10y": 4.2
+    },
+    "gdelt": {
+      "conflictEvents": [
+        {
+          "id": "h2_0",
+          "severity": 0.010473454716012576
+        },
+        {
+          "id": "h2_1",
+          "severity": 0.8078999513101413
+        },
+        {
+          "id": "h2_2",
+          "severity": 0.2393493583540296
+        },
+        {
+          "id": "h2_3",
+          "severity": 0.6615467494341474
+        },
+        {
+          "id": "h2_4",
+          "severity": 0.44541846499558857
+        },
+        {
+          "id": "h2_5",
+          "severity": 0.2064412755515339
+        },
+        {
+          "id": "h2_6",
+          "severity": 0.30975318401120955
+        },
+        {
+          "id": "h2_7",
+          "severity": 0.3663900077102109
+        },
+        {
+          "id": "h2_8",
+          "severity": 0.8428258622355322
+        }
+      ]
+    },
+    "sanctions": {
+      "count": 1
+    },
+    "delta": {
+      "newAlerts": 3,
+      "escalatedAlerts": 1
+    },
+    "radiation": {
+      "station1": {
+        "cpm": 17.446474751728424
+      }
+    },
+    "energy": {
+      "oilPrice": 77.23300193008387
+    },
+    "gold": {
+      "price": 2397.0431761438417
+    },
+    "dxy": {
+      "value": 103.08675595131598
+    }
+  },
+  {
+    "sweepId": "history_3",
+    "timestamp": "2026-09-15T08:45:00.000Z",
+    "fred": {
+      "vix": 29.45,
+      "hySpread": 4.16,
+      "treasury10y": 4.2
+    },
+    "gdelt": {
+      "conflictEvents": [
+        {
+          "id": "h3_0",
+          "severity": 0.6732829012376083
+        },
+        {
+          "id": "h3_1",
+          "severity": 0.16568532614611153
+        },
+        {
+          "id": "h3_2",
+          "severity": 0.7220511729501968
+        },
+        {
+          "id": "h3_3",
+          "severity": 0.5055526587415049
+        },
+        {
+          "id": "h3_4",
+          "severity": 0.010946182299426344
+        }
+      ]
+    },
+    "sanctions": {
+      "count": 1
+    },
+    "delta": {
+      "newAlerts": 4,
+      "escalatedAlerts": 0
+    },
+    "radiation": {
+      "station1": {
+        "cpm": 16.195708346797428
+      }
+    },
+    "energy": {
+      "oilPrice": 75.54390023460007
+    },
+    "gold": {
+      "price": 2350.289067104562
+    },
+    "dxy": {
+      "value": 103.06471192998687
+    }
+  },
+  {
+    "sweepId": "history_4",
+    "timestamp": "2026-09-15T09:00:00.000Z",
+    "fred": {
+      "vix": 22.35,
+      "hySpread": 3.81,
+      "treasury10y": 4.2
+    },
+    "gdelt": {
+      "conflictEvents": [
+        {
+          "id": "h4_0",
+          "severity": 0.1102529452662877
+        },
+        {
+          "id": "h4_1",
+          "severity": 0.4617500158487411
+        },
+        {
+          "id": "h4_2",
+          "severity": 0.3734492313067064
+        },
+        {
+          "id": "h4_3",
+          "severity": 0.6932450052553658
+        },
+        {
+          "id": "h4_4",
+          "severity": 0.7781915859472428
+        }
+      ]
+    },
+    "sanctions": {
+      "count": 2
+    },
+    "delta": {
+      "newAlerts": 5,
+      "escalatedAlerts": 0
+    },
+    "radiation": {
+      "station1": {
+        "cpm": 18.064927584498207
+      }
+    },
+    "energy": {
+      "oilPrice": 77.60464840717384
+    },
+    "gold": {
+      "price": 2397.3592792467166
+    },
+    "dxy": {
+      "value": 103.84369033453142
+    }
+  },
+  {
+    "sweepId": "history_5",
+    "timestamp": "2026-09-15T09:15:00.000Z",
+    "fred": {
+      "vix": 21.53,
+      "hySpread": 3.01,
+      "treasury10y": 4.2
+    },
+    "gdelt": {
+      "conflictEvents": [
+        {
+          "id": "h5_0",
+          "severity": 0.41269971795753424
+        },
+        {
+          "id": "h5_1",
+          "severity": 0.25727512345356995
+        },
+        {
+          "id": "h5_2",
+          "severity": 0.1346008824463647
+        },
+        {
+          "id": "h5_3",
+          "severity": 0.9166230601513414
+        },
+        {
+          "id": "h5_4",
+          "severity": 0.4759355415671265
+        },
+        {
+          "id": "h5_5",
+          "severity": 0.4160225363177412
+        }
+      ]
+    },
+    "sanctions": {
+      "count": 2
+    },
+    "delta": {
+      "newAlerts": 0,
+      "escalatedAlerts": 2
+    },
+    "radiation": {
+      "station1": {
+        "cpm": 16.31205536664515
+      }
+    },
+    "energy": {
+      "oilPrice": 77.49387777723221
+    },
+    "gold": {
+      "price": 2378.707988600321
+    },
+    "dxy": {
+      "value": 103.86056627131805
+    }
+  },
+  {
+    "sweepId": "history_6",
+    "timestamp": "2026-09-15T09:30:00.000Z",
+    "fred": {
+      "vix": 29.14,
+      "hySpread": 3.05,
+      "treasury10y": 4.2
+    },
+    "gdelt": {
+      "conflictEvents": [
+        {
+          "id": "h6_0",
+          "severity": 0.9127849405418613
+        },
+        {
+          "id": "h6_1",
+          "severity": 0.7597898408225836
+        },
+        {
+          "id": "h6_2",
+          "severity": 0.8118976228674923
+        },
+        {
+          "id": "h6_3",
+          "severity": 0.6506348456188409
+        },
+        {
+          "id": "h6_4",
+          "severity": 0.24910930849194357
+        },
+        {
+          "id": "h6_5",
+          "severity": 0.6929060407995211
+        },
+        {
+          "id": "h6_6",
+          "severity": 0.42584918608894107
+        },
+        {
+          "id": "h6_7",
+          "severity": 0.44865509063919884
+        },
+        {
+          "id": "h6_8",
+          "severity": 0.16840448452419565
+        },
+        {
+          "id": "h6_9",
+          "severity": 0.11523333411653391
+        },
+        {
+          "id": "h6_10",
+          "severity": 0.8643730781713401
+        },
+        {
+          "id": "h6_11",
+          "severity": 0.5007034838601636
+        },
+        {
+          "id": "h6_12",
+          "severity": 0.72036586934766
+        },
+        {
+          "id": "h6_13",
+          "severity": 0.7561919660404945
+        }
+      ]
+    },
+    "sanctions": {
+      "count": 0
+    },
+    "delta": {
+      "newAlerts": 3,
+      "escalatedAlerts": 2
+    },
+    "radiation": {
+      "station1": {
+        "cpm": 19.392080053542557
+      }
+    },
+    "energy": {
+      "oilPrice": 85.20211747279956
+    },
+    "gold": {
+      "price": 2332.066382320276
+    },
+    "dxy": {
+      "value": 103.66346875661941
+    }
+  },
+  {
+    "sweepId": "history_7",
+    "timestamp": "2026-09-15T09:45:00.000Z",
+    "fred": {
+      "vix": 22.56,
+      "hySpread": 3.94,
+      "treasury10y": 4.2
+    },
+    "gdelt": {
+      "conflictEvents": [
+        {
+          "id": "h7_0",
+          "severity": 0.5576351371418089
+        },
+        {
+          "id": "h7_1",
+          "severity": 0.3086810568299658
+        },
+        {
+          "id": "h7_2",
+          "severity": 0.44578048021206795
+        },
+        {
+          "id": "h7_3",
+          "severity": 0.3420538206334802
+        },
+        {
+          "id": "h7_4",
+          "severity": 0.24487162899736825
+        },
+        {
+          "id": "h7_5",
+          "severity": 0.9047388502585634
+        },
+        {
+          "id": "h7_6",
+          "severity": 0.10175642522476402
+        },
+        {
+          "id": "h7_7",
+          "severity": 0.5391734203285006
+        },
+        {
+          "id": "h7_8",
+          "severity": 0.889301115476923
+        },
+        {
+          "id": "h7_9",
+          "severity": 0.6604070368887518
+        }
+      ]
+    },
+    "sanctions": {
+      "count": 2
+    },
+    "delta": {
+      "newAlerts": 3,
+      "escalatedAlerts": 0
+    },
+    "radiation": {
+      "station1": {
+        "cpm": 19.062690742204907
+      }
+    },
+    "energy": {
+      "oilPrice": 76.86129501152156
+    },
+    "gold": {
+      "price": 2331.258232880576
+    },
+    "dxy": {
+      "value": 103.13848885752437
+    }
+  },
+  {
+    "sweepId": "history_8",
+    "timestamp": "2026-09-15T10:00:00.000Z",
+    "fred": {
+      "vix": 27.73,
+      "hySpread": 4.05,
+      "treasury10y": 4.2
+    },
+    "gdelt": {
+      "conflictEvents": [
+        {
+          "id": "h8_0",
+          "severity": 0.841783742286748
+        },
+        {
+          "id": "h8_1",
+          "severity": 0.8045481033656576
+        },
+        {
+          "id": "h8_2",
+          "severity": 0.9789976925065125
+        },
+        {
+          "id": "h8_3",
+          "severity": 0.09613921491431121
+        },
+        {
+          "id": "h8_4",
+          "severity": 0.39237827362664435
+        },
+        {
+          "id": "h8_5",
+          "severity": 0.3606118116281569
+        },
+        {
+          "id": "h8_6",
+          "severity": 0.3891573379444677
+        },
+        {
+          "id": "h8_7",
+          "severity": 0.7516727445824851
+        },
+        {
+          "id": "h8_8",
+          "severity": 0.7370485213417106
+        },
+        {
+          "id": "h8_9",
+          "severity": 0.061773592174996894
+        },
+        {
+          "id": "h8_10",
+          "severity": 0.22554046416563578
+        }
+      ]
+    },
+    "sanctions": {
+      "count": 2
+    },
+    "delta": {
+      "newAlerts": 1,
+      "escalatedAlerts": 1
+    },
+    "radiation": {
+      "station1": {
+        "cpm": 19.816418523417756
+      }
+    },
+    "energy": {
+      "oilPrice": 79.96554498874706
+    },
+    "gold": {
+      "price": 2322.1581531046118
+    },
+    "dxy": {
+      "value": 104.33101362581438
+    }
+  },
+  {
+    "sweepId": "history_9",
+    "timestamp": "2026-09-15T10:15:00.000Z",
+    "fred": {
+      "vix": 21.94,
+      "hySpread": 4.12,
+      "treasury10y": 4.2
+    },
+    "gdelt": {
+      "conflictEvents": [
+        {
+          "id": "h9_0",
+          "severity": 0.7813932343328789
+        },
+        {
+          "id": "h9_1",
+          "severity": 0.9878262924643302
+        },
+        {
+          "id": "h9_2",
+          "severity": 0.4505089855517266
+        },
+        {
+          "id": "h9_3",
+          "severity": 0.4745565609963456
+        },
+        {
+          "id": "h9_4",
+          "severity": 0.059440495969258045
+        },
+        {
+          "id": "h9_5",
+          "severity": 0.18690494893744214
+        },
+        {
+          "id": "h9_6",
+          "severity": 0.9782495324050262
+        },
+        {
+          "id": "h9_7",
+          "severity": 0.21825610213321145
+        },
+        {
+          "id": "h9_8",
+          "severity": 0.7197294784445509
+        },
+        {
+          "id": "h9_9",
+          "severity": 0.04336351366880642
+        },
+        {
+          "id": "h9_10",
+          "severity": 0.24835867285919244
+        },
+        {
+          "id": "h9_11",
+          "severity": 0.5796452317991558
+        },
+        {
+          "id": "h9_12",
+          "severity": 0.5331285165385093
+        },
+        {
+          "id": "h9_13",
+          "severity": 0.1898397414513897
+        }
+      ]
+    },
+    "sanctions": {
+      "count": 2
+    },
+    "delta": {
+      "newAlerts": 3,
+      "escalatedAlerts": 0
+    },
+    "radiation": {
+      "station1": {
+        "cpm": 18.166073658392243
+      }
+    },
+    "energy": {
+      "oilPrice": 86.7311871931758
+    },
+    "gold": {
+      "price": 2376.2472946715798
+    },
+    "dxy": {
+      "value": 104.19874538710887
+    }
+  },
+  {
+    "sweepId": "history_10",
+    "timestamp": "2026-09-15T10:30:00.000Z",
+    "fred": {
+      "vix": 29.14,
+      "hySpread": 3.79,
+      "treasury10y": 4.2
+    },
+    "gdelt": {
+      "conflictEvents": [
+        {
+          "id": "h10_0",
+          "severity": 0.3139284758775165
+        },
+        {
+          "id": "h10_1",
+          "severity": 0.08270356226335518
+        },
+        {
+          "id": "h10_2",
+          "severity": 0.8624596119545331
+        },
+        {
+          "id": "h10_3",
+          "severity": 0.9365961729245684
+        },
+        {
+          "id": "h10_4",
+          "severity": 0.5925224593983638
+        }
+      ]
+    },
+    "sanctions": {
+      "count": 1
+    },
+    "delta": {
+      "newAlerts": 3,
+      "escalatedAlerts": 1
+    },
+    "radiation": {
+      "station1": {
+        "cpm": 18.356056387225546
+      }
+    },
+    "energy": {
+      "oilPrice": 86.22567492593123
+    },
+    "gold": {
+      "price": 2341.6795670495367
+    },
+    "dxy": {
+      "value": 104.65879058973788
+    }
+  },
+  {
+    "sweepId": "history_11",
+    "timestamp": "2026-09-15T10:45:00.000Z",
+    "fred": {
+      "vix": 21.88,
+      "hySpread": 3.56,
+      "treasury10y": 4.2
+    },
+    "gdelt": {
+      "conflictEvents": [
+        {
+          "id": "h11_0",
+          "severity": 0.5308953185366234
+        },
+        {
+          "id": "h11_1",
+          "severity": 0.24286912671568017
+        },
+        {
+          "id": "h11_2",
+          "severity": 0.5614360824664582
+        },
+        {
+          "id": "h11_3",
+          "severity": 0.22513622427540514
+        },
+        {
+          "id": "h11_4",
+          "severity": 0.07654710370125306
+        },
+        {
+          "id": "h11_5",
+          "severity": 0.0962252852482175
+        },
+        {
+          "id": "h11_6",
+          "severity": 0.46678453510249285
+        },
+        {
+          "id": "h11_7",
+          "severity": 0.7400458840104049
+        }
+      ]
+    },
+    "sanctions": {
+      "count": 1
+    },
+    "delta": {
+      "newAlerts": 3,
+      "escalatedAlerts": 0
+    },
+    "radiation": {
+      "station1": {
+        "cpm": 19.24097327215407
+      }
+    },
+    "energy": {
+      "oilPrice": 77.17495832437373
+    },
+    "gold": {
+      "price": 2372.8336963005786
+    },
+    "dxy": {
+      "value": 103.55273433945494
+    }
+  },
+  {
+    "sweepId": "history_12",
+    "timestamp": "2026-09-15T11:00:00.000Z",
+    "fred": {
+      "vix": 27.75,
+      "hySpread": 3.07,
+      "treasury10y": 4.2
+    },
+    "gdelt": {
+      "conflictEvents": [
+        {
+          "id": "h12_0",
+          "severity": 0.7212534589434458
+        },
+        {
+          "id": "h12_1",
+          "severity": 0.22877616352610164
+        },
+        {
+          "id": "h12_2",
+          "severity": 0.46062361815381037
+        },
+        {
+          "id": "h12_3",
+          "severity": 0.6226345077714153
+        },
+        {
+          "id": "h12_4",
+          "severity": 0.06783270641354622
+        }
+      ]
+    },
+    "sanctions": {
+      "count": 1
+    },
+    "delta": {
+      "newAlerts": 4,
+      "escalatedAlerts": 0
+    },
+    "radiation": {
+      "station1": {
+        "cpm": 18.495637335691217
+      }
+    },
+    "energy": {
+      "oilPrice": 86.86859651941089
+    },
+    "gold": {
+      "price": 2390.121300460565
+    },
+    "dxy": {
+      "value": 103.54072652110253
+    }
+  },
+  {
+    "sweepId": "history_13",
+    "timestamp": "2026-09-15T11:15:00.000Z",
+    "fred": {
+      "vix": 20.2,
+      "hySpread": 3.62,
+      "treasury10y": 4.2
+    },
+    "gdelt": {
+      "conflictEvents": [
+        {
+          "id": "h13_0",
+          "severity": 0.5761440070091299
+        },
+        {
+          "id": "h13_1",
+          "severity": 0.8867644190436896
+        },
+        {
+          "id": "h13_2",
+          "severity": 0.9892360629791692
+        },
+        {
+          "id": "h13_3",
+          "severity": 0.6511194373372395
+        },
+        {
+          "id": "h13_4",
+          "severity": 0.9279670371293127
+        },
+        {
+          "id": "h13_5",
+          "severity": 0.4213705216501036
+        },
+        {
+          "id": "h13_6",
+          "severity": 0.9811286318485122
+        },
+        {
+          "id": "h13_7",
+          "severity": 0.4130252568457069
+        },
+        {
+          "id": "h13_8",
+          "severity": 0.13727315594433676
+        },
+        {
+          "id": "h13_9",
+          "severity": 0.3021458423483796
+        },
+        {
+          "id": "h13_10",
+          "severity": 0.9715278850835702
+        },
+        {
+          "id": "h13_11",
+          "severity": 0.739743713611247
+        }
+      ]
+    },
+    "sanctions": {
+      "count": 1
+    },
+    "delta": {
+      "newAlerts": 4,
+      "escalatedAlerts": 2
+    },
+    "radiation": {
+      "station1": {
+        "cpm": 18.37496459212463
+      }
+    },
+    "energy": {
+      "oilPrice": 79.4594874874272
+    },
+    "gold": {
+      "price": 2339.97070223647
+    },
+    "dxy": {
+      "value": 103.25068808567593
+    }
+  },
+  {
+    "sweepId": "history_14",
+    "timestamp": "2026-09-15T11:30:00.000Z",
+    "fred": {
+      "vix": 27.85,
+      "hySpread": 4.24,
+      "treasury10y": 4.2
+    },
+    "gdelt": {
+      "conflictEvents": [
+        {
+          "id": "h14_0",
+          "severity": 0.1254407747136601
+        },
+        {
+          "id": "h14_1",
+          "severity": 0.34991916155053326
+        },
+        {
+          "id": "h14_2",
+          "severity": 0.5604027467745609
+        },
+        {
+          "id": "h14_3",
+          "severity": 0.06819758172752022
+        },
+        {
+          "id": "h14_4",
+          "severity": 0.8957254268714618
+        },
+        {
+          "id": "h14_5",
+          "severity": 0.131239513698723
+        },
+        {
+          "id": "h14_6",
+          "severity": 0.6607825076203246
+        },
+        {
+          "id": "h14_7",
+          "severity": 0.41279135696293245
+        },
+        {
+          "id": "h14_8",
+          "severity": 0.7773175269750487
+        }
+      ]
+    },
+    "sanctions": {
+      "count": 0
+    },
+    "delta": {
+      "newAlerts": 5,
+      "escalatedAlerts": 2
+    },
+    "radiation": {
+      "station1": {
+        "cpm": 19.670960167813973
+      }
+    },
+    "energy": {
+      "oilPrice": 87.96822114239141
+    },
+    "gold": {
+      "price": 2318.4731020240415
+    },
+    "dxy": {
+      "value": 103.64483395271282
+    }
+  },
+  {
+    "sweepId": "history_15",
+    "timestamp": "2026-09-15T11:45:00.000Z",
+    "fred": {
+      "vix": 27.75,
+      "hySpread": 3.26,
+      "treasury10y": 4.2
+    },
+    "gdelt": {
+      "conflictEvents": [
+        {
+          "id": "h15_0",
+          "severity": 0.7082746898370575
+        },
+        {
+          "id": "h15_1",
+          "severity": 0.278699978466741
+        },
+        {
+          "id": "h15_2",
+          "severity": 0.22030875572774478
+        },
+        {
+          "id": "h15_3",
+          "severity": 0.2784326339490646
+        }
+      ]
+    },
+    "sanctions": {
+      "count": 2
+    },
+    "delta": {
+      "newAlerts": 3,
+      "escalatedAlerts": 0
+    },
+    "radiation": {
+      "station1": {
+        "cpm": 18.986853003821462
+      }
+    },
+    "energy": {
+      "oilPrice": 75.19126830163711
+    },
+    "gold": {
+      "price": 2321.5034719758874
+    },
+    "dxy": {
+      "value": 104.81742736411351
+    }
+  },
+  {
+    "sweepId": "history_16",
+    "timestamp": "2026-09-15T12:00:00.000Z",
+    "fred": {
+      "vix": 27.39,
+      "hySpread": 3.76,
+      "treasury10y": 4.2
+    },
+    "gdelt": {
+      "conflictEvents": [
+        {
+          "id": "h16_0",
+          "severity": 0.6092836134341273
+        },
+        {
+          "id": "h16_1",
+          "severity": 0.6482871455083603
+        },
+        {
+          "id": "h16_2",
+          "severity": 0.9944621029301934
+        },
+        {
+          "id": "h16_3",
+          "severity": 0.25202347147482307
+        },
+        {
+          "id": "h16_4",
+          "severity": 0.7628330575986717
+        },
+        {
+          "id": "h16_5",
+          "severity": 0.5154368878547124
+        },
+        {
+          "id": "h16_6",
+          "severity": 0.540138100734048
+        },
+        {
+          "id": "h16_7",
+          "severity": 0.8634034193779936
+        }
+      ]
+    },
+    "sanctions": {
+      "count": 2
+    },
+    "delta": {
+      "newAlerts": 1,
+      "escalatedAlerts": 2
+    },
+    "radiation": {
+      "station1": {
+        "cpm": 18.551407458401915
+      }
+    },
+    "energy": {
+      "oilPrice": 78.71688087496089
+    },
+    "gold": {
+      "price": 2343.569647017971
+    },
+    "dxy": {
+      "value": 104.37290406168167
+    }
+  },
+  {
+    "sweepId": "history_17",
+    "timestamp": "2026-09-15T12:15:00.000Z",
+    "fred": {
+      "vix": 25.62,
+      "hySpread": 3.68,
+      "treasury10y": 4.2
+    },
+    "gdelt": {
+      "conflictEvents": [
+        {
+          "id": "h17_0",
+          "severity": 0.3982458341385027
+        },
+        {
+          "id": "h17_1",
+          "severity": 0.16641655372648456
+        },
+        {
+          "id": "h17_2",
+          "severity": 0.13947992625962113
+        },
+        {
+          "id": "h17_3",
+          "severity": 0.6507544143703499
+        }
+      ]
+    },
+    "sanctions": {
+      "count": 2
+    },
+    "delta": {
+      "newAlerts": 2,
+      "escalatedAlerts": 0
+    },
+    "radiation": {
+      "station1": {
+        "cpm": 16.20512274503107
+      }
+    },
+    "energy": {
+      "oilPrice": 81.38943900561955
+    },
+    "gold": {
+      "price": 2303.714553696475
+    },
+    "dxy": {
+      "value": 104.0472423755765
+    }
+  },
+  {
+    "sweepId": "history_18",
+    "timestamp": "2026-09-15T12:30:00.000Z",
+    "fred": {
+      "vix": 31.35,
+      "hySpread": 3.57,
+      "treasury10y": 4.2
+    },
+    "gdelt": {
+      "conflictEvents": [
+        {
+          "id": "h18_0",
+          "severity": 0.4040493625582009
+        },
+        {
+          "id": "h18_1",
+          "severity": 0.11424590457828576
+        },
+        {
+          "id": "h18_2",
+          "severity": 0.4270273554164443
+        },
+        {
+          "id": "h18_3",
+          "severity": 0.41343618636959434
+        },
+        {
+          "id": "h18_4",
+          "severity": 0.8745330401693105
+        },
+        {
+          "id": "h18_5",
+          "severity": 0.46811172453795646
+        },
+        {
+          "id": "h18_6",
+          "severity": 0.04429693677242197
+        },
+        {
+          "id": "h18_7",
+          "severity": 0.31065645209708403
+        },
+        {
+          "id": "h18_8",
+          "severity": 0.6272328962846996
+        },
+        {
+          "id": "h18_9",
+          "severity": 0.0380463482150315
+        },
+        {
+          "id": "h18_10",
+          "severity": 0.20938248779101554
+        }
+      ]
+    },
+    "sanctions": {
+      "count": 0
+    },
+    "delta": {
+      "newAlerts": 5,
+      "escalatedAlerts": 2
+    },
+    "radiation": {
+      "station1": {
+        "cpm": 19.84326600002477
+      }
+    },
+    "energy": {
+      "oilPrice": 78.22625782290915
+    },
+    "gold": {
+      "price": 2366.908447991481
+    },
+    "dxy": {
+      "value": 103.3928641509836
+    }
+  },
+  {
+    "sweepId": "history_19",
+    "timestamp": "2026-09-15T12:45:00.000Z",
+    "fred": {
+      "vix": 25.8,
+      "hySpread": 3.67,
+      "treasury10y": 4.2
+    },
+    "gdelt": {
+      "conflictEvents": [
+        {
+          "id": "h19_0",
+          "severity": 0.3518919587591065
+        },
+        {
+          "id": "h19_1",
+          "severity": 0.11462512104353162
+        },
+        {
+          "id": "h19_2",
+          "severity": 0.21204011934949762
+        },
+        {
+          "id": "h19_3",
+          "severity": 0.10510864200503112
+        },
+        {
+          "id": "h19_4",
+          "severity": 0.3535507275419023
+        },
+        {
+          "id": "h19_5",
+          "severity": 0.9383233414846457
+        },
+        {
+          "id": "h19_6",
+          "severity": 0.07379397392609799
+        },
+        {
+          "id": "h19_7",
+          "severity": 0.432076281076891
+        },
+        {
+          "id": "h19_8",
+          "severity": 0.559665554782723
+        },
+        {
+          "id": "h19_9",
+          "severity": 0.7964904504989105
+        }
+      ]
+    },
+    "sanctions": {
+      "count": 1
+    },
+    "delta": {
+      "newAlerts": 4,
+      "escalatedAlerts": 1
+    },
+    "radiation": {
+      "station1": {
+        "cpm": 18.773130517678844
+      }
+    },
+    "energy": {
+      "oilPrice": 82.02387428409047
+    },
+    "gold": {
+      "price": 2344.354316940868
+    },
+    "dxy": {
+      "value": 104.81972215953068
+    }
+  }
+]
+
+
+========================================================================

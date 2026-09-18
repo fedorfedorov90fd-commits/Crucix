@@ -83,3 +83,10 @@ build/
 
 # --- Persist (приватные данные внутри data/) ---
 data/persist/*.json
+
+# --- Расширенное покрытие backup-файлов с датами ---
+*.backup-*
+*.backup_*
+*.backup.*
+*.backup-2026-*
+*.backup_2026-*

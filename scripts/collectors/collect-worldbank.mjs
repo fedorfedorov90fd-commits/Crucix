@@ -19,6 +19,7 @@
 import { writeFileSync, existsSync, mkdirSync, readFileSync, appendFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { saveRaw } from './lib/collector-helper.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -256,8 +257,31 @@ async function collect() {
   result.meta.countries_without_data = withoutAnyData;
   result.meta.countries_without_data_list = withoutDataList;
 
-  writeFileSync(BASKET_FILE, JSON.stringify(result, null, 2));
-  log(`[WorldBank] ✅ Сохранено в ${BASKET_FILE}`);
+  // Преобразуем countries (объект) в массив entries для catalog-адаптера.
+  const entries = Object.entries(result.countries).map(([iso3, indicators]) => {
+    const flat = { iso3, country: iso3 };
+    for (const [k, v] of Object.entries(indicators)) {
+      if (v && typeof v === 'object' && 'value' in v) {
+        flat[k] = v.value;
+        flat[k + '_year'] = v.year;
+      }
+    }
+    return flat;
+  });
+
+  const result2 = await saveRaw('worldbank', { ...result, entries }, {
+    collector: 'collect-worldbank.mjs',
+    source: 'WorldBank API',
+    source_url: 'https://api.worldbank.org/v2',
+    license: 'cc-by',
+    format_hint: 'catalog',
+    value_unit: 'unknown',
+    granularity: 'snapshot',
+    record_count: entries.length,
+    notes: `${INDICATORS ? Object.keys(INDICATORS).length : 6} индикаторов, ${entries.length} стран`,
+    backwardCompat: true
+  });
+  log(`[WorldBank] Сохранено через saveRaw → ${result2.raw_file}`);
   log(`[WorldBank] ${result.meta.duration_ms}мс, стран с данными ${withAnyData}/${allCountryCodes.length}, без данных ${withoutAnyData}`);
   log(`[WorldBank] Успешных: ${result.meta.successful_requests}/${result.meta.total_requests}, ошибок: ${result.meta.failed_requests}`);
 

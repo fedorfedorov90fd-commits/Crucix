@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 import { promises as fs } from 'fs';
 import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const BASKET_PATH = join(__dirname, '..', 'data', 'basket', 'unemployment.json');
+const BASKET_PATH = join(__dirname, '..', '..', 'data', 'basket', 'unemployment.json');
 
 function generateData() {
     const now = new Date();
@@ -20,13 +20,13 @@ function generateData() {
 
 async function collectUnemployment() {
     const data = generateData();
-    await fs.mkdir(join(__dirname, '..', 'data', 'basket'), { recursive: true });
+    await fs.mkdir(join(__dirname, '..', '..', 'data', 'basket'), { recursive: true });
     await fs.writeFile(BASKET_PATH, JSON.stringify(data, null, 2));
     console.log(`[UNEMPLOYMENT] ✅ Сохранено ${data.length} записей`);
     return data;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
     collectUnemployment().catch(console.error);
 }
 

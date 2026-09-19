@@ -1,0 +1,64 @@
+============================================================
+RAG-МОДУЛЬ (Retrieval-Augmented Generation)
+============================================================
+Версия: 1.0.0
+Порт: 3120
+Статус: ✅ РАБОТАЕТ
+
+ОПИСАНИЕ
+---------
+Модуль для AI-аналитики на основе RAG. Читает данные из корзины Crucix
+(/data/basket/), индексирует их и отвечает на вопросы с использованием
+локальных AI-моделей (Ollama).
+
+ФУНКЦИИ
+--------
+- Индексация JSON-файлов из корзины
+- Векторный поиск по данным
+- Генерация ответов через Ollama (llama3.2, deepseek-r1)
+- API для запросов и поиска
+
+API ЭНДПОИНТЫ
+-------------
+GET    /api/rag/status          - Статус сервера
+GET    /api/rag/stats           - Статистика корзины
+POST   /api/rag/search          - Поиск по данным
+POST   /api/rag/query           - AI-запрос с RAG
+
+ПРИМЕРЫ ЗАПРОСОВ
+----------------
+# Статус
+curl http://localhost:3120/api/rag/status
+
+# Поиск
+curl -X POST http://localhost:3120/api/rag/search \
+  -H "Content-Type: application/json" \
+  -d '{"query": "экономика", "limit": 10}'
+
+# AI-запрос
+curl -X POST http://localhost:3120/api/rag/query \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Какая экономическая ситуация в мире?"}'
+
+ЗАВИСИМОСТИ
+-----------
+- Node.js v22+
+- Ollama (локальный AI)
+- Модели: llama3.2 или deepseek-r1
+
+УСТАНОВКА
+---------
+cd /home/ta8_/Рабочий стол/Crucix/rag-module/rag-module
+npm install
+cp .env.example .env
+# Отредактируйте .env (укажите модель)
+node rag-server.mjs
+
+ФАЙЛЫ
+-----
+rag-server.mjs     - Основной сервер
+rag-indexer.mjs    - Индексатор данных
+rag-ai-router.mjs  - Маршрутизация AI-запросов
+rag-chat.html      - Чат-интерфейс
+.env               - Конфигурация
+============================================================

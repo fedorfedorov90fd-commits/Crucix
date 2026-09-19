@@ -13,7 +13,7 @@ import dotenv from 'dotenv';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: join(__dirname, '..', '.env') });
 
-const BASKET_DIR = join(__dirname, '..', 'data', 'basket');
+const BASKET_DIR = join(__dirname, '..', '..', 'data', 'basket');
 const FRED_API_KEY = process.env.FRED_API_KEY;
 
 // ============================================================

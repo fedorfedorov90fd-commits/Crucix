@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 import { promises as fs } from 'fs';
 import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';;
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const BASKET_PATH = join(__dirname, '..', 'data', 'basket', 'pipelines.json');
+const BASKET_PATH = join(__dirname, '..', '..', 'data', 'basket', 'pipelines.json');
 
 const PIPELINE_DATA = [
   { name: "Северный поток", lat1: 60.0, lng1: 28.0, lat2: 54.0, lng2: 13.0, type: "газ", countries: "Россия-Германия" },
@@ -16,10 +16,10 @@ const PIPELINE_DATA = [
 async function collectPipelines() {
   const now = new Date().toISOString();
   const data = PIPELINE_DATA.map(p => ({ ...p, collected: now }));
-  await fs.mkdir(join(__dirname, '..', 'data', 'basket'), { recursive: true });
+  await fs.mkdir(join(__dirname, '..', '..', 'data', 'basket'), { recursive: true });
   await fs.writeFile(BASKET_PATH, JSON.stringify(data, null, 2));
   console.log(`[PIPELINES] ✅ ${data.length} трубопроводов`);
   return data;
 }
-if (import.meta.url === `file://${process.argv[1]}`) { collectPipelines().catch(console.error); }
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) { collectPipelines().catch(console.error); }
 export { collectPipelines };

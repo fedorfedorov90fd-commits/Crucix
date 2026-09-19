@@ -11,7 +11,7 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const BASKET_PATH = join(__dirname, '..', 'data', 'basket', 'earthquakes.json');
+const BASKET_PATH = join(__dirname, '..', '..', 'data', 'basket', 'earthquakes.json');
 
 // Реальные координаты сейсмоактивных зон с историческими данными
 const EARTHQUAKES = [
@@ -85,7 +85,7 @@ async function collectEarthquakes() {
     const data = generateEarthquakeData();
     
     // Сохраняем в корзину
-    await fs.mkdir(join(__dirname, '..', 'data', 'basket'), { recursive: true });
+    await fs.mkdir(join(__dirname, '..', '..', 'data', 'basket'), { recursive: true });
     await fs.writeFile(BASKET_PATH, JSON.stringify(data, null, 2));
     
     console.log(`[EARTHQUAKES] ✅ Сохранено ${data.length} записей в ${BASKET_PATH}`);

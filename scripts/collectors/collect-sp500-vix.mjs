@@ -1,51 +1,51 @@
 #!/usr/bin/env node
-import { promises as fs } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+/**
+ * Crucix Collector: sp500-vix.
+ * Версия 2.0.0. Принят 19.09.2026.
+ *
+ * Демо-данные SP500 и VIX. Тип — timeseries.
+ * Формат: [{date, value: vix, sp500, vix}].
+ */
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const BASKET_DIR = join(__dirname, '..', 'data', 'basket');
-const BASKET_PATH = join(BASKET_DIR, 'sp500-vix.json');
+import { saveRaw } from './lib/collector-helper.mjs';
+import { pathToFileURL } from 'url';
 
 function generateData() {
-    const now = new Date();
-    const data = [];
-    for (let i = 30; i >= 0; i--) {
-        const date = new Date(now);
-        date.setDate(date.getDate() - i);
-        const sp500 = 4500 + i * 5 + (Math.random() - 0.5) * 50;
-        const vix = 18 + (i / 30) * 15 + (Math.random() - 0.5) * 3;
-        data.push({
-            date: date.toISOString().split('T')[0],
-            sp500: Math.round(sp500 * 100) / 100,
-            vix: Math.round(vix * 100) / 100,
-            ratio: Math.round((sp500 / vix) * 100) / 100
-        });
-    }
-    return data;
+  const now = new Date();
+  const data = [];
+  for (let i = 30; i >= 0; i--) {
+    const date = new Date(now);
+    date.setDate(date.getDate() - i);
+    const sp500 = 4500 + i * 5 + (Math.random() - 0.5) * 50;
+    const vix = 18 + (i / 30) * 15 + (Math.random() - 0.5) * 3;
+    data.push({
+      date: date.toISOString().slice(0, 10),
+      value: Math.round(vix * 100) / 100,
+      sp500: Math.round(sp500 * 100) / 100,
+      vix: Math.round(vix * 100) / 100
+    });
+  }
+  return data;
 }
 
-async function saveToBasket(data) {
-    try {
-        await fs.mkdir(BASKET_DIR, { recursive: true });
-        await fs.writeFile(BASKET_PATH, JSON.stringify(data, null, 2), 'utf8');
-        console.log(`[SP500-VIX] ✅ Сохранено ${data.length} записей`);
-        return true;
-    } catch (error) {
-        console.error(`[SP500-VIX] ❌ Ошибка:`, error.message);
-        return false;
-    }
+export async function collectSP500VIX() {
+  const data = generateData();
+  const result = await saveRaw('sp500-vix', data, {
+    collector: 'collect-sp500-vix.mjs',
+    source: 'Crucix SP500-VIX (demo)',
+    source_url: 'local://demo',
+    license: 'proprietary',
+    format_hint: 'timeseries',
+    value_unit: 'index',
+    granularity: 'daily',
+    record_count: data.length,
+    notes: 'Демо-данные, реальный источник не подключён',
+    backwardCompat: true
+  });
+  console.log(`[SP500-VIX] OK ${data.length} записей → ${result.raw_file}`);
+  return data;
 }
 
-async function collectSP500VIX() {
-    console.log('[SP500-VIX] 📡 Начинаем сбор...');
-    const data = generateData();
-    await saveToBasket(data);
-    return data;
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  collectSP500VIX().catch((e) => { console.error('[SP500-VIX] FATAL:', e.message); process.exit(1); });
 }
-
-if (import.meta.url === `file://${process.argv[1]}`) {
-    collectSP500VIX().catch(console.error);
-}
-
-export { collectSP500VIX, generateData };

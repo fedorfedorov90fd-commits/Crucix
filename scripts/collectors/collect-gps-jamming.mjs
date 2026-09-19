@@ -8,10 +8,10 @@
 
 import { promises as fs } from 'fs';
 import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const BASKET_DIR = join(__dirname, '..', 'data', 'basket');
+const BASKET_DIR = join(__dirname, '..', '..', 'data', 'basket');
 const BASKET_PATH = join(BASKET_DIR, 'gps-jamming.json');
 
 const REGIONS = [
@@ -116,7 +116,7 @@ async function collectGPSJamming() {
     return data;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
     collectGPSJamming().catch(console.error);
 }
 

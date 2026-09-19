@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 import { promises as fs } from 'fs';
 import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';;
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const BASKET_PATH = join(__dirname, '..', 'data', 'basket', 'instability-index.json');
+const BASKET_PATH = join(__dirname, '..', '..', 'data', 'basket', 'instability-index.json');
 
 const COUNTRIES = [
   { name: "Украина", lat: 48.3794, lng: 31.1656, index: 85 },
@@ -25,10 +25,10 @@ const COUNTRIES = [
 async function collectInstabilityIndex() {
   const now = new Date().toISOString();
   const data = COUNTRIES.map(c => ({ ...c, collected: now }));
-  await fs.mkdir(join(__dirname, '..', 'data', 'basket'), { recursive: true });
+  await fs.mkdir(join(__dirname, '..', '..', 'data', 'basket'), { recursive: true });
   await fs.writeFile(BASKET_PATH, JSON.stringify(data, null, 2));
   console.log(`[INSTABILITY-INDEX] ✅ ${data.length} стран`);
   return data;
 }
-if (import.meta.url === `file://${process.argv[1]}`) { collectInstabilityIndex().catch(console.error); }
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) { collectInstabilityIndex().catch(console.error); }
 export { collectInstabilityIndex };

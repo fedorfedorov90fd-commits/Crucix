@@ -10,7 +10,7 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const BASKET_PATH = join(__dirname, '..', 'data', 'basket', 'conflict-zones.json');
+const BASKET_PATH = join(__dirname, '..', '..', 'data', 'basket', 'conflict-zones.json');
 
 // Реальные зоны конфликтов с координатами (по данным ACLED)
 const CONFLICT_ZONES = [
@@ -56,7 +56,7 @@ async function collectConflictZones() {
       timestamp: now.toISOString()
     }));
 
-    await fs.mkdir(join(__dirname, '..', 'data', 'basket'), { recursive: true });
+    await fs.mkdir(join(__dirname, '..', '..', 'data', 'basket'), { recursive: true });
     await fs.writeFile(BASKET_PATH, JSON.stringify(data, null, 2));
     
     console.log(`[CONFLICT-ZONES] ✅ Сохранено ${data.length} записей в ${BASKET_PATH}`);

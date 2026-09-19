@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 import { promises as fs } from 'fs';
 import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';;
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const BASKET_PATH = join(__dirname, '..', 'data', 'basket', 'cyber-apt.json');
+const BASKET_PATH = join(__dirname, '..', '..', 'data', 'basket', 'cyber-apt.json');
 
 const APT_DATA = [
   { name: "APT28 (Fancy Bear)", country: "Россия", lat: 55.7558, lng: 37.6173, type: "кибершпионаж", active: true },
@@ -18,10 +18,10 @@ const APT_DATA = [
 async function collectCyberAPT() {
   const now = new Date().toISOString();
   const data = APT_DATA.map(a => ({ ...a, collected: now }));
-  await fs.mkdir(join(__dirname, '..', 'data', 'basket'), { recursive: true });
+  await fs.mkdir(join(__dirname, '..', '..', 'data', 'basket'), { recursive: true });
   await fs.writeFile(BASKET_PATH, JSON.stringify(data, null, 2));
   console.log(`[CYBER-APT] ✅ ${data.length} группировок`);
   return data;
 }
-if (import.meta.url === `file://${process.argv[1]}`) { collectCyberAPT().catch(console.error); }
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) { collectCyberAPT().catch(console.error); }
 export { collectCyberAPT };

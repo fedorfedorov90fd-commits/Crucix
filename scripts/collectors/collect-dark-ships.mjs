@@ -1,37 +1,59 @@
 #!/usr/bin/env node
-import { promises as fs } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+/**
+ * Crucix Collector: dark-ships.
+ * Версия 2.0.0. Принят 18.09.2026.
+ *
+ * Роль: генерирует демо-данные тёмного флота и сдаёт через saveRaw.
+ * Сборщик НЕ пишет в basket напрямую — только raw + накладная.
+ *
+ * Формат данных: [{date, region, ships}]. Тип — timeseries
+ * (есть date + числовое ships, нет координат). Регион текстовый (море),
+ * в справочнике стран его нет — уйдёт в extra.unmapped_regions.
+ *
+ * Реальный источник — не подключён (демо-режим).
+ */
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const BASKET_PATH = join(__dirname, '..', 'data', 'basket', 'dark-ships.json');
+import { saveRaw } from './lib/collector-helper.mjs';
+import { pathToFileURL } from 'url';
+
+const REGIONS = ['Black Sea', 'Mediterranean', 'South China Sea', 'Persian Gulf', 'Baltic Sea'];
+const DAYS_BACK = 30;
 
 function generateData() {
-    const now = new Date();
-    const data = [];
-    const regions = ['Black Sea', 'Mediterranean', 'South China Sea', 'Persian Gulf', 'Baltic Sea'];
-    
-    for (let i = 30; i >= 0; i--) {
-        const date = new Date(now);
-        date.setDate(date.getDate() - i);
-        data.push({
-            date: date.toISOString().slice(0,10),
-            region: regions[Math.floor(Math.random() * regions.length)],
-            ships: Math.floor(Math.random() * 10) + 1
-        });
-    }
-    return data;
+  const now = new Date();
+  const data = [];
+  for (let i = DAYS_BACK; i >= 0; i--) {
+    const date = new Date(now);
+    date.setDate(date.getDate() - i);
+    data.push({
+      date: date.toISOString().slice(0, 10),
+      region: REGIONS[Math.floor(Math.random() * REGIONS.length)],
+      ships: Math.floor(Math.random() * 10) + 1
+    });
+  }
+  return data;
 }
 
-async function collectDarkShips() {
-    const data = generateData();
-    await fs.mkdir(join(__dirname, '..', 'data', 'basket'), { recursive: true });
-    await fs.writeFile(BASKET_PATH, JSON.stringify(data, null, 2));
-    console.log(`[Dark Ships] ✅ Сохранено ${data.length} записей`);
-    return data;
+export async function collectDarkShips() {
+  const data = generateData();
+  const result = await saveRaw('dark-ships', data, {
+    collector: 'collect-dark-ships.mjs',
+    source: 'Crucix dark-ships (demo)',
+    source_url: 'local://demo',
+    license: 'proprietary',
+    format_hint: 'timeseries',
+    value_unit: 'count',
+    granularity: 'event',
+    record_count: data.length,
+    notes: 'Демо-данные, реальный источник не подключён',
+    backwardCompat: true
+  });
+
+  console.log(`[Dark Ships] OK ${data.length} записей → ${result.raw_file}`);
+  console.log(`[Dark Ships] Накладная: ${result.incoming_file}`);
+  return data;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
-    collectDarkShips().catch(console.error);
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  collectDarkShips().catch((e) => { console.error('[Dark Ships] FATAL:', e.message); process.exit(1); });
 }
-export { collectDarkShips };

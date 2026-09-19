@@ -25,17 +25,20 @@
 8. [AI-лаборатория](#-ai-лаборатория)
 9. [API-ключи](#-api-ключи)
 10. [Архитектура](#-архитектура)
-11. [Модульная архитектура сервера](#-модульная-архитектура-сервера)
-12. [🗺️ Геополитическая карта (geo-map)](#️-геополитическая-карта-geo-map)
-13. [Источники данных](#-источники-данных)
-14. [npm-скрипты](#-npm-скрипты)
-15. [Конфигурация](#-конфигурация)
-16. [API-эндпоинты](#-api-эндпоинты)
-17. [Устранение неполадок](#-устранение-неполадок)
-18. [Расширения](#-расширения)
-19. [AI-чат](#-ai-чат)
-20. [Вклад в проект](#-вклад-в-проект)
-21. [Лицензия](#-лицензия)
+11. [Складская система](#-складская-система-warehouse)
+12. [Справочники](#-справочники-datareference)
+13. [Документация](#-документация)
+14. [Модульная архитектура сервера](#-модульная-архитектура-сервера)
+15. [🗺️ Геополитическая карта (geo-map)](#️-геополитическая-карта-geo-map)
+16. [Источники данных](#-источники-данных)
+17. [npm-скрипты](#-npm-скрипты)
+18. [Конфигурация](#-конфигурация)
+19. [API-эндпоинты](#-api-эндпоинты)
+20. [Устранение неполадок](#-устранение-неполадок)
+21. [Расширения](#-расширения)
+22. [AI-чат](#-ai-чат)
+23. [Вклад в проект](#-вклад-в-проект)
+24. [Лицензия](#-лицензия)
 
 ---
 
@@ -94,7 +97,7 @@
 
 ```bash
 # 1. Клонировать репозиторий
-git clone https://github.com/calesthio/Crucix.git
+git clone https://github.com/fedorfedorov90fd-commits/Crucix.git
 cd Crucix
 
 # 2. Установить зависимости (только Express)
@@ -118,7 +121,7 @@ node --trace-warnings server.mjs
 ### Docker
 
 ```bash
-git clone https://github.com/calesthio/Crucix.git
+git clone https://github.com/fedorfedorov90fd-commits/Crucix.git
 cd Crucix
 cp .env.example .env
 docker compose up -d
@@ -287,6 +290,112 @@ curl http://localhost:3117/api/layers/strategic-risk-composite/stats
 ```
 
 ---
+
+
+
+---
+
+## Складская система (Warehouse)
+
+Данные проходят три роли, каждая делает только своё:
+
+| Роль | Где | Что делает |
+|---|---|---|
+| Сборщик | scripts/collectors/*.mjs | Ходит в интернет, кладёт сырой ответ в data/raw/{id}.json с меткой |
+| Кладовщик | scripts/warehouse/manager.mjs | Читает data/raw/, нормализует, пишет в data/basket/ |
+| Потребитель | apis/, dashboard/ | Читает только data/basket/ |
+
+### Три правила
+
+- Сборщик никогда не пишет в data/basket/
+- Кладовщик никогда не ходит в интернет
+- Потребитель никогда не читает data/raw/
+
+### Метка на ящике
+
+Каждый файл в data/raw/{id}.json содержит:
+
+    {
+      "_collector": "collect-usgs.mjs",
+      "_collected_at": "2026-09-19T09:00:00Z",
+      "_source_type": "points",
+      "_period": "P730D",
+      "_payload": { "...сырой ответ API..." }
+    }
+
+Поле _source_type — единственный источник правды. Кладовщик читает метку и выбирает адаптер. Никаких универсальных парсеров, угадывающих формат.
+
+### Пять базовых типов источника
+
+| Тип | Формат | Примеры |
+|---|---|---|
+| timeseries | [{date, value}] | FRED, VIX, yield-curve, инфляция |
+| points | [{lat, lon, value}] | USGS, NOAA, FIRMS, dark-fleet |
+| regions | [{region, value}] | World Bank, gini, happiness |
+| events | [{date, lat, lon, type, ...}] | GDELT, ACLED, CISA KEV |
+| hierarchical | {country: {region: {...}}} | страновые индексы, sanctions |
+
+Шестой тип создаётся только по реальной необходимости.
+
+### Файлы
+
+| Путь | Что |
+|---|---|
+| scripts/warehouse/manager.mjs | Главный диспетчер |
+| scripts/warehouse/adapters/ | 5 адаптеров — по одному на тип |
+| scripts/warehouse/sweep.sh | Cron-обёртка |
+| data/warehouse/manifest.json | Складской учёт |
+| data/schemas/basket.v1.json | JSON Schema |
+| docs/basket-schema-v1.md | Документация схемы |
+
+### Формат корзины crucix.basket.v1
+
+    {
+      "schema": "crucix.basket.v1",
+      "meta": { "id": "usgs", "source_type": "points", "count": 730 },
+      "series": [],
+      "points": [ { "lat": 35.7, "lon": 139.7, "value": 4.5, "label": "Tokyo" } ],
+      "regions": [],
+      "extra": { "usgs_min_magnitude": 2.5 }
+    }
+
+---
+
+## Справочники (data/reference/)
+
+| Файл | Записей | Описание |
+|---|---|---|
+| capitals-coords.json | 250 | Координаты столиц мира, timezone, ISO-коды |
+
+Генератор: scripts/reference/build-capitals.mjs v2.0.3
+
+Источники:
+- Wikidata (SPARQL) — координаты, ISO, столицы
+- Natural Earth (ne_10m) — координаты, население (pop_max)
+- dr5hn/countries-states-cities — ISO3, timezone, native имена
+
+Особенности:
+- Включает зависимые территории (SJM, TKL, BES, UMI, BVT, HMD, ATA)
+- Для необитаемых территорий — координаты территории, а не столицы
+- Известная недоделка: name_en содержит имя страны, а не имя столицы
+
+---
+
+## Документация
+
+| Путь | Что там |
+|---|---|
+| docs/book/ | Книга проекта (6 частей) |
+| docs/book-parts/ | Исходные части книги |
+| docs/help/ru/ | Справочник по модулям (RU) |
+| docs/help/en/ | Справочник по модулям (EN) |
+| docs/basket-schema-v1.md | Схема корзины |
+| FULL_MODULES_REGISTRY.md | Реестр всех модулей |
+| README.md | Этот файл (RU) |
+| README_en.md | Английская версия |
+| CONTRIBUTING.md | Как внести вклад |
+| SECURITY.md | Политика безопасности |
+
 
 ## 🏗️ Инфраструктурный анализатор
 

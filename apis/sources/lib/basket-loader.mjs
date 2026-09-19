@@ -5,22 +5,22 @@
  * Используется модулями apis/sources/*-api.mjs для единообразного чтения
  * корзины (basket), persist-файлов и безопасной записи.
  *
+ * ВЕРСИЯ 2.0.0 (18.09.2026). Совместимость v0/v1:
+ *   - Файлы со schema='crucix.basket.v1' отдаются нативно (source='basket-v1').
+ *   - Файлы старого формата оборачиваются через basket-legacy.mjs
+ *     (source='basket-legacy'). При этом сохраняется и оригинал в поле .legacy,
+ *     чтобы старые API-модули, читающие плоский массив, продолжали работать.
+ *
  * ТРИ ФУНКЦИИ:
  *   loadWithFallback({ basketFile, fallbackData, hint })
- *     → ENOENT:     { data: fallbackData, source: 'fallback', hint }
- *     → JSON error: { data: null, source: 'corrupted', error: 'CORRUPTED_JSON', detail }
- *     → EACCES:     { data: null, source: 'error', error: 'PERMISSION_DENIED' }
- *     → ok:         { data, source: 'basket', mtime }
+ *     → { data: v1-объект, legacy: оригинал|null, source, mtime?, error?, detail?, hint? }
+ *       source ∈ 'basket-v1' | 'basket-legacy' | 'fallback' | 'corrupted' | 'error'
  *
  *   loadPersist({ persistFile, defaults })
- *     → ENOENT: { data: defaults, source: 'defaults' }
- *     → ok:     { data, source: 'persist', mtime }
- *     → error:  { data: defaults, source: 'defaults', error }
+ *     → { data, source: 'persist'|'defaults', mtime?, error? }
  *
- *   savePersist({ persistFile, data })
- *     → атомарная запись (temp + rename)
- *     → конкурентно-безопасная (promise-цепочка per file)
- *     → mkdir -p перед записью
+ *   savePersist({ persistFile, data, pretty })
+ *     → { ok, bytes, error? }
  *
  * ГАРАНТИИ:
  *   - Атомарная запись на Linux (fs.rename атомарна в рамках одной ФС).
@@ -29,16 +29,13 @@
  */
 
 import { promises as fs } from 'fs';
-import { join, dirname } from 'path';
+import { dirname } from 'path';
+import { wrapLegacy } from './basket-legacy.mjs';
 
 // ============================================================
 //  КОНКУРЕНТНО-БЕЗОПАСНАЯ ЗАПИСЬ
 // ============================================================
 
-/**
- * Promise-цепочка на файл: если два запроса одновременно пишут в один файл,
- * они выстраиваются в очередь. Последний выигрывает. Потери нет.
- */
 const writeChains = new Map();
 
 function withWriteChain(key, fn) {
@@ -53,17 +50,13 @@ function withWriteChain(key, fn) {
 // ============================================================
 
 /**
- * Чтение JSON-файла из корзины с fallback на встроенные данные.
- * Различает три семантики ошибок:
- *   ENOENT       → fallback (файла нет, это нормально до первого сбора)
- *   JSON parse   → corrupted (файл есть, но повреждён — вернуть fallback + error)
- *   EACCES/other → error (реальная проблема с правами/диском)
+ * Чтение JSON-файла из корзины с fallback и совместимостью v0/v1.
  *
  * @param {object} opts
  * @param {string} opts.basketFile      — абсолютный путь или относительно PROJECT_ROOT
  * @param {any}    opts.fallbackData    — данные, если файла нет
  * @param {string} [opts.hint]          — подсказка (например 'запустите collect-x.mjs')
- * @returns {Promise<{ data, source, hint?, error?, detail?, mtime? }>}
+ * @returns {Promise<{ data, legacy, source, hint?, error?, detail?, mtime? }>}
  */
 export async function loadWithFallback({ basketFile, fallbackData = null, hint = null }) {
   if (!basketFile) throw new Error('loadWithFallback: basketFile required');
@@ -73,12 +66,13 @@ export async function loadWithFallback({ basketFile, fallbackData = null, hint =
     raw = await fs.readFile(basketFile, 'utf8');
   } catch (e) {
     if (e.code === 'ENOENT') {
-      return { data: fallbackData, source: 'fallback', hint };
+      const wrappedFallback = wrapLegacy(fallbackData);
+      return { data: wrappedFallback, legacy: fallbackData, source: 'fallback', hint };
     }
     if (e.code === 'EACCES') {
-      return { data: null, source: 'error', error: 'PERMISSION_DENIED', detail: e.message };
+      return { data: null, legacy: null, source: 'error', error: 'PERMISSION_DENIED', detail: e.message };
     }
-    return { data: null, source: 'error', error: e.code || 'READ_ERROR', detail: e.message };
+    return { data: null, legacy: null, source: 'error', error: e.code || 'READ_ERROR', detail: e.message };
   }
 
   let st;
@@ -88,8 +82,10 @@ export async function loadWithFallback({ basketFile, fallbackData = null, hint =
   try {
     parsed = JSON.parse(raw);
   } catch (e) {
+    const wrappedFallback = wrapLegacy(fallbackData);
     return {
-      data: fallbackData,
+      data: wrappedFallback,
+      legacy: fallbackData,
       source: 'corrupted',
       error: 'CORRUPTED_JSON',
       detail: e.message,
@@ -97,9 +93,13 @@ export async function loadWithFallback({ basketFile, fallbackData = null, hint =
     };
   }
 
+  const isNativeV1 = parsed && typeof parsed === 'object' && parsed.schema === 'crucix.basket.v1';
+  const wrapped = isNativeV1 ? parsed : wrapLegacy(parsed);
+
   return {
-    data: parsed,
-    source: 'basket',
+    data: wrapped,
+    legacy: isNativeV1 ? null : parsed,
+    source: isNativeV1 ? 'basket-v1' : 'basket-legacy',
     mtime: st ? st.mtime.toISOString() : null,
   };
 }
@@ -152,7 +152,7 @@ export async function loadPersist({ persistFile, defaults = null }) {
 /**
  * Атомарная запись JSON в persist-файл.
  *   1. mkdir -p родительской папки.
- *   2. Запись в <file>.<random>.tmp.
+ *   2. Запись в <file>.<pid>.<ts>.tmp.
  *   3. fs.rename поверх целевого файла (атомарно на Linux).
  *   4. Конкурентность: promise-цепочка на файл — параллельные вызовы
  *      выстраиваются в очередь, не теряя данные.

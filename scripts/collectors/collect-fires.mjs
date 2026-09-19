@@ -10,7 +10,7 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const BASKET_PATH = join(__dirname, '..', 'data', 'basket', 'fires.json');
+const BASKET_PATH = join(__dirname, '..', '..', 'data', 'basket', 'fires.json');
 
 // Регионы с реальными координатами (центры пожароопасных зон)
 const REGIONS = [
@@ -87,7 +87,7 @@ async function collectFires() {
       }
     };
     
-    await fs.mkdir(join(__dirname, '..', 'data', 'basket'), { recursive: true });
+    await fs.mkdir(join(__dirname, '..', '..', 'data', 'basket'), { recursive: true });
     await fs.writeFile(BASKET_PATH, JSON.stringify(data, null, 2));
     console.log(`[FIRES] ✅ Сохранено ${features.length} записей в ${BASKET_PATH}`);
     console.log(`[FIRES] ✅ Первая запись:`, features[0].properties);

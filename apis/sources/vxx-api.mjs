@@ -2,71 +2,30 @@
  * apis/sources/vxx-api.mjs — API-МОДУЛЬ: VXX (ВОЛАТИЛЬНОСТЬ, VIX SHORT-TERM FUTURES)
  *
  * КОНТРАКТ CRUCIX v2 (Layer).
- * ИСТОЧНИК: data/basket/vxx.json — [{ date, value }] ИЛИ [{ date, close }] ИЛИ { data:[...] } ИЛИ { series:[...] }.
- * ДОПОЛНИТЕЛЬНО: data/basket/vix.json — [{ date, close, country, lat, lng }] для сравнения VXX vs VIX.
- * Сборщик: scripts/collectors/collect-vxx.mjs.
+ * ВЕРСИЯ 3.0.0 (19.09.2026). Переведён на basket-loader v2.0.0.
  *
- * VXX (iPath Series B S&P 500 VIX Short-Term Futures ETN) — биржевой инструмент,
- * отслеживающий краткосрочные фьючерсы на VIX. Растёт, когда растёт волатильность.
- * Теряет в цене на контанго (типичный decay ~5-10% в месяц).
+ * ИСТОЧНИКИ:
+ *   data/basket/vxx.json — v1 (series + meta) ИЛИ legacy (массив)
+ *   data/basket/vix.json — v1 (points) ИЛИ legacy (массив)
  *
- * Точка ряда:
- *   { date, value | close }
+ * VXX (iPath Series B S&P 500 VIX Short-Term Futures ETN) — биржевой инструмент.
+ * Теряет в цене на контанго (decay ~5-10% в месяц).
  *
- * Режимы волатильности:
- *   calm      (< 20)
- *   normal    (20-30)
- *   elevated  (30-45)
- *   stress    (45-60)
- *   panic     (> 60)
+ * Режимы: calm (<20), normal (20-30), elevated (30-45), stress (45-60), panic (>60).
  *
  * ФОРМАТЫ: json (FC + series + stats + regimes), csv, series, stats, raw, report.
  * ФИЛЬТРЫ: ?since=, ?until=, ?min_value=, ?max_value=, ?regime=, ?limit=, ?top=, ?sort=.
- *
- * СЛУЖЕБНЫЕ ПОДПУТИ:
- *   GET /                       — сводка (series + stats + regime + VIX-сравнение)
- *   GET /stats                  — агрегированная статистика
- *   GET /status                 — health-check
- *   GET /health                 — расширенный health
- *   GET /config                 — конфигурация (пороги режимов, цвета)
- *   GET /count                  — только числа
- *   GET /series                 — временной ряд
- *   GET /latest                 — последнее значение
- *   GET /recent?since=          — свежие точки
- *   GET /top?n=N                — топ по value
- *   GET /bottom?n=N             — антитоп по value
- *   GET /regimes                — группировка по режимам
- *   GET /current-regime         — текущий режим
- *   GET /calm                   — точки calm
- *   GET /stress                 — точки stress + panic
- *   GET /volatility             — волатильность самого VXX
- *   GET /decay                  — decay (roll-cost / contango effect)
- *   GET /contango               — индикатор контанго (VXX vs VIX)
- *   GET /backwardation          — индикатор бэквордации
- *   GET /vix-comparison         — сравнение VXX и VIX (side-by-side)
- *   GET /distribution           — распределение value по бакетам
- *   GET /timeline               — динамика по дням
- *   GET /trends                 — тренды (7 vs 7)
- *   GET /anomalies              — аномалии
- *   GET /signals                — торговые сигналы
- *   GET /compare?dates=a,b,c    — сравнение точек
- *   GET /filter-presets         — готовые фильтры
- *   GET /export                 — текстовый отчёт
- *   GET /reset-cache            — сброс кэша
- *   GET /featurecollection      — GeoJSON (VIX-точки из basket/vix.json)
- *   GET /render                 — рендер-конфиг
- *   GET /builtin                — встроенный fallback (25 точек)
  */
 
-import { promises as fs } from 'fs';
+import { loadWithFallback } from './lib/basket-loader.mjs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
 const PROJECT_ROOT = join(__dirname, '..', '..');
-const BASKET_FILE  = join(PROJECT_ROOT, 'data', 'basket', 'vxx.json');
-const VIX_FILE     = join(PROJECT_ROOT, 'data', 'basket', 'vix.json');
+const VXX_FILE = join(PROJECT_ROOT, 'data', 'basket', 'vxx.json');
+const VIX_FILE = join(PROJECT_ROOT, 'data', 'basket', 'vix.json');
 
 export const route  = '/api/layers/vxx';
 export const method = 'GET';
@@ -83,17 +42,13 @@ export const meta = {
   unit: 'points',
 };
 
-// ============================================================
-//  РЕЖИМЫ ВОЛАТИЛЬНОСТИ
-// ============================================================
-
 const REGIME_META = {
-  calm:     { min: 0,  max: 20,  color: '#22c55e', label: 'Спокойствие',     severity: 1, description: 'Низкая волатильность, риск-он' },
-  normal:   { min: 20, max: 30,  color: '#84cc16', label: 'Норма',           severity: 2, description: 'Обычный уровень' },
-  elevated: { min: 30, max: 45,  color: '#eab308', label: 'Повышенная',      severity: 3, description: 'Рост напряжения' },
-  stress:   { min: 45, max: 60,  color: '#f97316', label: 'Стресс',          severity: 4, description: 'Высокая волатильность' },
-  panic:    { min: 60, max: Infinity, color: '#dc2626', label: 'Паника',     severity: 5, description: 'Экстремальная волатильность' },
-  unknown:  { min: -1, max: -1,  color: '#64748b', label: 'Неизвестно',      severity: 0, description: 'Нет данных' },
+  calm:     { min: 0, max: 20,  color: '#22c55e', label: 'Спокойствие', severity: 1, description: 'Низкая волатильность, риск-он' },
+  normal:   { min: 20, max: 30,  color: '#84cc16', label: 'Норма',       severity: 2, description: 'Обычный уровень' },
+  elevated: { min: 30, max: 45,  color: '#eab308', label: 'Повышенная',  severity: 3, description: 'Рост напряжения' },
+  stress:   { min: 45, max: 60,  color: '#f97316', label: 'Стресс',      severity: 4, description: 'Высокая волатильность' },
+  panic:    { min: 60, max: Infinity, color: '#dc2626', label: 'Паника', severity: 5, description: 'Экстремальная волатильность' },
+  unknown:  { min: -1, max: -1,  color: '#64748b', label: 'Неизвестно',  severity: 0, description: 'Нет данных' },
 };
 
 function regimeOf(v) {
@@ -107,26 +62,22 @@ function regimeOf(v) {
 }
 
 const SIZE_BUCKETS = [
-  { min: 0,  max: 20, label: '< 20 (calm)',      color: '#22c55e' },
-  { min: 20, max: 30, label: '20-30 (normal)',   color: '#84cc16' },
+  { min: 0, max: 20, label: '< 20 (calm)', color: '#22c55e' },
+  { min: 20, max: 30, label: '20-30 (normal)', color: '#84cc16' },
   { min: 30, max: 45, label: '30-45 (elevated)', color: '#eab308' },
-  { min: 45, max: 60, label: '45-60 (stress)',   color: '#f97316' },
+  { min: 45, max: 60, label: '45-60 (stress)', color: '#f97316' },
   { min: 60, max: Infinity, label: '> 60 (panic)', color: '#dc2626' },
 ];
 
 const FILTER_PRESETS = [
-  { id: 'all',       label: 'Весь ряд',                params: {} },
-  { id: 'latest',    label: 'Последние 30',            params: { sort: 'date-desc', limit: 30 } },
-  { id: 'calm',      label: 'Спокойствие (< 20)',      params: { regime: 'calm' } },
-  { id: 'normal',    label: 'Норма (20-30)',           params: { regime: 'normal' } },
-  { id: 'stress',    label: 'Стресс (45-60)',          params: { regime: 'stress' } },
-  { id: 'panic',     label: 'Паника (> 60)',           params: { regime: 'panic' } },
-  { id: 'high',      label: 'Значение > 40',           params: { min_value: 40 } },
+  { id: 'all', label: 'Весь ряд', params: {} },
+  { id: 'latest', label: 'Последние 30', params: { sort: 'date-desc', limit: 30 } },
+  { id: 'calm', label: 'Спокойствие (< 20)', params: { regime: 'calm' } },
+  { id: 'normal', label: 'Норма (20-30)', params: { regime: 'normal' } },
+  { id: 'stress', label: 'Стресс (45-60)', params: { regime: 'stress' } },
+  { id: 'panic', label: 'Паника (> 60)', params: { regime: 'panic' } },
+  { id: 'high', label: 'Значение > 40', params: { min_value: 40 } },
 ];
-
-// ============================================================
-//  FALLBACK (25 точек)
-// ============================================================
 
 const BUILTIN_SERIES = [
   { date: '2026-07-22', value: 25.5 }, { date: '2026-07-23', value: 26.2 },
@@ -144,10 +95,6 @@ const BUILTIN_SERIES = [
   { date: '2026-08-15', value: 39.5 },
 ];
 
-// ============================================================
-//  IN-MEMORY КЭШ
-// ============================================================
-
 const _cache = new Map();
 const CACHE_TTL = 60_000;
 function cacheGet(key) {
@@ -159,55 +106,56 @@ function cacheGet(key) {
 function cachePut(key, value) { _cache.set(key, { value, expires: Date.now() + CACHE_TTL }); }
 function cacheClear() { _cache.clear(); return _cache.size; }
 
-// ============================================================
-//  ЗАГРУЗКА BASKET
-// ============================================================
+// Basket-loader интеграция: v1 → series+meta, legacy → массив
 
-async function loadData() {
-  let raw;
-  try { raw = await fs.readFile(BASKET_FILE, 'utf8'); }
-  catch (e) {
-    if (e.code === 'ENOENT') {
-      const err = new Error('no_data'); err.statusCode = 503;
-      err.hint = 'run scripts/collectors/collect-vxx.mjs';
-      throw err;
-    }
-    throw e;
+async function loadVxx() {
+  const loaded = await loadWithFallback({ basketFile: VXX_FILE, fallbackData: null, hint: 'run scripts/collectors/collect-vxx.mjs' });
+  if (loaded.source === 'error') {
+    const err = new Error(loaded.error || 'load error'); err.statusCode = 500; throw err;
   }
-  let parsed;
-  try { parsed = JSON.parse(raw); }
-  catch (e) { const err = new Error('invalid_json_in_basket: ' + e.message); err.statusCode = 500; throw err; }
-  return parsed;
+  if (loaded.source === 'fallback' || !loaded.data) {
+    const err = new Error('no_data'); err.statusCode = 503;
+    err.hint = 'run scripts/collectors/collect-vxx.mjs'; throw err;
+  }
+  if (loaded.source === 'basket-v1') {
+    const d = loaded.data;
+    const rows = (d.series || []).map(s => ({ date: s.date, value: s.value, region: s.region || null }));
+    const pts = (d.points || []).map(p => ({ date: p.timestamp ? String(p.timestamp).slice(0,10) : null, value: p.value, region: p.region || null }));
+    const merged = rows.length > 0 ? rows : pts;
+    return { rows: merged, source: d.meta?.source || null, meta: d.meta || null, format: 'v1' };
+  }
+  // legacy
+  const doc = loaded.data;
+  let arr = [];
+  if (Array.isArray(doc)) arr = doc;
+  else if (doc && Array.isArray(doc.data)) arr = doc.data;
+  else if (doc && Array.isArray(doc.series)) arr = doc.series;
+  else if (doc && Array.isArray(doc.items)) arr = doc.items;
+  return { rows: arr, source: doc?.source || null, meta: doc?.meta || null, format: 'legacy' };
 }
 
 async function loadVix() {
-  try {
-    const raw = await fs.readFile(VIX_FILE, 'utf8');
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed)) return parsed;
-    if (parsed && Array.isArray(parsed.data)) return parsed.data;
-    return [];
-  } catch (e) { return []; }
+  const loaded = await loadWithFallback({ basketFile: VIX_FILE, fallbackData: null, hint: null });
+  if (loaded.source === 'error' || loaded.source === 'fallback' || !loaded.data) return [];
+  if (loaded.source === 'basket-v1') {
+    const d = loaded.data;
+    return (d.points || []).map(p => ({
+      date: p.timestamp ? String(p.timestamp).slice(0,10) : null,
+      close: p.value,
+      country: p.region || null,
+      lat: p.lat, lng: p.lon,
+    }));
+  }
+  const doc = loaded.data;
+  if (Array.isArray(doc)) return doc;
+  if (doc && Array.isArray(doc.data)) return doc.data;
+  return [];
 }
-
-function extractSeries(doc) {
-  if (Array.isArray(doc)) return { series: doc, source: null, meta: null };
-  if (!doc || typeof doc !== 'object') return { series: [], source: null, meta: null };
-  if (Array.isArray(doc.data))   return { series: doc.data,   source: doc.source || null, meta: doc.meta || null };
-  if (Array.isArray(doc.series)) return { series: doc.series, source: doc.source || null, meta: doc.meta || null };
-  if (Array.isArray(doc.items))  return { series: doc.items,  source: doc.source || null, meta: doc.meta || null };
-  return { series: [], source: null, meta: null };
-}
-
-// ============================================================
-//  НОРМАЛИЗАЦИЯ
-// ============================================================
 
 function normalizePoint(p, i) {
   const date = String(p.date || p.timestamp || '').slice(0, 10) || null;
   const value = Number(p.value ?? p.close ?? p.v ?? p.price);
   const regime = regimeOf(value);
-
   return {
     date,
     value: Number.isFinite(value) ? Number(value.toFixed(2)) : null,
@@ -230,10 +178,6 @@ function normalizeVix(v, i) {
   };
 }
 
-// ============================================================
-//  ФИЛЬТРЫ
-// ============================================================
-
 function applyFilters(rows, query) {
   let r = rows.slice();
   if (query.regime) r = r.filter(x => x.regime === String(query.regime).toLowerCase());
@@ -241,21 +185,15 @@ function applyFilters(rows, query) {
   if (query.until)  r = r.filter(x => !x.date || x.date <= String(query.until).slice(0, 10));
   if (query.min_value != null) { const n = Number(query.min_value); if (Number.isFinite(n)) r = r.filter(x => x.value != null && x.value >= n); }
   if (query.max_value != null) { const n = Number(query.max_value); if (Number.isFinite(n)) r = r.filter(x => x.value != null && x.value <= n); }
-
   const sortKey = query.sort || 'date-asc';
   if (sortKey === 'date-asc')       r.sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
   else if (sortKey === 'date-desc') r.sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
   else if (sortKey === 'value-desc') r.sort((a, b) => (b.value ?? -1) - (a.value ?? -1));
   else if (sortKey === 'value-asc')  r.sort((a, b) => (a.value ?? 1e9) - (b.value ?? 1e9));
-
   if (query.top)   { const n = parseInt(query.top, 10);   if (n > 0) r = r.slice(0, n); }
   if (query.limit) { const n = parseInt(query.limit, 10); if (n > 0) r = r.slice(-n); }
   return r;
 }
-
-// ============================================================
-//  СТАТИСТИКА
-// ============================================================
 
 function computeStats(rows) {
   const byRegime = { calm: 0, normal: 0, elevated: 0, stress: 0, panic: 0, unknown: 0 };
@@ -266,7 +204,6 @@ function computeStats(rows) {
   }
   const dates = rows.map(r => r.date).filter(Boolean).sort();
   if (!values.length) return { count: rows.length, by_regime: byRegime };
-
   const sorted = [...values].sort((a, b) => a - b);
   const mean = values.reduce((a, b) => a + b, 0) / values.length;
   const median = sorted.length % 2 === 0
@@ -280,7 +217,6 @@ function computeStats(rows) {
     ? Number((last.value - first.value).toFixed(2)) : null;
   const changePct = (last && first && last.value != null && first.value !== 0)
     ? Number(((last.value - first.value) / first.value * 100).toFixed(2)) : null;
-
   return {
     count: rows.length,
     date_from: dates[0] || null,
@@ -348,8 +284,6 @@ function computeVolatility(rows) {
 }
 
 function computeDecay(rows) {
-  // Decay (roll cost) — насколько VXX потерял бы за период, если бы VIX-фьючерсы были в контанго.
-  // Приближение: если VXX падает при flat/rising VIX → decay.
   if (rows.length < 2) return null;
   const first = rows[0], last = rows[rows.length - 1];
   if (first.value == null || last.value == null) return null;
@@ -378,16 +312,9 @@ async function computeVixComparison(vxxRows) {
     vix: v.close,
     vxx: vxxByDate[v.date] ?? null,
   })).filter(p => p.vxx != null);
-
   if (!pairs.length) {
-    return {
-      pairs: 0,
-      note: 'VXX и VIX не пересекаются по датам',
-      vix_count: vixNorm.length,
-      vxx_count: vxxRows.length,
-    };
+    return { pairs: 0, note: 'VXX и VIX не пересекаются по датам', vix_count: vixNorm.length, vxx_count: vxxRows.length };
   }
-
   let contango = 0, backwardation = 0, neutral = 0;
   for (const p of pairs) {
     const ratio = p.vxx / p.vix;
@@ -416,8 +343,7 @@ function computeAnomalies(rows) {
   return rows
     .filter(r => r.value != null && Math.abs(r.value - mean) > threshold)
     .map(r => ({
-      date: r.date,
-      value: r.value,
+      date: r.date, value: r.value,
       z_score: Number(((r.value - mean) / (stddev || 1)).toFixed(2)),
       deviation: Number((r.value - mean).toFixed(2)),
       regime: r.regime,
@@ -438,24 +364,22 @@ function computeSignals(rows) {
     if (deltaPct > 3) signal = 'vol-rising';
     else if (deltaPct < -3) signal = 'vol-falling';
     signals.push({
-      date: cur.date,
-      from: prev.value,
-      to: cur.value,
+      date: cur.date, from: prev.value, to: cur.value,
       delta: Number(delta.toFixed(2)),
       delta_pct: Number(deltaPct.toFixed(2)),
-      signal,
-      regime: cur.regime,
+      signal, regime: cur.regime,
     });
     prev = cur;
   }
   return signals;
 }
 
-function toReport(rows, stats, comparison) {
+function toReport(rows, stats, comparison, format) {
   const lines = [];
   lines.push('='.repeat(60));
   lines.push('  VXX REPORT — VIX Short-Term Futures');
   lines.push(`  Generated: ${new Date().toISOString()}`);
+  lines.push(`  Basket format: ${format || 'unknown'}`);
   lines.push('='.repeat(60));
   lines.push('');
   lines.push(`Точек: ${stats.count}`);
@@ -482,10 +406,6 @@ function toReport(rows, stats, comparison) {
   return lines.join('\n');
 }
 
-// ============================================================
-//  ФОРМАТЫ
-// ============================================================
-
 function toFeatureCollection(vixRows) {
   const features = vixRows
     .filter(r => Number.isFinite(r.lat) && Number.isFinite(r.lng))
@@ -508,12 +428,7 @@ function toFeatureCollection(vixRows) {
 }
 
 function toSeries(rows) {
-  return rows.map(r => ({
-    date: r.date,
-    value: r.value,
-    regime: r.regime,
-    regimeLabel: r.regimeLabel,
-  }));
+  return rows.map(r => ({ date: r.date, value: r.value, regime: r.regime, regimeLabel: r.regimeLabel }));
 }
 
 function toCSV(rows) {
@@ -529,9 +444,7 @@ function toCSV(rows) {
 
 function toRenderConfig(rows) {
   const series = rows.map(r => ({ x: r.date, y: r.value })).filter(p => p.y != null);
-  const coloredPoints = rows.map(r => ({
-    x: r.date, y: r.value, color: r.regimeColor, regime: r.regime,
-  })).filter(p => p.y != null);
+  const coloredPoints = rows.map(r => ({ x: r.date, y: r.value, color: r.regimeColor, regime: r.regime })).filter(p => p.y != null);
   return {
     type: 'series',
     series: [{ name: 'VXX', color: '#ff44aa', data: series }],
@@ -559,10 +472,6 @@ function sendText(res, status, text, ct = 'text/plain; charset=utf-8') {
   res.end(text);
 }
 
-// ============================================================
-//  HANDLER
-// ============================================================
-
 export async function handler(req, res) {
   try {
     const urlObj = new URL(req.url, 'http://x');
@@ -572,12 +481,10 @@ export async function handler(req, res) {
 
     const extra = {
       'X-Module': 'vxx-api',
-      'X-Module-Version': '2.0.0',
+      'X-Module-Version': '3.0.0',
       'Cache-Control': `public, max-age=${meta.cache}`,
       'Access-Control-Allow-Origin': '*',
     };
-
-    // ---- Не-basket эндпоинты ----
 
     if (sub === '/builtin') {
       const rows = BUILTIN_SERIES.map(normalizePoint);
@@ -605,64 +512,45 @@ export async function handler(req, res) {
       return sendJSON(res, 200, { presets: FILTER_PRESETS, count: FILTER_PRESETS.length }, extra);
     }
 
-    // ---- Basket-зависимые ----
-
-    let doc;
-    try { doc = await loadData(); }
+    let loadedVxx;
+    try { loadedVxx = await loadVxx(); }
     catch (e) {
       if (e.statusCode === 503 && (sub === '/health' || sub === '/status')) {
-        return sendJSON(res, 200, {
-          status: 'degraded', basket_available: false, hint: e.hint,
-          generated_at: new Date().toISOString(),
-        }, extra);
+        return sendJSON(res, 200, { status: 'degraded', basket_available: false, hint: e.hint, generated_at: new Date().toISOString() }, extra);
       }
       throw e;
     }
 
-    const { series: rawArr, source, meta: srcMeta } = extractSeries(doc);
+    const { rows: rawArr, source, meta: srcMeta, format: basketFormat } = loadedVxx;
     const all = rawArr.map(normalizePoint);
 
     if (sub === '/health') {
       return sendJSON(res, 200, {
-        status: 'online',
-        basket_available: true,
-        points: all.length,
-        cache_size: _cache.size,
-        generated_at: new Date().toISOString(),
+        status: 'online', basket_available: true, basket_format: basketFormat,
+        points: all.length, cache_size: _cache.size, generated_at: new Date().toISOString(),
       }, extra);
     }
 
     if (sub === '/count') {
       const stats = computeStats(all);
-      return sendJSON(res, 200, {
-        total: stats.count,
-        date_from: stats.date_from,
-        date_to: stats.date_to,
-        by_regime: stats.by_regime,
-      }, extra);
+      return sendJSON(res, 200, { total: stats.count, date_from: stats.date_from, date_to: stats.date_to, by_regime: stats.by_regime }, extra);
     }
 
     if (sub === '/stats' || format === 'stats') {
-      return sendJSON(res, 200, { stats: computeStats(all), source, src_meta: srcMeta }, extra);
+      return sendJSON(res, 200, { stats: computeStats(all), source, src_meta: srcMeta, basket_format: basketFormat }, extra);
     }
     if (sub === '/status') {
       const st = computeStats(all);
       return sendJSON(res, 200, {
-        status: 'online',
-        points: all.length,
-        last_value: st.last_value,
-        last_regime: st.last_regime,
-        source, generated_at: new Date().toISOString(),
+        status: 'online', points: all.length, last_value: st.last_value, last_regime: st.last_regime,
+        source, basket_format: basketFormat, generated_at: new Date().toISOString(),
       }, extra);
     }
     if (sub === '/series') {
       const rows = applyFilters(all, query);
       return sendJSON(res, 200, { series: toSeries(rows), count: rows.length, total: all.length }, extra);
     }
-    if (sub === '/latest') {
-      const last = all.slice(-1)[0] || null;
-      return sendJSON(res, 200, { latest: last }, extra);
-    }
+    if (sub === '/latest') return sendJSON(res, 200, { latest: all.slice(-1)[0] || null }, extra);
     if (sub === '/recent') {
       const since = query.since || new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
       const rows = all.filter(r => r.date && r.date >= since.slice(0, 10));
@@ -691,13 +579,7 @@ export async function handler(req, res) {
       const last = all.slice(-1)[0];
       if (!last) return sendJSON(res, 200, { current: null }, extra);
       return sendJSON(res, 200, {
-        current: {
-          date: last.date,
-          value: last.value,
-          regime: last.regime,
-          regimeLabel: last.regimeLabel,
-          regimeColor: last.regimeColor,
-        },
+        current: { date: last.date, value: last.value, regime: last.regime, regimeLabel: last.regimeLabel, regimeColor: last.regimeColor },
       }, extra);
     }
     if (sub === '/calm') {
@@ -708,14 +590,8 @@ export async function handler(req, res) {
       const rows = all.filter(r => r.regime === 'stress' || r.regime === 'panic');
       return sendJSON(res, 200, { stress: rows, count: rows.length }, extra);
     }
-    if (sub === '/volatility') {
-      const vol = computeVolatility(all);
-      return sendJSON(res, 200, { volatility: vol }, extra);
-    }
-    if (sub === '/decay') {
-      const decay = computeDecay(all);
-      return sendJSON(res, 200, { decay }, extra);
-    }
+    if (sub === '/volatility') return sendJSON(res, 200, { volatility: computeVolatility(all) }, extra);
+    if (sub === '/decay') return sendJSON(res, 200, { decay: computeDecay(all) }, extra);
     if (sub === '/contango' || sub === '/backwardation' || sub === '/vix-comparison') {
       const cached = cacheGet('vix-comparison');
       let comparison = cached;
@@ -727,17 +603,12 @@ export async function handler(req, res) {
       if (sub === '/backwardation') return sendJSON(res, 200, { verdict: comparison?.verdict || 'unknown', backwardation_count: comparison?.backwardation_count ?? 0, comparison }, extra);
       return sendJSON(res, 200, { comparison }, extra);
     }
-    if (sub === '/distribution') {
-      const distribution = computeDistribution(all);
-      return sendJSON(res, 200, { distribution }, extra);
-    }
+    if (sub === '/distribution') return sendJSON(res, 200, { distribution: computeDistribution(all) }, extra);
     if (sub === '/timeline') {
       const timeline = all.map(r => ({ date: r.date, value: r.value, regime: r.regime }));
       return sendJSON(res, 200, { timeline, days: timeline.length }, extra);
     }
-    if (sub === '/trends') {
-      return sendJSON(res, 200, { trends: computeTrends(all) }, extra);
-    }
+    if (sub === '/trends') return sendJSON(res, 200, { trends: computeTrends(all) }, extra);
     if (sub === '/anomalies') {
       const anomalies = computeAnomalies(all);
       return sendJSON(res, 200, { anomalies, count: anomalies.length }, extra);
@@ -754,8 +625,7 @@ export async function handler(req, res) {
     if (sub === '/export' || format === 'report') {
       const stats = computeStats(all);
       const comparison = await computeVixComparison(all);
-      const report = toReport(all, stats, comparison);
-      return sendText(res, 200, report, 'text/plain; charset=utf-8');
+      return sendText(res, 200, toReport(all, stats, comparison, basketFormat), 'text/plain; charset=utf-8');
     }
     if (sub === '/reset-cache') {
       const before = _cache.size;
@@ -772,7 +642,6 @@ export async function handler(req, res) {
     }
 
     const rows = applyFilters(all, query);
-
     if (format === 'csv')    return sendText(res, 200, toCSV(rows), 'text/csv; charset=utf-8');
     if (format === 'series') return sendJSON(res, 200, { series: toSeries(rows), meta: { count: rows.length } }, extra);
     if (format === 'raw')    return sendJSON(res, 200, { data: rows, source, src_meta: srcMeta }, extra);
@@ -786,7 +655,7 @@ export async function handler(req, res) {
       meta: {
         source: meta.source, category: meta.category, unit: meta.unit,
         total_points: all.length, returned_points: rows.length,
-        upstream_source: source, upstream_meta: srcMeta,
+        upstream_source: source, upstream_meta: srcMeta, basket_format: basketFormat,
         generated_at: new Date().toISOString(),
       },
       series: toSeries(rows),
@@ -796,10 +665,8 @@ export async function handler(req, res) {
       decay: computeDecay(rows),
       vix_comparison: comparison,
       current_regime: stats.last_value != null ? {
-        regime: stats.last_regime,
-        regimeLabel: stats.last_regimeLabel,
-        value: stats.last_value,
-        date: stats.last_date,
+        regime: stats.last_regime, regimeLabel: stats.last_regimeLabel,
+        value: stats.last_value, date: stats.last_date,
       } : null,
     }, extra);
 

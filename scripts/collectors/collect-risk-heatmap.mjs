@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 import { promises as fs } from 'fs';
 import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';;
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const BASKET_PATH = join(__dirname, '..', 'data', 'basket', 'risk-heatmap.json');
+const BASKET_PATH = join(__dirname, '..', '..', 'data', 'basket', 'risk-heatmap.json');
 
 const RISK_DATA = [
   { lat: 48.3794, lng: 31.1656, intensity: 0.9, region: "Украина" },
@@ -21,10 +21,10 @@ const RISK_DATA = [
 async function collectRiskHeatmap() {
   const now = new Date().toISOString();
   const data = RISK_DATA.map(r => ({ ...r, collected: now }));
-  await fs.mkdir(join(__dirname, '..', 'data', 'basket'), { recursive: true });
+  await fs.mkdir(join(__dirname, '..', '..', 'data', 'basket'), { recursive: true });
   await fs.writeFile(BASKET_PATH, JSON.stringify(data, null, 2));
   console.log(`[RISK-HEATMAP] ✅ ${data.length} точек риска`);
   return data;
 }
-if (import.meta.url === `file://${process.argv[1]}`) { collectRiskHeatmap().catch(console.error); }
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) { collectRiskHeatmap().catch(console.error); }
 export { collectRiskHeatmap };

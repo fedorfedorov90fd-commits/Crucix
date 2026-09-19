@@ -1,92 +1,94 @@
-# ============================================================
-# Crucix .gitignore — публикация публичной части
-# data/, core/, server/, endpoint-finder/ — ОФИЦИАЛЬНЫЕ, публикуются
-# ============================================================
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
 
-# --- Приватные папки (НИКОГДА в Git) ---
-PROJECT/
-AI_MEMORY/
+# Временные файлы
+*.tmp
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Бэкапы (лично хозяина)
+backups/
+
+# Persist-данные графа (не коммитим)
+data/persist/*.json
+
+# Логи (не коммитим)
+logs/**/*.log
+
+# Персональные копии (правило 42)
+**/[А-Яа-яЁё]*.mjs
+**/*(копия)*
+**/*(copy)*
+**/*=*
+**/*.bak
+**/*.old
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.pytest_cache/
+
+# Прочее
+.cache/
+dist/
+build/
+
+# ==== ЗАЩИТА ОТ ПРИВАТНОГО (обновлено 19.09.2026) ====
+# ВАЖНО: data/ теперь ПУБЛИЧНАЯ, её НЕ игнорируем!
+
+# Приватные папки
 logs/
-LOGS/
 backups/
 reports/
 snapshots/
 snapshots_full/
 runs/
-test/
-DATA/
-CODE/
-Тексты/
-Чат/
-Корзина/
-Резервные копии/
-1opml/
-RSS_lenta/
+PROJECT/
+AI_MEMORY/
 node_modules/
-venv/
-__pycache__/
 
-# --- Персональные копии (правило #42) ---
-*[А-Яа-яЁё]*
-* (копия)*
-* (другая копия)*
-* (3-я копия)*
-*_копия*
-*=*
-*/=*
-1server.mjs
-новый файл
-новый_файл
-как надо делать.txt
+# Но внутри data/ эти подпапки — служебные:
+data/feeds/*.backup*
+data/feeds/*.opml.backup*
+data/**/*.zip
+data/**/*.tar.gz
 
-# --- Бэкапы (любые формы) ---
+# Архивы и бэкапы (везде)
+*.tar.gz
+*.zip
+*.7z
 *.bak
-*.bak.*
+*.bak2
 *.bak_*
-*.bak-*
+*.bak.*
 *.backup
-*.backup.*
+*.backup_*
+*.backup-*
 *.old
-*.old.*
+*.orig
 *.tmp
 *.swp
 *.swo
 *~
-.gitignore.backup_before_strengthen
+*_backup_*
+*копия*
+*(копия)*
 
-# --- Архивы ---
-*.tar.gz
-*.zip
-*.7z
-*.rar
-
-# --- Секреты ---
+# Логи и секреты
+*.log
 .env
-.env.*
+.env.local
+.env.*.local
 !.env.example
 
-# --- Логи ---
-*.log
-npm-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# --- Python ---
-*.py[cod]
-.pytest_cache/
-
-# --- Прочее ---
-.DS_Store
-.cache/
-dist/
-build/
-
-# --- Persist (приватные данные внутри data/) ---
-data/persist/*.json
-
-# --- Расширенное покрытие backup-файлов с датами ---
-*.backup-*
-*.backup_*
-*.backup.*
-*.backup-2026-*
-*.backup_2026-*
+# Черновики
+новый_файл*
+новый файл*
+как использовать*
+Чат.txt

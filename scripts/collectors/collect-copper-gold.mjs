@@ -1,61 +1,51 @@
 #!/usr/bin/env node
-// ============================================================
-// COLLECT-COPPER-GOLD.MJS — Сборщик индекса Медь/Золото
-// ============================================================
+/**
+ * Crucix Collector: copper-gold.
+ * Версия 2.0.0. Принят 19.09.2026.
+ *
+ * Демо-данные индекса Медь/Золото. Тип — timeseries.
+ * Формат: [{date, value: ratio, copper, gold}].
+ */
 
-import { promises as fs } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const BASKET_DIR = join(__dirname, '..', 'data', 'basket');
-const BASKET_PATH = join(BASKET_DIR, 'copper-gold.json');
-
-async function loadExisting() {
-    try {
-        const data = await fs.readFile(BASKET_PATH, 'utf8');
-        return JSON.parse(data);
-    } catch { return []; }
-}
+import { saveRaw } from './lib/collector-helper.mjs';
+import { pathToFileURL } from 'url';
 
 function generateData() {
-    const now = new Date();
-    const data = [];
-    for (let i = 30; i >= 0; i--) {
-        const date = new Date(now);
-        date.setDate(date.getDate() - i);
-        const base = 12 + (i / 30) * 3 + (Math.random() - 0.5) * 1.5;
-        data.push({
-            date: date.toISOString().split('T')[0],
-            copper: Math.round((420 + i * 1.5 + (Math.random() - 0.5) * 10) * 100) / 100,
-            gold: Math.round((1900 + i * 2 + (Math.random() - 0.5) * 15) * 100) / 100,
-            ratio: Math.round(base * 100) / 100
-        });
-    }
-    return data;
+  const now = new Date();
+  const data = [];
+  for (let i = 30; i >= 0; i--) {
+    const date = new Date(now);
+    date.setDate(date.getDate() - i);
+    const base = 12 + (i / 30) * 3 + (Math.random() - 0.5) * 1.5;
+    data.push({
+      date: date.toISOString().slice(0, 10),
+      value: Math.round(base * 100) / 100,
+      copper: Math.round((420 + i * 1.5 + (Math.random() - 0.5) * 10) * 100) / 100,
+      gold: Math.round((1900 + i * 2 + (Math.random() - 0.5) * 15) * 100) / 100
+    });
+  }
+  return data;
 }
 
-async function saveToBasket(data) {
-    try {
-        await fs.mkdir(BASKET_DIR, { recursive: true });
-        await fs.writeFile(BASKET_PATH, JSON.stringify(data, null, 2), 'utf8');
-        console.log(`[COPPER-GOLD] ✅ Сохранено ${data.length} записей`);
-        return true;
-    } catch (error) {
-        console.error(`[COPPER-GOLD] ❌ Ошибка:`, error.message);
-        return false;
-    }
+export async function collectCopperGold() {
+  const data = generateData();
+  const result = await saveRaw('copper-gold', data, {
+    collector: 'collect-copper-gold.mjs',
+    source: 'Crucix copper-gold (demo)',
+    source_url: 'local://demo',
+    license: 'proprietary',
+    format_hint: 'timeseries',
+    value_unit: 'ratio',
+    value_scale: 'copper_usd_per_gold_usd',
+    granularity: 'daily',
+    record_count: data.length,
+    notes: 'Демо-данные',
+    backwardCompat: true
+  });
+  console.log(`[COPPER-GOLD] OK ${data.length} записей → ${result.raw_file}`);
+  return data;
 }
 
-async function collectCopperGold() {
-    console.log('[COPPER-GOLD] 📡 Начинаем сбор...');
-    const data = generateData();
-    await saveToBasket(data);
-    return data;
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  collectCopperGold().catch((e) => { console.error('[COPPER-GOLD] FATAL:', e.message); process.exit(1); });
 }
-
-if (import.meta.url === `file://${process.argv[1]}`) {
-    collectCopperGold().catch(console.error);
-}
-
-export { collectCopperGold, generateData };

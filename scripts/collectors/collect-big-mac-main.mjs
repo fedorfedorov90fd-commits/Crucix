@@ -9,7 +9,7 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const BASKET_PATH = join(__dirname, '..', 'data', 'basket', 'big-mac-main.json');
+const BASKET_PATH = join(__dirname, '..', '..', 'data', 'basket', 'big-mac-main.json');
 
 // Реальные данные по Биг-Маку (The Economist)
 const BIG_MAC_DATA = [
@@ -47,7 +47,7 @@ async function main() {
     price: item.price,
     date: now.toISOString().slice(0, 10)
   }));
-  await fs.mkdir(join(__dirname, '..', 'data', 'basket'), { recursive: true });
+  await fs.mkdir(join(__dirname, '..', '..', 'data', 'basket'), { recursive: true });
   await fs.writeFile(BASKET_PATH, JSON.stringify(data, null, 2));
   console.log(`✅ Сохранено ${data.length} записей в ${BASKET_PATH}`);
 }

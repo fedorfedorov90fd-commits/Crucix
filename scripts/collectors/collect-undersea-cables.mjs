@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 import { promises as fs } from 'fs';
 import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';;
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const BASKET_PATH = join(__dirname, '..', 'data', 'basket', 'undersea-cables.json');
+const BASKET_PATH = join(__dirname, '..', '..', 'data', 'basket', 'undersea-cables.json');
 
 const CABLE_DATA = [
   { name: "MAREA", lat1: 36.5, lng1: -76.0, lat2: 40.5, lng2: -9.0, countries: "США-Испания", length: 6600 },
@@ -18,10 +18,10 @@ const CABLE_DATA = [
 async function collectUnderseaCables() {
   const now = new Date().toISOString();
   const data = CABLE_DATA.map(c => ({ ...c, collected: now }));
-  await fs.mkdir(join(__dirname, '..', 'data', 'basket'), { recursive: true });
+  await fs.mkdir(join(__dirname, '..', '..', 'data', 'basket'), { recursive: true });
   await fs.writeFile(BASKET_PATH, JSON.stringify(data, null, 2));
   console.log(`[UNDERSEA-CABLES] ✅ ${data.length} кабелей`);
   return data;
 }
-if (import.meta.url === `file://${process.argv[1]}`) { collectUnderseaCables().catch(console.error); }
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) { collectUnderseaCables().catch(console.error); }
 export { collectUnderseaCables };

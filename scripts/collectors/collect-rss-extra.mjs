@@ -6,7 +6,7 @@
 
 import { promises as fs } from 'fs';
 import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -57,5 +57,5 @@ async function collectRSSExtra() {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) collectRSSExtra().catch(() => process.exit(1));
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) collectRSSExtra().catch(() => process.exit(1));
 export { collectRSSExtra };

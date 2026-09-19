@@ -1,15 +1,21 @@
 #!/usr/bin/env node
+/**
+ * Crucix Collector: military-bases.
+ * Версия 2.0.0. Принят 18.09.2026.
+ *
+ * Роль: сохраняет справочник военных баз (60+ объектов с координатами).
+ * Сборщик НЕ пишет в basket напрямую — только raw + накладная.
+ *
+ * Формат данных: [{name, country, lat, lng, type}]. Тип — points
+ * (есть координаты, нет дат → granularity snapshot).
+ *
+ * Источник: открытые данные (встроенный справочник).
+ */
 
-// ============================================================
-// COLLECT-MILITARY-BASES.MJS — Сбор данных о военных базах
-// Источник: Встроенная база координат (открытые данные)
-// ============================================================
-
-import fs from 'fs/promises';
-import path from 'path';
+import { saveRaw } from './lib/collector-helper.mjs';
+import { pathToFileURL } from 'url';
 
 const BASES = [
-  // США
   { name: 'Пентагон', country: 'США', lat: 38.8719, lng: -77.0563, type: 'штаб' },
   { name: 'Форт-Ливенворт', country: 'США', lat: 39.3553, lng: -94.9286, type: 'армейская база' },
   { name: 'Форт-Брэгг', country: 'США', lat: 35.1390, lng: -79.0060, type: 'армейская база' },
@@ -30,8 +36,6 @@ const BASES = [
   { name: 'Авиабаза Неллис', country: 'США', lat: 36.2358, lng: -115.0342, type: 'авиабаза' },
   { name: 'Авиабаза Эдвардс', country: 'США', lat: 34.9050, lng: -117.8840, type: 'авиабаза' },
   { name: 'Авиабаза Рамштайн', country: 'Германия', lat: 49.4362, lng: 7.6003, type: 'авиабаза' },
-  
-  // Россия
   { name: 'Кремль (Москва)', country: 'Россия', lat: 55.7517, lng: 37.6178, type: 'штаб' },
   { name: 'Минобороны РФ', country: 'Россия', lat: 55.7520, lng: 37.6140, type: 'штаб' },
   { name: 'Генштаб ВС РФ', country: 'Россия', lat: 55.7560, lng: 37.6080, type: 'штаб' },
@@ -42,50 +46,30 @@ const BASES = [
   { name: 'Военная база Хабаровск', country: 'Россия', lat: 48.4800, lng: 135.0800, type: 'военная база' },
   { name: 'Военная база Новосибирск', country: 'Россия', lat: 55.0300, lng: 82.9300, type: 'военная база' },
   { name: 'Военная база Екатеринбург', country: 'Россия', lat: 56.8300, lng: 60.6000, type: 'военная база' },
-  
-  // Китай
   { name: 'Центральный военный совет', country: 'Китай', lat: 39.9042, lng: 116.4074, type: 'штаб' },
   { name: 'Военная база Пекин', country: 'Китай', lat: 39.9042, lng: 116.4074, type: 'штаб' },
   { name: 'Военная база Шанхай', country: 'Китай', lat: 31.2304, lng: 121.4737, type: 'военно-морская' },
   { name: 'Военная база Гонконг', country: 'Китай', lat: 22.3193, lng: 114.1694, type: 'военная база' },
   { name: 'Военная база Тайвань', country: 'Китай', lat: 25.0330, lng: 121.5654, type: 'военная база' },
-  
-  // Великобритания
   { name: 'Минобороны Великобритании', country: 'Великобритания', lat: 51.5055, lng: -0.1290, type: 'штаб' },
   { name: 'Военная база Портсмут', country: 'Великобритания', lat: 50.8000, lng: -1.0833, type: 'военно-морская' },
   { name: 'Военная база Плимут', country: 'Великобритания', lat: 50.3700, lng: -4.1420, type: 'военно-морская' },
-  
-  // Франция
   { name: 'Минобороны Франции', country: 'Франция', lat: 48.8566, lng: 2.3522, type: 'штаб' },
   { name: 'Военная база Брест', country: 'Франция', lat: 48.3900, lng: -4.4860, type: 'военно-морская' },
   { name: 'Военная база Тулон', country: 'Франция', lat: 43.1300, lng: 5.9300, type: 'военно-морская' },
-  
-  // Германия
   { name: 'Минобороны Германии', country: 'Германия', lat: 52.5200, lng: 13.4050, type: 'штаб' },
-  
-  // Израиль
   { name: 'Минобороны Израиля', country: 'Израиль', lat: 32.0853, lng: 34.7818, type: 'штаб' },
   { name: 'Военная база Тель-Авив', country: 'Израиль', lat: 32.0853, lng: 34.7818, type: 'военная база' },
   { name: 'Военная база Хайфа', country: 'Израиль', lat: 32.8100, lng: 34.9900, type: 'военно-морская' },
-  
-  // Турция
   { name: 'Военная база Инджирлик', country: 'Турция', lat: 37.0020, lng: 35.4250, type: 'авиабаза' },
   { name: 'Военная база Анкара', country: 'Турция', lat: 39.9334, lng: 32.8597, type: 'штаб' },
-  
-  // Япония
   { name: 'Военная база Йокосука', country: 'Япония', lat: 35.2910, lng: 139.6570, type: 'военно-морская' },
   { name: 'Военная база Окинава', country: 'Япония', lat: 26.3340, lng: 127.8050, type: 'военная база' },
   { name: 'Военная база Сасебо', country: 'Япония', lat: 33.1630, lng: 129.7160, type: 'военно-морская' },
-  
-  // Южная Корея
   { name: 'Военная база Йонсан', country: 'Южная Корея', lat: 37.5400, lng: 126.9800, type: 'военная база' },
   { name: 'Военная база Пусан', country: 'Южная Корея', lat: 35.1796, lng: 129.0756, type: 'военно-морская' },
-  
-  // Индия
   { name: 'Военная база Мумбаи', country: 'Индия', lat: 18.9400, lng: 72.8400, type: 'военно-морская' },
   { name: 'Военная база Дели', country: 'Индия', lat: 28.6139, lng: 77.2090, type: 'штаб' },
-  
-  // Другие страны
   { name: 'Военная база Палмдейл', country: 'ЮАР', lat: -33.9249, lng: 18.4241, type: 'авиабаза' },
   { name: 'Военная база Бразилиа', country: 'Бразилия', lat: -15.7939, lng: -47.8828, type: 'штаб' },
   { name: 'Военная база Буэнос-Айрес', country: 'Аргентина', lat: -34.6037, lng: -58.3816, type: 'штаб' },
@@ -95,40 +79,24 @@ const BASES = [
   { name: 'Военная база Исламабад', country: 'Пакистан', lat: 33.6844, lng: 73.0479, type: 'штаб' }
 ];
 
-async function main() {
-    console.log('\n🏛️ СБОР ДАННЫХ О ВОЕННЫХ БАЗАХ\n');
-    
-    const outputPath = path.join(process.cwd(), 'data', 'basket', 'military-bases.json');
-    
-    const data = {
-        success: true,
-        data: {
-            features: BASES.map(base => ({
-                type: 'Feature',
-                geometry: {
-                    type: 'Point',
-                    coordinates: [base.lng, base.lat]
-                },
-                properties: {
-                    name: base.name,
-                    country: base.country,
-                    type: base.type,
-                    severity: 'medium'
-                }
-            }))
-        },
-        metadata: {
-            total: BASES.length,
-            updated: new Date().toISOString(),
-            source: 'Open source military bases database'
-        }
-    };
-    
-    await fs.mkdir(path.dirname(outputPath), { recursive: true });
-    await fs.writeFile(outputPath, JSON.stringify(data, null, 2));
-    
-    console.log(`✅ Сохранено ${BASES.length} военных баз в ${outputPath}`);
-    console.log(`📊 Стран: ${[...new Set(BASES.map(b => b.country))].length}`);
+export async function collectMilitaryBases() {
+  const result = await saveRaw('military-bases', BASES, {
+    collector: 'collect-military-bases.mjs',
+    source: 'Open source military bases database',
+    source_url: 'local://military-bases',
+    license: 'public-domain',
+    format_hint: 'points',
+    value_unit: 'count',
+    granularity: 'snapshot',
+    record_count: BASES.length,
+    notes: 'Встроенный справочник военных баз',
+    backwardCompat: true
+  });
+  console.log(`[Military Bases] OK ${BASES.length} баз → ${result.raw_file}`);
+  console.log(`[Military Bases] Накладная: ${result.incoming_file}`);
+  return BASES;
 }
 
-main().catch(console.error);
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  collectMilitaryBases().catch((e) => { console.error('[Military Bases] FATAL:', e.message); process.exit(1); });
+}

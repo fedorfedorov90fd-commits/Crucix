@@ -1,24 +1,28 @@
+#!/usr/bin/env node
 /**
- * collect-map-layer-vix.mjs
- * Сборщик данных для слоя VIX
+ * Crucix Collector: map-layer-vix (обогащение VIX координатами).
+ * Версия 2.0.0. Принят 18.09.2026.
  *
- * Читает существующие данные VIX и обогащает их гео-координатами
- * Сохраняет в data/basket/map-layer-vix.json
+ * ВНИМАНИЕ: это не классический сборщик внешнего источника.
+ * Он обогащает уже собранные VIX-данные (из data/basket/vix.json,
+ * vxx.json, sp500-vix.json) координатами и сдаёт через saveRaw.
+ *
+ * Логически это ближе к API-модулю, но живёт в collect/ для совместимости.
+ * После перевода базовых VIX-сборщиков может быть перенесён в apis/sources/.
+ *
+ * Формат данных: плоский массив [{value, timestamp, region, lat, lng, change, volume, source}].
+ * Тип — points (есть координаты).
  */
 
-import { readFile, writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import { readFile } from 'fs/promises';
+import { join, dirname } from 'path';
+import { fileURLToPath, pathToFileURL } from 'url';
+import { saveRaw } from './lib/collector-helper.mjs';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
+const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = join(__dirname, '../..');
 const BASKET_DIR = join(PROJECT_ROOT, 'data/basket');
-const OUTPUT_FILE = join(BASKET_DIR, 'map-layer-vix.json');
 
-// Координаты для регионов
 const REGION_COORDS = {
   'US': { lat: 39.8283, lng: -98.5795 },
   'EU': { lat: 50.8503, lng: 4.3517 },
@@ -35,153 +39,90 @@ const REGION_COORDS = {
   'GLOBAL': { lat: 20.0, lng: 0.0 }
 };
 
-// Источники VIX
 const VIX_SOURCES = [
   { name: 'VIX', file: 'vix.json' },
   { name: 'VXX', file: 'vxx.json' },
   { name: 'SP500_VIX', file: 'sp500-vix.json' }
 ];
 
-async function main() {
-  console.log('📊 [map-layer-vix] Сбор данных для слоя VIX...');
-  const startTime = Date.now();
-
-  try {
-    // Создаём папку если нет
-    await mkdir(BASKET_DIR, { recursive: true });
-
-    const allData = [];
-    const sources = [];
-
-    // Собираем данные из всех источников
-    for (const source of VIX_SOURCES) {
-      try {
-        const filePath = join(BASKET_DIR, source.file);
-        const content = await readFile(filePath, 'utf-8');
-        const data = JSON.parse(content);
-
-        if (Array.isArray(data) && data.length > 0) {
-          // Определяем регион для каждого элемента
-          const enriched = data.map((record, index) => {
-            const region = record.region || record.regionCode || 'GLOBAL';
-            const coords = REGION_COORDS[region] || REGION_COORDS['GLOBAL'];
-
-            // Добавляем небольшую случайность для распределения
-            const latOffset = (Math.random() - 0.5) * 5;
-            const lngOffset = (Math.random() - 0.5) * 5;
-
-            return {
-              ...record,
-              _source: source.name,
-              _enriched: true,
-              lat: coords.lat + latOffset,
-              lng: coords.lng + lngOffset,
-              region: region,
-              value: record.value || record.close || record.price || 0,
-              timestamp: record.timestamp || record.date || new Date().toISOString()
-            };
-          });
-
-          allData.push(...enriched);
-          sources.push({ source: source.name, count: enriched.length });
-          console.log(`  ✅ ${source.name}: ${enriched.length} записей`);
-        } else {
-          console.log(`  ⚠️ ${source.name}: данные пустые или нет файла`);
-        }
-      } catch (err) {
-        console.log(`  ⚠️ ${source.name}: не удалось прочитать — ${err.message}`);
-      }
-    }
-
-    // Если данных нет — создаём демо
-    if (allData.length === 0) {
-      console.log('  📦 Создаю демо-данные...');
-      const demo = generateDemoData();
-      allData.push(...demo);
-    }
-
-    // Сортируем по времени
-    allData.sort((a, b) => {
-      const tA = new Date(a.timestamp).getTime();
-      const tB = new Date(b.timestamp).getTime();
-      return tA - tB;
-    });
-
-    // Сохраняем результат
-    const output = {
-      type: 'FeatureCollection',
-      features: allData.map(record => ({
-        type: 'Feature',
-        geometry: {
-          type: 'Point',
-          coordinates: [record.lng, record.lat]
-        },
-        properties: {
-          value: record.value,
-          timestamp: record.timestamp,
-          label: `VIX: ${record.value}`,
-          region: record.region || 'GLOBAL',
-          change: record.change || 0,
-          volume: record.volume || 0,
-          source: record._source || 'unknown',
-          _original: record
-        }
-      })),
-      metadata: {
-        sources,
-        total: allData.length,
-        timestamp: new Date().toISOString(),
-        layer: 'map-layer-vix',
-        generator: 'collect-map-layer-vix'
-      }
-    };
-
-    await writeFile(OUTPUT_FILE, JSON.stringify(output, null, 2), 'utf-8');
-
-    console.log(`✅ [map-layer-vix] Сохранено ${allData.length} записей`);
-    console.log(`   Файл: ${OUTPUT_FILE}`);
-    console.log(`   ⏱️ ${(Date.now() - startTime) / 1000}с`);
-
-    return output;
-
-  } catch (err) {
-    console.error('❌ [map-layer-vix] Ошибка:', err);
-    throw err;
-  }
-}
-
-/**
- * Генерация демо-данных
- */
 function generateDemoData() {
   const data = [];
   const now = Date.now();
   const regions = Object.keys(REGION_COORDS);
-
   for (let i = 0; i < 50; i++) {
     const region = regions[Math.floor(Math.random() * regions.length)];
     const coords = REGION_COORDS[region];
     const baseValue = 15 + Math.random() * 25;
-
     data.push({
       value: Math.round(baseValue * 100) / 100,
       timestamp: new Date(now - Math.random() * 86400000 * 60).toISOString(),
-      region: region,
+      region,
       lat: coords.lat + (Math.random() - 0.5) * 5,
       lng: coords.lng + (Math.random() - 0.5) * 5,
       change: Math.round((Math.random() - 0.5) * 8 * 100) / 100,
       volume: Math.round(Math.random() * 500000),
-      _source: 'demo',
-      _enriched: true
+      source: 'demo'
     });
   }
-
   return data;
 }
 
-// Запуск если скрипт вызван напрямую
-if (import.meta.url === `file://${process.argv[1]}`) {
-  main().catch(console.error);
+export async function collectMapLayerVix() {
+  const allData = [];
+  const sources = [];
+
+  for (const source of VIX_SOURCES) {
+    try {
+      const filePath = join(BASKET_DIR, source.file);
+      const content = await readFile(filePath, 'utf-8');
+      const data = JSON.parse(content);
+      // Basket может быть в v1-формате {schema, meta, series, points, ...} — читаем points.
+      const arr = Array.isArray(data) ? data : (Array.isArray(data.points) ? data.points : []);
+      if (arr.length > 0) {
+        const enriched = arr.map(record => {
+          const region = record.region || 'GLOBAL';
+          const coords = REGION_COORDS[region] || REGION_COORDS['GLOBAL'];
+          return {
+            ...record,
+            lat: (record.lat || coords.lat) + (Math.random() - 0.5) * 5,
+            lng: (record.lon || record.lng || coords.lng) + (Math.random() - 0.5) * 5,
+            region,
+            value: record.value || record.close || record.price || 0,
+            timestamp: record.timestamp || new Date().toISOString(),
+            source: source.name
+          };
+        });
+        allData.push(...enriched);
+        sources.push({ source: source.name, count: enriched.length });
+      }
+    } catch (err) {
+      console.warn(`[VIX-LAYER] ${source.name}: ${err.message}`);
+    }
+  }
+
+  if (allData.length === 0) {
+    console.log('[VIX-LAYER] Нет источников, демо-данные');
+    allData.push(...generateDemoData());
+  }
+
+  const result = await saveRaw('map-layer-vix', allData, {
+    collector: 'collect-map-layer-vix.mjs',
+    source: 'VIX (обогащение координатами)',
+    source_url: 'local://vix-enrichment',
+    license: 'public-domain',
+    format_hint: 'points',
+    value_unit: 'index',
+    granularity: 'event',
+    record_count: allData.length,
+    notes: `Источников: ${sources.length}, всего записей: ${allData.length}`,
+    backwardCompat: true
+  });
+
+  console.log(`[VIX-LAYER] OK ${allData.length} записей → ${result.raw_file}`);
+  console.log(`[VIX-LAYER] Накладная: ${result.incoming_file}`);
+  return allData;
 }
 
-export default main;
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  collectMapLayerVix().catch((e) => { console.error('[VIX-LAYER] FATAL:', e.message); process.exit(1); });
+}

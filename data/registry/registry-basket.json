@@ -1,0 +1,5807 @@
+{
+  "meta": {
+    "schema_version": "crucix.registry.basket.v1",
+    "generated_by": "server/build-registry.mjs",
+    "generated_at": "2026-09-21T10:54:42.826Z",
+    "description": "Детальный реестр корзины Crucix (data/basket/*.json). Источник: server/registry.generated.json и прямой скан файлов.",
+    "help_ru_link": "docs/help/ru/basket/README.md",
+    "help_en_link": "docs/help/en/basket/README.md",
+    "source_dir": "data/basket",
+    "total_files": 257,
+    "total_with_meta": 115,
+    "total_without_meta": 142,
+    "by_status": {
+      "active": 115,
+      "legacy": 0,
+      "unknown": 142
+    }
+  },
+  "items": [
+    {
+      "id": "acled-latest",
+      "file": "data/basket/acled-latest.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/acled-latest.md",
+      "help_en_link": "docs/help/en/basket/acled-latest.md",
+      "parse_error": null
+    },
+    {
+      "id": "acled",
+      "file": "data/basket/acled.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "acled-api",
+        "infrastructure-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/acled.md",
+      "help_en_link": "docs/help/en/basket/acled.md",
+      "parse_error": null
+    },
+    {
+      "id": "agriculture",
+      "file": "data/basket/agriculture.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/agriculture.md",
+      "help_en_link": "docs/help/en/basket/agriculture.md",
+      "parse_error": null
+    },
+    {
+      "id": "air-quality",
+      "file": "data/basket/air-quality.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/air-quality.md",
+      "help_en_link": "docs/help/en/basket/air-quality.md",
+      "parse_error": null
+    },
+    {
+      "id": "aurora",
+      "file": "data/basket/aurora.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/aurora.md",
+      "help_en_link": "docs/help/en/basket/aurora.md",
+      "parse_error": null
+    },
+    {
+      "id": "aviation",
+      "file": "data/basket/aviation.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "aviation-api"
+      ],
+      "writers": [
+        "collect-aviation.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/aviation.md",
+      "help_en_link": "docs/help/en/basket/aviation.md",
+      "parse_error": null
+    },
+    {
+      "id": "bbc",
+      "file": "data/basket/bbc.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/bbc.md",
+      "help_en_link": "docs/help/en/basket/bbc.md",
+      "parse_error": null
+    },
+    {
+      "id": "bdi",
+      "file": "data/basket/bdi.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 366,
+      "readers": [
+        "bdi-api"
+      ],
+      "writers": [
+        "collect-bdi.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/bdi.md",
+      "help_en_link": "docs/help/en/basket/bdi.md",
+      "parse_error": null
+    },
+    {
+      "id": "big-mac-alt",
+      "file": "data/basket/big-mac-alt.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "big-mac-alt-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/big-mac-alt.md",
+      "help_en_link": "docs/help/en/basket/big-mac-alt.md",
+      "parse_error": null
+    },
+    {
+      "id": "big-mac-main",
+      "file": "data/basket/big-mac-main.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "big-mac-main-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/big-mac-main.md",
+      "help_en_link": "docs/help/en/basket/big-mac-main.md",
+      "parse_error": null
+    },
+    {
+      "id": "big-mac",
+      "file": "data/basket/big-mac.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "big-mac-api"
+      ],
+      "writers": [
+        "collect-big-mac.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/big-mac.md",
+      "help_en_link": "docs/help/en/basket/big-mac.md",
+      "parse_error": null
+    },
+    {
+      "id": "bls",
+      "file": "data/basket/bls.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 31,
+      "readers": [],
+      "writers": [
+        "collect-bls.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/bls.md",
+      "help_en_link": "docs/help/en/basket/bls.md",
+      "parse_error": null
+    },
+    {
+      "id": "botnets",
+      "file": "data/basket/botnets.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "botnets-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/botnets.md",
+      "help_en_link": "docs/help/en/basket/botnets.md",
+      "parse_error": null
+    },
+    {
+      "id": "boundaries",
+      "file": "data/basket/boundaries.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/boundaries.md",
+      "help_en_link": "docs/help/en/basket/boundaries.md",
+      "parse_error": null
+    },
+    {
+      "id": "business-optimism",
+      "file": "data/basket/business-optimism.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 31,
+      "readers": [
+        "business-optimism-api"
+      ],
+      "writers": [
+        "collect-business-optimism.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/business-optimism.md",
+      "help_en_link": "docs/help/en/basket/business-optimism.md",
+      "parse_error": null
+    },
+    {
+      "id": "cables_34",
+      "file": "data/basket/cables_34.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/cables_34.md",
+      "help_en_link": "docs/help/en/basket/cables_34.md",
+      "parse_error": null
+    },
+    {
+      "id": "celestrak-latest",
+      "file": "data/basket/celestrak-latest.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/celestrak-latest.md",
+      "help_en_link": "docs/help/en/basket/celestrak-latest.md",
+      "parse_error": null
+    },
+    {
+      "id": "celestrak",
+      "file": "data/basket/celestrak.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-celestrak.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/celestrak.md",
+      "help_en_link": "docs/help/en/basket/celestrak.md",
+      "parse_error": null
+    },
+    {
+      "id": "cisa-kev",
+      "file": "data/basket/cisa-kev.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "cisa-kev-api"
+      ],
+      "writers": [
+        "collect-cisa-kev.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/cisa-kev.md",
+      "help_en_link": "docs/help/en/basket/cisa-kev.md",
+      "parse_error": null
+    },
+    {
+      "id": "cisa",
+      "file": "data/basket/cisa.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "cisa"
+      ],
+      "writers": [
+        "collect-cisa.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/cisa.md",
+      "help_en_link": "docs/help/en/basket/cisa.md",
+      "parse_error": null
+    },
+    {
+      "id": "climate",
+      "file": "data/basket/climate.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/climate.md",
+      "help_en_link": "docs/help/en/basket/climate.md",
+      "parse_error": null
+    },
+    {
+      "id": "coingecko-latest",
+      "file": "data/basket/coingecko-latest.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/coingecko-latest.md",
+      "help_en_link": "docs/help/en/basket/coingecko-latest.md",
+      "parse_error": null
+    },
+    {
+      "id": "coingecko",
+      "file": "data/basket/coingecko.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-coingecko.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/coingecko.md",
+      "help_en_link": "docs/help/en/basket/coingecko.md",
+      "parse_error": null
+    },
+    {
+      "id": "comtrade-latest",
+      "file": "data/basket/comtrade-latest.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/comtrade-latest.md",
+      "help_en_link": "docs/help/en/basket/comtrade-latest.md",
+      "parse_error": null
+    },
+    {
+      "id": "comtrade",
+      "file": "data/basket/comtrade.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 31,
+      "readers": [],
+      "writers": [
+        "collect-comtrade.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/comtrade.md",
+      "help_en_link": "docs/help/en/basket/comtrade.md",
+      "parse_error": null
+    },
+    {
+      "id": "conflict-zone",
+      "file": "data/basket/conflict-zone.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "conflict-zone",
+        "conflict-zone-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/conflict-zone.md",
+      "help_en_link": "docs/help/en/basket/conflict-zone.md",
+      "parse_error": null
+    },
+    {
+      "id": "conflict-zones",
+      "file": "data/basket/conflict-zones.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-conflict-zones.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/conflict-zones.md",
+      "help_en_link": "docs/help/en/basket/conflict-zones.md",
+      "parse_error": null
+    },
+    {
+      "id": "conflicts",
+      "file": "data/basket/conflicts.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 31,
+      "readers": [],
+      "writers": [
+        "collect-conflicts.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/conflicts.md",
+      "help_en_link": "docs/help/en/basket/conflicts.md",
+      "parse_error": null
+    },
+    {
+      "id": "consumer-confidence",
+      "file": "data/basket/consumer-confidence.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 30,
+      "readers": [
+        "consumer-confidence-api"
+      ],
+      "writers": [
+        "collect-consumer-confidence.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/consumer-confidence.md",
+      "help_en_link": "docs/help/en/basket/consumer-confidence.md",
+      "parse_error": null
+    },
+    {
+      "id": "consumer-expectations",
+      "file": "data/basket/consumer-expectations.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 31,
+      "readers": [
+        "consumer-expectations-api"
+      ],
+      "writers": [
+        "collect-consumer-expectations.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/consumer-expectations.md",
+      "help_en_link": "docs/help/en/basket/consumer-expectations.md",
+      "parse_error": null
+    },
+    {
+      "id": "copper-gold",
+      "file": "data/basket/copper-gold.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 31,
+      "readers": [
+        "copper-gold-api",
+        "copper-gold-ratio-api"
+      ],
+      "writers": [
+        "collect-copper-gold.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/copper-gold.md",
+      "help_en_link": "docs/help/en/basket/copper-gold.md",
+      "parse_error": null
+    },
+    {
+      "id": "corruption",
+      "file": "data/basket/corruption.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/corruption.md",
+      "help_en_link": "docs/help/en/basket/corruption.md",
+      "parse_error": null
+    },
+    {
+      "id": "covid-latest",
+      "file": "data/basket/covid-latest.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/covid-latest.md",
+      "help_en_link": "docs/help/en/basket/covid-latest.md",
+      "parse_error": null
+    },
+    {
+      "id": "covid",
+      "file": "data/basket/covid.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-covid.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/covid.md",
+      "help_en_link": "docs/help/en/basket/covid.md",
+      "parse_error": null
+    },
+    {
+      "id": "crypto-fear",
+      "file": "data/basket/crypto-fear.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "crypto-fear-api"
+      ],
+      "writers": [
+        "collect-crypto-fear.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/crypto-fear.md",
+      "help_en_link": "docs/help/en/basket/crypto-fear.md",
+      "parse_error": null
+    },
+    {
+      "id": "cve",
+      "file": "data/basket/cve.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/cve.md",
+      "help_en_link": "docs/help/en/basket/cve.md",
+      "parse_error": null
+    },
+    {
+      "id": "cve_events",
+      "file": "data/basket/cve_events.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "cve"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/cve_events.md",
+      "help_en_link": "docs/help/en/basket/cve_events.md",
+      "parse_error": null
+    },
+    {
+      "id": "cyber-apt",
+      "file": "data/basket/cyber-apt.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "cyber-apt-api"
+      ],
+      "writers": [
+        "collect-cyber-apt.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/cyber-apt.md",
+      "help_en_link": "docs/help/en/basket/cyber-apt.md",
+      "parse_error": null
+    },
+    {
+      "id": "cyber-attacks",
+      "file": "data/basket/cyber-attacks.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "cyber-api"
+      ],
+      "writers": [
+        "collect-cyber-attacks.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/cyber-attacks.md",
+      "help_en_link": "docs/help/en/basket/cyber-attacks.md",
+      "parse_error": null
+    },
+    {
+      "id": "cyber-threat-index",
+      "file": "data/basket/cyber-threat-index.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 31,
+      "readers": [
+        "cyber-threat-index-api"
+      ],
+      "writers": [
+        "collect-cyber-threat-index.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/cyber-threat-index.md",
+      "help_en_link": "docs/help/en/basket/cyber-threat-index.md",
+      "parse_error": null
+    },
+    {
+      "id": "cyber-threats",
+      "file": "data/basket/cyber-threats.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 31,
+      "readers": [],
+      "writers": [
+        "collect-cyber-threats.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/cyber-threats.md",
+      "help_en_link": "docs/help/en/basket/cyber-threats.md",
+      "parse_error": null
+    },
+    {
+      "id": "daily-briefing-cache",
+      "file": "data/basket/daily-briefing-cache.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/daily-briefing-cache.md",
+      "help_en_link": "docs/help/en/basket/daily-briefing-cache.md",
+      "parse_error": null
+    },
+    {
+      "id": "daily-report",
+      "file": "data/basket/daily-report.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-daily-report.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/daily-report.md",
+      "help_en_link": "docs/help/en/basket/daily-report.md",
+      "parse_error": null
+    },
+    {
+      "id": "dark-fleet",
+      "file": "data/basket/dark-fleet.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 31,
+      "readers": [
+        "dark-fleet-api"
+      ],
+      "writers": [
+        "collect-dark-fleet.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/dark-fleet.md",
+      "help_en_link": "docs/help/en/basket/dark-fleet.md",
+      "parse_error": null
+    },
+    {
+      "id": "dark-ships",
+      "file": "data/basket/dark-ships.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "dark-ships-api"
+      ],
+      "writers": [
+        "collect-dark-ships-real.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/dark-ships.md",
+      "help_en_link": "docs/help/en/basket/dark-ships.md",
+      "parse_error": null
+    },
+    {
+      "id": "darkweb-data",
+      "file": "data/basket/darkweb-data.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/darkweb-data.md",
+      "help_en_link": "docs/help/en/basket/darkweb-data.md",
+      "parse_error": null
+    },
+    {
+      "id": "darkweb",
+      "file": "data/basket/darkweb.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "darkweb-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/darkweb.md",
+      "help_en_link": "docs/help/en/basket/darkweb.md",
+      "parse_error": null
+    },
+    {
+      "id": "datacenters",
+      "file": "data/basket/datacenters.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/datacenters.md",
+      "help_en_link": "docs/help/en/basket/datacenters.md",
+      "parse_error": null
+    },
+    {
+      "id": "ddos",
+      "file": "data/basket/ddos.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/ddos.md",
+      "help_en_link": "docs/help/en/basket/ddos.md",
+      "parse_error": null
+    },
+    {
+      "id": "debt-gdp",
+      "file": "data/basket/debt-gdp.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "debt-gdp-api"
+      ],
+      "writers": [
+        "collect-debt-gdp.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/debt-gdp.md",
+      "help_en_link": "docs/help/en/basket/debt-gdp.md",
+      "parse_error": null
+    },
+    {
+      "id": "democracy",
+      "file": "data/basket/democracy.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/democracy.md",
+      "help_en_link": "docs/help/en/basket/democracy.md",
+      "parse_error": null
+    },
+    {
+      "id": "drought",
+      "file": "data/basket/drought.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/drought.md",
+      "help_en_link": "docs/help/en/basket/drought.md",
+      "parse_error": null
+    },
+    {
+      "id": "dxy",
+      "file": "data/basket/dxy.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 30,
+      "readers": [
+        "dxy-api"
+      ],
+      "writers": [
+        "collect-dxy.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/dxy.md",
+      "help_en_link": "docs/help/en/basket/dxy.md",
+      "parse_error": null
+    },
+    {
+      "id": "earthquake-zone",
+      "file": "data/basket/earthquake-zone.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "earthquake-zone",
+        "earthquake-zone-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/earthquake-zone.md",
+      "help_en_link": "docs/help/en/basket/earthquake-zone.md",
+      "parse_error": null
+    },
+    {
+      "id": "earthquakes-other",
+      "file": "data/basket/earthquakes-other.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/earthquakes-other.md",
+      "help_en_link": "docs/help/en/basket/earthquakes-other.md",
+      "parse_error": null
+    },
+    {
+      "id": "earthquakes",
+      "file": "data/basket/earthquakes.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 15,
+      "readers": [
+        "earthquakes-api",
+        "infrastructure-api"
+      ],
+      "writers": [
+        "collect-earthquakes.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/earthquakes.md",
+      "help_en_link": "docs/help/en/basket/earthquakes.md",
+      "parse_error": null
+    },
+    {
+      "id": "ecb-usd-eur",
+      "file": "data/basket/ecb-usd-eur.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 10,
+      "readers": [],
+      "writers": [
+        "collect-ecb.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/ecb-usd-eur.md",
+      "help_en_link": "docs/help/en/basket/ecb-usd-eur.md",
+      "parse_error": null
+    },
+    {
+      "id": "economy",
+      "file": "data/basket/economy.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 93,
+      "readers": [
+        "economy-api"
+      ],
+      "writers": [
+        "collect-economy.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/economy.md",
+      "help_en_link": "docs/help/en/basket/economy.md",
+      "parse_error": null
+    },
+    {
+      "id": "education",
+      "file": "data/basket/education.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "education-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/education.md",
+      "help_en_link": "docs/help/en/basket/education.md",
+      "parse_error": null
+    },
+    {
+      "id": "eia-real",
+      "file": "data/basket/eia-real.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-eia-real.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/eia-real.md",
+      "help_en_link": "docs/help/en/basket/eia-real.md",
+      "parse_error": null
+    },
+    {
+      "id": "eia",
+      "file": "data/basket/eia.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 110,
+      "readers": [
+        "eia-api"
+      ],
+      "writers": [
+        "collect-eia.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/eia.md",
+      "help_en_link": "docs/help/en/basket/eia.md",
+      "parse_error": null
+    },
+    {
+      "id": "energy",
+      "file": "data/basket/energy.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "energy-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/energy.md",
+      "help_en_link": "docs/help/en/basket/energy.md",
+      "parse_error": null
+    },
+    {
+      "id": "entities",
+      "file": "data/basket/entities.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/entities.md",
+      "help_en_link": "docs/help/en/basket/entities.md",
+      "parse_error": null
+    },
+    {
+      "id": "epa",
+      "file": "data/basket/epa.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 12000,
+      "readers": [
+        "epa-api"
+      ],
+      "writers": [
+        "collect-epa.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/epa.md",
+      "help_en_link": "docs/help/en/basket/epa.md",
+      "parse_error": null
+    },
+    {
+      "id": "epidemics",
+      "file": "data/basket/epidemics.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "epidemics-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/epidemics.md",
+      "help_en_link": "docs/help/en/basket/epidemics.md",
+      "parse_error": null
+    },
+    {
+      "id": "events",
+      "file": "data/basket/events.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "events-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/events.md",
+      "help_en_link": "docs/help/en/basket/events.md",
+      "parse_error": null
+    },
+    {
+      "id": "exchanges",
+      "file": "data/basket/exchanges.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/exchanges.md",
+      "help_en_link": "docs/help/en/basket/exchanges.md",
+      "parse_error": null
+    },
+    {
+      "id": "exercises",
+      "file": "data/basket/exercises.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/exercises.md",
+      "help_en_link": "docs/help/en/basket/exercises.md",
+      "parse_error": null
+    },
+    {
+      "id": "feeds",
+      "file": "data/basket/feeds.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 93,
+      "readers": [],
+      "writers": [
+        "collect-feeds.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/feeds.md",
+      "help_en_link": "docs/help/en/basket/feeds.md",
+      "parse_error": null
+    },
+    {
+      "id": "fires",
+      "file": "data/basket/fires.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 60,
+      "readers": [],
+      "writers": [
+        "collect-fires.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/fires.md",
+      "help_en_link": "docs/help/en/basket/fires.md",
+      "parse_error": null
+    },
+    {
+      "id": "firms-data",
+      "file": "data/basket/firms-data.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/firms-data.md",
+      "help_en_link": "docs/help/en/basket/firms-data.md",
+      "parse_error": null
+    },
+    {
+      "id": "firms",
+      "file": "data/basket/firms.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 60,
+      "readers": [
+        "firms-api",
+        "infrastructure-api"
+      ],
+      "writers": [
+        "collect-fires.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/firms.md",
+      "help_en_link": "docs/help/en/basket/firms.md",
+      "parse_error": null
+    },
+    {
+      "id": "fleet",
+      "file": "data/basket/fleet.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/fleet.md",
+      "help_en_link": "docs/help/en/basket/fleet.md",
+      "parse_error": null
+    },
+    {
+      "id": "flood-zone",
+      "file": "data/basket/flood-zone.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "flood-zone",
+        "flood-zone-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/flood-zone.md",
+      "help_en_link": "docs/help/en/basket/flood-zone.md",
+      "parse_error": null
+    },
+    {
+      "id": "floods",
+      "file": "data/basket/floods.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/floods.md",
+      "help_en_link": "docs/help/en/basket/floods.md",
+      "parse_error": null
+    },
+    {
+      "id": "forests",
+      "file": "data/basket/forests.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/forests.md",
+      "help_en_link": "docs/help/en/basket/forests.md",
+      "parse_error": null
+    },
+    {
+      "id": "fred-latest",
+      "file": "data/basket/fred-latest.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/fred-latest.md",
+      "help_en_link": "docs/help/en/basket/fred-latest.md",
+      "parse_error": null
+    },
+    {
+      "id": "fred-real",
+      "file": "data/basket/fred-real.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/fred-real.md",
+      "help_en_link": "docs/help/en/basket/fred-real.md",
+      "parse_error": null
+    },
+    {
+      "id": "fred",
+      "file": "data/basket/fred.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "fred-api"
+      ],
+      "writers": [
+        "collect-fred-real.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/fred.md",
+      "help_en_link": "docs/help/en/basket/fred.md",
+      "parse_error": null
+    },
+    {
+      "id": "freedom",
+      "file": "data/basket/freedom.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/freedom.md",
+      "help_en_link": "docs/help/en/basket/freedom.md",
+      "parse_error": null
+    },
+    {
+      "id": "frostbyte-latest",
+      "file": "data/basket/frostbyte-latest.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/frostbyte-latest.md",
+      "help_en_link": "docs/help/en/basket/frostbyte-latest.md",
+      "parse_error": null
+    },
+    {
+      "id": "frostbyte",
+      "file": "data/basket/frostbyte.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-frostbyte.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/frostbyte.md",
+      "help_en_link": "docs/help/en/basket/frostbyte.md",
+      "parse_error": null
+    },
+    {
+      "id": "fx-rates",
+      "file": "data/basket/fx-rates.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-frankfurter.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/fx-rates.md",
+      "help_en_link": "docs/help/en/basket/fx-rates.md",
+      "parse_error": null
+    },
+    {
+      "id": "gdelt-latest",
+      "file": "data/basket/gdelt-latest.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "gdelt-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/gdelt-latest.md",
+      "help_en_link": "docs/help/en/basket/gdelt-latest.md",
+      "parse_error": null
+    },
+    {
+      "id": "gdelt",
+      "file": "data/basket/gdelt.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "gdelt-news-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/gdelt.md",
+      "help_en_link": "docs/help/en/basket/gdelt.md",
+      "parse_error": null
+    },
+    {
+      "id": "gdelt_news",
+      "file": "data/basket/gdelt_news.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "gdelt",
+        "gdelt-news-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/gdelt_news.md",
+      "help_en_link": "docs/help/en/basket/gdelt_news.md",
+      "parse_error": null
+    },
+    {
+      "id": "gdp",
+      "file": "data/basket/gdp.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/gdp.md",
+      "help_en_link": "docs/help/en/basket/gdp.md",
+      "parse_error": null
+    },
+    {
+      "id": "geo-countries",
+      "file": "data/basket/geo-countries.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/geo-countries.md",
+      "help_en_link": "docs/help/en/basket/geo-countries.md",
+      "parse_error": null
+    },
+    {
+      "id": "geo-data",
+      "file": "data/basket/geo-data.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-geo-data.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/geo-data.md",
+      "help_en_link": "docs/help/en/basket/geo-data.md",
+      "parse_error": null
+    },
+    {
+      "id": "geo-layers",
+      "file": "data/basket/geo-layers.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/geo-layers.md",
+      "help_en_link": "docs/help/en/basket/geo-layers.md",
+      "parse_error": null
+    },
+    {
+      "id": "geo-markers",
+      "file": "data/basket/geo-markers.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "geo-markers-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/geo-markers.md",
+      "help_en_link": "docs/help/en/basket/geo-markers.md",
+      "parse_error": null
+    },
+    {
+      "id": "github_events",
+      "file": "data/basket/github_events.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "github",
+        "github-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/github_events.md",
+      "help_en_link": "docs/help/en/basket/github_events.md",
+      "parse_error": null
+    },
+    {
+      "id": "global-price-latest",
+      "file": "data/basket/global-price-latest.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/global-price-latest.md",
+      "help_en_link": "docs/help/en/basket/global-price-latest.md",
+      "parse_error": null
+    },
+    {
+      "id": "global-price",
+      "file": "data/basket/global-price.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-global-price.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/global-price.md",
+      "help_en_link": "docs/help/en/basket/global-price.md",
+      "parse_error": null
+    },
+    {
+      "id": "gold-oil-basket",
+      "file": "data/basket/gold-oil-basket.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 31,
+      "readers": [],
+      "writers": [
+        "collect-gold-oil-basket.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/gold-oil-basket.md",
+      "help_en_link": "docs/help/en/basket/gold-oil-basket.md",
+      "parse_error": null
+    },
+    {
+      "id": "gold-oil-ratio",
+      "file": "data/basket/gold-oil-ratio.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "gold-oil-ratio-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/gold-oil-ratio.md",
+      "help_en_link": "docs/help/en/basket/gold-oil-ratio.md",
+      "parse_error": null
+    },
+    {
+      "id": "gold-oil",
+      "file": "data/basket/gold-oil.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-gold-oil.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/gold-oil.md",
+      "help_en_link": "docs/help/en/basket/gold-oil.md",
+      "parse_error": null
+    },
+    {
+      "id": "gold-silver",
+      "file": "data/basket/gold-silver.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "gold-silver-api"
+      ],
+      "writers": [
+        "collect-gold-silver.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/gold-silver.md",
+      "help_en_link": "docs/help/en/basket/gold-silver.md",
+      "parse_error": null
+    },
+    {
+      "id": "gold",
+      "file": "data/basket/gold.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "gold"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/gold.md",
+      "help_en_link": "docs/help/en/basket/gold.md",
+      "parse_error": null
+    },
+    {
+      "id": "google-trends",
+      "file": "data/basket/google-trends.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "google-trends-api"
+      ],
+      "writers": [
+        "collect-google-trends.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/google-trends.md",
+      "help_en_link": "docs/help/en/basket/google-trends.md",
+      "parse_error": null
+    },
+    {
+      "id": "gps-jamming",
+      "file": "data/basket/gps-jamming.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "gps-jamming",
+        "gps-jamming-api"
+      ],
+      "writers": [
+        "collect-gps-jamming.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/gps-jamming.md",
+      "help_en_link": "docs/help/en/basket/gps-jamming.md",
+      "parse_error": null
+    },
+    {
+      "id": "gscpi",
+      "file": "data/basket/gscpi.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 31,
+      "readers": [],
+      "writers": [
+        "collect-gscpi.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/gscpi.md",
+      "help_en_link": "docs/help/en/basket/gscpi.md",
+      "parse_error": null
+    },
+    {
+      "id": "hackernews-top",
+      "file": "data/basket/hackernews-top.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "hackernews-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/hackernews-top.md",
+      "help_en_link": "docs/help/en/basket/hackernews-top.md",
+      "parse_error": null
+    },
+    {
+      "id": "hackernews",
+      "file": "data/basket/hackernews.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "hackernews"
+      ],
+      "writers": [
+        "collect-hackernews.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/hackernews.md",
+      "help_en_link": "docs/help/en/basket/hackernews.md",
+      "parse_error": null
+    },
+    {
+      "id": "happiness-alt",
+      "file": "data/basket/happiness-alt.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "happiness-alt-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/happiness-alt.md",
+      "help_en_link": "docs/help/en/basket/happiness-alt.md",
+      "parse_error": null
+    },
+    {
+      "id": "happiness",
+      "file": "data/basket/happiness.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "happiness-api"
+      ],
+      "writers": [
+        "collect-happiness.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/happiness.md",
+      "help_en_link": "docs/help/en/basket/happiness.md",
+      "parse_error": null
+    },
+    {
+      "id": "hdi",
+      "file": "data/basket/hdi.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/hdi.md",
+      "help_en_link": "docs/help/en/basket/hdi.md",
+      "parse_error": null
+    },
+    {
+      "id": "healthcare",
+      "file": "data/basket/healthcare.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/healthcare.md",
+      "help_en_link": "docs/help/en/basket/healthcare.md",
+      "parse_error": null
+    },
+    {
+      "id": "highways",
+      "file": "data/basket/highways.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/highways.md",
+      "help_en_link": "docs/help/en/basket/highways.md",
+      "parse_error": null
+    },
+    {
+      "id": "humanitarian",
+      "file": "data/basket/humanitarian.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/humanitarian.md",
+      "help_en_link": "docs/help/en/basket/humanitarian.md",
+      "parse_error": null
+    },
+    {
+      "id": "hurricanes",
+      "file": "data/basket/hurricanes.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "hurricanes-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/hurricanes.md",
+      "help_en_link": "docs/help/en/basket/hurricanes.md",
+      "parse_error": null
+    },
+    {
+      "id": "hy-spread",
+      "file": "data/basket/hy-spread.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 30,
+      "readers": [
+        "hy-spread-api"
+      ],
+      "writers": [
+        "collect-hy-spread.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/hy-spread.md",
+      "help_en_link": "docs/help/en/basket/hy-spread.md",
+      "parse_error": null
+    },
+    {
+      "id": "hydrosheds",
+      "file": "data/basket/hydrosheds.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/hydrosheds.md",
+      "help_en_link": "docs/help/en/basket/hydrosheds.md",
+      "parse_error": null
+    },
+    {
+      "id": "indirect-indicators",
+      "file": "data/basket/indirect-indicators.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "indirect-indicators-api"
+      ],
+      "writers": [
+        "collect-indirect-indicators.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/indirect-indicators.md",
+      "help_en_link": "docs/help/en/basket/indirect-indicators.md",
+      "parse_error": null
+    },
+    {
+      "id": "inequality",
+      "file": "data/basket/inequality.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/inequality.md",
+      "help_en_link": "docs/help/en/basket/inequality.md",
+      "parse_error": null
+    },
+    {
+      "id": "inflation",
+      "file": "data/basket/inflation.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 366,
+      "readers": [
+        "inflation-api",
+        "infrastructure-api"
+      ],
+      "writers": [
+        "collect-inflation.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/inflation.md",
+      "help_en_link": "docs/help/en/basket/inflation.md",
+      "parse_error": null
+    },
+    {
+      "id": "infrastructure",
+      "file": "data/basket/infrastructure.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-infrastructure.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/infrastructure.md",
+      "help_en_link": "docs/help/en/basket/infrastructure.md",
+      "parse_error": null
+    },
+    {
+      "id": "instability-index",
+      "file": "data/basket/instability-index.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "instability-index-api"
+      ],
+      "writers": [
+        "collect-instability-index.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/instability-index.md",
+      "help_en_link": "docs/help/en/basket/instability-index.md",
+      "parse_error": null
+    },
+    {
+      "id": "intel-feed",
+      "file": "data/basket/intel-feed.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "intelligence-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/intel-feed.md",
+      "help_en_link": "docs/help/en/basket/intel-feed.md",
+      "parse_error": null
+    },
+    {
+      "id": "interfax",
+      "file": "data/basket/interfax.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/interfax.md",
+      "help_en_link": "docs/help/en/basket/interfax.md",
+      "parse_error": null
+    },
+    {
+      "id": "internet-outages",
+      "file": "data/basket/internet-outages.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-internet-outages.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/internet-outages.md",
+      "help_en_link": "docs/help/en/basket/internet-outages.md",
+      "parse_error": null
+    },
+    {
+      "id": "internet",
+      "file": "data/basket/internet.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "internet-outages-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/internet.md",
+      "help_en_link": "docs/help/en/basket/internet.md",
+      "parse_error": null
+    },
+    {
+      "id": "iss-live",
+      "file": "data/basket/iss-live.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/iss-live.md",
+      "help_en_link": "docs/help/en/basket/iss-live.md",
+      "parse_error": null
+    },
+    {
+      "id": "iss",
+      "file": "data/basket/iss.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-iss.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/iss.md",
+      "help_en_link": "docs/help/en/basket/iss.md",
+      "parse_error": null
+    },
+    {
+      "id": "langley-taxis",
+      "file": "data/basket/langley-taxis.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/langley-taxis.md",
+      "help_en_link": "docs/help/en/basket/langley-taxis.md",
+      "parse_error": null
+    },
+    {
+      "id": "launches-upcoming",
+      "file": "data/basket/launches-upcoming.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "launches-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/launches-upcoming.md",
+      "help_en_link": "docs/help/en/basket/launches-upcoming.md",
+      "parse_error": null
+    },
+    {
+      "id": "launches",
+      "file": "data/basket/launches.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-launches.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/launches.md",
+      "help_en_link": "docs/help/en/basket/launches.md",
+      "parse_error": null
+    },
+    {
+      "id": "links",
+      "file": "data/basket/links.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/links.md",
+      "help_en_link": "docs/help/en/basket/links.md",
+      "parse_error": null
+    },
+    {
+      "id": "malware",
+      "file": "data/basket/malware.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "malware-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/malware.md",
+      "help_en_link": "docs/help/en/basket/malware.md",
+      "parse_error": null
+    },
+    {
+      "id": "map-layer-vix",
+      "file": "data/basket/map-layer-vix.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-map-layer-vix.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/map-layer-vix.md",
+      "help_en_link": "docs/help/en/basket/map-layer-vix.md",
+      "parse_error": null
+    },
+    {
+      "id": "maritime-monitor",
+      "file": "data/basket/maritime-monitor.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-maritime-monitor.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/maritime-monitor.md",
+      "help_en_link": "docs/help/en/basket/maritime-monitor.md",
+      "parse_error": null
+    },
+    {
+      "id": "mediacloud",
+      "file": "data/basket/mediacloud.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "mediacloud"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/mediacloud.md",
+      "help_en_link": "docs/help/en/basket/mediacloud.md",
+      "parse_error": null
+    },
+    {
+      "id": "military-base",
+      "file": "data/basket/military-base.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "military-base"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/military-base.md",
+      "help_en_link": "docs/help/en/basket/military-base.md",
+      "parse_error": null
+    },
+    {
+      "id": "military-bases",
+      "file": "data/basket/military-bases.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "military-bases-api"
+      ],
+      "writers": [
+        "collect-military-bases.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/military-bases.md",
+      "help_en_link": "docs/help/en/basket/military-bases.md",
+      "parse_error": null
+    },
+    {
+      "id": "military-exercises",
+      "file": "data/basket/military-exercises.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 31,
+      "readers": [
+        "military-exercises-api"
+      ],
+      "writers": [
+        "collect-military-exercises.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/military-exercises.md",
+      "help_en_link": "docs/help/en/basket/military-exercises.md",
+      "parse_error": null
+    },
+    {
+      "id": "military-spending",
+      "file": "data/basket/military-spending.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/military-spending.md",
+      "help_en_link": "docs/help/en/basket/military-spending.md",
+      "parse_error": null
+    },
+    {
+      "id": "minerals",
+      "file": "data/basket/minerals.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/minerals.md",
+      "help_en_link": "docs/help/en/basket/minerals.md",
+      "parse_error": null
+    },
+    {
+      "id": "mobile",
+      "file": "data/basket/mobile.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/mobile.md",
+      "help_en_link": "docs/help/en/basket/mobile.md",
+      "parse_error": null
+    },
+    {
+      "id": "news",
+      "file": "data/basket/news.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 1,
+      "readers": [
+        "news-api",
+        "newsapi-basket-integration"
+      ],
+      "writers": [
+        "collect-news.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/news.md",
+      "help_en_link": "docs/help/en/basket/news.md",
+      "parse_error": null
+    },
+    {
+      "id": "newsapi-latest",
+      "file": "data/basket/newsapi-latest.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/newsapi-latest.md",
+      "help_en_link": "docs/help/en/basket/newsapi-latest.md",
+      "parse_error": null
+    },
+    {
+      "id": "newsapi-real",
+      "file": "data/basket/newsapi-real.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-newsapi-real.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/newsapi-real.md",
+      "help_en_link": "docs/help/en/basket/newsapi-real.md",
+      "parse_error": null
+    },
+    {
+      "id": "newsapi",
+      "file": "data/basket/newsapi.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-newsapi.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/newsapi.md",
+      "help_en_link": "docs/help/en/basket/newsapi.md",
+      "parse_error": null
+    },
+    {
+      "id": "noaa",
+      "file": "data/basket/noaa.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 31,
+      "readers": [
+        "noaa-api"
+      ],
+      "writers": [
+        "collect-noaa.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/noaa.md",
+      "help_en_link": "docs/help/en/basket/noaa.md",
+      "parse_error": null
+    },
+    {
+      "id": "notam",
+      "file": "data/basket/notam.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "notam",
+        "notam-api"
+      ],
+      "writers": [
+        "collect-notam.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/notam.md",
+      "help_en_link": "docs/help/en/basket/notam.md",
+      "parse_error": null
+    },
+    {
+      "id": "nuclear-monitor",
+      "file": "data/basket/nuclear-monitor.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 30,
+      "readers": [
+        "nuclear-monitor-api"
+      ],
+      "writers": [
+        "collect-nuclear-monitor.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/nuclear-monitor.md",
+      "help_en_link": "docs/help/en/basket/nuclear-monitor.md",
+      "parse_error": null
+    },
+    {
+      "id": "nuclear",
+      "file": "data/basket/nuclear.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/nuclear.md",
+      "help_en_link": "docs/help/en/basket/nuclear.md",
+      "parse_error": null
+    },
+    {
+      "id": "nuclear_monitor",
+      "file": "data/basket/nuclear_monitor.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/nuclear_monitor.md",
+      "help_en_link": "docs/help/en/basket/nuclear_monitor.md",
+      "parse_error": null
+    },
+    {
+      "id": "ocean",
+      "file": "data/basket/ocean.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "ocean-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/ocean.md",
+      "help_en_link": "docs/help/en/basket/ocean.md",
+      "parse_error": null
+    },
+    {
+      "id": "ofac-data",
+      "file": "data/basket/ofac-data.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/ofac-data.md",
+      "help_en_link": "docs/help/en/basket/ofac-data.md",
+      "parse_error": null
+    },
+    {
+      "id": "ofac-sdn",
+      "file": "data/basket/ofac-sdn.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "ofac-sdn-api"
+      ],
+      "writers": [
+        "collect-ofac-sdn.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/ofac-sdn.md",
+      "help_en_link": "docs/help/en/basket/ofac-sdn.md",
+      "parse_error": null
+    },
+    {
+      "id": "ofac",
+      "file": "data/basket/ofac.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "infrastructure-api",
+        "ofac",
+        "ofac-api"
+      ],
+      "writers": [
+        "collect-ofac.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/ofac.md",
+      "help_en_link": "docs/help/en/basket/ofac.md",
+      "parse_error": null
+    },
+    {
+      "id": "oil-gas",
+      "file": "data/basket/oil-gas.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "oil-gas-api"
+      ],
+      "writers": [
+        "collect-oil-gas.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/oil-gas.md",
+      "help_en_link": "docs/help/en/basket/oil-gas.md",
+      "parse_error": null
+    },
+    {
+      "id": "oil",
+      "file": "data/basket/oil.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "oil"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/oil.md",
+      "help_en_link": "docs/help/en/basket/oil.md",
+      "parse_error": null
+    },
+    {
+      "id": "oneweb",
+      "file": "data/basket/oneweb.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/oneweb.md",
+      "help_en_link": "docs/help/en/basket/oneweb.md",
+      "parse_error": null
+    },
+    {
+      "id": "open-meteo",
+      "file": "data/basket/open-meteo.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-open-meteo.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/open-meteo.md",
+      "help_en_link": "docs/help/en/basket/open-meteo.md",
+      "parse_error": null
+    },
+    {
+      "id": "openaq-latest",
+      "file": "data/basket/openaq-latest.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/openaq-latest.md",
+      "help_en_link": "docs/help/en/basket/openaq-latest.md",
+      "parse_error": null
+    },
+    {
+      "id": "openaq",
+      "file": "data/basket/openaq.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-openaq.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/openaq.md",
+      "help_en_link": "docs/help/en/basket/openaq.md",
+      "parse_error": null
+    },
+    {
+      "id": "openmeteo-2026-08-19",
+      "file": "data/basket/openmeteo-2026-08-19.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/openmeteo-2026-08-19.md",
+      "help_en_link": "docs/help/en/basket/openmeteo-2026-08-19.md",
+      "parse_error": null
+    },
+    {
+      "id": "openmeteo-latest",
+      "file": "data/basket/openmeteo-latest.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/openmeteo-latest.md",
+      "help_en_link": "docs/help/en/basket/openmeteo-latest.md",
+      "parse_error": null
+    },
+    {
+      "id": "opensanctions",
+      "file": "data/basket/opensanctions.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-opensanctions.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/opensanctions.md",
+      "help_en_link": "docs/help/en/basket/opensanctions.md",
+      "parse_error": null
+    },
+    {
+      "id": "opensky-data",
+      "file": "data/basket/opensky-data.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/opensky-data.md",
+      "help_en_link": "docs/help/en/basket/opensky-data.md",
+      "parse_error": null
+    },
+    {
+      "id": "opensky",
+      "file": "data/basket/opensky.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "opensky",
+        "opensky-api"
+      ],
+      "writers": [
+        "collect-opensky.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/opensky.md",
+      "help_en_link": "docs/help/en/basket/opensky.md",
+      "parse_error": null
+    },
+    {
+      "id": "openweather",
+      "file": "data/basket/openweather.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-openweather.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/openweather.md",
+      "help_en_link": "docs/help/en/basket/openweather.md",
+      "parse_error": null
+    },
+    {
+      "id": "ovx",
+      "file": "data/basket/ovx.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 30,
+      "readers": [
+        "ovx-api"
+      ],
+      "writers": [
+        "collect-ovx.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/ovx.md",
+      "help_en_link": "docs/help/en/basket/ovx.md",
+      "parse_error": null
+    },
+    {
+      "id": "pentagon-pizza",
+      "file": "data/basket/pentagon-pizza.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/pentagon-pizza.md",
+      "help_en_link": "docs/help/en/basket/pentagon-pizza.md",
+      "parse_error": null
+    },
+    {
+      "id": "phishing",
+      "file": "data/basket/phishing.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/phishing.md",
+      "help_en_link": "docs/help/en/basket/phishing.md",
+      "parse_error": null
+    },
+    {
+      "id": "pipelines",
+      "file": "data/basket/pipelines.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "pipelines-api"
+      ],
+      "writers": [
+        "collect-pipelines.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/pipelines.md",
+      "help_en_link": "docs/help/en/basket/pipelines.md",
+      "parse_error": null
+    },
+    {
+      "id": "pipelines_24",
+      "file": "data/basket/pipelines_24.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/pipelines_24.md",
+      "help_en_link": "docs/help/en/basket/pipelines_24.md",
+      "parse_error": null
+    },
+    {
+      "id": "pmi",
+      "file": "data/basket/pmi.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 31,
+      "readers": [
+        "pmi-api"
+      ],
+      "writers": [
+        "collect-pmi.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/pmi.md",
+      "help_en_link": "docs/help/en/basket/pmi.md",
+      "parse_error": null
+    },
+    {
+      "id": "political",
+      "file": "data/basket/political.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/political.md",
+      "help_en_link": "docs/help/en/basket/political.md",
+      "parse_error": null
+    },
+    {
+      "id": "population",
+      "file": "data/basket/population.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/population.md",
+      "help_en_link": "docs/help/en/basket/population.md",
+      "parse_error": null
+    },
+    {
+      "id": "ports-maritime",
+      "file": "data/basket/ports-maritime.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/ports-maritime.md",
+      "help_en_link": "docs/help/en/basket/ports-maritime.md",
+      "parse_error": null
+    },
+    {
+      "id": "ports",
+      "file": "data/basket/ports.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/ports.md",
+      "help_en_link": "docs/help/en/basket/ports.md",
+      "parse_error": null
+    },
+    {
+      "id": "poverty",
+      "file": "data/basket/poverty.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/poverty.md",
+      "help_en_link": "docs/help/en/basket/poverty.md",
+      "parse_error": null
+    },
+    {
+      "id": "power-grid",
+      "file": "data/basket/power-grid.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/power-grid.md",
+      "help_en_link": "docs/help/en/basket/power-grid.md",
+      "parse_error": null
+    },
+    {
+      "id": "prediction-markets",
+      "file": "data/basket/prediction-markets.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-prediction-markets.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/prediction-markets.md",
+      "help_en_link": "docs/help/en/basket/prediction-markets.md",
+      "parse_error": null
+    },
+    {
+      "id": "predictions",
+      "file": "data/basket/predictions.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "predict",
+        "predict-layer"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/predictions.md",
+      "help_en_link": "docs/help/en/basket/predictions.md",
+      "parse_error": null
+    },
+    {
+      "id": "press-freedom",
+      "file": "data/basket/press-freedom.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/press-freedom.md",
+      "help_en_link": "docs/help/en/basket/press-freedom.md",
+      "parse_error": null
+    },
+    {
+      "id": "railways",
+      "file": "data/basket/railways.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/railways.md",
+      "help_en_link": "docs/help/en/basket/railways.md",
+      "parse_error": null
+    },
+    {
+      "id": "ransomware",
+      "file": "data/basket/ransomware.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/ransomware.md",
+      "help_en_link": "docs/help/en/basket/ransomware.md",
+      "parse_error": null
+    },
+    {
+      "id": "recession",
+      "file": "data/basket/recession.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 31,
+      "readers": [
+        "recession-api"
+      ],
+      "writers": [
+        "collect-recession.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/recession.md",
+      "help_en_link": "docs/help/en/basket/recession.md",
+      "parse_error": null
+    },
+    {
+      "id": "reddit",
+      "file": "data/basket/reddit.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "reddit",
+        "reddit-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/reddit.md",
+      "help_en_link": "docs/help/en/basket/reddit.md",
+      "parse_error": null
+    },
+    {
+      "id": "refugees",
+      "file": "data/basket/refugees.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/refugees.md",
+      "help_en_link": "docs/help/en/basket/refugees.md",
+      "parse_error": null
+    },
+    {
+      "id": "renewable",
+      "file": "data/basket/renewable.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/renewable.md",
+      "help_en_link": "docs/help/en/basket/renewable.md",
+      "parse_error": null
+    },
+    {
+      "id": "rest-countries-latest",
+      "file": "data/basket/rest-countries-latest.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/rest-countries-latest.md",
+      "help_en_link": "docs/help/en/basket/rest-countries-latest.md",
+      "parse_error": null
+    },
+    {
+      "id": "rest-countries",
+      "file": "data/basket/rest-countries.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-rest-countries.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/rest-countries.md",
+      "help_en_link": "docs/help/en/basket/rest-countries.md",
+      "parse_error": null
+    },
+    {
+      "id": "ria-latest",
+      "file": "data/basket/ria-latest.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/ria-latest.md",
+      "help_en_link": "docs/help/en/basket/ria-latest.md",
+      "parse_error": null
+    },
+    {
+      "id": "ria",
+      "file": "data/basket/ria.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-ria.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/ria.md",
+      "help_en_link": "docs/help/en/basket/ria.md",
+      "parse_error": null
+    },
+    {
+      "id": "risk-heatmap",
+      "file": "data/basket/risk-heatmap.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "risk-heatmap-api"
+      ],
+      "writers": [
+        "collect-risk-heatmap.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/risk-heatmap.md",
+      "help_en_link": "docs/help/en/basket/risk-heatmap.md",
+      "parse_error": null
+    },
+    {
+      "id": "rss-extra-latest",
+      "file": "data/basket/rss-extra-latest.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/rss-extra-latest.md",
+      "help_en_link": "docs/help/en/basket/rss-extra-latest.md",
+      "parse_error": null
+    },
+    {
+      "id": "rss-extra",
+      "file": "data/basket/rss-extra.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-rss-extra.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/rss-extra.md",
+      "help_en_link": "docs/help/en/basket/rss-extra.md",
+      "parse_error": null
+    },
+    {
+      "id": "rss-latest",
+      "file": "data/basket/rss-latest.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "rss-feeds-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/rss-latest.md",
+      "help_en_link": "docs/help/en/basket/rss-latest.md",
+      "parse_error": null
+    },
+    {
+      "id": "rss-universal",
+      "file": "data/basket/rss-universal.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 3,
+      "readers": [
+        "rss-feeds-api"
+      ],
+      "writers": [
+        "collect-rss-universal.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/rss-universal.md",
+      "help_en_link": "docs/help/en/basket/rss-universal.md",
+      "parse_error": null
+    },
+    {
+      "id": "rss",
+      "file": "data/basket/rss.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/rss.md",
+      "help_en_link": "docs/help/en/basket/rss.md",
+      "parse_error": null
+    },
+    {
+      "id": "rsshub",
+      "file": "data/basket/rsshub.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 1,
+      "readers": [
+        "rss-feeds-api"
+      ],
+      "writers": [
+        "collect-rsshub.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/rsshub.md",
+      "help_en_link": "docs/help/en/basket/rsshub.md",
+      "parse_error": null
+    },
+    {
+      "id": "rublev-dubai",
+      "file": "data/basket/rublev-dubai.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "rublev-dubai-api"
+      ],
+      "writers": [
+        "collect-rublev-dubai.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/rublev-dubai.md",
+      "help_en_link": "docs/help/en/basket/rublev-dubai.md",
+      "parse_error": null
+    },
+    {
+      "id": "russian-latest",
+      "file": "data/basket/russian-latest.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/russian-latest.md",
+      "help_en_link": "docs/help/en/basket/russian-latest.md",
+      "parse_error": null
+    },
+    {
+      "id": "russian-sources",
+      "file": "data/basket/russian-sources.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-russian-sources.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/russian-sources.md",
+      "help_en_link": "docs/help/en/basket/russian-sources.md",
+      "parse_error": null
+    },
+    {
+      "id": "safecast-data",
+      "file": "data/basket/safecast-data.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/safecast-data.md",
+      "help_en_link": "docs/help/en/basket/safecast-data.md",
+      "parse_error": null
+    },
+    {
+      "id": "safecast",
+      "file": "data/basket/safecast.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 31,
+      "readers": [
+        "safecast-api"
+      ],
+      "writers": [
+        "collect-safecast.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/safecast.md",
+      "help_en_link": "docs/help/en/basket/safecast.md",
+      "parse_error": null
+    },
+    {
+      "id": "sanction-list",
+      "file": "data/basket/sanction-list.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "sanction-list"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/sanction-list.md",
+      "help_en_link": "docs/help/en/basket/sanction-list.md",
+      "parse_error": null
+    },
+    {
+      "id": "satellite-stac",
+      "file": "data/basket/satellite-stac.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "satellite-stac-api"
+      ],
+      "writers": [
+        "collect-satellite-stac.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/satellite-stac.md",
+      "help_en_link": "docs/help/en/basket/satellite-stac.md",
+      "parse_error": null
+    },
+    {
+      "id": "satellites",
+      "file": "data/basket/satellites.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/satellites.md",
+      "help_en_link": "docs/help/en/basket/satellites.md",
+      "parse_error": null
+    },
+    {
+      "id": "shipping-lanes",
+      "file": "data/basket/shipping-lanes.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/shipping-lanes.md",
+      "help_en_link": "docs/help/en/basket/shipping-lanes.md",
+      "parse_error": null
+    },
+    {
+      "id": "shipping-route",
+      "file": "data/basket/shipping-route.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "shipping-route"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/shipping-route.md",
+      "help_en_link": "docs/help/en/basket/shipping-route.md",
+      "parse_error": null
+    },
+    {
+      "id": "ships-data",
+      "file": "data/basket/ships-data.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/ships-data.md",
+      "help_en_link": "docs/help/en/basket/ships-data.md",
+      "parse_error": null
+    },
+    {
+      "id": "ships",
+      "file": "data/basket/ships.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "ships-api"
+      ],
+      "writers": [
+        "collect-ships.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/ships.md",
+      "help_en_link": "docs/help/en/basket/ships.md",
+      "parse_error": null
+    },
+    {
+      "id": "shodan",
+      "file": "data/basket/shodan.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "shodan"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/shodan.md",
+      "help_en_link": "docs/help/en/basket/shodan.md",
+      "parse_error": null
+    },
+    {
+      "id": "sites_24",
+      "file": "data/basket/sites_24.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/sites_24.md",
+      "help_en_link": "docs/help/en/basket/sites_24.md",
+      "parse_error": null
+    },
+    {
+      "id": "social-unrest",
+      "file": "data/basket/social-unrest.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 30,
+      "readers": [
+        "social-unrest-api"
+      ],
+      "writers": [
+        "collect-social-unrest.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/social-unrest.md",
+      "help_en_link": "docs/help/en/basket/social-unrest.md",
+      "parse_error": null
+    },
+    {
+      "id": "sp500-vix",
+      "file": "data/basket/sp500-vix.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 31,
+      "readers": [
+        "sp500-vix-api"
+      ],
+      "writers": [
+        "collect-sp500-vix.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/sp500-vix.md",
+      "help_en_link": "docs/help/en/basket/sp500-vix.md",
+      "parse_error": null
+    },
+    {
+      "id": "sp500",
+      "file": "data/basket/sp500.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/sp500.md",
+      "help_en_link": "docs/help/en/basket/sp500.md",
+      "parse_error": null
+    },
+    {
+      "id": "space-debris",
+      "file": "data/basket/space-debris.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "space-debris",
+        "space-debris-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/space-debris.md",
+      "help_en_link": "docs/help/en/basket/space-debris.md",
+      "parse_error": null
+    },
+    {
+      "id": "space-track-latest",
+      "file": "data/basket/space-track-latest.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/space-track-latest.md",
+      "help_en_link": "docs/help/en/basket/space-track-latest.md",
+      "parse_error": null
+    },
+    {
+      "id": "space-track",
+      "file": "data/basket/space-track.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-space-track.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/space-track.md",
+      "help_en_link": "docs/help/en/basket/space-track.md",
+      "parse_error": null
+    },
+    {
+      "id": "space",
+      "file": "data/basket/space.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "space-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/space.md",
+      "help_en_link": "docs/help/en/basket/space.md",
+      "parse_error": null
+    },
+    {
+      "id": "spaceports",
+      "file": "data/basket/spaceports.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/spaceports.md",
+      "help_en_link": "docs/help/en/basket/spaceports.md",
+      "parse_error": null
+    },
+    {
+      "id": "starlink",
+      "file": "data/basket/starlink.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "starlink-api"
+      ],
+      "writers": [
+        "collect-starlink.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/starlink.md",
+      "help_en_link": "docs/help/en/basket/starlink.md",
+      "parse_error": null
+    },
+    {
+      "id": "strategic-ports",
+      "file": "data/basket/strategic-ports.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "strategic-ports-api"
+      ],
+      "writers": [
+        "collect-strategic-ports.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/strategic-ports.md",
+      "help_en_link": "docs/help/en/basket/strategic-ports.md",
+      "parse_error": null
+    },
+    {
+      "id": "submarine-cable",
+      "file": "data/basket/submarine-cable.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "submarine-cable",
+        "submarine-cable-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/submarine-cable.md",
+      "help_en_link": "docs/help/en/basket/submarine-cable.md",
+      "parse_error": null
+    },
+    {
+      "id": "tass",
+      "file": "data/basket/tass.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/tass.md",
+      "help_en_link": "docs/help/en/basket/tass.md",
+      "parse_error": null
+    },
+    {
+      "id": "temporal-data",
+      "file": "data/basket/temporal-data.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/temporal-data.md",
+      "help_en_link": "docs/help/en/basket/temporal-data.md",
+      "parse_error": null
+    },
+    {
+      "id": "thermal",
+      "file": "data/basket/thermal.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 31,
+      "readers": [],
+      "writers": [
+        "collect-thermal.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/thermal.md",
+      "help_en_link": "docs/help/en/basket/thermal.md",
+      "parse_error": null
+    },
+    {
+      "id": "thinktanks",
+      "file": "data/basket/thinktanks.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "thinktanks-api"
+      ],
+      "writers": [
+        "collect-thinktanks.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/thinktanks.md",
+      "help_en_link": "docs/help/en/basket/thinktanks.md",
+      "parse_error": null
+    },
+    {
+      "id": "threats",
+      "file": "data/basket/threats.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "threats-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/threats.md",
+      "help_en_link": "docs/help/en/basket/threats.md",
+      "parse_error": null
+    },
+    {
+      "id": "tips",
+      "file": "data/basket/tips.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 30,
+      "readers": [
+        "tips-api"
+      ],
+      "writers": [
+        "collect-tips.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/tips.md",
+      "help_en_link": "docs/help/en/basket/tips.md",
+      "parse_error": null
+    },
+    {
+      "id": "trade-balance",
+      "file": "data/basket/trade-balance.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/trade-balance.md",
+      "help_en_link": "docs/help/en/basket/trade-balance.md",
+      "parse_error": null
+    },
+    {
+      "id": "trade",
+      "file": "data/basket/trade.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/trade.md",
+      "help_en_link": "docs/help/en/basket/trade.md",
+      "parse_error": null
+    },
+    {
+      "id": "trading-economics-latest",
+      "file": "data/basket/trading-economics-latest.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/trading-economics-latest.md",
+      "help_en_link": "docs/help/en/basket/trading-economics-latest.md",
+      "parse_error": null
+    },
+    {
+      "id": "trading-economics",
+      "file": "data/basket/trading-economics.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-trading-economics.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/trading-economics.md",
+      "help_en_link": "docs/help/en/basket/trading-economics.md",
+      "parse_error": null
+    },
+    {
+      "id": "transport",
+      "file": "data/basket/transport.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/transport.md",
+      "help_en_link": "docs/help/en/basket/transport.md",
+      "parse_error": null
+    },
+    {
+      "id": "treasury-debt",
+      "file": "data/basket/treasury-debt.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "treasury-api"
+      ],
+      "writers": [
+        "collect-treasury.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/treasury-debt.md",
+      "help_en_link": "docs/help/en/basket/treasury-debt.md",
+      "parse_error": null
+    },
+    {
+      "id": "ucdp-latest",
+      "file": "data/basket/ucdp-latest.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/ucdp-latest.md",
+      "help_en_link": "docs/help/en/basket/ucdp-latest.md",
+      "parse_error": null
+    },
+    {
+      "id": "ucdp",
+      "file": "data/basket/ucdp.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-ucdp.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/ucdp.md",
+      "help_en_link": "docs/help/en/basket/ucdp.md",
+      "parse_error": null
+    },
+    {
+      "id": "undersea-cables",
+      "file": "data/basket/undersea-cables.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "undersea-cables-api"
+      ],
+      "writers": [
+        "collect-undersea-cables.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/undersea-cables.md",
+      "help_en_link": "docs/help/en/basket/undersea-cables.md",
+      "parse_error": null
+    },
+    {
+      "id": "unemployment",
+      "file": "data/basket/unemployment.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 31,
+      "readers": [
+        "unemployment-api"
+      ],
+      "writers": [
+        "collect-unemployment.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/unemployment.md",
+      "help_en_link": "docs/help/en/basket/unemployment.md",
+      "parse_error": null
+    },
+    {
+      "id": "unique-indicators",
+      "file": "data/basket/unique-indicators.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-unique-indicators.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/unique-indicators.md",
+      "help_en_link": "docs/help/en/basket/unique-indicators.md",
+      "parse_error": null
+    },
+    {
+      "id": "uranium",
+      "file": "data/basket/uranium.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 31,
+      "readers": [
+        "uranium-api"
+      ],
+      "writers": [
+        "collect-uranium.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/uranium.md",
+      "help_en_link": "docs/help/en/basket/uranium.md",
+      "parse_error": null
+    },
+    {
+      "id": "urbanization",
+      "file": "data/basket/urbanization.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/urbanization.md",
+      "help_en_link": "docs/help/en/basket/urbanization.md",
+      "parse_error": null
+    },
+    {
+      "id": "usgs",
+      "file": "data/basket/usgs.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 31,
+      "readers": [
+        "usgs",
+        "usgs-api"
+      ],
+      "writers": [
+        "collect-usgs.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/usgs.md",
+      "help_en_link": "docs/help/en/basket/usgs.md",
+      "parse_error": null
+    },
+    {
+      "id": "viirs",
+      "file": "data/basket/viirs.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "viirs-api"
+      ],
+      "writers": [
+        "collect-viirs.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/viirs.md",
+      "help_en_link": "docs/help/en/basket/viirs.md",
+      "parse_error": null
+    },
+    {
+      "id": "vix",
+      "file": "data/basket/vix.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 254,
+      "readers": [
+        "vix",
+        "vix-api"
+      ],
+      "writers": [
+        "collect-vix.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/vix.md",
+      "help_en_link": "docs/help/en/basket/vix.md",
+      "parse_error": null
+    },
+    {
+      "id": "volcanoes",
+      "file": "data/basket/volcanoes.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "volcanoes-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/volcanoes.md",
+      "help_en_link": "docs/help/en/basket/volcanoes.md",
+      "parse_error": null
+    },
+    {
+      "id": "vulnerabilities",
+      "file": "data/basket/vulnerabilities.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "vulnerabilities-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/vulnerabilities.md",
+      "help_en_link": "docs/help/en/basket/vulnerabilities.md",
+      "parse_error": null
+    },
+    {
+      "id": "vxx",
+      "file": "data/basket/vxx.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 31,
+      "readers": [
+        "vxx-api"
+      ],
+      "writers": [
+        "collect-vxx.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/vxx.md",
+      "help_en_link": "docs/help/en/basket/vxx.md",
+      "parse_error": null
+    },
+    {
+      "id": "war-preparation",
+      "file": "data/basket/war-preparation.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 30,
+      "readers": [
+        "war-preparation-api"
+      ],
+      "writers": [
+        "collect-war-preparation.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/war-preparation.md",
+      "help_en_link": "docs/help/en/basket/war-preparation.md",
+      "parse_error": null
+    },
+    {
+      "id": "weather",
+      "file": "data/basket/weather.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "weather",
+        "weather-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/weather.md",
+      "help_en_link": "docs/help/en/basket/weather.md",
+      "parse_error": null
+    },
+    {
+      "id": "who",
+      "file": "data/basket/who.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [
+        "who-api"
+      ],
+      "writers": [
+        "collect-who.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/who.md",
+      "help_en_link": "docs/help/en/basket/who.md",
+      "parse_error": null
+    },
+    {
+      "id": "wildfires",
+      "file": "data/basket/wildfires.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "wildfires-api"
+      ],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/wildfires.md",
+      "help_en_link": "docs/help/en/basket/wildfires.md",
+      "parse_error": null
+    },
+    {
+      "id": "worldbank-latest",
+      "file": "data/basket/worldbank-latest.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/worldbank-latest.md",
+      "help_en_link": "docs/help/en/basket/worldbank-latest.md",
+      "parse_error": null
+    },
+    {
+      "id": "worldbank",
+      "file": "data/basket/worldbank.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-worldbank.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/worldbank.md",
+      "help_en_link": "docs/help/en/basket/worldbank.md",
+      "parse_error": null
+    },
+    {
+      "id": "wti-brent-spread",
+      "file": "data/basket/wti-brent-spread.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 21,
+      "readers": [
+        "wti-brent-spread-api"
+      ],
+      "writers": [
+        "collect-wti-brent-spread.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/wti-brent-spread.md",
+      "help_en_link": "docs/help/en/basket/wti-brent-spread.md",
+      "parse_error": null
+    },
+    {
+      "id": "ww3chance",
+      "file": "data/basket/ww3chance.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/ww3chance.md",
+      "help_en_link": "docs/help/en/basket/ww3chance.md",
+      "parse_error": null
+    },
+    {
+      "id": "yahoo-latest",
+      "file": "data/basket/yahoo-latest.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/yahoo-latest.md",
+      "help_en_link": "docs/help/en/basket/yahoo-latest.md",
+      "parse_error": null
+    },
+    {
+      "id": "yahoo",
+      "file": "data/basket/yahoo.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 0,
+      "readers": [],
+      "writers": [
+        "collect-yahoo.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/yahoo.md",
+      "help_en_link": "docs/help/en/basket/yahoo.md",
+      "parse_error": null
+    },
+    {
+      "id": "yield-curve",
+      "file": "data/basket/yield-curve.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 31,
+      "readers": [
+        "yield-curve-api"
+      ],
+      "writers": [
+        "collect-yield-curve.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/yield-curve.md",
+      "help_en_link": "docs/help/en/basket/yield-curve.md",
+      "parse_error": null
+    },
+    {
+      "id": "zones",
+      "file": "data/basket/zones.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/zones.md",
+      "help_en_link": "docs/help/en/basket/zones.md",
+      "parse_error": null
+    }
+  ]
+}

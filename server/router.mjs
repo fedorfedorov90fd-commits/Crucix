@@ -1,5 +1,5 @@
 /**
- * server/router.mjs — РОУТЕР API CRUCIX v2.3.0
+ * server/router.mjs — РОУТЕР API CRUCIX v2.4.0
  *
  * КОНТРАКТНЫЙ РОУТЕР. Одна форма handler. Никаких fallback.
  *
@@ -14,6 +14,7 @@
  *   8. Структурированный лог (JSON lines).
  *   9. Метрики per-route: вызовы, среднее время, ошибки, последний вызов.
  *  10. Служебные эндпоинты РЕЕСТРА (см. BUILTIN_ENDPOINTS ниже):
+ *        /api/registry/                  — ПОЛНАЯ СВОДКА (v2.4.0, для страницы /registry)
  *        /api/registry/layers            — только Layer
  *        /api/registry/services          — только Service
  *        /api/registry/summary           — { layers, services, total }
@@ -33,6 +34,17 @@
  *   export const methods = ['GET', 'POST'];        // multi-method (Service)
  *   export const meta    = { ... };
  *   export async function handler(req, res) {}
+ *
+ * ИЗМЕНЕНИЕ v2.4.0 (20.09.2026):
+ *   - Добавлен корневой обработчик /api/registry/ и /api/registry
+ *     (handleRegistryRoot). Возвращает ПОЛНУЮ СВОДКУ для страницы
+ *     dashboard/public/registry.html: { success, data: { timestamp,
+ *     summary, pages, api, collectors, scripts, basket } }.
+ *   - Читает готовые дисковые реестры data/registry/*.json и сканирует
+ *     data/basket/*.json. Работает даже если какой-то реестр отсутствует
+ *     (возвращает пустой массив для этой категории).
+ *   - Существующие обработчики (/layers, /services, /summary, /modules,
+ *     /module/:id, /health, /stats) не тронуты — работают как раньше.
  */
 
 import { promises as fs, watch } from 'fs';
@@ -45,6 +57,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
 const PROJECT_ROOT = join(__dirname, '..');
 const REGISTRY_FILE = join(__dirname, 'registry.generated.json');
+const REGISTRY_DIR = join(PROJECT_ROOT, 'data', 'registry');
+const BASKET_DIR = join(PROJECT_ROOT, 'data', 'basket');
 const LOG_FILE = join(PROJECT_ROOT, 'logs', 'api-requests.log');
 const ERR_FILE = join(PROJECT_ROOT, 'logs', 'api-errors.log');
 
@@ -78,7 +92,7 @@ const CONFIG = {
     openMs: 30_000,
   },
   timeout: {
-    handlerMs: 25_000,
+    handlerMs: 60_000,
   },
   dev: process.env.NODE_ENV !== 'production',
 };
@@ -127,13 +141,6 @@ function logError(entry) {
 //  МЕТОДЫ — универсальное определение разрешённых методов
 // ============================================================
 
-/**
- * Возвращает массив разрешённых HTTP-методов для entry.
- * Приоритет:
- *   1. entry.methods (массив) — если объявлен.
- *   2. entry.method (строка) — single-method.
- *   3. null — метод не объявлен, разрешены все.
- */
 function getAllowedMethods(entry) {
   if (Array.isArray(entry.methods) && entry.methods.length > 0) {
     return entry.methods.map(m => String(m).toUpperCase());
@@ -180,8 +187,6 @@ async function loadRegistry() {
     throw new Error('registry validation failed:\n  ' + errors.join('\n  '));
   }
 
-  // СЛИЯНИЕ СЕКЦИЙ: Layer (routes) + Service (services) → плоский индекс маршрутизации.
-  // Оригиналы сохраняются в _sections для служебных эндпоинтов реестра.
   const layerRoutes = reg.routes || {};
   const serviceRoutes = reg.services || {};
   const merged = { ...layerRoutes, ...serviceRoutes };
@@ -463,9 +468,6 @@ function sendJSON(res, status, payload, extraHeaders = {}) {
 //  СЛУЖЕБНЫЕ ЭНДПОИНТЫ РЕЕСТРА
 // ============================================================
 
-/**
- * Формирует запись модуля для отдачи в UI/клиент.
- */
 function serializeEntry(route, entry, kind) {
   return {
     route,
@@ -475,6 +477,140 @@ function serializeEntry(route, entry, kind) {
     methods: Array.isArray(entry.methods) ? entry.methods : null,
     meta: entry.meta || {},
   };
+}
+
+/**
+ * Безопасно читает JSON-файл. Если файла нет или он битый — возвращает null.
+ */
+async function readJsonSafe(path) {
+  try {
+    const raw = await fs.readFile(path, 'utf8');
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * GET /api/registry/ (корень) — ПОЛНАЯ СВОДКА для страницы /registry.
+ *
+ * Возвращает структуру, которую ждёт dashboard/public/registry.html:
+ *   { success: true, data: { timestamp, summary, pages, api, collectors, scripts, basket } }
+ *
+ * summary = {
+ *   totalPages, totalAPI, totalCollectors, totalScripts, totalBasket, total
+ * }
+ *
+ * Источники:
+ *   - state.registry (server/registry.generated.json) — layer + service
+ *   - data/registry/registry-pages.json — страницы
+ *   - data/registry/registry-api.json — API-модули
+ *   - data/registry/registry-collectors.json — сборщики
+ *   - data/basket/*.json — корзина (скан директории)
+ */
+async function handleRegistryRoot(req, res) {
+  try {
+    const timestamp = new Date().toISOString();
+
+    // Реестр (layer + service) — уже в памяти.
+    const layerRoutes = state.registry?._sections?.layer || {};
+    const serviceRoutes = state.registry?._sections?.service || {};
+
+    // Дисковые реестры.
+    const pagesReg = await readJsonSafe(join(REGISTRY_DIR, 'registry-pages.json'));
+    const apiReg = await readJsonSafe(join(REGISTRY_DIR, 'registry-api.json'));
+    const collectorsReg = await readJsonSafe(join(REGISTRY_DIR, 'registry-collectors.json'));
+
+    // Страницы.
+    const pages = (pagesReg?.items || []).map(p => ({
+      name: p.id || p.title || '—',
+      url: p.path || null,
+      category: p.category || null,
+      status: p.status || 'unknown',
+    }));
+
+    // API-модули.
+    const api = (apiReg?.items || []).map(a => ({
+      name: a.id || '—',
+      url: a.endpoint || null,
+      method: a.method || null,
+      status: a.status || 'unknown',
+    }));
+
+    // Сборщики.
+    const collectors = (collectorsReg?.items || []).map(c => ({
+      name: c.id || '—',
+      source: c.path || null,
+      schedule: c.schedule || null,
+      status: c.status || 'unknown',
+    }));
+
+    // Скрипты — все .mjs в scripts/ (без scripts/collectors/, они уже в сборщиках).
+    let scripts = [];
+    try {
+      const scriptEntries = await fs.readdir(join(PROJECT_ROOT, 'scripts'));
+      scripts = scriptEntries
+        .filter(f => f.endsWith('.mjs') && !f.startsWith('.'))
+        .map(f => ({
+          name: f,
+          path: `scripts/${f}`,
+          isCollector: false,
+        }));
+    } catch {}
+
+    // Корзина — сканируем data/basket/.
+    let basket = [];
+    try {
+      const basketEntries = await fs.readdir(BASKET_DIR);
+      const basketFiles = basketEntries.filter(f => f.endsWith('.json')).sort();
+      for (const f of basketFiles) {
+        try {
+          const st = await fs.stat(join(BASKET_DIR, f));
+          basket.push({
+            name: f,
+            size: st.size,
+            mtime: st.mtime.toISOString(),
+          });
+        } catch {}
+      }
+    } catch {}
+
+    const summary = {
+      totalPages: pages.length,
+      totalAPI: api.length,
+      totalCollectors: collectors.length,
+      totalScripts: scripts.length,
+      totalBasket: basket.length,
+      total: pages.length + api.length + collectors.length + scripts.length + basket.length,
+    };
+
+    return sendJSON(res, 200, {
+      success: true,
+      data: {
+        timestamp,
+        summary,
+        pages,
+        api,
+        collectors,
+        scripts,
+        basket,
+        // Дополнительные поля — сводка по layer/service из основного реестра.
+        registry: {
+          layers: Object.keys(layerRoutes).length,
+          services: Object.keys(serviceRoutes).length,
+          total_routes: Object.keys(layerRoutes).length + Object.keys(serviceRoutes).length,
+          generated_at: state.registry?.meta?.generated_at || null,
+        },
+      },
+    });
+  } catch (e) {
+    console.error('[router] handleRegistryRoot error:', e);
+    return sendJSON(res, 500, {
+      success: false,
+      error: 'registry_root_failed',
+      message: e.message,
+    });
+  }
 }
 
 /**
@@ -525,7 +661,6 @@ async function handleRegistrySummary(req, res) {
 
 /**
  * GET /api/registry/modules?kind=layer|service
- * Без kind — отдаёт оба раздела в одном ответе.
  */
 async function handleRegistryModules(req, res) {
   if (!state.registry) return sendJSON(res, 503, { error: 'registry_not_loaded' });
@@ -558,7 +693,7 @@ async function handleRegistryModules(req, res) {
 }
 
 /**
- * GET /api/registry/module/:id — конкретный модуль по moduleId (без -api).
+ * GET /api/registry/module/:id
  */
 async function handleRegistryModule(req, res) {
   if (!state.registry) return sendJSON(res, 503, { error: 'registry_not_loaded' });
@@ -569,7 +704,6 @@ async function handleRegistryModule(req, res) {
   const layer = state.registry._sections?.layer || {};
   const service = state.registry._sections?.service || {};
 
-  // moduleId в реестре с суффиксом -api. Пробуем оба варианта.
   const tryIds = [id, `${id}-api`];
   for (const [route, entry] of Object.entries(layer)) {
     if (tryIds.includes(entry.moduleId)) {
@@ -585,7 +719,7 @@ async function handleRegistryModule(req, res) {
 }
 
 /**
- * GET /api/registry/health — health-check сервера и реестра.
+ * GET /api/registry/health
  */
 async function handleRegistryHealth(req, res) {
   const health = {
@@ -612,7 +746,7 @@ async function handleRegistryHealth(req, res) {
 }
 
 /**
- * GET /api/registry/stats — детальная статистика реестра.
+ * GET /api/registry/stats
  */
 async function handleRegistryStats(req, res) {
   if (!state.registry) return sendJSON(res, 503, { error: 'registry_not_loaded' });
@@ -657,10 +791,10 @@ async function handleRegistryStats(req, res) {
 
 /**
  * BUILTIN_ENDPOINTS — служебные эндпоинты сервера Crucix.
- * НЕ путать с Service-модулями из /apis/sources/*-api.mjs с route /api/services/*.
- * Здесь — обработчики самого роутера (реестр, health, stats и т.д.).
  */
 const BUILTIN_ENDPOINTS = {
+  '/api/registry/':           handleRegistryRoot,
+  '/api/registry':            handleRegistryRoot,
   '/api/registry/layers':     handleRegistryLayers,
   '/api/registry/services':   handleRegistryServices,
   '/api/registry/summary':    handleRegistrySummary,
@@ -676,7 +810,6 @@ const BUILTIN_ENDPOINTS = {
 
 function findBuiltinEndpoint(pathname) {
   if (BUILTIN_ENDPOINTS[pathname]) return BUILTIN_ENDPOINTS[pathname];
-  // Проверка с :id
   for (const pattern of Object.keys(BUILTIN_ENDPOINTS)) {
     if (!pattern.includes(':')) continue;
     const res = matchRoute(pattern, pathname);
@@ -695,7 +828,6 @@ export async function handleAPI(req, res, pathname) {
   res.setHeader('X-Request-Id', reqId);
   applyCORS(res);
 
-  // Preflight
   if (req.method === 'OPTIONS') {
     res.writeHead(204); res.end(); return true;
   }
@@ -706,7 +838,6 @@ export async function handleAPI(req, res, pathname) {
 
   if (!applyRateLimit(req, res)) return true;
 
-  // Служебные эндпоинты (BUILTIN)
   const builtinHandler = findBuiltinEndpoint(pathname);
   if (builtinHandler) {
     state.activeRequests.add(reqId);
@@ -721,7 +852,6 @@ export async function handleAPI(req, res, pathname) {
     return true;
   }
 
-  // Поиск маршрута в реестре
   const match = findRoute(pathname);
   if (!match) {
     sendJSON(res, 404, { error: 'route_not_found', path: pathname });
@@ -734,7 +864,6 @@ export async function handleAPI(req, res, pathname) {
   metricStart(route);
   req.params = params;
 
-  // Проверка методов — МУЛЬТИМЕТОДНАЯ (method или methods)
   const allowedMethods = getAllowedMethods(entry);
   if (allowedMethods && !allowedMethods.includes(req.method) && req.method !== 'HEAD') {
     const allowHeader = allowedMethods.join(', ');
@@ -744,7 +873,6 @@ export async function handleAPI(req, res, pathname) {
     return true;
   }
 
-  // Circuit breaker
   if (!circuitCheck(moduleId)) {
     sendJSON(res, 503, { error: 'circuit_open', moduleId, retry_after: 30 }, { 'Retry-After': '30' });
     metricEnd(route, Date.now() - startTime, 503);
@@ -752,7 +880,6 @@ export async function handleAPI(req, res, pathname) {
     return true;
   }
 
-  // Кэш ответов
   const urlObj = new URL(req.url, 'http://x');
   const query = Object.fromEntries(urlObj.searchParams.entries());
   const cacheKey = cacheKeyFor(route, req.method, query);
@@ -768,7 +895,6 @@ export async function handleAPI(req, res, pathname) {
     }
   }
 
-  // Загрузка и вызов модуля
   state.activeRequests.add(reqId);
   const captured = { status: 0, headers: {}, chunks: [] };
   const originalWriteHead = res.writeHead.bind(res);

@@ -1,280 +1,525 @@
 {
-  "type": "FeatureCollection",
-  "features": [
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "big-mac",
+    "source": "The Economist Big Mac Index",
+    "source_url": "https://www.economist.com/big-mac-index",
+    "fetched_at": "2026-09-20T10:34:47.123Z",
+    "normalized_at": "2026-09-20T11:28:56.941Z",
+    "collector": "collect-big-mac.mjs",
+    "license": "proprietary",
+    "count": 41,
+    "granularity": "snapshot",
+    "value_unit": "usd",
+    "value_scale": null,
+    "value_type": "price",
+    "value_range": null
+  },
+  "series": [],
+  "points": [],
+  "regions": [
     {
-      "type": "Feature",
-      "properties": {
-        "name": "США",
-        "value": 5.21,
-        "label": "price",
-        "unit": "$"
-      }
+      "region": "AUS",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Россия",
-        "value": 5.06,
-        "label": "price",
-        "unit": "$"
-      }
+      "region": "AUT",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Китай",
-        "value": 5.26,
-        "label": "price",
-        "unit": "$"
-      }
+      "region": "ARG",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Индия",
-        "value": 4.22,
-        "label": "price",
-        "unit": "$"
-      }
+      "region": "BEL",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Бразилия",
-        "value": 3.32,
-        "label": "price",
-        "unit": "$"
-      }
+      "region": "BGR",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Великобритания",
-        "value": 5.23,
-        "label": "price",
-        "unit": "$"
-      }
+      "region": "BRA",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Германия",
-        "value": 5.11,
-        "label": "price",
-        "unit": "$"
-      }
+      "region": "GBR",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Франция",
-        "value": 3.09,
-        "label": "price",
-        "unit": "$"
-      }
+      "region": "HUN",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Япония",
-        "value": 6.16,
-        "label": "price",
-        "unit": "$"
-      }
+      "region": "VNM",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Италия",
-        "value": 4.45,
-        "label": "price",
-        "unit": "$"
-      }
+      "region": "DEU",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Канада",
-        "value": 4.84,
-        "label": "price",
-        "unit": "$"
-      }
+      "region": "GRC",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Австралия",
-        "value": 3.33,
-        "label": "price",
-        "unit": "$"
-      }
+      "region": "DNK",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Мексика",
-        "value": 6.35,
-        "label": "price",
-        "unit": "$"
-      }
+      "region": "EGY",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Турция",
-        "value": 3.06,
-        "label": "price",
-        "unit": "$"
-      }
+      "region": "IND",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Иран",
-        "value": 2.79,
-        "label": "price",
-        "unit": "$"
-      }
+      "region": "IRL",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Египет",
-        "value": 6.03,
-        "label": "price",
-        "unit": "$"
-      }
+      "region": "ESP",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "ЮАР",
-        "value": 3.04,
-        "label": "price",
-        "unit": "$"
-      }
+      "region": "ITA",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Аргентина",
-        "value": 4.72,
-        "label": "price",
-        "unit": "$"
-      }
+      "region": "CHN",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Украина",
-        "value": 3.17,
-        "label": "price",
-        "unit": "$"
-      }
+      "region": "LVA",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Польша",
-        "value": 5.89,
-        "label": "price",
-        "unit": "$"
-      }
+      "region": "LTU",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Испания",
-        "value": 6.39,
-        "label": "price",
-        "unit": "$"
-      }
+      "region": "LUX",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Нидерланды",
-        "value": 2.92,
-        "label": "price",
-        "unit": "$"
-      }
+      "region": "MEX",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Бельгия",
-        "value": 2.7,
-        "label": "price",
-        "unit": "$"
-      }
+      "region": "NLD",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Швеция",
-        "value": 6.2,
-        "label": "price",
-        "unit": "$"
-      }
+      "region": "NOR",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Норвегия",
-        "value": 3.97,
-        "label": "price",
-        "unit": "$"
-      }
+      "region": "PRT",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Дания",
-        "value": 4.11,
-        "label": "price",
-        "unit": "$"
-      }
+      "region": "RUS",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Финляндия",
-        "value": 4.5,
-        "label": "price",
-        "unit": "$"
-      }
+      "region": "ROU",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Ирландия",
-        "value": 6.16,
-        "label": "price",
-        "unit": "$"
-      }
+      "region": "SGP",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Португалия",
-        "value": 3.28,
-        "label": "price",
-        "unit": "$"
-      }
+      "region": "SVK",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Греция",
-        "value": 6.02,
-        "label": "price",
-        "unit": "$"
-      }
+      "region": "SVN",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
+    },
+    {
+      "region": "USA",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
+    },
+    {
+      "region": "TUR",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
+    },
+    {
+      "region": "FIN",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
+    },
+    {
+      "region": "HRV",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
+    },
+    {
+      "region": "CZE",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
+    },
+    {
+      "region": "CHL",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
+    },
+    {
+      "region": "CHE",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
+    },
+    {
+      "region": "SWE",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
+    },
+    {
+      "region": "EST",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
+    },
+    {
+      "region": "ZAF",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
+    },
+    {
+      "region": "JPN",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     }
   ],
-  "_meta": {
-    "source": "demo-big-mac",
-    "updated": "2026-08-28T04:49:46.855Z",
-    "total": 30
+  "extra": {
+    "adapter": "catalog",
+    "adapter_version": "1.1.0",
+    "type_counts": {
+      "unknown": 41
+    },
+    "regions_count": 41,
+    "entries": [
+      {
+        "country": "Австралия",
+        "price": 4.8,
+        "date": "2026-09-20",
+        "source": "big-mac-alt-fallback"
+      },
+      {
+        "country": "Австрия",
+        "price": 4.85,
+        "date": "2026-09-20",
+        "source": "economist"
+      },
+      {
+        "country": "Аргентина",
+        "price": 3.5,
+        "date": "2026-09-20",
+        "source": "big-mac-fallback"
+      },
+      {
+        "country": "Бельгия",
+        "price": 4.75,
+        "date": "2026-09-20",
+        "source": "economist"
+      },
+      {
+        "country": "Болгария",
+        "price": 2.55,
+        "date": "2026-09-20",
+        "source": "economist"
+      },
+      {
+        "country": "Бразилия",
+        "price": 4.5,
+        "date": "2026-09-20",
+        "source": "big-mac-fallback"
+      },
+      {
+        "country": "Великобритания",
+        "price": 5.2,
+        "date": "2026-09-20",
+        "source": "big-mac-fallback"
+      },
+      {
+        "country": "Венгрия",
+        "price": 2.95,
+        "date": "2026-09-20",
+        "source": "economist"
+      },
+      {
+        "country": "Вьетнам",
+        "price": 2.6,
+        "date": "2026-09-20",
+        "source": "big-mac-alt-fallback"
+      },
+      {
+        "country": "Германия",
+        "price": 5,
+        "date": "2026-09-20",
+        "source": "big-mac-fallback"
+      },
+      {
+        "country": "Греция",
+        "price": 3.95,
+        "date": "2026-09-20",
+        "source": "economist"
+      },
+      {
+        "country": "Дания",
+        "price": 5.85,
+        "date": "2026-09-20",
+        "source": "economist"
+      },
+      {
+        "country": "Египет",
+        "price": 2.2,
+        "date": "2026-09-20",
+        "source": "big-mac-alt-fallback"
+      },
+      {
+        "country": "Индия",
+        "price": 2.8,
+        "date": "2026-09-20",
+        "source": "big-mac-fallback"
+      },
+      {
+        "country": "Ирландия",
+        "price": 4.95,
+        "date": "2026-09-20",
+        "source": "economist"
+      },
+      {
+        "country": "Испания",
+        "price": 4.35,
+        "date": "2026-09-20",
+        "source": "economist"
+      },
+      {
+        "country": "Италия",
+        "price": 4.65,
+        "date": "2026-09-20",
+        "source": "economist"
+      },
+      {
+        "country": "Китай",
+        "price": 3.2,
+        "date": "2026-09-20",
+        "source": "big-mac-fallback"
+      },
+      {
+        "country": "Латвия",
+        "price": 3.05,
+        "date": "2026-09-20",
+        "source": "economist"
+      },
+      {
+        "country": "Литва",
+        "price": 3.15,
+        "date": "2026-09-20",
+        "source": "economist"
+      },
+      {
+        "country": "Люксембург",
+        "price": 5.15,
+        "date": "2026-09-20",
+        "source": "economist"
+      },
+      {
+        "country": "Мексика",
+        "price": 3.2,
+        "date": "2026-09-20",
+        "source": "big-mac-alt-fallback"
+      },
+      {
+        "country": "Нидерланды",
+        "price": 4.85,
+        "date": "2026-09-20",
+        "source": "economist"
+      },
+      {
+        "country": "Норвегия",
+        "price": 6.15,
+        "date": "2026-09-20",
+        "source": "economist"
+      },
+      {
+        "country": "Португалия",
+        "price": 3.85,
+        "date": "2026-09-20",
+        "source": "economist"
+      },
+      {
+        "country": "Россия",
+        "price": 2.5,
+        "date": "2026-09-20",
+        "source": "big-mac-fallback"
+      },
+      {
+        "country": "Румыния",
+        "price": 2.65,
+        "date": "2026-09-20",
+        "source": "economist"
+      },
+      {
+        "country": "Сингапур",
+        "price": 5.8,
+        "date": "2026-09-20",
+        "source": "big-mac-alt-fallback"
+      },
+      {
+        "country": "Словакия",
+        "price": 3.05,
+        "date": "2026-09-20",
+        "source": "economist"
+      },
+      {
+        "country": "Словения",
+        "price": 3.25,
+        "date": "2026-09-20",
+        "source": "economist"
+      },
+      {
+        "country": "США",
+        "price": 5.8,
+        "date": "2026-09-20",
+        "source": "big-mac-fallback"
+      },
+      {
+        "country": "Турция",
+        "price": 2,
+        "date": "2026-09-20",
+        "source": "big-mac-fallback"
+      },
+      {
+        "country": "Финляндия",
+        "price": 5.35,
+        "date": "2026-09-20",
+        "source": "economist"
+      },
+      {
+        "country": "Хорватия",
+        "price": 3.15,
+        "date": "2026-09-20",
+        "source": "economist"
+      },
+      {
+        "country": "Чехия",
+        "price": 3.25,
+        "date": "2026-09-20",
+        "source": "economist"
+      },
+      {
+        "country": "Чили",
+        "price": 3.8,
+        "date": "2026-09-20",
+        "source": "big-mac-alt-fallback"
+      },
+      {
+        "country": "Швейцария",
+        "price": 6.45,
+        "date": "2026-09-20",
+        "source": "economist"
+      },
+      {
+        "country": "Швеция",
+        "price": 5.45,
+        "date": "2026-09-20",
+        "source": "economist"
+      },
+      {
+        "country": "Эстония",
+        "price": 3.25,
+        "date": "2026-09-20",
+        "source": "economist"
+      },
+      {
+        "country": "ЮАР",
+        "price": 2.8,
+        "date": "2026-09-20",
+        "source": "big-mac-alt-fallback"
+      },
+      {
+        "country": "Япония",
+        "price": 4,
+        "date": "2026-09-20",
+        "source": "big-mac-fallback"
+      }
+    ],
+    "entries_count": 41
   }
 }

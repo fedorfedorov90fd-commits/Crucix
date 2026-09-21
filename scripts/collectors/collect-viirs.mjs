@@ -1,72 +1,60 @@
 #!/usr/bin/env node
-// ============================================================
-// COLLECT-VIIRS.MJS — Сборщик данных ночных огней
-// ============================================================
-
-import { promises as fs } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath, pathToFileURL } from 'url';;
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const BASKET_DIR = join(__dirname, '..', '..', 'data', 'basket');
-const BASKET_PATH = join(BASKET_DIR, 'viirs.json');
+/**
+ * Crucix Collector: viirs (ночные огни, 5 регионов × 31 день) — demo.
+ * Версия 2.0.0. Принят 20.09.2026.
+ * Формат: [{date, region, lat, lon, brightness}]. Тип — points.
+ */
+import { saveRaw } from './lib/collector-helper.mjs';
+import { pathToFileURL } from 'url';
 
 const REGIONS = [
-    { name: 'Украина', lat: 49, lon: 31 },
-    { name: 'Россия', lat: 60, lon: 90 },
-    { name: 'США', lat: 40, lon: -100 },
-    { name: 'Китай', lat: 35, lon: 105 },
-    { name: 'Европа', lat: 50, lon: 10 }
+  { name: 'Украина', lat: 49, lon: 31 },
+  { name: 'Россия', lat: 60, lon: 90 },
+  { name: 'США', lat: 40, lon: -100 },
+  { name: 'Китай', lat: 35, lon: 105 },
+  { name: 'Европа', lat: 50, lon: 10 },
 ];
 
-async function loadExisting() {
-    try {
-        const data = await fs.readFile(BASKET_PATH, 'utf8');
-        return JSON.parse(data);
-    } catch { return []; }
-}
-
 function generateData() {
-    const now = new Date();
-    const data = [];
-    for (const region of REGIONS) {
-        for (let i = 30; i >= 0; i--) {
-            const date = new Date(now);
-            date.setDate(date.getDate() - i);
-            const brightness = Math.round((50 + (i / 30) * 20 + (Math.random() - 0.5) * 15) * 100) / 100;
-            data.push({
-                date: date.toISOString().split('T')[0],
-                region: region.name,
-                lat: region.lat,
-                lon: region.lon,
-                brightness: Math.max(0, brightness)
-            });
-        }
+  const now = new Date();
+  const data = [];
+  for (const region of REGIONS) {
+    for (let i = 30; i >= 0; i--) {
+      const date = new Date(now);
+      date.setDate(date.getDate() - i);
+      const brightness = Math.round((50 + (i / 30) * 20 + (Math.random() - 0.5) * 15) * 100) / 100;
+      data.push({
+        date: date.toISOString().split('T')[0],
+        region: region.name,
+        lat: region.lat,
+        lon: region.lon,
+        brightness: Math.max(0, brightness),
+      });
     }
-    return data;
+  }
+  return data;
 }
 
-async function saveToBasket(data) {
-    try {
-        await fs.mkdir(BASKET_DIR, { recursive: true });
-        await fs.writeFile(BASKET_PATH, JSON.stringify(data, null, 2), 'utf8');
-        console.log(`[VIIRS] ✅ Сохранено ${data.length} записей`);
-        return true;
-    } catch (error) {
-        console.error(`[VIIRS] ❌ Ошибка:`, error.message);
-        return false;
-    }
-}
-
-async function collectVIIRS() {
-    console.log('[VIIRS] 📡 Начинаем сбор...');
-    const data = generateData();
-    await saveToBasket(data);
-    return data;
+export async function collectVIIRS() {
+  const data = generateData();
+  const result = await saveRaw('viirs', data, {
+    collector: 'collect-viirs.mjs',
+    source: 'VIIRS night lights (demo)',
+    source_url: 'https://www.earthdata.nasa.gov/',
+    license: 'public-domain',
+    format_hint: 'points',
+    value_type: 'index',
+    value_unit: 'brightness',
+    granularity: 'daily',
+    period: 'P30D',
+    record_count: data.length,
+    notes: `Demo: ${REGIONS.length} регионов × 31 день = ${data.length}; basket не перезаписывается`,
+    backwardCompat: false,
+  });
+  console.log(`[VIIRS] OK ${data.length} → ${result.raw_file}`);
+  return data;
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-    collectVIIRS().catch(console.error);
+  collectVIIRS().catch(e => { console.error('[VIIRS] FATAL:', e.message); process.exit(1); });
 }
-
-export { collectVIIRS, generateData };

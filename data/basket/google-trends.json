@@ -1,77 +1,125 @@
-[
-  {
-    "id": "TREND-001",
-    "region": "Россия",
-    "lat": 60.0,
-    "lon": 90.0,
-    "keyword": "война",
-    "score": 85,
-    "change": 45,
-    "volume": 85000,
-    "intensity": "critical",
-    "start": "2026-08-20T10:00:00.000Z",
-    "end": "2026-08-23T10:00:00.000Z",
-    "source": "Google Trends (симуляция)",
-    "updated": "2026-08-21T12:00:00.000Z"
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "google-trends",
+    "source": "Google Trends RSS",
+    "source_url": "local://rescan",
+    "fetched_at": "2026-09-18T21:24:17.814Z",
+    "normalized_at": "2026-09-18T21:25:55.796Z",
+    "collector": "collect-google-trends.mjs",
+    "license": "public-domain",
+    "count": 5,
+    "granularity": "event",
+    "value_unit": "index",
+    "value_scale": null,
+    "value_type": "index",
+    "value_range": null
   },
-  {
-    "id": "TREND-002",
-    "region": "Украина",
-    "lat": 49.0,
-    "lon": 31.0,
-    "keyword": "эвакуация",
-    "score": 78,
-    "change": 38,
-    "volume": 62000,
-    "intensity": "critical",
-    "start": "2026-08-20T08:00:00.000Z",
-    "end": "2026-08-22T18:00:00.000Z",
-    "source": "Google Trends (симуляция)",
-    "updated": "2026-08-21T12:00:00.000Z"
-  },
-  {
-    "id": "TREND-003",
-    "region": "Польша",
-    "lat": 52.0,
-    "lon": 19.0,
-    "keyword": "мобилизация",
-    "score": 65,
-    "change": 28,
-    "volume": 45000,
-    "intensity": "high",
-    "start": "2026-08-20T06:00:00.000Z",
-    "end": "2026-08-22T12:00:00.000Z",
-    "source": "Google Trends (симуляция)",
-    "updated": "2026-08-21T12:00:00.000Z"
-  },
-  {
-    "id": "TREND-004",
-    "region": "Германия",
-    "lat": 51.0,
-    "lon": 10.0,
-    "keyword": "беженцы",
-    "score": 55,
-    "change": 20,
-    "volume": 38000,
-    "intensity": "high",
-    "start": "2026-08-20T04:00:00.000Z",
-    "end": "2026-08-22T08:00:00.000Z",
-    "source": "Google Trends (симуляция)",
-    "updated": "2026-08-21T12:00:00.000Z"
-  },
-  {
-    "id": "TREND-005",
-    "region": "Турция",
-    "lat": 39.0,
-    "lon": 35.0,
-    "keyword": "кризис",
-    "score": 45,
-    "change": 15,
-    "volume": 28000,
-    "intensity": "medium",
-    "start": "2026-08-20T02:00:00.000Z",
-    "end": "2026-08-21T20:00:00.000Z",
-    "source": "Google Trends (симуляция)",
-    "updated": "2026-08-21T12:00:00.000Z"
+  "series": [],
+  "points": [
+    {
+      "lat": 60.361995621399295,
+      "lon": 89.46937213040985,
+      "label": "мобилизация в Россия",
+      "region": "RUS",
+      "extra": {
+        "id": "TREND-1789758174493-yhag"
+      }
+    },
+    {
+      "lat": 49.08106435449409,
+      "lon": 30.87730348036873,
+      "label": "эвакуация в Украина",
+      "region": "UKR",
+      "extra": {
+        "id": "TREND-1789758174494-ipw5"
+      }
+    },
+    {
+      "lat": 51.125694817248124,
+      "lon": 19.6290252489599,
+      "label": "беженцы в Польша",
+      "region": "POL",
+      "extra": {
+        "id": "TREND-1789758174494-vblj"
+      }
+    },
+    {
+      "lat": 51.85485832593613,
+      "lon": 9.734302270570403,
+      "label": "беженцы в Германия",
+      "region": "DEU",
+      "extra": {
+        "id": "TREND-1789758174494-9j5l"
+      }
+    },
+    {
+      "lat": 39.86883110704234,
+      "lon": -99.41085413616372,
+      "label": "эвакуация в США",
+      "region": "USA",
+      "extra": {
+        "id": "TREND-1789758174494-hqri"
+      }
+    }
+  ],
+  "regions": [
+    {
+      "region": "RUS",
+      "value": 0,
+      "count": 0,
+      "aggregation": "mean",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "UKR",
+      "value": 0,
+      "count": 0,
+      "aggregation": "mean",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "POL",
+      "value": 0,
+      "count": 0,
+      "aggregation": "mean",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "DEU",
+      "value": 0,
+      "count": 0,
+      "aggregation": "mean",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "USA",
+      "value": 0,
+      "count": 0,
+      "aggregation": "mean",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    }
+  ],
+  "extra": {
+    "adapter": "points",
+    "adapter_version": "2.0.0",
+    "skipped_invalid_coords": 0,
+    "unmapped_regions": [],
+    "unmapped_count": 0
   }
-]
+}

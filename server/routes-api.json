@@ -1628,5 +1628,25 @@
     "path": "/api/basket/*",
     "module": "basket-api",
     "method": "GET"
+  },
+  {
+    "path": "/api/layers/country-brief",
+    "module": "country-brief-api",
+    "method": "GET"
+  },
+  {
+    "path": "/api/layers/world-brief",
+    "module": "world-brief-api",
+    "method": "GET"
+  },
+  {
+    "path": "/api/layers/analyze-situation",
+    "module": "analyze-situation-api",
+    "method": "GET"
+  },
+  {
+    "path": "/api/layers/entity-graph",
+    "module": "entity-graph-api",
+    "method": "GET"
   }
 ]

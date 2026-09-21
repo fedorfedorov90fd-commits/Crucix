@@ -1,6 +1,6 @@
 /**
  * Адаптер regions.
- * Версия 2.0.0. Принят 18.09.2026.
+ * Версия 2.1.0. Принят 19.09.2026.
  *
  * Назначение: нормализация источников с региональными агрегатами без
  * временного ряда. Формат сырья: массив объектов с полем region|country
@@ -11,6 +11,9 @@
  * Одна карта by_alias_lower — для всех видов входных данных.
  *
  * Если регион распознан в ISO3 и у страны есть центроид — добавляется точка.
+ *
+ * Изменение 2.1.0: passThroughV1Object для готовых v1-объектов.
+ * Универсальный принцип: адаптер НЕ теряет данные.
  *
  * Контракт: export async function normalize(rawData, meta) -> объект.
  */
@@ -51,9 +54,53 @@ function pickString(obj, fields) {
   return null;
 }
 
+// v2.1.0: pass-through готового v1-объекта.
+function passThroughV1Object(rawData, rawMeta) {
+  const points = Array.isArray(rawData.points) ? rawData.points : [];
+  const series = Array.isArray(rawData.series) ? rawData.series : [];
+  const regions = Array.isArray(rawData.regions) ? rawData.regions : [];
+  const documents = Array.isArray(rawData.documents) ? rawData.documents : [];
+  const graph = rawData.graph && typeof rawData.graph === 'object' ? rawData.graph : null;
+  const count = points.length + series.length + regions.length + documents.length;
+  const valueUnit = rawMeta.value_unit || rawData.value_unit || 'index';
+  const valueType = rawMeta.value_type || rawData.value_type || 'index';
+  const granularity = rawMeta.granularity || rawData.granularity || 'snapshot';
+  const aggregation = rawMeta.aggregation || rawData.aggregation || 'mean';
+  const result = {
+    schema: 'crucix.basket.v1',
+    count, granularity,
+    value_unit: valueUnit,
+    value_scale: rawMeta.value_scale || rawData.value_scale || null,
+    value_type: valueType,
+    value_range: rawMeta.value_range !== undefined ? rawMeta.value_range : (rawData.value_range || null),
+    series, points,
+    regions: regions.map(r => ({ ...r, aggregation: r.aggregation || aggregation })),
+    extra: {
+      adapter: 'regions',
+      adapter_version: '2.1.0',
+      passthrough_v1: true,
+      series_count: series.length,
+      points_count: points.length,
+      regions_count: regions.length
+    }
+  };
+  if (documents.length > 0) result.documents = documents;
+  if (graph) result.graph = graph;
+  if (rawData.extra && typeof rawData.extra === 'object') Object.assign(result.extra, rawData.extra);
+  return result;
+}
+
 export async function normalize(rawData, meta) {
+  const rawMeta = meta || {};
+
+  // v2.1.0: ГОТОВЫЙ v1-объект
+  if (rawData && !Array.isArray(rawData) && typeof rawData === 'object'
+      && (Array.isArray(rawData.points) || Array.isArray(rawData.series) || Array.isArray(rawData.regions))) {
+    return passThroughV1Object(rawData, rawMeta);
+  }
+
   if (!Array.isArray(rawData)) {
-    throw new Error(`regions.normalize: ожидается массив, получено ${typeof rawData}`);
+    throw new Error(`regions.normalize: ожидается массив или v1-объект, получено ${typeof rawData}`);
   }
 
   const countries = await mapperWarmup();
@@ -64,7 +111,6 @@ export async function normalize(rawData, meta) {
   let skipped = 0;
   let pointsFromCentroids = 0;
 
-  const rawMeta = meta || {};
   const valueUnit = rawMeta.value_unit || 'index';
   const valueTypeMap = {
     'magnitude': 'magnitude', 'severity_0_1': 'severity', 'severity_0_10': 'severity',
@@ -138,7 +184,7 @@ export async function normalize(rawData, meta) {
     regions,
     extra: {
       adapter: 'regions',
-      adapter_version: '2.0.0',
+      adapter_version: '2.1.0',
       skipped_rows: skipped,
       points_from_centroids: pointsFromCentroids,
       unmapped_regions: Array.from(unmappedRegions),

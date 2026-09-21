@@ -1,280 +1,289 @@
 {
-  "type": "FeatureCollection",
-  "features": [
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "comtrade",
+    "source": "UN Comtrade (demo)",
+    "source_url": "https://comtradeapi.un.org/",
+    "fetched_at": "2026-09-20T10:41:42.000Z",
+    "normalized_at": "2026-09-20T11:28:56.962Z",
+    "collector": "collect-comtrade.mjs",
+    "license": "public-domain",
+    "count": 31,
+    "granularity": "daily",
+    "value_unit": "usd",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null,
+    "period": "P30D"
+  },
+  "series": [
     {
-      "type": "Feature",
-      "properties": {
-        "name": "США",
-        "value": 656.01,
-        "label": "trade",
-        "unit": "млрд $"
+      "date": "2026-08-21",
+      "value": 146617,
+      "extra": {
+        "exports": 32310,
+        "imports": 42041
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Россия",
-        "value": 571.5,
-        "label": "trade",
-        "unit": "млрд $"
+      "date": "2026-08-22",
+      "value": 59400,
+      "extra": {
+        "exports": 28917,
+        "imports": 53264
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Китай",
-        "value": 290.81,
-        "label": "trade",
-        "unit": "млрд $"
+      "date": "2026-08-23",
+      "value": 113835,
+      "extra": {
+        "exports": 53172,
+        "imports": 26386
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Индия",
-        "value": 350.69,
-        "label": "trade",
-        "unit": "млрд $"
+      "date": "2026-08-24",
+      "value": 81200,
+      "extra": {
+        "exports": 45488,
+        "imports": 21854
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Бразилия",
-        "value": 736.77,
-        "label": "trade",
-        "unit": "млрд $"
+      "date": "2026-08-25",
+      "value": 144893,
+      "extra": {
+        "exports": 58710,
+        "imports": 47827
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Великобритания",
-        "value": 801.09,
-        "label": "trade",
-        "unit": "млрд $"
+      "date": "2026-08-26",
+      "value": 99510,
+      "extra": {
+        "exports": 27912,
+        "imports": 69699
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Германия",
-        "value": 303.06,
-        "label": "trade",
-        "unit": "млрд $"
+      "date": "2026-08-27",
+      "value": 143739,
+      "extra": {
+        "exports": 31651,
+        "imports": 65792
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Франция",
-        "value": 580.08,
-        "label": "trade",
-        "unit": "млрд $"
+      "date": "2026-08-28",
+      "value": 79310,
+      "extra": {
+        "exports": 28488,
+        "imports": 59373
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Япония",
-        "value": 840.05,
-        "label": "trade",
-        "unit": "млрд $"
+      "date": "2026-08-29",
+      "value": 92070,
+      "extra": {
+        "exports": 58022,
+        "imports": 65416
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Италия",
-        "value": 691.75,
-        "label": "trade",
-        "unit": "млрд $"
+      "date": "2026-08-30",
+      "value": 123496,
+      "extra": {
+        "exports": 65856,
+        "imports": 34522
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Канада",
-        "value": 442.6,
-        "label": "trade",
-        "unit": "млрд $"
+      "date": "2026-08-31",
+      "value": 115816,
+      "extra": {
+        "exports": 35033,
+        "imports": 22841
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Австралия",
-        "value": 920.63,
-        "label": "trade",
-        "unit": "млрд $"
+      "date": "2026-09-01",
+      "value": 119611,
+      "extra": {
+        "exports": 54679,
+        "imports": 38743
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Мексика",
-        "value": 895.86,
-        "label": "trade",
-        "unit": "млрд $"
+      "date": "2026-09-02",
+      "value": 92861,
+      "extra": {
+        "exports": 29400,
+        "imports": 36250
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Турция",
-        "value": 681.14,
-        "label": "trade",
-        "unit": "млрд $"
+      "date": "2026-09-03",
+      "value": 95508,
+      "extra": {
+        "exports": 34723,
+        "imports": 50512
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Иран",
-        "value": 222.92,
-        "label": "trade",
-        "unit": "млрд $"
+      "date": "2026-09-04",
+      "value": 50178,
+      "extra": {
+        "exports": 32398,
+        "imports": 38128
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Египет",
-        "value": 252.34,
-        "label": "trade",
-        "unit": "млрд $"
+      "date": "2026-09-05",
+      "value": 147180,
+      "extra": {
+        "exports": 56951,
+        "imports": 63398
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "ЮАР",
-        "value": 107.37,
-        "label": "trade",
-        "unit": "млрд $"
+      "date": "2026-09-06",
+      "value": 117635,
+      "extra": {
+        "exports": 44690,
+        "imports": 27354
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Аргентина",
-        "value": 142.13,
-        "label": "trade",
-        "unit": "млрд $"
+      "date": "2026-09-07",
+      "value": 121541,
+      "extra": {
+        "exports": 31406,
+        "imports": 67457
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Украина",
-        "value": 569.18,
-        "label": "trade",
-        "unit": "млрд $"
+      "date": "2026-09-08",
+      "value": 83084,
+      "extra": {
+        "exports": 36494,
+        "imports": 45143
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Польша",
-        "value": 412.92,
-        "label": "trade",
-        "unit": "млрд $"
+      "date": "2026-09-09",
+      "value": 142720,
+      "extra": {
+        "exports": 61922,
+        "imports": 43795
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Испания",
-        "value": 531.44,
-        "label": "trade",
-        "unit": "млрд $"
+      "date": "2026-09-10",
+      "value": 144370,
+      "extra": {
+        "exports": 53075,
+        "imports": 60875
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Нидерланды",
-        "value": 455.36,
-        "label": "trade",
-        "unit": "млрд $"
+      "date": "2026-09-11",
+      "value": 118887,
+      "extra": {
+        "exports": 29204,
+        "imports": 24497
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Бельгия",
-        "value": 312.99,
-        "label": "trade",
-        "unit": "млрд $"
+      "date": "2026-09-12",
+      "value": 90505,
+      "extra": {
+        "exports": 38698,
+        "imports": 35394
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Швеция",
-        "value": 618.61,
-        "label": "trade",
-        "unit": "млрд $"
+      "date": "2026-09-13",
+      "value": 81048,
+      "extra": {
+        "exports": 69527,
+        "imports": 49594
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Норвегия",
-        "value": 599.99,
-        "label": "trade",
-        "unit": "млрд $"
+      "date": "2026-09-14",
+      "value": 123055,
+      "extra": {
+        "exports": 55825,
+        "imports": 22794
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Дания",
-        "value": 861,
-        "label": "trade",
-        "unit": "млрд $"
+      "date": "2026-09-15",
+      "value": 107763,
+      "extra": {
+        "exports": 58750,
+        "imports": 66205
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Финляндия",
-        "value": 492.58,
-        "label": "trade",
-        "unit": "млрд $"
+      "date": "2026-09-16",
+      "value": 62155,
+      "extra": {
+        "exports": 67430,
+        "imports": 36979
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Ирландия",
-        "value": 512.92,
-        "label": "trade",
-        "unit": "млрд $"
+      "date": "2026-09-17",
+      "value": 77632,
+      "extra": {
+        "exports": 31883,
+        "imports": 25406
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Португалия",
-        "value": 471.25,
-        "label": "trade",
-        "unit": "млрд $"
+      "date": "2026-09-18",
+      "value": 89004,
+      "extra": {
+        "exports": 24299,
+        "imports": 45449
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Греция",
-        "value": 122.66,
-        "label": "trade",
-        "unit": "млрд $"
+      "date": "2026-09-19",
+      "value": 72193,
+      "extra": {
+        "exports": 25594,
+        "imports": 38081
+      }
+    },
+    {
+      "date": "2026-09-20",
+      "value": 145096,
+      "extra": {
+        "exports": 31497,
+        "imports": 68960
       }
     }
   ],
-  "_meta": {
-    "source": "demo-comtrade",
-    "updated": "2026-08-28T04:49:46.870Z",
-    "total": 30
+  "points": [],
+  "regions": [
+    {
+      "region": "GLOBAL",
+      "value": 105868.12903225806,
+      "count": 31,
+      "aggregation": "sum",
+      "extra": {
+        "max": 147180,
+        "sum": 3281912
+      }
+    }
+  ],
+  "extra": {
+    "adapter": "timeseries",
+    "adapter_version": "2.1.1",
+    "unique_dates": 31,
+    "unmapped_regions": [],
+    "unmapped_count": 0
   }
 }

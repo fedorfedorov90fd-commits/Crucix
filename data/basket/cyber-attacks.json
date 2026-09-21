@@ -1,42 +1,345 @@
-[
-  {
-    "name": "Ransomware attack",
-    "severity": 3,
-    "lat": 40.7128,
-    "lng": -74.006,
-    "region": "US",
-    "timestamp": "2026-09-05T14:57:07.553Z"
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "cyber-attacks",
+    "source": "CISA KEV + открытые данные",
+    "source_url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+    "fetched_at": "2026-09-20T10:41:42.203Z",
+    "normalized_at": "2026-09-20T11:28:56.969Z",
+    "collector": "collect-cyber-attacks.mjs",
+    "license": "public-domain",
+    "count": 15,
+    "granularity": "snapshot",
+    "value_unit": "count",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null
   },
-  {
-    "name": "DDoS attack",
-    "severity": 2,
-    "lat": 51.5074,
-    "lng": -0.1278,
-    "region": "EU",
-    "timestamp": "2026-09-05T13:57:07.553Z"
-  },
-  {
-    "name": "Data breach",
-    "severity": 3,
-    "lat": 35.6762,
-    "lng": 139.6503,
-    "region": "JAPAN",
-    "timestamp": "2026-09-05T12:57:07.553Z"
-  },
-  {
-    "name": "Phishing campaign",
-    "severity": 1,
-    "lat": 22.3193,
-    "lng": 114.1694,
-    "region": "ASIA",
-    "timestamp": "2026-09-05T11:57:07.553Z"
-  },
-  {
-    "name": "Malware outbreak",
-    "severity": 2,
-    "lat": 55.7558,
-    "lng": 37.6173,
-    "region": "RUSSIA",
-    "timestamp": "2026-09-05T10:57:07.553Z"
+  "series": [],
+  "points": [
+    {
+      "lat": 40.7128,
+      "lon": -74.006,
+      "label": "DDoS атака на банковский сектор",
+      "region": "USA",
+      "timestamp": "2026-09-20T10:41:42.199Z",
+      "extra": {
+        "id": "attack-001",
+        "type": "ddos"
+      }
+    },
+    {
+      "lat": 50.4501,
+      "lon": 30.5234,
+      "label": "Взлом государственной сети",
+      "region": "UKR",
+      "timestamp": "2026-09-20T10:41:42.199Z",
+      "extra": {
+        "id": "attack-002",
+        "type": "breach"
+      }
+    },
+    {
+      "lat": 51.5074,
+      "lon": -0.1278,
+      "label": "Ransomware атака на больницу",
+      "region": "GBR",
+      "timestamp": "2026-09-20T10:41:42.199Z",
+      "extra": {
+        "id": "attack-003",
+        "type": "ransomware"
+      }
+    },
+    {
+      "lat": 52.52,
+      "lon": 13.405,
+      "label": "Фишинговая кампания против дипломатов",
+      "region": "DEU",
+      "timestamp": "2026-09-20T10:41:42.199Z",
+      "extra": {
+        "id": "attack-004",
+        "type": "phishing"
+      }
+    },
+    {
+      "lat": 55.7558,
+      "lon": 37.6173,
+      "label": "DDoS на правительственные сайты",
+      "region": "RUS",
+      "timestamp": "2026-09-20T10:41:42.199Z",
+      "extra": {
+        "id": "attack-005",
+        "type": "ddos"
+      }
+    },
+    {
+      "lat": 31.0461,
+      "lon": 34.8516,
+      "label": "Взлом военной базы данных",
+      "region": "ISR",
+      "timestamp": "2026-09-20T10:41:42.199Z",
+      "extra": {
+        "id": "attack-006",
+        "type": "breach"
+      }
+    },
+    {
+      "lat": 10.4806,
+      "lon": -66.9036,
+      "label": "Кибератака на энергетическую сеть",
+      "region": "VEN",
+      "timestamp": "2026-09-20T10:41:42.199Z",
+      "extra": {
+        "id": "attack-007",
+        "type": "infrastructure"
+      }
+    },
+    {
+      "lat": 52.3676,
+      "lon": 4.9041,
+      "label": "Ransomware на логистическую компанию",
+      "region": "NLD",
+      "timestamp": "2026-09-20T10:41:42.199Z",
+      "extra": {
+        "id": "attack-008",
+        "type": "ransomware"
+      }
+    },
+    {
+      "lat": 1.3521,
+      "lon": 103.8198,
+      "label": "Фишинг на финансовые учреждения",
+      "region": "SGP",
+      "timestamp": "2026-09-20T10:41:42.199Z",
+      "extra": {
+        "id": "attack-009",
+        "type": "phishing"
+      }
+    },
+    {
+      "lat": 39.9042,
+      "lon": 116.4074,
+      "label": "DDoS на телекоммуникации",
+      "region": "CHN",
+      "timestamp": "2026-09-20T10:41:42.199Z",
+      "extra": {
+        "id": "attack-010",
+        "type": "ddos"
+      }
+    },
+    {
+      "lat": 48.8566,
+      "lon": 2.3522,
+      "label": "Взлом правительственной почты",
+      "region": "FRA",
+      "timestamp": "2026-09-20T10:41:42.199Z",
+      "extra": {
+        "id": "attack-011",
+        "type": "breach"
+      }
+    },
+    {
+      "lat": 28.6139,
+      "lon": 77.209,
+      "label": "Кибератака на оборонный сектор",
+      "region": "IND",
+      "timestamp": "2026-09-20T10:41:42.199Z",
+      "extra": {
+        "id": "attack-012",
+        "type": "breach"
+      }
+    },
+    {
+      "lat": 41.9028,
+      "lon": 12.4964,
+      "label": "Ransomware на городскую администрацию",
+      "region": "ITA",
+      "timestamp": "2026-09-20T10:41:42.199Z",
+      "extra": {
+        "id": "attack-013",
+        "type": "ransomware"
+      }
+    },
+    {
+      "lat": 39.9334,
+      "lon": 32.8597,
+      "label": "DDoS на новостные порталы",
+      "region": "TUR",
+      "timestamp": "2026-09-20T10:41:42.199Z",
+      "extra": {
+        "id": "attack-014",
+        "type": "ddos"
+      }
+    },
+    {
+      "lat": 46.948,
+      "lon": 7.4474,
+      "label": "Кибершпионаж в дипломатических кругах",
+      "region": "CHE",
+      "timestamp": "2026-09-20T10:41:42.199Z",
+      "extra": {
+        "id": "attack-015",
+        "type": "spy"
+      }
+    }
+  ],
+  "regions": [
+    {
+      "region": "USA",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "UKR",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "GBR",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "DEU",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "RUS",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "ISR",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "VEN",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "NLD",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "SGP",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "CHN",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "FRA",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "IND",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "ITA",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "TUR",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "CHE",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    }
+  ],
+  "extra": {
+    "adapter": "points",
+    "adapter_version": "2.1.0",
+    "skipped_invalid_coords": 0,
+    "unmapped_regions": [],
+    "unmapped_count": 0
   }
-]
+}

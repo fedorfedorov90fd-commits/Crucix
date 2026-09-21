@@ -1,18 +1,281 @@
-[
-  {"date": "2026-07-25", "value": 104.0},
-  {"date": "2026-07-27", "value": 104.2},
-  {"date": "2026-07-29", "value": 104.5},
-  {"date": "2026-07-31", "value": 104.8},
-  {"date": "2026-08-02", "value": 105.0},
-  {"date": "2026-08-04", "value": 105.2},
-  {"date": "2026-08-06", "value": 105.2},
-  {"date": "2026-08-08", "value": 105.1},
-  {"date": "2026-08-10", "value": 105.2},
-  {"date": "2026-08-12", "value": 105.2},
-  {"date": "2026-08-14", "value": 105.2},
-  {"date": "2026-08-16", "value": 105.2},
-  {"date": "2026-08-18", "value": 105.2},
-  {"date": "2026-08-20", "value": 105.2},
-  {"date": "2026-08-22", "value": 105.2},
-  {"date": "2026-08-23", "value": 105.2}
-]
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "dxy",
+    "source": "DXY (demo)",
+    "source_url": "https://finance.yahoo.com/quote/DX-Y.NYB",
+    "fetched_at": "2026-09-20T10:43:22.224Z",
+    "normalized_at": "2026-09-20T11:28:56.996Z",
+    "collector": "collect-dxy.mjs",
+    "license": "public-domain",
+    "count": 30,
+    "granularity": "daily",
+    "value_unit": "index",
+    "value_scale": null,
+    "value_type": "index",
+    "value_range": null,
+    "period": "P30D"
+  },
+  "series": [
+    {
+      "date": "2026-08-22",
+      "value": 105.2,
+      "extra": {
+        "change": 0.01,
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-08-23",
+      "value": 105.5,
+      "extra": {
+        "change": 0.12,
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-08-24",
+      "value": 105.8,
+      "extra": {
+        "change": -0.12,
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-08-25",
+      "value": 106.1,
+      "extra": {
+        "change": 0.07,
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-08-26",
+      "value": 106,
+      "extra": {
+        "change": 0.17,
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-08-27",
+      "value": 105.7,
+      "extra": {
+        "change": -0.09,
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-08-28",
+      "value": 105.3,
+      "extra": {
+        "change": -0.1,
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-08-29",
+      "value": 104.9,
+      "extra": {
+        "change": 0.15,
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-08-30",
+      "value": 104.6,
+      "extra": {
+        "change": 0.05,
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-08-31",
+      "value": 104.2,
+      "extra": {
+        "change": -0.05,
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-09-01",
+      "value": 104,
+      "extra": {
+        "change": 0.01,
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-09-02",
+      "value": 103.8,
+      "extra": {
+        "change": 0.11,
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-09-03",
+      "value": 103.5,
+      "extra": {
+        "change": 0.18,
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-09-04",
+      "value": 103.2,
+      "extra": {
+        "change": 0.01,
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-09-05",
+      "value": 103,
+      "extra": {
+        "change": 0.02,
+        "status": "low"
+      }
+    },
+    {
+      "date": "2026-09-06",
+      "value": 102.8,
+      "extra": {
+        "change": 0.14,
+        "status": "low"
+      }
+    },
+    {
+      "date": "2026-09-07",
+      "value": 102.5,
+      "extra": {
+        "change": -0.1,
+        "status": "low"
+      }
+    },
+    {
+      "date": "2026-09-08",
+      "value": 102.2,
+      "extra": {
+        "change": -0.11,
+        "status": "low"
+      }
+    },
+    {
+      "date": "2026-09-09",
+      "value": 102,
+      "extra": {
+        "change": 0.05,
+        "status": "low"
+      }
+    },
+    {
+      "date": "2026-09-10",
+      "value": 101.8,
+      "extra": {
+        "change": -0.04,
+        "status": "low"
+      }
+    },
+    {
+      "date": "2026-09-11",
+      "value": 101.5,
+      "extra": {
+        "change": -0.19,
+        "status": "low"
+      }
+    },
+    {
+      "date": "2026-09-12",
+      "value": 101.2,
+      "extra": {
+        "change": -0.06,
+        "status": "low"
+      }
+    },
+    {
+      "date": "2026-09-13",
+      "value": 101,
+      "extra": {
+        "change": -0.16,
+        "status": "low"
+      }
+    },
+    {
+      "date": "2026-09-14",
+      "value": 100.8,
+      "extra": {
+        "change": -0.08,
+        "status": "low"
+      }
+    },
+    {
+      "date": "2026-09-15",
+      "value": 100.5,
+      "extra": {
+        "change": 0.01,
+        "status": "low"
+      }
+    },
+    {
+      "date": "2026-09-16",
+      "value": 100.2,
+      "extra": {
+        "change": 0.03,
+        "status": "low"
+      }
+    },
+    {
+      "date": "2026-09-17",
+      "value": 100,
+      "extra": {
+        "change": 0.02,
+        "status": "low"
+      }
+    },
+    {
+      "date": "2026-09-18",
+      "value": 99.8,
+      "extra": {
+        "change": -0.09,
+        "status": "low"
+      }
+    },
+    {
+      "date": "2026-09-19",
+      "value": 99.5,
+      "extra": {
+        "change": 0.03,
+        "status": "low"
+      }
+    },
+    {
+      "date": "2026-09-20",
+      "value": 99.2,
+      "extra": {
+        "change": 0,
+        "status": "low"
+      }
+    }
+  ],
+  "points": [],
+  "regions": [
+    {
+      "region": "GLOBAL",
+      "value": 102.85999999999999,
+      "count": 30,
+      "aggregation": "mean",
+      "extra": {
+        "max": 106.1,
+        "sum": 3085.7999999999997
+      }
+    }
+  ],
+  "extra": {
+    "adapter": "timeseries",
+    "adapter_version": "2.1.1",
+    "unique_dates": 30,
+    "unmapped_regions": [],
+    "unmapped_count": 0
+  }
+}

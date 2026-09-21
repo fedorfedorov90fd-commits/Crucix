@@ -1,0 +1,65 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "trading-economics",
+    "source": "Trading Economics (demo)",
+    "source_url": "https://tradingeconomics.com/",
+    "fetched_at": "2026-09-20T11:17:12.755Z",
+    "normalized_at": "2026-09-20T11:28:57.200Z",
+    "collector": "collect-trading-economics.mjs",
+    "license": "public-domain",
+    "count": 1,
+    "granularity": "snapshot",
+    "value_unit": "index",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null
+  },
+  "series": [],
+  "points": [],
+  "regions": [],
+  "extra": {
+    "adapter": "catalog",
+    "adapter_version": "1.1.0",
+    "type_counts": {
+      "unknown": 1
+    },
+    "regions_count": 0,
+    "entries": [
+      {
+        "source": "TradingEconomics",
+        "lastUpdated": "2026-09-20T11:17:12.750Z",
+        "indicators": {
+          "us_inflation": {
+            "value": 3.2,
+            "year": 2024,
+            "note": "Демо-данные"
+          },
+          "us_unemployment": {
+            "value": 3.9,
+            "year": 2024,
+            "note": "Демо-данные"
+          },
+          "fed_rate": {
+            "value": 5.5,
+            "year": 2024,
+            "note": "Демо-данные"
+          },
+          "eu_inflation": {
+            "value": 2.6,
+            "year": 2024,
+            "note": "Демо-данные"
+          },
+          "china_gdp": {
+            "value": 4.8,
+            "year": 2024,
+            "note": "Демо-данные"
+          }
+        },
+        "note": "Для реальных данных установите TRADING_ECONOMICS_KEY в .env (правило 12.2)"
+      }
+    ],
+    "entries_count": 1,
+    "wrapped_single_object": true
+  }
+}

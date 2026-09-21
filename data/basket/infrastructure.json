@@ -1,0 +1,2150 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "infrastructure",
+    "source": "Crucix infrastructure",
+    "source_url": "local://rescan",
+    "fetched_at": "2026-09-18T21:24:17.815Z",
+    "normalized_at": "2026-09-18T21:25:55.825Z",
+    "collector": "collect-infrastructure.mjs",
+    "license": "proprietary",
+    "count": 114,
+    "granularity": "event",
+    "value_unit": "severity_0_1",
+    "value_scale": null,
+    "value_type": "severity",
+    "value_range": [
+      0,
+      1
+    ]
+  },
+  "series": [],
+  "points": [
+    {
+      "lat": 47.5122,
+      "lon": 34.8347,
+      "value": 0.95,
+      "label": "Запорожская АЭС",
+      "region": "UKR",
+      "timestamp": "2026-09-18T18:09:58.068Z",
+      "extra": {
+        "id": "npp-zaporizhzhia",
+        "type": "nuclear_power_plant",
+        "status": "critical"
+      }
+    },
+    {
+      "lat": 51.3892,
+      "lon": 30.0995,
+      "value": 0.7,
+      "label": "Чернобыльская АЭС (зона)",
+      "region": "UKR",
+      "timestamp": "2026-09-18T18:09:58.068Z",
+      "extra": {
+        "id": "npp-chernobyl",
+        "type": "nuclear_power_plant",
+        "status": "decommissioned"
+      }
+    },
+    {
+      "lat": 37.4213,
+      "lon": 141.0328,
+      "value": 0.8,
+      "label": "Фукусима-1 (зона)",
+      "region": "JPN",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "npp-fukushima",
+        "type": "nuclear_power_plant",
+        "status": "decommissioned"
+      }
+    },
+    {
+      "lat": 37.4286,
+      "lon": 138.5953,
+      "value": 0.45,
+      "label": "Касивадзаки-Карива",
+      "region": "JPN",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "npp-kashiwazaki",
+        "type": "nuclear_power_plant",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 44.3253,
+      "lon": -81.5997,
+      "value": 0.3,
+      "label": "Брюс (Bruce)",
+      "region": "CAN",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "npp-bruce",
+        "type": "nuclear_power_plant",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 37.0911,
+      "lon": 129.3836,
+      "value": 0.35,
+      "label": "Ханул (Hanul)",
+      "region": "KOR",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "npp-hanul",
+        "type": "nuclear_power_plant",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 51.0153,
+      "lon": 2.1361,
+      "value": 0.3,
+      "label": "Гравлин (Gravelines)",
+      "region": "FRA",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "npp-gravelines",
+        "type": "nuclear_power_plant",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 49.8575,
+      "lon": 0.6353,
+      "value": 0.3,
+      "label": "Палюэль (Paluel)",
+      "region": "FRA",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "npp-paluel",
+        "type": "nuclear_power_plant",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 49.4158,
+      "lon": 6.2181,
+      "value": 0.35,
+      "label": "Каттеном (Cattenom)",
+      "region": "FRA",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "npp-cattenom",
+        "type": "nuclear_power_plant",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 21.9175,
+      "lon": 112.9781,
+      "value": 0.3,
+      "label": "Тайшань (Taishan)",
+      "region": "CHN",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "npp-taishan",
+        "type": "nuclear_power_plant",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 28.8294,
+      "lon": 50.8922,
+      "value": 0.75,
+      "label": "Бушер (Bushehr)",
+      "region": "IRN",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "npp-bushehr",
+        "type": "nuclear_power_plant",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 8.1683,
+      "lon": 77.7128,
+      "value": 0.4,
+      "label": "Куданкулам (Kudankulam)",
+      "region": "IND",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "npp-kudankulam",
+        "type": "nuclear_power_plant",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 23.9647,
+      "lon": 52.2247,
+      "value": 0.25,
+      "label": "Барака (Barakah)",
+      "region": "ARE",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "npp-barakah",
+        "type": "nuclear_power_plant",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 36.1447,
+      "lon": 33.5403,
+      "value": 0.65,
+      "label": "Аккую (Akkuyu)",
+      "region": "TUR",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "npp-akkuyu",
+        "type": "nuclear_power_plant",
+        "status": "warning"
+      }
+    },
+    {
+      "lat": 34.6869,
+      "lon": 119.4569,
+      "value": 0.25,
+      "label": "Тяньвань (Tianwan)",
+      "region": "CHN",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "npp-tianwan",
+        "type": "nuclear_power_plant",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 46.4553,
+      "lon": 0.6533,
+      "value": 0.3,
+      "label": "Сиво (Civaux)",
+      "region": "FRA",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "npp-civaux",
+        "type": "nuclear_power_plant",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 49.1803,
+      "lon": 14.3761,
+      "value": 0.25,
+      "label": "Темелин (Temelin)",
+      "region": "CZE",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "npp-temelin",
+        "type": "nuclear_power_plant",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 54.7606,
+      "lon": 26.0867,
+      "value": 0.6,
+      "label": "Островец (БелАЭС)",
+      "region": "BLR",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "npp-ostrovets",
+        "type": "nuclear_power_plant",
+        "status": "warning"
+      }
+    },
+    {
+      "lat": 46.5725,
+      "lon": 18.8539,
+      "value": 0.5,
+      "label": "Пакш (Paks)",
+      "region": "HUN",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "npp-paks",
+        "type": "nuclear_power_plant",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 43.7461,
+      "lon": 23.7708,
+      "value": 0.4,
+      "label": "Козлодуй (Kozloduy)",
+      "region": "BGR",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "npp-kozloduy",
+        "type": "nuclear_power_plant",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 31.2304,
+      "lon": 121.4737,
+      "value": 0.35,
+      "label": "Порт Шанхай",
+      "region": "CHN",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "port-shanghai",
+        "type": "seaport",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 1.2644,
+      "lon": 103.8223,
+      "value": 0.3,
+      "label": "Порт Сингапур",
+      "region": "SGP",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "port-singapore",
+        "type": "seaport",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 29.8683,
+      "lon": 121.544,
+      "value": 0.35,
+      "label": "Порт Нинбо-Чжоушань",
+      "region": "CHN",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "port-ningbo",
+        "type": "seaport",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 22.5431,
+      "lon": 114.0579,
+      "value": 0.35,
+      "label": "Порт Шэньчжэнь",
+      "region": "CHN",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "port-shenzhen",
+        "type": "seaport",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 35.1028,
+      "lon": 129.0403,
+      "value": 0.35,
+      "label": "Порт Пусан",
+      "region": "KOR",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "port-busan",
+        "type": "seaport",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 51.9491,
+      "lon": 4.1407,
+      "value": 0.3,
+      "label": "Порт Роттердам",
+      "region": "NLD",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "port-rotterdam",
+        "type": "seaport",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 51.2604,
+      "lon": 4.3861,
+      "value": 0.3,
+      "label": "Порт Антверпен-Брюгге",
+      "region": "BEL",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "port-antwerp",
+        "type": "seaport",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 53.5461,
+      "lon": 9.9745,
+      "value": 0.3,
+      "label": "Порт Гамбург",
+      "region": "DEU",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "port-hamburg",
+        "type": "seaport",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 33.7395,
+      "lon": -118.261,
+      "value": 0.3,
+      "label": "Порт Лос-Анджелес",
+      "region": "USA",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "port-la",
+        "type": "seaport",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 33.7542,
+      "lon": -118.2165,
+      "value": 0.3,
+      "label": "Порт Лонг-Бич",
+      "region": "USA",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "port-longbeach",
+        "type": "seaport",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 40.6696,
+      "lon": -74.1206,
+      "value": 0.3,
+      "label": "Порт Нью-Йорк/Нью-Джерси",
+      "region": "USA",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "port-newyork",
+        "type": "seaport",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 25.0166,
+      "lon": 55.0617,
+      "value": 0.4,
+      "label": "Порт Джебель-Али (Дубай)",
+      "region": "ARE",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "port-jebel-ali",
+        "type": "seaport",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 22.6167,
+      "lon": 120.2833,
+      "value": 0.65,
+      "label": "Порт Гаосюн",
+      "region": "TWN",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "port-kaohsiung",
+        "type": "seaport",
+        "status": "warning"
+      }
+    },
+    {
+      "lat": 37.945,
+      "lon": 23.6437,
+      "value": 0.4,
+      "label": "Порт Пирей",
+      "region": "GRC",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "port-piraeus",
+        "type": "seaport",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 39.4489,
+      "lon": -0.3155,
+      "value": 0.3,
+      "label": "Порт Валенсия",
+      "region": "ESP",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "port-valencia",
+        "type": "seaport",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 36.1326,
+      "lon": -5.4418,
+      "value": 0.4,
+      "label": "Порт Альхесирас",
+      "region": "ESP",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "port-algeciras",
+        "type": "seaport",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": -29.8681,
+      "lon": 31.0257,
+      "value": 0.55,
+      "label": "Порт Дурбан",
+      "region": "ZAF",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "port-durban",
+        "type": "seaport",
+        "status": "warning"
+      }
+    },
+    {
+      "lat": 6.45,
+      "lon": 3.3667,
+      "value": 0.55,
+      "label": "Порт Лагос (Апапа)",
+      "region": "NGA",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "port-lagos",
+        "type": "seaport",
+        "status": "warning"
+      }
+    },
+    {
+      "lat": 18.95,
+      "lon": 72.95,
+      "value": 0.4,
+      "label": "Порт Мумбаи (JNPT)",
+      "region": "IND",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "port-mumbai",
+        "type": "seaport",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 6.95,
+      "lon": 79.85,
+      "value": 0.45,
+      "label": "Порт Коломбо",
+      "region": "LKA",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "port-colombo",
+        "type": "seaport",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 3,
+      "lon": 101.4,
+      "value": 0.4,
+      "label": "Порт Кланг",
+      "region": "MYS",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "port-klang",
+        "type": "seaport",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 1.3625,
+      "lon": 103.5489,
+      "value": 0.4,
+      "label": "Порт Танджунг-Пелепас",
+      "region": "MYS",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "port-tanjung-pelepas",
+        "type": "seaport",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": -23.9608,
+      "lon": -46.3339,
+      "value": 0.45,
+      "label": "Порт Сантос",
+      "region": "BRA",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "port-santos",
+        "type": "seaport",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": -34.6,
+      "lon": -58.3667,
+      "value": 0.5,
+      "label": "Порт Буэнос-Айрес",
+      "region": "ARG",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "port-buenosaires",
+        "type": "seaport",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 19.2,
+      "lon": -96.1333,
+      "value": 0.45,
+      "label": "Порт Веракрус",
+      "region": "MEX",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "port-veracruz",
+        "type": "seaport",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 43.1155,
+      "lon": 131.8855,
+      "value": 0.6,
+      "label": "Порт Владивосток",
+      "region": "RUS",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "port-vladivostok",
+        "type": "seaport",
+        "status": "warning"
+      }
+    },
+    {
+      "lat": 26.5667,
+      "lon": 56.25,
+      "value": 0.9,
+      "label": "Ормузский пролив",
+      "region": "Iran/Oman/UAE",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "chokepoint-hormuz",
+        "type": "chokepoint",
+        "status": "warning",
+        "unmapped_region": true,
+        "unmapped_original": "Iran/Oman/UAE"
+      }
+    },
+    {
+      "lat": 1.5,
+      "lon": 102.8,
+      "value": 0.7,
+      "label": "Малаккский пролив",
+      "region": "Malaysia/Singapore/Indonesia",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "chokepoint-malacca",
+        "type": "chokepoint",
+        "status": "nominal",
+        "unmapped_region": true,
+        "unmapped_original": "Malaysia/Singapore/Indonesia"
+      }
+    },
+    {
+      "lat": 30.5,
+      "lon": 32.5,
+      "value": 0.6,
+      "label": "Суэцкий канал",
+      "region": "EGY",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "chokepoint-suez",
+        "type": "chokepoint",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 9.08,
+      "lon": -79.68,
+      "value": 0.75,
+      "label": "Панамский канал",
+      "region": "PAN",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "chokepoint-panama",
+        "type": "chokepoint",
+        "status": "warning"
+      }
+    },
+    {
+      "lat": 24.5,
+      "lon": 119.5,
+      "value": 0.95,
+      "label": "Тайваньский пролив",
+      "region": "Taiwan/China",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "chokepoint-taiwan",
+        "type": "chokepoint",
+        "status": "warning",
+        "unmapped_region": true,
+        "unmapped_original": "Taiwan/China"
+      }
+    },
+    {
+      "lat": 41.12,
+      "lon": 29.05,
+      "value": 0.75,
+      "label": "Босфор и Дарданеллы",
+      "region": "TUR",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "chokepoint-bosphorus",
+        "type": "chokepoint",
+        "status": "warning"
+      }
+    },
+    {
+      "lat": 36,
+      "lon": -5.5,
+      "value": 0.5,
+      "label": "Гибралтарский пролив",
+      "region": "Spain/Morocco/UK",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "chokepoint-gibraltar",
+        "type": "chokepoint",
+        "status": "nominal",
+        "unmapped_region": true,
+        "unmapped_original": "Spain/Morocco/UK"
+      }
+    },
+    {
+      "lat": 12.58,
+      "lon": 43.33,
+      "value": 0.9,
+      "label": "Баб-эль-Мандебский пролив",
+      "region": "Yemen/Djibouti/Eritrea",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "chokepoint-bab-el-mandeb",
+        "type": "chokepoint",
+        "status": "critical",
+        "unmapped_region": true,
+        "unmapped_original": "Yemen/Djibouti/Eritrea"
+      }
+    },
+    {
+      "lat": -34.8333,
+      "lon": 20,
+      "value": 0.5,
+      "label": "Мыс Доброй Надежды",
+      "region": "ZAF",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "chokepoint-cape",
+        "type": "chokepoint",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 34.5,
+      "lon": 129,
+      "value": 0.6,
+      "label": "Корейский пролив",
+      "region": "South Korea/Japan",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "chokepoint-korea",
+        "type": "chokepoint",
+        "status": "warning",
+        "unmapped_region": true,
+        "unmapped_original": "South Korea/Japan"
+      }
+    },
+    {
+      "lat": 51,
+      "lon": 1.5,
+      "value": 0.4,
+      "label": "Ла-Манш / Дуврский пролив",
+      "region": "UK/France",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "chokepoint-english-channel",
+        "type": "chokepoint",
+        "status": "nominal",
+        "unmapped_region": true,
+        "unmapped_original": "UK/France"
+      }
+    },
+    {
+      "lat": 57,
+      "lon": 11,
+      "value": 0.6,
+      "label": "Датские проливы (Балтика)",
+      "region": "Denmark/Sweden",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "chokepoint-danish-straits",
+        "type": "chokepoint",
+        "status": "warning",
+        "unmapped_region": true,
+        "unmapped_original": "Denmark/Sweden"
+      }
+    },
+    {
+      "lat": 26,
+      "lon": 52,
+      "value": 0.7,
+      "label": "Южная часть Персидского залива",
+      "region": "Saudi Arabia/Qatar/Bahrain",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "chokepoint-strait-of-hormuz-south",
+        "type": "chokepoint",
+        "status": "warning",
+        "unmapped_region": true,
+        "unmapped_original": "Saudi Arabia/Qatar/Bahrain"
+      }
+    },
+    {
+      "lat": 56,
+      "lon": 3,
+      "value": 0.75,
+      "label": "Северное море (газопроводы)",
+      "region": "Norway/UK/Netherlands",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "chokepoint-north-sea",
+        "type": "chokepoint",
+        "status": "warning",
+        "unmapped_region": true,
+        "unmapped_original": "Norway/UK/Netherlands"
+      }
+    },
+    {
+      "lat": 9.5,
+      "lon": -79.9,
+      "value": 0.65,
+      "label": "Северный вход Панамского канала",
+      "region": "Panama/Costa Rica",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "chokepoint-panama-north",
+        "type": "chokepoint",
+        "status": "warning",
+        "unmapped_region": true,
+        "unmapped_original": "Panama/Costa Rica"
+      }
+    },
+    {
+      "lat": 30.8231,
+      "lon": 111.0032,
+      "value": 0.4,
+      "label": "Три ущелья (Three Gorges)",
+      "region": "CHN",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "dam-three-gorges",
+        "type": "dam",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": -25.4081,
+      "lon": -54.5889,
+      "value": 0.35,
+      "label": "Итайпу (Itaipu)",
+      "region": "Brazil/Paraguay",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "dam-itaipu",
+        "type": "dam",
+        "status": "nominal",
+        "unmapped_region": true,
+        "unmapped_original": "Brazil/Paraguay"
+      }
+    },
+    {
+      "lat": 28.2597,
+      "lon": 103.6431,
+      "value": 0.35,
+      "label": "Силоду (Xiluodu)",
+      "region": "CHN",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "dam-xiluodu",
+        "type": "dam",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": -3.1317,
+      "lon": -51.7756,
+      "value": 0.5,
+      "label": "Белу-Монте (Belo Monte)",
+      "region": "BRA",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "dam-belo-monte",
+        "type": "dam",
+        "status": "warning"
+      }
+    },
+    {
+      "lat": 7.7661,
+      "lon": -62.9992,
+      "value": 0.85,
+      "label": "Гури (Guri)",
+      "region": "VEN",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "dam-guri",
+        "type": "dam",
+        "status": "critical"
+      }
+    },
+    {
+      "lat": -3.8317,
+      "lon": -49.6467,
+      "value": 0.35,
+      "label": "Тукуруи (Tucuruí)",
+      "region": "BRA",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "dam-tucurui",
+        "type": "dam",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 47.9569,
+      "lon": -118.9814,
+      "value": 0.3,
+      "label": "Гранд-Кули (Grand Coulee)",
+      "region": "USA",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "dam-grand-coulee",
+        "type": "dam",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 52.8247,
+      "lon": 91.3719,
+      "value": 0.5,
+      "label": "Саяно-Шушенская ГЭС",
+      "region": "RUS",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "dam-sayano",
+        "type": "dam",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 55.9336,
+      "lon": 92.2969,
+      "value": 0.4,
+      "label": "Красноярская ГЭС",
+      "region": "RUS",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "dam-krasnoyarsk",
+        "type": "dam",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 56.2836,
+      "lon": 101.7667,
+      "value": 0.4,
+      "label": "Братская ГЭС",
+      "region": "RUS",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "dam-bratsk",
+        "type": "dam",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 46.7786,
+      "lon": 33.3719,
+      "value": 1,
+      "label": "Каховская ГЭС",
+      "region": "UKR",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "dam-kakhovka",
+        "type": "dam",
+        "status": "destroyed"
+      }
+    },
+    {
+      "lat": 38.3833,
+      "lon": 69.35,
+      "value": 0.45,
+      "label": "Нурекская ГЭС",
+      "region": "TJK",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "dam-nurek",
+        "type": "dam",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 38.7333,
+      "lon": 69.7333,
+      "value": 0.6,
+      "label": "Рогунская ГЭС",
+      "region": "TJK",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "dam-roga",
+        "type": "dam",
+        "status": "warning"
+      }
+    },
+    {
+      "lat": 11.2147,
+      "lon": 35.0928,
+      "value": 0.7,
+      "label": "GERD (Возрождение)",
+      "region": "ETH",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "dam-gerd",
+        "type": "dam",
+        "status": "warning"
+      }
+    },
+    {
+      "lat": 23.9707,
+      "lon": 32.8771,
+      "value": 0.65,
+      "label": "Асуанская плотина",
+      "region": "EGY",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "dam-aswan",
+        "type": "dam",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 38.9072,
+      "lon": -77.0369,
+      "value": 0.45,
+      "label": "Eastern Interconnection (США Восток)",
+      "region": "USA",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "grid-us-eastern",
+        "type": "power_grid",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 39.7392,
+      "lon": -104.9903,
+      "value": 0.45,
+      "label": "Western Interconnection (США Запад)",
+      "region": "USA",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "grid-us-western",
+        "type": "power_grid",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 30.2672,
+      "lon": -97.7431,
+      "value": 0.7,
+      "label": "ERCOT (Техас)",
+      "region": "USA",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "grid-us-texas",
+        "type": "power_grid",
+        "status": "warning"
+      }
+    },
+    {
+      "lat": 50.1109,
+      "lon": 8.6821,
+      "value": 0.4,
+      "label": "ENTSO-E Central (Центральная Европа)",
+      "region": "Germany/France/Poland/Czechia",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "grid-eu-central",
+        "type": "power_grid",
+        "status": "nominal",
+        "unmapped_region": true,
+        "unmapped_original": "Germany/France/Poland/Czechia"
+      }
+    },
+    {
+      "lat": 50.4501,
+      "lon": 30.5234,
+      "value": 0.95,
+      "label": "Укрэнерго",
+      "region": "UKR",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "grid-ukraine",
+        "type": "power_grid",
+        "status": "critical"
+      }
+    },
+    {
+      "lat": 31.2304,
+      "lon": 121.4737,
+      "value": 0.35,
+      "label": "Восточная энергосеть Китая (State Grid)",
+      "region": "CHN",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "grid-china-east",
+        "type": "power_grid",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 28.6139,
+      "lon": 77.209,
+      "value": 0.65,
+      "label": "Northern Grid (Индия Север)",
+      "region": "IND",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "grid-india-north",
+        "type": "power_grid",
+        "status": "warning"
+      }
+    },
+    {
+      "lat": 55.7558,
+      "lon": 37.6173,
+      "value": 0.5,
+      "label": "ЕЭС России",
+      "region": "RUS",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "grid-russia-unified",
+        "type": "power_grid",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 35.6762,
+      "lon": 139.6503,
+      "value": 0.45,
+      "label": "Энергосистемы Японии (10 компаний)",
+      "region": "JPN",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "grid-japan",
+        "type": "power_grid",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 25.033,
+      "lon": 121.5654,
+      "value": 0.75,
+      "label": "Taipower (Тайвань)",
+      "region": "TWN",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "grid-taiwan",
+        "type": "power_grid",
+        "status": "warning"
+      }
+    },
+    {
+      "lat": 24.7136,
+      "lon": 46.6753,
+      "value": 0.5,
+      "label": "Saudi Electricity Company",
+      "region": "SAU",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "grid-saudi",
+        "type": "power_grid",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": -15.7942,
+      "lon": -47.8822,
+      "value": 0.45,
+      "label": "SIN (Бразилия)",
+      "region": "BRA",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "grid-brazil",
+        "type": "power_grid",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": -26.2041,
+      "lon": 28.0473,
+      "value": 0.85,
+      "label": "Eskom (ЮАР)",
+      "region": "ZAF",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "grid-south-africa",
+        "type": "power_grid",
+        "status": "critical"
+      }
+    },
+    {
+      "lat": 38.8719,
+      "lon": -77.0563,
+      "value": 0.3,
+      "label": "Пентагон",
+      "region": "USA",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "mil-pentagon",
+        "type": "military_base",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 36.9467,
+      "lon": -76.3,
+      "value": 0.35,
+      "label": "Военно-морская база Норфолк",
+      "region": "USA",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "mil-norfolk",
+        "type": "military_base",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 32.6833,
+      "lon": -117.1667,
+      "value": 0.3,
+      "label": "ВМБ Сан-Диего",
+      "region": "USA",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "mil-san-diego",
+        "type": "military_base",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 21.3474,
+      "lon": -157.9717,
+      "value": 0.4,
+      "label": "Перл-Харбор",
+      "region": "USA",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "mil-pearl-harbor",
+        "type": "military_base",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 49.4369,
+      "lon": 7.6003,
+      "value": 0.35,
+      "label": "Авиабаза Рамштайн",
+      "region": "DEU",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "mil-ramstein",
+        "type": "military_base",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 13.584,
+      "lon": 144.93,
+      "value": 0.5,
+      "label": "База Гуам (Андерсен)",
+      "region": "USA (Guam)",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "mil-guam",
+        "type": "military_base",
+        "status": "nominal",
+        "unmapped_region": true,
+        "unmapped_original": "USA (Guam)"
+      }
+    },
+    {
+      "lat": 26.3333,
+      "lon": 127.75,
+      "value": 0.55,
+      "label": "База Окинава",
+      "region": "JPN",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "mil-okinawa",
+        "type": "military_base",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": -7.3133,
+      "lon": 72.4111,
+      "value": 0.45,
+      "label": "База Диего-Гарсия",
+      "region": "UK (BIOT)",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "mil-diego-garcia",
+        "type": "military_base",
+        "status": "nominal",
+        "unmapped_region": true,
+        "unmapped_original": "UK (BIOT)"
+      }
+    },
+    {
+      "lat": 19.9,
+      "lon": -75.15,
+      "value": 0.4,
+      "label": "База Гуантанамо",
+      "region": "Cuba (US lease)",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "mil-guantanamo",
+        "type": "military_base",
+        "status": "nominal",
+        "unmapped_region": true,
+        "unmapped_original": "Cuba (US lease)"
+      }
+    },
+    {
+      "lat": 44.6166,
+      "lon": 33.5254,
+      "value": 0.9,
+      "label": "ВМБ Севастополь",
+      "region": "Russia (Crimea)",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "mil-sevastopol",
+        "type": "military_base",
+        "status": "critical",
+        "unmapped_region": true,
+        "unmapped_original": "Russia (Crimea)"
+      }
+    },
+    {
+      "lat": 34.89,
+      "lon": 35.87,
+      "value": 0.75,
+      "label": "ВМБ Тартус (Сирия)",
+      "region": "SYR",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "mil-tartus",
+        "type": "military_base",
+        "status": "warning"
+      }
+    },
+    {
+      "lat": 35.4017,
+      "lon": 35.9489,
+      "value": 0.75,
+      "label": "Авиабаза Хмеймим (Сирия)",
+      "region": "SYR",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "mil-khmeimim",
+        "type": "military_base",
+        "status": "warning"
+      }
+    },
+    {
+      "lat": 54.65,
+      "lon": 19.9167,
+      "value": 0.65,
+      "label": "ВМБ Балтийск",
+      "region": "Russia (Kaliningrad)",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "mil-baltiysk",
+        "type": "military_base",
+        "status": "warning",
+        "unmapped_region": true,
+        "unmapped_original": "Russia (Kaliningrad)"
+      }
+    },
+    {
+      "lat": 43.1155,
+      "lon": 131.8855,
+      "value": 0.5,
+      "label": "ВМБ Владивосток",
+      "region": "RUS",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "mil-vladivostok",
+        "type": "military_base",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 18.25,
+      "lon": 109.5,
+      "value": 0.7,
+      "label": "База Санья (Хайнань)",
+      "region": "CHN",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "mil-sanya",
+        "type": "military_base",
+        "status": "warning"
+      }
+    },
+    {
+      "lat": 38.9167,
+      "lon": 121.6167,
+      "value": 0.45,
+      "label": "ВМБ Далянь",
+      "region": "CHN",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "mil-dalian",
+        "type": "military_base",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 30.0167,
+      "lon": 122.1,
+      "value": 0.65,
+      "label": "ВМБ Чжоушань",
+      "region": "CHN",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "mil-zhoushan",
+        "type": "military_base",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 46.0319,
+      "lon": 12.5964,
+      "value": 0.3,
+      "label": "Авиабаза Авиано (Италия)",
+      "region": "ITA",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "mil-aviano",
+        "type": "military_base",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 37.0022,
+      "lon": 35.4258,
+      "value": 0.55,
+      "label": "Авиабаза Инджирлик (Турция)",
+      "region": "TUR",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "mil-incirlik",
+        "type": "military_base",
+        "status": "warning"
+      }
+    },
+    {
+      "lat": 49.4372,
+      "lon": 7.6011,
+      "value": 0.4,
+      "label": "Объединённый командный центр Рамштайн",
+      "region": "DEU",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "mil-ramstein-nato",
+        "type": "military_base",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 53.5392,
+      "lon": 8.5819,
+      "value": 0.35,
+      "label": "Порт Бремерхафен (НАТО)",
+      "region": "DEU",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "mil-bremerhaven",
+        "type": "military_base",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 25.1173,
+      "lon": 51.315,
+      "value": 0.5,
+      "label": "Авиабаза Аль-Удейд (Катар)",
+      "region": "QAT",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "mil-al-udeid",
+        "type": "military_base",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 26.2167,
+      "lon": 50.6,
+      "value": 0.55,
+      "label": "ВМБ Бахрейн (5-й флот)",
+      "region": "BHR",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "mil-naval-bahrain",
+        "type": "military_base",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 35.2939,
+      "lon": 139.6711,
+      "value": 0.45,
+      "label": "ВМБ Йокосука (Япония)",
+      "region": "JPN",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "mil-yokosuka",
+        "type": "military_base",
+        "status": "nominal"
+      }
+    },
+    {
+      "lat": 36.9608,
+      "lon": 127.0311,
+      "value": 0.6,
+      "label": "Лагерь Хамфрис (Южная Корея)",
+      "region": "KOR",
+      "timestamp": "2026-09-18T18:09:58.069Z",
+      "extra": {
+        "id": "mil-camp-humphreys",
+        "type": "military_base",
+        "status": "nominal"
+      }
+    }
+  ],
+  "regions": [
+    {
+      "region": "UKR",
+      "value": 0.8999999999999999,
+      "count": 4,
+      "aggregation": "max",
+      "extra": {
+        "max": 1,
+        "sum": 3.5999999999999996
+      }
+    },
+    {
+      "region": "JPN",
+      "value": 0.54,
+      "count": 5,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.8,
+        "sum": 2.7
+      }
+    },
+    {
+      "region": "CAN",
+      "value": 0.3,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.3,
+        "sum": 0.3
+      }
+    },
+    {
+      "region": "KOR",
+      "value": 0.4333333333333333,
+      "count": 3,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.6,
+        "sum": 1.2999999999999998
+      }
+    },
+    {
+      "region": "FRA",
+      "value": 0.3125,
+      "count": 4,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.35,
+        "sum": 1.25
+      }
+    },
+    {
+      "region": "CHN",
+      "value": 0.40909090909090917,
+      "count": 11,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.7,
+        "sum": 4.500000000000001
+      }
+    },
+    {
+      "region": "IRN",
+      "value": 0.75,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.75,
+        "sum": 0.75
+      }
+    },
+    {
+      "region": "IND",
+      "value": 0.4833333333333334,
+      "count": 3,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.65,
+        "sum": 1.4500000000000002
+      }
+    },
+    {
+      "region": "ARE",
+      "value": 0.325,
+      "count": 2,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.4,
+        "sum": 0.65
+      }
+    },
+    {
+      "region": "TUR",
+      "value": 0.65,
+      "count": 3,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.75,
+        "sum": 1.95
+      }
+    },
+    {
+      "region": "CZE",
+      "value": 0.25,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.25,
+        "sum": 0.25
+      }
+    },
+    {
+      "region": "BLR",
+      "value": 0.6,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.6,
+        "sum": 0.6
+      }
+    },
+    {
+      "region": "HUN",
+      "value": 0.5,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.5,
+        "sum": 0.5
+      }
+    },
+    {
+      "region": "BGR",
+      "value": 0.4,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.4,
+        "sum": 0.4
+      }
+    },
+    {
+      "region": "SGP",
+      "value": 0.3,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.3,
+        "sum": 0.3
+      }
+    },
+    {
+      "region": "NLD",
+      "value": 0.3,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.3,
+        "sum": 0.3
+      }
+    },
+    {
+      "region": "BEL",
+      "value": 0.3,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.3,
+        "sum": 0.3
+      }
+    },
+    {
+      "region": "DEU",
+      "value": 0.35,
+      "count": 4,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.4,
+        "sum": 1.4
+      }
+    },
+    {
+      "region": "USA",
+      "value": 0.3772727272727272,
+      "count": 11,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.7,
+        "sum": 4.1499999999999995
+      }
+    },
+    {
+      "region": "TWN",
+      "value": 0.7,
+      "count": 2,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.75,
+        "sum": 1.4
+      }
+    },
+    {
+      "region": "GRC",
+      "value": 0.4,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.4,
+        "sum": 0.4
+      }
+    },
+    {
+      "region": "ESP",
+      "value": 0.35,
+      "count": 2,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.4,
+        "sum": 0.7
+      }
+    },
+    {
+      "region": "ZAF",
+      "value": 0.6333333333333333,
+      "count": 3,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.85,
+        "sum": 1.9
+      }
+    },
+    {
+      "region": "NGA",
+      "value": 0.55,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.55,
+        "sum": 0.55
+      }
+    },
+    {
+      "region": "LKA",
+      "value": 0.45,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.45,
+        "sum": 0.45
+      }
+    },
+    {
+      "region": "MYS",
+      "value": 0.4,
+      "count": 2,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.4,
+        "sum": 0.8
+      }
+    },
+    {
+      "region": "BRA",
+      "value": 0.43749999999999994,
+      "count": 4,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.5,
+        "sum": 1.7499999999999998
+      }
+    },
+    {
+      "region": "ARG",
+      "value": 0.5,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.5,
+        "sum": 0.5
+      }
+    },
+    {
+      "region": "MEX",
+      "value": 0.45,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.45,
+        "sum": 0.45
+      }
+    },
+    {
+      "region": "RUS",
+      "value": 0.48333333333333334,
+      "count": 6,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.6,
+        "sum": 2.9
+      }
+    },
+    {
+      "region": "Iran/Oman/UAE",
+      "value": 0.9,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.9,
+        "sum": 0.9
+      }
+    },
+    {
+      "region": "Malaysia/Singapore/Indonesia",
+      "value": 0.7,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.7,
+        "sum": 0.7
+      }
+    },
+    {
+      "region": "EGY",
+      "value": 0.625,
+      "count": 2,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.65,
+        "sum": 1.25
+      }
+    },
+    {
+      "region": "PAN",
+      "value": 0.75,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.75,
+        "sum": 0.75
+      }
+    },
+    {
+      "region": "Taiwan/China",
+      "value": 0.95,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.95,
+        "sum": 0.95
+      }
+    },
+    {
+      "region": "Spain/Morocco/UK",
+      "value": 0.5,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.5,
+        "sum": 0.5
+      }
+    },
+    {
+      "region": "Yemen/Djibouti/Eritrea",
+      "value": 0.9,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.9,
+        "sum": 0.9
+      }
+    },
+    {
+      "region": "South Korea/Japan",
+      "value": 0.6,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.6,
+        "sum": 0.6
+      }
+    },
+    {
+      "region": "UK/France",
+      "value": 0.4,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.4,
+        "sum": 0.4
+      }
+    },
+    {
+      "region": "Denmark/Sweden",
+      "value": 0.6,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.6,
+        "sum": 0.6
+      }
+    },
+    {
+      "region": "Saudi Arabia/Qatar/Bahrain",
+      "value": 0.7,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.7,
+        "sum": 0.7
+      }
+    },
+    {
+      "region": "Norway/UK/Netherlands",
+      "value": 0.75,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.75,
+        "sum": 0.75
+      }
+    },
+    {
+      "region": "Panama/Costa Rica",
+      "value": 0.65,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.65,
+        "sum": 0.65
+      }
+    },
+    {
+      "region": "Brazil/Paraguay",
+      "value": 0.35,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.35,
+        "sum": 0.35
+      }
+    },
+    {
+      "region": "VEN",
+      "value": 0.85,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.85,
+        "sum": 0.85
+      }
+    },
+    {
+      "region": "TJK",
+      "value": 0.525,
+      "count": 2,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.6,
+        "sum": 1.05
+      }
+    },
+    {
+      "region": "ETH",
+      "value": 0.7,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.7,
+        "sum": 0.7
+      }
+    },
+    {
+      "region": "Germany/France/Poland/Czechia",
+      "value": 0.4,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.4,
+        "sum": 0.4
+      }
+    },
+    {
+      "region": "SAU",
+      "value": 0.5,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.5,
+        "sum": 0.5
+      }
+    },
+    {
+      "region": "USA (Guam)",
+      "value": 0.5,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.5,
+        "sum": 0.5
+      }
+    },
+    {
+      "region": "UK (BIOT)",
+      "value": 0.45,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.45,
+        "sum": 0.45
+      }
+    },
+    {
+      "region": "Cuba (US lease)",
+      "value": 0.4,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.4,
+        "sum": 0.4
+      }
+    },
+    {
+      "region": "Russia (Crimea)",
+      "value": 0.9,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.9,
+        "sum": 0.9
+      }
+    },
+    {
+      "region": "SYR",
+      "value": 0.75,
+      "count": 2,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.75,
+        "sum": 1.5
+      }
+    },
+    {
+      "region": "Russia (Kaliningrad)",
+      "value": 0.65,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.65,
+        "sum": 0.65
+      }
+    },
+    {
+      "region": "ITA",
+      "value": 0.3,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.3,
+        "sum": 0.3
+      }
+    },
+    {
+      "region": "QAT",
+      "value": 0.5,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.5,
+        "sum": 0.5
+      }
+    },
+    {
+      "region": "BHR",
+      "value": 0.55,
+      "count": 1,
+      "aggregation": "max",
+      "extra": {
+        "max": 0.55,
+        "sum": 0.55
+      }
+    }
+  ],
+  "extra": {
+    "adapter": "points",
+    "adapter_version": "2.0.0",
+    "skipped_invalid_coords": 0,
+    "unmapped_regions": [
+      "Iran/Oman/UAE",
+      "Malaysia/Singapore/Indonesia",
+      "Taiwan/China",
+      "Spain/Morocco/UK",
+      "Yemen/Djibouti/Eritrea",
+      "South Korea/Japan",
+      "UK/France",
+      "Denmark/Sweden",
+      "Saudi Arabia/Qatar/Bahrain",
+      "Norway/UK/Netherlands",
+      "Panama/Costa Rica",
+      "Brazil/Paraguay",
+      "Germany/France/Poland/Czechia",
+      "USA (Guam)",
+      "UK (BIOT)",
+      "Cuba (US lease)",
+      "Russia (Crimea)",
+      "Russia (Kaliningrad)"
+    ],
+    "unmapped_count": 18
+  }
+}

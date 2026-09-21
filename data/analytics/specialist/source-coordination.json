@@ -1,0 +1,54 @@
+{
+  "_meta": {
+    "id": "source-coordination",
+    "category": "specialist",
+    "version": "1.0.0",
+    "schema_version": "1.0.0",
+    "sources": [
+      "news",
+      "gdelt_news"
+    ],
+    "calculator": "SourceCoordination",
+    "updated_at": "2026-09-20T09:51:55.348Z",
+    "period": "latest",
+    "duration_ms": 10,
+    "checksum": "23038f0a68231e62",
+    "stats": {
+      "publications": 69,
+      "clusters": 0,
+      "by_source": {
+        "[object Object]": 34,
+        "gdelt-Ukraine": 8,
+        "gdelt-United States": 3,
+        "gdelt-China": 5,
+        "gdelt-Russia": 4,
+        "gdelt-France": 3,
+        "gdelt-United Kingdom": 7,
+        "gdelt-Germany": 5
+      }
+    },
+    "description": "Координированные публикации: N источников, схожий смысл, узкое временное окно."
+  },
+  "data": {
+    "clusters": [],
+    "by_source": {
+      "[object Object]": 34,
+      "gdelt-Ukraine": 8,
+      "gdelt-United States": 3,
+      "gdelt-China": 5,
+      "gdelt-Russia": 4,
+      "gdelt-France": 3,
+      "gdelt-United Kingdom": 7,
+      "gdelt-Germany": 5
+    },
+    "stats": {
+      "totalPublications": 69,
+      "uniqueSources": 41,
+      "windowMinutes": 30,
+      "simThreshold": 0.7,
+      "minClusterSize": 2,
+      "now": "2026-09-20T09:51:55.351Z"
+    },
+    "generated_at": "2026-09-20T09:51:55.348Z"
+  }
+}

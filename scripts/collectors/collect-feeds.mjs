@@ -1,16 +1,20 @@
 #!/usr/bin/env node
-
+/**
+ * Crucix Collector: feeds (RSS через OPML) — реальный сборщик.
+ * Версия 2.0.0. Принят 20.09.2026.
+ * Роль: RSS-агрегация → saveRaw. Сборщик НЕ пишет в basket.
+ * Источник: data/feeds/feeds.opml (список RSS).
+ * Формат: [{id, title, link, pubDate, description, source, collectedAt, category}]. Тип — events.
+ */
 import { promises as fs } from 'fs';
 import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import { createHash } from 'crypto';
+import { saveRaw } from './lib/collector-helper.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT = join(__dirname, '..', '..');  // ← ИСПРАВЛЕНО: поднимаемся на два уровня выше (в корень проекта)
-const DATA_DIR = join(ROOT, 'data', 'raw');
+const ROOT = join(__dirname, '..', '..');
 const FEEDS_FILE = join(ROOT, 'data', 'feeds', 'feeds.opml');
-
-await fs.mkdir(DATA_DIR, { recursive: true });
 
 function parseOpml(xml) {
   const feeds = [];
@@ -25,15 +29,14 @@ function parseOpml(xml) {
 async function fetchFeed(url) {
   try {
     const res = await fetch(url, {
-      headers: { 
+      headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'application/rss+xml, application/xml, text/xml, */*'
+        'Accept': 'application/rss+xml, application/xml, text/xml, */*',
       },
-      signal: AbortSignal.timeout(30000)
+      signal: AbortSignal.timeout(30000),
     });
     if (!res.ok) return [];
     const text = await res.text();
-    
     const items = [];
     const itemRegex = /<item>([\s\S]*?)<\/item>/g;
     let itemMatch;
@@ -53,9 +56,15 @@ async function fetchFeed(url) {
   }
 }
 
-async function collectAllFeeds() {
+export async function collectFeeds() {
   console.log('[Collector] Чтение списка RSS-лент...');
-  const xml = await fs.readFile(FEEDS_FILE, 'utf-8');
+  let xml;
+  try {
+    xml = await fs.readFile(FEEDS_FILE, 'utf-8');
+  } catch (e) {
+    console.error(`[Collector] FATAL: не могу прочитать ${FEEDS_FILE}: ${e.message}`);
+    process.exit(1);
+  }
   const feeds = parseOpml(xml);
   console.log(`[Collector] Найдено ${feeds.length} лент`);
 
@@ -76,36 +85,33 @@ async function collectAllFeeds() {
           ...item,
           source: feed.name,
           collectedAt: new Date().toISOString(),
-          category: 'news'
+          category: 'news',
         });
       }
     }
     await new Promise(resolve => setTimeout(resolve, 500));
   }
 
-  console.log(`[Collector] Успешно загружено ${successCount} из ${feeds.length} источников`);
-  console.log(`[Collector] Всего записей: ${allItems.length}`);
+  console.log(`[Collector] Успешно ${successCount} из ${feeds.length} источников, всего ${allItems.length} записей`);
 
-  const today = new Date().toISOString().slice(0, 10);
-  const outputFile = join(DATA_DIR, `feeds_${today}.json`);
-
-  let existing = [];
-  try {
-    const old = await fs.readFile(outputFile, 'utf-8');
-    existing = JSON.parse(old);
-  } catch (e) {}
-
-  const combined = [...existing, ...allItems];
-  const unique = new Map();
-  for (const item of combined) {
-    if (!unique.has(item.id)) {
-      unique.set(item.id, item);
-    }
-  }
-
-  const final = Array.from(unique.values());
-  await fs.writeFile(outputFile, JSON.stringify(final, null, 2));
-  console.log(`[Collector] Сохранено ${final.length} записей в ${outputFile}`);
+  const result = await saveRaw('feeds', allItems, {
+    collector: 'collect-feeds.mjs',
+    source: 'RSS via OPML',
+    source_url: 'file://data/feeds/feeds.opml',
+    license: 'public-domain',
+    format_hint: 'events',
+    value_type: 'count',
+    value_unit: 'count',
+    granularity: 'event',
+    period: null,
+    record_count: allItems.length,
+    notes: `${successCount}/${feeds.length} источников; basket не перезаписывается`,
+    backwardCompat: false,
+  });
+  console.log(`[Collector] OK → ${result.raw_file}`);
+  return allItems;
 }
 
-collectAllFeeds().catch(console.error);
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  collectFeeds().catch((e) => { console.error('[Collector] FATAL:', e); process.exit(1); });
+}

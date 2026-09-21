@@ -1,112 +1,34 @@
-[
-  {
-    "id": "49590512",
-    "title": "GrapheneOS Overhauled Default Apps and Secure Clipboard",
-    "text": "",
-    "score": 118,
-    "country": "Global",
-    "lat": 0,
-    "lng": 0,
-    "severity": "INFO",
-    "timestamp": "2026-09-06T20:24:00+00:00"
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "hackernews",
+    "source": "Hacker News API",
+    "source_url": "https://hacker-news.firebaseio.com/v0/topstories.json",
+    "fetched_at": "2026-09-20T10:53:46.701Z",
+    "normalized_at": "2026-09-20T11:28:57.078Z",
+    "collector": "collect-hackernews.mjs",
+    "license": "public-domain",
+    "count": 0,
+    "granularity": "snapshot",
+    "value_unit": "count",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null
   },
-  {
-    "id": "49590738",
-    "title": "Show HN: Mador \u2013 Make any DOM reactive with a tiny 80-line Proxy state tuple",
-    "text": "",
-    "score": 45,
-    "country": "Global",
-    "lat": 0,
-    "lng": 0,
-    "severity": "INFO",
-    "timestamp": "2026-09-06T20:45:13+00:00"
-  },
-  {
-    "id": "49585644",
-    "title": "Your intellectual fly is open (2025)",
-    "text": "",
-    "score": 465,
-    "country": "Global",
-    "lat": 0,
-    "lng": 0,
-    "severity": "INFO",
-    "timestamp": "2026-09-06T11:56:43+00:00"
-  },
-  {
-    "id": "49584083",
-    "title": "Isar Aerospace reaches orbit and deploys payloads on second flight",
-    "text": "",
-    "score": 535,
-    "country": "Global",
-    "lat": 0,
-    "lng": 0,
-    "severity": "INFO",
-    "timestamp": "2026-09-06T07:21:06+00:00"
-  },
-  {
-    "id": "49540637",
-    "title": "Black Hole of Los Alamos Seller of surplus nuclear research materials (2011)",
-    "text": "",
-    "score": 28,
-    "country": "Global",
-    "lat": 0,
-    "lng": 0,
-    "severity": "INFO",
-    "timestamp": "2026-09-02T18:47:55+00:00"
-  },
-  {
-    "id": "49590611",
-    "title": "It took a year to ship WebAssembly in Anubis",
-    "text": "",
-    "score": 96,
-    "country": "Global",
-    "lat": 0,
-    "lng": 0,
-    "severity": "INFO",
-    "timestamp": "2026-09-06T20:32:38+00:00"
-  },
-  {
-    "id": "49587636",
-    "title": "NetBSD 9.5 released and EOL for NetBSD-9",
-    "text": "",
-    "score": 98,
-    "country": "Global",
-    "lat": 0,
-    "lng": 0,
-    "severity": "INFO",
-    "timestamp": "2026-09-06T15:44:24+00:00"
-  },
-  {
-    "id": "49554622",
-    "title": "Babylonian Lamb Stew with Beets (1750\u20131730 BCE)",
-    "text": "",
-    "score": 74,
-    "country": "Global",
-    "lat": 0,
-    "lng": 0,
-    "severity": "INFO",
-    "timestamp": "2026-09-03T18:40:07+00:00"
-  },
-  {
-    "id": "49590595",
-    "title": "Harnessing the Universal Geometry of Embeddings",
-    "text": "",
-    "score": 20,
-    "country": "Global",
-    "lat": 0,
-    "lng": 0,
-    "severity": "INFO",
-    "timestamp": "2026-09-06T20:31:20+00:00"
-  },
-  {
-    "id": "49587903",
-    "title": "Research carried out using NetBSD",
-    "text": "",
-    "score": 70,
-    "country": "Global",
-    "lat": 0,
-    "lng": 0,
-    "severity": "INFO",
-    "timestamp": "2026-09-06T16:10:05+00:00"
+  "series": [],
+  "points": [],
+  "regions": [],
+  "extra": {
+    "adapter": "events",
+    "adapter_version": "2.1.0",
+    "total_events": 0,
+    "unique_dates": 0,
+    "skipped_no_date": 30,
+    "points_from_centroids": 0,
+    "unmapped_regions": [],
+    "unmapped_count": 0,
+    "source": "HackerNews",
+    "count": 30,
+    "inner_array_key": "items"
   }
-]
+}

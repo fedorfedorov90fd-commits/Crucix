@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-import { promises as fs } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT = join(__dirname, '..');
-const BASKET_FILE = join(ROOT, 'data', 'basket', 'news.json');
+/**
+ * Crucix Collector: news (топ-10 новостей) — demo.
+ * Версия 2.0.0. Принят 20.09.2026.
+ * Формат: {articles:[...], summary:{total,byCategory,byRegion,byImportance}}. Тип — events.
+ */
+import { saveRaw } from './lib/collector-helper.mjs';
+import { pathToFileURL } from 'url';
 
 const DEMO_DATA = {
   articles: [
@@ -18,30 +18,35 @@ const DEMO_DATA = {
     { id: 'news-007', title: 'Китай запустил новый спутник для мониторинга океана', source: 'Xinhua', category: 'technology', region: 'Китай', date: '2026-08-16T06:30:00Z', importance: 'low' },
     { id: 'news-008', title: 'Россия заявила о готовности к переговорам по Украине', source: 'TASS', category: 'diplomacy', region: 'Россия', date: '2026-08-16T06:00:00Z', importance: 'high' },
     { id: 'news-009', title: 'Землетрясение магнитудой 6.2 в Индонезии', source: 'USGS', category: 'disaster', region: 'Азия', date: '2026-08-16T05:30:00Z', importance: 'high' },
-    { id: 'news-010', title: 'Индия стала третьей экономикой мира', source: 'Times of India', category: 'economy', region: 'Индия', date: '2026-08-16T05:00:00Z', importance: 'medium' }
+    { id: 'news-010', title: 'Индия стала третьей экономикой мира', source: 'Times of India', category: 'economy', region: 'Индия', date: '2026-08-16T05:00:00Z', importance: 'medium' },
   ],
   summary: {
     total: 10,
-    byCategory: { 'geopolitics': 2, 'politics': 2, 'economy': 3, 'technology': 1, 'diplomacy': 1, 'disaster': 1 },
+    byCategory: { geopolitics: 2, politics: 2, economy: 3, technology: 1, diplomacy: 1, disaster: 1 },
     byRegion: { 'Ближний Восток': 1, 'США': 2, 'Европа': 1, 'Мир': 2, 'Китай': 1, 'Россия': 1, 'Азия': 1, 'Индия': 1 },
-    byImportance: { 'critical': 1, 'high': 4, 'medium': 4, 'low': 1 }
-  }
+    byImportance: { critical: 1, high: 4, medium: 4, low: 1 },
+  },
 };
 
-async function collect() {
-  try {
-    const entry = {
-      id: `news-${new Date().toISOString().slice(0, 10)}`,
-      type: 'news',
-      date: new Date().toISOString(),
-      data: DEMO_DATA,
-      source: 'demo'
-    };
-    await fs.mkdir(join(ROOT, 'data', 'basket'), { recursive: true });
-    await fs.writeFile(BASKET_FILE, JSON.stringify(entry, null, 2));
-    console.log('✅ Новости сохранены в корзину');
-  } catch (e) {
-    console.error('❌ Ошибка сбора новостей:', e.message);
-  }
+export async function collectNews() {
+  const result = await saveRaw('news', DEMO_DATA, {
+    collector: 'collect-news.mjs',
+    source: 'Crucix news (demo)',
+    source_url: 'local://demo',
+    license: 'public-domain',
+    format_hint: 'events',
+    value_type: 'count',
+    value_unit: 'count',
+    granularity: 'snapshot',
+    period: null,
+    record_count: DEMO_DATA.articles.length,
+    notes: 'Демо-данные (10 новостей); basket не перезаписывается',
+    backwardCompat: false,
+  });
+  console.log(`[NEWS] OK ${DEMO_DATA.articles.length} → ${result.raw_file}`);
+  return DEMO_DATA;
 }
-collect();
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  collectNews().catch((e) => { console.error('[NEWS] FATAL:', e); process.exit(1); });
+}

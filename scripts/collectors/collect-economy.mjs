@@ -1,76 +1,61 @@
 #!/usr/bin/env node
+/**
+ * Crucix Collector: economy (FRED-индикаторы: VIX, 10Y Treasury, AAA) — demo.
+ * Версия 2.0.0. Принят 20.09.2026.
+ * Роль: demo-сырьё → saveRaw. Сборщик НЕ пишет в basket.
+ * Реальный источник: FRED API (https://fred.stlouisfed.org/).
+ * Формат: [{date, value, indicator}]. Тип — timeseries.
+ * ПРИМЕЧАНИЕ: старый путь data/economy/history.json заменён на saveRaw.
+ */
+import { saveRaw } from './lib/collector-helper.mjs';
+import { pathToFileURL } from 'url';
 
-// ============================================================
-// СБОР ЭКОНОМИЧЕСКИХ ДАННЫХ (FRED)
-// Источник: FRED API
-// ============================================================
-
-import { promises as fs } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath, pathToFileURL } from 'url';;
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT = join(__dirname, '..');
-const OUTPUT = join(ROOT, 'data', 'economy', 'history.json');
-
-// Индикаторы для мониторинга
 const INDICATORS = [
-  { id: 'VIXCLS', name: 'VIX' },
-  { id: 'DGS10', name: '10Y Treasury' },
-  { id: 'DAAA', name: 'Corporate AAA' }
+  { id: 'VIXCLS', name: 'VIX', base: 20, vol: 0.3 },
+  { id: 'DGS10', name: '10Y Treasury', base: 4.3, vol: 0.1 },
+  { id: 'DAAA', name: 'Corporate AAA', base: 5.2, vol: 0.1 },
 ];
+const DAYS_BACK = 30;
 
-async function fetchFred(indicator) {
-  // Для теста генерируем данные
-  return generateTestEconomy(indicator);
-}
-
-function generateTestEconomy(indicator) {
-  const data = [];
+function generateForIndicator(ind) {
   const now = new Date();
-  const baseValue = indicator.id === 'VIXCLS' ? 20 : 
-                    indicator.id === 'DGS10' ? 4.3 : 5.2;
-  const volatility = indicator.id === 'VIXCLS' ? 0.3 : 0.1;
-  
-  for (let i = 30; i >= 0; i--) {
+  const data = [];
+  for (let i = DAYS_BACK; i >= 0; i--) {
     const d = new Date(now);
     d.setDate(d.getDate() - i);
     const date = d.toISOString().slice(0, 10);
-    const value = Math.round((baseValue + (Math.random() - 0.5) * volatility * 2) * 100) / 100;
-    data.push({ date, value, indicator: indicator.id });
+    const value = Math.round((ind.base + (Math.random() - 0.5) * ind.vol * 2) * 100) / 100;
+    data.push({ date, value, indicator: ind.id });
   }
   return data;
 }
 
-async function collectEconomy() {
-  console.log('[Economy] Начинаю сбор данных...');
-  
+export async function collectEconomy() {
+  console.log('[Economy] Начинаем сбор...');
   let allData = [];
-  for (const indicator of INDICATORS) {
-    const data = await fetchFred(indicator);
-    allData = allData.concat(data);
-    console.log(`[Economy] Индикатор ${indicator.id}: ${data.length} записей`);
+  for (const ind of INDICATORS) {
+    const d = generateForIndicator(ind);
+    allData = allData.concat(d);
+    console.log(`[Economy] ${ind.id}: ${d.length} записей`);
   }
-  
-  // Агрегируем по дням
-  const daily = {};
-  for (const item of allData) {
-    if (!daily[item.date]) daily[item.date] = 0;
-    daily[item.date] += item.value;
-  }
-  
-  const result = Object.entries(daily)
-    .map(([date, value]) => ({ date, value: Math.round(value * 100) / 100 }))
-    .sort((a, b) => a.date.localeCompare(b.date));
-  
-  await fs.mkdir(join(ROOT, 'data', 'economy'), { recursive: true });
-  await fs.writeFile(OUTPUT, JSON.stringify(result, null, 2));
-  
-  console.log(`[Economy] Сохранено ${result.length} дней данных в ${OUTPUT}`);
+  const result = await saveRaw('economy', allData, {
+    collector: 'collect-economy.mjs',
+    source: 'FRED (demo)',
+    source_url: 'https://fred.stlouisfed.org/',
+    license: 'public-domain',
+    format_hint: 'timeseries',
+    value_type: 'index',
+    value_unit: 'index',
+    granularity: 'daily',
+    period: 'P30D',
+    record_count: allData.length,
+    notes: `Демо-данные по ${INDICATORS.length} индикаторам; basket не перезаписывается`,
+    backwardCompat: false,
+  });
+  console.log(`[Economy] OK ${allData.length} → ${result.raw_file}`);
+  return allData;
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  collectEconomy().catch(console.error);
+  collectEconomy().catch((e) => { console.error('[Economy] FATAL:', e); process.exit(1); });
 }
-
-export default collectEconomy;

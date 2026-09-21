@@ -1,85 +1,85 @@
 {
-  "type": "FeatureCollection",
-  "features": [
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "dark-ships",
+    "source": "Dark Ships (sample)",
+    "source_url": "https://www.marinetraffic.com/",
+    "fetched_at": "2026-09-20T10:43:22.107Z",
+    "normalized_at": "2026-09-20T11:28:56.993Z",
+    "collector": "collect-dark-ships-real.mjs",
+    "license": "public-domain",
+    "count": 5,
+    "granularity": "snapshot",
+    "value_unit": "ships",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null
+  },
+  "series": [],
+  "points": [
     {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -78,
-          32
-        ]
-      },
-      "properties": {
-        "name": "Unknown-001",
+      "lat": 32,
+      "lon": -78,
+      "label": "Unknown-001",
+      "extra": {
         "type": "tanker",
-        "status": "suspicious",
-        "severity": "high"
+        "status": "suspicious"
       }
     },
     {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -72,
-          38
-        ]
-      },
-      "properties": {
-        "name": "Unknown-002",
+      "lat": 38,
+      "lon": -72,
+      "label": "Unknown-002",
+      "extra": {
         "type": "cargo",
-        "status": "suspicious",
-        "severity": "high"
+        "status": "suspicious"
       }
     },
     {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -68,
-          42
-        ]
-      },
-      "properties": {
-        "name": "Unknown-003",
+      "lat": 42,
+      "lon": -68,
+      "label": "Unknown-003",
+      "extra": {
         "type": "tanker",
-        "status": "suspicious",
-        "severity": "high"
+        "status": "suspicious"
       }
     },
     {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -62,
-          28
-        ]
-      },
-      "properties": {
-        "name": "Unknown-004",
+      "lat": 28,
+      "lon": -62,
+      "label": "Unknown-004",
+      "extra": {
         "type": "cargo",
-        "status": "suspicious",
-        "severity": "high"
+        "status": "suspicious"
       }
     },
     {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -56,
-          22
-        ]
-      },
-      "properties": {
-        "name": "Unknown-005",
+      "lat": 22,
+      "lon": -56,
+      "label": "Unknown-005",
+      "extra": {
         "type": "tanker",
-        "status": "suspicious",
-        "severity": "high"
+        "status": "suspicious"
       }
     }
-  ]
+  ],
+  "regions": [
+    {
+      "region": "GLOBAL",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    }
+  ],
+  "extra": {
+    "adapter": "points",
+    "adapter_version": "2.1.0",
+    "skipped_invalid_coords": 0,
+    "unmapped_regions": [],
+    "unmapped_count": 0
+  }
 }

@@ -14,8 +14,6 @@ yarn-error.log*
 # Бэкапы (лично хозяина)
 backups/
 
-# Persist-данные графа (не коммитим)
-data/persist/*.json
 
 # Логи (не коммитим)
 logs/**/*.log
@@ -27,6 +25,28 @@ logs/**/*.log
 **/*=*
 **/*.bak
 **/*.old
+.env
+.env.local
+.env.*.local
+*.tar.gz
+*.zip
+*.7z
+*.bak
+*.backup
+*.old
+*.log
+*.tmp
+*.swp
+*.swo
+*~
+*(копия)*
+
+# Реальные секреты (не коммитить!)
+data/secrets/acled.json
+data/secrets/*.json
+!data/secrets/*.template
+
+
 
 # Python
 __pycache__/
@@ -38,57 +58,27 @@ venv/
 .cache/
 dist/
 build/
+AI_MEMORY/
+test/
+PROJECT/
+logs/
+Тексты/
+Чат/
+Корзина/
+Резервные копии/
+депсеку дать посмотреть/
+1opml/
+RSS_lenta/
 
-# ==== ЗАЩИТА ОТ ПРИВАТНОГО (обновлено 19.09.2026) ====
-# ВАЖНО: data/ теперь ПУБЛИЧНАЯ, её НЕ игнорируем!
-
-# Приватные папки
+# ─── Приватные папки (НЕ публиковать!) ───
+PROJECT/
+AI_MEMORY/
 logs/
 backups/
 reports/
 snapshots/
 snapshots_full/
 runs/
-PROJECT/
-AI_MEMORY/
 node_modules/
-
-# Но внутри data/ эти подпапки — служебные:
-data/feeds/*.backup*
-data/feeds/*.opml.backup*
-data/**/*.zip
-data/**/*.tar.gz
-
-# Архивы и бэкапы (везде)
-*.tar.gz
-*.zip
-*.7z
-*.bak
-*.bak2
-*.bak_*
-*.bak.*
-*.backup
-*.backup_*
-*.backup-*
-*.old
-*.orig
-*.tmp
-*.swp
-*.swo
-*~
-*_backup_*
-*копия*
-*(копия)*
-
-# Логи и секреты
-*.log
-.env
-.env.local
-.env.*.local
-!.env.example
-
-# Черновики
-новый_файл*
-новый файл*
-как использовать*
-Чат.txt
+test/
+venv/

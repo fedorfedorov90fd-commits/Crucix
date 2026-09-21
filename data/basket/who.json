@@ -1,280 +1,102 @@
 {
-  "type": "FeatureCollection",
-  "features": [
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "США",
-        "value": 68.45,
-        "label": "alerts",
-        "unit": ""
-      }
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "who",
+    "source": "WHO Disease Outbreak News (demo)",
+    "source_url": "https://www.who.int/emergencies/disease-outbreak-news",
+    "fetched_at": "2026-09-20T11:20:53.760Z",
+    "normalized_at": "2026-09-20T11:28:57.302Z",
+    "collector": "collect-who.mjs",
+    "license": "public-domain",
+    "count": 1,
+    "granularity": "snapshot",
+    "value_unit": "alerts",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null
+  },
+  "series": [],
+  "points": [],
+  "regions": [],
+  "extra": {
+    "adapter": "catalog",
+    "adapter_version": "1.1.0",
+    "type_counts": {
+      "unknown": 1
     },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Россия",
-        "value": 32.75,
-        "label": "alerts",
-        "unit": ""
+    "regions_count": 0,
+    "entries": [
+      {
+        "source": "WHO",
+        "updated": "2026-09-20T11:20:53.757Z",
+        "alerts": [
+          {
+            "id": "who-001",
+            "disease": "Ebola",
+            "country": "Демократическая Республика Конго",
+            "status": "active",
+            "risk": "high",
+            "date": "2026-08-10",
+            "source": "WHO"
+          },
+          {
+            "id": "who-002",
+            "disease": "Cholera",
+            "country": "Йемен",
+            "status": "active",
+            "risk": "high",
+            "date": "2026-08-12",
+            "source": "WHO"
+          },
+          {
+            "id": "who-003",
+            "disease": "Dengue",
+            "country": "Бразилия",
+            "status": "active",
+            "risk": "medium",
+            "date": "2026-08-14",
+            "source": "WHO"
+          },
+          {
+            "id": "who-004",
+            "disease": "Monkeypox",
+            "country": "Нигерия",
+            "status": "active",
+            "risk": "medium",
+            "date": "2026-08-15",
+            "source": "WHO"
+          },
+          {
+            "id": "who-005",
+            "disease": "Polio",
+            "country": "Пакистан",
+            "status": "active",
+            "risk": "high",
+            "date": "2026-08-16",
+            "source": "WHO"
+          }
+        ],
+        "summary": {
+          "total": 5,
+          "byRisk": {
+            "high": 3,
+            "medium": 2
+          },
+          "byStatus": {
+            "active": 5
+          },
+          "byCountry": {
+            "ДР Конго": 1,
+            "Йемен": 1,
+            "Бразилия": 1,
+            "Нигерия": 1,
+            "Пакистан": 1
+          }
+        },
+        "note": "Демо-данные (WHO Disease Outbreak News API не подключён)"
       }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Китай",
-        "value": 15.66,
-        "label": "alerts",
-        "unit": ""
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Индия",
-        "value": 75.63,
-        "label": "alerts",
-        "unit": ""
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Бразилия",
-        "value": 34.2,
-        "label": "alerts",
-        "unit": ""
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Великобритания",
-        "value": 95.33,
-        "label": "alerts",
-        "unit": ""
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Германия",
-        "value": 15.31,
-        "label": "alerts",
-        "unit": ""
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Франция",
-        "value": 5.14,
-        "label": "alerts",
-        "unit": ""
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Япония",
-        "value": 30.94,
-        "label": "alerts",
-        "unit": ""
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Италия",
-        "value": 11.09,
-        "label": "alerts",
-        "unit": ""
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Канада",
-        "value": 67.63,
-        "label": "alerts",
-        "unit": ""
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Австралия",
-        "value": 80.29,
-        "label": "alerts",
-        "unit": ""
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Мексика",
-        "value": 8.72,
-        "label": "alerts",
-        "unit": ""
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Турция",
-        "value": 11.95,
-        "label": "alerts",
-        "unit": ""
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Иран",
-        "value": 1.19,
-        "label": "alerts",
-        "unit": ""
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Египет",
-        "value": 36.85,
-        "label": "alerts",
-        "unit": ""
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "ЮАР",
-        "value": 72.95,
-        "label": "alerts",
-        "unit": ""
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Аргентина",
-        "value": 70.2,
-        "label": "alerts",
-        "unit": ""
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Украина",
-        "value": 74.75,
-        "label": "alerts",
-        "unit": ""
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Польша",
-        "value": 24.1,
-        "label": "alerts",
-        "unit": ""
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Испания",
-        "value": 76.59,
-        "label": "alerts",
-        "unit": ""
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Нидерланды",
-        "value": 14.62,
-        "label": "alerts",
-        "unit": ""
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Бельгия",
-        "value": 38.94,
-        "label": "alerts",
-        "unit": ""
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Швеция",
-        "value": 88.14,
-        "label": "alerts",
-        "unit": ""
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Норвегия",
-        "value": 20.74,
-        "label": "alerts",
-        "unit": ""
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Дания",
-        "value": 67.03,
-        "label": "alerts",
-        "unit": ""
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Финляндия",
-        "value": 88.28,
-        "label": "alerts",
-        "unit": ""
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Ирландия",
-        "value": 37.9,
-        "label": "alerts",
-        "unit": ""
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Португалия",
-        "value": 89.42,
-        "label": "alerts",
-        "unit": ""
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Греция",
-        "value": 71.98,
-        "label": "alerts",
-        "unit": ""
-      }
-    }
-  ],
-  "_meta": {
-    "source": "demo-who",
-    "updated": "2026-08-28T04:49:46.868Z",
-    "total": 30
+    ],
+    "entries_count": 1,
+    "wrapped_single_object": true
   }
 }

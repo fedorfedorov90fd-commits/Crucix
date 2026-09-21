@@ -1,17 +1,23 @@
 /**
  * apis/sources/rss-feeds-api.mjs — API-МОДУЛЬ: RSS-ЛЕНТЫ
  *
- * КОНТРАКТ CRUCIX v2.
- * ИСТОЧНИК: data/basket/rss-latest.json (основной) ИЛИ data/basket/rss.json (fallback) — { items:[...] } ИЛИ [...] ИЛИ { feed:[...] }.
- * Сборщик: scripts/collectors/collect-rss-feeds.mjs.
+ * КОНТРАКТ CRUCIX v2 / v3.
+ * ИСТОЧНИК: data/basket/rsshub.json (основной, crucix.basket.v1, 500 documents)
+ *           ИЛИ data/basket/rss-universal.json (fallback, crucix.basket.v1)
+ *           ИЛИ data/basket/rss-latest.json (легаси, {items:[]}, 18.09.2026).
+ * Сборщик: scripts/collectors/collect-rsshub.mjs (активный).
+ *          scripts/collectors/collect-rss-feeds.mjs — УДАЛЁН, файлы rss-latest.json/rss.json остались как сироты.
  *
  * Агрегатор RSS-новостей из глобальных источников. Классифицирует каждую новость
  * по региону (europe/us/asia-pacific/middle-east/africa/latin-america/energy/
  * government/thinktank/forecast/world) на основе источника и категории.
  * Регион определяет координаты на карте (REGION_COORDS).
  *
+ * Чтение через basket-loader.mjs (loadWithFallback) — поддерживает и basket.v1
+ * (документы), и легаси-формат ({items:[]}, массив) на случай перехода.
+ *
  * ФОРМАТЫ: json (FC + series + stats), csv, series, stats, raw.
- * ФИЛЬТРЫ: ?region=, ?source=, ?category=, ?q=, ?since=, ?until=, ?limit=, ?top=.
+ * ФИЛЬТРЫ: ?region=, ?source=, ?category=, ?q=, ?since=, ?until=, ?limit=, ?top=, ?sort=.
  *
  * СЛУЖЕБНЫЕ ПОДПУТИ:
  *   GET /                    — корень (список эндпоинтов)
@@ -23,18 +29,23 @@
  *   GET /categories          — топ категорий
  *   GET /timeline            — динамика по дням
  *   GET /featurecollection   — чистый GeoJSON
+ *
+ * Изменение 20.09.2026: переключение с rss-latest.json на rsshub.json (basket.v1).
+ * Чтение через loadWithFallback. Совместимость с обоими форматами.
  */
 
-import { promises as fs } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { loadWithFallback } from './lib/basket-loader.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
 const PROJECT_ROOT = join(__dirname, '..', '..');
 const BASKET_DIR = join(PROJECT_ROOT, 'data', 'basket');
-const PRIMARY_FILE = join(BASKET_DIR, 'rss-latest.json');
-const FALLBACK_FILE = join(BASKET_DIR, 'rss.json');
+
+const PRIMARY_FILE  = join(BASKET_DIR, 'rsshub.json');
+const FALLBACK_FILE = join(BASKET_DIR, 'rss-universal.json');
+const LEGACY_FILE   = join(BASKET_DIR, 'rss-latest.json');
 
 export const route  = '/api/layers/rss-feeds';
 export const method = 'GET';
@@ -44,8 +55,8 @@ export const meta = {
   icon: '📰',
   color: '#ec4899',
   vizType: 'marker',
-  source: 'basket/rss-latest.json',
-  collector: 'collect-rss-feeds.mjs',
+  source: 'basket/rsshub.json',
+  collector: 'collect-rsshub.mjs',
   cache: 300,
   description: 'RSS-новости из глобальных источников с классификацией по регионам',
   unit: 'articles',
@@ -91,7 +102,6 @@ function detectRegion(source, category) {
   const s = (source || '').toLowerCase();
   const c = (category || '').toLowerCase();
 
-  // Россия / СНГ
   if (s.includes('тасс') || s.includes('tass') || s.includes('lenta.ru') || s.includes('lenta') ||
       s.includes('интерфакс') || s.includes('interfax') || s.includes('коммерсантъ') || s.includes('kommersant') ||
       s.includes('ведомости') || s.includes('vedomosti') || s.includes('ria') || s.includes('риа') ||
@@ -104,7 +114,6 @@ function detectRegion(source, category) {
     return 'europe';
   }
 
-  // США
   if (s.includes('fox news') || s.includes('cnn') || s.includes('nytimes') || s.includes('washington post') ||
       s.includes('wsj') || s.includes('bloomberg') || s.includes('reuters') || s.includes('ap news') ||
       s.includes('associated press') || s.includes('white house') || s.includes('pentagon') ||
@@ -121,7 +130,6 @@ function detectRegion(source, category) {
     return 'us';
   }
 
-  // Европа (без России)
   if (s.includes('guardian') || s.includes('bbc') || s.includes('sky news') || s.includes('independent') ||
       s.includes('telegraph') || s.includes('the times') || s.includes('economist') ||
       s.includes('euobserver') || s.includes('euractiv') || s.includes('france24') || s.includes('le monde') ||
@@ -142,7 +150,6 @@ function detectRegion(source, category) {
     return 'europe';
   }
 
-  // Африка
   if (s.includes('africa') || s.includes('nigeria') || s.includes('kenya') || s.includes('south africa') ||
       s.includes('egypt') || s.includes('morocco') || s.includes('tunisia') || s.includes('algeria') ||
       s.includes('ghana') || s.includes('ethiopia') || s.includes('tanzania') || s.includes('uganda') ||
@@ -153,7 +160,6 @@ function detectRegion(source, category) {
     return 'africa';
   }
 
-  // Ближний Восток
   if (s.includes('al jazeera') || s.includes('middle east') || s.includes('haaretz') ||
       s.includes('times of israel') || s.includes('jerusalem post') || s.includes('israel') ||
       s.includes('palestine') || s.includes('iran') || s.includes('iraq') || s.includes('syria') ||
@@ -167,7 +173,6 @@ function detectRegion(source, category) {
     return 'middle-east';
   }
 
-  // Латинская Америка
   if (s.includes('latin') || s.includes('mexico') || s.includes('brazil') || s.includes('argentina') ||
       s.includes('chile') || s.includes('colombia') || s.includes('peru') || s.includes('venezuela') ||
       s.includes('ecuador') || s.includes('bolivia') || s.includes('paraguay') || s.includes('uruguay') ||
@@ -179,7 +184,6 @@ function detectRegion(source, category) {
     return 'latin-america';
   }
 
-  // Азия-Тихоокеанский
   if (s.includes('asia') || s.includes('china') || s.includes('japan') || s.includes('south korea') ||
       s.includes('korea') || s.includes('india') || s.includes('australia') || s.includes('new zealand') ||
       s.includes('singapore') || s.includes('malaysia') || s.includes('indonesia') || s.includes('philippines') ||
@@ -194,7 +198,6 @@ function detectRegion(source, category) {
     return 'asia-pacific';
   }
 
-  // Энергетика
   if (c.includes('energy') || c.includes('oil') || c.includes('gas') || s.includes('oilprice') ||
       c.includes('power') || c.includes('renewable') || c.includes('electricity') || c.includes('fuel') ||
       c.includes('petrol') || c.includes('refinery') || s.includes('opec') || s.includes('brent') ||
@@ -204,7 +207,6 @@ function detectRegion(source, category) {
     return 'energy';
   }
 
-  // Правительство
   if (c.includes('government') || c.includes('politics') || c.includes('election') || c.includes('policy') ||
       c.includes('state') || c.includes('parliament') || c.includes('congress') || c.includes('senate') ||
       c.includes('house') || c.includes('president') || c.includes('prime minister') ||
@@ -216,7 +218,6 @@ function detectRegion(source, category) {
     return 'government';
   }
 
-  // Аналитические центры
   if (c.includes('thinktank') || c.includes('analysis') || c.includes('research') || c.includes('institute') ||
       c.includes('foundation') || c.includes('center') || c.includes('centre') || c.includes('academy') ||
       s.includes('chatham') || s.includes('csis') || s.includes('atlantic council') ||
@@ -227,7 +228,6 @@ function detectRegion(source, category) {
     return 'thinktank';
   }
 
-  // Прогнозы
   if (c.includes('forecast') || c.includes('prediction') || c.includes('outlook') ||
       c.includes('projection') || c.includes('estimate') || c.includes('forecasting') ||
       s.includes('forex') || s.includes('trading') || s.includes('market') || s.includes('finance') ||
@@ -243,52 +243,78 @@ function detectRegion(source, category) {
 }
 
 // ============================================================
-//  ЗАГРУЗКА
+//  ЗАГРУЗКА — через basket-loader.mjs (поддерживает basket.v1 и легаси)
 // ============================================================
 
 async function loadData() {
-  let raw;
-  try { raw = await fs.readFile(PRIMARY_FILE, 'utf8'); }
-  catch (e1) {
-    try { raw = await fs.readFile(FALLBACK_FILE, 'utf8'); }
-    catch (e2) {
-      const err = new Error('no_data'); err.statusCode = 503;
-      err.hint = 'run scripts/collectors/collect-rss-feeds.mjs'; throw err;
-    }
-  }
-  let parsed;
-  try { parsed = JSON.parse(raw); }
-  catch (e) { const err = new Error('invalid_json_in_basket: ' + e.message); err.statusCode = 500; throw err; }
-  return parsed;
+  const primary = await loadWithFallback({
+    basketFile: PRIMARY_FILE,
+    fallbackData: null,
+    hint: 'run node scripts/collectors/collect-rsshub.mjs && node scripts/warehouse/managerbasket.mjs',
+  });
+
+  if (primary.source === 'basket-v1' && primary.data) return primary.data;
+  if (primary.source === 'basket-legacy' && primary.legacy) return primary.legacy;
+
+  const secondary = await loadWithFallback({
+    basketFile: FALLBACK_FILE,
+    fallbackData: null,
+    hint: 'run node scripts/collectors/collect-rss-universal.mjs',
+  });
+  if (secondary.data || secondary.legacy) return secondary.data || secondary.legacy;
+
+  const legacy = await loadWithFallback({
+    basketFile: LEGACY_FILE,
+    fallbackData: null,
+    hint: 'legacy rss-latest.json, сборщик collect-rss-feeds.mjs удалён',
+  });
+  if (legacy.legacy) return legacy.legacy;
+
+  const err = new Error('no_data');
+  err.statusCode = 503;
+  err.hint = 'run node scripts/collectors/collect-rsshub.mjs && node scripts/warehouse/managerbasket.mjs';
+  throw err;
 }
 
-function extractItems(doc) {
+/**
+ * Универсальное извлечение документов/записей из разных форматов:
+ *  - basket.v1: {schema:'crucix.basket.v1', documents:[{id,text,url,title,timestamp,region,extra}]}
+ *  - легаси:    {items:[...]} | {feeds:[...]} | {data:[...]} | [...]
+ *  - объекты:   любой массив внутри объекта.
+ */
+function extractDocuments(doc) {
   if (Array.isArray(doc)) return doc;
   if (!doc || typeof doc !== 'object') return [];
+  if (Array.isArray(doc.documents)) return doc.documents;
   if (Array.isArray(doc.items)) return doc.items;
   if (Array.isArray(doc.feeds)) return doc.feeds;
+  if (Array.isArray(doc.articles)) return doc.articles;
   if (Array.isArray(doc.data)) return doc.data;
   if (doc.data && Array.isArray(doc.data.items)) return doc.data.items;
-  // Если объект — собираем все массивы внутри
+  if (doc.data && Array.isArray(doc.data.documents)) return doc.data.documents;
   const result = [];
   for (const v of Object.values(doc)) if (Array.isArray(v)) result.push(...v);
   return result;
 }
 
 function normalizeItem(it, i) {
-  const source = it.source || it.sourceUrl || 'Неизвестный источник';
-  const category = it.category || 'news';
+  // Совместимость: basket.v1 документы (text, url, title, timestamp, extra.source, extra.category)
+  // и легаси-записи (description, link, source, category, pubDate).
+  const source = (it.extra && it.extra.source) || it.source || it.sourceUrl || 'Неизвестный источник';
+  const category = (it.extra && it.extra.category) || it.category || 'news';
   const region = detectRegion(source, category);
   const coords = REGION_COORDS[region] || REGION_COORDS['world'];
   const regionMeta = REGION_LABELS[region] || REGION_LABELS['world'];
-  const rawDate = it.pubDate || it.published || it.date || it.timestamp || null;
+  const rawDate = it.timestamp || it.pubDate || it.published || it.date || null;
   const date = rawDate ? String(rawDate).slice(0, 10) : null;
+  const title = it.title || it.name || (it.text ? String(it.text).slice(0, 120) : 'Без названия');
+  const summary = it.description || it.summary || it.content || it.text || '';
 
   return {
     id: String(it.id || it.guid || `rss-${i}`),
-    title: it.title || it.name || 'Без названия',
-    summary: it.description || it.summary || it.content || '',
-    url: it.link || it.url || null,
+    title,
+    summary,
+    url: it.url || it.link || null,
     source,
     category,
     region,
@@ -421,12 +447,13 @@ export async function handler(req, res) {
     const format = (query.format || 'json').toLowerCase();
 
     const doc = await loadData();
-    const rawItems = extractItems(doc);
+    const rawItems = extractDocuments(doc);
     const all = rawItems.map(normalizeItem);
 
     const extra = {
       'X-Module': 'rss-feeds-api',
-      'X-Module-Version': '2.0.0',
+      'X-Module-Version': '3.0.0',
+      'X-Module-Source': meta.source,
       'Cache-Control': `public, max-age=${meta.cache}`,
     };
 
@@ -434,7 +461,7 @@ export async function handler(req, res) {
       return sendJSON(res, 200, { stats: computeStats(all) }, extra);
     }
     if (sub === '/status') {
-      return sendJSON(res, 200, { status: 'online', count: all.length, generated_at: new Date().toISOString() }, extra);
+      return sendJSON(res, 200, { status: 'online', count: all.length, source: meta.source, generated_at: new Date().toISOString() }, extra);
     }
     if (sub === '/latest') {
       const latest = all.slice().sort((a, b) => String(b.timestamp || '').localeCompare(String(a.timestamp || ''))).slice(0, 50);
@@ -474,7 +501,7 @@ export async function handler(req, res) {
 
     if (format === 'csv')    return sendText(res, 200, toCSV(rows), 'text/csv; charset=utf-8');
     if (format === 'series') return sendJSON(res, 200, { series: toSeries(rows), meta: { count: rows.length } }, extra);
-    if (format === 'raw')    return sendJSON(res, 200, { data: rows, meta: { total: all.length } }, extra);
+    if (format === 'raw')    return sendJSON(res, 200, { data: rows, meta: { total: all.length, source: meta.source } }, extra);
 
     const fc = toFeatureCollection(rows);
     return sendJSON(res, 200, {

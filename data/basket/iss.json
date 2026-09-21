@@ -1,0 +1,47 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "iss",
+    "source": "WhereTheISSAt API",
+    "source_url": "https://api.wheretheiss.at/v1/satellites/25544",
+    "fetched_at": "2026-09-20T10:56:29.807Z",
+    "normalized_at": "2026-09-20T11:44:06.471Z",
+    "collector": "collect-iss.mjs",
+    "license": "public-domain",
+    "count": 1,
+    "granularity": "snapshot",
+    "value_unit": "count",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null
+  },
+  "series": [],
+  "points": [
+    {
+      "lat": -37.866997457206,
+      "lon": -12.632716270089,
+      "extra": {
+        "__key": "iss"
+      }
+    }
+  ],
+  "regions": [
+    {
+      "region": "GLOBAL",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    }
+  ],
+  "extra": {
+    "adapter": "points",
+    "adapter_version": "2.2.1",
+    "skipped_invalid_coords": 0,
+    "unmapped_regions": [],
+    "unmapped_count": 0
+  }
+}

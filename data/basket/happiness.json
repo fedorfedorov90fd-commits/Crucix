@@ -1,280 +1,423 @@
 {
-  "type": "FeatureCollection",
-  "features": [
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "happiness",
+    "source": "World Happiness Report 2026",
+    "source_url": "https://worldhappiness.report/",
+    "fetched_at": "2026-09-20T10:53:46.783Z",
+    "normalized_at": "2026-09-20T11:28:57.080Z",
+    "collector": "collect-happiness.mjs",
+    "license": "public-domain",
+    "count": 30,
+    "granularity": "snapshot",
+    "value_unit": "score_0_10",
+    "value_scale": "happiness_0_10",
+    "value_type": "index",
+    "value_range": null
+  },
+  "series": [],
+  "points": [],
+  "regions": [
     {
-      "type": "Feature",
-      "properties": {
-        "name": "США",
-        "value": 4.28,
-        "label": "score",
-        "unit": ""
-      }
+      "region": "FIN",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Россия",
-        "value": 6.7,
-        "label": "score",
-        "unit": ""
-      }
+      "region": "DNK",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Китай",
-        "value": 3.87,
-        "label": "score",
-        "unit": ""
-      }
+      "region": "ISL",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Индия",
-        "value": 6.93,
-        "label": "score",
-        "unit": ""
-      }
+      "region": "SWE",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Бразилия",
-        "value": 7.8,
-        "label": "score",
-        "unit": ""
-      }
+      "region": "ISR",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Великобритания",
-        "value": 3.68,
-        "label": "score",
-        "unit": ""
-      }
+      "region": "NLD",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Германия",
-        "value": 6.78,
-        "label": "score",
-        "unit": ""
-      }
+      "region": "NOR",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Франция",
-        "value": 7.89,
-        "label": "score",
-        "unit": ""
-      }
+      "region": "CHE",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Япония",
-        "value": 3.14,
-        "label": "score",
-        "unit": ""
-      }
+      "region": "LUX",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Италия",
-        "value": 5.38,
-        "label": "score",
-        "unit": ""
-      }
+      "region": "NZL",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Канада",
-        "value": 6.05,
-        "label": "score",
-        "unit": ""
-      }
+      "region": "AUT",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Австралия",
-        "value": 7.65,
-        "label": "score",
-        "unit": ""
-      }
+      "region": "AUS",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Мексика",
-        "value": 6.83,
-        "label": "score",
-        "unit": ""
-      }
+      "region": "CAN",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Турция",
-        "value": 6.07,
-        "label": "score",
-        "unit": ""
-      }
+      "region": "IRL",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Иран",
-        "value": 5.9,
-        "label": "score",
-        "unit": ""
-      }
+      "region": "USA",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Египет",
-        "value": 7.05,
-        "label": "score",
-        "unit": ""
-      }
+      "region": "DEU",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "ЮАР",
-        "value": 4.42,
-        "label": "score",
-        "unit": ""
-      }
+      "region": "GBR",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Аргентина",
-        "value": 6.38,
-        "label": "score",
-        "unit": ""
-      }
+      "region": "FRA",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Украина",
-        "value": 3.78,
-        "label": "score",
-        "unit": ""
-      }
+      "region": "ITA",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Польша",
-        "value": 6.75,
-        "label": "score",
-        "unit": ""
-      }
+      "region": "ESP",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Испания",
-        "value": 4.84,
-        "label": "score",
-        "unit": ""
-      }
+      "region": "JPN",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Нидерланды",
-        "value": 7.61,
-        "label": "score",
-        "unit": ""
-      }
+      "region": "KOR",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Бельгия",
-        "value": 5.82,
-        "label": "score",
-        "unit": ""
-      }
+      "region": "RUS",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Швеция",
-        "value": 3.52,
-        "label": "score",
-        "unit": ""
-      }
+      "region": "CHN",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Норвегия",
-        "value": 5.21,
-        "label": "score",
-        "unit": ""
-      }
+      "region": "IND",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Дания",
-        "value": 7.29,
-        "label": "score",
-        "unit": ""
-      }
+      "region": "BRA",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Финляндия",
-        "value": 3.67,
-        "label": "score",
-        "unit": ""
-      }
+      "region": "MEX",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Ирландия",
-        "value": 6.2,
-        "label": "score",
-        "unit": ""
-      }
+      "region": "TUR",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Португалия",
-        "value": 6.98,
-        "label": "score",
-        "unit": ""
-      }
+      "region": "EGY",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Греция",
-        "value": 4.47,
-        "label": "score",
-        "unit": ""
-      }
+      "region": "ZAF",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
     }
   ],
-  "_meta": {
-    "source": "demo-happiness",
-    "updated": "2026-08-28T04:49:46.860Z",
-    "total": 30
+  "extra": {
+    "adapter": "catalog",
+    "adapter_version": "1.1.0",
+    "type_counts": {
+      "unknown": 30
+    },
+    "regions_count": 30,
+    "entries": [
+      {
+        "id": 1,
+        "country": "Финляндия",
+        "score": 7.8,
+        "rank": 1,
+        "updated": "2026-09-20T10:53:46.780Z"
+      },
+      {
+        "id": 2,
+        "country": "Дания",
+        "score": 7.6,
+        "rank": 2,
+        "updated": "2026-09-20T10:53:46.780Z"
+      },
+      {
+        "id": 3,
+        "country": "Исландия",
+        "score": 7.5,
+        "rank": 3,
+        "updated": "2026-09-20T10:53:46.780Z"
+      },
+      {
+        "id": 4,
+        "country": "Швеция",
+        "score": 7.4,
+        "rank": 4,
+        "updated": "2026-09-20T10:53:46.780Z"
+      },
+      {
+        "id": 5,
+        "country": "Израиль",
+        "score": 7.3,
+        "rank": 5,
+        "updated": "2026-09-20T10:53:46.780Z"
+      },
+      {
+        "id": 6,
+        "country": "Нидерланды",
+        "score": 7.3,
+        "rank": 6,
+        "updated": "2026-09-20T10:53:46.780Z"
+      },
+      {
+        "id": 7,
+        "country": "Норвегия",
+        "score": 7.2,
+        "rank": 7,
+        "updated": "2026-09-20T10:53:46.780Z"
+      },
+      {
+        "id": 8,
+        "country": "Швейцария",
+        "score": 7.1,
+        "rank": 8,
+        "updated": "2026-09-20T10:53:46.780Z"
+      },
+      {
+        "id": 9,
+        "country": "Люксембург",
+        "score": 7,
+        "rank": 9,
+        "updated": "2026-09-20T10:53:46.780Z"
+      },
+      {
+        "id": 10,
+        "country": "Новая Зеландия",
+        "score": 6.9,
+        "rank": 10,
+        "updated": "2026-09-20T10:53:46.780Z"
+      },
+      {
+        "id": 11,
+        "country": "Австрия",
+        "score": 6.8,
+        "rank": 11,
+        "updated": "2026-09-20T10:53:46.780Z"
+      },
+      {
+        "id": 12,
+        "country": "Австралия",
+        "score": 6.7,
+        "rank": 12,
+        "updated": "2026-09-20T10:53:46.780Z"
+      },
+      {
+        "id": 13,
+        "country": "Канада",
+        "score": 6.6,
+        "rank": 13,
+        "updated": "2026-09-20T10:53:46.780Z"
+      },
+      {
+        "id": 14,
+        "country": "Ирландия",
+        "score": 6.5,
+        "rank": 14,
+        "updated": "2026-09-20T10:53:46.780Z"
+      },
+      {
+        "id": 15,
+        "country": "США",
+        "score": 6.3,
+        "rank": 15,
+        "updated": "2026-09-20T10:53:46.780Z"
+      },
+      {
+        "id": 16,
+        "country": "Германия",
+        "score": 6.2,
+        "rank": 16,
+        "updated": "2026-09-20T10:53:46.780Z"
+      },
+      {
+        "id": 17,
+        "country": "Великобритания",
+        "score": 6.1,
+        "rank": 17,
+        "updated": "2026-09-20T10:53:46.780Z"
+      },
+      {
+        "id": 18,
+        "country": "Франция",
+        "score": 6,
+        "rank": 18,
+        "updated": "2026-09-20T10:53:46.780Z"
+      },
+      {
+        "id": 19,
+        "country": "Италия",
+        "score": 5.9,
+        "rank": 19,
+        "updated": "2026-09-20T10:53:46.780Z"
+      },
+      {
+        "id": 20,
+        "country": "Испания",
+        "score": 5.8,
+        "rank": 20,
+        "updated": "2026-09-20T10:53:46.780Z"
+      },
+      {
+        "id": 21,
+        "country": "Япония",
+        "score": 5.7,
+        "rank": 21,
+        "updated": "2026-09-20T10:53:46.780Z"
+      },
+      {
+        "id": 22,
+        "country": "Южная Корея",
+        "score": 5.6,
+        "rank": 22,
+        "updated": "2026-09-20T10:53:46.780Z"
+      },
+      {
+        "id": 23,
+        "country": "Россия",
+        "score": 5.3,
+        "rank": 23,
+        "updated": "2026-09-20T10:53:46.780Z"
+      },
+      {
+        "id": 24,
+        "country": "Китай",
+        "score": 5.1,
+        "rank": 24,
+        "updated": "2026-09-20T10:53:46.780Z"
+      },
+      {
+        "id": 25,
+        "country": "Индия",
+        "score": 4.8,
+        "rank": 25,
+        "updated": "2026-09-20T10:53:46.780Z"
+      },
+      {
+        "id": 26,
+        "country": "Бразилия",
+        "score": 4.7,
+        "rank": 26,
+        "updated": "2026-09-20T10:53:46.780Z"
+      },
+      {
+        "id": 27,
+        "country": "Мексика",
+        "score": 4.5,
+        "rank": 27,
+        "updated": "2026-09-20T10:53:46.780Z"
+      },
+      {
+        "id": 28,
+        "country": "Турция",
+        "score": 4.3,
+        "rank": 28,
+        "updated": "2026-09-20T10:53:46.780Z"
+      },
+      {
+        "id": 29,
+        "country": "Египет",
+        "score": 4,
+        "rank": 29,
+        "updated": "2026-09-20T10:53:46.780Z"
+      },
+      {
+        "id": 30,
+        "country": "ЮАР",
+        "score": 3.8,
+        "rank": 30,
+        "updated": "2026-09-20T10:53:46.780Z"
+      }
+    ],
+    "entries_count": 30
   }
 }

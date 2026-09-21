@@ -1,105 +1,289 @@
 {
-  "type": "FeatureCollection",
-  "features": [
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "safecast",
+    "source": "Safecast (demo)",
+    "source_url": "https://api.safecast.org/",
+    "fetched_at": "2026-09-20T11:05:25.237Z",
+    "normalized_at": "2026-09-20T11:28:57.148Z",
+    "collector": "collect-safecast.mjs",
+    "license": "public-domain",
+    "count": 31,
+    "granularity": "daily",
+    "value_unit": "cpm",
+    "value_scale": null,
+    "value_type": "index",
+    "value_range": null,
+    "period": "P30D"
+  },
+  "series": [
     {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          34.8347,
-          47.5122
-        ]
-      },
-      "properties": {
-        "name": "Запорожская АЭС",
-        "reading": 85.3,
-        "level": "elevated",
-        "severity": "medium"
+      "date": "2026-08-21",
+      "value": 49.2,
+      "extra": {
+        "site": "Fukushima Daiichi",
+        "cpm": 58.12
       }
     },
     {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          30.099,
-          51.389
-        ]
-      },
-      "properties": {
-        "name": "Чернобыльская Зона",
-        "reading": 33.3,
-        "level": "normal",
-        "severity": "medium"
+      "date": "2026-08-22",
+      "value": 34.48,
+      "extra": {
+        "site": "Fukushima",
+        "cpm": 49.94
       }
     },
     {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          141.0325,
-          37.4214
-        ]
-      },
-      "properties": {
-        "name": "Фукусима-1",
-        "reading": 69.5,
-        "level": "elevated",
-        "severity": "medium"
+      "date": "2026-08-23",
+      "value": 27.35,
+      "extra": {
+        "site": "Mayak",
+        "cpm": 45.53
       }
     },
     {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          50.8865,
-          28.8309
-        ]
-      },
-      "properties": {
-        "name": "АЭС Бушер",
-        "reading": null,
-        "level": "unknown",
-        "severity": "medium"
+      "date": "2026-08-24",
+      "value": 30.41,
+      "extra": {
+        "site": "Three Mile Island",
+        "cpm": 21.6
       }
     },
     {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          125.758,
-          39.796
-        ]
-      },
-      "properties": {
-        "name": "Ёнбён (Северная Корея)",
-        "reading": null,
-        "level": "unknown",
-        "severity": "medium"
+      "date": "2026-08-25",
+      "value": 28.75,
+      "extra": {
+        "site": "Three Mile Island",
+        "cpm": 25.99
       }
     },
     {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          35,
-          31
-        ]
-      },
-      "properties": {
-        "name": "Димона (Израиль)",
-        "reading": 29.5,
-        "level": "normal",
-        "severity": "medium"
+      "date": "2026-08-26",
+      "value": 13.18,
+      "extra": {
+        "site": "Fukushima",
+        "cpm": 51.35
+      }
+    },
+    {
+      "date": "2026-08-27",
+      "value": 21.58,
+      "extra": {
+        "site": "Three Mile Island",
+        "cpm": 48.16
+      }
+    },
+    {
+      "date": "2026-08-28",
+      "value": 47.88,
+      "extra": {
+        "site": "Three Mile Island",
+        "cpm": 34.63
+      }
+    },
+    {
+      "date": "2026-08-29",
+      "value": 52.99,
+      "extra": {
+        "site": "Fukushima",
+        "cpm": 27.28
+      }
+    },
+    {
+      "date": "2026-08-30",
+      "value": 58.48,
+      "extra": {
+        "site": "Fukushima",
+        "cpm": 40.45
+      }
+    },
+    {
+      "date": "2026-08-31",
+      "value": 42.92,
+      "extra": {
+        "site": "Chernobyl",
+        "cpm": 48
+      }
+    },
+    {
+      "date": "2026-09-01",
+      "value": 43.28,
+      "extra": {
+        "site": "Fukushima",
+        "cpm": 26.68
+      }
+    },
+    {
+      "date": "2026-09-02",
+      "value": 37.84,
+      "extra": {
+        "site": "Chernobyl",
+        "cpm": 39.91
+      }
+    },
+    {
+      "date": "2026-09-03",
+      "value": 28.59,
+      "extra": {
+        "site": "Fukushima Daiichi",
+        "cpm": 53.26
+      }
+    },
+    {
+      "date": "2026-09-04",
+      "value": 33.46,
+      "extra": {
+        "site": "Three Mile Island",
+        "cpm": 58.28
+      }
+    },
+    {
+      "date": "2026-09-05",
+      "value": 54.57,
+      "extra": {
+        "site": "Three Mile Island",
+        "cpm": 25.55
+      }
+    },
+    {
+      "date": "2026-09-06",
+      "value": 10.63,
+      "extra": {
+        "site": "Three Mile Island",
+        "cpm": 35.19
+      }
+    },
+    {
+      "date": "2026-09-07",
+      "value": 22.39,
+      "extra": {
+        "site": "Fukushima Daiichi",
+        "cpm": 38.23
+      }
+    },
+    {
+      "date": "2026-09-08",
+      "value": 44.18,
+      "extra": {
+        "site": "Fukushima",
+        "cpm": 28.94
+      }
+    },
+    {
+      "date": "2026-09-09",
+      "value": 21.58,
+      "extra": {
+        "site": "Mayak",
+        "cpm": 59.28
+      }
+    },
+    {
+      "date": "2026-09-10",
+      "value": 54.74,
+      "extra": {
+        "site": "Fukushima Daiichi",
+        "cpm": 32.1
+      }
+    },
+    {
+      "date": "2026-09-11",
+      "value": 28.06,
+      "extra": {
+        "site": "Mayak",
+        "cpm": 35.99
+      }
+    },
+    {
+      "date": "2026-09-12",
+      "value": 11.08,
+      "extra": {
+        "site": "Three Mile Island",
+        "cpm": 48.84
+      }
+    },
+    {
+      "date": "2026-09-13",
+      "value": 42.8,
+      "extra": {
+        "site": "Three Mile Island",
+        "cpm": 50.64
+      }
+    },
+    {
+      "date": "2026-09-14",
+      "value": 16.84,
+      "extra": {
+        "site": "Fukushima Daiichi",
+        "cpm": 54.75
+      }
+    },
+    {
+      "date": "2026-09-15",
+      "value": 26,
+      "extra": {
+        "site": "Mayak",
+        "cpm": 51.65
+      }
+    },
+    {
+      "date": "2026-09-16",
+      "value": 51.22,
+      "extra": {
+        "site": "Chernobyl",
+        "cpm": 57.77
+      }
+    },
+    {
+      "date": "2026-09-17",
+      "value": 43.81,
+      "extra": {
+        "site": "Fukushima",
+        "cpm": 24.38
+      }
+    },
+    {
+      "date": "2026-09-18",
+      "value": 41.19,
+      "extra": {
+        "site": "Mayak",
+        "cpm": 58.35
+      }
+    },
+    {
+      "date": "2026-09-19",
+      "value": 14.32,
+      "extra": {
+        "site": "Mayak",
+        "cpm": 25.54
+      }
+    },
+    {
+      "date": "2026-09-20",
+      "value": 28.31,
+      "extra": {
+        "site": "Three Mile Island",
+        "cpm": 42.09
       }
     }
   ],
-  "_meta": {
-    "source": "safecast",
-    "updated": "2026-08-28T04:49:25.286Z"
+  "points": [],
+  "regions": [
+    {
+      "region": "GLOBAL",
+      "value": 34.26161290322581,
+      "count": 31,
+      "aggregation": "mean",
+      "extra": {
+        "max": 58.48,
+        "sum": 1062.1100000000001
+      }
+    }
+  ],
+  "extra": {
+    "adapter": "timeseries",
+    "adapter_version": "2.1.1",
+    "unique_dates": 31,
+    "unmapped_regions": [],
+    "unmapped_count": 0
   }
 }

@@ -1,82 +1,29 @@
-[
-  {
-    "date": "2026-08-30",
-    "value": 99.9
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "oil-gas",
+    "source": "Oil/Gas (demo)",
+    "source_url": "https://finance.yahoo.com/quote/CL=F",
+    "fetched_at": "2026-09-20T10:59:29.424Z",
+    "normalized_at": "2026-09-20T11:28:57.114Z",
+    "collector": "collect-oil-gas.mjs",
+    "license": "public-domain",
+    "count": 0,
+    "granularity": "daily",
+    "value_unit": "ratio",
+    "value_scale": "oil_usd_per_gas_usd",
+    "value_type": "price",
+    "value_range": null,
+    "period": "P30D"
   },
-  {
-    "date": "2026-08-29",
-    "value": 50.64
-  },
-  {
-    "date": "2026-08-28",
-    "value": 66.52
-  },
-  {
-    "date": "2026-08-27",
-    "value": 80.89
-  },
-  {
-    "date": "2026-08-26",
-    "value": 73.06
-  },
-  {
-    "date": "2026-08-25",
-    "value": 66.84
-  },
-  {
-    "date": "2026-08-24",
-    "value": 50.9
-  },
-  {
-    "date": "2026-08-23",
-    "value": 56.01
-  },
-  {
-    "date": "2026-08-22",
-    "value": 84.92
-  },
-  {
-    "date": "2026-08-21",
-    "value": 68.26
-  },
-  {
-    "date": "2026-08-20",
-    "value": 72.47
-  },
-  {
-    "date": "2026-08-19",
-    "value": 76.54
-  },
-  {
-    "date": "2026-08-18",
-    "value": 59.42
-  },
-  {
-    "date": "2026-08-17",
-    "value": 66.08
-  },
-  {
-    "date": "2026-08-16",
-    "value": 88.75
-  },
-  {
-    "date": "2026-08-15",
-    "value": 99.55
-  },
-  {
-    "date": "2026-08-14",
-    "value": 61.88
-  },
-  {
-    "date": "2026-08-13",
-    "value": 89.91
-  },
-  {
-    "date": "2026-08-12",
-    "value": 56.47
-  },
-  {
-    "date": "2026-08-11",
-    "value": 53.48
+  "series": [],
+  "points": [],
+  "regions": [],
+  "extra": {
+    "adapter": "timeseries",
+    "adapter_version": "2.1.1",
+    "unique_dates": 0,
+    "unmapped_regions": [],
+    "unmapped_count": 0
   }
-]
+}

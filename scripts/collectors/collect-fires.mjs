@@ -1,18 +1,14 @@
 #!/usr/bin/env node
+/**
+ * Crucix Collector: fires (пожары, FIRMS-совместимые) — demo.
+ * Версия 2.0.0. Принят 20.09.2026.
+ * Роль: demo с реальными координатами пожароопасных зон → saveRaw.
+ * Источник: NASA FIRMS (https://firms.modaps.eosdis.nasa.gov/).
+ * Формат: [{name, region, lat, lng, date, fires, intensity, severity, frp, confidence}]. Тип — points.
+ */
+import { saveRaw } from './lib/collector-helper.mjs';
+import { pathToFileURL } from 'url';
 
-// ============================================================
-// COLLECT-FIRES.MJS — Сбор данных о пожарах (FIRMS)
-// Профессиональная версия с координатами
-// ============================================================
-
-import { promises as fs } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const BASKET_PATH = join(__dirname, '..', '..', 'data', 'basket', 'fires.json');
-
-// Регионы с реальными координатами (центры пожароопасных зон)
 const REGIONS = [
   { name: 'Amazon', lat: -5.0, lng: -60.0 },
   { name: 'California', lat: 37.0, lng: -120.0 },
@@ -26,7 +22,6 @@ const REGIONS = [
   { name: 'Spain', lat: 40.0, lng: -4.0 },
   { name: 'Portugal', lat: 39.5, lng: -8.0 },
   { name: 'Italy', lat: 42.0, lng: 12.0 },
-  { name: 'Greece', lat: 38.0, lng: 23.0 },
   { name: 'Russia', lat: 55.0, lng: 40.0 },
   { name: 'South Africa', lat: -30.0, lng: 25.0 },
   { name: 'India', lat: 20.0, lng: 78.0 },
@@ -36,67 +31,52 @@ const REGIONS = [
   { name: 'Argentina', lat: -35.0, lng: -65.0 },
 ];
 
-function generateFeatures() {
+function generateData() {
   const now = new Date();
   const features = [];
-  const severity = ['low', 'medium', 'high', 'critical'];
-  
   for (let i = 0; i < 60; i++) {
     const date = new Date(now);
     date.setDate(date.getDate() - i);
     const region = REGIONS[Math.floor(Math.random() * REGIONS.length)];
     const intensity = Math.floor(20 + Math.random() * 180);
-    const severityLevel = intensity > 120 ? 'critical' : intensity > 80 ? 'high' : intensity > 40 ? 'medium' : 'low';
-    
+    const severity = intensity > 120 ? 'critical' : intensity > 80 ? 'high' : intensity > 40 ? 'medium' : 'low';
     features.push({
-      type: 'Feature',
-      geometry: {
-        type: 'Point',
-        coordinates: [region.lng, region.lat]
-      },
-      properties: {
-        name: `Пожар в ${region.name}`,
-        region: region.name,
-        date: date.toISOString().slice(0,10),
-        fires: intensity,
-        intensity: intensity,
-        severity: severityLevel,
-        frp: Math.round((Math.random() * 100 + 10) * 100) / 100,
-        confidence: Math.round((50 + Math.random() * 50) * 10) / 10,
-        lat: region.lat,
-        lng: region.lng
-      }
+      name: `Пожар в ${region.name}`,
+      region: region.name,
+      lat: region.lat,
+      lng: region.lng,
+      date: date.toISOString().slice(0, 10),
+      fires: intensity,
+      intensity,
+      severity,
+      frp: Math.round((Math.random() * 100 + 10) * 100) / 100,
+      confidence: Math.round((50 + Math.random() * 50) * 10) / 10,
     });
   }
   return features;
 }
 
-async function collectFires() {
-  try {
-    console.log('[FIRES] Начинаем сбор данных о пожарах...');
-    const features = generateFeatures();
-    
-    const data = {
-      type: 'FeatureCollection',
-      features: features,
-      metadata: {
-        source: 'FIRMS (NASA) — демо-данные',
-        total: features.length,
-        updated: new Date().toISOString(),
-        attribution: 'Данные сгенерированы на основе реальных координат пожароопасных зон'
-      }
-    };
-    
-    await fs.mkdir(join(__dirname, '..', '..', 'data', 'basket'), { recursive: true });
-    await fs.writeFile(BASKET_PATH, JSON.stringify(data, null, 2));
-    console.log(`[FIRES] ✅ Сохранено ${features.length} записей в ${BASKET_PATH}`);
-    console.log(`[FIRES] ✅ Первая запись:`, features[0].properties);
-    return data;
-  } catch (error) {
-    console.error(`[FIRES] ❌ Ошибка: ${error.message}`);
-    throw error;
-  }
+export async function collectFires() {
+  console.log('[FIRES] Начинаем сбор...');
+  const data = generateData();
+  const result = await saveRaw('fires', data, {
+    collector: 'collect-fires.mjs',
+    source: 'NASA FIRMS (demo)',
+    source_url: 'https://firms.modaps.eosdis.nasa.gov/',
+    license: 'public-domain',
+    format_hint: 'points',
+    value_type: 'count',
+    value_unit: 'fires',
+    granularity: 'event',
+    period: 'P60D',
+    record_count: data.length,
+    notes: 'Демо-данные с реальными координатами пожароопасных зон; basket не перезаписывается',
+    backwardCompat: false,
+  });
+  console.log(`[FIRES] OK ${data.length} → ${result.raw_file}`);
+  return data;
 }
 
-console.log('[FIRES] Запуск сборщика...');
-collectFires().then(() => console.log('[FIRES] ✅ Готово!')).catch(console.error);
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  collectFires().catch((e) => { console.error('[FIRES] FATAL:', e); process.exit(1); });
+}

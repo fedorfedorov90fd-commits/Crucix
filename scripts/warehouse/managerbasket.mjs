@@ -1,14 +1,30 @@
 #!/usr/bin/env node
 /**
  * Crucix Warehouse Manager (кладовщик).
- * Версия 1.1.1. Принят 19.09.2026.
+ * Версия 1.2.0. Принят 20.09.2026.
+ *
+ * Изменение 1.2.0 (20.09.2026):
+ *   - updateItemStatus: при смене статуса вычищает поля-«призраки» от предыдущих
+ *     состояний (error, failed_at, processed_at, processed_to, format_used,
+ *     archived_at, archived_reason). Ранее поля накапливались: если запись
+ *     сначала упала (failed + error), а потом прошла (processed), поле error
+ *     оставалось висеть, создавая ложную картину 'processed + validation failed'.
+ *   - Добавлены поля: status_updated_at (единое время последнего изменения статуса)
+ *     и status_prev (предыдущий статус для трассировки переходов).
+ *   - Введена валидация накладной по схеме data/schemas/incoming.v1.json перед
+ *     saveIncoming. Схема читается один раз в main (не на каждую запись).
+ *     Реализована своя структурная проверка без внешних библиотек.
+ *   - Философия: накладная хранит ТОЛЬКО АКТУАЛЬНОЕ состояние записи.
+ *     История переходов — в lineage.mjs, не в накладной.
  *
  * Изменение 1.1.0:
  *   - updateItemStatus принимает объект item (не id). Два item с одинаковым id
  *     теперь обрабатываются оба (было: find по id → всегда первый).
  *   - detectFormatHint распознаёт catalog для объектов с ключами entries/objects/...
  *     (было: любой объект → hierarchical, что неверно для OFAC SDN).
- *   - Изменение 1.1.1: runAdapter приоритет данных над метаданными. Если
+ *   - Изменение 1.1.1: runAdapter приоритет данных над метаданными.
+ *   - Изменение 1.1.2: metaInput передаёт value_type и granularity из накладной.
+ *     Это позволяет passThroughV1Object использовать явные значения вместо дефолтов. Если
  *     format_hint в накладной = 'hierarchical', но detectFormatHint(data) даёт
  *     конкретный тип (catalog/timeseries/points/regions/events) — используется
  *     детект, лог WARN. Универсальное правило: данные важнее метаданных.
@@ -42,6 +58,7 @@ const EVICTION_LOG = join(ROOT, 'data', 'warehouse', 'eviction.log');
 const RAW_DIR = join(ROOT, 'data', 'raw');
 const BASKET_DIR = join(ROOT, 'data', 'basket');
 const ADAPTERS_DIR = join(ROOT, 'scripts', 'warehouse', 'adapters');
+const SCHEMA_INCOMING_PATH = join(ROOT, 'data', 'schemas', 'incoming.v1.json');
 const LOG_FILE = join(ROOT, 'logs', 'collectors', 'managerbasket.log');
 
 async function log(msg, level = 'INFO') {
@@ -78,6 +95,92 @@ async function listIncomingFiles() {
   return entries.filter(f => f.endsWith('.json')).sort();
 }
 
+// === СХЕМА НАКЛАДНОЙ ===
+
+/**
+ * Загружает схему накладной из data/schemas/incoming.v1.json.
+ * Возвращает объект схемы или null, если схема не найдена (валидация
+ * будет пропущена с предупреждением в лог).
+ */
+async function loadIncomingSchema() {
+  if (!existsSync(SCHEMA_INCOMING_PATH)) {
+    return null;
+  }
+  try {
+    const raw = await readFile(SCHEMA_INCOMING_PATH, 'utf-8');
+    return JSON.parse(raw);
+  } catch (e) {
+    await log(`Схема ${SCHEMA_INCOMING_PATH} не парсится: ${e.message}`, 'WARN');
+    return null;
+  }
+}
+
+/**
+ * Структурная валидация накладной по схеме. Без внешних библиотек —
+ * проверяем обязательные поля, типы, enum, patterns и условные инварианты
+ * (processed → processed_at+processed_to, failed → failed_at+error,
+ * archived → archived_at+archived_reason).
+ *
+ * Возвращает { ok: true } или { ok: false, errors: [...] }.
+ */
+function validateIncoming(incoming, schema) {
+  const errors = [];
+  if (!schema) return { ok: true, errors: [] };
+
+  if (!incoming || typeof incoming !== 'object') {
+    return { ok: false, errors: ['накладная не объект'] };
+  }
+  if (typeof incoming.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(incoming.date)) {
+    errors.push('$.date: ожидается YYYY-MM-DD');
+  }
+  if (!Array.isArray(incoming.items)) {
+    errors.push('$.items: ожидается массив');
+    return { ok: false, errors };
+  }
+
+  const itemSchema = schema.$defs && schema.$defs.item;
+  const itemRequired = (itemSchema && itemSchema.required) || ['id', 'collector', 'source', 'raw_file', 'status'];
+  const statusEnum = (itemSchema && itemSchema.properties && itemSchema.properties.status && itemSchema.properties.status.enum)
+    || ['pending', 'processed', 'failed', 'archived'];
+
+  for (let i = 0; i < incoming.items.length; i++) {
+    const it = incoming.items[i];
+    const p = `$.items[${i}]`;
+    if (!it || typeof it !== 'object') {
+      errors.push(`${p}: не объект`);
+      continue;
+    }
+    for (const field of itemRequired) {
+      if (it[field] === undefined || it[field] === null || it[field] === '') {
+        errors.push(`${p}.${field}: обязательное поле отсутствует`);
+      }
+    }
+    if (it.status !== undefined && !statusEnum.includes(it.status)) {
+      errors.push(`${p}.status: '${it.status}' не из enum [${statusEnum.join(', ')}]`);
+    }
+    if (it.status === 'processed') {
+      if (!it.processed_at) errors.push(`${p}.processed_at: обязателен при status='processed'`);
+      if (!it.processed_to) errors.push(`${p}.processed_to: обязателен при status='processed'`);
+      if (it.error) errors.push(`${p}.error: не должен присутствовать при status='processed' (поле-призрак)`);
+      if (it.failed_at) errors.push(`${p}.failed_at: не должен присутствовать при status='processed' (поле-призрак)`);
+    }
+    if (it.status === 'failed') {
+      if (!it.failed_at) errors.push(`${p}.failed_at: обязателен при status='failed'`);
+      if (!it.error) errors.push(`${p}.error: обязателен при status='failed'`);
+      if (it.processed_at) errors.push(`${p}.processed_at: не должен присутствовать при status='failed' (поле-призрак)`);
+    }
+    if (it.status === 'archived') {
+      if (!it.archived_at) errors.push(`${p}.archived_at: обязателен при status='archived'`);
+      if (!it.archived_reason) errors.push(`${p}.archived_reason: обязателен при status='archived'`);
+    }
+    if (it.checksum_sha256 !== undefined && !/^[a-f0-9]{64}$/.test(it.checksum_sha256)) {
+      errors.push(`${p}.checksum_sha256: ожидается sha256 hex`);
+    }
+  }
+
+  return errors.length === 0 ? { ok: true, errors: [] } : { ok: false, errors };
+}
+
 // === РАБОТА С НАКЛАДНЫМИ ===
 
 async function sha256File(filePath) {
@@ -99,13 +202,27 @@ async function loadIncoming(fileName) {
   throw new Error(`Накладная ${fileName}: неизвестная структура (ожидается массив или {items:[]})`);
 }
 
-async function saveIncoming(incoming) {
+async function saveIncoming(incoming, schema) {
   const output = {
     date: incoming.date,
     updated_at: new Date().toISOString(),
     items: incoming.items
   };
+
+  const validation = validateIncoming(output, schema);
+  if (!validation.ok) {
+    await log(`ОТКЛОНЕНА накладная ${incoming.date}: ${validation.errors.length} ошибок схемы:`, 'ERROR');
+    for (const err of validation.errors.slice(0, 10)) {
+      await log(`  ${err}`, 'ERROR');
+    }
+    if (validation.errors.length > 10) {
+      await log(`  ... и ещё ${validation.errors.length - 10}`, 'ERROR');
+    }
+    return false;
+  }
+
   await writeFile(incoming._path, JSON.stringify(output, null, 2), 'utf-8');
+  return true;
 }
 
 function findPendingItems(incoming) {
@@ -133,12 +250,55 @@ async function verifyRawFile(item) {
   return { ok: true, rawPath, size: st.size };
 }
 
+/**
+ * Обновляет статус записи в накладной.
+ *
+ * Изменение 1.2.0: при смене статуса вычищает поля-«призраки» от предыдущих
+ * состояний. Философия: накладная хранит ТОЛЬКО АКТУАЛЬНОЕ состояние записи.
+ * История переходов — в lineage.mjs.
+ *
+ * Правила очистки:
+ *   - processed: удалить error, failed_at (призраки от прошлой неудачи)
+ *   - failed:    удалить processed_at, processed_to, format_used (призраки от прошлого успеха)
+ *   - archived:  удалить error, failed_at (архив — терминальное состояние)
+ *   - pending:   удалить всё терминальное (error, failed_at, processed_at,
+ *                processed_to, archived_at, archived_reason)
+ */
 function updateItemStatus(incoming, item, status, extra = {}) {
-  // Принимает объект item (не id), чтобы различать одинаковые id.
   if (!item || typeof item !== 'object') return false;
   if (!incoming.items.includes(item)) return false;
+
+  const now = new Date().toISOString();
+  const prevStatus = item.status;
+
+  if (status === 'processed') {
+    delete item.error;
+    delete item.failed_at;
+    item.processed_at = now;
+  } else if (status === 'failed') {
+    delete item.processed_at;
+    delete item.processed_to;
+    delete item.format_used;
+    item.failed_at = now;
+  } else if (status === 'archived') {
+    delete item.error;
+    delete item.failed_at;
+    item.archived_at = item.archived_at || now;
+  } else if (status === 'pending') {
+    delete item.error;
+    delete item.failed_at;
+    delete item.processed_at;
+    delete item.processed_to;
+    delete item.archived_at;
+    delete item.archived_reason;
+  }
+
   item.status = status;
-  item.processed_at = new Date().toISOString();
+  item.status_updated_at = now;
+  if (prevStatus && prevStatus !== status) {
+    item.status_prev = prevStatus;
+  }
+
   Object.assign(item, extra);
   return true;
 }
@@ -308,7 +468,9 @@ async function processOneItem(item, manifest, lineage, quality) {
     license: item.license,
     format_hint: item.format_hint,
     value_unit: item.value_unit,
-    value_scale: item.value_scale
+    value_scale: item.value_scale,
+    value_type: item.value_type || null,
+    granularity: item.granularity || null
   };
 
   const adapterRun = await runAdapter(item.format_hint, rawData, metaInput);
@@ -332,6 +494,8 @@ async function processOneItem(item, manifest, lineage, quality) {
     series: adapterResult.series || [],
     points: adapterResult.points || [],
     regions: adapterResult.regions || [],
+    documents: adapterResult.documents || [],
+    graph: adapterResult.graph || null,
     extra: adapterResult.extra || {}
   };
 
@@ -439,13 +603,20 @@ async function evictRawIfNeeded(config) {
 
 async function main() {
   const started = Date.now();
-  await log('=== Кладовщик запущен ===');
+  await log('=== Кладовщик запущен (v1.2.0) ===');
   const config = await loadConfig();
   const manifest = await loadManifest();
   const lineage = await loadLineage();
   const quality = await loadQuality();
+  const schema = await loadIncomingSchema();
+  if (!schema) {
+    await log(`Схема ${SCHEMA_INCOMING_PATH} не найдена — валидация накладных отключена`, 'WARN');
+  } else {
+    await log(`Схема накладной загружена: ${schema.$id || 'incoming.v1'}`);
+  }
+
   const incomingFiles = await listIncomingFiles();
-  let processed = 0, failed = 0, skipped = 0;
+  let processed = 0, failed = 0, skipped = 0, schemaRejected = 0;
 
   for (const fileName of incomingFiles) {
     let incoming;
@@ -459,6 +630,7 @@ async function main() {
     if (pending.length === 0) continue;
     await log(`Накладная ${fileName}: ${pending.length} записей со status=pending`);
 
+    let anyChange = false;
     for (const item of pending) {
       const result = await processOneItem(item, manifest, lineage, quality);
       if (result.ok) {
@@ -467,14 +639,21 @@ async function main() {
           format_used: result.format_used
         });
         processed++;
+        anyChange = true;
         await log(`OK ${item.id} → ${result.basket_file.replace(ROOT + '/', '')} (${result.count} записей, ${result.format_used})`);
       } else {
         updateItemStatus(incoming, item, 'failed', { error: result.reason });
         failed++;
+        anyChange = true;
         await log(`FAIL ${item.id}: ${result.reason}`, 'ERROR');
       }
     }
-    await saveIncoming(incoming);
+
+    // Сохраняем накладную только если были изменения.
+    if (anyChange) {
+      const saved = await saveIncoming(incoming, schema);
+      if (!saved) schemaRejected++;
+    }
   }
 
   const evict = await evictRawIfNeeded(config);
@@ -488,8 +667,8 @@ async function main() {
   await saveQuality(quality);
   await saveManifest(manifest);
   const duration = Date.now() - started;
-  await log(`=== Кладовщик завершён: processed=${processed}, failed=${failed}, skipped=${skipped}, evicted=${evict.evicted}, время=${duration}мс ===`);
-  return { processed, failed, skipped, evicted: evict.evicted, duration_ms: duration };
+  await log(`=== Кладовщик завершён: processed=${processed}, failed=${failed}, skipped=${skipped}, schema_rejected=${schemaRejected}, evicted=${evict.evicted}, время=${duration}мс ===`);
+  return { processed, failed, skipped, schema_rejected: schemaRejected, evicted: evict.evicted, duration_ms: duration };
 }
 
 main().catch(async (e) => {

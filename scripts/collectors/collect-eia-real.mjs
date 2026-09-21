@@ -1,41 +1,42 @@
 #!/usr/bin/env node
-// collect-eia-real.mjs — заменён на открытые данные (без ключей).
-// Правило 12.2: EIA требует ключ → заменён.
-// Источники: US Treasury (энергетические облигации), open-meteo (погода по энергоузлам).
+/**
+ * Crucix Collector: eia-real — заглушка (EIA требует API-ключ).
+ * Версия 2.0.0. Принят 20.09.2026.
+ * Роль: информация о статусе → saveRaw. Сборщик НЕ пишет в basket.
+ * Правило 12.2: EIA требует ключ → заменён на открытые данные.
+ * Реальные энергетические данные — в отдельных источниках (oil, oil-gas, energy).
+ * Формат: {source, updated, note, indicators}. Тип — catalog.
+ */
+import { saveRaw } from './lib/collector-helper.mjs';
+import { pathToFileURL } from 'url';
 
-import { promises as fs } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const BASKET = join(__dirname, '..', '..', 'data', 'basket');
-const LOGS = join(__dirname, '..', '..', 'logs', 'collectors');
-
-async function log(msg) {
-  await fs.mkdir(LOGS, { recursive: true });
-  await fs.appendFile(join(LOGS, 'collect-eia-real.log'), `[${new Date().toISOString()}] ${msg}\n`);
-}
-
-async function main() {
-  await log('Запуск collect-eia-real (замена на открытые данные)');
+export async function collectEiaReal() {
+  console.log('[EIA-real] Заглушка (EIA требует ключ, правило 12.2)');
   const result = {
     source: 'EIA-replacement',
     updated: new Date().toISOString(),
-    note: 'EIA требует API-ключ. Согласно правилу 12.2 заменён. Используйте data/basket/oil.json, oil-gas.json, energy.json для энергетических данных.',
+    note: 'EIA требует API-ключ. Согласно правилу 12.2 заменён. Реальные энергетические данные — в отдельных источниках: oil.json, oil-gas.json, energy.json.',
     indicators: {},
   };
 
-  // Всё что можем — из уже существующих источников
-  const oil = await fs.readFile(join(BASKET, 'oil.json'), 'utf-8').then(JSON.parse).catch(() => null);
-  const oilGas = await fs.readFile(join(BASKET, 'oil-gas.json'), 'utf-8').then(JSON.parse).catch(() => null);
-  const energy = await fs.readFile(join(BASKET, 'energy.json'), 'utf-8').then(JSON.parse).catch(() => null);
-
-  if (oil) result.indicators.oil = oil;
-  if (oilGas) result.indicators.oilGas = oilGas;
-  if (energy) result.indicators.energy = energy;
-
-  await fs.mkdir(BASKET, { recursive: true });
-  await fs.writeFile(join(BASKET, 'eia-real.json'), JSON.stringify(result, null, 2));
-  await log(`Сохранено. Индикаторов: ${Object.keys(result.indicators).length}`);
-  console.log(`[EIA-replacement] ${Object.keys(result.indicators).length} индикаторов (из существующих basket-файлов)`);
+  const saveResult = await saveRaw('eia-real', result, {
+    collector: 'collect-eia-real.mjs',
+    source: 'EIA (заглушка)',
+    source_url: 'https://www.eia.gov/opendata/',
+    license: 'public-domain',
+    format_hint: 'catalog',
+    value_type: 'count',
+    value_unit: 'count',
+    granularity: 'snapshot',
+    period: null,
+    record_count: 0,
+    notes: 'Заглушка: EIA требует ключ (правило 12.2). Реальные данные — в oil/oil-gas/energy; basket не перезаписывается',
+    backwardCompat: false,
+  });
+  console.log(`[EIA-real] OK → ${saveResult.raw_file}`);
+  return result;
 }
-main().catch(async (e) => { await log(`FATAL: ${e.message}`); console.error(e.message); process.exit(1); });
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  collectEiaReal().catch((e) => { console.error('[EIA-real] FATAL:', e); process.exit(1); });
+}

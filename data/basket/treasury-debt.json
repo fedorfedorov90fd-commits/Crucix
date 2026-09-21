@@ -1,50 +1,29 @@
 {
-  "source": "US Treasury",
-  "updated": "2026-09-12T15:39:25.744Z",
-  "latest": {
-    "date": "2026-09-10",
-    "totalDebt": 40047726949770.15
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "treasury-debt",
+    "source": "US Treasury Fiscal Data",
+    "source_url": "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v2/accounting/od/debt_to_penny?sort=-record_date&page[size]=10",
+    "fetched_at": "2026-09-20T11:18:55.528Z",
+    "normalized_at": "2026-09-20T11:38:12.686Z",
+    "collector": "collect-treasury.mjs",
+    "license": "public-domain",
+    "count": 0,
+    "granularity": "daily",
+    "value_unit": "usd",
+    "value_scale": null,
+    "value_type": "price",
+    "value_range": null,
+    "period": "P10D"
   },
-  "history": [
-    {
-      "date": "2026-09-10",
-      "totalDebt": 40047726949770.15
-    },
-    {
-      "date": "2026-09-09",
-      "totalDebt": 40074284925786.5
-    },
-    {
-      "date": "2026-09-08",
-      "totalDebt": 40084090785446.35
-    },
-    {
-      "date": "2026-09-04",
-      "totalDebt": 40094590636301.7
-    },
-    {
-      "date": "2026-09-03",
-      "totalDebt": 40102964278586.1
-    },
-    {
-      "date": "2026-09-02",
-      "totalDebt": 40117045127072.57
-    },
-    {
-      "date": "2026-09-01",
-      "totalDebt": 40112464593206.3
-    },
-    {
-      "date": "2026-08-31",
-      "totalDebt": 40175641071634.14
-    },
-    {
-      "date": "2026-08-28",
-      "totalDebt": 40104097482666.58
-    },
-    {
-      "date": "2026-08-27",
-      "totalDebt": 40077529831942.94
-    }
-  ]
+  "series": [],
+  "points": [],
+  "regions": [],
+  "extra": {
+    "adapter": "timeseries",
+    "adapter_version": "2.2.0",
+    "unique_dates": 0,
+    "unmapped_regions": [],
+    "unmapped_count": 0
+  }
 }

@@ -1,4 +1,253 @@
-[
-  {"entity": "Russian Defense Company", "risk": 95, "reason": "Military technology", "country": "Russia", "lat": 55.7558, "lng": 37.6173, "severity": "CRITICAL", "timestamp": "2026-09-07T10:00:00Z"},
-  {"entity": "Chinese Tech Firm", "risk": 78, "reason": "Export controls", "country": "China", "lat": 39.9042, "lng": 116.4074, "severity": "HIGH", "timestamp": "2026-09-07T09:00:00Z"}
-]
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "ofac",
+    "source": "OFAC (demo)",
+    "source_url": "https://ofac.treasury.gov/",
+    "fetched_at": "2026-09-20T10:57:51.007Z",
+    "normalized_at": "2026-09-20T11:28:57.113Z",
+    "collector": "collect-ofac.mjs",
+    "license": "public-domain",
+    "count": 31,
+    "granularity": "snapshot",
+    "value_unit": "count",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null,
+    "period": "P30D"
+  },
+  "series": [],
+  "points": [],
+  "regions": [
+    {
+      "region": "CUB",
+      "value": 9,
+      "count": 9,
+      "aggregation": "count"
+    },
+    {
+      "region": "SYR",
+      "value": 8,
+      "count": 8,
+      "aggregation": "count"
+    },
+    {
+      "region": "IRN",
+      "value": 5,
+      "count": 5,
+      "aggregation": "count"
+    },
+    {
+      "region": "RUS",
+      "value": 3,
+      "count": 3,
+      "aggregation": "count"
+    },
+    {
+      "region": "VEN",
+      "value": 3,
+      "count": 3,
+      "aggregation": "count"
+    }
+  ],
+  "extra": {
+    "adapter": "catalog",
+    "adapter_version": "1.1.0",
+    "type_counts": {
+      "Персональные": 11,
+      "Отраслевые": 8,
+      "Финансовые": 8,
+      "Торговые": 4
+    },
+    "regions_count": 5,
+    "entries": [
+      {
+        "date": "2026-08-21",
+        "country": "Куба",
+        "type": "Персональные",
+        "count": 18
+      },
+      {
+        "date": "2026-08-22",
+        "country": "Куба",
+        "type": "Персональные",
+        "count": 13
+      },
+      {
+        "date": "2026-08-23",
+        "country": "Иран",
+        "type": "Отраслевые",
+        "count": 18
+      },
+      {
+        "date": "2026-08-24",
+        "country": "Северная Корея",
+        "type": "Персональные",
+        "count": 7
+      },
+      {
+        "date": "2026-08-25",
+        "country": "Сирия",
+        "type": "Финансовые",
+        "count": 5
+      },
+      {
+        "date": "2026-08-26",
+        "country": "Иран",
+        "type": "Финансовые",
+        "count": 10
+      },
+      {
+        "date": "2026-08-27",
+        "country": "Сирия",
+        "type": "Торговые",
+        "count": 3
+      },
+      {
+        "date": "2026-08-28",
+        "country": "Иран",
+        "type": "Персональные",
+        "count": 19
+      },
+      {
+        "date": "2026-08-29",
+        "country": "Россия",
+        "type": "Финансовые",
+        "count": 16
+      },
+      {
+        "date": "2026-08-30",
+        "country": "Сирия",
+        "type": "Отраслевые",
+        "count": 19
+      },
+      {
+        "date": "2026-08-31",
+        "country": "Северная Корея",
+        "type": "Отраслевые",
+        "count": 19
+      },
+      {
+        "date": "2026-09-01",
+        "country": "Сирия",
+        "type": "Финансовые",
+        "count": 15
+      },
+      {
+        "date": "2026-09-02",
+        "country": "Куба",
+        "type": "Отраслевые",
+        "count": 16
+      },
+      {
+        "date": "2026-09-03",
+        "country": "Россия",
+        "type": "Персональные",
+        "count": 5
+      },
+      {
+        "date": "2026-09-04",
+        "country": "Куба",
+        "type": "Финансовые",
+        "count": 12
+      },
+      {
+        "date": "2026-09-05",
+        "country": "Куба",
+        "type": "Отраслевые",
+        "count": 17
+      },
+      {
+        "date": "2026-09-06",
+        "country": "Сирия",
+        "type": "Отраслевые",
+        "count": 9
+      },
+      {
+        "date": "2026-09-07",
+        "country": "Иран",
+        "type": "Торговые",
+        "count": 19
+      },
+      {
+        "date": "2026-09-08",
+        "country": "Венесуэла",
+        "type": "Персональные",
+        "count": 9
+      },
+      {
+        "date": "2026-09-09",
+        "country": "Северная Корея",
+        "type": "Персональные",
+        "count": 8
+      },
+      {
+        "date": "2026-09-10",
+        "country": "Венесуэла",
+        "type": "Персональные",
+        "count": 15
+      },
+      {
+        "date": "2026-09-11",
+        "country": "Куба",
+        "type": "Торговые",
+        "count": 19
+      },
+      {
+        "date": "2026-09-12",
+        "country": "Сирия",
+        "type": "Персональные",
+        "count": 2
+      },
+      {
+        "date": "2026-09-13",
+        "country": "Сирия",
+        "type": "Финансовые",
+        "count": 1
+      },
+      {
+        "date": "2026-09-14",
+        "country": "Куба",
+        "type": "Персональные",
+        "count": 9
+      },
+      {
+        "date": "2026-09-15",
+        "country": "Куба",
+        "type": "Персональные",
+        "count": 13
+      },
+      {
+        "date": "2026-09-16",
+        "country": "Иран",
+        "type": "Отраслевые",
+        "count": 3
+      },
+      {
+        "date": "2026-09-17",
+        "country": "Куба",
+        "type": "Отраслевые",
+        "count": 17
+      },
+      {
+        "date": "2026-09-18",
+        "country": "Россия",
+        "type": "Финансовые",
+        "count": 7
+      },
+      {
+        "date": "2026-09-19",
+        "country": "Сирия",
+        "type": "Торговые",
+        "count": 10
+      },
+      {
+        "date": "2026-09-20",
+        "country": "Венесуэла",
+        "type": "Финансовые",
+        "count": 19
+      }
+    ],
+    "entries_count": 31
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "ucdp",
+    "source": "UCDP (demo)",
+    "source_url": "https://ucdp.uu.se/downloads/",
+    "fetched_at": "2026-09-20T11:18:55.605Z",
+    "normalized_at": "2026-09-20T11:28:57.202Z",
+    "collector": "collect-ucdp.mjs",
+    "license": "public-domain",
+    "count": 1,
+    "granularity": "snapshot",
+    "value_unit": "count",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null
+  },
+  "series": [],
+  "points": [],
+  "regions": [],
+  "extra": {
+    "adapter": "catalog",
+    "adapter_version": "1.1.0",
+    "type_counts": {
+      "unknown": 1
+    },
+    "regions_count": 0,
+    "entries": [
+      {
+        "source": "UCDP",
+        "lastUpdated": "2026-09-20T11:18:55.602Z",
+        "conflicts": [
+          {
+            "region": "Ukraine",
+            "type": "Armed Conflict",
+            "year": 2024,
+            "status": "active"
+          },
+          {
+            "region": "Syria",
+            "type": "Armed Conflict",
+            "year": 2024,
+            "status": "active"
+          },
+          {
+            "region": "Yemen",
+            "type": "Armed Conflict",
+            "year": 2024,
+            "status": "active"
+          },
+          {
+            "region": "Sudan",
+            "type": "Armed Conflict",
+            "year": 2024,
+            "status": "active"
+          },
+          {
+            "region": "Myanmar",
+            "type": "Armed Conflict",
+            "year": 2024,
+            "status": "active"
+          },
+          {
+            "region": "Gaza",
+            "type": "Armed Conflict",
+            "year": 2024,
+            "status": "active"
+          },
+          {
+            "region": "Ethiopia",
+            "type": "Armed Conflict",
+            "year": 2024,
+            "status": "active"
+          }
+        ],
+        "note": "Demo. Для реальных данных требуется парсинг ZIP→CSV UCDP"
+      }
+    ],
+    "entries_count": 1,
+    "wrapped_single_object": true
+  }
+}

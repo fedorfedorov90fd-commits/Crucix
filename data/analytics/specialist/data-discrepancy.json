@@ -1,0 +1,88 @@
+{
+  "_meta": {
+    "id": "data-discrepancy",
+    "category": "specialist",
+    "version": "1.1.1",
+    "schema_version": "1.1.1",
+    "sources": [
+      "worldbank-latest",
+      "rest-countries",
+      "who",
+      "happiness",
+      "freedom",
+      "fred-real"
+    ],
+    "calculator": "DataDiscrepancy",
+    "updated_at": "2026-09-20T09:51:52.289Z",
+    "period": "latest",
+    "duration_ms": 9,
+    "checksum": "3f1ce9874eb98cd9",
+    "stats": {
+      "checks": 3,
+      "by_type": {
+        "within_source": 3
+      },
+      "countries_worldbank": 196,
+      "countries_rest": 250,
+      "who_features": 30,
+      "happiness_features": 30,
+      "freedom_records": 9,
+      "fred_observations": 100
+    },
+    "description": "Расхождение данных: 3 типа проверок (within_source, cross_source, rank_consistency)."
+  },
+  "data": {
+    "checks": [
+      {
+        "checkType": "within_source",
+        "source": "worldbank",
+        "country": "CYP",
+        "indicator": "GDP_PC vs GDP/POPULATION",
+        "expected": 30075.26,
+        "observed": 41783.09,
+        "spreadPct": 28,
+        "level": "critical",
+        "details": {
+          "GDP": 41225787247.3309,
+          "POPULATION": 1370754,
+          "GDP_PC": 41783.08984375
+        }
+      },
+      {
+        "checkType": "within_source",
+        "source": "worldbank",
+        "country": "SYR",
+        "indicator": "GDP_PC vs GDP/POPULATION",
+        "expected": 926.51,
+        "observed": 1056.78,
+        "spreadPct": 12.3,
+        "level": "high",
+        "details": {
+          "GDP": 23737634644.3994,
+          "POPULATION": 25620427,
+          "GDP_PC": 1056.78264718197
+        }
+      },
+      {
+        "checkType": "within_source",
+        "source": "worldbank",
+        "country": "UKR",
+        "indicator": "GDP_PC vs GDP/POPULATION",
+        "expected": 5495.93,
+        "observed": 5865.88,
+        "spreadPct": 6.3,
+        "level": "medium",
+        "details": {
+          "GDP": 214233312784.397,
+          "POPULATION": 38980376,
+          "GDP_PC": 5865.884765625
+        }
+      }
+    ],
+    "total": 3,
+    "by_type": {
+      "within_source": 3
+    },
+    "generated_at": "2026-09-20T09:51:52.289Z"
+  }
+}

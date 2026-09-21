@@ -1,0 +1,34 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "russian-sources",
+    "source": "Russian sources (demo)",
+    "source_url": "local://demo",
+    "fetched_at": "2026-09-20T11:03:20.631Z",
+    "normalized_at": "2026-09-20T11:28:57.139Z",
+    "collector": "collect-russian-sources.mjs",
+    "license": "public-domain",
+    "count": 0,
+    "granularity": "snapshot",
+    "value_unit": "unknown",
+    "value_scale": null,
+    "value_type": "unknown",
+    "value_range": null
+  },
+  "series": [],
+  "points": [],
+  "regions": [],
+  "extra": {
+    "adapter": "hierarchical",
+    "adapter_version": "1.1.0",
+    "original_type": "object-snapshot",
+    "original_keys": [
+      "source",
+      "timestamp",
+      "weather",
+      "tass",
+      "rbc",
+      "interfax"
+    ]
+  }
+}

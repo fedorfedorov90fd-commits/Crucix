@@ -47,6 +47,8 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { createHash } from 'crypto';
 import { loadPersist, savePersist } from './lib/basket-loader.mjs';
+import http from 'node:http';
+import https from 'node:https';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
@@ -102,22 +104,52 @@ function escapeXml(s) {
 }
 
 function readBody(req, maxBytes = MAX_BODY_BYTES) {
+  // v2.0.1 (21.09.2026): добавлен таймаут 2 секунды.
+  // ПРИЧИНА: undici (node fetch) держит keep-alive и событие 'end'
+  // не срабатывает, если клиент не закрыл write-сторону. Curl закрывает
+  // соединение — поэтому работал. readBody висел — router.mjs Promise.race
+  // возвращал 504 через 25с. Фикс: если 'end' не наступил за 2 секунды,
+  // возвращаем пустой объект (для /update body не нужен).
   return new Promise((resolve, reject) => {
     const chunks = [];
     let total = 0;
+    let done = false;
+    const timer = setTimeout(() => {
+      if (done) return;
+      done = true;
+      // Если что-то успело прийти — отдаём, иначе {}
+      if (chunks.length === 0) return resolve({});
+      const raw = Buffer.concat(chunks).toString('utf8');
+      try { resolve(JSON.parse(raw)); }
+      catch { resolve({ __raw: raw }); }
+    }, 2000);
     req.on('data', c => {
+      if (done) return;
       total += c.length;
-      if (total > maxBytes) { req.destroy(); reject(new Error('body_too_large')); return; }
+      if (total > maxBytes) {
+        done = true;
+        clearTimeout(timer);
+        req.destroy();
+        reject(new Error('body_too_large'));
+        return;
+      }
       chunks.push(c);
     });
     req.on('end', () => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
       if (chunks.length === 0) return resolve({});
       const raw = Buffer.concat(chunks).toString('utf8');
-      // Пробуем JSON, если не выходит — отдаём как plain text (для OPML)
       try { resolve(JSON.parse(raw)); }
       catch { resolve({ __raw: raw }); }
     });
-    req.on('error', reject);
+    req.on('error', (e) => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      reject(e);
+    });
   });
 }
 
@@ -268,39 +300,84 @@ function mergeStatus(feeds, status) {
 //  ПРОВЕРКА ЛЕНТ
 // ============================================================
 
-async function checkFeed(url) {
-  try {
-    const res = await fetch(url, {
-      headers: { 'User-Agent': 'Crucix-RSS-Manager/2.0' },
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+export async function checkFeed(url) {
+  // v2.0.4 (21.09.2026): fix утечки сокетов.
+  // ПРИЧИНА: без agent:false каждый https.request оставляет сокет в globalAgent
+  // (keep-alive). После 33 запросов пул забивается — следующий висит вечно.
+  // ДИАГНОСТИКА: тест 39 URL последовательно зависал на #34 (после 33 успешных).
+  // РЕШЕНИЕ: agent: false (новый сокет на каждый запрос) + Connection: close.
+  // Дополнительно: clearTimeout только в end/error (не при получении response),
+  // res.resume() для явного потребления потока, флаг resolved от двойного resolve,
+  // req.setTimeout + req.on('timeout') для двойной защиты.
+  return new Promise((resolve) => {
+    let parsed;
+    try { parsed = new URL(url); }
+    catch (e) { return resolve({ alive: false, error: 'invalid_url' }); }
+    const isHttps = parsed.protocol === 'https:';
+    const httpMod = isHttps ? https : http;
+    let resolved = false;
+    const done = (r) => { if (!resolved) { resolved = true; resolve(r); } };
+    const timer = setTimeout(() => {
+      try { req.destroy(); } catch {}
+      done({ alive: false, error: 'timeout' });
+    }, FETCH_TIMEOUT_MS);
+    const req = httpMod.request({
+      method: 'GET',
+      hostname: parsed.hostname,
+      port: parsed.port || (isHttps ? 443 : 80),
+      path: parsed.pathname + parsed.search,
+      agent: false,
+      headers: {
+        'User-Agent': 'Crucix-RSS-Manager/2.0',
+        'Accept': 'application/rss+xml, application/xml, text/xml, */*',
+        'Connection': 'close'
+      }
+    }, (res) => {
+      const status = res.statusCode;
+      res.resume();
+      res.on('end', () => { clearTimeout(timer); done({ alive: status >= 200 && status < 400, status }); });
+      res.on('error', () => { clearTimeout(timer); done({ alive: false, error: 'res_error' }); });
     });
-    return { alive: res.ok, status: res.status };
-  } catch (e) {
-    return { alive: false, error: e.message };
-  }
+    req.on('error', (e) => { clearTimeout(timer); done({ alive: false, error: e.message }); });
+    req.on('timeout', () => { clearTimeout(timer); try { req.destroy(); } catch {} done({ alive: false, error: 'req_timeout' }); });
+    req.setTimeout(FETCH_TIMEOUT_MS);
+    req.end();
+  });
 }
 
-async function updateAllFeeds(feeds) {
+export async function updateAllFeeds(feeds) {
+  // v2.0.3 (21.09.2026): параллельная обработка батчами по 5.
+  // ПРИЧИНА: последовательная обработка 39 фидов × (400мс запрос + 100мс пауза)
+  // = ~20-25с, иногда упирается в таймаут router.mjs (25с) → 504.
+  // Параллельно по 5 батчей: 8 батчей × 400мс + 7 × 50мс пауза = ~3.5с.
+  const CONCURRENCY = 5;
+  const BATCH_PAUSE_MS = 50;
   const limit = Math.min(feeds.length, MAX_UPDATE_PER_REQUEST);
+  const targets = feeds.slice(0, limit);
   const results = [];
   const statusUpdates = {};
   let checked = 0;
 
-  for (const feed of feeds.slice(0, limit)) {
-    checked++;
-    const r = await checkFeed(feed.url);
-    statusUpdates[feed.id] = {
-      alive: r.alive,
-      status: r.status,
-      lastCheck: new Date().toISOString(),
-      errorCount: r.alive ? 0 : (feed.errorCount || 0) + 1,
-    };
-    results.push({ id: feed.id, name: feed.name, url: feed.url, alive: r.alive, status: r.status });
-    // Пауза 100 мс между проверками
-    await new Promise(res => setTimeout(res, 100));
+  for (let i = 0; i < targets.length; i += CONCURRENCY) {
+    const batch = targets.slice(i, i + CONCURRENCY);
+    const batchResults = await Promise.all(batch.map(f => checkFeed(f.url)));
+    for (let j = 0; j < batch.length; j++) {
+      const feed = batch[j];
+      const r = batchResults[j];
+      checked++;
+      statusUpdates[feed.id] = {
+        alive: r.alive,
+        status: r.status,
+        lastCheck: new Date().toISOString(),
+        errorCount: r.alive ? 0 : (feed.errorCount || 0) + 1,
+      };
+      results.push({ id: feed.id, name: feed.name, url: feed.url, alive: r.alive, status: r.status });
+    }
+    if (i + CONCURRENCY < targets.length) {
+      await new Promise(res => setTimeout(res, BATCH_PAUSE_MS));
+    }
   }
 
-  // Слить с существующим статусом
   const { status: existing } = await loadStatus();
   const merged = { ...existing, ...statusUpdates };
   await saveStatus(merged);

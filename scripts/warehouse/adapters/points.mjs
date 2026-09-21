@@ -1,19 +1,11 @@
 /**
  * Адаптер points.
- * Версия 2.0.0. Принят 18.09.2026.
+ * Версия 2.2.1. Принят 20.09.2026.
  *
- * Назначение: нормализация источников с пространственными точками.
- * Формат сырья: массив объектов с полями lat + lon|lng, опционально
- * value, timestamp, country|region, label|title|name.
- *
- * ВЕРСИЯ 2.0.0 использует ЕДИНЫЙ справочник data/reference/countries.json
- * (собран из country-characteristics, country-coords, country-aliases и alpha-2).
- * Одна карта by_alias_lower — для всех видов входных данных.
- *
- * Результат: объект crucix.basket.v1 с points + regions + series (если
- * найдено больше одного уникального дня).
- *
- * Контракт: export async function normalize(rawData, meta) -> объект.
+ * Изменения от 2.2.0:
+ *   1. UNWRAP_KEYS расширены: values, measurements, cities, airports, iss.
+ *   2. Single-object handler: если найденный ключ вернул объект-не-массив (iss),
+ *      оборачивается в [obj].
  */
 
 import { readFile } from 'fs/promises';
@@ -25,7 +17,6 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..', '..', '..');
 const COUNTRIES_PATH = join(ROOT, 'data', 'reference', 'countries.json');
 
-
 const LAT_FIELDS = ['lat', 'latitude', 'y'];
 const LON_FIELDS = ['lon', 'lng', 'longitude', 'x'];
 const VALUE_FIELDS = ['value', 'magnitude', 'severity', 'intensity', 'count', 'capacity', 'amount'];
@@ -35,6 +26,50 @@ const TS_FIELDS = ['timestamp', 'date', 'time', 'datetime', 'ts'];
 const ID_FIELDS = ['id', '_id', 'uid', 'code'];
 const TYPE_FIELDS = ['type', 'category', 'kind'];
 const STATUS_FIELDS = ['status', 'state', 'condition'];
+
+const UNWRAP_KEYS = [
+  'data', 'items', 'records', 'rows', 'entries', 'results', 'list',
+  'series', 'history', 'observations', 'points', 'daily', 'hourly',
+  'vessels', 'aircraft', 'ports', 'alerts', 'indicators', 'objects',
+  'satellites', 'ships', 'fires', 'events', 'regions', 'markers',
+  'values', 'measurements', 'cities', 'airports', 'iss'
+];
+
+function unwrapWrapper(obj) {
+  if (obj === null || obj === undefined) return null;
+  if (typeof obj !== 'object') return null;
+  if (Array.isArray(obj)) return null;
+
+  for (const key of UNWRAP_KEYS) {
+    const v = obj[key];
+    if (Array.isArray(v) && v.length > 0) {
+      return { array: v, via: key, nested: false };
+    }
+    if (v && typeof v === 'object' && Array.isArray(v) === false) {
+      const subArrays = [];
+      let hasSubArrays = false;
+      for (const subKey of Object.keys(v)) {
+        if (Array.isArray(v[subKey]) && v[subKey].length > 0) {
+          hasSubArrays = true;
+          for (const el of v[subKey]) {
+            if (el && typeof el === 'object' && el.__group === undefined) {
+              subArrays.push({ ...el, __group: subKey });
+            } else {
+              subArrays.push(el);
+            }
+          }
+        }
+      }
+      if (hasSubArrays && subArrays.length > 0) {
+        return { array: subArrays, via: key, nested: true };
+      }
+      if (Object.keys(v).length > 0) {
+        return { array: [{ ...v, __key: key }], via: key, nested: false, single: true };
+      }
+    }
+  }
+  return null;
+}
 
 function pickNumeric(obj, fields) {
   for (const f of fields) {
@@ -61,53 +96,41 @@ function normalizeTimestamp(raw) {
   if (raw === undefined || raw === null) return null;
   if (typeof raw === 'string') {
     const d = new Date(raw);
-    if (!Number.isNaN(d.getTime())) return d.toISOString();
+    if (Number.isNaN(d.getTime()) === false) return d.toISOString();
   }
   if (typeof raw === 'number') {
     const ms = raw < 1e12 ? raw * 1000 : raw;
     const d = new Date(ms);
-    if (!Number.isNaN(d.getTime())) return d.toISOString();
+    if (Number.isNaN(d.getTime()) === false) return d.toISOString();
   }
   return null;
 }
 
 function isValidCoords(lat, lon) {
-  return lat !== null && lon !== null
-    && lat >= -90 && lat <= 90
-    && lon >= -180 && lon <= 180
-    && !(lat === 0 && lon === 0);
+  if (lat === null || lon === null) return false;
+  if (lat < -90 || lat > 90) return false;
+  if (lon < -180 || lon > 180) return false;
+  if (lat === 0 && lon === 0) return false;
+  return true;
 }
 
 function deriveValueType(valueUnit) {
-  if (!valueUnit) return 'unknown';
+  if (valueUnit === undefined || valueUnit === null) return 'unknown';
   const map = {
-    'magnitude': 'magnitude',
-    'severity_0_1': 'severity',
-    'severity_0_10': 'severity',
-    'percent': 'ratio',
-    'USD': 'price',
-    'EUR': 'price',
-    'index': 'index',
-    'count': 'count',
-    'ratio': 'ratio',
-    'MW': 'count',
-    'meters': 'count',
-    'events_per_day': 'count',
-    'temperature': 'temperature',
-    'probability': 'probability',
+    'magnitude': 'magnitude', 'severity_0_1': 'severity', 'severity_0_10': 'severity',
+    'percent': 'ratio', 'USD': 'price', 'EUR': 'price', 'index': 'index',
+    'count': 'count', 'ratio': 'ratio', 'MW': 'count', 'meters': 'count',
+    'events_per_day': 'count', 'temperature': 'temperature', 'probability': 'probability',
     'unknown': 'unknown'
   };
   return map[valueUnit] || 'unknown';
 }
 
 function deriveValueRange(valueUnit) {
-  if (!valueUnit) return null;
+  if (valueUnit === undefined || valueUnit === null) return null;
   const map = {
-    'magnitude': [0, 10],
-    'severity_0_1': [0, 1],
-    'severity_0_10': [0, 10],
-    'percent': [0, 100],
-    'probability': [0, 1]
+    'magnitude': [0, 10], 'severity_0_1': [0, 1], 'severity_0_10': [0, 10],
+    'percent': [0, 100], 'probability': [0, 1]
   };
   return map[valueUnit] || null;
 }
@@ -120,7 +143,7 @@ function deriveAggregation(valueType) {
 }
 
 function inferValueUnit(rawData) {
-  if (!Array.isArray(rawData) || rawData.length === 0) return 'unknown';
+  if (Array.isArray(rawData) === false || rawData.length === 0) return 'unknown';
   const f = rawData[0];
   if (!f || typeof f !== 'object') return 'unknown';
   if ('magnitude' in f) return 'magnitude';
@@ -130,9 +153,66 @@ function inferValueUnit(rawData) {
   return 'unknown';
 }
 
+function passThroughV1Object(rawData, rawMeta) {
+  const points = Array.isArray(rawData.points) ? rawData.points : [];
+  const series = Array.isArray(rawData.series) ? rawData.series : [];
+  const regions = Array.isArray(rawData.regions) ? rawData.regions : [];
+  const documents = Array.isArray(rawData.documents) ? rawData.documents : [];
+  const graph = rawData.graph && typeof rawData.graph === 'object' ? rawData.graph : null;
+  const count = points.length + series.length + regions.length + documents.length;
+
+  const valueUnit = rawMeta.value_unit || rawData.value_unit || 'unknown';
+  const valueType = rawMeta.value_type || rawData.value_type || deriveValueType(valueUnit);
+  const valueRange = rawMeta.value_range !== undefined ? rawMeta.value_range
+    : (rawData.value_range !== undefined ? rawData.value_range : deriveValueRange(valueUnit));
+  const aggregation = rawMeta.aggregation || rawData.aggregation || deriveAggregation(valueType);
+  const granularity = rawMeta.granularity || rawData.granularity || 'event';
+
+  const result = {
+    schema: 'crucix.basket.v1',
+    count,
+    granularity,
+    value_unit: valueUnit,
+    value_scale: rawMeta.value_scale || rawData.value_scale || null,
+    value_type: valueType,
+    value_range: valueRange,
+    series,
+    points,
+    regions: regions.map(r => ({ ...r, aggregation: r.aggregation || aggregation })),
+    extra: {
+      adapter: 'points',
+      adapter_version: '2.2.1',
+      passthrough_v1: true,
+      series_count: series.length,
+      points_count: points.length,
+      regions_count: regions.length
+    }
+  };
+  if (documents.length > 0) result.documents = documents;
+  if (graph) result.graph = graph;
+  if (rawData.extra && typeof rawData.extra === 'object') Object.assign(result.extra, rawData.extra);
+  return result;
+}
+
 export async function normalize(rawData, meta) {
-  if (!Array.isArray(rawData)) {
-    throw new Error(`points.normalize: ожидается массив, получено ${typeof rawData}`);
+  const rawMeta = meta || {};
+
+  if (rawData && Array.isArray(rawData) === false && typeof rawData === 'object'
+      && (Array.isArray(rawData.points) || Array.isArray(rawData.series) || Array.isArray(rawData.regions))) {
+    return passThroughV1Object(rawData, rawMeta);
+  }
+
+  if (rawData && Array.isArray(rawData) === false && typeof rawData === 'object') {
+    const unwrapped = unwrapWrapper(rawData);
+    if (unwrapped) {
+      console.warn('[points] unwrapWrapper: ключ "' + unwrapped.via + '", элементов: ' + unwrapped.array.length + (unwrapped.nested ? ' (вложенный)' : '') + (unwrapped.single ? ' (single-object)' : ''));
+      rawData = unwrapped.array;
+    }
+  }
+
+  if (Array.isArray(rawData) === false) {
+    const keys = rawData && typeof rawData === 'object' ? Object.keys(rawData).join(',') : String(typeof rawData);
+    throw new Error('points.normalize: ожидается массив точек, v1-объект или объект-обёртка, получено объект с ключами [' + keys + ']');
   }
 
   await mapperWarmup();
@@ -150,7 +230,7 @@ export async function normalize(rawData, meta) {
     const lat = pickNumeric(row, LAT_FIELDS);
     const lon = pickNumeric(row, LON_FIELDS);
 
-    if (!isValidCoords(lat, lon)) {
+    if (isValidCoords(lat, lon) === false) {
       skippedInvalidCoords++;
       continue;
     }
@@ -173,7 +253,9 @@ export async function normalize(rawData, meta) {
     for (const k of ID_FIELDS) if (row[k] !== undefined) { extra.id = row[k]; break; }
     for (const k of TYPE_FIELDS) if (row[k] !== undefined) { extra.type = row[k]; break; }
     for (const k of STATUS_FIELDS) if (row[k] !== undefined) { extra.status = row[k]; break; }
-    if (!regionIso3 && rawRegion) {
+    if (row.__group !== undefined) extra.__group = row.__group;
+    if (row.__key !== undefined) extra.__key = row.__key;
+    if (regionIso3 === null && rawRegion) {
       extra.unmapped_region = true;
       extra.unmapped_original = rawRegion;
       unmappedRegions.add(rawRegion);
@@ -187,7 +269,7 @@ export async function normalize(rawData, meta) {
     }
 
     const regionKey = regionIso3 || rawRegion || 'GLOBAL';
-    if (!regionsMap.has(regionKey)) {
+    if (regionsMap.has(regionKey) === false) {
       regionsMap.set(regionKey, { region: regionKey, sum: 0, count: 0, max: -Infinity });
     }
     if (value !== null) {
@@ -207,11 +289,11 @@ export async function normalize(rawData, meta) {
     }
   }
 
-  const rawMeta = meta || {};
   const valueUnit = rawMeta.value_unit || inferValueUnit(rawData);
-  const valueType = deriveValueType(valueUnit);
+  const valueType = rawMeta.value_type || deriveValueType(valueUnit);
   const valueRange = rawMeta.value_range !== undefined ? rawMeta.value_range : deriveValueRange(valueUnit);
   const aggregation = rawMeta.aggregation || deriveAggregation(valueType);
+  const granularity = rawMeta.granularity || (uniqueDates.size > 1 ? 'daily' : 'snapshot');
 
   const regions = Array.from(regionsMap.values()).map(a => ({
     region: a.region,
@@ -224,6 +306,7 @@ export async function normalize(rawData, meta) {
   return {
     schema: 'crucix.basket.v1',
     count: points.length,
+    granularity,
     value_unit: valueUnit,
     value_scale: rawMeta.value_scale || null,
     value_type: valueType,
@@ -233,7 +316,7 @@ export async function normalize(rawData, meta) {
     regions,
     extra: {
       adapter: 'points',
-      adapter_version: '2.0.0',
+      adapter_version: '2.2.1',
       skipped_invalid_coords: skippedInvalidCoords,
       unmapped_regions: Array.from(unmappedRegions),
       unmapped_count: unmappedRegions.size

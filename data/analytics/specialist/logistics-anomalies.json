@@ -1,0 +1,81 @@
+{
+  "_meta": {
+    "id": "logistics-anomalies",
+    "category": "specialist",
+    "version": "1.1.0",
+    "schema_version": "1.1.0",
+    "sources": [
+      "aviation",
+      "ships",
+      "military-exercises"
+    ],
+    "calculator": "LogisticsAnomalies",
+    "updated_at": "2026-09-20T09:51:52.941Z",
+    "period": "latest",
+    "duration_ms": 8,
+    "checksum": "566a92c394bb3605",
+    "stats": {
+      "total_events": 61,
+      "total_loaded": 61,
+      "anomalies": 0,
+      "clusters": 0,
+      "by_source": {
+        "aviation": 13,
+        "dark-ships": 0,
+        "ships": 31,
+        "military-exercises": 17,
+        "notam": 0,
+        "infrastructure": 0
+      }
+    },
+    "description": "Логистические аномалии: накопление транспорта перед событием. Физические данные не лгут."
+  },
+  "data": {
+    "anomalies": [],
+    "clusters": [],
+    "by_type": {
+      "aviation": {
+        "count": 13,
+        "avgSeverity": 0.6,
+        "uniqueCells": 13
+      },
+      "ship": {
+        "count": 31,
+        "avgSeverity": 0.4,
+        "uniqueCells": 31
+      }
+    },
+    "by_region": {
+      "Europe": {
+        "count": 14,
+        "avgSeverity": 0.471
+      },
+      "Americas": {
+        "count": 11,
+        "avgSeverity": 0.455
+      },
+      "Asia": {
+        "count": 11,
+        "avgSeverity": 0.473
+      },
+      "Africa": {
+        "count": 8,
+        "avgSeverity": 0.425
+      }
+    },
+    "stats": {
+      "totalEvents": 61,
+      "freshEvents": 44,
+      "windowHours": 168,
+      "gridSizeKm": 150,
+      "clusterRadiusKm": 200,
+      "minAnomalyScore": 1.5,
+      "baseline": {
+        "median": 1,
+        "mad": 0
+      },
+      "now": "2026-09-20T09:51:52.942Z"
+    },
+    "generated_at": "2026-09-20T09:51:52.941Z"
+  }
+}

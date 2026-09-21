@@ -1,167 +1,207 @@
-[
-  {
-    "name": "Новая Зеландия (Крайстчерч)",
-    "place": "Новая Зеландия (Крайстчерч)",
-    "magnitude": 7.8,
-    "depth": 20,
-    "time": "2026-08-12T05:30:12.466Z",
-    "lat": -42,
-    "lng": 173,
-    "severity": "critical",
-    "date": "2026-08-12"
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "earthquakes",
+    "source": "USGS (sample)",
+    "source_url": "https://earthquake.usgs.gov/fdsnws/event/1/query",
+    "fetched_at": "2026-09-20T10:43:22.287Z",
+    "normalized_at": "2026-09-20T11:28:56.998Z",
+    "collector": "collect-earthquakes.mjs",
+    "license": "public-domain",
+    "count": 15,
+    "granularity": "event",
+    "value_unit": "richter",
+    "value_scale": null,
+    "value_type": "magnitude",
+    "value_range": null,
+    "period": "P30D"
   },
-  {
-    "name": "Непал (Катманду)",
-    "place": "Непал (Катманду)",
-    "magnitude": 7.8,
-    "depth": 18,
-    "time": "2026-08-26T05:30:12.466Z",
-    "lat": 28,
-    "lng": 85,
-    "severity": "critical",
-    "date": "2026-08-26"
-  },
-  {
-    "name": "Турция (Кахраманмараш)",
-    "place": "Турция (Кахраманмараш)",
-    "magnitude": 7.8,
-    "depth": 12,
-    "time": "2026-08-13T05:30:12.466Z",
-    "lat": 38,
-    "lng": 37,
-    "severity": "critical",
-    "date": "2026-08-13"
-  },
-  {
-    "name": "Иран (Керманшах)",
-    "place": "Иран (Керманшах)",
-    "magnitude": 7.2,
-    "depth": 15,
-    "time": "2026-08-15T05:30:12.466Z",
-    "lat": 34,
-    "lng": 48,
-    "severity": "high",
-    "date": "2026-08-15"
-  },
-  {
-    "name": "Индонезия (Бали)",
-    "place": "Индонезия (Бали)",
-    "magnitude": 7,
-    "depth": 18,
-    "time": "2026-08-08T05:30:12.466Z",
-    "lat": -8,
-    "lng": 115,
-    "severity": "high",
-    "date": "2026-08-08"
-  },
-  {
-    "name": "Каскадия, США",
-    "place": "Каскадия, США",
-    "magnitude": 6.8,
-    "depth": 12.5,
-    "time": "2026-08-10T05:30:12.466Z",
-    "lat": 45,
-    "lng": -125,
-    "severity": "high",
-    "date": "2026-08-10"
-  },
-  {
-    "name": "Турция (Газиантеп)",
-    "place": "Турция (Газиантеп)",
-    "magnitude": 6.5,
-    "depth": 8,
-    "time": "2026-08-13T05:30:12.466Z",
-    "lat": 37.5,
-    "lng": 38,
-    "severity": "high",
-    "date": "2026-08-13"
-  },
-  {
-    "name": "Япония (Канто)",
-    "place": "Япония (Канто)",
-    "magnitude": 6.5,
-    "depth": 15,
-    "time": "2026-08-17T05:30:12.466Z",
-    "lat": 36,
-    "lng": 139,
-    "severity": "high",
-    "date": "2026-08-17"
-  },
-  {
-    "name": "Чили (Консепсьон)",
-    "place": "Чили (Консепсьон)",
-    "magnitude": 6.5,
-    "depth": 15,
-    "time": "2026-08-28T05:30:12.466Z",
-    "lat": -35,
-    "lng": -72,
-    "severity": "high",
-    "date": "2026-08-28"
-  },
-  {
-    "name": "Непал (Эверест)",
-    "place": "Непал (Эверест)",
-    "magnitude": 6.2,
-    "depth": 12,
-    "time": "2026-08-11T05:30:12.466Z",
-    "lat": 27.5,
-    "lng": 86,
-    "severity": "medium",
-    "date": "2026-08-11"
-  },
-  {
-    "name": "Индонезия (Суматра)",
-    "place": "Индонезия (Суматра)",
-    "magnitude": 6.2,
-    "depth": 10,
-    "time": "2026-08-23T05:30:12.466Z",
-    "lat": -5,
-    "lng": 105,
-    "severity": "medium",
-    "date": "2026-08-23"
-  },
-  {
-    "name": "Новая Зеландия (Веллингтон)",
-    "place": "Новая Зеландия (Веллингтон)",
-    "magnitude": 6,
-    "depth": 12,
-    "time": "2026-08-15T05:30:12.466Z",
-    "lat": -43,
-    "lng": 172,
-    "severity": "medium",
-    "date": "2026-08-15"
-  },
-  {
-    "name": "Иран (Лорестан)",
-    "place": "Иран (Лорестан)",
-    "magnitude": 5.8,
-    "depth": 10,
-    "time": "2026-08-08T05:30:12.466Z",
-    "lat": 33,
-    "lng": 49,
-    "severity": "medium",
-    "date": "2026-08-08"
-  },
-  {
-    "name": "Греция (Афины)",
-    "place": "Греция (Афины)",
-    "magnitude": 5.8,
-    "depth": 8,
-    "time": "2026-08-28T05:30:12.466Z",
-    "lat": 37.5,
-    "lng": 23,
-    "severity": "medium",
-    "date": "2026-08-28"
-  },
-  {
-    "name": "Орегон, США",
-    "place": "Орегон, США",
-    "magnitude": 5.4,
-    "depth": 8.2,
-    "time": "2026-08-07T05:30:12.466Z",
-    "lat": 44.5,
-    "lng": -124.8,
-    "severity": "medium",
-    "date": "2026-08-07"
+  "series": [
+    {
+      "date": "2026-08-22",
+      "value": 8.2
+    },
+    {
+      "date": "2026-08-30",
+      "value": 7.8
+    },
+    {
+      "date": "2026-08-25",
+      "value": 7.8
+    },
+    {
+      "date": "2026-09-08",
+      "value": 7.2
+    },
+    {
+      "date": "2026-09-12",
+      "value": 7.2
+    },
+    {
+      "date": "2026-09-19",
+      "value": 7.1
+    },
+    {
+      "date": "2026-09-15",
+      "value": 6.8
+    },
+    {
+      "date": "2026-09-15",
+      "value": 6.5
+    },
+    {
+      "date": "2026-09-09",
+      "value": 6.5
+    },
+    {
+      "date": "2026-09-17",
+      "value": 6.2
+    },
+    {
+      "date": "2026-09-19",
+      "value": 6.2
+    },
+    {
+      "date": "2026-08-23",
+      "value": 6.2
+    },
+    {
+      "date": "2026-09-17",
+      "value": 5.8
+    },
+    {
+      "date": "2026-08-23",
+      "value": 5.8
+    },
+    {
+      "date": "2026-09-10",
+      "value": 5.4
+    }
+  ],
+  "points": [
+    {
+      "lat": -33,
+      "lon": -71,
+      "value": 8.2,
+      "label": "Чили (Вальпараисо)",
+      "timestamp": "2026-08-22T00:00:00.000Z"
+    },
+    {
+      "lat": -42,
+      "lon": 173,
+      "value": 7.8,
+      "label": "Новая Зеландия (Крайстчерч)",
+      "timestamp": "2026-08-30T00:00:00.000Z"
+    },
+    {
+      "lat": 28,
+      "lon": 85,
+      "value": 7.8,
+      "label": "Непал (Катманду)",
+      "timestamp": "2026-08-25T00:00:00.000Z"
+    },
+    {
+      "lat": 35,
+      "lon": -118,
+      "value": 7.2,
+      "label": "Калифорния, США",
+      "timestamp": "2026-09-08T00:00:00.000Z"
+    },
+    {
+      "lat": 34,
+      "lon": 48,
+      "value": 7.2,
+      "label": "Иран (Керманшах)",
+      "timestamp": "2026-09-12T00:00:00.000Z"
+    },
+    {
+      "lat": 18,
+      "lon": -100,
+      "value": 7.1,
+      "label": "Мексика (Поблета)",
+      "timestamp": "2026-09-19T00:00:00.000Z"
+    },
+    {
+      "lat": 45,
+      "lon": -125,
+      "value": 6.8,
+      "label": "Каскадия, США",
+      "timestamp": "2026-09-15T00:00:00.000Z"
+    },
+    {
+      "lat": -35,
+      "lon": -72,
+      "value": 6.5,
+      "label": "Чили (Консепсьон)",
+      "timestamp": "2026-09-15T00:00:00.000Z"
+    },
+    {
+      "lat": 36,
+      "lon": 139,
+      "value": 6.5,
+      "label": "Япония (Канто)",
+      "timestamp": "2026-09-09T00:00:00.000Z"
+    },
+    {
+      "lat": 38,
+      "lon": 22,
+      "value": 6.2,
+      "label": "Греция (Коринф)",
+      "timestamp": "2026-09-17T00:00:00.000Z"
+    },
+    {
+      "lat": -5,
+      "lon": 105,
+      "value": 6.2,
+      "label": "Индонезия (Суматра)",
+      "timestamp": "2026-09-19T00:00:00.000Z"
+    },
+    {
+      "lat": 27.5,
+      "lon": 86,
+      "value": 6.2,
+      "label": "Непал (Эверест)",
+      "timestamp": "2026-08-23T00:00:00.000Z"
+    },
+    {
+      "lat": 33,
+      "lon": 49,
+      "value": 5.8,
+      "label": "Иран (Лорестан)",
+      "timestamp": "2026-09-17T00:00:00.000Z"
+    },
+    {
+      "lat": 36.5,
+      "lon": -120.5,
+      "value": 5.8,
+      "label": "Сан-Хоакин, США",
+      "timestamp": "2026-08-23T00:00:00.000Z"
+    },
+    {
+      "lat": 44.5,
+      "lon": -124.8,
+      "value": 5.4,
+      "label": "Орегон, США",
+      "timestamp": "2026-09-10T00:00:00.000Z"
+    }
+  ],
+  "regions": [
+    {
+      "region": "GLOBAL",
+      "value": 6.713333333333334,
+      "count": 15,
+      "aggregation": "max",
+      "extra": {
+        "max": 8.2,
+        "sum": 100.7
+      }
+    }
+  ],
+  "extra": {
+    "adapter": "points",
+    "adapter_version": "2.1.0",
+    "skipped_invalid_coords": 0,
+    "unmapped_regions": [],
+    "unmapped_count": 0
   }
-]
+}

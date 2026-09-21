@@ -1,0 +1,88 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "daily-report",
+    "source": "Crucix daily aggregate",
+    "source_url": "local://rescan",
+    "fetched_at": "2026-09-18T21:24:17.812Z",
+    "normalized_at": "2026-09-18T21:25:55.710Z",
+    "collector": "collect-daily-report.mjs",
+    "license": "proprietary",
+    "count": 1,
+    "granularity": "snapshot",
+    "value_unit": "count",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null
+  },
+  "series": [],
+  "points": [],
+  "regions": [],
+  "extra": {
+    "adapter": "catalog",
+    "adapter_version": "1.0.0",
+    "type_counts": {
+      "unknown": 1
+    },
+    "regions_count": 0,
+    "entries": [
+      {
+        "date": "2026-09-18",
+        "timestamp": "2026-09-18T19:11:04.914Z",
+        "summary": {
+          "total_critical": 0,
+          "total_warning": 1,
+          "total_normal": 2
+        },
+        "indicators": {
+          "notam": {
+            "count": 5,
+            "critical": 0
+          },
+          "gps": {
+            "count": 4,
+            "critical": 0
+          },
+          "trends": {
+            "count": 5,
+            "critical": 0
+          },
+          "vix": {
+            "current": null,
+            "status": {
+              "status": "unknown",
+              "color": "#888",
+              "label": "Нет данных"
+            }
+          },
+          "yield_curve": {
+            "current": 0.39,
+            "status": {
+              "status": "normal",
+              "color": "#4ade80",
+              "label": "Норма"
+            }
+          },
+          "gold_oil": {
+            "current": 24.2461,
+            "status": {
+              "status": "warning",
+              "color": "#f59e0b",
+              "label": "Средний"
+            }
+          },
+          "bdi": {
+            "current": 2070,
+            "status": {
+              "status": "normal",
+              "color": "#4ade80",
+              "label": "Норма"
+            }
+          }
+        }
+      }
+    ],
+    "entries_count": 1,
+    "wrapped_single_object": true
+  }
+}

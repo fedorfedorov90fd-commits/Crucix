@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Crucix Collector: EPA (Air Quality — PM2.5, PM10, озон, NO2).
- * Версия 2.0.0. Принят 19.09.2026.
+ * Версия 2.0.1. Принят 19.09.2026.
  *
  * Источник: Open-Meteo Air Quality API (без ключа, без регистрации).
  *   Основные air quality API (AirNow, OpenAQ v3, WAQI, EPA AQS) требуют ключ
@@ -20,6 +20,11 @@
  *   timeseries — массив {date, value, region: iso3, extra: {pm10, ozone, no2, ...}}.
  *
  * Demo-fallback: 30 записей Math.random при полном сбое всех точек.
+ *
+ * Изменение 2.0.1: payload передаётся КАК ОБЪЕКТ {points, series}, а не плоский массив.
+ *   Это позволяет адаптеру points.mjs v2.1.0 сохранять оба представления через
+ *   passThroughV1Object. Ранее (v2.0.0) .concat() терял 12000 series — они шли
+ *   в skippedInvalidCoords, потому что не имели lat/lon.
  *
  * Роль: привозит сырьё в data/raw/ через saveRaw(), кладовщик нормализует в v1.
  * backwardCompat: true — пишет и в basket, пока не все API-модули переведены.
@@ -208,9 +213,12 @@ export async function collectEPA() {
     console.log(`[EPA] points: ${points.length}, series: ${timeseries.length}`);
   }
 
-  // Для demo-fallback — data это массив, передаём как есть
-  const payload = Array.isArray(data) ? data : data.points.concat(data.series);
-  const recordCount = payload.length;
+  // v2.0.1: для open-meteo передаём ОБЪЕКТ {points, series} — адаптер points.mjs v2.1.0
+  // сохранит оба представления через passThroughV1Object. Для demo-fallback — массив.
+  const payload = Array.isArray(data) ? data : { points: data.points, series: data.series };
+  const recordCount = Array.isArray(payload)
+    ? payload.length
+    : ((payload.points?.length || 0) + (payload.series?.length || 0));
 
   const result = await saveRaw('epa', payload, {
     collector: 'collect-epa.mjs',

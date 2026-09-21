@@ -1,0 +1,120 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "cyber-apt",
+    "source": "Crucix APT reference",
+    "source_url": "local://reference",
+    "fetched_at": "2026-09-20T10:38:19.209Z",
+    "normalized_at": "2026-09-20T11:28:56.956Z",
+    "collector": "collect-cyber-apt.mjs",
+    "license": "public-domain",
+    "count": 8,
+    "granularity": "snapshot",
+    "value_unit": "count",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null
+  },
+  "series": [],
+  "points": [],
+  "regions": [
+    {
+      "region": "RUS",
+      "value": 6,
+      "count": 6,
+      "aggregation": "count"
+    },
+    {
+      "region": "USA",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
+    }
+  ],
+  "extra": {
+    "adapter": "catalog",
+    "adapter_version": "1.1.0",
+    "type_counts": {
+      "кибершпионаж": 4,
+      "хакерская": 1,
+      "деструктивная": 1,
+      "вымогатели": 2
+    },
+    "regions_count": 2,
+    "entries": [
+      {
+        "name": "APT28 (Fancy Bear)",
+        "country": "Россия",
+        "lat": 55.7558,
+        "lng": 37.6173,
+        "type": "кибершпионаж",
+        "active": true,
+        "collected": "2026-09-20T10:38:19.205Z"
+      },
+      {
+        "name": "APT29 (Cozy Bear)",
+        "country": "Россия",
+        "lat": 55.7558,
+        "lng": 37.6173,
+        "type": "кибершпионаж",
+        "active": true,
+        "collected": "2026-09-20T10:38:19.205Z"
+      },
+      {
+        "name": "Lazarus Group",
+        "country": "Северная Корея",
+        "lat": 39.019,
+        "lng": 125.755,
+        "type": "хакерская",
+        "active": true,
+        "collected": "2026-09-20T10:38:19.205Z"
+      },
+      {
+        "name": "Sandworm",
+        "country": "Россия",
+        "lat": 55.7558,
+        "lng": 37.6173,
+        "type": "деструктивная",
+        "active": true,
+        "collected": "2026-09-20T10:38:19.205Z"
+      },
+      {
+        "name": "Turla",
+        "country": "Россия",
+        "lat": 55.7558,
+        "lng": 37.6173,
+        "type": "кибершпионаж",
+        "active": true,
+        "collected": "2026-09-20T10:38:19.205Z"
+      },
+      {
+        "name": "Equation Group",
+        "country": "США",
+        "lat": 38.9072,
+        "lng": -77.0369,
+        "type": "кибершпионаж",
+        "active": true,
+        "collected": "2026-09-20T10:38:19.205Z"
+      },
+      {
+        "name": "DarkSide",
+        "country": "Россия",
+        "lat": 55.7558,
+        "lng": 37.6173,
+        "type": "вымогатели",
+        "active": true,
+        "collected": "2026-09-20T10:38:19.205Z"
+      },
+      {
+        "name": "REvil",
+        "country": "Россия",
+        "lat": 55.7558,
+        "lng": 37.6173,
+        "type": "вымогатели",
+        "active": false,
+        "collected": "2026-09-20T10:38:19.205Z"
+      }
+    ],
+    "entries_count": 8
+  }
+}

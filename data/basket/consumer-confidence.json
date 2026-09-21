@@ -1,280 +1,281 @@
 {
-  "type": "FeatureCollection",
-  "features": [
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "consumer-confidence",
+    "source": "FRED / Conference Board (demo)",
+    "source_url": "https://fred.stlouisfed.org/series/CONCCONF",
+    "fetched_at": "2026-09-20T10:38:18.318Z",
+    "normalized_at": "2026-09-20T11:28:56.944Z",
+    "collector": "collect-consumer-confidence.mjs",
+    "license": "public-domain",
+    "count": 30,
+    "granularity": "daily",
+    "value_unit": "index",
+    "value_scale": null,
+    "value_type": "index",
+    "value_range": null,
+    "period": "P30D"
+  },
+  "series": [
     {
-      "type": "Feature",
-      "properties": {
-        "name": "США",
-        "value": 68.97,
-        "label": "index",
-        "unit": ""
+      "date": "2026-08-22",
+      "value": 95,
+      "extra": {
+        "change": 0.11,
+        "status": "normal"
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Россия",
-        "value": 53.72,
-        "label": "index",
-        "unit": ""
+      "date": "2026-08-23",
+      "value": 96,
+      "extra": {
+        "change": -0.1,
+        "status": "normal"
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Китай",
-        "value": 85.96,
-        "label": "index",
-        "unit": ""
+      "date": "2026-08-24",
+      "value": 97,
+      "extra": {
+        "change": 0.01,
+        "status": "normal"
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Индия",
-        "value": 45.32,
-        "label": "index",
-        "unit": ""
+      "date": "2026-08-25",
+      "value": 98,
+      "extra": {
+        "change": 0.01,
+        "status": "normal"
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Бразилия",
-        "value": 96.97,
-        "label": "index",
-        "unit": ""
+      "date": "2026-08-26",
+      "value": 99,
+      "extra": {
+        "change": -0.2,
+        "status": "normal"
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Великобритания",
-        "value": 56.33,
-        "label": "index",
-        "unit": ""
+      "date": "2026-08-27",
+      "value": 100,
+      "extra": {
+        "change": 0,
+        "status": "normal"
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Германия",
-        "value": 74.84,
-        "label": "index",
-        "unit": ""
+      "date": "2026-08-28",
+      "value": 101,
+      "extra": {
+        "change": 0.22,
+        "status": "normal"
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Франция",
-        "value": 43.39,
-        "label": "index",
-        "unit": ""
+      "date": "2026-08-29",
+      "value": 102,
+      "extra": {
+        "change": -0.23,
+        "status": "normal"
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Япония",
-        "value": 83.94,
-        "label": "index",
-        "unit": ""
+      "date": "2026-08-30",
+      "value": 103,
+      "extra": {
+        "change": -0.06,
+        "status": "normal"
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Италия",
-        "value": 60.04,
-        "label": "index",
-        "unit": ""
+      "date": "2026-08-31",
+      "value": 104,
+      "extra": {
+        "change": -0.16,
+        "status": "normal"
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Канада",
-        "value": 83.44,
-        "label": "index",
-        "unit": ""
+      "date": "2026-09-01",
+      "value": 105,
+      "extra": {
+        "change": -0.17,
+        "status": "normal"
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Австралия",
-        "value": 76.66,
-        "label": "index",
-        "unit": ""
+      "date": "2026-09-02",
+      "value": 106,
+      "extra": {
+        "change": 0.16,
+        "status": "normal"
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Мексика",
-        "value": 116.32,
-        "label": "index",
-        "unit": ""
+      "date": "2026-09-03",
+      "value": 107,
+      "extra": {
+        "change": -0.11,
+        "status": "normal"
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Турция",
-        "value": 42.51,
-        "label": "index",
-        "unit": ""
+      "date": "2026-09-04",
+      "value": 108,
+      "extra": {
+        "change": -0.21,
+        "status": "normal"
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Иран",
-        "value": 94.67,
-        "label": "index",
-        "unit": ""
+      "date": "2026-09-05",
+      "value": 109,
+      "extra": {
+        "change": -0.22,
+        "status": "normal"
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Египет",
-        "value": 55.36,
-        "label": "index",
-        "unit": ""
+      "date": "2026-09-06",
+      "value": 110,
+      "extra": {
+        "change": 0.08,
+        "status": "normal"
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "ЮАР",
-        "value": 41.53,
-        "label": "index",
-        "unit": ""
+      "date": "2026-09-07",
+      "value": 111,
+      "extra": {
+        "change": 0.18,
+        "status": "high"
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Аргентина",
-        "value": 112.51,
-        "label": "index",
-        "unit": ""
+      "date": "2026-09-08",
+      "value": 112,
+      "extra": {
+        "change": 0.07,
+        "status": "high"
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Украина",
-        "value": 50.08,
-        "label": "index",
-        "unit": ""
+      "date": "2026-09-09",
+      "value": 113,
+      "extra": {
+        "change": 0.11,
+        "status": "high"
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Польша",
-        "value": 88.54,
-        "label": "index",
-        "unit": ""
+      "date": "2026-09-10",
+      "value": 114,
+      "extra": {
+        "change": -0.11,
+        "status": "high"
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Испания",
-        "value": 103.1,
-        "label": "index",
-        "unit": ""
+      "date": "2026-09-11",
+      "value": 115,
+      "extra": {
+        "change": 0.21,
+        "status": "high"
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Нидерланды",
-        "value": 77.59,
-        "label": "index",
-        "unit": ""
+      "date": "2026-09-12",
+      "value": 116,
+      "extra": {
+        "change": -0.09,
+        "status": "high"
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Бельгия",
-        "value": 86.99,
-        "label": "index",
-        "unit": ""
+      "date": "2026-09-13",
+      "value": 117,
+      "extra": {
+        "change": -0.23,
+        "status": "high"
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Швеция",
-        "value": 62.01,
-        "label": "index",
-        "unit": ""
+      "date": "2026-09-14",
+      "value": 118,
+      "extra": {
+        "change": 0.22,
+        "status": "high"
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Норвегия",
-        "value": 81.2,
-        "label": "index",
-        "unit": ""
+      "date": "2026-09-15",
+      "value": 119,
+      "extra": {
+        "change": -0.15,
+        "status": "high"
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Дания",
-        "value": 106.7,
-        "label": "index",
-        "unit": ""
+      "date": "2026-09-16",
+      "value": 120,
+      "extra": {
+        "change": 0.11,
+        "status": "high"
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Финляндия",
-        "value": 84,
-        "label": "index",
-        "unit": ""
+      "date": "2026-09-17",
+      "value": 121,
+      "extra": {
+        "change": 0.1,
+        "status": "high"
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Ирландия",
-        "value": 107.56,
-        "label": "index",
-        "unit": ""
+      "date": "2026-09-18",
+      "value": 122,
+      "extra": {
+        "change": 0.23,
+        "status": "high"
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Португалия",
-        "value": 53.74,
-        "label": "index",
-        "unit": ""
+      "date": "2026-09-19",
+      "value": 123,
+      "extra": {
+        "change": -0.23,
+        "status": "high"
       }
     },
     {
-      "type": "Feature",
-      "properties": {
-        "name": "Греция",
-        "value": 109.28,
-        "label": "index",
-        "unit": ""
+      "date": "2026-09-20",
+      "value": 124,
+      "extra": {
+        "change": -0.09,
+        "status": "high"
       }
     }
   ],
-  "_meta": {
-    "source": "demo-consumer-confidence",
-    "updated": "2026-08-28T04:49:46.860Z",
-    "total": 30
+  "points": [],
+  "regions": [
+    {
+      "region": "GLOBAL",
+      "value": 109.5,
+      "count": 30,
+      "aggregation": "mean",
+      "extra": {
+        "max": 124,
+        "sum": 3285
+      }
+    }
+  ],
+  "extra": {
+    "adapter": "timeseries",
+    "adapter_version": "2.1.1",
+    "unique_dates": 30,
+    "unmapped_regions": [],
+    "unmapped_count": 0
   }
 }

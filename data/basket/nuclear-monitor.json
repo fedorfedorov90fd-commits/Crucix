@@ -1,128 +1,281 @@
-[
-  {
-    "date": "2026-08-01",
-    "value": 28,
-    "lat": 46.2044,
-    "lng": 6.1432
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "nuclear-monitor",
+    "source": "Nuclear monitor (demo)",
+    "source_url": "https://www.iaea.org/",
+    "fetched_at": "2026-09-20T10:57:50.946Z",
+    "normalized_at": "2026-09-20T11:28:57.108Z",
+    "collector": "collect-nuclear-monitor.mjs",
+    "license": "public-domain",
+    "count": 30,
+    "granularity": "daily",
+    "value_unit": "index",
+    "value_scale": null,
+    "value_type": "index",
+    "value_range": null,
+    "period": "P30D"
   },
-  {
-    "date": "2026-08-02",
-    "value": 30,
-    "lat": 46.2044,
-    "lng": 6.1432
-  },
-  {
-    "date": "2026-08-03",
-    "value": 29,
-    "lat": 46.2044,
-    "lng": 6.1432
-  },
-  {
-    "date": "2026-08-04",
-    "value": 31,
-    "lat": 46.2044,
-    "lng": 6.1432
-  },
-  {
-    "date": "2026-08-05",
-    "value": 32,
-    "lat": 46.2044,
-    "lng": 6.1432
-  },
-  {
-    "date": "2026-08-06",
-    "value": 30,
-    "lat": 46.2044,
-    "lng": 6.1432
-  },
-  {
-    "date": "2026-08-07",
-    "value": 33,
-    "lat": 46.2044,
-    "lng": 6.1432
-  },
-  {
-    "date": "2026-08-08",
-    "value": 31,
-    "lat": 46.2044,
-    "lng": 6.1432
-  },
-  {
-    "date": "2026-08-09",
-    "value": 34,
-    "lat": 46.2044,
-    "lng": 6.1432
-  },
-  {
-    "date": "2026-08-10",
-    "value": 35,
-    "lat": 46.2044,
-    "lng": 6.1432
-  },
-  {
-    "date": "2026-08-11",
-    "value": 33,
-    "lat": 46.2044,
-    "lng": 6.1432
-  },
-  {
-    "date": "2026-08-12",
-    "value": 34,
-    "lat": 46.2044,
-    "lng": 6.1432
-  },
-  {
-    "date": "2026-08-13",
-    "value": 36,
-    "lat": 46.2044,
-    "lng": 6.1432
-  },
-  {
-    "date": "2026-08-14",
-    "value": 35,
-    "lat": 46.2044,
-    "lng": 6.1432
-  },
-  {
-    "date": "2026-08-15",
-    "value": 34,
-    "lat": 46.2044,
-    "lng": 6.1432
-  },
-  {
-    "date": "2026-08-16",
-    "value": 36,
-    "lat": 46.2044,
-    "lng": 6.1432
-  },
-  {
-    "date": "2026-08-17",
-    "value": 35,
-    "lat": 46.2044,
-    "lng": 6.1432
-  },
-  {
-    "date": "2026-08-18",
-    "value": 33,
-    "lat": 46.2044,
-    "lng": 6.1432
-  },
-  {
-    "date": "2026-08-19",
-    "value": 34,
-    "lat": 46.2044,
-    "lng": 6.1432
-  },
-  {
-    "date": "2026-08-20",
-    "value": 35,
-    "lat": 46.2044,
-    "lng": 6.1432
-  },
-  {
-    "date": "2026-08-21",
-    "value": 33.9,
-    "lat": 46.2044,
-    "lng": 6.1432
+  "series": [
+    {
+      "date": "2026-08-22",
+      "value": 33.9,
+      "extra": {
+        "site": "Фукусима",
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-08-23",
+      "value": 34.5,
+      "extra": {
+        "site": "Чернобыль",
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-08-24",
+      "value": 35,
+      "extra": {
+        "site": "Три-Майл-Айленд",
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-08-25",
+      "value": 35.5,
+      "extra": {
+        "site": "Маяк",
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-08-26",
+      "value": 36,
+      "extra": {
+        "site": "Селлафилд",
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-08-27",
+      "value": 36.5,
+      "extra": {
+        "site": "Фукусима",
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-08-28",
+      "value": 37,
+      "extra": {
+        "site": "Чернобыль",
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-08-29",
+      "value": 37.5,
+      "extra": {
+        "site": "Три-Майл-Айленд",
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-08-30",
+      "value": 38,
+      "extra": {
+        "site": "Маяк",
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-08-31",
+      "value": 38.5,
+      "extra": {
+        "site": "Селлафилд",
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-09-01",
+      "value": 39,
+      "extra": {
+        "site": "Фукусима",
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-09-02",
+      "value": 39.5,
+      "extra": {
+        "site": "Чернобыль",
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-09-03",
+      "value": 40,
+      "extra": {
+        "site": "Три-Майл-Айленд",
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-09-04",
+      "value": 40.5,
+      "extra": {
+        "site": "Маяк",
+        "status": "high"
+      }
+    },
+    {
+      "date": "2026-09-05",
+      "value": 41,
+      "extra": {
+        "site": "Селлафилд",
+        "status": "high"
+      }
+    },
+    {
+      "date": "2026-09-06",
+      "value": 41.5,
+      "extra": {
+        "site": "Фукусима",
+        "status": "high"
+      }
+    },
+    {
+      "date": "2026-09-07",
+      "value": 42,
+      "extra": {
+        "site": "Чернобыль",
+        "status": "high"
+      }
+    },
+    {
+      "date": "2026-09-08",
+      "value": 42.5,
+      "extra": {
+        "site": "Три-Майл-Айленд",
+        "status": "high"
+      }
+    },
+    {
+      "date": "2026-09-09",
+      "value": 43,
+      "extra": {
+        "site": "Маяк",
+        "status": "high"
+      }
+    },
+    {
+      "date": "2026-09-10",
+      "value": 43.5,
+      "extra": {
+        "site": "Селлафилд",
+        "status": "high"
+      }
+    },
+    {
+      "date": "2026-09-11",
+      "value": 44,
+      "extra": {
+        "site": "Фукусима",
+        "status": "high"
+      }
+    },
+    {
+      "date": "2026-09-12",
+      "value": 44.5,
+      "extra": {
+        "site": "Чернобыль",
+        "status": "high"
+      }
+    },
+    {
+      "date": "2026-09-13",
+      "value": 45,
+      "extra": {
+        "site": "Три-Майл-Айленд",
+        "status": "high"
+      }
+    },
+    {
+      "date": "2026-09-14",
+      "value": 45.5,
+      "extra": {
+        "site": "Маяк",
+        "status": "high"
+      }
+    },
+    {
+      "date": "2026-09-15",
+      "value": 46,
+      "extra": {
+        "site": "Селлафилд",
+        "status": "high"
+      }
+    },
+    {
+      "date": "2026-09-16",
+      "value": 46.5,
+      "extra": {
+        "site": "Фукусима",
+        "status": "high"
+      }
+    },
+    {
+      "date": "2026-09-17",
+      "value": 47,
+      "extra": {
+        "site": "Чернобыль",
+        "status": "high"
+      }
+    },
+    {
+      "date": "2026-09-18",
+      "value": 47.5,
+      "extra": {
+        "site": "Три-Майл-Айленд",
+        "status": "high"
+      }
+    },
+    {
+      "date": "2026-09-19",
+      "value": 48,
+      "extra": {
+        "site": "Маяк",
+        "status": "high"
+      }
+    },
+    {
+      "date": "2026-09-20",
+      "value": 48.5,
+      "extra": {
+        "site": "Селлафилд",
+        "status": "high"
+      }
+    }
+  ],
+  "points": [],
+  "regions": [
+    {
+      "region": "GLOBAL",
+      "value": 41.24666666666667,
+      "count": 30,
+      "aggregation": "mean",
+      "extra": {
+        "max": 48.5,
+        "sum": 1237.4
+      }
+    }
+  ],
+  "extra": {
+    "adapter": "timeseries",
+    "adapter_version": "2.1.1",
+    "unique_dates": 30,
+    "unmapped_regions": [],
+    "unmapped_count": 0
   }
-]
+}

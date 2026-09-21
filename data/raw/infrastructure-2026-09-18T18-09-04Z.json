@@ -1,0 +1,2754 @@
+[
+  {
+    "id": "npp-zaporizhzhia",
+    "name": "Запорожская АЭС",
+    "type": "nuclear_power_plant",
+    "layer": "energy",
+    "country": "Ukraine",
+    "lat": 47.5122,
+    "lon": 34.8347,
+    "severity": 0.95,
+    "vulnerability": 9.5,
+    "status": "critical",
+    "statusReason": "Зона военных действий, потеря охлаждения",
+    "capacity": 5700,
+    "unit": "MW",
+    "owner": "Энергоатом",
+    "operational": false,
+    "risks": [
+      "military_attack",
+      "fire",
+      "cooling_failure"
+    ],
+    "cascade": [
+      "grid-ua-001",
+      "dam-kakhovka"
+    ],
+    "timestamp": "2026-09-18T18:09:04.764Z"
+  },
+  {
+    "id": "npp-chernobyl",
+    "name": "Чернобыльская АЭС (зона)",
+    "type": "nuclear_power_plant",
+    "layer": "energy",
+    "country": "Ukraine",
+    "lat": 51.3892,
+    "lon": 30.0995,
+    "severity": 0.7,
+    "vulnerability": 7,
+    "status": "decommissioned",
+    "statusReason": "Остановлена, зона отчуждения",
+    "capacity": 0,
+    "unit": "MW",
+    "owner": "Энергоатом",
+    "operational": false,
+    "risks": [
+      "radioactive_contamination",
+      "military_attack"
+    ],
+    "cascade": [],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "npp-fukushima",
+    "name": "Фукусима-1 (зона)",
+    "type": "nuclear_power_plant",
+    "layer": "energy",
+    "country": "Japan",
+    "lat": 37.4213,
+    "lon": 141.0328,
+    "severity": 0.8,
+    "vulnerability": 8,
+    "status": "decommissioned",
+    "statusReason": "Авария 2011, вывод из эксплуатации",
+    "capacity": 0,
+    "unit": "MW",
+    "owner": "TEPCO",
+    "operational": false,
+    "risks": [
+      "radioactive_water",
+      "earthquake",
+      "tsunami"
+    ],
+    "cascade": [],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "npp-kashiwazaki",
+    "name": "Касивадзаки-Карива",
+    "type": "nuclear_power_plant",
+    "layer": "energy",
+    "country": "Japan",
+    "lat": 37.4286,
+    "lon": 138.5953,
+    "severity": 0.45,
+    "vulnerability": 4.5,
+    "status": "nominal",
+    "statusReason": "Крупнейшая АЭС мира по мощности",
+    "capacity": 7965,
+    "unit": "MW",
+    "owner": "TEPCO",
+    "operational": true,
+    "risks": [
+      "earthquake",
+      "tsunami"
+    ],
+    "cascade": [
+      "grid-jp-001"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "npp-bruce",
+    "name": "Брюс (Bruce)",
+    "type": "nuclear_power_plant",
+    "layer": "energy",
+    "country": "Canada",
+    "lat": 44.3253,
+    "lon": -81.5997,
+    "severity": 0.3,
+    "vulnerability": 3,
+    "status": "nominal",
+    "statusReason": "Крупнейшая АЭС Северной Америки",
+    "capacity": 6232,
+    "unit": "MW",
+    "owner": "Bruce Power",
+    "operational": true,
+    "risks": [],
+    "cascade": [
+      "grid-ca-001"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "npp-hanul",
+    "name": "Ханул (Hanul)",
+    "type": "nuclear_power_plant",
+    "layer": "energy",
+    "country": "South Korea",
+    "lat": 37.0911,
+    "lon": 129.3836,
+    "severity": 0.35,
+    "vulnerability": 3.5,
+    "status": "nominal",
+    "statusReason": "Крупнейшая АЭС Южной Кореи",
+    "capacity": 6100,
+    "unit": "MW",
+    "owner": "KHNP",
+    "operational": true,
+    "risks": [
+      "earthquake"
+    ],
+    "cascade": [
+      "grid-kr-001"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "npp-gravelines",
+    "name": "Гравлин (Gravelines)",
+    "type": "nuclear_power_plant",
+    "layer": "energy",
+    "country": "France",
+    "lat": 51.0153,
+    "lon": 2.1361,
+    "severity": 0.3,
+    "vulnerability": 3,
+    "status": "nominal",
+    "statusReason": "Крупнейшая АЭС Западной Европы",
+    "capacity": 5460,
+    "unit": "MW",
+    "owner": "EDF",
+    "operational": true,
+    "risks": [
+      "flooding"
+    ],
+    "cascade": [
+      "grid-fr-001"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "npp-paluel",
+    "name": "Палюэль (Paluel)",
+    "type": "nuclear_power_plant",
+    "layer": "energy",
+    "country": "France",
+    "lat": 49.8575,
+    "lon": 0.6353,
+    "severity": 0.3,
+    "vulnerability": 3,
+    "status": "nominal",
+    "statusReason": "Вторая по мощности АЭС Франции",
+    "capacity": 5320,
+    "unit": "MW",
+    "owner": "EDF",
+    "operational": true,
+    "risks": [
+      "flooding"
+    ],
+    "cascade": [
+      "grid-fr-001"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "npp-cattenom",
+    "name": "Каттеном (Cattenom)",
+    "type": "nuclear_power_plant",
+    "layer": "energy",
+    "country": "France",
+    "lat": 49.4158,
+    "lon": 6.2181,
+    "severity": 0.35,
+    "vulnerability": 3.5,
+    "status": "nominal",
+    "statusReason": "АЭС вблизи границы с Германией и Люксембургом",
+    "capacity": 5200,
+    "unit": "MW",
+    "owner": "EDF",
+    "operational": true,
+    "risks": [
+      "cross_border"
+    ],
+    "cascade": [
+      "grid-fr-001",
+      "grid-de-001"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "npp-taishan",
+    "name": "Тайшань (Taishan)",
+    "type": "nuclear_power_plant",
+    "layer": "energy",
+    "country": "China",
+    "lat": 21.9175,
+    "lon": 112.9781,
+    "severity": 0.3,
+    "vulnerability": 3,
+    "status": "nominal",
+    "statusReason": "Крупнейшая АЭС Китая",
+    "capacity": 3500,
+    "unit": "MW",
+    "owner": "CGN",
+    "operational": true,
+    "risks": [
+      "typhoon"
+    ],
+    "cascade": [
+      "grid-cn-001"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "npp-bushehr",
+    "name": "Бушер (Bushehr)",
+    "type": "nuclear_power_plant",
+    "layer": "energy",
+    "country": "Iran",
+    "lat": 28.8294,
+    "lon": 50.8922,
+    "severity": 0.75,
+    "vulnerability": 7.5,
+    "status": "nominal",
+    "statusReason": "Единственная АЭС Ирана, геополитически значима",
+    "capacity": 1000,
+    "unit": "MW",
+    "owner": "Rosatom/Atomic Energy Organization of Iran",
+    "operational": true,
+    "risks": [
+      "military_attack",
+      "earthquake"
+    ],
+    "cascade": [
+      "grid-ir-001"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "npp-kudankulam",
+    "name": "Куданкулам (Kudankulam)",
+    "type": "nuclear_power_plant",
+    "layer": "energy",
+    "country": "India",
+    "lat": 8.1683,
+    "lon": 77.7128,
+    "severity": 0.4,
+    "vulnerability": 4,
+    "status": "nominal",
+    "statusReason": "Крупнейшая АЭС Индии",
+    "capacity": 2000,
+    "unit": "MW",
+    "owner": "NPCIL",
+    "operational": true,
+    "risks": [
+      "tsunami",
+      "cyclone"
+    ],
+    "cascade": [
+      "grid-in-001"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "npp-barakah",
+    "name": "Барака (Barakah)",
+    "type": "nuclear_power_plant",
+    "layer": "energy",
+    "country": "UAE",
+    "lat": 23.9647,
+    "lon": 52.2247,
+    "severity": 0.25,
+    "vulnerability": 2.5,
+    "status": "nominal",
+    "statusReason": "Первая АЭС арабского мира",
+    "capacity": 5380,
+    "unit": "MW",
+    "owner": "ENEC",
+    "operational": true,
+    "risks": [
+      "regional_tension"
+    ],
+    "cascade": [
+      "grid-ae-001"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "npp-akkuyu",
+    "name": "Аккую (Akkuyu)",
+    "type": "nuclear_power_plant",
+    "layer": "energy",
+    "country": "Turkey",
+    "lat": 36.1447,
+    "lon": 33.5403,
+    "severity": 0.65,
+    "vulnerability": 6.5,
+    "status": "warning",
+    "statusReason": "Строительство, зависимость от Росатома, санкции",
+    "capacity": 4800,
+    "unit": "MW",
+    "owner": "Rosatom",
+    "operational": false,
+    "risks": [
+      "sanctions",
+      "earthquake"
+    ],
+    "cascade": [
+      "grid-tr-001"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "npp-tianwan",
+    "name": "Тяньвань (Tianwan)",
+    "type": "nuclear_power_plant",
+    "layer": "energy",
+    "country": "China",
+    "lat": 34.6869,
+    "lon": 119.4569,
+    "severity": 0.25,
+    "vulnerability": 2.5,
+    "status": "nominal",
+    "statusReason": "Крупная АЭС Китая",
+    "capacity": 6100,
+    "unit": "MW",
+    "owner": "CNNC",
+    "operational": true,
+    "risks": [],
+    "cascade": [
+      "grid-cn-001"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "npp-civaux",
+    "name": "Сиво (Civaux)",
+    "type": "nuclear_power_plant",
+    "layer": "energy",
+    "country": "France",
+    "lat": 46.4553,
+    "lon": 0.6533,
+    "severity": 0.3,
+    "vulnerability": 3,
+    "status": "nominal",
+    "statusReason": "Крупная АЭС с реакторами EPR",
+    "capacity": 2990,
+    "unit": "MW",
+    "owner": "EDF",
+    "operational": true,
+    "risks": [],
+    "cascade": [
+      "grid-fr-001"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "npp-temelin",
+    "name": "Темелин (Temelin)",
+    "type": "nuclear_power_plant",
+    "layer": "energy",
+    "country": "Czechia",
+    "lat": 49.1803,
+    "lon": 14.3761,
+    "severity": 0.25,
+    "vulnerability": 2.5,
+    "status": "nominal",
+    "statusReason": "Крупнейшая АЭС Чехии",
+    "capacity": 2160,
+    "unit": "MW",
+    "owner": "ČEZ",
+    "operational": true,
+    "risks": [],
+    "cascade": [
+      "grid-cz-001"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "npp-ostrovets",
+    "name": "Островец (БелАЭС)",
+    "type": "nuclear_power_plant",
+    "layer": "energy",
+    "country": "Belarus",
+    "lat": 54.7606,
+    "lon": 26.0867,
+    "severity": 0.6,
+    "vulnerability": 6,
+    "status": "warning",
+    "statusReason": "АЭС вблизи границы с Литвой, вызывает напряжённость",
+    "capacity": 2400,
+    "unit": "MW",
+    "owner": "Rosatom",
+    "operational": true,
+    "risks": [
+      "cross_border",
+      "sanctions"
+    ],
+    "cascade": [
+      "grid-by-001",
+      "grid-lt-001"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "npp-paks",
+    "name": "Пакш (Paks)",
+    "type": "nuclear_power_plant",
+    "layer": "energy",
+    "country": "Hungary",
+    "lat": 46.5725,
+    "lon": 18.8539,
+    "severity": 0.5,
+    "vulnerability": 5,
+    "status": "nominal",
+    "statusReason": "Единственная АЭС Венгрии, зависимость от Росатома",
+    "capacity": 2000,
+    "unit": "MW",
+    "owner": "MVM Paksi Atomerőmű",
+    "operational": true,
+    "risks": [
+      "russian_fuel_dependency"
+    ],
+    "cascade": [
+      "grid-hu-001"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "npp-kozloduy",
+    "name": "Козлодуй (Kozloduy)",
+    "type": "nuclear_power_plant",
+    "layer": "energy",
+    "country": "Bulgaria",
+    "lat": 43.7461,
+    "lon": 23.7708,
+    "severity": 0.4,
+    "vulnerability": 4,
+    "status": "nominal",
+    "statusReason": "Единственная АЭС Болгарии",
+    "capacity": 2000,
+    "unit": "MW",
+    "owner": "Kozloduy NPP",
+    "operational": true,
+    "risks": [
+      "russian_fuel_dependency"
+    ],
+    "cascade": [
+      "grid-bg-001"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "port-shanghai",
+    "name": "Порт Шанхай",
+    "type": "seaport",
+    "layer": "transport",
+    "country": "China",
+    "lat": 31.2304,
+    "lon": 121.4737,
+    "severity": 0.35,
+    "vulnerability": 3.5,
+    "status": "nominal",
+    "statusReason": "Крупнейший контейнерный порт мира",
+    "capacity": 47.3,
+    "unit": "M TEU/год",
+    "owner": "Shanghai International Port Group",
+    "operational": true,
+    "risks": [
+      "typhoon"
+    ],
+    "cascade": [
+      "chokepoint-malacca"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "port-singapore",
+    "name": "Порт Сингапур",
+    "type": "seaport",
+    "layer": "transport",
+    "country": "Singapore",
+    "lat": 1.2644,
+    "lon": 103.8223,
+    "severity": 0.3,
+    "vulnerability": 3,
+    "status": "nominal",
+    "statusReason": "Второй контейнерный порт мира, хаб Малакки",
+    "capacity": 37.2,
+    "unit": "M TEU/год",
+    "owner": "MPA Singapore",
+    "operational": true,
+    "risks": [
+      "chokepoint_dependency"
+    ],
+    "cascade": [
+      "chokepoint-malacca"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "port-ningbo",
+    "name": "Порт Нинбо-Чжоушань",
+    "type": "seaport",
+    "layer": "transport",
+    "country": "China",
+    "lat": 29.8683,
+    "lon": 121.544,
+    "severity": 0.35,
+    "vulnerability": 3.5,
+    "status": "nominal",
+    "statusReason": "Третий контейнерный порт мира",
+    "capacity": 33.3,
+    "unit": "M TEU/год",
+    "owner": "Zhejiang Port",
+    "operational": true,
+    "risks": [
+      "typhoon"
+    ],
+    "cascade": [
+      "chokepoint-taiwan"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "port-shenzhen",
+    "name": "Порт Шэньчжэнь",
+    "type": "seaport",
+    "layer": "transport",
+    "country": "China",
+    "lat": 22.5431,
+    "lon": 114.0579,
+    "severity": 0.35,
+    "vulnerability": 3.5,
+    "status": "nominal",
+    "statusReason": "Четвёртый контейнерный порт мира",
+    "capacity": 30,
+    "unit": "M TEU/год",
+    "owner": "Shenzhen Port Group",
+    "operational": true,
+    "risks": [
+      "typhoon",
+      "taiwan_strait"
+    ],
+    "cascade": [
+      "chokepoint-taiwan"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "port-busan",
+    "name": "Порт Пусан",
+    "type": "seaport",
+    "layer": "transport",
+    "country": "South Korea",
+    "lat": 35.1028,
+    "lon": 129.0403,
+    "severity": 0.35,
+    "vulnerability": 3.5,
+    "status": "nominal",
+    "statusReason": "Крупнейший порт Кореи",
+    "capacity": 22,
+    "unit": "M TEU/год",
+    "owner": "Busan Port Authority",
+    "operational": true,
+    "risks": [
+      "north_korea_tension"
+    ],
+    "cascade": [
+      "chokepoint-korea"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "port-rotterdam",
+    "name": "Порт Роттердам",
+    "type": "seaport",
+    "layer": "transport",
+    "country": "Netherlands",
+    "lat": 51.9491,
+    "lon": 4.1407,
+    "severity": 0.3,
+    "vulnerability": 3,
+    "status": "nominal",
+    "statusReason": "Крупнейший порт Европы",
+    "capacity": 14.5,
+    "unit": "M TEU/год",
+    "owner": "Port of Rotterdam Authority",
+    "operational": true,
+    "risks": [],
+    "cascade": [
+      "chokepoint-english-channel"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "port-antwerp",
+    "name": "Порт Антверпен-Брюгге",
+    "type": "seaport",
+    "layer": "transport",
+    "country": "Belgium",
+    "lat": 51.2604,
+    "lon": 4.3861,
+    "severity": 0.3,
+    "vulnerability": 3,
+    "status": "nominal",
+    "statusReason": "Второй порт Европы",
+    "capacity": 13.5,
+    "unit": "M TEU/год",
+    "owner": "Port of Antwerp-Bruges",
+    "operational": true,
+    "risks": [],
+    "cascade": [
+      "chokepoint-english-channel"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "port-hamburg",
+    "name": "Порт Гамбург",
+    "type": "seaport",
+    "layer": "transport",
+    "country": "Germany",
+    "lat": 53.5461,
+    "lon": 9.9745,
+    "severity": 0.3,
+    "vulnerability": 3,
+    "status": "nominal",
+    "statusReason": "Третий порт Европы, ворота для Центральной Европы",
+    "capacity": 8.3,
+    "unit": "M TEU/год",
+    "owner": "Hamburg Port Authority",
+    "operational": true,
+    "risks": [],
+    "cascade": [
+      "chokepoint-english-channel"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "port-la",
+    "name": "Порт Лос-Анджелес",
+    "type": "seaport",
+    "layer": "transport",
+    "country": "USA",
+    "lat": 33.7395,
+    "lon": -118.261,
+    "severity": 0.3,
+    "vulnerability": 3,
+    "status": "nominal",
+    "statusReason": "Крупнейший порт США",
+    "capacity": 10.7,
+    "unit": "M TEU/год",
+    "owner": "Port of Los Angeles",
+    "operational": true,
+    "risks": [
+      "earthquake"
+    ],
+    "cascade": [
+      "chokepoint-panama"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "port-longbeach",
+    "name": "Порт Лонг-Бич",
+    "type": "seaport",
+    "layer": "transport",
+    "country": "USA",
+    "lat": 33.7542,
+    "lon": -118.2165,
+    "severity": 0.3,
+    "vulnerability": 3,
+    "status": "nominal",
+    "statusReason": "Второй порт США, парный с LA",
+    "capacity": 9.4,
+    "unit": "M TEU/год",
+    "owner": "Port of Long Beach",
+    "operational": true,
+    "risks": [
+      "earthquake"
+    ],
+    "cascade": [
+      "chokepoint-panama"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "port-newyork",
+    "name": "Порт Нью-Йорк/Нью-Джерси",
+    "type": "seaport",
+    "layer": "transport",
+    "country": "USA",
+    "lat": 40.6696,
+    "lon": -74.1206,
+    "severity": 0.3,
+    "vulnerability": 3,
+    "status": "nominal",
+    "statusReason": "Третий порт США",
+    "capacity": 9.5,
+    "unit": "M TEU/год",
+    "owner": "Port Authority of NY/NJ",
+    "operational": true,
+    "risks": [
+      "hurricane"
+    ],
+    "cascade": [],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "port-jebel-ali",
+    "name": "Порт Джебель-Али (Дубай)",
+    "type": "seaport",
+    "layer": "transport",
+    "country": "UAE",
+    "lat": 25.0166,
+    "lon": 55.0617,
+    "severity": 0.4,
+    "vulnerability": 4,
+    "status": "nominal",
+    "statusReason": "Крупнейший порт Ближнего Востока",
+    "capacity": 14.1,
+    "unit": "M TEU/год",
+    "owner": "DP World",
+    "operational": true,
+    "risks": [
+      "hormuz_dependency"
+    ],
+    "cascade": [
+      "chokepoint-hormuz"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "port-kaohsiung",
+    "name": "Порт Гаосюн",
+    "type": "seaport",
+    "layer": "transport",
+    "country": "Taiwan",
+    "lat": 22.6167,
+    "lon": 120.2833,
+    "severity": 0.65,
+    "vulnerability": 6.5,
+    "status": "warning",
+    "statusReason": "Геополитическая напряжённость в Тайваньском проливе",
+    "capacity": 9.5,
+    "unit": "M TEU/год",
+    "owner": "Taiwan International Ports Corp",
+    "operational": true,
+    "risks": [
+      "china_taiwan_tension",
+      "blockade"
+    ],
+    "cascade": [
+      "chokepoint-taiwan"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "port-piraeus",
+    "name": "Порт Пирей",
+    "type": "seaport",
+    "layer": "transport",
+    "country": "Greece",
+    "lat": 37.945,
+    "lon": 23.6437,
+    "severity": 0.4,
+    "vulnerability": 4,
+    "status": "nominal",
+    "statusReason": "Крупнейший порт Средиземноморья, китайское управление (COSCO)",
+    "capacity": 5.4,
+    "unit": "M TEU/год",
+    "owner": "COSCO",
+    "operational": true,
+    "risks": [
+      "suez_dependency"
+    ],
+    "cascade": [
+      "chokepoint-suez"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "port-valencia",
+    "name": "Порт Валенсия",
+    "type": "seaport",
+    "layer": "transport",
+    "country": "Spain",
+    "lat": 39.4489,
+    "lon": -0.3155,
+    "severity": 0.3,
+    "vulnerability": 3,
+    "status": "nominal",
+    "statusReason": "Крупнейший порт Испании",
+    "capacity": 5.5,
+    "unit": "M TEU/год",
+    "owner": "Autoridad Portuaria de Valencia",
+    "operational": true,
+    "risks": [],
+    "cascade": [
+      "chokepoint-gibraltar"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "port-algeciras",
+    "name": "Порт Альхесирас",
+    "type": "seaport",
+    "layer": "transport",
+    "country": "Spain",
+    "lat": 36.1326,
+    "lon": -5.4418,
+    "severity": 0.4,
+    "vulnerability": 4,
+    "status": "nominal",
+    "statusReason": "Стратегический порт у Гибралтара",
+    "capacity": 4.8,
+    "unit": "M TEU/год",
+    "owner": "Autoridad Portuaria Bahía de Algeciras",
+    "operational": true,
+    "risks": [
+      "gibraltar_dependency"
+    ],
+    "cascade": [
+      "chokepoint-gibraltar"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "port-durban",
+    "name": "Порт Дурбан",
+    "type": "seaport",
+    "layer": "transport",
+    "country": "South Africa",
+    "lat": -29.8681,
+    "lon": 31.0257,
+    "severity": 0.55,
+    "vulnerability": 5.5,
+    "status": "warning",
+    "statusReason": "Крупнейший порт Африки, заторы",
+    "capacity": 2.9,
+    "unit": "M TEU/год",
+    "owner": "Transnet",
+    "operational": true,
+    "risks": [
+      "infrastructure_decay",
+      "cape_route_dependency"
+    ],
+    "cascade": [
+      "chokepoint-cape"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "port-lagos",
+    "name": "Порт Лагос (Апапа)",
+    "type": "seaport",
+    "layer": "transport",
+    "country": "Nigeria",
+    "lat": 6.45,
+    "lon": 3.3667,
+    "severity": 0.55,
+    "vulnerability": 5.5,
+    "status": "warning",
+    "statusReason": "Крупнейший порт Западной Африки, перегружен",
+    "capacity": 1.9,
+    "unit": "M TEU/год",
+    "owner": "Nigerian Ports Authority",
+    "operational": true,
+    "risks": [
+      "piracy",
+      "congestion"
+    ],
+    "cascade": [],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "port-mumbai",
+    "name": "Порт Мумбаи (JNPT)",
+    "type": "seaport",
+    "layer": "transport",
+    "country": "India",
+    "lat": 18.95,
+    "lon": 72.95,
+    "severity": 0.4,
+    "vulnerability": 4,
+    "status": "nominal",
+    "statusReason": "Крупнейший контейнерный порт Индии",
+    "capacity": 5.1,
+    "unit": "M TEU/год",
+    "owner": "Jawaharlal Nehru Port Trust",
+    "operational": true,
+    "risks": [
+      "monsoon"
+    ],
+    "cascade": [],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "port-colombo",
+    "name": "Порт Коломбо",
+    "type": "seaport",
+    "layer": "transport",
+    "country": "Sri Lanka",
+    "lat": 6.95,
+    "lon": 79.85,
+    "severity": 0.45,
+    "vulnerability": 4.5,
+    "status": "nominal",
+    "statusReason": "Крупный транзитный хаб Индийского океана",
+    "capacity": 7.2,
+    "unit": "M TEU/год",
+    "owner": "Sri Lanka Ports Authority",
+    "operational": true,
+    "risks": [
+      "india_china_competition"
+    ],
+    "cascade": [
+      "chokepoint-malacca"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "port-klang",
+    "name": "Порт Кланг",
+    "type": "seaport",
+    "layer": "transport",
+    "country": "Malaysia",
+    "lat": 3,
+    "lon": 101.4,
+    "severity": 0.4,
+    "vulnerability": 4,
+    "status": "nominal",
+    "statusReason": "Крупнейший порт Малайзии",
+    "capacity": 14,
+    "unit": "M TEU/год",
+    "owner": "Port Klang Authority",
+    "operational": true,
+    "risks": [
+      "malacca_dependency"
+    ],
+    "cascade": [
+      "chokepoint-malacca"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "port-tanjung-pelepas",
+    "name": "Порт Танджунг-Пелепас",
+    "type": "seaport",
+    "layer": "transport",
+    "country": "Malaysia",
+    "lat": 1.3625,
+    "lon": 103.5489,
+    "severity": 0.4,
+    "vulnerability": 4,
+    "status": "nominal",
+    "statusReason": "Второй порт Малайзии, транзит",
+    "capacity": 10.5,
+    "unit": "M TEU/год",
+    "owner": "Johor Port Authority",
+    "operational": true,
+    "risks": [
+      "malacca_dependency"
+    ],
+    "cascade": [
+      "chokepoint-malacca"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "port-santos",
+    "name": "Порт Сантос",
+    "type": "seaport",
+    "layer": "transport",
+    "country": "Brazil",
+    "lat": -23.9608,
+    "lon": -46.3339,
+    "severity": 0.45,
+    "vulnerability": 4.5,
+    "status": "nominal",
+    "statusReason": "Крупнейший порт Бразилии",
+    "capacity": 4.8,
+    "unit": "M TEU/год",
+    "owner": "Santos Port Authority",
+    "operational": true,
+    "risks": [
+      "infrastructure_decay"
+    ],
+    "cascade": [],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "port-buenosaires",
+    "name": "Порт Буэнос-Айрес",
+    "type": "seaport",
+    "layer": "transport",
+    "country": "Argentina",
+    "lat": -34.6,
+    "lon": -58.3667,
+    "severity": 0.5,
+    "vulnerability": 5,
+    "status": "nominal",
+    "statusReason": "Главный порт Аргентины",
+    "capacity": 1.5,
+    "unit": "M TEU/год",
+    "owner": "Administración General de Puertos",
+    "operational": true,
+    "risks": [
+      "economic_crisis"
+    ],
+    "cascade": [],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "port-veracruz",
+    "name": "Порт Веракрус",
+    "type": "seaport",
+    "layer": "transport",
+    "country": "Mexico",
+    "lat": 19.2,
+    "lon": -96.1333,
+    "severity": 0.45,
+    "vulnerability": 4.5,
+    "status": "nominal",
+    "statusReason": "Крупнейший порт Мексики на Атлантике",
+    "capacity": 2,
+    "unit": "M TEU/год",
+    "owner": "API Veracruz",
+    "operational": true,
+    "risks": [
+      "hurricane",
+      "cartel_violence"
+    ],
+    "cascade": [],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "port-vladivostok",
+    "name": "Порт Владивосток",
+    "type": "seaport",
+    "layer": "transport",
+    "country": "Russia",
+    "lat": 43.1155,
+    "lon": 131.8855,
+    "severity": 0.6,
+    "vulnerability": 6,
+    "status": "warning",
+    "statusReason": "Ключевой порт России на Тихом океане, санкции",
+    "capacity": 1.5,
+    "unit": "M TEU/год",
+    "owner": "FESCO",
+    "operational": true,
+    "risks": [
+      "sanctions",
+      "regional_tension"
+    ],
+    "cascade": [],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "chokepoint-hormuz",
+    "name": "Ормузский пролив",
+    "type": "chokepoint",
+    "layer": "transport",
+    "country": "Iran/Oman/UAE",
+    "lat": 26.5667,
+    "lon": 56.25,
+    "severity": 0.9,
+    "vulnerability": 9,
+    "status": "warning",
+    "statusReason": "20% мировой нефти, напряжённость Иран-США",
+    "capacity": 21,
+    "unit": "M баррелей/день",
+    "owner": "Iran",
+    "operational": true,
+    "risks": [
+      "iran_us_tension",
+      "blockade",
+      "oil_flow_disruption"
+    ],
+    "cascade": [
+      "port-jebel-ali",
+      "port-kaohsiung"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "chokepoint-malacca",
+    "name": "Малаккский пролив",
+    "type": "chokepoint",
+    "layer": "transport",
+    "country": "Malaysia/Singapore/Indonesia",
+    "lat": 1.5,
+    "lon": 102.8,
+    "severity": 0.7,
+    "vulnerability": 7,
+    "status": "nominal",
+    "statusReason": "Крупнейший пролив мира, 25% мировой торговли",
+    "capacity": 30,
+    "unit": "M TEU/год",
+    "owner": "Singapore/Malaysia",
+    "operational": true,
+    "risks": [
+      "chinese_dependency",
+      "piracy",
+      "blockade"
+    ],
+    "cascade": [
+      "port-singapore",
+      "port-shanghai"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "chokepoint-suez",
+    "name": "Суэцкий канал",
+    "type": "chokepoint",
+    "layer": "transport",
+    "country": "Egypt",
+    "lat": 30.5,
+    "lon": 32.5,
+    "severity": 0.6,
+    "vulnerability": 6,
+    "status": "nominal",
+    "statusReason": "12% мировой торговли, 30% контейнерного трафика",
+    "capacity": 12,
+    "unit": "% мировой торговли",
+    "owner": "Suez Canal Authority",
+    "operational": true,
+    "risks": [
+      "blockade",
+      "houthi_attack",
+      "egypt_stability"
+    ],
+    "cascade": [
+      "port-piraeus",
+      "port-jebel-ali"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "chokepoint-panama",
+    "name": "Панамский канал",
+    "type": "chokepoint",
+    "layer": "transport",
+    "country": "Panama",
+    "lat": 9.08,
+    "lon": -79.68,
+    "severity": 0.75,
+    "vulnerability": 7.5,
+    "status": "warning",
+    "statusReason": "Проблемы с засухой, ограничение пропускной способности",
+    "capacity": 5,
+    "unit": "% мировой торговли",
+    "owner": "Panama Canal Authority",
+    "operational": true,
+    "risks": [
+      "drought",
+      "climate_change",
+      "us_china_tension"
+    ],
+    "cascade": [
+      "port-la",
+      "port-newyork"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "chokepoint-taiwan",
+    "name": "Тайваньский пролив",
+    "type": "chokepoint",
+    "layer": "transport",
+    "country": "Taiwan/China",
+    "lat": 24.5,
+    "lon": 119.5,
+    "severity": 0.95,
+    "vulnerability": 9.5,
+    "status": "warning",
+    "statusReason": "Ключевой регион для полупроводников, напряжённость",
+    "capacity": 10,
+    "unit": "% мировой торговли",
+    "owner": "Contested",
+    "operational": true,
+    "risks": [
+      "china_taiwan_tension",
+      "blockade",
+      "semiconductor_crisis"
+    ],
+    "cascade": [
+      "port-kaohsiung",
+      "port-shenzhen"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "chokepoint-bosphorus",
+    "name": "Босфор и Дарданеллы",
+    "type": "chokepoint",
+    "layer": "transport",
+    "country": "Turkey",
+    "lat": 41.12,
+    "lon": 29.05,
+    "severity": 0.75,
+    "vulnerability": 7.5,
+    "status": "warning",
+    "statusReason": "Продовольственная сделка и российский экспорт",
+    "capacity": 3,
+    "unit": "% мировой торговли",
+    "owner": "Turkey",
+    "operational": true,
+    "risks": [
+      "russia_ukraine",
+      "food_crisis",
+      "turkish_control"
+    ],
+    "cascade": [],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "chokepoint-gibraltar",
+    "name": "Гибралтарский пролив",
+    "type": "chokepoint",
+    "layer": "transport",
+    "country": "Spain/Morocco/UK",
+    "lat": 36,
+    "lon": -5.5,
+    "severity": 0.5,
+    "vulnerability": 5,
+    "status": "nominal",
+    "statusReason": "Стратегический проход между Европой и Африкой",
+    "capacity": 4,
+    "unit": "% мировой торговли",
+    "owner": "Contested",
+    "operational": true,
+    "risks": [
+      "spain_uk_tension"
+    ],
+    "cascade": [
+      "port-algeciras",
+      "port-valencia"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "chokepoint-bab-el-mandeb",
+    "name": "Баб-эль-Мандебский пролив",
+    "type": "chokepoint",
+    "layer": "transport",
+    "country": "Yemen/Djibouti/Eritrea",
+    "lat": 12.58,
+    "lon": 43.33,
+    "severity": 0.9,
+    "vulnerability": 9,
+    "status": "critical",
+    "statusReason": "Атаки хуситов на суда, блокада Красного моря",
+    "capacity": 8,
+    "unit": "% мировой торговли",
+    "owner": "Contested",
+    "operational": true,
+    "risks": [
+      "houthi_attacks",
+      "yemen_war",
+      "shipping_crisis"
+    ],
+    "cascade": [
+      "chokepoint-suez"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "chokepoint-cape",
+    "name": "Мыс Доброй Надежды",
+    "type": "chokepoint",
+    "layer": "transport",
+    "country": "South Africa",
+    "lat": -34.8333,
+    "lon": 20,
+    "severity": 0.5,
+    "vulnerability": 5,
+    "status": "nominal",
+    "statusReason": "Альтернативный маршрут при блокировке Суэца",
+    "capacity": 3,
+    "unit": "% мировой торговли",
+    "owner": "South Africa",
+    "operational": true,
+    "risks": [
+      "weather",
+      "piracy"
+    ],
+    "cascade": [],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "chokepoint-korea",
+    "name": "Корейский пролив",
+    "type": "chokepoint",
+    "layer": "transport",
+    "country": "South Korea/Japan",
+    "lat": 34.5,
+    "lon": 129,
+    "severity": 0.6,
+    "vulnerability": 6,
+    "status": "warning",
+    "statusReason": "Ракетные испытания КНДР, напряжённость",
+    "capacity": 4,
+    "unit": "% мировой торговли",
+    "owner": "Contested",
+    "operational": true,
+    "risks": [
+      "north_korea_tension",
+      "missile_tests"
+    ],
+    "cascade": [
+      "port-busan"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "chokepoint-english-channel",
+    "name": "Ла-Манш / Дуврский пролив",
+    "type": "chokepoint",
+    "layer": "transport",
+    "country": "UK/France",
+    "lat": 51,
+    "lon": 1.5,
+    "severity": 0.4,
+    "vulnerability": 4,
+    "status": "nominal",
+    "statusReason": "Крупнейший морской коридор Европы",
+    "capacity": 15,
+    "unit": "% мировой торговли",
+    "owner": "UK/France",
+    "operational": true,
+    "risks": [
+      "migrant_crisis",
+      "fishing_disputes"
+    ],
+    "cascade": [
+      "port-rotterdam",
+      "port-antwerp"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "chokepoint-danish-straits",
+    "name": "Датские проливы (Балтика)",
+    "type": "chokepoint",
+    "layer": "transport",
+    "country": "Denmark/Sweden",
+    "lat": 57,
+    "lon": 11,
+    "severity": 0.6,
+    "vulnerability": 6,
+    "status": "warning",
+    "statusReason": "Российский теневой флот, экологические риски",
+    "capacity": 2,
+    "unit": "% мировой торговли",
+    "owner": "Denmark",
+    "operational": true,
+    "risks": [
+      "russian_shadow_fleet",
+      "oil_spill"
+    ],
+    "cascade": [],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "chokepoint-strait-of-hormuz-south",
+    "name": "Южная часть Персидского залива",
+    "type": "chokepoint",
+    "layer": "transport",
+    "country": "Saudi Arabia/Qatar/Bahrain",
+    "lat": 26,
+    "lon": 52,
+    "severity": 0.7,
+    "vulnerability": 7,
+    "status": "warning",
+    "statusReason": "Основные нефтяные терминалы",
+    "capacity": 12,
+    "unit": "M баррелей/день",
+    "owner": "Saudi Arabia",
+    "operational": true,
+    "risks": [
+      "iran_tension",
+      "terrorism"
+    ],
+    "cascade": [
+      "chokepoint-hormuz"
+    ],
+    "timestamp": "2026-09-18T18:09:04.765Z"
+  },
+  {
+    "id": "chokepoint-north-sea",
+    "name": "Северное море (газопроводы)",
+    "type": "chokepoint",
+    "layer": "transport",
+    "country": "Norway/UK/Netherlands",
+    "lat": 56,
+    "lon": 3,
+    "severity": 0.75,
+    "vulnerability": 7.5,
+    "status": "warning",
+    "statusReason": "Диверсии на газопроводах, угроза энергобезопасности",
+    "capacity": 5,
+    "unit": "% газоснабжения ЕС",
+    "owner": "Norway/UK",
+    "operational": true,
+    "risks": [
+      "sabotage",
+      "russian_hybrid_warfare"
+    ],
+    "cascade": [],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "chokepoint-panama-north",
+    "name": "Северный вход Панамского канала",
+    "type": "chokepoint",
+    "layer": "transport",
+    "country": "Panama/Costa Rica",
+    "lat": 9.5,
+    "lon": -79.9,
+    "severity": 0.65,
+    "vulnerability": 6.5,
+    "status": "warning",
+    "statusReason": "Климатические проблемы",
+    "capacity": 2,
+    "unit": "% мировой торговли",
+    "owner": "Panama",
+    "operational": true,
+    "risks": [
+      "drought",
+      "climate_change"
+    ],
+    "cascade": [
+      "chokepoint-panama"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "dam-three-gorges",
+    "name": "Три ущелья (Three Gorges)",
+    "type": "dam",
+    "layer": "energy",
+    "country": "China",
+    "lat": 30.8231,
+    "lon": 111.0032,
+    "severity": 0.4,
+    "vulnerability": 4,
+    "status": "nominal",
+    "statusReason": "Крупнейшая ГЭС мира",
+    "capacity": 22500,
+    "unit": "MW",
+    "owner": "China Three Gorges Corp",
+    "operational": true,
+    "risks": [
+      "earthquake",
+      "military_target"
+    ],
+    "cascade": [
+      "grid-cn-001"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "dam-itaipu",
+    "name": "Итайпу (Itaipu)",
+    "type": "dam",
+    "layer": "energy",
+    "country": "Brazil/Paraguay",
+    "lat": -25.4081,
+    "lon": -54.5889,
+    "severity": 0.35,
+    "vulnerability": 3.5,
+    "status": "nominal",
+    "statusReason": "Вторая по мощности ГЭС мира, бинациональная",
+    "capacity": 14000,
+    "unit": "MW",
+    "owner": "Itaipu Binacional",
+    "operational": true,
+    "risks": [],
+    "cascade": [
+      "grid-br-001"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "dam-xiluodu",
+    "name": "Силоду (Xiluodu)",
+    "type": "dam",
+    "layer": "energy",
+    "country": "China",
+    "lat": 28.2597,
+    "lon": 103.6431,
+    "severity": 0.35,
+    "vulnerability": 3.5,
+    "status": "nominal",
+    "statusReason": "Третья по мощности ГЭС Китая",
+    "capacity": 13860,
+    "unit": "MW",
+    "owner": "China Yangtze Power",
+    "operational": true,
+    "risks": [
+      "earthquake"
+    ],
+    "cascade": [
+      "grid-cn-001"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "dam-belo-monte",
+    "name": "Белу-Монте (Belo Monte)",
+    "type": "dam",
+    "layer": "energy",
+    "country": "Brazil",
+    "lat": -3.1317,
+    "lon": -51.7756,
+    "severity": 0.5,
+    "vulnerability": 5,
+    "status": "warning",
+    "statusReason": "Экологические протесты, споры с коренными народами",
+    "capacity": 11233,
+    "unit": "MW",
+    "owner": "Norte Energia",
+    "operational": true,
+    "risks": [
+      "social_conflict",
+      "amazon_deforestation"
+    ],
+    "cascade": [],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "dam-guri",
+    "name": "Гури (Guri)",
+    "type": "dam",
+    "layer": "energy",
+    "country": "Venezuela",
+    "lat": 7.7661,
+    "lon": -62.9992,
+    "severity": 0.85,
+    "vulnerability": 8.5,
+    "status": "critical",
+    "statusReason": "Критическое состояние из-за экономического кризиса",
+    "capacity": 10235,
+    "unit": "MW",
+    "owner": "Corpoelec",
+    "operational": true,
+    "risks": [
+      "infrastructure_decay",
+      "economic_crisis",
+      "blackout"
+    ],
+    "cascade": [
+      "grid-ve-001"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "dam-tucurui",
+    "name": "Тукуруи (Tucuruí)",
+    "type": "dam",
+    "layer": "energy",
+    "country": "Brazil",
+    "lat": -3.8317,
+    "lon": -49.6467,
+    "severity": 0.35,
+    "vulnerability": 3.5,
+    "status": "nominal",
+    "statusReason": "Крупная ГЭС Бразилии",
+    "capacity": 8535,
+    "unit": "MW",
+    "owner": "Eletronorte",
+    "operational": true,
+    "risks": [],
+    "cascade": [
+      "grid-br-001"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "dam-grand-coulee",
+    "name": "Гранд-Кули (Grand Coulee)",
+    "type": "dam",
+    "layer": "energy",
+    "country": "USA",
+    "lat": 47.9569,
+    "lon": -118.9814,
+    "severity": 0.3,
+    "vulnerability": 3,
+    "status": "nominal",
+    "statusReason": "Крупнейшая ГЭС США",
+    "capacity": 6809,
+    "unit": "MW",
+    "owner": "US Bureau of Reclamation",
+    "operational": true,
+    "risks": [
+      "earthquake"
+    ],
+    "cascade": [
+      "grid-us-001"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "dam-sayano",
+    "name": "Саяно-Шушенская ГЭС",
+    "type": "dam",
+    "layer": "energy",
+    "country": "Russia",
+    "lat": 52.8247,
+    "lon": 91.3719,
+    "severity": 0.5,
+    "vulnerability": 5,
+    "status": "nominal",
+    "statusReason": "Крупнейшая ГЭС России, авария 2009",
+    "capacity": 6400,
+    "unit": "MW",
+    "owner": "RusHydro",
+    "operational": true,
+    "risks": [
+      "earthquake",
+      "historical_accident"
+    ],
+    "cascade": [
+      "grid-ru-001"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "dam-krasnoyarsk",
+    "name": "Красноярская ГЭС",
+    "type": "dam",
+    "layer": "energy",
+    "country": "Russia",
+    "lat": 55.9336,
+    "lon": 92.2969,
+    "severity": 0.4,
+    "vulnerability": 4,
+    "status": "nominal",
+    "statusReason": "Вторая по мощности ГЭС России",
+    "capacity": 6000,
+    "unit": "MW",
+    "owner": "RusHydro",
+    "operational": true,
+    "risks": [],
+    "cascade": [
+      "grid-ru-001"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "dam-bratsk",
+    "name": "Братская ГЭС",
+    "type": "dam",
+    "layer": "energy",
+    "country": "Russia",
+    "lat": 56.2836,
+    "lon": 101.7667,
+    "severity": 0.4,
+    "vulnerability": 4,
+    "status": "nominal",
+    "statusReason": "Третья по мощности ГЭС России",
+    "capacity": 4500,
+    "unit": "MW",
+    "owner": "Irkutskenergo",
+    "operational": true,
+    "risks": [],
+    "cascade": [
+      "grid-ru-001"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "dam-kakhovka",
+    "name": "Каховская ГЭС",
+    "type": "dam",
+    "layer": "energy",
+    "country": "Ukraine",
+    "lat": 46.7786,
+    "lon": 33.3719,
+    "severity": 1,
+    "vulnerability": 10,
+    "status": "destroyed",
+    "statusReason": "Разрушена 06.06.2023, экологическая катастрофа",
+    "capacity": 357,
+    "unit": "MW",
+    "owner": "Ukrhydroenergo",
+    "operational": false,
+    "risks": [
+      "destroyed",
+      "flooding",
+      "nuclear_plant_cooling"
+    ],
+    "cascade": [
+      "npp-zaporizhzhia"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "dam-nurek",
+    "name": "Нурекская ГЭС",
+    "type": "dam",
+    "layer": "energy",
+    "country": "Tajikistan",
+    "lat": 38.3833,
+    "lon": 69.35,
+    "severity": 0.45,
+    "vulnerability": 4.5,
+    "status": "nominal",
+    "statusReason": "Крупнейшая ГЭС Таджикистана",
+    "capacity": 3015,
+    "unit": "MW",
+    "owner": "Barqi Tojik",
+    "operational": true,
+    "risks": [
+      "central_asia_water_disputes"
+    ],
+    "cascade": [],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "dam-roga",
+    "name": "Рогунская ГЭС",
+    "type": "dam",
+    "layer": "energy",
+    "country": "Tajikistan",
+    "lat": 38.7333,
+    "lon": 69.7333,
+    "severity": 0.6,
+    "vulnerability": 6,
+    "status": "warning",
+    "statusReason": "Строится, вызывает споры с Узбекистаном",
+    "capacity": 3600,
+    "unit": "MW",
+    "owner": "Rogun HPP",
+    "operational": false,
+    "risks": [
+      "water_disputes",
+      "earthquake"
+    ],
+    "cascade": [],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "dam-gerd",
+    "name": "GERD (Возрождение)",
+    "type": "dam",
+    "layer": "energy",
+    "country": "Ethiopia",
+    "lat": 11.2147,
+    "lon": 35.0928,
+    "severity": 0.7,
+    "vulnerability": 7,
+    "status": "warning",
+    "statusReason": "Крупнейшая ГЭС Африки, спор с Египтом и Суданом",
+    "capacity": 5150,
+    "unit": "MW",
+    "owner": "Ethiopian Electric Power",
+    "operational": true,
+    "risks": [
+      "nile_water_dispute",
+      "egypt_ethiopia_tension"
+    ],
+    "cascade": [
+      "dam-aswan"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "dam-aswan",
+    "name": "Асуанская плотина",
+    "type": "dam",
+    "layer": "energy",
+    "country": "Egypt",
+    "lat": 23.9707,
+    "lon": 32.8771,
+    "severity": 0.65,
+    "vulnerability": 6.5,
+    "status": "nominal",
+    "statusReason": "Ключевая плотина Египта, зависит от стока Нила",
+    "capacity": 2100,
+    "unit": "MW",
+    "owner": "Egyptian Electricity Holding Company",
+    "operational": true,
+    "risks": [
+      "gerd_dependency",
+      "nile_water_reduction"
+    ],
+    "cascade": [
+      "grid-eg-001"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "grid-us-eastern",
+    "name": "Eastern Interconnection (США Восток)",
+    "type": "power_grid",
+    "layer": "energy",
+    "country": "USA",
+    "lat": 38.9072,
+    "lon": -77.0369,
+    "severity": 0.45,
+    "vulnerability": 4.5,
+    "status": "nominal",
+    "statusReason": "Крупнейшая энергосеть США",
+    "capacity": 700,
+    "unit": "GW",
+    "owner": "Multiple",
+    "operational": true,
+    "risks": [
+      "cyber_attack",
+      "extreme_weather"
+    ],
+    "cascade": [
+      "port-newyork"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "grid-us-western",
+    "name": "Western Interconnection (США Запад)",
+    "type": "power_grid",
+    "layer": "energy",
+    "country": "USA",
+    "lat": 39.7392,
+    "lon": -104.9903,
+    "severity": 0.45,
+    "vulnerability": 4.5,
+    "status": "nominal",
+    "statusReason": "Западная энергосеть США",
+    "capacity": 250,
+    "unit": "GW",
+    "owner": "Multiple",
+    "operational": true,
+    "risks": [
+      "wildfire",
+      "drought",
+      "cyber_attack"
+    ],
+    "cascade": [
+      "port-la"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "grid-us-texas",
+    "name": "ERCOT (Техас)",
+    "type": "power_grid",
+    "layer": "energy",
+    "country": "USA",
+    "lat": 30.2672,
+    "lon": -97.7431,
+    "severity": 0.7,
+    "vulnerability": 7,
+    "status": "warning",
+    "statusReason": "Изолированная сеть, аварии зимой 2021 и 2023",
+    "capacity": 90,
+    "unit": "GW",
+    "owner": "ERCOT",
+    "operational": true,
+    "risks": [
+      "extreme_weather",
+      "grid_isolation",
+      "demand_surge"
+    ],
+    "cascade": [],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "grid-eu-central",
+    "name": "ENTSO-E Central (Центральная Европа)",
+    "type": "power_grid",
+    "layer": "energy",
+    "country": "Germany/France/Poland/Czechia",
+    "lat": 50.1109,
+    "lon": 8.6821,
+    "severity": 0.4,
+    "vulnerability": 4,
+    "status": "nominal",
+    "statusReason": "Крупнейшая европейская энергосеть",
+    "capacity": 500,
+    "unit": "GW",
+    "owner": "ENTSO-E",
+    "operational": true,
+    "risks": [
+      "russian_gas_dependency",
+      "cyber_attack"
+    ],
+    "cascade": [
+      "npp-cattenom",
+      "npp-gravelines",
+      "npp-temelin"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "grid-ukraine",
+    "name": "Укрэнерго",
+    "type": "power_grid",
+    "layer": "energy",
+    "country": "Ukraine",
+    "lat": 50.4501,
+    "lon": 30.5234,
+    "severity": 0.95,
+    "vulnerability": 9.5,
+    "status": "critical",
+    "statusReason": "Постоянные атаки на энергосистему, синхронизация с ENTSO-E",
+    "capacity": 55,
+    "unit": "GW",
+    "owner": "Ukrenergo",
+    "operational": true,
+    "risks": [
+      "military_attack",
+      "russian_strikes",
+      "blackout"
+    ],
+    "cascade": [
+      "npp-zaporizhzhia",
+      "npp-chernobyl"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "grid-china-east",
+    "name": "Восточная энергосеть Китая (State Grid)",
+    "type": "power_grid",
+    "layer": "energy",
+    "country": "China",
+    "lat": 31.2304,
+    "lon": 121.4737,
+    "severity": 0.35,
+    "vulnerability": 3.5,
+    "status": "nominal",
+    "statusReason": "Крупнейшая энергосеть мира",
+    "capacity": 1200,
+    "unit": "GW",
+    "owner": "State Grid Corporation of China",
+    "operational": true,
+    "risks": [
+      "typhoon",
+      "cyber_attack"
+    ],
+    "cascade": [
+      "port-shanghai",
+      "port-ningbo"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "grid-india-north",
+    "name": "Northern Grid (Индия Север)",
+    "type": "power_grid",
+    "layer": "energy",
+    "country": "India",
+    "lat": 28.6139,
+    "lon": 77.209,
+    "severity": 0.65,
+    "vulnerability": 6.5,
+    "status": "warning",
+    "statusReason": "Крупный блэкаут 2012 (620 млн человек)",
+    "capacity": 120,
+    "unit": "GW",
+    "owner": "POSOCO",
+    "operational": true,
+    "risks": [
+      "overload",
+      "monsoon",
+      "cyber_attack"
+    ],
+    "cascade": [
+      "grid-in-001"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "grid-russia-unified",
+    "name": "ЕЭС России",
+    "type": "power_grid",
+    "layer": "energy",
+    "country": "Russia",
+    "lat": 55.7558,
+    "lon": 37.6173,
+    "severity": 0.5,
+    "vulnerability": 5,
+    "status": "nominal",
+    "statusReason": "Единая энергосистема России",
+    "capacity": 250,
+    "unit": "GW",
+    "owner": "ФСК ЕЭС",
+    "operational": true,
+    "risks": [
+      "sanctions",
+      "cyber_attack"
+    ],
+    "cascade": [
+      "npp-ostrovets"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "grid-japan",
+    "name": "Энергосистемы Японии (10 компаний)",
+    "type": "power_grid",
+    "layer": "energy",
+    "country": "Japan",
+    "lat": 35.6762,
+    "lon": 139.6503,
+    "severity": 0.45,
+    "vulnerability": 4.5,
+    "status": "nominal",
+    "statusReason": "Разделённая на 2 частоты (50/60 Гц)",
+    "capacity": 290,
+    "unit": "GW",
+    "owner": "Multiple",
+    "operational": true,
+    "risks": [
+      "earthquake",
+      "typhoon",
+      "typhoon_frequency_split"
+    ],
+    "cascade": [
+      "npp-fukushima",
+      "npp-kashiwazaki"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "grid-taiwan",
+    "name": "Taipower (Тайвань)",
+    "type": "power_grid",
+    "layer": "energy",
+    "country": "Taiwan",
+    "lat": 25.033,
+    "lon": 121.5654,
+    "severity": 0.75,
+    "vulnerability": 7.5,
+    "status": "warning",
+    "statusReason": "Изолированная сеть, уязвима при блокаде",
+    "capacity": 55,
+    "unit": "GW",
+    "owner": "Taipower",
+    "operational": true,
+    "risks": [
+      "china_blockade",
+      "cyber_attack",
+      "import_dependency"
+    ],
+    "cascade": [
+      "port-kaohsiung"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "grid-saudi",
+    "name": "Saudi Electricity Company",
+    "type": "power_grid",
+    "layer": "energy",
+    "country": "Saudi Arabia",
+    "lat": 24.7136,
+    "lon": 46.6753,
+    "severity": 0.5,
+    "vulnerability": 5,
+    "status": "nominal",
+    "statusReason": "Крупная энергосеть Ближнего Востока",
+    "capacity": 90,
+    "unit": "GW",
+    "owner": "Saudi Electricity Company",
+    "operational": true,
+    "risks": [
+      "iran_tension",
+      "houthi_attacks",
+      "oil_dependency"
+    ],
+    "cascade": [
+      "chokepoint-hormuz"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "grid-brazil",
+    "name": "SIN (Бразилия)",
+    "type": "power_grid",
+    "layer": "energy",
+    "country": "Brazil",
+    "lat": -15.7942,
+    "lon": -47.8822,
+    "severity": 0.45,
+    "vulnerability": 4.5,
+    "status": "nominal",
+    "statusReason": "Объединённая энергосеть Бразилии",
+    "capacity": 180,
+    "unit": "GW",
+    "owner": "ONS",
+    "operational": true,
+    "risks": [
+      "drought",
+      "amazon_deforestation",
+      "cyber_attack"
+    ],
+    "cascade": [
+      "dam-itaipu",
+      "dam-belo-monte"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "grid-south-africa",
+    "name": "Eskom (ЮАР)",
+    "type": "power_grid",
+    "layer": "energy",
+    "country": "South Africa",
+    "lat": -26.2041,
+    "lon": 28.0473,
+    "severity": 0.85,
+    "vulnerability": 8.5,
+    "status": "critical",
+    "statusReason": "Веерные отключения (load shedding), критическое состояние",
+    "capacity": 48,
+    "unit": "GW",
+    "owner": "Eskom",
+    "operational": true,
+    "risks": [
+      "load_shedding",
+      "infrastructure_decay",
+      "corruption",
+      "coal_dependency"
+    ],
+    "cascade": [
+      "port-durban"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "mil-pentagon",
+    "name": "Пентагон",
+    "type": "military_base",
+    "layer": "military",
+    "country": "USA",
+    "lat": 38.8719,
+    "lon": -77.0563,
+    "severity": 0.3,
+    "vulnerability": 3,
+    "status": "nominal",
+    "statusReason": "Главный штаб ВС США",
+    "capacity": 26000,
+    "unit": "personnel",
+    "owner": "US DoD",
+    "operational": true,
+    "risks": [
+      "terrorism"
+    ],
+    "cascade": [],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "mil-norfolk",
+    "name": "Военно-морская база Норфолк",
+    "type": "military_base",
+    "layer": "military",
+    "country": "USA",
+    "lat": 36.9467,
+    "lon": -76.3,
+    "severity": 0.35,
+    "vulnerability": 3.5,
+    "status": "nominal",
+    "statusReason": "Крупнейшая ВМБ мира, Атлантический флот",
+    "capacity": 46000,
+    "unit": "personnel",
+    "owner": "US Navy",
+    "operational": true,
+    "risks": [
+      "hurricane"
+    ],
+    "cascade": [
+      "port-newyork"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "mil-san-diego",
+    "name": "ВМБ Сан-Диего",
+    "type": "military_base",
+    "layer": "military",
+    "country": "USA",
+    "lat": 32.6833,
+    "lon": -117.1667,
+    "severity": 0.3,
+    "vulnerability": 3,
+    "status": "nominal",
+    "statusReason": "Тихоокеанский флот США",
+    "capacity": 24000,
+    "unit": "personnel",
+    "owner": "US Navy",
+    "operational": true,
+    "risks": [
+      "earthquake"
+    ],
+    "cascade": [
+      "port-la"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "mil-pearl-harbor",
+    "name": "Перл-Харбор",
+    "type": "military_base",
+    "layer": "military",
+    "country": "USA",
+    "lat": 21.3474,
+    "lon": -157.9717,
+    "severity": 0.4,
+    "vulnerability": 4,
+    "status": "nominal",
+    "statusReason": "Ключевая база Тихого океана, историческое значение",
+    "capacity": 22000,
+    "unit": "personnel",
+    "owner": "US Navy",
+    "operational": true,
+    "risks": [
+      "china_tension"
+    ],
+    "cascade": [],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "mil-ramstein",
+    "name": "Авиабаза Рамштайн",
+    "type": "military_base",
+    "layer": "military",
+    "country": "Germany",
+    "lat": 49.4369,
+    "lon": 7.6003,
+    "severity": 0.35,
+    "vulnerability": 3.5,
+    "status": "nominal",
+    "statusReason": "Крупнейшая база США в Европе, штаб USAFE",
+    "capacity": 9000,
+    "unit": "personnel",
+    "owner": "US Air Force",
+    "operational": true,
+    "risks": [
+      "russia_tension"
+    ],
+    "cascade": [],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "mil-guam",
+    "name": "База Гуам (Андерсен)",
+    "type": "military_base",
+    "layer": "military",
+    "country": "USA (Guam)",
+    "lat": 13.584,
+    "lon": 144.93,
+    "severity": 0.5,
+    "vulnerability": 5,
+    "status": "nominal",
+    "statusReason": "Стратегическая база в Тихом океане",
+    "capacity": 6500,
+    "unit": "personnel",
+    "owner": "US Air Force",
+    "operational": true,
+    "risks": [
+      "north_korea_threat",
+      "china_tension",
+      "typhoon"
+    ],
+    "cascade": [],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "mil-okinawa",
+    "name": "База Окинава",
+    "type": "military_base",
+    "layer": "military",
+    "country": "Japan",
+    "lat": 26.3333,
+    "lon": 127.75,
+    "severity": 0.55,
+    "vulnerability": 5.5,
+    "status": "nominal",
+    "statusReason": "Крупнейшая база США в Азии, близ Тайваня",
+    "capacity": 26000,
+    "unit": "personnel",
+    "owner": "US Marine Corps",
+    "operational": true,
+    "risks": [
+      "china_tension",
+      "taiwan_strait"
+    ],
+    "cascade": [
+      "chokepoint-taiwan"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "mil-diego-garcia",
+    "name": "База Диего-Гарсия",
+    "type": "military_base",
+    "layer": "military",
+    "country": "UK (BIOT)",
+    "lat": -7.3133,
+    "lon": 72.4111,
+    "severity": 0.45,
+    "vulnerability": 4.5,
+    "status": "nominal",
+    "statusReason": "Стратегическая база в Индийском океане",
+    "capacity": 3500,
+    "unit": "personnel",
+    "owner": "UK/US",
+    "operational": true,
+    "risks": [
+      "iran_tension",
+      "chagos_dispute"
+    ],
+    "cascade": [],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "mil-guantanamo",
+    "name": "База Гуантанамо",
+    "type": "military_base",
+    "layer": "military",
+    "country": "Cuba (US lease)",
+    "lat": 19.9,
+    "lon": -75.15,
+    "severity": 0.4,
+    "vulnerability": 4,
+    "status": "nominal",
+    "statusReason": "Спорная база США на Кубе",
+    "capacity": 6000,
+    "unit": "personnel",
+    "owner": "US Navy",
+    "operational": true,
+    "risks": [
+      "cuba_tension",
+      "human_rights"
+    ],
+    "cascade": [],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "mil-sevastopol",
+    "name": "ВМБ Севастополь",
+    "type": "military_base",
+    "layer": "military",
+    "country": "Russia (Crimea)",
+    "lat": 44.6166,
+    "lon": 33.5254,
+    "severity": 0.9,
+    "vulnerability": 9,
+    "status": "critical",
+    "statusReason": "Черноморский флот, зона конфликта с Украиной",
+    "capacity": 25000,
+    "unit": "personnel",
+    "owner": "Russian Navy",
+    "operational": true,
+    "risks": [
+      "ukraine_war",
+      "drone_attacks",
+      "missile_strikes"
+    ],
+    "cascade": [
+      "port-odesa"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "mil-tartus",
+    "name": "ВМБ Тартус (Сирия)",
+    "type": "military_base",
+    "layer": "military",
+    "country": "Syria",
+    "lat": 34.89,
+    "lon": 35.87,
+    "severity": 0.75,
+    "vulnerability": 7.5,
+    "status": "warning",
+    "statusReason": "Единственная ВМБ России в Средиземном море",
+    "capacity": 2000,
+    "unit": "personnel",
+    "owner": "Russian Navy",
+    "operational": true,
+    "risks": [
+      "syria_conflict",
+      "regime_change"
+    ],
+    "cascade": [],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "mil-khmeimim",
+    "name": "Авиабаза Хмеймим (Сирия)",
+    "type": "military_base",
+    "layer": "military",
+    "country": "Syria",
+    "lat": 35.4017,
+    "lon": 35.9489,
+    "severity": 0.75,
+    "vulnerability": 7.5,
+    "status": "warning",
+    "statusReason": "Ключевая база ВКС России на Ближнем Востоке",
+    "capacity": 3000,
+    "unit": "personnel",
+    "owner": "Russian Air Force",
+    "operational": true,
+    "risks": [
+      "syria_conflict",
+      "israeli_strikes"
+    ],
+    "cascade": [],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "mil-baltiysk",
+    "name": "ВМБ Балтийск",
+    "type": "military_base",
+    "layer": "military",
+    "country": "Russia (Kaliningrad)",
+    "lat": 54.65,
+    "lon": 19.9167,
+    "severity": 0.65,
+    "vulnerability": 6.5,
+    "status": "warning",
+    "statusReason": "Балтийский флот, анклав Калининград",
+    "capacity": 12000,
+    "unit": "personnel",
+    "owner": "Russian Navy",
+    "operational": true,
+    "risks": [
+      "nato_tension",
+      "kaliningrad_isolation"
+    ],
+    "cascade": [],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "mil-vladivostok",
+    "name": "ВМБ Владивосток",
+    "type": "military_base",
+    "layer": "military",
+    "country": "Russia",
+    "lat": 43.1155,
+    "lon": 131.8855,
+    "severity": 0.5,
+    "vulnerability": 5,
+    "status": "nominal",
+    "statusReason": "Тихоокеанский флот России",
+    "capacity": 18000,
+    "unit": "personnel",
+    "owner": "Russian Navy",
+    "operational": true,
+    "risks": [
+      "china_tension",
+      "north_korea"
+    ],
+    "cascade": [
+      "port-vladivostok"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "mil-sanya",
+    "name": "База Санья (Хайнань)",
+    "type": "military_base",
+    "layer": "military",
+    "country": "China",
+    "lat": 18.25,
+    "lon": 109.5,
+    "severity": 0.7,
+    "vulnerability": 7,
+    "status": "warning",
+    "statusReason": "Южно-Китайское море, ключевая ВМБ",
+    "capacity": 20000,
+    "unit": "personnel",
+    "owner": "PLA Navy",
+    "operational": true,
+    "risks": [
+      "south_china_sea_tension",
+      "us_navy_patrols"
+    ],
+    "cascade": [
+      "chokepoint-malacca"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "mil-dalian",
+    "name": "ВМБ Далянь",
+    "type": "military_base",
+    "layer": "military",
+    "country": "China",
+    "lat": 38.9167,
+    "lon": 121.6167,
+    "severity": 0.45,
+    "vulnerability": 4.5,
+    "status": "nominal",
+    "statusReason": "Северный флот Китая",
+    "capacity": 15000,
+    "unit": "personnel",
+    "owner": "PLA Navy",
+    "operational": true,
+    "risks": [
+      "north_korea",
+      "japan_tension"
+    ],
+    "cascade": [],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "mil-zhoushan",
+    "name": "ВМБ Чжоушань",
+    "type": "military_base",
+    "layer": "military",
+    "country": "China",
+    "lat": 30.0167,
+    "lon": 122.1,
+    "severity": 0.65,
+    "vulnerability": 6.5,
+    "status": "nominal",
+    "statusReason": "Восточный флот Китая, близ Тайваня",
+    "capacity": 18000,
+    "unit": "personnel",
+    "owner": "PLA Navy",
+    "operational": true,
+    "risks": [
+      "taiwan_strait",
+      "us_tension"
+    ],
+    "cascade": [
+      "chokepoint-taiwan"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "mil-aviano",
+    "name": "Авиабаза Авиано (Италия)",
+    "type": "military_base",
+    "layer": "military",
+    "country": "Italy",
+    "lat": 46.0319,
+    "lon": 12.5964,
+    "severity": 0.3,
+    "vulnerability": 3,
+    "status": "nominal",
+    "statusReason": "База ВВС США в Италии",
+    "capacity": 4000,
+    "unit": "personnel",
+    "owner": "NATO/US",
+    "operational": true,
+    "risks": [],
+    "cascade": [],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "mil-incirlik",
+    "name": "Авиабаза Инджирлик (Турция)",
+    "type": "military_base",
+    "layer": "military",
+    "country": "Turkey",
+    "lat": 37.0022,
+    "lon": 35.4258,
+    "severity": 0.55,
+    "vulnerability": 5.5,
+    "status": "warning",
+    "statusReason": "База НАТО, ядерное оружие, трения с США",
+    "capacity": 5000,
+    "unit": "personnel",
+    "owner": "NATO",
+    "operational": true,
+    "risks": [
+      "turkish_us_tension",
+      "nuclear_storage"
+    ],
+    "cascade": [],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "mil-ramstein-nato",
+    "name": "Объединённый командный центр Рамштайн",
+    "type": "military_base",
+    "layer": "military",
+    "country": "Germany",
+    "lat": 49.4372,
+    "lon": 7.6011,
+    "severity": 0.4,
+    "vulnerability": 4,
+    "status": "nominal",
+    "statusReason": "Командование НАТО, координация помощи Украине",
+    "capacity": 1500,
+    "unit": "personnel",
+    "owner": "NATO",
+    "operational": true,
+    "risks": [
+      "russia_tension",
+      "cyber_attack"
+    ],
+    "cascade": [],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "mil-bremerhaven",
+    "name": "Порт Бремерхафен (НАТО)",
+    "type": "military_base",
+    "layer": "military",
+    "country": "Germany",
+    "lat": 53.5392,
+    "lon": 8.5819,
+    "severity": 0.35,
+    "vulnerability": 3.5,
+    "status": "nominal",
+    "statusReason": "Перевалочный пункт НАТО",
+    "capacity": 2000,
+    "unit": "personnel",
+    "owner": "NATO",
+    "operational": true,
+    "risks": [
+      "russia_sabotage"
+    ],
+    "cascade": [
+      "port-hamburg"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "mil-al-udeid",
+    "name": "Авиабаза Аль-Удейд (Катар)",
+    "type": "military_base",
+    "layer": "military",
+    "country": "Qatar",
+    "lat": 25.1173,
+    "lon": 51.315,
+    "severity": 0.5,
+    "vulnerability": 5,
+    "status": "nominal",
+    "statusReason": "Крупная база США на Ближнем Востоке",
+    "capacity": 11000,
+    "unit": "personnel",
+    "owner": "US Air Force",
+    "operational": true,
+    "risks": [
+      "iran_tension",
+      "regional_instability"
+    ],
+    "cascade": [],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "mil-naval-bahrain",
+    "name": "ВМБ Бахрейн (5-й флот)",
+    "type": "military_base",
+    "layer": "military",
+    "country": "Bahrain",
+    "lat": 26.2167,
+    "lon": 50.6,
+    "severity": 0.55,
+    "vulnerability": 5.5,
+    "status": "nominal",
+    "statusReason": "5-й флот США, Персидский залив",
+    "capacity": 7000,
+    "unit": "personnel",
+    "owner": "US Navy",
+    "operational": true,
+    "risks": [
+      "iran_tension",
+      "hormuz"
+    ],
+    "cascade": [
+      "chokepoint-hormuz"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "mil-yokosuka",
+    "name": "ВМБ Йокосука (Япония)",
+    "type": "military_base",
+    "layer": "military",
+    "country": "Japan",
+    "lat": 35.2939,
+    "lon": 139.6711,
+    "severity": 0.45,
+    "vulnerability": 4.5,
+    "status": "nominal",
+    "statusReason": "7-й флот США, Тихоокеанский регион",
+    "capacity": 12000,
+    "unit": "personnel",
+    "owner": "US Navy",
+    "operational": true,
+    "risks": [
+      "china_tension",
+      "earthquake"
+    ],
+    "cascade": [],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  },
+  {
+    "id": "mil-camp-humphreys",
+    "name": "Лагерь Хамфрис (Южная Корея)",
+    "type": "military_base",
+    "layer": "military",
+    "country": "South Korea",
+    "lat": 36.9608,
+    "lon": 127.0311,
+    "severity": 0.6,
+    "vulnerability": 6,
+    "status": "nominal",
+    "statusReason": "Крупнейшая база США в Корее",
+    "capacity": 28000,
+    "unit": "personnel",
+    "owner": "US Forces Korea",
+    "operational": true,
+    "risks": [
+      "north_korea_threat",
+      "missile_tests"
+    ],
+    "cascade": [
+      "chokepoint-korea"
+    ],
+    "timestamp": "2026-09-18T18:09:04.766Z"
+  }
+]

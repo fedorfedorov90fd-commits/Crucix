@@ -1,47 +1,1030 @@
-[
-  {
-    "country": "USA",
-    "energy": 120,
-    "oil": 18.5,
-    "lat": 39.8283,
-    "lng": -98.5795,
-    "region": "US",
-    "timestamp": "2026-09-05T14:57:07.546Z"
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "eia",
+    "source": "Yahoo Finance (EIA replacement)",
+    "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/",
+    "fetched_at": "2026-09-19T05:28:29.476Z",
+    "normalized_at": "2026-09-19T05:28:29.588Z",
+    "collector": "collect-eia.mjs",
+    "license": "public-domain",
+    "count": 110,
+    "granularity": "daily",
+    "value_unit": "usd",
+    "value_scale": "energy_futures",
+    "value_type": "price",
+    "value_range": null
   },
-  {
-    "country": "Saudi Arabia",
-    "energy": 80,
-    "oil": 10.2,
-    "lat": 23.8859,
-    "lng": 45.0792,
-    "region": "MIDDLE_EAST",
-    "timestamp": "2026-09-05T13:57:07.546Z"
-  },
-  {
-    "country": "Russia",
-    "energy": 70,
-    "oil": 11,
-    "lat": 61.524,
-    "lng": 105.3188,
-    "region": "RUSSIA",
-    "timestamp": "2026-09-05T12:57:07.546Z"
-  },
-  {
-    "country": "China",
-    "energy": 65,
-    "oil": 8.5,
-    "lat": 35.8617,
-    "lng": 104.1954,
-    "region": "ASIA",
-    "timestamp": "2026-09-05T11:57:07.546Z"
-  },
-  {
-    "country": "Canada",
-    "energy": 55,
-    "oil": 7.2,
-    "lat": 56.1304,
-    "lng": -106.3468,
-    "region": "US",
-    "timestamp": "2026-09-05T10:57:07.546Z"
+  "series": [
+    {
+      "date": "2026-08-19",
+      "value": 85.83,
+      "extra": {
+        "symbol": "CL=F",
+        "name": "WTI Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-08-20",
+      "value": 87.83,
+      "extra": {
+        "symbol": "CL=F",
+        "name": "WTI Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-08-21",
+      "value": 87.06,
+      "extra": {
+        "symbol": "CL=F",
+        "name": "WTI Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-08-24",
+      "value": 85.01,
+      "extra": {
+        "symbol": "CL=F",
+        "name": "WTI Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-08-25",
+      "value": 82.36,
+      "extra": {
+        "symbol": "CL=F",
+        "name": "WTI Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-08-26",
+      "value": 82.23,
+      "extra": {
+        "symbol": "CL=F",
+        "name": "WTI Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-08-27",
+      "value": 83.53,
+      "extra": {
+        "symbol": "CL=F",
+        "name": "WTI Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-08-28",
+      "value": 83.4,
+      "extra": {
+        "symbol": "CL=F",
+        "name": "WTI Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-08-31",
+      "value": 85.76,
+      "extra": {
+        "symbol": "CL=F",
+        "name": "WTI Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-09-01",
+      "value": 90.22,
+      "extra": {
+        "symbol": "CL=F",
+        "name": "WTI Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-09-02",
+      "value": 91.01,
+      "extra": {
+        "symbol": "CL=F",
+        "name": "WTI Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-09-03",
+      "value": 91.3,
+      "extra": {
+        "symbol": "CL=F",
+        "name": "WTI Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-09-04",
+      "value": 91.48,
+      "extra": {
+        "symbol": "CL=F",
+        "name": "WTI Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-09-08",
+      "value": 93.03,
+      "extra": {
+        "symbol": "CL=F",
+        "name": "WTI Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-09-09",
+      "value": 96.05,
+      "extra": {
+        "symbol": "CL=F",
+        "name": "WTI Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-09-10",
+      "value": 102.48,
+      "extra": {
+        "symbol": "CL=F",
+        "name": "WTI Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-09-11",
+      "value": 100.05,
+      "extra": {
+        "symbol": "CL=F",
+        "name": "WTI Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-09-14",
+      "value": 101.39,
+      "extra": {
+        "symbol": "CL=F",
+        "name": "WTI Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-09-15",
+      "value": 105.83,
+      "extra": {
+        "symbol": "CL=F",
+        "name": "WTI Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-09-16",
+      "value": 102.43,
+      "extra": {
+        "symbol": "CL=F",
+        "name": "WTI Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-09-17",
+      "value": 101.91,
+      "extra": {
+        "symbol": "CL=F",
+        "name": "WTI Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-09-18",
+      "value": 100.3,
+      "extra": {
+        "symbol": "CL=F",
+        "name": "WTI Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-08-19",
+      "value": 91.62,
+      "extra": {
+        "symbol": "BZ=F",
+        "name": "Brent Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-08-20",
+      "value": 93.78,
+      "extra": {
+        "symbol": "BZ=F",
+        "name": "Brent Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-08-21",
+      "value": 94.39,
+      "extra": {
+        "symbol": "BZ=F",
+        "name": "Brent Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-08-24",
+      "value": 92.17,
+      "extra": {
+        "symbol": "BZ=F",
+        "name": "Brent Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-08-25",
+      "value": 88.58,
+      "extra": {
+        "symbol": "BZ=F",
+        "name": "Brent Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-08-26",
+      "value": 87.84,
+      "extra": {
+        "symbol": "BZ=F",
+        "name": "Brent Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-08-27",
+      "value": 89.7,
+      "extra": {
+        "symbol": "BZ=F",
+        "name": "Brent Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-08-28",
+      "value": 89.31,
+      "extra": {
+        "symbol": "BZ=F",
+        "name": "Brent Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-08-31",
+      "value": 90.49,
+      "extra": {
+        "symbol": "BZ=F",
+        "name": "Brent Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-09-01",
+      "value": 94.65,
+      "extra": {
+        "symbol": "BZ=F",
+        "name": "Brent Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-09-02",
+      "value": 95.63,
+      "extra": {
+        "symbol": "BZ=F",
+        "name": "Brent Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-09-03",
+      "value": 95.52,
+      "extra": {
+        "symbol": "BZ=F",
+        "name": "Brent Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-09-04",
+      "value": 96.28,
+      "extra": {
+        "symbol": "BZ=F",
+        "name": "Brent Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-09-08",
+      "value": 97.92,
+      "extra": {
+        "symbol": "BZ=F",
+        "name": "Brent Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-09-09",
+      "value": 101.21,
+      "extra": {
+        "symbol": "BZ=F",
+        "name": "Brent Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-09-10",
+      "value": 107.63,
+      "extra": {
+        "symbol": "BZ=F",
+        "name": "Brent Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-09-11",
+      "value": 104.61,
+      "extra": {
+        "symbol": "BZ=F",
+        "name": "Brent Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-09-14",
+      "value": 105.68,
+      "extra": {
+        "symbol": "BZ=F",
+        "name": "Brent Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-09-15",
+      "value": 108.75,
+      "extra": {
+        "symbol": "BZ=F",
+        "name": "Brent Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-09-16",
+      "value": 105.83,
+      "extra": {
+        "symbol": "BZ=F",
+        "name": "Brent Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-09-17",
+      "value": 104.82,
+      "extra": {
+        "symbol": "BZ=F",
+        "name": "Brent Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-09-18",
+      "value": 103.87,
+      "extra": {
+        "symbol": "BZ=F",
+        "name": "Brent Crude Oil",
+        "unit": "USD/barrel"
+      }
+    },
+    {
+      "date": "2026-08-19",
+      "value": 2.81,
+      "extra": {
+        "symbol": "NG=F",
+        "name": "Natural Gas",
+        "unit": "USD/MMBtu"
+      }
+    },
+    {
+      "date": "2026-08-20",
+      "value": 2.73,
+      "extra": {
+        "symbol": "NG=F",
+        "name": "Natural Gas",
+        "unit": "USD/MMBtu"
+      }
+    },
+    {
+      "date": "2026-08-21",
+      "value": 2.77,
+      "extra": {
+        "symbol": "NG=F",
+        "name": "Natural Gas",
+        "unit": "USD/MMBtu"
+      }
+    },
+    {
+      "date": "2026-08-24",
+      "value": 2.78,
+      "extra": {
+        "symbol": "NG=F",
+        "name": "Natural Gas",
+        "unit": "USD/MMBtu"
+      }
+    },
+    {
+      "date": "2026-08-25",
+      "value": 2.77,
+      "extra": {
+        "symbol": "NG=F",
+        "name": "Natural Gas",
+        "unit": "USD/MMBtu"
+      }
+    },
+    {
+      "date": "2026-08-26",
+      "value": 2.84,
+      "extra": {
+        "symbol": "NG=F",
+        "name": "Natural Gas",
+        "unit": "USD/MMBtu"
+      }
+    },
+    {
+      "date": "2026-08-27",
+      "value": 2.91,
+      "extra": {
+        "symbol": "NG=F",
+        "name": "Natural Gas",
+        "unit": "USD/MMBtu"
+      }
+    },
+    {
+      "date": "2026-08-28",
+      "value": 2.89,
+      "extra": {
+        "symbol": "NG=F",
+        "name": "Natural Gas",
+        "unit": "USD/MMBtu"
+      }
+    },
+    {
+      "date": "2026-08-31",
+      "value": 2.93,
+      "extra": {
+        "symbol": "NG=F",
+        "name": "Natural Gas",
+        "unit": "USD/MMBtu"
+      }
+    },
+    {
+      "date": "2026-09-01",
+      "value": 2.9,
+      "extra": {
+        "symbol": "NG=F",
+        "name": "Natural Gas",
+        "unit": "USD/MMBtu"
+      }
+    },
+    {
+      "date": "2026-09-02",
+      "value": 2.96,
+      "extra": {
+        "symbol": "NG=F",
+        "name": "Natural Gas",
+        "unit": "USD/MMBtu"
+      }
+    },
+    {
+      "date": "2026-09-03",
+      "value": 2.91,
+      "extra": {
+        "symbol": "NG=F",
+        "name": "Natural Gas",
+        "unit": "USD/MMBtu"
+      }
+    },
+    {
+      "date": "2026-09-04",
+      "value": 2.97,
+      "extra": {
+        "symbol": "NG=F",
+        "name": "Natural Gas",
+        "unit": "USD/MMBtu"
+      }
+    },
+    {
+      "date": "2026-09-08",
+      "value": 2.92,
+      "extra": {
+        "symbol": "NG=F",
+        "name": "Natural Gas",
+        "unit": "USD/MMBtu"
+      }
+    },
+    {
+      "date": "2026-09-09",
+      "value": 2.82,
+      "extra": {
+        "symbol": "NG=F",
+        "name": "Natural Gas",
+        "unit": "USD/MMBtu"
+      }
+    },
+    {
+      "date": "2026-09-10",
+      "value": 2.83,
+      "extra": {
+        "symbol": "NG=F",
+        "name": "Natural Gas",
+        "unit": "USD/MMBtu"
+      }
+    },
+    {
+      "date": "2026-09-11",
+      "value": 2.83,
+      "extra": {
+        "symbol": "NG=F",
+        "name": "Natural Gas",
+        "unit": "USD/MMBtu"
+      }
+    },
+    {
+      "date": "2026-09-14",
+      "value": 2.9,
+      "extra": {
+        "symbol": "NG=F",
+        "name": "Natural Gas",
+        "unit": "USD/MMBtu"
+      }
+    },
+    {
+      "date": "2026-09-15",
+      "value": 2.92,
+      "extra": {
+        "symbol": "NG=F",
+        "name": "Natural Gas",
+        "unit": "USD/MMBtu"
+      }
+    },
+    {
+      "date": "2026-09-16",
+      "value": 2.89,
+      "extra": {
+        "symbol": "NG=F",
+        "name": "Natural Gas",
+        "unit": "USD/MMBtu"
+      }
+    },
+    {
+      "date": "2026-09-17",
+      "value": 2.9,
+      "extra": {
+        "symbol": "NG=F",
+        "name": "Natural Gas",
+        "unit": "USD/MMBtu"
+      }
+    },
+    {
+      "date": "2026-09-18",
+      "value": 2.91,
+      "extra": {
+        "symbol": "NG=F",
+        "name": "Natural Gas",
+        "unit": "USD/MMBtu"
+      }
+    },
+    {
+      "date": "2026-08-19",
+      "value": 3.26,
+      "extra": {
+        "symbol": "RB=F",
+        "name": "RBOB Gasoline",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-08-20",
+      "value": 3.26,
+      "extra": {
+        "symbol": "RB=F",
+        "name": "RBOB Gasoline",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-08-21",
+      "value": 3.35,
+      "extra": {
+        "symbol": "RB=F",
+        "name": "RBOB Gasoline",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-08-24",
+      "value": 3.27,
+      "extra": {
+        "symbol": "RB=F",
+        "name": "RBOB Gasoline",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-08-25",
+      "value": 3.25,
+      "extra": {
+        "symbol": "RB=F",
+        "name": "RBOB Gasoline",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-08-26",
+      "value": 3.32,
+      "extra": {
+        "symbol": "RB=F",
+        "name": "RBOB Gasoline",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-08-27",
+      "value": 3.38,
+      "extra": {
+        "symbol": "RB=F",
+        "name": "RBOB Gasoline",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-08-28",
+      "value": 3.49,
+      "extra": {
+        "symbol": "RB=F",
+        "name": "RBOB Gasoline",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-08-31",
+      "value": 3.44,
+      "extra": {
+        "symbol": "RB=F",
+        "name": "RBOB Gasoline",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-09-01",
+      "value": 3.14,
+      "extra": {
+        "symbol": "RB=F",
+        "name": "RBOB Gasoline",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-09-02",
+      "value": 3.1,
+      "extra": {
+        "symbol": "RB=F",
+        "name": "RBOB Gasoline",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-09-03",
+      "value": 3.13,
+      "extra": {
+        "symbol": "RB=F",
+        "name": "RBOB Gasoline",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-09-04",
+      "value": 3.21,
+      "extra": {
+        "symbol": "RB=F",
+        "name": "RBOB Gasoline",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-09-08",
+      "value": 3.25,
+      "extra": {
+        "symbol": "RB=F",
+        "name": "RBOB Gasoline",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-09-09",
+      "value": 3.21,
+      "extra": {
+        "symbol": "RB=F",
+        "name": "RBOB Gasoline",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-09-10",
+      "value": 3.39,
+      "extra": {
+        "symbol": "RB=F",
+        "name": "RBOB Gasoline",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-09-11",
+      "value": 3.31,
+      "extra": {
+        "symbol": "RB=F",
+        "name": "RBOB Gasoline",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-09-14",
+      "value": 3.32,
+      "extra": {
+        "symbol": "RB=F",
+        "name": "RBOB Gasoline",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-09-15",
+      "value": 3.47,
+      "extra": {
+        "symbol": "RB=F",
+        "name": "RBOB Gasoline",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-09-16",
+      "value": 3.48,
+      "extra": {
+        "symbol": "RB=F",
+        "name": "RBOB Gasoline",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-09-17",
+      "value": 3.51,
+      "extra": {
+        "symbol": "RB=F",
+        "name": "RBOB Gasoline",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-09-18",
+      "value": 3.53,
+      "extra": {
+        "symbol": "RB=F",
+        "name": "RBOB Gasoline",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-08-19",
+      "value": 4.45,
+      "extra": {
+        "symbol": "HO=F",
+        "name": "Heating Oil",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-08-20",
+      "value": 4.48,
+      "extra": {
+        "symbol": "HO=F",
+        "name": "Heating Oil",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-08-21",
+      "value": 4.49,
+      "extra": {
+        "symbol": "HO=F",
+        "name": "Heating Oil",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-08-24",
+      "value": 4.27,
+      "extra": {
+        "symbol": "HO=F",
+        "name": "Heating Oil",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-08-25",
+      "value": 4.24,
+      "extra": {
+        "symbol": "HO=F",
+        "name": "Heating Oil",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-08-26",
+      "value": 4.26,
+      "extra": {
+        "symbol": "HO=F",
+        "name": "Heating Oil",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-08-27",
+      "value": 4.28,
+      "extra": {
+        "symbol": "HO=F",
+        "name": "Heating Oil",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-08-28",
+      "value": 4.36,
+      "extra": {
+        "symbol": "HO=F",
+        "name": "Heating Oil",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-08-31",
+      "value": 4.5,
+      "extra": {
+        "symbol": "HO=F",
+        "name": "Heating Oil",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-09-01",
+      "value": 4.68,
+      "extra": {
+        "symbol": "HO=F",
+        "name": "Heating Oil",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-09-02",
+      "value": 4.68,
+      "extra": {
+        "symbol": "HO=F",
+        "name": "Heating Oil",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-09-03",
+      "value": 4.59,
+      "extra": {
+        "symbol": "HO=F",
+        "name": "Heating Oil",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-09-04",
+      "value": 4.54,
+      "extra": {
+        "symbol": "HO=F",
+        "name": "Heating Oil",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-09-08",
+      "value": 4.57,
+      "extra": {
+        "symbol": "HO=F",
+        "name": "Heating Oil",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-09-09",
+      "value": 4.8,
+      "extra": {
+        "symbol": "HO=F",
+        "name": "Heating Oil",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-09-10",
+      "value": 5.06,
+      "extra": {
+        "symbol": "HO=F",
+        "name": "Heating Oil",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-09-11",
+      "value": 4.96,
+      "extra": {
+        "symbol": "HO=F",
+        "name": "Heating Oil",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-09-14",
+      "value": 4.96,
+      "extra": {
+        "symbol": "HO=F",
+        "name": "Heating Oil",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-09-15",
+      "value": 5.26,
+      "extra": {
+        "symbol": "HO=F",
+        "name": "Heating Oil",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-09-16",
+      "value": 5.25,
+      "extra": {
+        "symbol": "HO=F",
+        "name": "Heating Oil",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-09-17",
+      "value": 5.11,
+      "extra": {
+        "symbol": "HO=F",
+        "name": "Heating Oil",
+        "unit": "USD/gallon"
+      }
+    },
+    {
+      "date": "2026-09-18",
+      "value": 5.06,
+      "extra": {
+        "symbol": "HO=F",
+        "name": "Heating Oil",
+        "unit": "USD/gallon"
+      }
+    }
+  ],
+  "points": [],
+  "regions": [
+    {
+      "region": "GLOBAL",
+      "value": 40.08890909090911,
+      "count": 110,
+      "aggregation": "mean",
+      "extra": {
+        "max": 108.75,
+        "sum": 4409.7800000000025
+      }
+    }
+  ],
+  "extra": {
+    "adapter": "timeseries",
+    "adapter_version": "2.1.0",
+    "unique_dates": 22,
+    "unmapped_regions": [],
+    "unmapped_count": 0
   }
-]
+}

@@ -1,7 +1,168 @@
-[
-  {"name": "США", "lat": 38.0000, "lng": -97.0000, "rate": 3.8, "date": "2026-07"},
-  {"name": "Еврозона", "lat": 50.0000, "lng": 10.0000, "rate": 6.5, "date": "2026-07"},
-  {"name": "Япония", "lat": 36.0000, "lng": 138.0000, "rate": 2.5, "date": "2026-07"},
-  {"name": "Россия", "lat": 60.0000, "lng": 90.0000, "rate": 3.2, "date": "2026-07"},
-  {"name": "Китай", "lat": 35.0000, "lng": 105.0000, "rate": 5.1, "date": "2026-07"}
-]
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "unemployment",
+    "source": "FRED UNRATE (demo)",
+    "source_url": "https://fred.stlouisfed.org/series/UNRATE",
+    "fetched_at": "2026-09-20T11:18:55.727Z",
+    "normalized_at": "2026-09-20T11:28:57.204Z",
+    "collector": "collect-unemployment.mjs",
+    "license": "public-domain",
+    "count": 31,
+    "granularity": "daily",
+    "value_unit": "percent",
+    "value_scale": null,
+    "value_type": "index",
+    "value_range": [
+      0,
+      100
+    ],
+    "period": "P30D"
+  },
+  "series": [
+    {
+      "date": "2026-08-21",
+      "value": 4.91
+    },
+    {
+      "date": "2026-08-22",
+      "value": 5.68
+    },
+    {
+      "date": "2026-08-23",
+      "value": 4.28
+    },
+    {
+      "date": "2026-08-24",
+      "value": 3.79
+    },
+    {
+      "date": "2026-08-25",
+      "value": 3.73
+    },
+    {
+      "date": "2026-08-26",
+      "value": 4.89
+    },
+    {
+      "date": "2026-08-27",
+      "value": 3.86
+    },
+    {
+      "date": "2026-08-28",
+      "value": 5.84
+    },
+    {
+      "date": "2026-08-29",
+      "value": 5.8
+    },
+    {
+      "date": "2026-08-30",
+      "value": 5.02
+    },
+    {
+      "date": "2026-08-31",
+      "value": 3.85
+    },
+    {
+      "date": "2026-09-01",
+      "value": 3.69
+    },
+    {
+      "date": "2026-09-02",
+      "value": 5.41
+    },
+    {
+      "date": "2026-09-03",
+      "value": 3.67
+    },
+    {
+      "date": "2026-09-04",
+      "value": 5.89
+    },
+    {
+      "date": "2026-09-05",
+      "value": 3.98
+    },
+    {
+      "date": "2026-09-06",
+      "value": 5.57
+    },
+    {
+      "date": "2026-09-07",
+      "value": 5.8
+    },
+    {
+      "date": "2026-09-08",
+      "value": 6.41
+    },
+    {
+      "date": "2026-09-09",
+      "value": 5.42
+    },
+    {
+      "date": "2026-09-10",
+      "value": 6.1
+    },
+    {
+      "date": "2026-09-11",
+      "value": 4.09
+    },
+    {
+      "date": "2026-09-12",
+      "value": 4.07
+    },
+    {
+      "date": "2026-09-13",
+      "value": 6.46
+    },
+    {
+      "date": "2026-09-14",
+      "value": 5.3
+    },
+    {
+      "date": "2026-09-15",
+      "value": 4.61
+    },
+    {
+      "date": "2026-09-16",
+      "value": 5.89
+    },
+    {
+      "date": "2026-09-17",
+      "value": 6.41
+    },
+    {
+      "date": "2026-09-18",
+      "value": 6.2
+    },
+    {
+      "date": "2026-09-19",
+      "value": 4.08
+    },
+    {
+      "date": "2026-09-20",
+      "value": 6.29
+    }
+  ],
+  "points": [],
+  "regions": [
+    {
+      "region": "GLOBAL",
+      "value": 5.064193548387096,
+      "count": 31,
+      "aggregation": "mean",
+      "extra": {
+        "max": 6.46,
+        "sum": 156.98999999999998
+      }
+    }
+  ],
+  "extra": {
+    "adapter": "timeseries",
+    "adapter_version": "2.1.1",
+    "unique_dates": 31,
+    "unmapped_regions": [],
+    "unmapped_count": 0
+  }
+}

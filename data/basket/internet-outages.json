@@ -1,0 +1,110 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "internet-outages",
+    "source": "Crucix internet outages",
+    "source_url": "https://api.ooni.io/",
+    "fetched_at": "2026-09-20T10:55:13.561Z",
+    "normalized_at": "2026-09-20T11:28:57.089Z",
+    "collector": "collect-internet-outages.mjs",
+    "license": "public-domain",
+    "count": 5,
+    "granularity": "snapshot",
+    "value_unit": "count",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null
+  },
+  "series": [],
+  "points": [
+    {
+      "lat": 32.4279,
+      "lon": 53.688,
+      "label": "Массовые отключения интернета",
+      "region": "IRN"
+    },
+    {
+      "lat": 35.8617,
+      "lon": 104.1954,
+      "label": "Великий китайский фаервол",
+      "region": "CHN"
+    },
+    {
+      "lat": 61.524,
+      "lon": 105.3188,
+      "label": "Ограничения доступа",
+      "region": "RUS"
+    },
+    {
+      "lat": 38.9637,
+      "lon": 35.2433,
+      "label": "Блокировки соцсетей",
+      "region": "TUR"
+    },
+    {
+      "lat": 20.5937,
+      "lon": 78.9629,
+      "label": "Локальные отключения",
+      "region": "IND"
+    }
+  ],
+  "regions": [
+    {
+      "region": "IRN",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "CHN",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "RUS",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "TUR",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "IND",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    }
+  ],
+  "extra": {
+    "adapter": "points",
+    "adapter_version": "2.1.0",
+    "skipped_invalid_coords": 0,
+    "unmapped_regions": [],
+    "unmapped_count": 0
+  }
+}

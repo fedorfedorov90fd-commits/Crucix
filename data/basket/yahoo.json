@@ -1,0 +1,54 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "yahoo",
+    "source": "Yahoo Finance (sample)",
+    "source_url": "https://finance.yahoo.com/",
+    "fetched_at": "2026-09-20T11:22:18.314Z",
+    "normalized_at": "2026-09-20T11:28:57.303Z",
+    "collector": "collect-yahoo.mjs",
+    "license": "public-domain",
+    "count": 1,
+    "granularity": "snapshot",
+    "value_unit": "usd",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null
+  },
+  "series": [],
+  "points": [],
+  "regions": [],
+  "extra": {
+    "adapter": "catalog",
+    "adapter_version": "1.1.0",
+    "type_counts": {
+      "unknown": 1
+    },
+    "regions_count": 0,
+    "entries": [
+      {
+        "source": "yahoo",
+        "timestamp": "2026-09-20T11:22:18.309Z",
+        "markets": {
+          "sp500": {
+            "name": "S&P 500",
+            "value": 6582.69,
+            "change": "+1.63%"
+          },
+          "nasdaq": {
+            "name": "Nasdaq",
+            "value": 21879.18,
+            "change": "+2.20%"
+          },
+          "oil": {
+            "name": "WTI Crude",
+            "value": 112.06,
+            "unit": "$/bbl"
+          }
+        }
+      }
+    ],
+    "entries_count": 1,
+    "wrapped_single_object": true
+  }
+}

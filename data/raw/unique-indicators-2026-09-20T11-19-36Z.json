@@ -1,0 +1,544 @@
+{
+  "collected_at": "2026-09-20T11:19:36.947Z",
+  "indicators": {
+    "pentagon-pizza": {
+      "id": "pentagon-pizza",
+      "name": "Индекс \"Пицца Пентагона\"",
+      "shortName": "Пицца Пентагона",
+      "description": "Резкий рост заказов пиццы в районе Пентагона — признак подготовки к операции",
+      "source": "Google Maps / Yelp",
+      "location": {
+        "name": "Пентагон, Арлингтон, Вирджиния",
+        "lat": 38.8719,
+        "lng": -77.0563,
+        "radius_km": 5
+      },
+      "thresholds": {
+        "warning": 50,
+        "critical": 100
+      },
+      "points": [
+        {
+          "date": "2026-08-21",
+          "value": 36,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-08-22",
+          "value": 36,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-08-23",
+          "value": 35,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-08-24",
+          "value": 34,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-08-25",
+          "value": 35,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-08-26",
+          "value": 35,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-08-27",
+          "value": 36,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-08-28",
+          "value": 72,
+          "trend": "rising",
+          "status": "warning"
+        },
+        {
+          "date": "2026-08-29",
+          "value": 113,
+          "trend": "rising",
+          "status": "critical"
+        },
+        {
+          "date": "2026-08-30",
+          "value": 35,
+          "trend": "falling",
+          "status": "normal"
+        },
+        {
+          "date": "2026-08-31",
+          "value": 35,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-01",
+          "value": 36,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-02",
+          "value": 36,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-03",
+          "value": 35,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-04",
+          "value": 34,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-05",
+          "value": 35,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-06",
+          "value": 34,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-07",
+          "value": 35,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-08",
+          "value": 35,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-09",
+          "value": 79,
+          "trend": "rising",
+          "status": "warning"
+        },
+        {
+          "date": "2026-09-10",
+          "value": 34,
+          "trend": "falling",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-11",
+          "value": 35,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-12",
+          "value": 34,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-13",
+          "value": 36,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-14",
+          "value": 35,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-15",
+          "value": 35,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-16",
+          "value": 34,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-17",
+          "value": 35,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-18",
+          "value": 36,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-19",
+          "value": 34,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-20",
+          "value": 34,
+          "trend": "stable",
+          "status": "normal"
+        }
+      ],
+      "pointsCount": 31,
+      "source_used": "generated",
+      "isDemo": true,
+      "rolling_stats": {
+        "window": 7,
+        "samples": 7,
+        "mean": 34.71,
+        "stddev": 0.7,
+        "min": 34,
+        "max": 36,
+        "ema": 34.62,
+        "p25": 34,
+        "p75": 35
+      },
+      "spikes": [
+        {
+          "date": "2026-08-29",
+          "value": 113,
+          "z_score": 6.58,
+          "deviation": 75.07,
+          "status": "critical"
+        },
+        {
+          "date": "2026-09-09",
+          "value": 79,
+          "z_score": 3.6,
+          "deviation": 41.07,
+          "status": "warning"
+        },
+        {
+          "date": "2026-08-28",
+          "value": 72,
+          "z_score": 2.99,
+          "deviation": 34.07,
+          "status": "warning"
+        }
+      ],
+      "spikes_count": 3,
+      "latest": {
+        "date": "2026-09-20",
+        "value": 34,
+        "trend": "stable",
+        "status": "normal"
+      }
+    },
+    "langley-taxis": {
+      "id": "langley-taxis",
+      "name": "Индекс \"Такси в Лэнгли\"",
+      "shortName": "Такси Лэнгли",
+      "description": "Резкий рост заказов такси в районе штаб-квартиры ЦРУ — признак экстренного совещания",
+      "source": "Uber / Lyft / Google Maps",
+      "location": {
+        "name": "Лэнгли, Вирджиния (штаб-квартира ЦРУ)",
+        "lat": 38.9519,
+        "lng": -77.1467,
+        "radius_km": 5
+      },
+      "thresholds": {
+        "warning": 20,
+        "critical": 50
+      },
+      "points": [
+        {
+          "date": "2026-08-21",
+          "value": 11,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-08-22",
+          "value": 12,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-08-23",
+          "value": 13,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-08-24",
+          "value": 12,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-08-25",
+          "value": 11,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-08-26",
+          "value": 11,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-08-27",
+          "value": 11,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-08-28",
+          "value": 11,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-08-29",
+          "value": 11,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-08-30",
+          "value": 11,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-08-31",
+          "value": 11,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-01",
+          "value": 11,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-02",
+          "value": 12,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-03",
+          "value": 11,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-04",
+          "value": 36,
+          "trend": "rising",
+          "status": "warning"
+        },
+        {
+          "date": "2026-09-05",
+          "value": 12,
+          "trend": "falling",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-06",
+          "value": 12,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-07",
+          "value": 11,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-08",
+          "value": 21,
+          "trend": "rising",
+          "status": "warning"
+        },
+        {
+          "date": "2026-09-09",
+          "value": 12,
+          "trend": "falling",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-10",
+          "value": 12,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-11",
+          "value": 12,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-12",
+          "value": 11,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-13",
+          "value": 14,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-14",
+          "value": 12,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-15",
+          "value": 12,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-16",
+          "value": 12,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-17",
+          "value": 10,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-18",
+          "value": 11,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-19",
+          "value": 11,
+          "trend": "stable",
+          "status": "normal"
+        },
+        {
+          "date": "2026-09-20",
+          "value": 10,
+          "trend": "stable",
+          "status": "normal"
+        }
+      ],
+      "pointsCount": 31,
+      "source_used": "generated",
+      "isDemo": true,
+      "rolling_stats": {
+        "window": 7,
+        "samples": 7,
+        "mean": 11.14,
+        "stddev": 0.83,
+        "min": 10,
+        "max": 12,
+        "ema": 10.96,
+        "p25": 10,
+        "p75": 12
+      },
+      "spikes": [
+        {
+          "date": "2026-09-04",
+          "value": 36,
+          "z_score": 9.07,
+          "deviation": 23.79,
+          "status": "warning"
+        },
+        {
+          "date": "2026-09-08",
+          "value": 21,
+          "z_score": 3.35,
+          "deviation": 8.79,
+          "status": "warning"
+        }
+      ],
+      "spikes_count": 2,
+      "latest": {
+        "date": "2026-09-20",
+        "value": 10,
+        "trend": "stable",
+        "status": "normal"
+      }
+    }
+  },
+  "summary": {
+    "pentagon-pizza": {
+      "pointsCount": 31,
+      "source_used": "generated",
+      "isDemo": true,
+      "spikes": 3,
+      "latest": {
+        "date": "2026-09-20",
+        "value": 34,
+        "trend": "stable",
+        "status": "normal"
+      },
+      "rolling_stats": {
+        "window": 7,
+        "samples": 7,
+        "mean": 34.71,
+        "stddev": 0.7,
+        "min": 34,
+        "max": 36,
+        "ema": 34.62,
+        "p25": 34,
+        "p75": 35
+      }
+    },
+    "langley-taxis": {
+      "pointsCount": 31,
+      "source_used": "generated",
+      "isDemo": true,
+      "spikes": 2,
+      "latest": {
+        "date": "2026-09-20",
+        "value": 10,
+        "trend": "stable",
+        "status": "normal"
+      },
+      "rolling_stats": {
+        "window": 7,
+        "samples": 7,
+        "mean": 11.14,
+        "stddev": 0.83,
+        "min": 10,
+        "max": 12,
+        "ema": 10.96,
+        "p25": 10,
+        "p75": 12
+      }
+    }
+  }
+}

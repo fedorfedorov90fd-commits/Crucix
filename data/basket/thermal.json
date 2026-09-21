@@ -1,146 +1,165 @@
-[
-  {
-    "id": "thermal-001",
-    "name": "thermal #1",
-    "lat": 37.581470908432635,
-    "lng": 29.386105061852362,
-    "severity": "medium",
-    "timestamp": "2026-08-28T05:32:44.831Z"
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "thermal",
+    "source": "NASA FIRMS (demo)",
+    "source_url": "https://firms.modaps.eosdis.nasa.gov/api/",
+    "fetched_at": "2026-09-20T11:46:46.634Z",
+    "normalized_at": "2026-09-20T11:46:46.782Z",
+    "collector": "collect-thermal.mjs",
+    "license": "public-domain",
+    "count": 31,
+    "granularity": "daily",
+    "value_unit": "detections",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null,
+    "period": "P30D"
   },
-  {
-    "id": "thermal-002",
-    "name": "thermal #2",
-    "lat": 35.060077464801786,
-    "lng": 23.02373422519738,
-    "severity": "low",
-    "timestamp": "2026-08-28T05:32:44.831Z"
-  },
-  {
-    "id": "thermal-003",
-    "name": "thermal #3",
-    "lat": 29.636046572219055,
-    "lng": 24.476117507936202,
-    "severity": "medium",
-    "timestamp": "2026-08-28T05:32:44.831Z"
-  },
-  {
-    "id": "thermal-004",
-    "name": "thermal #4",
-    "lat": 37.29634308474359,
-    "lng": 22.75370600923612,
-    "severity": "high",
-    "timestamp": "2026-08-28T05:32:44.831Z"
-  },
-  {
-    "id": "thermal-005",
-    "name": "thermal #5",
-    "lat": 31.221110068928645,
-    "lng": 19.50250735372127,
-    "severity": "high",
-    "timestamp": "2026-08-28T05:32:44.831Z"
-  },
-  {
-    "id": "thermal-006",
-    "name": "thermal #6",
-    "lat": 34.03279381627614,
-    "lng": 12.106273636276725,
-    "severity": "high",
-    "timestamp": "2026-08-28T05:32:44.831Z"
-  },
-  {
-    "id": "thermal-007",
-    "name": "thermal #7",
-    "lat": 21.796313593225953,
-    "lng": 10.478803177728748,
-    "severity": "medium",
-    "timestamp": "2026-08-28T05:32:44.831Z"
-  },
-  {
-    "id": "thermal-008",
-    "name": "thermal #8",
-    "lat": 28.39896939273953,
-    "lng": 20.7018556570749,
-    "severity": "critical",
-    "timestamp": "2026-08-28T05:32:44.831Z"
-  },
-  {
-    "id": "thermal-009",
-    "name": "thermal #9",
-    "lat": 27.26575669811092,
-    "lng": 24.649701263024664,
-    "severity": "high",
-    "timestamp": "2026-08-28T05:32:44.831Z"
-  },
-  {
-    "id": "thermal-010",
-    "name": "thermal #10",
-    "lat": 33.11007858075901,
-    "lng": 16.389475860711492,
-    "severity": "low",
-    "timestamp": "2026-08-28T05:32:44.831Z"
-  },
-  {
-    "id": "thermal-011",
-    "name": "thermal #11",
-    "lat": 30.885219080805175,
-    "lng": 18.49426975913004,
-    "severity": "high",
-    "timestamp": "2026-08-28T05:32:44.831Z"
-  },
-  {
-    "id": "thermal-012",
-    "name": "thermal #12",
-    "lat": 35.970864732725545,
-    "lng": 14.800909749918588,
-    "severity": "critical",
-    "timestamp": "2026-08-28T05:32:44.831Z"
-  },
-  {
-    "id": "thermal-013",
-    "name": "thermal #13",
-    "lat": 32.793052417587056,
-    "lng": 14.407456628317732,
-    "severity": "high",
-    "timestamp": "2026-08-28T05:32:44.831Z"
-  },
-  {
-    "id": "thermal-014",
-    "name": "thermal #14",
-    "lat": 31.6478327274984,
-    "lng": 19.74801875143745,
-    "severity": "high",
-    "timestamp": "2026-08-28T05:32:44.831Z"
-  },
-  {
-    "id": "thermal-015",
-    "name": "thermal #15",
-    "lat": 37.47266351173989,
-    "lng": 21.196112161454458,
-    "severity": "medium",
-    "timestamp": "2026-08-28T05:32:44.831Z"
-  },
-  {
-    "id": "thermal-016",
-    "name": "thermal #16",
-    "lat": 31.339791711167816,
-    "lng": 10.822033531455215,
-    "severity": "medium",
-    "timestamp": "2026-08-28T05:32:44.831Z"
-  },
-  {
-    "id": "thermal-017",
-    "name": "thermal #17",
-    "lat": 32.629732890456545,
-    "lng": 13.077454035329907,
-    "severity": "medium",
-    "timestamp": "2026-08-28T05:32:44.831Z"
-  },
-  {
-    "id": "thermal-018",
-    "name": "thermal #18",
-    "lat": 26.518952977256557,
-    "lng": 21.468581516574005,
-    "severity": "high",
-    "timestamp": "2026-08-28T05:32:44.831Z"
+  "series": [
+    {
+      "date": "2026-08-21",
+      "value": 195.72
+    },
+    {
+      "date": "2026-08-22",
+      "value": 173.24
+    },
+    {
+      "date": "2026-08-23",
+      "value": 149.09
+    },
+    {
+      "date": "2026-08-24",
+      "value": 162.22
+    },
+    {
+      "date": "2026-08-25",
+      "value": 179.06
+    },
+    {
+      "date": "2026-08-26",
+      "value": 113.45
+    },
+    {
+      "date": "2026-08-27",
+      "value": 117.01
+    },
+    {
+      "date": "2026-08-28",
+      "value": 148.81
+    },
+    {
+      "date": "2026-08-29",
+      "value": 113.32
+    },
+    {
+      "date": "2026-08-30",
+      "value": 117.54
+    },
+    {
+      "date": "2026-08-31",
+      "value": 125.63
+    },
+    {
+      "date": "2026-09-01",
+      "value": 184.58
+    },
+    {
+      "date": "2026-09-02",
+      "value": 167.69
+    },
+    {
+      "date": "2026-09-03",
+      "value": 192.84
+    },
+    {
+      "date": "2026-09-04",
+      "value": 223.03
+    },
+    {
+      "date": "2026-09-05",
+      "value": 220.3
+    },
+    {
+      "date": "2026-09-06",
+      "value": 277.53
+    },
+    {
+      "date": "2026-09-07",
+      "value": 237.95
+    },
+    {
+      "date": "2026-09-08",
+      "value": 229.77
+    },
+    {
+      "date": "2026-09-09",
+      "value": 280.76
+    },
+    {
+      "date": "2026-09-10",
+      "value": 301.78
+    },
+    {
+      "date": "2026-09-11",
+      "value": 263.86
+    },
+    {
+      "date": "2026-09-12",
+      "value": 321.03
+    },
+    {
+      "date": "2026-09-13",
+      "value": 281.19
+    },
+    {
+      "date": "2026-09-14",
+      "value": 292.26
+    },
+    {
+      "date": "2026-09-15",
+      "value": 307.91
+    },
+    {
+      "date": "2026-09-16",
+      "value": 297.92
+    },
+    {
+      "date": "2026-09-17",
+      "value": 272.96
+    },
+    {
+      "date": "2026-09-18",
+      "value": 226.25
+    },
+    {
+      "date": "2026-09-19",
+      "value": 264.53
+    },
+    {
+      "date": "2026-09-20",
+      "value": 178.02
+    }
+  ],
+  "points": [],
+  "regions": [
+    {
+      "region": "GLOBAL",
+      "value": 213.45967741935482,
+      "count": 31,
+      "aggregation": "sum",
+      "extra": {
+        "max": 321.03,
+        "sum": 6617.249999999999
+      }
+    }
+  ],
+  "extra": {
+    "adapter": "timeseries",
+    "adapter_version": "2.2.1",
+    "unique_dates": 31,
+    "unmapped_regions": [],
+    "unmapped_count": 0
   }
-]
+}

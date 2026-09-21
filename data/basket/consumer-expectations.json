@@ -1,0 +1,258 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "consumer-expectations",
+    "source": "FRED / Conference Board (demo)",
+    "source_url": "https://fred.stlouisfed.org/series/CONCEXP",
+    "fetched_at": "2026-09-20T10:38:18.382Z",
+    "normalized_at": "2026-09-20T11:38:12.558Z",
+    "collector": "collect-consumer-expectations.mjs",
+    "license": "public-domain",
+    "count": 31,
+    "granularity": "daily",
+    "value_unit": "index",
+    "value_scale": null,
+    "value_type": "index",
+    "value_range": null,
+    "period": "P30D"
+  },
+  "series": [
+    {
+      "date": "2026-08-21",
+      "value": 85.66,
+      "extra": {
+        "source": "DEMO"
+      }
+    },
+    {
+      "date": "2026-08-22",
+      "value": 87.69,
+      "extra": {
+        "source": "DEMO"
+      }
+    },
+    {
+      "date": "2026-08-23",
+      "value": 81.32,
+      "extra": {
+        "source": "DEMO"
+      }
+    },
+    {
+      "date": "2026-08-24",
+      "value": 90.65,
+      "extra": {
+        "source": "DEMO"
+      }
+    },
+    {
+      "date": "2026-08-25",
+      "value": 81.3,
+      "extra": {
+        "source": "DEMO"
+      }
+    },
+    {
+      "date": "2026-08-26",
+      "value": 94.59,
+      "extra": {
+        "source": "DEMO"
+      }
+    },
+    {
+      "date": "2026-08-27",
+      "value": 91.54,
+      "extra": {
+        "source": "DEMO"
+      }
+    },
+    {
+      "date": "2026-08-28",
+      "value": 86.51,
+      "extra": {
+        "source": "DEMO"
+      }
+    },
+    {
+      "date": "2026-08-29",
+      "value": 89.16,
+      "extra": {
+        "source": "DEMO"
+      }
+    },
+    {
+      "date": "2026-08-30",
+      "value": 92.61,
+      "extra": {
+        "source": "DEMO"
+      }
+    },
+    {
+      "date": "2026-08-31",
+      "value": 93,
+      "extra": {
+        "source": "DEMO"
+      }
+    },
+    {
+      "date": "2026-09-01",
+      "value": 92.47,
+      "extra": {
+        "source": "DEMO"
+      }
+    },
+    {
+      "date": "2026-09-02",
+      "value": 82.91,
+      "extra": {
+        "source": "DEMO"
+      }
+    },
+    {
+      "date": "2026-09-03",
+      "value": 83.69,
+      "extra": {
+        "source": "DEMO"
+      }
+    },
+    {
+      "date": "2026-09-04",
+      "value": 96.61,
+      "extra": {
+        "source": "DEMO"
+      }
+    },
+    {
+      "date": "2026-09-05",
+      "value": 80.5,
+      "extra": {
+        "source": "DEMO"
+      }
+    },
+    {
+      "date": "2026-09-06",
+      "value": 98.54,
+      "extra": {
+        "source": "DEMO"
+      }
+    },
+    {
+      "date": "2026-09-07",
+      "value": 81.46,
+      "extra": {
+        "source": "DEMO"
+      }
+    },
+    {
+      "date": "2026-09-08",
+      "value": 91.46,
+      "extra": {
+        "source": "DEMO"
+      }
+    },
+    {
+      "date": "2026-09-09",
+      "value": 80.11,
+      "extra": {
+        "source": "DEMO"
+      }
+    },
+    {
+      "date": "2026-09-10",
+      "value": 86.33,
+      "extra": {
+        "source": "DEMO"
+      }
+    },
+    {
+      "date": "2026-09-11",
+      "value": 81.74,
+      "extra": {
+        "source": "DEMO"
+      }
+    },
+    {
+      "date": "2026-09-12",
+      "value": 94.71,
+      "extra": {
+        "source": "DEMO"
+      }
+    },
+    {
+      "date": "2026-09-13",
+      "value": 84.4,
+      "extra": {
+        "source": "DEMO"
+      }
+    },
+    {
+      "date": "2026-09-14",
+      "value": 90.33,
+      "extra": {
+        "source": "DEMO"
+      }
+    },
+    {
+      "date": "2026-09-15",
+      "value": 81.48,
+      "extra": {
+        "source": "DEMO"
+      }
+    },
+    {
+      "date": "2026-09-16",
+      "value": 92.4,
+      "extra": {
+        "source": "DEMO"
+      }
+    },
+    {
+      "date": "2026-09-17",
+      "value": 94.96,
+      "extra": {
+        "source": "DEMO"
+      }
+    },
+    {
+      "date": "2026-09-18",
+      "value": 91.04,
+      "extra": {
+        "source": "DEMO"
+      }
+    },
+    {
+      "date": "2026-09-19",
+      "value": 83.32,
+      "extra": {
+        "source": "DEMO"
+      }
+    },
+    {
+      "date": "2026-09-20",
+      "value": 97.95,
+      "extra": {
+        "source": "DEMO"
+      }
+    }
+  ],
+  "points": [],
+  "regions": [
+    {
+      "region": "GLOBAL",
+      "value": 88.40129032258065,
+      "count": 31,
+      "aggregation": "mean",
+      "extra": {
+        "max": 98.54,
+        "sum": 2740.44
+      }
+    }
+  ],
+  "extra": {
+    "adapter": "timeseries",
+    "adapter_version": "2.2.0",
+    "unique_dates": 31,
+    "unmapped_regions": [],
+    "unmapped_count": 0
+  }
+}

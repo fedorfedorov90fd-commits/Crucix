@@ -1,18 +1,284 @@
-[
-  {"date": "2026-07-25", "value": 3.0},
-  {"date": "2026-07-27", "value": 3.1},
-  {"date": "2026-07-29", "value": 3.1},
-  {"date": "2026-07-31", "value": 3.2},
-  {"date": "2026-08-02", "value": 3.2},
-  {"date": "2026-08-04", "value": 3.16},
-  {"date": "2026-08-06", "value": 3.16},
-  {"date": "2026-08-08", "value": 3.15},
-  {"date": "2026-08-10", "value": 3.16},
-  {"date": "2026-08-12", "value": 3.16},
-  {"date": "2026-08-14", "value": 3.16},
-  {"date": "2026-08-16", "value": 3.16},
-  {"date": "2026-08-18", "value": 3.16},
-  {"date": "2026-08-20", "value": 3.16},
-  {"date": "2026-08-22", "value": 3.16},
-  {"date": "2026-08-23", "value": 3.16}
-]
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "hy-spread",
+    "source": "FRED BAMLH0A0HYM2 (demo)",
+    "source_url": "https://fred.stlouisfed.org/series/BAMLH0A0HYM2",
+    "fetched_at": "2026-09-20T10:55:12.485Z",
+    "normalized_at": "2026-09-20T11:28:57.081Z",
+    "collector": "collect-hy-spread.mjs",
+    "license": "public-domain",
+    "count": 30,
+    "granularity": "daily",
+    "value_unit": "percent",
+    "value_scale": null,
+    "value_type": "index",
+    "value_range": [
+      0,
+      100
+    ],
+    "period": "P30D"
+  },
+  "series": [
+    {
+      "date": "2026-08-22",
+      "value": 3.16,
+      "extra": {
+        "change": -0.021,
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-08-23",
+      "value": 3.2,
+      "extra": {
+        "change": -0.009,
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-08-24",
+      "value": 3.25,
+      "extra": {
+        "change": -0.023,
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-08-25",
+      "value": 3.3,
+      "extra": {
+        "change": 0.005,
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-08-26",
+      "value": 3.35,
+      "extra": {
+        "change": 0.018,
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-08-27",
+      "value": 3.4,
+      "extra": {
+        "change": 0.012,
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-08-28",
+      "value": 3.45,
+      "extra": {
+        "change": 0.023,
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-08-29",
+      "value": 3.5,
+      "extra": {
+        "change": 0.006,
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-08-30",
+      "value": 3.55,
+      "extra": {
+        "change": -0.012,
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-08-31",
+      "value": 3.6,
+      "extra": {
+        "change": -0.008,
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-09-01",
+      "value": 3.65,
+      "extra": {
+        "change": -0.016,
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-09-02",
+      "value": 3.7,
+      "extra": {
+        "change": 0.024,
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-09-03",
+      "value": 3.75,
+      "extra": {
+        "change": 0.022,
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-09-04",
+      "value": 3.8,
+      "extra": {
+        "change": -0.021,
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-09-05",
+      "value": 3.85,
+      "extra": {
+        "change": 0.003,
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-09-06",
+      "value": 3.9,
+      "extra": {
+        "change": -0.005,
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-09-07",
+      "value": 3.95,
+      "extra": {
+        "change": 0.012,
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-09-08",
+      "value": 4,
+      "extra": {
+        "change": -0.012,
+        "status": "normal"
+      }
+    },
+    {
+      "date": "2026-09-09",
+      "value": 4.05,
+      "extra": {
+        "change": 0.005,
+        "status": "high"
+      }
+    },
+    {
+      "date": "2026-09-10",
+      "value": 4.1,
+      "extra": {
+        "change": 0.01,
+        "status": "high"
+      }
+    },
+    {
+      "date": "2026-09-11",
+      "value": 4.15,
+      "extra": {
+        "change": -0.01,
+        "status": "high"
+      }
+    },
+    {
+      "date": "2026-09-12",
+      "value": 4.2,
+      "extra": {
+        "change": 0.002,
+        "status": "high"
+      }
+    },
+    {
+      "date": "2026-09-13",
+      "value": 4.25,
+      "extra": {
+        "change": -0.001,
+        "status": "high"
+      }
+    },
+    {
+      "date": "2026-09-14",
+      "value": 4.3,
+      "extra": {
+        "change": -0.014,
+        "status": "high"
+      }
+    },
+    {
+      "date": "2026-09-15",
+      "value": 4.35,
+      "extra": {
+        "change": -0.007,
+        "status": "high"
+      }
+    },
+    {
+      "date": "2026-09-16",
+      "value": 4.4,
+      "extra": {
+        "change": -0.006,
+        "status": "high"
+      }
+    },
+    {
+      "date": "2026-09-17",
+      "value": 4.45,
+      "extra": {
+        "change": 0.011,
+        "status": "high"
+      }
+    },
+    {
+      "date": "2026-09-18",
+      "value": 4.5,
+      "extra": {
+        "change": 0.01,
+        "status": "high"
+      }
+    },
+    {
+      "date": "2026-09-19",
+      "value": 4.55,
+      "extra": {
+        "change": 0.006,
+        "status": "high"
+      }
+    },
+    {
+      "date": "2026-09-20",
+      "value": 4.6,
+      "extra": {
+        "change": -0.022,
+        "status": "high"
+      }
+    }
+  ],
+  "points": [],
+  "regions": [
+    {
+      "region": "GLOBAL",
+      "value": 3.875333333333333,
+      "count": 30,
+      "aggregation": "mean",
+      "extra": {
+        "max": 4.6,
+        "sum": 116.25999999999999
+      }
+    }
+  ],
+  "extra": {
+    "adapter": "timeseries",
+    "adapter_version": "2.1.1",
+    "unique_dates": 30,
+    "unmapped_regions": [],
+    "unmapped_count": 0
+  }
+}

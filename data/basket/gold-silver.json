@@ -1,18 +1,29 @@
-[
-  {"date": "2026-07-25", "ratio": 82.0},
-  {"date": "2026-07-27", "ratio": 83.5},
-  {"date": "2026-07-29", "ratio": 85.0},
-  {"date": "2026-07-31", "ratio": 86.0},
-  {"date": "2026-08-02", "ratio": 86.5},
-  {"date": "2026-08-04", "ratio": 86.92},
-  {"date": "2026-08-06", "ratio": 86.92},
-  {"date": "2026-08-08", "ratio": 86.8},
-  {"date": "2026-08-10", "ratio": 86.92},
-  {"date": "2026-08-12", "ratio": 86.92},
-  {"date": "2026-08-14", "ratio": 86.92},
-  {"date": "2026-08-16", "ratio": 86.92},
-  {"date": "2026-08-18", "ratio": 86.92},
-  {"date": "2026-08-20", "ratio": 86.92},
-  {"date": "2026-08-22", "ratio": 86.92},
-  {"date": "2026-08-23", "ratio": 86.92}
-]
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "gold-silver",
+    "source": "Gold/Silver (demo)",
+    "source_url": "https://finance.yahoo.com/quote/GC=F",
+    "fetched_at": "2026-09-20T10:53:39.784Z",
+    "normalized_at": "2026-09-20T11:28:57.071Z",
+    "collector": "collect-gold-silver.mjs",
+    "license": "public-domain",
+    "count": 0,
+    "granularity": "daily",
+    "value_unit": "ratio",
+    "value_scale": "gold_usd_per_silver_usd",
+    "value_type": "price",
+    "value_range": null,
+    "period": "P30D"
+  },
+  "series": [],
+  "points": [],
+  "regions": [],
+  "extra": {
+    "adapter": "timeseries",
+    "adapter_version": "2.1.1",
+    "unique_dates": 0,
+    "unmapped_regions": [],
+    "unmapped_count": 0
+  }
+}

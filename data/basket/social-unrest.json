@@ -1,42 +1,387 @@
-[
-  {
-    "country": "France",
-    "intensity": 4,
-    "lat": 46.6033,
-    "lng": 1.8883,
-    "region": "EU",
-    "timestamp": "2026-09-05T14:57:07.555Z"
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "social-unrest",
+    "source": "Social unrest index (demo)",
+    "source_url": "https://acleddata.com/",
+    "fetched_at": "2026-09-20T11:05:25.429Z",
+    "normalized_at": "2026-09-20T11:28:57.187Z",
+    "collector": "collect-social-unrest.mjs",
+    "license": "public-domain",
+    "count": 30,
+    "granularity": "daily",
+    "value_unit": "index",
+    "value_scale": null,
+    "value_type": "index",
+    "value_range": null,
+    "period": "P30D"
   },
-  {
-    "country": "India",
-    "intensity": 5,
-    "lat": 20.5937,
-    "lng": 78.9629,
-    "region": "ASIA",
-    "timestamp": "2026-09-05T13:57:07.555Z"
-  },
-  {
-    "country": "Brazil",
-    "intensity": 3,
-    "lat": -14.235,
-    "lng": -51.9253,
-    "region": "BRAZIL",
-    "timestamp": "2026-09-05T12:57:07.555Z"
-  },
-  {
-    "country": "South Africa",
-    "intensity": 4,
-    "lat": -30.5595,
-    "lng": 22.9375,
-    "region": "AFRICA",
-    "timestamp": "2026-09-05T11:57:07.555Z"
-  },
-  {
-    "country": "USA",
-    "intensity": 2,
-    "lat": 39.8283,
-    "lng": -98.5795,
-    "region": "US",
-    "timestamp": "2026-09-05T10:57:07.555Z"
+  "series": [
+    {
+      "date": "2026-08-22",
+      "value": 35.5,
+      "region": "Европа",
+      "extra": {
+        "status": "normal",
+        "unmapped_region": true,
+        "unmapped_original": "Европа"
+      }
+    },
+    {
+      "date": "2026-08-23",
+      "value": 36,
+      "region": "Азия",
+      "extra": {
+        "status": "normal",
+        "unmapped_region": true,
+        "unmapped_original": "Азия"
+      }
+    },
+    {
+      "date": "2026-08-24",
+      "value": 36.5,
+      "region": "Америка",
+      "extra": {
+        "status": "normal",
+        "unmapped_region": true,
+        "unmapped_original": "Америка"
+      }
+    },
+    {
+      "date": "2026-08-25",
+      "value": 37,
+      "region": "Африка",
+      "extra": {
+        "status": "normal",
+        "unmapped_region": true,
+        "unmapped_original": "Африка"
+      }
+    },
+    {
+      "date": "2026-08-26",
+      "value": 37.5,
+      "region": "Ближний Восток",
+      "extra": {
+        "status": "normal",
+        "unmapped_region": true,
+        "unmapped_original": "Ближний Восток"
+      }
+    },
+    {
+      "date": "2026-08-27",
+      "value": 38,
+      "region": "Европа",
+      "extra": {
+        "status": "normal",
+        "unmapped_region": true,
+        "unmapped_original": "Европа"
+      }
+    },
+    {
+      "date": "2026-08-28",
+      "value": 38.5,
+      "region": "Азия",
+      "extra": {
+        "status": "normal",
+        "unmapped_region": true,
+        "unmapped_original": "Азия"
+      }
+    },
+    {
+      "date": "2026-08-29",
+      "value": 39,
+      "region": "Америка",
+      "extra": {
+        "status": "normal",
+        "unmapped_region": true,
+        "unmapped_original": "Америка"
+      }
+    },
+    {
+      "date": "2026-08-30",
+      "value": 39.5,
+      "region": "Африка",
+      "extra": {
+        "status": "normal",
+        "unmapped_region": true,
+        "unmapped_original": "Африка"
+      }
+    },
+    {
+      "date": "2026-08-31",
+      "value": 40,
+      "region": "Ближний Восток",
+      "extra": {
+        "status": "normal",
+        "unmapped_region": true,
+        "unmapped_original": "Ближний Восток"
+      }
+    },
+    {
+      "date": "2026-09-01",
+      "value": 40.5,
+      "region": "Европа",
+      "extra": {
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Европа"
+      }
+    },
+    {
+      "date": "2026-09-02",
+      "value": 41,
+      "region": "Азия",
+      "extra": {
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Азия"
+      }
+    },
+    {
+      "date": "2026-09-03",
+      "value": 41.5,
+      "region": "Америка",
+      "extra": {
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Америка"
+      }
+    },
+    {
+      "date": "2026-09-04",
+      "value": 42,
+      "region": "Африка",
+      "extra": {
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Африка"
+      }
+    },
+    {
+      "date": "2026-09-05",
+      "value": 42.5,
+      "region": "Ближний Восток",
+      "extra": {
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Ближний Восток"
+      }
+    },
+    {
+      "date": "2026-09-06",
+      "value": 43,
+      "region": "Европа",
+      "extra": {
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Европа"
+      }
+    },
+    {
+      "date": "2026-09-07",
+      "value": 43.5,
+      "region": "Азия",
+      "extra": {
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Азия"
+      }
+    },
+    {
+      "date": "2026-09-08",
+      "value": 44,
+      "region": "Америка",
+      "extra": {
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Америка"
+      }
+    },
+    {
+      "date": "2026-09-09",
+      "value": 44.5,
+      "region": "Африка",
+      "extra": {
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Африка"
+      }
+    },
+    {
+      "date": "2026-09-10",
+      "value": 45,
+      "region": "Ближний Восток",
+      "extra": {
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Ближний Восток"
+      }
+    },
+    {
+      "date": "2026-09-11",
+      "value": 45.5,
+      "region": "Европа",
+      "extra": {
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Европа"
+      }
+    },
+    {
+      "date": "2026-09-12",
+      "value": 46,
+      "region": "Азия",
+      "extra": {
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Азия"
+      }
+    },
+    {
+      "date": "2026-09-13",
+      "value": 46.5,
+      "region": "Америка",
+      "extra": {
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Америка"
+      }
+    },
+    {
+      "date": "2026-09-14",
+      "value": 47,
+      "region": "Африка",
+      "extra": {
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Африка"
+      }
+    },
+    {
+      "date": "2026-09-15",
+      "value": 47.5,
+      "region": "Ближний Восток",
+      "extra": {
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Ближний Восток"
+      }
+    },
+    {
+      "date": "2026-09-16",
+      "value": 48,
+      "region": "Европа",
+      "extra": {
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Европа"
+      }
+    },
+    {
+      "date": "2026-09-17",
+      "value": 48.5,
+      "region": "Азия",
+      "extra": {
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Азия"
+      }
+    },
+    {
+      "date": "2026-09-18",
+      "value": 49,
+      "region": "Америка",
+      "extra": {
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Америка"
+      }
+    },
+    {
+      "date": "2026-09-19",
+      "value": 49.5,
+      "region": "Африка",
+      "extra": {
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Африка"
+      }
+    },
+    {
+      "date": "2026-09-20",
+      "value": 50,
+      "region": "Ближний Восток",
+      "extra": {
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Ближний Восток"
+      }
+    }
+  ],
+  "points": [],
+  "regions": [
+    {
+      "region": "Европа",
+      "value": 41.75,
+      "count": 6,
+      "aggregation": "mean",
+      "extra": {
+        "max": 48,
+        "sum": 250.5
+      }
+    },
+    {
+      "region": "Азия",
+      "value": 42.25,
+      "count": 6,
+      "aggregation": "mean",
+      "extra": {
+        "max": 48.5,
+        "sum": 253.5
+      }
+    },
+    {
+      "region": "Америка",
+      "value": 42.75,
+      "count": 6,
+      "aggregation": "mean",
+      "extra": {
+        "max": 49,
+        "sum": 256.5
+      }
+    },
+    {
+      "region": "Африка",
+      "value": 43.25,
+      "count": 6,
+      "aggregation": "mean",
+      "extra": {
+        "max": 49.5,
+        "sum": 259.5
+      }
+    },
+    {
+      "region": "Ближний Восток",
+      "value": 43.75,
+      "count": 6,
+      "aggregation": "mean",
+      "extra": {
+        "max": 50,
+        "sum": 262.5
+      }
+    }
+  ],
+  "extra": {
+    "adapter": "timeseries",
+    "adapter_version": "2.1.1",
+    "unique_dates": 30,
+    "unmapped_regions": [
+      "Европа",
+      "Азия",
+      "Америка",
+      "Африка",
+      "Ближний Восток"
+    ],
+    "unmapped_count": 5
   }
-]
+}

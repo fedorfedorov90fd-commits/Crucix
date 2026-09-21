@@ -1,165 +1,196 @@
 {
-  "type": "FeatureCollection",
-  "features": [
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "ships",
+    "source": "Ships AIS (sample + demo)",
+    "source_url": "https://www.marinetraffic.com/",
+    "fetched_at": "2026-09-20T11:05:25.366Z",
+    "normalized_at": "2026-09-20T11:38:12.640Z",
+    "collector": "collect-ships.mjs",
+    "license": "public-domain",
+    "count": 31,
+    "granularity": "daily",
+    "value_unit": "ships",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null,
+    "period": "P30D"
+  },
+  "series": [],
+  "points": [
     {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -80,
-          30
-        ]
-      },
-      "properties": {
-        "name": "CMA CGM Alexander",
-        "imo": "1234567",
-        "type": "container",
-        "severity": "low"
-      }
+      "lat": 36.268679805268704,
+      "lon": 50.41413209080841,
+      "timestamp": "2026-08-21T00:00:00.000Z"
     },
     {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -75,
-          35
-        ]
-      },
-      "properties": {
-        "name": "MSC Anna",
-        "imo": "2345678",
-        "type": "container",
-        "severity": "low"
-      }
+      "lat": 32.71410104932252,
+      "lon": -30.273878956598168,
+      "timestamp": "2026-08-22T00:00:00.000Z"
     },
     {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -70,
-          40
-        ]
-      },
-      "properties": {
-        "name": "Maersk Sofia",
-        "imo": "3456789",
-        "type": "container",
-        "severity": "low"
-      }
+      "lat": 36.014240718191466,
+      "lon": -62.59009774530823,
+      "timestamp": "2026-08-23T00:00:00.000Z"
     },
     {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -65,
-          45
-        ]
-      },
-      "properties": {
-        "name": "COSCO Hope",
-        "imo": "4567890",
-        "type": "container",
-        "severity": "low"
-      }
+      "lat": 43.83523635499454,
+      "lon": 26.407352579351866,
+      "timestamp": "2026-08-24T00:00:00.000Z"
     },
     {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -60,
-          25
-        ]
-      },
-      "properties": {
-        "name": "Ever Given",
-        "imo": "5678901",
-        "type": "container",
-        "severity": "low"
-      }
+      "lat": 52.38608230521317,
+      "lon": 61.40384224166135,
+      "timestamp": "2026-08-25T00:00:00.000Z"
     },
     {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -55,
-          20
-        ]
-      },
-      "properties": {
-        "name": "HMM Rotterdam",
-        "imo": "6789012",
-        "type": "container",
-        "severity": "low"
-      }
+      "lat": 48.865647100219924,
+      "lon": -69.14454593869748,
+      "timestamp": "2026-08-26T00:00:00.000Z"
     },
     {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -50,
-          15
-        ]
-      },
-      "properties": {
-        "name": "ONE Trust",
-        "imo": "7890123",
-        "type": "container",
-        "severity": "low"
-      }
+      "lat": 43.138255530612604,
+      "lon": -39.09365107314982,
+      "timestamp": "2026-08-27T00:00:00.000Z"
     },
     {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -45,
-          10
-        ]
-      },
-      "properties": {
-        "name": "Yang Ming Wisdom",
-        "imo": "8901234",
-        "type": "container",
-        "severity": "low"
-      }
+      "lat": 51.391931436093174,
+      "lon": 76.68640744801979,
+      "timestamp": "2026-08-28T00:00:00.000Z"
     },
     {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -40,
-          5
-        ]
-      },
-      "properties": {
-        "name": "ZIM Constanta",
-        "imo": "9012345",
-        "type": "container",
-        "severity": "low"
-      }
+      "lat": 34.313841678383966,
+      "lon": 35.85954998239748,
+      "timestamp": "2026-08-29T00:00:00.000Z"
     },
     {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -35,
-          0
-        ]
-      },
-      "properties": {
-        "name": "MOL Triumph",
-        "imo": "0123456",
-        "type": "container",
-        "severity": "low"
+      "lat": 33.30532035466539,
+      "lon": -37.34898967397483,
+      "timestamp": "2026-08-30T00:00:00.000Z"
+    },
+    {
+      "lat": 55.64039777323664,
+      "lon": -0.48868956478276004,
+      "timestamp": "2026-08-31T00:00:00.000Z"
+    },
+    {
+      "lat": 55.74177661006356,
+      "lon": 69.62670191867727,
+      "timestamp": "2026-09-01T00:00:00.000Z"
+    },
+    {
+      "lat": 30.57232689868559,
+      "lon": 17.90982843945467,
+      "timestamp": "2026-09-02T00:00:00.000Z"
+    },
+    {
+      "lat": 41.8942264654134,
+      "lon": 49.23354387680067,
+      "timestamp": "2026-09-03T00:00:00.000Z"
+    },
+    {
+      "lat": 31.509182199113987,
+      "lon": -3.1011784908919537,
+      "timestamp": "2026-09-04T00:00:00.000Z"
+    },
+    {
+      "lat": 29.791978904716704,
+      "lon": -53.08983196980078,
+      "timestamp": "2026-09-05T00:00:00.000Z"
+    },
+    {
+      "lat": 25.181678060192116,
+      "lon": 65.93411423025469,
+      "timestamp": "2026-09-06T00:00:00.000Z"
+    },
+    {
+      "lat": 16.229254490081924,
+      "lon": 28.181065522024227,
+      "timestamp": "2026-09-07T00:00:00.000Z"
+    },
+    {
+      "lat": 31.416474565306384,
+      "lon": -44.090181045276495,
+      "timestamp": "2026-09-08T00:00:00.000Z"
+    },
+    {
+      "lat": 43.86607033720735,
+      "lon": -18.654978898690025,
+      "timestamp": "2026-09-09T00:00:00.000Z"
+    },
+    {
+      "lat": 57.961022757710815,
+      "lon": -40.26916621823405,
+      "timestamp": "2026-09-10T00:00:00.000Z"
+    },
+    {
+      "lat": 28.648843215791914,
+      "lon": -34.39002668800177,
+      "timestamp": "2026-09-11T00:00:00.000Z"
+    },
+    {
+      "lat": 42.216924723701965,
+      "lon": 61.81812840720582,
+      "timestamp": "2026-09-12T00:00:00.000Z"
+    },
+    {
+      "lat": 39.683535132728736,
+      "lon": 40.39484520585506,
+      "timestamp": "2026-09-13T00:00:00.000Z"
+    },
+    {
+      "lat": 57.29254316172527,
+      "lon": 43.94160971862347,
+      "timestamp": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "lat": 47.02413007916526,
+      "lon": -53.2189345688727,
+      "timestamp": "2026-09-15T00:00:00.000Z"
+    },
+    {
+      "lat": 48.897759988261704,
+      "lon": -52.700850212639835,
+      "timestamp": "2026-09-16T00:00:00.000Z"
+    },
+    {
+      "lat": 49.59379007843081,
+      "lon": -31.161121248939075,
+      "timestamp": "2026-09-17T00:00:00.000Z"
+    },
+    {
+      "lat": 55.68347773709331,
+      "lon": 56.70406371372296,
+      "timestamp": "2026-09-18T00:00:00.000Z"
+    },
+    {
+      "lat": 51.3285889751577,
+      "lon": -53.23480266179577,
+      "timestamp": "2026-09-19T00:00:00.000Z"
+    },
+    {
+      "lat": 36.15783183670583,
+      "lon": -33.71728660016458,
+      "timestamp": "2026-09-20T00:00:00.000Z"
+    }
+  ],
+  "regions": [
+    {
+      "region": "GLOBAL",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
       }
     }
-  ]
+  ],
+  "extra": {
+    "adapter": "points",
+    "adapter_version": "2.2.0",
+    "skipped_invalid_coords": 0,
+    "unmapped_regions": [],
+    "unmapped_count": 0
+  }
 }

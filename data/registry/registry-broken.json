@@ -1,0 +1,126 @@
+{
+  "meta": {
+    "schema_version": "crucix.registry.broken.v1",
+    "generated_by": "manual (AI-ассистент, шаг 1 плана 20.09.2026)",
+    "generated_at": "2026-09-20T00:00:00.000Z",
+    "description": "Реестр битых связей Crucix: API-модули, которые ссылаются на отсутствующие basket-файлы, или на файлы с иным именем. Собран вручную из разведки build-registry v3.3.0.",
+    "help_ru_link": "docs/help/ru/basket/broken.md",
+    "help_en_link": "docs/help/en/basket/broken.md",
+    "source_analysis": "server/registry.generated.json (warnings.basket_file_missing) + ручной grep по apis/sources/*.mjs",
+    "total_broken": 9
+  },
+  "items": [
+    {
+      "id": "cii",
+      "api_module": "apis/sources/cii-api.mjs",
+      "route": "/api/layers/cii",
+      "basket_expected": "data/basket/cii.json",
+      "basket_present": false,
+      "has_builtin_fallback": true,
+      "fallback_description": "Модуль содержит встроенный массив стран со статусами нестабильности прямо в теле файла.",
+      "collector_present": false,
+      "severity": "medium",
+      "recommended_action": "Создать сборщик scripts/collectors/collect-cii.mjs ЛИБО зарегистрировать cii как демо-источник в registry-architecture.json (builtin-only)."
+    },
+    {
+      "id": "currents",
+      "api_module": "apis/sources/currents-api.mjs",
+      "route": "/api/layers/currents",
+      "basket_expected": "data/basket/currents.json",
+      "basket_present": false,
+      "has_builtin_fallback": true,
+      "fallback_description": "10 встроенных articles (currents-001..010) в теле файла, строки 186-195.",
+      "collector_present": false,
+      "severity": "medium",
+      "recommended_action": "Создать сборщик ЛИБО зарегистрировать как демо (builtin-only)."
+    },
+    {
+      "id": "emotion",
+      "api_module": "apis/sources/emotion-api.mjs",
+      "route": "/api/layers/emotion",
+      "basket_expected": "data/basket/emotion.json",
+      "basket_present": false,
+      "has_builtin_fallback": true,
+      "fallback_description": "Модуль читает также альтернативный путь data/emotion/analyses.json (строки 5).",
+      "collector_present": false,
+      "severity": "low",
+      "recommended_action": "Проверить, есть ли данные в data/emotion/analyses.json. Если есть — basket/emotion.json не нужен, обновить meta.source."
+    },
+    {
+      "id": "live",
+      "api_module": "apis/sources/live-api.mjs",
+      "route": "/api/layers/live",
+      "basket_expected": "data/basket/live.json",
+      "basket_present": false,
+      "has_builtin_fallback": true,
+      "fallback_description": "12 встроенных новостей (live-001..012) в теле файла, строки 69-80.",
+      "collector_present": false,
+      "severity": "medium",
+      "recommended_action": "Создать сборщик ЛИБО зарегистрировать как демо (builtin-only)."
+    },
+    {
+      "id": "satellite",
+      "api_module": "apis/sources/satellite-api.mjs",
+      "route": "/api/layers/satellite",
+      "basket_expected": "data/basket/satellite.json",
+      "basket_present": false,
+      "has_builtin_fallback": true,
+      "fallback_description": "Модуль содержит встроенный список спутников.",
+      "collector_present": true,
+      "collector_file": "scripts/collectors/collect-satellite-stac.mjs",
+      "collector_writes_to": "data/basket/satellite-stac.json",
+      "collector_writes_id": "satellite-stac",
+      "severity": "high",
+      "recommended_action": "РАСХОЖДЕНИЕ ИМЁН. API ищет satellite.json, а сборщик пишет satellite-stac.json (id=satellite-stac, points=5, regions=1). Варианты: (а) переименовать сборщик → id='satellite', basket='satellite.json'; (б) обновить meta.source и путь чтения в satellite-api.mjs на satellite-stac.json. Вариант (б) менее разрушителен."
+    },
+    {
+      "id": "shipping",
+      "api_module": "apis/sources/shipping-api.mjs",
+      "route": "/api/layers/shipping",
+      "basket_expected": "data/basket/shipping.json",
+      "basket_present": false,
+      "has_builtin_fallback": true,
+      "fallback_description": "Фallback на doc.vessels/data/items/ships (строки 190-196).",
+      "collector_present": false,
+      "severity": "medium",
+      "recommended_action": "Проверить: в data/basket/ есть shipping-lanes.json и shipping-route.json. Возможно, API должен читать одно из них. Уточнить архитектурное решение."
+    },
+    {
+      "id": "silence",
+      "api_module": "apis/sources/silence-api.mjs",
+      "route": "/api/layers/silence",
+      "basket_expected": "data/basket/silence.json",
+      "basket_present": false,
+      "has_builtin_fallback": true,
+      "fallback_description": "Фallback на doc.regions/data/items (строки 227-233).",
+      "collector_present": false,
+      "severity": "medium",
+      "recommended_action": "Создать сборщик ЛИБО зарегистрировать как демо (builtin-only)."
+    },
+    {
+      "id": "cargo",
+      "api_module": "apis/sources/infrastructure-api.mjs",
+      "route": "/api/layers/infrastructure",
+      "basket_expected": "data/basket/cargo.json",
+      "basket_present": false,
+      "has_builtin_fallback": true,
+      "fallback_description": "Строка 285: readJSON(join(BASKET_DIR, 'cargo.json'), []) — читает с дефолтом пустой массив.",
+      "collector_present": false,
+      "severity": "medium",
+      "recommended_action": "Создать сборщик ЛИБО убрать cargo.json из meta.source и из кода (если не используется в логике)."
+    },
+    {
+      "id": "unique-indicators",
+      "api_module": "apis/sources/unique-indicators-api.mjs",
+      "route": "/api/layers/unique-indicators",
+      "basket_expected": "data/basket/pentagon-pizza.json + data/basket/langley-taxis.json",
+      "basket_present": true,
+      "basket_files_found": ["data/basket/pentagon-pizza.json", "data/basket/langley-taxis.json"],
+      "has_builtin_fallback": true,
+      "fallback_description": "Модуль читает через join(BASKET_DIR, filename) динамически (строка 184).",
+      "collector_present": false,
+      "severity": "false_positive",
+      "recommended_action": "ЛОЖНОЕ ПРЕДУПРЕЖДЕНИЕ. Оба файла на месте. Причина: meta.source содержит склеенную строку 'basket/pentagon-pizza.json + basket/langley-taxis.json', парсер build-registry не разобрал '+'. Исправить в build-registry v3.3.1: разбирать множественные пути через '+'."
+    }
+  ]
+}

@@ -8,9 +8,9 @@
       "strategic-risk-composite"
     ],
     "calculator": "RiskSignalAggregator",
-    "updated_at": "2026-09-12T15:09:31.739Z",
+    "updated_at": "2026-09-20T09:51:56.163Z",
     "duration_ms": 6,
-    "checksum": "a3b11cefc40fb5ba",
+    "checksum": "c13b7edf97dd6e48",
     "stats": {
       "signals": 197,
       "regions": 20
@@ -21,9 +21,16 @@
       {
         "region": "UKR",
         "count": 1,
-        "sum": 0.56,
-        "avgSeverity": 0.56,
-        "riskScore": 5.6000000000000005
+        "sum": 0.584,
+        "avgSeverity": 0.584,
+        "riskScore": 5.84
+      },
+      {
+        "region": "IRN",
+        "count": 1,
+        "sum": 0.509,
+        "avgSeverity": 0.509,
+        "riskScore": 5.09
       },
       {
         "region": "SDN",
@@ -33,39 +40,32 @@
         "riskScore": 5.079000000000001
       },
       {
-        "region": "IRN",
+        "region": "YEM",
         "count": 1,
-        "sum": 0.503,
-        "avgSeverity": 0.503,
-        "riskScore": 5.03
+        "sum": 0.47600000000000003,
+        "avgSeverity": 0.47600000000000003,
+        "riskScore": 4.760000000000001
       },
       {
         "region": "SYR",
         "count": 1,
-        "sum": 0.45049999999999996,
-        "avgSeverity": 0.45049999999999996,
-        "riskScore": 4.505
-      },
-      {
-        "region": "YEM",
-        "count": 1,
-        "sum": 0.45049999999999996,
-        "avgSeverity": 0.45049999999999996,
-        "riskScore": 4.505
+        "sum": 0.47090000000000004,
+        "avgSeverity": 0.47090000000000004,
+        "riskScore": 4.7090000000000005
       },
       {
         "region": "VEN",
         "count": 1,
-        "sum": 0.4497,
-        "avgSeverity": 0.4497,
-        "riskScore": 4.497
+        "sum": 0.47009999999999996,
+        "avgSeverity": 0.47009999999999996,
+        "riskScore": 4.701
       },
       {
         "region": "RUS",
         "count": 1,
-        "sum": 0.4468,
-        "avgSeverity": 0.4468,
-        "riskScore": 4.468
+        "sum": 0.45880000000000004,
+        "avgSeverity": 0.45880000000000004,
+        "riskScore": 4.588
       },
       {
         "region": "AFG",
@@ -75,46 +75,39 @@
         "riskScore": 4.446
       },
       {
-        "region": "HTI",
-        "count": 1,
-        "sum": 0.44439999999999996,
-        "avgSeverity": 0.44439999999999996,
-        "riskScore": 4.444
-      },
-      {
-        "region": "BDI",
-        "count": 1,
-        "sum": 0.4388,
-        "avgSeverity": 0.4388,
-        "riskScore": 4.388
-      },
-      {
         "region": "MMR",
         "count": 1,
-        "sum": 0.4157,
-        "avgSeverity": 0.4157,
-        "riskScore": 4.157
-      },
-      {
-        "region": "MDG",
-        "count": 1,
-        "sum": 0.408,
-        "avgSeverity": 0.408,
-        "riskScore": 4.08
+        "sum": 0.4361,
+        "avgSeverity": 0.4361,
+        "riskScore": 4.361
       },
       {
         "region": "MLI",
         "count": 1,
-        "sum": 0.4067,
-        "avgSeverity": 0.4067,
-        "riskScore": 4.067
+        "sum": 0.4118,
+        "avgSeverity": 0.4118,
+        "riskScore": 4.118
+      },
+      {
+        "region": "PRK",
+        "count": 1,
+        "sum": 0.40759999999999996,
+        "avgSeverity": 0.40759999999999996,
+        "riskScore": 4.076
       },
       {
         "region": "LBY",
         "count": 1,
-        "sum": 0.39909999999999995,
-        "avgSeverity": 0.39909999999999995,
-        "riskScore": 3.9909999999999997
+        "sum": 0.4042,
+        "avgSeverity": 0.4042,
+        "riskScore": 4.042
+      },
+      {
+        "region": "HTI",
+        "count": 1,
+        "sum": 0.39490000000000003,
+        "avgSeverity": 0.39490000000000003,
+        "riskScore": 3.9490000000000003
       },
       {
         "region": "TUR",
@@ -131,13 +124,6 @@
         "riskScore": 3.9299999999999997
       },
       {
-        "region": "PRK",
-        "count": 1,
-        "sum": 0.3923,
-        "avgSeverity": 0.3923,
-        "riskScore": 3.923
-      },
-      {
         "region": "CAF",
         "count": 1,
         "sum": 0.3885,
@@ -145,22 +131,36 @@
         "riskScore": 3.8850000000000002
       },
       {
-        "region": "SOM",
-        "count": 1,
-        "sum": 0.3881,
-        "avgSeverity": 0.3881,
-        "riskScore": 3.8810000000000002
-      },
-      {
         "region": "BFA",
         "count": 1,
         "sum": 0.38549999999999995,
         "avgSeverity": 0.38549999999999995,
         "riskScore": 3.8549999999999995
+      },
+      {
+        "region": "LBN",
+        "count": 1,
+        "sum": 0.38420000000000004,
+        "avgSeverity": 0.38420000000000004,
+        "riskScore": 3.8420000000000005
+      },
+      {
+        "region": "SOM",
+        "count": 1,
+        "sum": 0.3836,
+        "avgSeverity": 0.3836,
+        "riskScore": 3.836
+      },
+      {
+        "region": "BDI",
+        "count": 1,
+        "sum": 0.3803,
+        "avgSeverity": 0.3803,
+        "riskScore": 3.8030000000000004
       }
     ],
     "total_signals": 197,
     "total_regions": 20,
-    "generated_at": "2026-09-12T15:09:31.739Z"
+    "generated_at": "2026-09-20T09:51:56.163Z"
   }
 }

@@ -1,0 +1,115 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "instability-index",
+    "source": "Crucix instability index",
+    "source_url": "local://reference",
+    "fetched_at": "2026-09-20T10:55:13.499Z",
+    "normalized_at": "2026-09-20T11:28:57.087Z",
+    "collector": "collect-instability-index.mjs",
+    "license": "public-domain",
+    "count": 15,
+    "granularity": "snapshot",
+    "value_unit": "score_0_100",
+    "value_scale": null,
+    "value_type": "index",
+    "value_range": null
+  },
+  "series": [],
+  "points": [
+    {
+      "lat": 48.3794,
+      "lon": 31.1656,
+      "label": "Украина"
+    },
+    {
+      "lat": 61.524,
+      "lon": 105.3188,
+      "label": "Россия"
+    },
+    {
+      "lat": 37.0902,
+      "lon": -95.7129,
+      "label": "США"
+    },
+    {
+      "lat": 35.8617,
+      "lon": 104.1954,
+      "label": "Китай"
+    },
+    {
+      "lat": 20.5937,
+      "lon": 78.9629,
+      "label": "Индия"
+    },
+    {
+      "lat": 31.0461,
+      "lon": 34.8516,
+      "label": "Израиль"
+    },
+    {
+      "lat": 32.4279,
+      "lon": 53.688,
+      "label": "Иран"
+    },
+    {
+      "lat": 38.9637,
+      "lon": 35.2433,
+      "label": "Турция"
+    },
+    {
+      "lat": 30.3753,
+      "lon": 69.3451,
+      "label": "Пакистан"
+    },
+    {
+      "lat": 33.9391,
+      "lon": 67.71,
+      "label": "Афганистан"
+    },
+    {
+      "lat": 34.8021,
+      "lon": 38.9968,
+      "label": "Сирия"
+    },
+    {
+      "lat": 15.5527,
+      "lon": 48.5164,
+      "label": "Йемен"
+    },
+    {
+      "lat": 5.1521,
+      "lon": 46.1996,
+      "label": "Сомали"
+    },
+    {
+      "lat": 12.8628,
+      "lon": 30.2176,
+      "label": "Судан"
+    },
+    {
+      "lat": 9.145,
+      "lon": 40.4897,
+      "label": "Эфиопия"
+    }
+  ],
+  "regions": [
+    {
+      "region": "GLOBAL",
+      "value": 0,
+      "count": 0,
+      "aggregation": "mean",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    }
+  ],
+  "extra": {
+    "adapter": "points",
+    "adapter_version": "2.1.0",
+    "skipped_invalid_coords": 0,
+    "unmapped_regions": [],
+    "unmapped_count": 0
+  }
+}

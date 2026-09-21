@@ -1,0 +1,206 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "risk-heatmap",
+    "source": "Crucix risk heatmap",
+    "source_url": "local://reference",
+    "fetched_at": "2026-09-20T11:02:06.719Z",
+    "normalized_at": "2026-09-20T11:28:57.136Z",
+    "collector": "collect-risk-heatmap.mjs",
+    "license": "public-domain",
+    "count": 11,
+    "granularity": "snapshot",
+    "value_unit": "intensity_0_1",
+    "value_scale": null,
+    "value_type": "index",
+    "value_range": null
+  },
+  "series": [],
+  "points": [
+    {
+      "lat": 48.3794,
+      "lon": 31.1656,
+      "value": 0.9,
+      "region": "UKR"
+    },
+    {
+      "lat": 32.4279,
+      "lon": 53.688,
+      "value": 0.85,
+      "region": "IRN"
+    },
+    {
+      "lat": 31.0461,
+      "lon": 34.8516,
+      "value": 0.8,
+      "region": "ISR"
+    },
+    {
+      "lat": 33.9391,
+      "lon": 67.71,
+      "value": 0.92,
+      "region": "AFG"
+    },
+    {
+      "lat": 34.8021,
+      "lon": 38.9968,
+      "value": 0.88,
+      "region": "SYR"
+    },
+    {
+      "lat": 15.5527,
+      "lon": 48.5164,
+      "value": 0.86,
+      "region": "YEM"
+    },
+    {
+      "lat": 5.1521,
+      "lon": 46.1996,
+      "value": 0.9,
+      "region": "SOM"
+    },
+    {
+      "lat": 12.8628,
+      "lon": 30.2176,
+      "value": 0.84,
+      "region": "SDN"
+    },
+    {
+      "lat": 9.145,
+      "lon": 40.4897,
+      "value": 0.8,
+      "region": "ETH"
+    },
+    {
+      "lat": 61.524,
+      "lon": 105.3188,
+      "value": 0.72,
+      "region": "RUS"
+    },
+    {
+      "lat": 30.3753,
+      "lon": 69.3451,
+      "value": 0.68,
+      "region": "PAK"
+    }
+  ],
+  "regions": [
+    {
+      "region": "UKR",
+      "value": 0.9,
+      "count": 1,
+      "aggregation": "mean",
+      "extra": {
+        "max": 0.9,
+        "sum": 0.9
+      }
+    },
+    {
+      "region": "IRN",
+      "value": 0.85,
+      "count": 1,
+      "aggregation": "mean",
+      "extra": {
+        "max": 0.85,
+        "sum": 0.85
+      }
+    },
+    {
+      "region": "ISR",
+      "value": 0.8,
+      "count": 1,
+      "aggregation": "mean",
+      "extra": {
+        "max": 0.8,
+        "sum": 0.8
+      }
+    },
+    {
+      "region": "AFG",
+      "value": 0.92,
+      "count": 1,
+      "aggregation": "mean",
+      "extra": {
+        "max": 0.92,
+        "sum": 0.92
+      }
+    },
+    {
+      "region": "SYR",
+      "value": 0.88,
+      "count": 1,
+      "aggregation": "mean",
+      "extra": {
+        "max": 0.88,
+        "sum": 0.88
+      }
+    },
+    {
+      "region": "YEM",
+      "value": 0.86,
+      "count": 1,
+      "aggregation": "mean",
+      "extra": {
+        "max": 0.86,
+        "sum": 0.86
+      }
+    },
+    {
+      "region": "SOM",
+      "value": 0.9,
+      "count": 1,
+      "aggregation": "mean",
+      "extra": {
+        "max": 0.9,
+        "sum": 0.9
+      }
+    },
+    {
+      "region": "SDN",
+      "value": 0.84,
+      "count": 1,
+      "aggregation": "mean",
+      "extra": {
+        "max": 0.84,
+        "sum": 0.84
+      }
+    },
+    {
+      "region": "ETH",
+      "value": 0.8,
+      "count": 1,
+      "aggregation": "mean",
+      "extra": {
+        "max": 0.8,
+        "sum": 0.8
+      }
+    },
+    {
+      "region": "RUS",
+      "value": 0.72,
+      "count": 1,
+      "aggregation": "mean",
+      "extra": {
+        "max": 0.72,
+        "sum": 0.72
+      }
+    },
+    {
+      "region": "PAK",
+      "value": 0.68,
+      "count": 1,
+      "aggregation": "mean",
+      "extra": {
+        "max": 0.68,
+        "sum": 0.68
+      }
+    }
+  ],
+  "extra": {
+    "adapter": "points",
+    "adapter_version": "2.1.0",
+    "skipped_invalid_coords": 0,
+    "unmapped_regions": [],
+    "unmapped_count": 0
+  }
+}

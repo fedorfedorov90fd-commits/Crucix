@@ -121,6 +121,7 @@ async function appendToIncoming(item) {
  * @param {string} [options.license]        — лицензия (public-domain, cc-by, ...).
  * @param {string} [options.format_hint]    — подсказка формата (timeseries|points|regions|events|hierarchical).
  * @param {string} [options.value_unit]     — единица измерения (magnitude, severity_0_1, ...).
+ * @param {string} [options.value_type]     — тип значения (magnitude|severity|price|index|count|...).
  * @param {string} [options.value_scale]    — шкала (richter, 0-1, 0-10, 0-100).
  * @param {string} [options.period]         — период ISO 8601 duration (P730D).
  * @param {string} [options.granularity]    — гранулярность (event, daily, snapshot).
@@ -167,6 +168,7 @@ export async function saveRaw(id, data, options = {}) {
     license: options.license || 'unknown',
     value_unit: options.value_unit || 'unknown',
     value_scale: options.value_scale || null,
+    value_type: options.value_type || null,
     period: options.period || null,
     granularity: options.granularity || 'event',
     notes: options.notes || null,

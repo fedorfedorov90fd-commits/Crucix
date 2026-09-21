@@ -1,18 +1,168 @@
-[
-  {"date": "2026-07-25", "value": 45},
-  {"date": "2026-07-27", "value": 47},
-  {"date": "2026-07-29", "value": 50},
-  {"date": "2026-07-31", "value": 52},
-  {"date": "2026-08-02", "value": 55},
-  {"date": "2026-08-04", "value": 55},
-  {"date": "2026-08-06", "value": 53},
-  {"date": "2026-08-08", "value": 52},
-  {"date": "2026-08-10", "value": 54},
-  {"date": "2026-08-12", "value": 55},
-  {"date": "2026-08-14", "value": 55},
-  {"date": "2026-08-16", "value": 54},
-  {"date": "2026-08-18", "value": 54},
-  {"date": "2026-08-20", "value": 55},
-  {"date": "2026-08-22", "value": 55},
-  {"date": "2026-08-23", "value": 55}
-]
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "recession",
+    "source": "NY Fed (demo)",
+    "source_url": "https://fred.stlouisfed.org/series/RECPROUSM156N",
+    "fetched_at": "2026-09-20T11:02:06.098Z",
+    "normalized_at": "2026-09-20T11:28:57.129Z",
+    "collector": "collect-recession.mjs",
+    "license": "public-domain",
+    "count": 31,
+    "granularity": "daily",
+    "value_unit": "percent",
+    "value_scale": null,
+    "value_type": "index",
+    "value_range": [
+      0,
+      100
+    ],
+    "period": "P30D"
+  },
+  "series": [
+    {
+      "date": "2026-08-21",
+      "value": 19.36
+    },
+    {
+      "date": "2026-08-22",
+      "value": 64.28
+    },
+    {
+      "date": "2026-08-23",
+      "value": 34.64
+    },
+    {
+      "date": "2026-08-24",
+      "value": 63
+    },
+    {
+      "date": "2026-08-25",
+      "value": 35.41
+    },
+    {
+      "date": "2026-08-26",
+      "value": 13.29
+    },
+    {
+      "date": "2026-08-27",
+      "value": 18.75
+    },
+    {
+      "date": "2026-08-28",
+      "value": 59.15
+    },
+    {
+      "date": "2026-08-29",
+      "value": 52.34
+    },
+    {
+      "date": "2026-08-30",
+      "value": 35.97
+    },
+    {
+      "date": "2026-08-31",
+      "value": 58
+    },
+    {
+      "date": "2026-09-01",
+      "value": 54.21
+    },
+    {
+      "date": "2026-09-02",
+      "value": 61.44
+    },
+    {
+      "date": "2026-09-03",
+      "value": 50.81
+    },
+    {
+      "date": "2026-09-04",
+      "value": 47.46
+    },
+    {
+      "date": "2026-09-05",
+      "value": 18.56
+    },
+    {
+      "date": "2026-09-06",
+      "value": 29.49
+    },
+    {
+      "date": "2026-09-07",
+      "value": 55.94
+    },
+    {
+      "date": "2026-09-08",
+      "value": 14.24
+    },
+    {
+      "date": "2026-09-09",
+      "value": 39.99
+    },
+    {
+      "date": "2026-09-10",
+      "value": 44.39
+    },
+    {
+      "date": "2026-09-11",
+      "value": 58.54
+    },
+    {
+      "date": "2026-09-12",
+      "value": 68.3
+    },
+    {
+      "date": "2026-09-13",
+      "value": 38.39
+    },
+    {
+      "date": "2026-09-14",
+      "value": 17.91
+    },
+    {
+      "date": "2026-09-15",
+      "value": 20.95
+    },
+    {
+      "date": "2026-09-16",
+      "value": 36.59
+    },
+    {
+      "date": "2026-09-17",
+      "value": 46.58
+    },
+    {
+      "date": "2026-09-18",
+      "value": 66.77
+    },
+    {
+      "date": "2026-09-19",
+      "value": 55.1
+    },
+    {
+      "date": "2026-09-20",
+      "value": 53.66
+    }
+  ],
+  "points": [],
+  "regions": [
+    {
+      "region": "GLOBAL",
+      "value": 43.016451612903225,
+      "count": 31,
+      "aggregation": "mean",
+      "extra": {
+        "max": 68.3,
+        "sum": 1333.51
+      }
+    }
+  ],
+  "extra": {
+    "adapter": "timeseries",
+    "adapter_version": "2.1.1",
+    "unique_dates": 31,
+    "unmapped_regions": [],
+    "unmapped_count": 0
+  }
+}

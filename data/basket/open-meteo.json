@@ -1,106 +1,115 @@
 {
-  "source": "OpenMeteo",
-  "updated": "2026-09-12T15:39:12.645Z",
-  "cities": [
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "open-meteo",
+    "source": "Open-Meteo API",
+    "source_url": "https://api.open-meteo.com/v1/forecast",
+    "fetched_at": "2026-09-20T10:59:32.940Z",
+    "normalized_at": "2026-09-20T11:44:06.477Z",
+    "collector": "collect-open-meteo.mjs",
+    "license": "public-domain",
+    "count": 15,
+    "granularity": "snapshot",
+    "value_unit": "celsius",
+    "value_scale": null,
+    "value_type": "index",
+    "value_range": null
+  },
+  "series": [],
+  "points": [
     {
-      "city": "Kyiv",
-      "countryCode": "UKR",
       "lat": 50.45,
-      "lng": 30.52,
-      "temperature": 14.3,
-      "windSpeed": 3.8,
-      "precipitation": 0,
-      "timestamp": "2026-09-12T15:39:12.046Z"
+      "lon": 30.52,
+      "timestamp": "2026-09-20T10:59:30.539Z"
     },
     {
-      "city": "Moscow",
-      "countryCode": "RUS",
       "lat": 55.75,
-      "lng": 37.62,
-      "temperature": 15,
-      "windSpeed": 6.2,
-      "precipitation": 0,
-      "timestamp": "2026-09-12T15:39:12.115Z"
+      "lon": 37.62,
+      "timestamp": "2026-09-20T10:59:30.705Z"
     },
     {
-      "city": "Beijing",
-      "countryCode": "CHN",
       "lat": 39.9,
-      "lng": 116.4,
-      "temperature": 22.8,
-      "windSpeed": 5.3,
-      "precipitation": 0,
-      "timestamp": "2026-09-12T15:39:12.181Z"
+      "lon": 116.4,
+      "timestamp": "2026-09-20T10:59:30.872Z"
     },
     {
-      "city": "Washington",
-      "countryCode": "USA",
       "lat": 38.9,
-      "lng": -77.03,
-      "temperature": 27,
-      "windSpeed": 12.9,
-      "precipitation": 0,
-      "timestamp": "2026-09-12T15:39:12.249Z"
+      "lon": -77.03,
+      "timestamp": "2026-09-20T10:59:31.044Z"
     },
     {
-      "city": "London",
-      "countryCode": "GBR",
       "lat": 51.5,
-      "lng": -0.12,
-      "temperature": 22.8,
-      "windSpeed": 20.9,
-      "precipitation": 0,
-      "timestamp": "2026-09-12T15:39:12.313Z"
+      "lon": -0.12,
+      "timestamp": "2026-09-20T10:59:31.209Z"
     },
     {
-      "city": "Tokyo",
-      "countryCode": "JPN",
       "lat": 35.68,
-      "lng": 139.69,
-      "temperature": 21.7,
-      "windSpeed": 2.2,
-      "precipitation": 0,
-      "timestamp": "2026-09-12T15:39:12.378Z"
+      "lon": 139.69,
+      "timestamp": "2026-09-20T10:59:31.373Z"
     },
     {
-      "city": "Tehran",
-      "countryCode": "IRN",
       "lat": 35.69,
-      "lng": 51.39,
-      "temperature": 26.7,
-      "windSpeed": 4.4,
-      "precipitation": 0,
-      "timestamp": "2026-09-12T15:39:12.441Z"
+      "lon": 51.39,
+      "timestamp": "2026-09-20T10:59:31.536Z"
     },
     {
-      "city": "Jerusalem",
-      "countryCode": "ISR",
       "lat": 31.77,
-      "lng": 35.21,
-      "temperature": 24.1,
-      "windSpeed": 20.8,
-      "precipitation": 0,
-      "timestamp": "2026-09-12T15:39:12.503Z"
+      "lon": 35.21,
+      "timestamp": "2026-09-20T10:59:31.697Z"
     },
     {
-      "city": "Taipei",
-      "countryCode": "TWN",
       "lat": 25.03,
-      "lng": 121.57,
-      "temperature": 26,
-      "windSpeed": 12.3,
-      "precipitation": 0,
-      "timestamp": "2026-09-12T15:39:12.577Z"
+      "lon": 121.57,
+      "timestamp": "2026-09-20T10:59:31.862Z"
     },
     {
-      "city": "New Delhi",
-      "countryCode": "IND",
       "lat": 28.61,
-      "lng": 77.21,
-      "temperature": 28.4,
-      "windSpeed": 6.9,
-      "precipitation": 0,
-      "timestamp": "2026-09-12T15:39:12.644Z"
+      "lon": 77.21,
+      "timestamp": "2026-09-20T10:59:32.026Z"
+    },
+    {
+      "lat": 59.93,
+      "lon": 30.31,
+      "timestamp": "2026-09-20T10:59:32.188Z"
+    },
+    {
+      "lat": 48.86,
+      "lon": 2.35,
+      "timestamp": "2026-09-20T10:59:32.348Z"
+    },
+    {
+      "lat": 52.52,
+      "lon": 13.4,
+      "timestamp": "2026-09-20T10:59:32.509Z"
+    },
+    {
+      "lat": 40.71,
+      "lon": -74.01,
+      "timestamp": "2026-09-20T10:59:32.671Z"
+    },
+    {
+      "lat": 53.9,
+      "lon": 27.56,
+      "timestamp": "2026-09-20T10:59:32.833Z"
     }
-  ]
+  ],
+  "regions": [
+    {
+      "region": "GLOBAL",
+      "value": 0,
+      "count": 0,
+      "aggregation": "mean",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    }
+  ],
+  "extra": {
+    "adapter": "points",
+    "adapter_version": "2.2.1",
+    "skipped_invalid_coords": 0,
+    "unmapped_regions": [],
+    "unmapped_count": 0
+  }
 }

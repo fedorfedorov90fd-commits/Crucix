@@ -1,31 +1,46 @@
-import { promises as fs } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath, pathToFileURL } from 'url';;
+#!/usr/bin/env node
+/**
+ * Crucix Collector: russian-sources (сводка российских источников) — demo.
+ * Версия 2.0.0. Принят 20.09.2026.
+ * Формат: {source, timestamp, weather:[...], tass:[...], rbc:[...], interfax:[...]}. Тип — hierarchical.
+ */
+import { saveRaw } from './lib/collector-helper.mjs';
+import { pathToFileURL } from 'url';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT = join(__dirname, '..');
-const BASKET_DIR = join(ROOT, 'data', 'basket');
+export async function collectRussianSources() {
+  console.log('[Russian] Сбор...');
+  const now = new Date().toISOString();
+  const data = {
+    source: 'russian',
+    timestamp: now,
+    weather: [
+      { city: 'Москва', temp: 15, condition: 'Облачно' },
+      { city: 'СПб', temp: 12, condition: 'Дождь' },
+    ],
+    tass: [{ title: 'Путин провел совещание', category: 'Политика' }],
+    rbc: [{ title: 'Акции Сбербанка обновили максимум', category: 'Бизнес' }],
+    interfax: [{ title: 'ВС РФ взяли новый пункт', category: 'СВО' }],
+  };
 
-async function collectRussianSources() {
-  console.log('[Russian] Сбор российских данных...');
-  try {
-    await fs.mkdir(BASKET_DIR, { recursive: true });
-    const data = {
-      source: 'russian',
-      timestamp: new Date().toISOString(),
-      weather: [
-        { city: 'Москва', temp: 15, condition: 'Облачно' },
-        { city: 'СПб', temp: 12, condition: 'Дождь' }
-      ],
-      tass: [{ title: 'Путин провел совещание', category: 'Политика' }],
-      rbc: [{ title: 'Акции Сбербанка обновили максимум', category: 'Бизнес' }],
-      interfax: [{ title: 'ВС РФ взяли новый пункт', category: 'СВО' }]
-    };
-    await fs.writeFile(join(BASKET_DIR, 'russian-latest.json'), JSON.stringify(data, null, 2));
-    console.log('[Russian] ✅ Готово');
-    return data;
-  } catch (e) { console.error('[Russian] Ошибка:', e.message); throw e; }
+  const totalItems = data.weather.length + data.tass.length + data.rbc.length + data.interfax.length;
+  const result = await saveRaw('russian-sources', data, {
+    collector: 'collect-russian-sources.mjs',
+    source: 'Russian sources (demo)',
+    source_url: 'local://demo',
+    license: 'public-domain',
+    format_hint: 'hierarchical',
+    value_type: 'count',
+    value_unit: 'count',
+    granularity: 'snapshot',
+    period: null,
+    record_count: totalItems,
+    notes: `Демо-данные (weather+tass+rbc+interfax, ${totalItems} записей); basket не перезаписывается`,
+    backwardCompat: false,
+  });
+  console.log(`[Russian] OK ${totalItems} → ${result.raw_file}`);
+  return data;
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) collectRussianSources().catch(() => process.exit(1));
-export { collectRussianSources };
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  collectRussianSources().catch((e) => { console.error('[Russian] FATAL:', e); process.exit(1); });
+}

@@ -1,33 +1,50 @@
 #!/usr/bin/env node
+/**
+ * Crucix Collector: newsapi (топ-новости NewsAPI) — требует ключ.
+ * Версия 2.0.0. Принят 20.09.2026.
+ * Правило 12.2: NewsAPI требует ключ → fallback demo (10 статей).
+ * Формат: {source, lastUpdated, totalArticles, articles:[...], note}. Тип — events.
+ */
+import { saveRaw } from './lib/collector-helper.mjs';
+import { pathToFileURL } from 'url';
 
-import { writeFileSync, existsSync, mkdirSync } from 'fs';
-import { join } from 'path';
+const API_URL = 'https://newsapi.org/v2/top-headlines?country=us&pageSize=20';
+const TIMEOUT_MS = 15000;
 
-const BASKET_DIR = join(process.cwd(), 'data', 'basket');
-
-if (!existsSync(BASKET_DIR)) {
-  mkdirSync(BASKET_DIR, { recursive: true });
+function buildFallback() {
+  const now = new Date().toISOString();
+  return {
+    source: 'NewsAPI (DEMO)',
+    lastUpdated: now,
+    totalArticles: 10,
+    articles: [
+      { title: 'Глобальный экономический форум начал работу в Давосе', source: 'Reuters', publishedAt: now },
+      { title: 'Новый этап переговоров по климату стартовал в ООН', source: 'BBC News', publishedAt: now },
+      { title: 'Технологические гиганты объявили о сотрудничестве в области ИИ', source: 'TechCrunch', publishedAt: now },
+      { title: 'Цены на нефть продолжают расти на фоне геополитической напряженности', source: 'Bloomberg', publishedAt: now },
+      { title: 'Европа готовится к новому пакету санкций', source: 'Euronews', publishedAt: now },
+      { title: 'Китай представил новый план развития экономики', source: 'Xinhua', publishedAt: now },
+      { title: 'NASA объявило о новой миссии на Марс', source: 'Space.com', publishedAt: now },
+      { title: 'Мировые рынки закрылись ростом на фоне оптимизма инвесторов', source: 'Financial Times', publishedAt: now },
+      { title: 'Новый закон о кибербезопасности принят в ЕС', source: 'Politico', publishedAt: now },
+      { title: 'Гуманитарный кризис в регионе усугубляется', source: 'Al Jazeera', publishedAt: now },
+    ],
+    note: 'Демо-данные (NewsAPI требует ключ, правило 12.2)',
+  };
 }
 
-async function fetchNewsAPI() {
-  console.log('[NewsAPI] Загрузка новостей...');
-
+export async function collectNewsAPI() {
+  console.log('[NewsAPI] Загрузка...');
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  let basketData;
+  let ok = false;
   try {
-    // Бесплатный NewsAPI (без ключа — ограниченный доступ)
-    const url = 'https://newsapi.org/v2/top-headlines?country=us&pageSize=20';
-    
-    const response = await fetch(url);
-    if (!response.ok) {
-      if (response.status === 401) {
-        console.log('[NewsAPI] ⚠️ Требуется API-ключ. Сохраняем демо-данные.');
-        throw new Error('API key required');
-      }
-      throw new Error(`HTTP ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    const basketData = {
+    const r = await fetch(API_URL, { signal: controller.signal });
+    clearTimeout(timer);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const data = await r.json();
+    basketData = {
       source: 'NewsAPI',
       lastUpdated: new Date().toISOString(),
       totalArticles: data.articles?.length || 0,
@@ -37,39 +54,35 @@ async function fetchNewsAPI() {
         source: a.source?.name || 'Unknown',
         publishedAt: a.publishedAt || '',
         url: a.url || '',
-        image: a.urlToImage || ''
+        image: a.urlToImage || '',
       })),
-      note: 'Данные загружены через NewsAPI (без ключа — ограниченно)'
+      note: 'Данные загружены через NewsAPI',
     };
-
-    const filePath = join(BASKET_DIR, 'newsapi-latest.json');
-    writeFileSync(filePath, JSON.stringify(basketData, null, 2));
-    console.log(`[NewsAPI] ✅ Данные сохранены в ${filePath}`);
-    console.log(`[NewsAPI] Всего новостей: ${basketData.totalArticles}`);
-
-  } catch (error) {
-    console.error('[NewsAPI] ❌ Ошибка:', error.message);
-    const fallbackData = {
-      source: 'NewsAPI (DEMO)',
-      lastUpdated: new Date().toISOString(),
-      totalArticles: 10,
-      articles: [
-        { title: 'Глобальный экономический форум начал работу в Давосе', source: 'Reuters', publishedAt: new Date().toISOString() },
-        { title: 'Новый этап переговоров по климату стартовал в ООН', source: 'BBC News', publishedAt: new Date().toISOString() },
-        { title: 'Технологические гиганты объявили о сотрудничестве в области ИИ', source: 'TechCrunch', publishedAt: new Date().toISOString() },
-        { title: 'Цены на нефть продолжают расти на фоне геополитической напряженности', source: 'Bloomberg', publishedAt: new Date().toISOString() },
-        { title: 'Европа готовится к новому пакету санкций', source: 'Euronews', publishedAt: new Date().toISOString() },
-        { title: 'Китай представил новый план развития экономики', source: 'Xinhua', publishedAt: new Date().toISOString() },
-        { title: 'NASA объявило о новой миссии на Марс', source: 'Space.com', publishedAt: new Date().toISOString() },
-        { title: 'Мировые рынки закрылись ростом на фоне оптимизма инвесторов', source: 'Financial Times', publishedAt: new Date().toISOString() },
-        { title: 'Новый закон о кибербезопасности принят в ЕС', source: 'Politico', publishedAt: new Date().toISOString() },
-        { title: 'Гуманитарный кризис в регионе усугубляется', source: 'Al Jazeera', publishedAt: new Date().toISOString() }
-      ],
-      note: 'Демо-данные (NewsAPI требует ключ)'
-    };
-    writeFileSync(join(BASKET_DIR, 'newsapi-latest.json'), JSON.stringify(fallbackData, null, 2));
-    console.log('[NewsAPI] ✅ Сохранены демо-данные');
+    ok = true;
+  } catch (e) {
+    clearTimeout(timer);
+    console.error('[NewsAPI] ⚠️ Ошибка:', e.message);
+    basketData = buildFallback();
   }
+
+  const result = await saveRaw('newsapi', basketData, {
+    collector: 'collect-newsapi.mjs',
+    source: ok ? 'NewsAPI' : 'NewsAPI (DEMO)',
+    source_url: API_URL,
+    license: 'public-domain',
+    format_hint: 'events',
+    value_type: 'count',
+    value_unit: 'count',
+    granularity: 'snapshot',
+    period: null,
+    record_count: basketData.articles.length,
+    notes: ok ? 'Реальные данные NewsAPI' : 'Fallback demo (требуется ключ, правило 12.2); basket не перезаписывается',
+    backwardCompat: false,
+  });
+  console.log(`[NewsAPI] OK ${basketData.articles.length} → ${result.raw_file}`);
+  return basketData;
 }
 
-fetchNewsAPI();
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  collectNewsAPI().catch((e) => { console.error('[NewsAPI] FATAL:', e); process.exit(1); });
+}

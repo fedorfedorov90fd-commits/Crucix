@@ -1,42 +1,368 @@
-[
-  {
-    "type": "war",
-    "severity": "critical",
-    "lat": 48.3794,
-    "lng": 31.1656,
-    "region": "UKRAINE",
-    "timestamp": "2026-09-05T14:57:07.565Z"
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "conflict-zones",
+    "source": "ACLED + открытые данные",
+    "source_url": "https://acleddata.com/",
+    "fetched_at": "2026-09-20T10:41:42.144Z",
+    "normalized_at": "2026-09-20T11:28:56.966Z",
+    "collector": "collect-conflict-zones.mjs",
+    "license": "public-domain",
+    "count": 18,
+    "granularity": "snapshot",
+    "value_unit": "count",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null
   },
-  {
-    "type": "war",
-    "severity": "critical",
-    "lat": 33.8886,
-    "lng": 35.4955,
-    "region": "LEBANON",
-    "timestamp": "2026-09-05T13:57:07.565Z"
-  },
-  {
-    "type": "conflict",
-    "severity": "high",
-    "lat": 15.5527,
-    "lng": 48.5164,
-    "region": "YEMEN",
-    "timestamp": "2026-09-05T12:57:07.565Z"
-  },
-  {
-    "type": "conflict",
-    "severity": "high",
-    "lat": 26.8206,
-    "lng": 30.8025,
-    "region": "SUDAN",
-    "timestamp": "2026-09-05T11:57:07.565Z"
-  },
-  {
-    "type": "conflict",
-    "severity": "medium",
-    "lat": 33.9391,
-    "lng": 67.71,
-    "region": "AFGHANISTAN",
-    "timestamp": "2026-09-05T10:57:07.565Z"
+  "series": [],
+  "points": [
+    {
+      "lat": 48,
+      "lon": 37.5,
+      "label": "Донбасс",
+      "region": "UKR",
+      "timestamp": "2026-09-20T10:41:42.139Z",
+      "extra": {
+        "id": "conflict-001",
+        "type": "война"
+      }
+    },
+    {
+      "lat": 50,
+      "lon": 30,
+      "label": "Киевская область",
+      "region": "UKR",
+      "timestamp": "2026-09-20T10:41:42.139Z",
+      "extra": {
+        "id": "conflict-002",
+        "type": "обстрелы"
+      }
+    },
+    {
+      "lat": 49.5,
+      "lon": 36,
+      "label": "Харьковская область",
+      "region": "UKR",
+      "timestamp": "2026-09-20T10:41:42.139Z",
+      "extra": {
+        "id": "conflict-003",
+        "type": "обстрелы"
+      }
+    },
+    {
+      "lat": 35.9,
+      "lon": 36.8,
+      "label": "Сирия (Идлиб)",
+      "region": "SYR",
+      "timestamp": "2026-09-20T10:41:42.139Z",
+      "extra": {
+        "id": "conflict-004",
+        "type": "война"
+      }
+    },
+    {
+      "lat": 36.2,
+      "lon": 37.2,
+      "label": "Сирия (Алеппо)",
+      "region": "SYR",
+      "timestamp": "2026-09-20T10:41:42.139Z",
+      "extra": {
+        "id": "conflict-005",
+        "type": "война"
+      }
+    },
+    {
+      "lat": 15.3,
+      "lon": 44.2,
+      "label": "Йемен (Сана)",
+      "region": "YEM",
+      "timestamp": "2026-09-20T10:41:42.139Z",
+      "extra": {
+        "id": "conflict-006",
+        "type": "война"
+      }
+    },
+    {
+      "lat": 31.5,
+      "lon": 34.5,
+      "label": "Палестина (Газа)",
+      "region": "PSE",
+      "timestamp": "2026-09-20T10:41:42.139Z",
+      "extra": {
+        "id": "conflict-007",
+        "type": "конфликт"
+      }
+    },
+    {
+      "lat": 33.9,
+      "lon": 35.5,
+      "label": "Ливан (Бейрут)",
+      "region": "LBN",
+      "timestamp": "2026-09-20T10:41:42.139Z",
+      "extra": {
+        "id": "conflict-008",
+        "type": "конфликт"
+      }
+    },
+    {
+      "lat": 15.6,
+      "lon": 32.5,
+      "label": "Судан (Хартум)",
+      "region": "SDN",
+      "timestamp": "2026-09-20T10:41:42.139Z",
+      "extra": {
+        "id": "conflict-009",
+        "type": "война"
+      }
+    },
+    {
+      "lat": 13,
+      "lon": 25,
+      "label": "Судан (Дарфур)",
+      "region": "SDN",
+      "timestamp": "2026-09-20T10:41:42.139Z",
+      "extra": {
+        "id": "conflict-010",
+        "type": "война"
+      }
+    },
+    {
+      "lat": 13,
+      "lon": 39,
+      "label": "Эфиопия (Тиграй)",
+      "region": "ETH",
+      "timestamp": "2026-09-20T10:41:42.139Z",
+      "extra": {
+        "id": "conflict-011",
+        "type": "война"
+      }
+    },
+    {
+      "lat": 2,
+      "lon": 45,
+      "label": "Сомали (Могадишо)",
+      "region": "SOM",
+      "timestamp": "2026-09-20T10:41:42.139Z",
+      "extra": {
+        "id": "conflict-012",
+        "type": "конфликт"
+      }
+    },
+    {
+      "lat": -1.7,
+      "lon": 29.2,
+      "label": "ДР Конго (Гома)",
+      "region": "COD",
+      "timestamp": "2026-09-20T10:41:42.139Z",
+      "extra": {
+        "id": "conflict-013",
+        "type": "конфликт"
+      }
+    },
+    {
+      "lat": 25,
+      "lon": 97,
+      "label": "Мьянма (Качин)",
+      "region": "MMR",
+      "timestamp": "2026-09-20T10:41:42.139Z",
+      "extra": {
+        "id": "conflict-014",
+        "type": "конфликт"
+      }
+    },
+    {
+      "lat": 31.6,
+      "lon": 65.7,
+      "label": "Афганистан (Кандагар)",
+      "region": "AFG",
+      "timestamp": "2026-09-20T10:41:42.139Z",
+      "extra": {
+        "id": "conflict-015",
+        "type": "конфликт"
+      }
+    },
+    {
+      "lat": 34,
+      "lon": 71,
+      "label": "Пакистан (Хайбер)",
+      "region": "PAK",
+      "timestamp": "2026-09-20T10:41:42.139Z",
+      "extra": {
+        "id": "conflict-016",
+        "type": "протесты"
+      }
+    },
+    {
+      "lat": 10.5,
+      "lon": -66.9,
+      "label": "Венесуэла (Каракас)",
+      "region": "VEN",
+      "timestamp": "2026-09-20T10:41:42.139Z",
+      "extra": {
+        "id": "conflict-017",
+        "type": "протесты"
+      }
+    },
+    {
+      "lat": 2.5,
+      "lon": -76.5,
+      "label": "Колумбия (Каука)",
+      "region": "COL",
+      "timestamp": "2026-09-20T10:41:42.139Z",
+      "extra": {
+        "id": "conflict-018",
+        "type": "конфликт"
+      }
+    }
+  ],
+  "regions": [
+    {
+      "region": "UKR",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "SYR",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "YEM",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "PSE",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "LBN",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "SDN",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "ETH",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "SOM",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "COD",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "MMR",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "AFG",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "PAK",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "VEN",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "COL",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    }
+  ],
+  "extra": {
+    "adapter": "points",
+    "adapter_version": "2.1.0",
+    "skipped_invalid_coords": 0,
+    "unmapped_regions": [],
+    "unmapped_count": 0
   }
-]
+}

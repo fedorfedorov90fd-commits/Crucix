@@ -1,128 +1,447 @@
-[
-  {
-    "date": "2026-08-01",
-    "value": 45,
-    "lat": 55.7558,
-    "lng": 37.6173
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "war-preparation",
+    "source": "War preparation index (demo)",
+    "source_url": "local://reference",
+    "fetched_at": "2026-09-20T11:20:53.692Z",
+    "normalized_at": "2026-09-20T11:28:57.296Z",
+    "collector": "collect-war-preparation.mjs",
+    "license": "public-domain",
+    "count": 30,
+    "granularity": "daily",
+    "value_unit": "score_0_100",
+    "value_scale": null,
+    "value_type": "index",
+    "value_range": null,
+    "period": "P30D"
   },
-  {
-    "date": "2026-08-02",
-    "value": 48,
-    "lat": 55.7558,
-    "lng": 37.6173
-  },
-  {
-    "date": "2026-08-03",
-    "value": 52,
-    "lat": 55.7558,
-    "lng": 37.6173
-  },
-  {
-    "date": "2026-08-04",
-    "value": 55,
-    "lat": 55.7558,
-    "lng": 37.6173
-  },
-  {
-    "date": "2026-08-05",
-    "value": 53,
-    "lat": 55.7558,
-    "lng": 37.6173
-  },
-  {
-    "date": "2026-08-06",
-    "value": 56,
-    "lat": 55.7558,
-    "lng": 37.6173
-  },
-  {
-    "date": "2026-08-07",
-    "value": 58,
-    "lat": 55.7558,
-    "lng": 37.6173
-  },
-  {
-    "date": "2026-08-08",
-    "value": 55,
-    "lat": 55.7558,
-    "lng": 37.6173
-  },
-  {
-    "date": "2026-08-09",
-    "value": 57,
-    "lat": 55.7558,
-    "lng": 37.6173
-  },
-  {
-    "date": "2026-08-10",
-    "value": 60,
-    "lat": 55.7558,
-    "lng": 37.6173
-  },
-  {
-    "date": "2026-08-11",
-    "value": 58,
-    "lat": 55.7558,
-    "lng": 37.6173
-  },
-  {
-    "date": "2026-08-12",
-    "value": 62,
-    "lat": 55.7558,
-    "lng": 37.6173
-  },
-  {
-    "date": "2026-08-13",
-    "value": 65,
-    "lat": 55.7558,
-    "lng": 37.6173
-  },
-  {
-    "date": "2026-08-14",
-    "value": 63,
-    "lat": 55.7558,
-    "lng": 37.6173
-  },
-  {
-    "date": "2026-08-15",
-    "value": 66,
-    "lat": 55.7558,
-    "lng": 37.6173
-  },
-  {
-    "date": "2026-08-16",
-    "value": 64,
-    "lat": 55.7558,
-    "lng": 37.6173
-  },
-  {
-    "date": "2026-08-17",
-    "value": 67,
-    "lat": 55.7558,
-    "lng": 37.6173
-  },
-  {
-    "date": "2026-08-18",
-    "value": 65,
-    "lat": 55.7558,
-    "lng": 37.6173
-  },
-  {
-    "date": "2026-08-19",
-    "value": 62,
-    "lat": 55.7558,
-    "lng": 37.6173
-  },
-  {
-    "date": "2026-08-20",
-    "value": 65,
-    "lat": 55.7558,
-    "lng": 37.6173
-  },
-  {
-    "date": "2026-08-21",
-    "value": 65,
-    "lat": 55.7558,
-    "lng": 37.6173
+  "series": [
+    {
+      "date": "2026-08-22",
+      "value": 65,
+      "region": "Восточная Европа",
+      "extra": {
+        "notam": 5,
+        "gps": 1,
+        "status": "medium",
+        "unmapped_region": true,
+        "unmapped_original": "Восточная Европа"
+      }
+    },
+    {
+      "date": "2026-08-23",
+      "value": 66,
+      "region": "Ближний Восток",
+      "extra": {
+        "notam": 2,
+        "gps": 2,
+        "status": "medium",
+        "unmapped_region": true,
+        "unmapped_original": "Ближний Восток"
+      }
+    },
+    {
+      "date": "2026-08-24",
+      "value": 67,
+      "region": "Южно-Китайское море",
+      "extra": {
+        "notam": 5,
+        "gps": 4,
+        "status": "medium",
+        "unmapped_region": true,
+        "unmapped_original": "Южно-Китайское море"
+      }
+    },
+    {
+      "date": "2026-08-25",
+      "value": 68,
+      "region": "Корейский полуостров",
+      "extra": {
+        "notam": 3,
+        "gps": 3,
+        "status": "medium",
+        "unmapped_region": true,
+        "unmapped_original": "Корейский полуостров"
+      }
+    },
+    {
+      "date": "2026-08-26",
+      "value": 69,
+      "region": "Балканы",
+      "extra": {
+        "notam": 1,
+        "gps": 3,
+        "status": "medium",
+        "unmapped_region": true,
+        "unmapped_original": "Балканы"
+      }
+    },
+    {
+      "date": "2026-08-27",
+      "value": 70,
+      "region": "Восточная Европа",
+      "extra": {
+        "notam": 1,
+        "gps": 5,
+        "status": "medium",
+        "unmapped_region": true,
+        "unmapped_original": "Восточная Европа"
+      }
+    },
+    {
+      "date": "2026-08-28",
+      "value": 71,
+      "region": "Ближний Восток",
+      "extra": {
+        "notam": 5,
+        "gps": 3,
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Ближний Восток"
+      }
+    },
+    {
+      "date": "2026-08-29",
+      "value": 72,
+      "region": "Южно-Китайское море",
+      "extra": {
+        "notam": 5,
+        "gps": 4,
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Южно-Китайское море"
+      }
+    },
+    {
+      "date": "2026-08-30",
+      "value": 73,
+      "region": "Корейский полуостров",
+      "extra": {
+        "notam": 5,
+        "gps": 4,
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Корейский полуостров"
+      }
+    },
+    {
+      "date": "2026-08-31",
+      "value": 74,
+      "region": "Балканы",
+      "extra": {
+        "notam": 3,
+        "gps": 3,
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Балканы"
+      }
+    },
+    {
+      "date": "2026-09-01",
+      "value": 75,
+      "region": "Восточная Европа",
+      "extra": {
+        "notam": 4,
+        "gps": 5,
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Восточная Европа"
+      }
+    },
+    {
+      "date": "2026-09-02",
+      "value": 76,
+      "region": "Ближний Восток",
+      "extra": {
+        "notam": 3,
+        "gps": 5,
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Ближний Восток"
+      }
+    },
+    {
+      "date": "2026-09-03",
+      "value": 77,
+      "region": "Южно-Китайское море",
+      "extra": {
+        "notam": 4,
+        "gps": 4,
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Южно-Китайское море"
+      }
+    },
+    {
+      "date": "2026-09-04",
+      "value": 78,
+      "region": "Корейский полуостров",
+      "extra": {
+        "notam": 3,
+        "gps": 3,
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Корейский полуостров"
+      }
+    },
+    {
+      "date": "2026-09-05",
+      "value": 79,
+      "region": "Балканы",
+      "extra": {
+        "notam": 3,
+        "gps": 1,
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Балканы"
+      }
+    },
+    {
+      "date": "2026-09-06",
+      "value": 80,
+      "region": "Восточная Европа",
+      "extra": {
+        "notam": 2,
+        "gps": 2,
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Восточная Европа"
+      }
+    },
+    {
+      "date": "2026-09-07",
+      "value": 81,
+      "region": "Ближний Восток",
+      "extra": {
+        "notam": 4,
+        "gps": 3,
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Ближний Восток"
+      }
+    },
+    {
+      "date": "2026-09-08",
+      "value": 82,
+      "region": "Южно-Китайское море",
+      "extra": {
+        "notam": 1,
+        "gps": 5,
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Южно-Китайское море"
+      }
+    },
+    {
+      "date": "2026-09-09",
+      "value": 83,
+      "region": "Корейский полуостров",
+      "extra": {
+        "notam": 3,
+        "gps": 2,
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Корейский полуостров"
+      }
+    },
+    {
+      "date": "2026-09-10",
+      "value": 84,
+      "region": "Балканы",
+      "extra": {
+        "notam": 3,
+        "gps": 4,
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Балканы"
+      }
+    },
+    {
+      "date": "2026-09-11",
+      "value": 85,
+      "region": "Восточная Европа",
+      "extra": {
+        "notam": 5,
+        "gps": 2,
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Восточная Европа"
+      }
+    },
+    {
+      "date": "2026-09-12",
+      "value": 86,
+      "region": "Ближний Восток",
+      "extra": {
+        "notam": 3,
+        "gps": 2,
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Ближний Восток"
+      }
+    },
+    {
+      "date": "2026-09-13",
+      "value": 87,
+      "region": "Южно-Китайское море",
+      "extra": {
+        "notam": 2,
+        "gps": 4,
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Южно-Китайское море"
+      }
+    },
+    {
+      "date": "2026-09-14",
+      "value": 88,
+      "region": "Корейский полуостров",
+      "extra": {
+        "notam": 5,
+        "gps": 5,
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Корейский полуостров"
+      }
+    },
+    {
+      "date": "2026-09-15",
+      "value": 89,
+      "region": "Балканы",
+      "extra": {
+        "notam": 1,
+        "gps": 3,
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Балканы"
+      }
+    },
+    {
+      "date": "2026-09-16",
+      "value": 90,
+      "region": "Восточная Европа",
+      "extra": {
+        "notam": 5,
+        "gps": 2,
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Восточная Европа"
+      }
+    },
+    {
+      "date": "2026-09-17",
+      "value": 91,
+      "region": "Ближний Восток",
+      "extra": {
+        "notam": 1,
+        "gps": 1,
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Ближний Восток"
+      }
+    },
+    {
+      "date": "2026-09-18",
+      "value": 92,
+      "region": "Южно-Китайское море",
+      "extra": {
+        "notam": 5,
+        "gps": 1,
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Южно-Китайское море"
+      }
+    },
+    {
+      "date": "2026-09-19",
+      "value": 93,
+      "region": "Корейский полуостров",
+      "extra": {
+        "notam": 2,
+        "gps": 5,
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Корейский полуостров"
+      }
+    },
+    {
+      "date": "2026-09-20",
+      "value": 94,
+      "region": "Балканы",
+      "extra": {
+        "notam": 3,
+        "gps": 4,
+        "status": "high",
+        "unmapped_region": true,
+        "unmapped_original": "Балканы"
+      }
+    }
+  ],
+  "points": [],
+  "regions": [
+    {
+      "region": "Восточная Европа",
+      "value": 77.5,
+      "count": 6,
+      "aggregation": "mean",
+      "extra": {
+        "max": 90,
+        "sum": 465
+      }
+    },
+    {
+      "region": "Ближний Восток",
+      "value": 78.5,
+      "count": 6,
+      "aggregation": "mean",
+      "extra": {
+        "max": 91,
+        "sum": 471
+      }
+    },
+    {
+      "region": "Южно-Китайское море",
+      "value": 79.5,
+      "count": 6,
+      "aggregation": "mean",
+      "extra": {
+        "max": 92,
+        "sum": 477
+      }
+    },
+    {
+      "region": "Корейский полуостров",
+      "value": 80.5,
+      "count": 6,
+      "aggregation": "mean",
+      "extra": {
+        "max": 93,
+        "sum": 483
+      }
+    },
+    {
+      "region": "Балканы",
+      "value": 81.5,
+      "count": 6,
+      "aggregation": "mean",
+      "extra": {
+        "max": 94,
+        "sum": 489
+      }
+    }
+  ],
+  "extra": {
+    "adapter": "timeseries",
+    "adapter_version": "2.1.1",
+    "unique_dates": 30,
+    "unmapped_regions": [
+      "Восточная Европа",
+      "Ближний Восток",
+      "Южно-Китайское море",
+      "Корейский полуостров",
+      "Балканы"
+    ],
+    "unmapped_count": 5
   }
-]
+}

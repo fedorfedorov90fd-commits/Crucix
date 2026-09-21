@@ -1,0 +1,52 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "rss-universal",
+    "source": "RSS Universal (direct)",
+    "source_url": "file://data/feeds/feeds.opml",
+    "fetched_at": "2026-09-20T11:03:35.352Z",
+    "normalized_at": "2026-09-20T11:28:57.147Z",
+    "collector": "collect-rss-universal.mjs",
+    "license": "public-domain",
+    "count": 500,
+    "granularity": "event",
+    "value_unit": "count",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null
+  },
+  "series": [
+    {
+      "date": "2026-09-18",
+      "value": 48
+    },
+    {
+      "date": "2026-09-19",
+      "value": 130
+    },
+    {
+      "date": "2026-09-20",
+      "value": 322
+    }
+  ],
+  "points": [],
+  "regions": [
+    {
+      "region": "GLOBAL",
+      "value": 500,
+      "count": 500,
+      "aggregation": "count"
+    }
+  ],
+  "extra": {
+    "adapter": "events",
+    "adapter_version": "2.1.0",
+    "total_events": 500,
+    "unique_dates": 3,
+    "skipped_no_date": 0,
+    "points_from_centroids": 0,
+    "unmapped_regions": [],
+    "unmapped_count": 0,
+    "inner_array_key": "items"
+  }
+}

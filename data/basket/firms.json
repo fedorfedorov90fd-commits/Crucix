@@ -1,250 +1,1006 @@
-[
-  {
-    "date": "2026-07-31",
-    "value": 37,
-    "fires": 37,
-    "region": "Amazon",
-    "frp": 30.11,
-    "confidence": 77.3
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "fires",
+    "source": "NASA FIRMS (demo)",
+    "source_url": "https://firms.modaps.eosdis.nasa.gov/",
+    "fetched_at": "2026-09-20T10:47:33.888Z",
+    "normalized_at": "2026-09-20T11:28:57.056Z",
+    "collector": "collect-fires.mjs",
+    "license": "public-domain",
+    "count": 60,
+    "granularity": "event",
+    "value_unit": "fires",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null,
+    "period": "P60D"
   },
-  {
-    "date": "2026-08-01",
-    "value": 109,
-    "fires": 109,
-    "region": "Australia",
-    "frp": 88.06,
-    "confidence": 58.5
-  },
-  {
-    "date": "2026-08-02",
-    "value": 130,
-    "fires": 130,
-    "region": "Greece",
-    "frp": 70.76,
-    "confidence": 59
-  },
-  {
-    "date": "2026-08-03",
-    "value": 51,
-    "fires": 51,
-    "region": "California",
-    "frp": 92.32,
-    "confidence": 67
-  },
-  {
-    "date": "2026-08-04",
-    "value": 149,
-    "fires": 149,
-    "region": "Australia",
-    "frp": 93.88,
-    "confidence": 88.7
-  },
-  {
-    "date": "2026-08-05",
-    "value": 126,
-    "fires": 126,
-    "region": "Siberia",
-    "frp": 24.8,
-    "confidence": 81.3
-  },
-  {
-    "date": "2026-08-06",
-    "value": 24,
-    "fires": 24,
-    "region": "Indonesia",
-    "frp": 96.81,
-    "confidence": 91.5
-  },
-  {
-    "date": "2026-08-07",
-    "value": 145,
-    "fires": 145,
-    "region": "Turkey",
-    "frp": 106.67,
-    "confidence": 74.9
-  },
-  {
-    "date": "2026-08-08",
-    "value": 157,
-    "fires": 157,
-    "region": "Turkey",
-    "frp": 17.02,
-    "confidence": 85
-  },
-  {
-    "date": "2026-08-09",
-    "value": 73,
-    "fires": 73,
-    "region": "Greece",
-    "frp": 12.79,
-    "confidence": 86.7
-  },
-  {
-    "date": "2026-08-10",
-    "value": 75,
-    "fires": 75,
-    "region": "Canada",
-    "frp": 98.25,
-    "confidence": 74.9
-  },
-  {
-    "date": "2026-08-11",
-    "value": 68,
-    "fires": 68,
-    "region": "Australia",
-    "frp": 92.02,
-    "confidence": 84.8
-  },
-  {
-    "date": "2026-08-12",
-    "value": 57,
-    "fires": 57,
-    "region": "Canada",
-    "frp": 46.85,
-    "confidence": 80.4
-  },
-  {
-    "date": "2026-08-13",
-    "value": 139,
-    "fires": 139,
-    "region": "Indonesia",
-    "frp": 12.27,
-    "confidence": 94.9
-  },
-  {
-    "date": "2026-08-14",
-    "value": 188,
-    "fires": 188,
-    "region": "Brazil",
-    "frp": 61.6,
-    "confidence": 83.8
-  },
-  {
-    "date": "2026-08-15",
-    "value": 173,
-    "fires": 173,
-    "region": "Australia",
-    "frp": 31.77,
-    "confidence": 85.2
-  },
-  {
-    "date": "2026-08-16",
-    "value": 86,
-    "fires": 86,
-    "region": "Australia",
-    "frp": 76.01,
-    "confidence": 53.8
-  },
-  {
-    "date": "2026-08-17",
-    "value": 76,
-    "fires": 76,
-    "region": "Indonesia",
-    "frp": 57.42,
-    "confidence": 84.4
-  },
-  {
-    "date": "2026-08-18",
-    "value": 151,
-    "fires": 151,
-    "region": "Indonesia",
-    "frp": 71.58,
-    "confidence": 75.9
-  },
-  {
-    "date": "2026-08-19",
-    "value": 160,
-    "fires": 160,
-    "region": "Indonesia",
-    "frp": 82.04,
-    "confidence": 93.3
-  },
-  {
-    "date": "2026-08-20",
-    "value": 110,
-    "fires": 110,
-    "region": "California",
-    "frp": 67.38,
-    "confidence": 86.6
-  },
-  {
-    "date": "2026-08-21",
-    "value": 69,
-    "fires": 69,
-    "region": "Australia",
-    "frp": 106.54,
-    "confidence": 67.6
-  },
-  {
-    "date": "2026-08-22",
-    "value": 80,
-    "fires": 80,
-    "region": "Amazon",
-    "frp": 25.94,
-    "confidence": 73.8
-  },
-  {
-    "date": "2026-08-23",
-    "value": 65,
-    "fires": 65,
-    "region": "California",
-    "frp": 26.26,
-    "confidence": 50.6
-  },
-  {
-    "date": "2026-08-24",
-    "value": 86,
-    "fires": 86,
-    "region": "Indonesia",
-    "frp": 42.58,
-    "confidence": 66.8
-  },
-  {
-    "date": "2026-08-25",
-    "value": 128,
-    "fires": 128,
-    "region": "Brazil",
-    "frp": 101.54,
-    "confidence": 61.1
-  },
-  {
-    "date": "2026-08-26",
-    "value": 85,
-    "fires": 85,
-    "region": "Canada",
-    "frp": 13.84,
-    "confidence": 80.6
-  },
-  {
-    "date": "2026-08-27",
-    "value": 174,
-    "fires": 174,
-    "region": "Siberia",
-    "frp": 22.5,
-    "confidence": 88.7
-  },
-  {
-    "date": "2026-08-28",
-    "value": 113,
-    "fires": 113,
-    "region": "Brazil",
-    "frp": 75.77,
-    "confidence": 54
-  },
-  {
-    "date": "2026-08-29",
-    "value": 81,
-    "fires": 81,
-    "region": "Indonesia",
-    "frp": 33.42,
-    "confidence": 98.9
-  },
-  {
-    "date": "2026-08-30",
-    "value": 187,
-    "fires": 187,
-    "region": "Indonesia",
-    "frp": 90.85,
-    "confidence": 55.6
+  "series": [
+    {
+      "date": "2026-09-20",
+      "value": 144,
+      "region": "PRT"
+    },
+    {
+      "date": "2026-09-19",
+      "value": 168,
+      "region": "ZAF"
+    },
+    {
+      "date": "2026-09-18",
+      "value": 165,
+      "region": "BRA"
+    },
+    {
+      "date": "2026-09-17",
+      "value": 170,
+      "region": "USA"
+    },
+    {
+      "date": "2026-09-16",
+      "value": 186,
+      "region": "ARG"
+    },
+    {
+      "date": "2026-09-15",
+      "value": 170,
+      "region": "CAN"
+    },
+    {
+      "date": "2026-09-14",
+      "value": 178,
+      "region": "LBR"
+    },
+    {
+      "date": "2026-09-13",
+      "value": 193,
+      "region": "PRT"
+    },
+    {
+      "date": "2026-09-12",
+      "value": 61,
+      "region": "TUR"
+    },
+    {
+      "date": "2026-09-11",
+      "value": 173,
+      "region": "PRT"
+    },
+    {
+      "date": "2026-09-10",
+      "value": 114,
+      "region": "IND"
+    },
+    {
+      "date": "2026-09-09",
+      "value": 68,
+      "region": "USA"
+    },
+    {
+      "date": "2026-09-08",
+      "value": 88,
+      "region": "ITA"
+    },
+    {
+      "date": "2026-09-07",
+      "value": 123,
+      "region": "BRA"
+    },
+    {
+      "date": "2026-09-06",
+      "value": 20,
+      "region": "CAN"
+    },
+    {
+      "date": "2026-09-05",
+      "value": 153,
+      "region": "RUS"
+    },
+    {
+      "date": "2026-09-04",
+      "value": 162,
+      "region": "LBR"
+    },
+    {
+      "date": "2026-09-03",
+      "value": 92
+    },
+    {
+      "date": "2026-09-02",
+      "value": 195,
+      "region": "TUR"
+    },
+    {
+      "date": "2026-09-01",
+      "value": 195,
+      "region": "IDN"
+    },
+    {
+      "date": "2026-08-31",
+      "value": 149,
+      "region": "USA"
+    },
+    {
+      "date": "2026-08-30",
+      "value": 96,
+      "region": "CHN"
+    },
+    {
+      "date": "2026-08-29",
+      "value": 109,
+      "region": "RUS"
+    },
+    {
+      "date": "2026-08-28",
+      "value": 162,
+      "region": "ZAF"
+    },
+    {
+      "date": "2026-08-27",
+      "value": 36,
+      "region": "MEX"
+    },
+    {
+      "date": "2026-08-26",
+      "value": 60,
+      "region": "BRA"
+    },
+    {
+      "date": "2026-08-25",
+      "value": 122,
+      "region": "ESP"
+    },
+    {
+      "date": "2026-08-24",
+      "value": 81,
+      "region": "PRT"
+    },
+    {
+      "date": "2026-08-23",
+      "value": 22,
+      "region": "JPN"
+    },
+    {
+      "date": "2026-08-22",
+      "value": 60,
+      "region": "BRA"
+    },
+    {
+      "date": "2026-08-21",
+      "value": 45,
+      "region": "IND"
+    },
+    {
+      "date": "2026-08-20",
+      "value": 106,
+      "region": "IND"
+    },
+    {
+      "date": "2026-08-19",
+      "value": 178,
+      "region": "USA"
+    },
+    {
+      "date": "2026-08-18",
+      "value": 42,
+      "region": "LBR"
+    },
+    {
+      "date": "2026-08-17",
+      "value": 114,
+      "region": "AUS"
+    },
+    {
+      "date": "2026-08-16",
+      "value": 126
+    },
+    {
+      "date": "2026-08-15",
+      "value": 164,
+      "region": "CAN"
+    },
+    {
+      "date": "2026-08-14",
+      "value": 120,
+      "region": "ZAF"
+    },
+    {
+      "date": "2026-08-13",
+      "value": 176,
+      "region": "BRA"
+    },
+    {
+      "date": "2026-08-12",
+      "value": 105
+    },
+    {
+      "date": "2026-08-11",
+      "value": 73,
+      "region": "AUS"
+    },
+    {
+      "date": "2026-08-10",
+      "value": 197,
+      "region": "JPN"
+    },
+    {
+      "date": "2026-08-09",
+      "value": 91,
+      "region": "LBR"
+    },
+    {
+      "date": "2026-08-08",
+      "value": 70,
+      "region": "ESP"
+    },
+    {
+      "date": "2026-08-07",
+      "value": 121,
+      "region": "JPN"
+    },
+    {
+      "date": "2026-08-06",
+      "value": 48,
+      "region": "USA"
+    },
+    {
+      "date": "2026-08-05",
+      "value": 30,
+      "region": "LBR"
+    },
+    {
+      "date": "2026-08-04",
+      "value": 38,
+      "region": "BRA"
+    },
+    {
+      "date": "2026-08-03",
+      "value": 52
+    },
+    {
+      "date": "2026-08-02",
+      "value": 152,
+      "region": "ITA"
+    },
+    {
+      "date": "2026-08-01",
+      "value": 121,
+      "region": "CAN"
+    },
+    {
+      "date": "2026-07-31",
+      "value": 55,
+      "region": "ARG"
+    },
+    {
+      "date": "2026-07-30",
+      "value": 118,
+      "region": "PRT"
+    },
+    {
+      "date": "2026-07-29",
+      "value": 37,
+      "region": "ARG"
+    },
+    {
+      "date": "2026-07-28",
+      "value": 156,
+      "region": "JPN"
+    },
+    {
+      "date": "2026-07-27",
+      "value": 108,
+      "region": "LBR"
+    },
+    {
+      "date": "2026-07-26",
+      "value": 60,
+      "region": "PRT"
+    },
+    {
+      "date": "2026-07-25",
+      "value": 94,
+      "region": "IDN"
+    },
+    {
+      "date": "2026-07-24",
+      "value": 188,
+      "region": "CAN"
+    },
+    {
+      "date": "2026-07-23",
+      "value": 159,
+      "region": "USA"
+    }
+  ],
+  "points": [
+    {
+      "lat": 39.5,
+      "lon": -8,
+      "value": 144,
+      "label": "Пожар в Portugal",
+      "region": "PRT",
+      "timestamp": "2026-09-20T00:00:00.000Z"
+    },
+    {
+      "lat": -30,
+      "lon": 25,
+      "value": 168,
+      "label": "Пожар в South Africa",
+      "region": "ZAF",
+      "timestamp": "2026-09-19T00:00:00.000Z"
+    },
+    {
+      "lat": -15,
+      "lon": -55,
+      "value": 165,
+      "label": "Пожар в Brazil",
+      "region": "BRA",
+      "timestamp": "2026-09-18T00:00:00.000Z"
+    },
+    {
+      "lat": 37,
+      "lon": -120,
+      "value": 170,
+      "label": "Пожар в California",
+      "region": "USA",
+      "timestamp": "2026-09-17T00:00:00.000Z"
+    },
+    {
+      "lat": -35,
+      "lon": -65,
+      "value": 186,
+      "label": "Пожар в Argentina",
+      "region": "ARG",
+      "timestamp": "2026-09-16T00:00:00.000Z"
+    },
+    {
+      "lat": 55,
+      "lon": -100,
+      "value": 170,
+      "label": "Пожар в Canada",
+      "region": "CAN",
+      "timestamp": "2026-09-15T00:00:00.000Z"
+    },
+    {
+      "lat": 60,
+      "lon": 100,
+      "value": 178,
+      "label": "Пожар в Siberia",
+      "region": "LBR",
+      "timestamp": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "lat": 39.5,
+      "lon": -8,
+      "value": 193,
+      "label": "Пожар в Portugal",
+      "region": "PRT",
+      "timestamp": "2026-09-13T00:00:00.000Z"
+    },
+    {
+      "lat": 39,
+      "lon": 35,
+      "value": 61,
+      "label": "Пожар в Turkey",
+      "region": "TUR",
+      "timestamp": "2026-09-12T00:00:00.000Z"
+    },
+    {
+      "lat": 39.5,
+      "lon": -8,
+      "value": 173,
+      "label": "Пожар в Portugal",
+      "region": "PRT",
+      "timestamp": "2026-09-11T00:00:00.000Z"
+    },
+    {
+      "lat": 20,
+      "lon": 78,
+      "value": 114,
+      "label": "Пожар в India",
+      "region": "IND",
+      "timestamp": "2026-09-10T00:00:00.000Z"
+    },
+    {
+      "lat": 37,
+      "lon": -120,
+      "value": 68,
+      "label": "Пожар в California",
+      "region": "USA",
+      "timestamp": "2026-09-09T00:00:00.000Z"
+    },
+    {
+      "lat": 42,
+      "lon": 12,
+      "value": 88,
+      "label": "Пожар в Italy",
+      "region": "ITA",
+      "timestamp": "2026-09-08T00:00:00.000Z"
+    },
+    {
+      "lat": -15,
+      "lon": -55,
+      "value": 123,
+      "label": "Пожар в Brazil",
+      "region": "BRA",
+      "timestamp": "2026-09-07T00:00:00.000Z"
+    },
+    {
+      "lat": 55,
+      "lon": -100,
+      "value": 20,
+      "label": "Пожар в Canada",
+      "region": "CAN",
+      "timestamp": "2026-09-06T00:00:00.000Z"
+    },
+    {
+      "lat": 55,
+      "lon": 40,
+      "value": 153,
+      "label": "Пожар в Russia",
+      "region": "RUS",
+      "timestamp": "2026-09-05T00:00:00.000Z"
+    },
+    {
+      "lat": 60,
+      "lon": 100,
+      "value": 162,
+      "label": "Пожар в Siberia",
+      "region": "LBR",
+      "timestamp": "2026-09-04T00:00:00.000Z"
+    },
+    {
+      "lat": -5,
+      "lon": -60,
+      "value": 92,
+      "label": "Пожар в Amazon",
+      "region": "Amazon",
+      "timestamp": "2026-09-03T00:00:00.000Z",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "Amazon"
+      }
+    },
+    {
+      "lat": 39,
+      "lon": 35,
+      "value": 195,
+      "label": "Пожар в Turkey",
+      "region": "TUR",
+      "timestamp": "2026-09-02T00:00:00.000Z"
+    },
+    {
+      "lat": -3,
+      "lon": 118,
+      "value": 195,
+      "label": "Пожар в Indonesia",
+      "region": "IDN",
+      "timestamp": "2026-09-01T00:00:00.000Z"
+    },
+    {
+      "lat": 37,
+      "lon": -120,
+      "value": 149,
+      "label": "Пожар в California",
+      "region": "USA",
+      "timestamp": "2026-08-31T00:00:00.000Z"
+    },
+    {
+      "lat": 35,
+      "lon": 105,
+      "value": 96,
+      "label": "Пожар в China",
+      "region": "CHN",
+      "timestamp": "2026-08-30T00:00:00.000Z"
+    },
+    {
+      "lat": 55,
+      "lon": 40,
+      "value": 109,
+      "label": "Пожар в Russia",
+      "region": "RUS",
+      "timestamp": "2026-08-29T00:00:00.000Z"
+    },
+    {
+      "lat": -30,
+      "lon": 25,
+      "value": 162,
+      "label": "Пожар в South Africa",
+      "region": "ZAF",
+      "timestamp": "2026-08-28T00:00:00.000Z"
+    },
+    {
+      "lat": 23,
+      "lon": -102,
+      "value": 36,
+      "label": "Пожар в Mexico",
+      "region": "MEX",
+      "timestamp": "2026-08-27T00:00:00.000Z"
+    },
+    {
+      "lat": -15,
+      "lon": -55,
+      "value": 60,
+      "label": "Пожар в Brazil",
+      "region": "BRA",
+      "timestamp": "2026-08-26T00:00:00.000Z"
+    },
+    {
+      "lat": 40,
+      "lon": -4,
+      "value": 122,
+      "label": "Пожар в Spain",
+      "region": "ESP",
+      "timestamp": "2026-08-25T00:00:00.000Z"
+    },
+    {
+      "lat": 39.5,
+      "lon": -8,
+      "value": 81,
+      "label": "Пожар в Portugal",
+      "region": "PRT",
+      "timestamp": "2026-08-24T00:00:00.000Z"
+    },
+    {
+      "lat": 36,
+      "lon": 138,
+      "value": 22,
+      "label": "Пожар в Japan",
+      "region": "JPN",
+      "timestamp": "2026-08-23T00:00:00.000Z"
+    },
+    {
+      "lat": -15,
+      "lon": -55,
+      "value": 60,
+      "label": "Пожар в Brazil",
+      "region": "BRA",
+      "timestamp": "2026-08-22T00:00:00.000Z"
+    },
+    {
+      "lat": 20,
+      "lon": 78,
+      "value": 45,
+      "label": "Пожар в India",
+      "region": "IND",
+      "timestamp": "2026-08-21T00:00:00.000Z"
+    },
+    {
+      "lat": 20,
+      "lon": 78,
+      "value": 106,
+      "label": "Пожар в India",
+      "region": "IND",
+      "timestamp": "2026-08-20T00:00:00.000Z"
+    },
+    {
+      "lat": 37,
+      "lon": -120,
+      "value": 178,
+      "label": "Пожар в California",
+      "region": "USA",
+      "timestamp": "2026-08-19T00:00:00.000Z"
+    },
+    {
+      "lat": 60,
+      "lon": 100,
+      "value": 42,
+      "label": "Пожар в Siberia",
+      "region": "LBR",
+      "timestamp": "2026-08-18T00:00:00.000Z"
+    },
+    {
+      "lat": -25,
+      "lon": 135,
+      "value": 114,
+      "label": "Пожар в Australia",
+      "region": "AUS",
+      "timestamp": "2026-08-17T00:00:00.000Z"
+    },
+    {
+      "lat": -5,
+      "lon": -60,
+      "value": 126,
+      "label": "Пожар в Amazon",
+      "region": "Amazon",
+      "timestamp": "2026-08-16T00:00:00.000Z",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "Amazon"
+      }
+    },
+    {
+      "lat": 55,
+      "lon": -100,
+      "value": 164,
+      "label": "Пожар в Canada",
+      "region": "CAN",
+      "timestamp": "2026-08-15T00:00:00.000Z"
+    },
+    {
+      "lat": -30,
+      "lon": 25,
+      "value": 120,
+      "label": "Пожар в South Africa",
+      "region": "ZAF",
+      "timestamp": "2026-08-14T00:00:00.000Z"
+    },
+    {
+      "lat": -15,
+      "lon": -55,
+      "value": 176,
+      "label": "Пожар в Brazil",
+      "region": "BRA",
+      "timestamp": "2026-08-13T00:00:00.000Z"
+    },
+    {
+      "lat": -5,
+      "lon": -60,
+      "value": 105,
+      "label": "Пожар в Amazon",
+      "region": "Amazon",
+      "timestamp": "2026-08-12T00:00:00.000Z",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "Amazon"
+      }
+    },
+    {
+      "lat": -25,
+      "lon": 135,
+      "value": 73,
+      "label": "Пожар в Australia",
+      "region": "AUS",
+      "timestamp": "2026-08-11T00:00:00.000Z"
+    },
+    {
+      "lat": 36,
+      "lon": 138,
+      "value": 197,
+      "label": "Пожар в Japan",
+      "region": "JPN",
+      "timestamp": "2026-08-10T00:00:00.000Z"
+    },
+    {
+      "lat": 60,
+      "lon": 100,
+      "value": 91,
+      "label": "Пожар в Siberia",
+      "region": "LBR",
+      "timestamp": "2026-08-09T00:00:00.000Z"
+    },
+    {
+      "lat": 40,
+      "lon": -4,
+      "value": 70,
+      "label": "Пожар в Spain",
+      "region": "ESP",
+      "timestamp": "2026-08-08T00:00:00.000Z"
+    },
+    {
+      "lat": 36,
+      "lon": 138,
+      "value": 121,
+      "label": "Пожар в Japan",
+      "region": "JPN",
+      "timestamp": "2026-08-07T00:00:00.000Z"
+    },
+    {
+      "lat": 37,
+      "lon": -120,
+      "value": 48,
+      "label": "Пожар в California",
+      "region": "USA",
+      "timestamp": "2026-08-06T00:00:00.000Z"
+    },
+    {
+      "lat": 60,
+      "lon": 100,
+      "value": 30,
+      "label": "Пожар в Siberia",
+      "region": "LBR",
+      "timestamp": "2026-08-05T00:00:00.000Z"
+    },
+    {
+      "lat": -15,
+      "lon": -55,
+      "value": 38,
+      "label": "Пожар в Brazil",
+      "region": "BRA",
+      "timestamp": "2026-08-04T00:00:00.000Z"
+    },
+    {
+      "lat": -5,
+      "lon": -60,
+      "value": 52,
+      "label": "Пожар в Amazon",
+      "region": "Amazon",
+      "timestamp": "2026-08-03T00:00:00.000Z",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "Amazon"
+      }
+    },
+    {
+      "lat": 42,
+      "lon": 12,
+      "value": 152,
+      "label": "Пожар в Italy",
+      "region": "ITA",
+      "timestamp": "2026-08-02T00:00:00.000Z"
+    },
+    {
+      "lat": 55,
+      "lon": -100,
+      "value": 121,
+      "label": "Пожар в Canada",
+      "region": "CAN",
+      "timestamp": "2026-08-01T00:00:00.000Z"
+    },
+    {
+      "lat": -35,
+      "lon": -65,
+      "value": 55,
+      "label": "Пожар в Argentina",
+      "region": "ARG",
+      "timestamp": "2026-07-31T00:00:00.000Z"
+    },
+    {
+      "lat": 39.5,
+      "lon": -8,
+      "value": 118,
+      "label": "Пожар в Portugal",
+      "region": "PRT",
+      "timestamp": "2026-07-30T00:00:00.000Z"
+    },
+    {
+      "lat": -35,
+      "lon": -65,
+      "value": 37,
+      "label": "Пожар в Argentina",
+      "region": "ARG",
+      "timestamp": "2026-07-29T00:00:00.000Z"
+    },
+    {
+      "lat": 36,
+      "lon": 138,
+      "value": 156,
+      "label": "Пожар в Japan",
+      "region": "JPN",
+      "timestamp": "2026-07-28T00:00:00.000Z"
+    },
+    {
+      "lat": 60,
+      "lon": 100,
+      "value": 108,
+      "label": "Пожар в Siberia",
+      "region": "LBR",
+      "timestamp": "2026-07-27T00:00:00.000Z"
+    },
+    {
+      "lat": 39.5,
+      "lon": -8,
+      "value": 60,
+      "label": "Пожар в Portugal",
+      "region": "PRT",
+      "timestamp": "2026-07-26T00:00:00.000Z"
+    },
+    {
+      "lat": -3,
+      "lon": 118,
+      "value": 94,
+      "label": "Пожар в Indonesia",
+      "region": "IDN",
+      "timestamp": "2026-07-25T00:00:00.000Z"
+    },
+    {
+      "lat": 55,
+      "lon": -100,
+      "value": 188,
+      "label": "Пожар в Canada",
+      "region": "CAN",
+      "timestamp": "2026-07-24T00:00:00.000Z"
+    },
+    {
+      "lat": 37,
+      "lon": -120,
+      "value": 159,
+      "label": "Пожар в California",
+      "region": "USA",
+      "timestamp": "2026-07-23T00:00:00.000Z"
+    }
+  ],
+  "regions": [
+    {
+      "region": "PRT",
+      "value": 128.16666666666666,
+      "count": 6,
+      "aggregation": "sum",
+      "extra": {
+        "max": 193,
+        "sum": 769
+      }
+    },
+    {
+      "region": "ZAF",
+      "value": 150,
+      "count": 3,
+      "aggregation": "sum",
+      "extra": {
+        "max": 168,
+        "sum": 450
+      }
+    },
+    {
+      "region": "BRA",
+      "value": 103.66666666666667,
+      "count": 6,
+      "aggregation": "sum",
+      "extra": {
+        "max": 176,
+        "sum": 622
+      }
+    },
+    {
+      "region": "USA",
+      "value": 128.66666666666666,
+      "count": 6,
+      "aggregation": "sum",
+      "extra": {
+        "max": 178,
+        "sum": 772
+      }
+    },
+    {
+      "region": "ARG",
+      "value": 92.66666666666667,
+      "count": 3,
+      "aggregation": "sum",
+      "extra": {
+        "max": 186,
+        "sum": 278
+      }
+    },
+    {
+      "region": "CAN",
+      "value": 132.6,
+      "count": 5,
+      "aggregation": "sum",
+      "extra": {
+        "max": 188,
+        "sum": 663
+      }
+    },
+    {
+      "region": "LBR",
+      "value": 101.83333333333333,
+      "count": 6,
+      "aggregation": "sum",
+      "extra": {
+        "max": 178,
+        "sum": 611
+      }
+    },
+    {
+      "region": "TUR",
+      "value": 128,
+      "count": 2,
+      "aggregation": "sum",
+      "extra": {
+        "max": 195,
+        "sum": 256
+      }
+    },
+    {
+      "region": "IND",
+      "value": 88.33333333333333,
+      "count": 3,
+      "aggregation": "sum",
+      "extra": {
+        "max": 114,
+        "sum": 265
+      }
+    },
+    {
+      "region": "ITA",
+      "value": 120,
+      "count": 2,
+      "aggregation": "sum",
+      "extra": {
+        "max": 152,
+        "sum": 240
+      }
+    },
+    {
+      "region": "RUS",
+      "value": 131,
+      "count": 2,
+      "aggregation": "sum",
+      "extra": {
+        "max": 153,
+        "sum": 262
+      }
+    },
+    {
+      "region": "Amazon",
+      "value": 93.75,
+      "count": 4,
+      "aggregation": "sum",
+      "extra": {
+        "max": 126,
+        "sum": 375
+      }
+    },
+    {
+      "region": "IDN",
+      "value": 144.5,
+      "count": 2,
+      "aggregation": "sum",
+      "extra": {
+        "max": 195,
+        "sum": 289
+      }
+    },
+    {
+      "region": "CHN",
+      "value": 96,
+      "count": 1,
+      "aggregation": "sum",
+      "extra": {
+        "max": 96,
+        "sum": 96
+      }
+    },
+    {
+      "region": "MEX",
+      "value": 36,
+      "count": 1,
+      "aggregation": "sum",
+      "extra": {
+        "max": 36,
+        "sum": 36
+      }
+    },
+    {
+      "region": "ESP",
+      "value": 96,
+      "count": 2,
+      "aggregation": "sum",
+      "extra": {
+        "max": 122,
+        "sum": 192
+      }
+    },
+    {
+      "region": "JPN",
+      "value": 124,
+      "count": 4,
+      "aggregation": "sum",
+      "extra": {
+        "max": 197,
+        "sum": 496
+      }
+    },
+    {
+      "region": "AUS",
+      "value": 93.5,
+      "count": 2,
+      "aggregation": "sum",
+      "extra": {
+        "max": 114,
+        "sum": 187
+      }
+    }
+  ],
+  "extra": {
+    "adapter": "points",
+    "adapter_version": "2.1.0",
+    "skipped_invalid_coords": 0,
+    "unmapped_regions": [
+      "Amazon"
+    ],
+    "unmapped_count": 1
   }
-]
+}

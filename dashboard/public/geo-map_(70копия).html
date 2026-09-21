@@ -1,0 +1,1908 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Геополитическая карта — Crucix</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet.heat.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+    </script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet.heat.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js">
+    </script>
+    <style>
+        /* ===== RESET & BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #0a0a0f;
+            color: #c8d0d8;
+            font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+            font-size: 13px;
+            line-height: 1.5;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ===== ПЕРВЫЙ БЛОК: ТОПБАР ===== */
+        .topbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(10, 10, 20, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid rgba(91, 192, 248, 0.25);
+            box-shadow: 0 2px 20px rgba(91, 192, 248, 0.08);
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        .topbar::after {
+            content: "";
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #5bc0f8, transparent);
+            opacity: 0.6;
+        }
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .topbar-brand {
+            font-size: 14px;
+            font-weight: 700;
+            color: #5bc0f8;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .topbar-btn {
+            height: 28px;
+            padding: 0 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.03);
+            color: #888;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-family: inherit;
+        }
+        .topbar-btn:hover {
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateY(-1px);
+        }
+        .btn-home {
+            color: #5bc0f8;
+            border-color: rgba(91, 192, 248, 0.2);
+            background: rgba(91, 192, 248, 0.06);
+        }
+        .btn-home:hover {
+            background: rgba(91, 192, 248, 0.15);
+        }
+        .btn-copy {
+            color: #5bc0f8;
+            border-color: rgba(91, 192, 248, 0.15);
+            background: rgba(91, 192, 248, 0.06);
+        }
+        .btn-copy:hover {
+            background: rgba(91, 192, 248, 0.15);
+        }
+        .btn-copy.copied {
+            background: rgba(76, 175, 80, 0.2);
+            border-color: #4caf50;
+            color: #4caf50;
+        }
+        .btn-rss {
+            color: #f26522;
+            border-color: rgba(242, 101, 34, 0.2);
+            background: rgba(242, 101, 34, 0.06);
+        }
+        .btn-rss:hover {
+            background: rgba(242, 101, 34, 0.15);
+        }
+        .btn-help {
+            color: #a78bfa;
+            border-color: rgba(167, 139, 250, 0.2);
+            background: rgba(167, 139, 250, 0.06);
+        }
+        .btn-help:hover {
+            background: rgba(167, 139, 250, 0.15);
+        }
+        .btn-heat {
+            color: #44ccff;
+            border-color: rgba(68, 204, 255, 0.15);
+            background: rgba(68, 204, 255, 0.06);
+        }
+        .btn-heat:hover {
+            background: rgba(68, 204, 255, 0.15);
+        }
+        .btn-heat.active {
+            background: rgba(68, 204, 255, 0.2);
+            border-color: #44ccff;
+        }
+        .btn-timeline {
+            color: #ff6b6b;
+            border-color: rgba(255, 107, 107, 0.15);
+            background: rgba(255, 107, 107, 0.06);
+        }
+        .btn-timeline:hover {
+            background: rgba(255, 107, 107, 0.15);
+        }
+        .btn-timeline.active {
+            background: rgba(255, 107, 107, 0.2);
+            border-color: #ff6b6b;
+        }
+        .btn-pdf {
+            color: #ec4899;
+            border-color: rgba(236, 72, 153, 0.15);
+            background: rgba(236, 72, 153, 0.06);
+        }
+        .btn-pdf:hover {
+            background: rgba(236, 72, 153, 0.15);
+        }
+
+        .lang-switch {
+            display: flex;
+            gap: 2px;
+            padding: 2px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .lang-btn {
+            padding: 2px 8px;
+            border: none;
+            background: transparent;
+            color: #666;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .lang-btn:hover {
+            color: #888;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .lang-btn.active {
+            color: #5bc0f8;
+            background: rgba(91, 192, 248, 0.1);
+        }
+
+        /* ===== ВЫПАДАЮЩЕЕ МЕНЮ КОПИРОВАНИЯ ===== */
+        .copy-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .copy-dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 32px;
+            background: #0a0a1a;
+            min-width: 220px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+            z-index: 200;
+            padding: 6px 0;
+        }
+        .copy-dropdown-content.show {
+            display: block;
+        }
+        .copy-dropdown-content button {
+            display: block;
+            width: 100%;
+            padding: 8px 16px;
+            background: transparent;
+            border: none;
+            color: #c8d0d8;
+            font-size: 12px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: inherit;
+        }
+        .copy-dropdown-content button:hover {
+            background: rgba(91, 192, 248, 0.08);
+            color: #5bc0f8;
+        }
+        .copy-dropdown-content .divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.05);
+            margin: 4px 12px;
+        }
+        .copy-dropdown-content .label {
+            padding: 4px 16px;
+            font-size: 10px;
+            color: #4a5a6a;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ===== ВТОРОЙ БЛОК: НАВИГАЦИЯ ПО ДАШБОРДАМ ===== */
+        .nav-dashboards {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            height: 38px;
+            background: rgba(6, 10, 18, 0.92);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            z-index: 99;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 4px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .nav-dashboards::-webkit-scrollbar {
+            display: none;
+        }
+        .nav-btn {
+            padding: 4px 10px;
+            border: none;
+            border-radius: 4px;
+            background: transparent;
+            color: #666;
+            font-size: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            font-family: inherit;
+            border: 1px solid transparent;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .nav-btn:hover {
+            color: #c8d0d8;
+            background: rgba(255, 255, 255, 0.04);
+        }
+        .nav-btn.active {
+            color: #5bc0f8;
+            background: rgba(91, 192, 248, 0.08);
+            border-color: rgba(91, 192, 248, 0.15);
+        }
+        .nav-btn .icon {
+            margin-right: 3px;
+        }
+
+        /* ===== ТРЕТИЙ БЛОК: ПАНЕЛЬ СЛОЁВ (30 шт.) ===== */
+        .layer-bar {
+            position: fixed;
+            top: 98px;
+            left: 0;
+            right: 0;
+            height: auto;
+            min-height: 40px;
+            background: rgba(6, 10, 18, 0.88);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            z-index: 98;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            padding: 4px 20px;
+            gap: 4px;
+            overflow: hidden;
+        }
+        .layer-bar-label {
+            color: #4a5a6a;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-right: 8px;
+            flex-shrink: 0;
+        }
+        .layer-btn {
+            padding: 3px 10px;
+            border: none;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.04);
+            color: #666;
+            font-size: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            font-family: inherit;
+            border: 1px solid transparent;
+        }
+        .layer-btn:hover {
+            color: #c8d0d8;
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .layer-btn.active {
+            color: #5bc0f8;
+            background: rgba(91, 192, 248, 0.12);
+            border-color: rgba(91, 192, 248, 0.2);
+        }
+        .layer-btn .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 4px;
+        }
+
+        /* ===== КАРТА ===== */
+        .map-container {
+            padding-top: 224px;
+            height: 100vh;
+            width: 100%;
+            position: relative;
+        }
+        #map {
+            height: 100%;
+            width: 100%;
+            background: #0a0a0f;
+        }
+
+        /* ===== ЛЕГЕНДА ===== */
+        .legend {
+            position: absolute;
+            bottom: 30px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(10, 10, 30, 0.92);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 12px;
+            backdrop-filter: blur(10px);
+            color: #ccc;
+            min-width: 140px;
+            max-height: 260px;
+            overflow-y: auto;
+        }
+        .legend .title {
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+        .legend .item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 3px 0;
+        }
+        .legend .color-box {
+            width: 20px;
+            height: 14px;
+            border-radius: 3px;
+            display: inline-block;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .legend .color-box.critical {
+            background: #ef4444;
+        }
+        .legend .color-box.pre-war {
+            background: #f97316;
+        }
+        .legend .color-box.high {
+            background: #f59e0b;
+        }
+        .legend .color-box.medium {
+            background: #eab308;
+        }
+        .legend .color-box.low {
+            background: #22c55e;
+        }
+        .legend .color-box.inactive {
+            background: #3a3a4a;
+        }
+        .legend .color-box.marker {
+            background: #3b82f6;
+            border-radius: 50%;
+            width: 12px;
+            height: 12px;
+        }
+        .legend .color-box.heat {
+            background: linear-gradient(90deg, #22c55e, #f59e0b, #ef4444);
+            border-radius: 3px;
+        }
+
+        /* ===== СТАТИСТИКА ===== */
+        .stats {
+            position: absolute;
+            top: 200px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(10, 10, 30, 0.92);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 8px;
+            padding: 12px 16px;
+            backdrop-filter: blur(10px);
+            min-width: 130px;
+            color: #ccc;
+            text-align: center;
+        }
+        .stats .count {
+            font-size: 28px;
+            font-weight: 700;
+            color: #44ccff;
+        }
+        .stats .label {
+            font-size: 11px;
+            color: #888;
+        }
+        .stats .countries-count {
+            font-size: 14px;
+            color: #ffd700;
+            margin-top: 4px;
+        }
+
+        /* ===== SSI ===== */
+        .ssi-panel {
+            position: absolute;
+            bottom: 150px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(10, 10, 30, 0.92);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 8px;
+            padding: 12px 16px;
+            backdrop-filter: blur(10px);
+            min-width: 150px;
+        }
+        .ssi-panel .ssi-title {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+        .ssi-panel .ssi-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .ssi-panel .ssi-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #22c55e, #eab308, #f59e0b, #f97316, #ef4444);
+            transition: width 1s ease;
+            border-radius: 4px;
+            width: 0%;
+        }
+        .ssi-panel .ssi-value {
+            font-size: 18px;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        /* ===== ВРЕМЕННАЯ ШКАЛА ===== */
+        .timeline-panel {
+            position: absolute;
+            bottom: 200px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: rgba(10, 10, 30, 0.92);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 8px;
+            padding: 8px 16px;
+            backdrop-filter: blur(10px);
+            min-width: 300px;
+            display: none;
+            color: #ccc;
+        }
+        .timeline-panel.active {
+            display: block;
+        }
+        .timeline-panel .timeline-title {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 4px;
+            text-align: center;
+        }
+        .timeline-panel .timeline-track {
+            display: flex;
+            gap: 2px;
+            height: 20px;
+            align-items: flex-end;
+            padding: 2px 0;
+        }
+        .timeline-panel .timeline-bar {
+            flex: 1;
+            min-height: 2px;
+            border-radius: 2px;
+            transition: height 0.5s ease;
+        }
+        .timeline-panel .timeline-date {
+            font-size: 10px;
+            color: #666;
+            text-align: center;
+            margin-top: 4px;
+        }
+
+        /* ===== УВЕДОМЛЕНИЯ ===== */
+        .notification {
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.85);
+            color: #ffffff;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            z-index: 100001;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: notif-fade 2.5s forwards;
+        }
+        @keyframes notif-fade {
+            0% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(10px);
+            }
+            10% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+            80% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+            }
+        }
+
+        /* ===== ЗАГРУЗКА ===== */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 10, 15, 0.8);
+            z-index: 999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .loading-overlay .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #5bc0f8;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        .loading-overlay .text {
+            color: #888;
+            font-size: 14px;
+            letter-spacing: 1px;
+        }
+
+        /* ===== POPUP СТИЛИ ===== */
+        .leaflet-popup-content-wrapper {
+            background: rgba(10, 10, 20, 0.92) !important;
+            color: #c8d0d8 !important;
+            border-radius: 6px !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+        .leaflet-popup-tip {
+            background: rgba(10, 10, 20, 0.92) !important;
+        }
+        .leaflet-control-zoom {
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+        .leaflet-control-zoom a {
+            background: rgba(10, 10, 20, 0.8) !important;
+            color: #c8d0d8 !important;
+        }
+
+        /* ===== ГРАНИЦЫ ===== */
+        .country-boundary {
+            stroke: #ffffff !important;
+            stroke-width: 1.2px !important;
+            stroke-opacity: 0.7 !important;
+            transition: all 0.3s;
+        }
+        .country-boundary:hover {
+            fill-opacity: 0.8 !important;
+            stroke-width: 2.5px !important;
+            stroke-opacity: 1 !important;
+        }
+
+        /* ===== ПОДПИСИ СТРАН ===== */
+        .country-label {
+            color: #e0e8f0;
+            font-size: 10px;
+            font-weight: 500;
+            text-shadow: 0 0 12px rgba(0, 0, 0, 0.95), 0 0 6px rgba(0, 0, 0, 0.9), 0 0 3px rgba(0, 0, 0, 0.8);
+            pointer-events: none;
+            white-space: nowrap;
+            letter-spacing: 0.5px;
+        }
+        .country-label-russia {
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 700;
+            text-shadow: 0 0 15px rgba(0, 0, 0, 0.95), 0 0 8px rgba(0, 0, 0, 0.9), 0 0 4px rgba(0, 0, 0, 0.8);
+            letter-spacing: 0.6px;
+        }
+        .country-label-inactive {
+            color: #8899aa;
+            font-size: 9px;
+            font-weight: 400;
+            text-shadow: 0 0 8px rgba(0, 0, 0, 0.9);
+            opacity: 0.85;
+        }
+
+        /* ===== АДАПТИВ ===== */
+        @media (max-width: 768px) {
+            .topbar {
+                padding: 0 12px;
+                height: 52px;
+            }
+            .topbar-brand {
+                font-size: 12px;
+            }
+            .topbar-btn {
+                font-size: 10px;
+                padding: 0 8px;
+                height: 24px;
+            }
+            .nav-dashboards {
+                top: 52px;
+                height: 34px;
+                padding: 0 10px;
+                gap: 2px;
+            }
+            .nav-btn {
+                font-size: 9px;
+                padding: 2px 6px;
+            }
+            .layer-bar {
+                top: 86px;
+                padding: 4px 10px;
+                gap: 2px;
+            }
+            .layer-btn {
+                font-size: 9px;
+                padding: 2px 6px;
+            }
+            .map-container {
+                padding-top: 160px;
+            }
+            .stats {
+                top: 170px;
+                right: 10px;
+                padding: 8px 12px;
+                min-width: 100px;
+            }
+            .stats .count {
+                font-size: 20px;
+            }
+            .legend {
+                bottom: 10px;
+                left: 10px;
+                padding: 8px 12px;
+                font-size: 10px;
+                min-width: 100px;
+            }
+            .ssi-panel {
+                bottom: 110px;
+                right: 10px;
+                padding: 8px 12px;
+                min-width: 100px;
+            }
+            .timeline-panel {
+                bottom: 150px;
+                min-width: 200px;
+            }
+        }
+        @media (max-width: 480px) {
+            .topbar {
+                padding: 0 8px;
+                height: 46px;
+            }
+            .topbar-brand {
+                font-size: 10px;
+                letter-spacing: 1px;
+            }
+            .topbar-btn {
+                font-size: 9px;
+                padding: 0 6px;
+                height: 20px;
+            }
+            .lang-btn {
+                font-size: 9px;
+                padding: 1px 5px;
+            }
+            .nav-dashboards {
+                top: 46px;
+                height: 30px;
+                padding: 0 6px;
+                gap: 2px;
+            }
+            .nav-btn {
+                font-size: 8px;
+                padding: 2px 5px;
+            }
+            .layer-bar {
+                top: 76px;
+                padding: 4px 6px;
+                gap: 2px;
+            }
+            .layer-btn {
+                font-size: 8px;
+                padding: 2px 5px;
+            }
+            .map-container {
+                padding-top: 145px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== ПЕРВЫЙ БЛОК: ТОПБАР ===== -->
+    <header class="topbar">
+        <div class="topbar-left">
+            <span class="topbar-brand">🌍 CRUCIX MAP</span>
+        </div>
+        <div class="topbar-right">
+            <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+
+            <div class="copy-dropdown">
+                <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ ▼</button>
+                <div class="copy-dropdown-content" id="copyDropdown">
+                    <div class="label">ФОРМАТЫ КОПИРОВАНИЯ</div>
+                    <button data-format="text">📄 Как текст (полный снапшот)</button>
+                    <button data-format="markdown">📝 Как Markdown</button>
+                    <button data-format="json">📊 Как JSON</button>
+                    <button data-format="csv">📋 Как CSV (таблицы)</button>
+                    <div class="divider"></div>
+                    <button data-format="dom">🌳 DOM-дерево</button>
+                    <button data-format="storage">💾 localStorage + sessionStorage</button>
+                    <button data-format="api">📡 API-запросы страницы</button>
+                    <div class="divider"></div>
+                    <button data-format="all">📦 ВСЁ В ОДНОМ</button>
+                </div>
+            </div>
+
+            <button class="topbar-btn btn-rss" onclick="window.location.href='/registry'">📡 Реестр</button>
+            <button class="topbar-btn btn-help" onclick="openHelp()">❓ HELP</button>
+            <button class="topbar-btn btn-heat" id="btn-heat" onclick="toggleHeat()">🌡️ Тепловая</button>
+            <button class="topbar-btn btn-timeline" id="btn-timeline" onclick="toggleTimeline()">📅 Хронология</button>
+            <button class="topbar-btn btn-pdf" onclick="exportPDF()">📄 PDF</button>
+            <div class="lang-switch">
+                <button class="lang-btn active" data-lang="ru" onclick="setLanguage('ru')">RU</button>
+                <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">EN</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ===== ВТОРОЙ БЛОК: НАВИГАЦИЯ ПО ДАШБОРДАМ ===== -->
+    <nav class="nav-dashboards">
+        <button class="nav-btn active" onclick="goToDashboard('5in1')"><span class="icon">🎯</span>Центр аналитики</button>
+        <button class="nav-btn" onclick="goToDashboard('economic')"><span class="icon">📊</span>Экономика</button>
+        <button class="nav-btn" onclick="goToDashboard('financial')"><span class="icon">💰</span>Финансы</button>
+        <button class="nav-btn" onclick="goToDashboard('military')"><span class="icon">🛡️</span>Военный</button>
+        <button class="nav-btn" onclick="goToDashboard('geopolitical')"><span class="icon">🌍</span>Геополитика</button>
+        <button class="nav-btn" onclick="goToDashboard('ecological')"><span class="icon">🌿</span>Экология</button>
+        <button class="nav-btn" onclick="goToDashboard('cyber')"><span class="icon">🔒</span>Кибер</button>
+        <button class="nav-btn" onclick="goToDashboard('space')"><span class="icon">🚀</span>Космос</button>
+        <button class="nav-btn" onclick="goToDashboard('news')"><span class="icon">📰</span>Новости</button>
+        <button class="nav-btn" onclick="goToDashboard('ai')"><span class="icon">🧠</span>AI</button>
+        <button class="nav-btn" onclick="goToDashboard('scientific')"><span class="icon">🔬</span>Наука</button>
+        <button class="nav-btn" onclick="goToDashboard('esg')"><span class="icon">🌱</span>ESG</button>
+        <button class="nav-btn" onclick="goToDashboard('threats')"><span class="icon">⚡</span>Угрозы</button>
+        <button class="nav-btn" onclick="goToDashboard('health')"><span class="icon">🏥</span>Здоровье</button>
+        <button class="nav-btn" onclick="goToDashboard('energy')"><span class="icon">⛽</span>Энергетика</button>
+        <button class="nav-btn" onclick="goToDashboard('transport')"><span class="icon">🚛</span>Транспорт</button>
+        <button class="nav-btn" onclick="goToDashboard('regions')"><span class="icon">🌏</span>Регионы</button>
+    </nav>
+
+    <!-- ===== РАЗДЕЛИТЕЛЬ МЕЖДУ ДАШБОРДАМИ И СЛОЯМИ ===== -->
+    <div 
+    style="height:2px; background: linear-gradient(90deg, transparent, rgba(91,192,248,0.3), transparent); margin:4px 0;">
+    </div>
+    
+    <!-- ===== ТРЕТИЙ БЛОК: ПАНЕЛЬ СЛОЁВ (30 шт.) ===== -->
+    <div class="layer-bar">
+        <span class="layer-bar-label">🎯 СЛОИ:</span>
+        <button class="layer-btn active" data-layer="all" onclick="setLayer('all')">🌍 Все</button>
+
+        <!-- ===== ОСНОВНЫЕ 30 СЛОЁВ ===== -->
+        <button class="layer-btn" data-layer="notam" onclick="setLayer('notam')"><span class="dot" style="background:#ef4444;"></span>NOTAM</button>
+        <button class="layer-btn" data-layer="gps" onclick="setLayer('gps')"><span class="dot" style="background:#8b5cf6;"></span>GPS</button>
+        <button class="layer-btn" data-layer="vix" onclick="setLayer('vix')"><span class="dot" style="background:#f59e0b;"></span>VIX</button>
+        <button class="layer-btn" data-layer="gold-oil" onclick="setLayer('gold-oil')"><span class="dot" style="background:#fbbf24;"></span>Gold/Oil</button>
+        <button class="layer-btn" data-layer="copper-gold" onclick="setLayer('copper-gold')"><span class="dot" style="background:#f97316;"></span>Cu/Au</button>
+        <button class="layer-btn" data-layer="bdi" onclick="setLayer('bdi')"><span class="dot" style="background:#06b6d4;"></span>BDI</button>
+        <button class="layer-btn" data-layer="uranium" onclick="setLayer('uranium')"><span class="dot" style="background:#10b981;"></span>Уран</button>
+        <button class="layer-btn" data-layer="viirs" onclick="setLayer('viirs')"><span class="dot" style="background:#a78bfa;"></span>Ночные огни</button>
+        <button class="layer-btn" data-layer="acled" onclick="setLayer('acled')"><span class="dot" style="background:#ef4444;"></span>ACLED</button>
+        <button class="layer-btn" data-layer="gdelt" onclick="setLayer('gdelt')"><span class="dot" style="background:#3b82f6;"></span>GDELT</button>
+        <button class="layer-btn" data-layer="firms" onclick="setLayer('firms')"><span class="dot" style="background:#f97316;"></span>Пожары</button>
+        <button class="layer-btn" data-layer="usgs" onclick="setLayer('usgs')"><span class="dot" style="background:#22c55e;"></span>Землетрясения</button>
+        <button class="layer-btn" data-layer="noaa" onclick="setLayer('noaa')"><span class="dot" style="background:#3b82f6;"></span>Погода</button>
+        <button class="layer-btn" data-layer="ships" onclick="setLayer('ships')"><span class="dot" style="background:#06b6d4;"></span>Суда</button>
+        <button class="layer-btn" data-layer="aviation" onclick="setLayer('aviation')"><span class="dot" style="background:#a78bfa;"></span>Авиация</button>
+        <button class="layer-btn" data-layer="dark-ships" onclick="setLayer('dark-ships')"><span class="dot" style="background:#06b6d4;"></span>Тёмные суда</button>
+        <button class="layer-btn" data-layer="ofac" onclick="setLayer('ofac')"><span class="dot" style="background:#ef4444;"></span>Санкции</button>
+        <button class="layer-btn" data-layer="conflict-predict" onclick="setLayer('conflict-predict')"><span class="dot" style="background:#f97316;"></span>Прогноз</button>
+        <button class="layer-btn" data-layer="yield-curve" onclick="setLayer('yield-curve')"><span class="dot" style="background:#4ade80;"></span>Yield</button>
+        <button class="layer-btn" data-layer="global-index" onclick="setLayer('global-index')"><span class="dot" style="background:#f59e0b;"></span>Индекс</button>
+
+        <!-- ===== 10 НОВЫХ СЛОЁВ (были в 30) ===== -->
+        <button class="layer-btn" data-layer="military-bases" onclick="setLayer('military-bases')"><span class="dot" style="background:#ef4444;"></span>Военные базы</button>
+        <button class="layer-btn" data-layer="undersea-cables" onclick="setLayer('undersea-cables')"><span class="dot" style="background:#3b82f6;"></span>Кабели</button>
+        <button class="layer-btn" data-layer="pipelines" onclick="setLayer('pipelines')"><span class="dot" style="background:#f97316;"></span>Трубопроводы</button>
+        <button class="layer-btn" data-layer="cyber-apt" onclick="setLayer('cyber-apt')"><span class="dot" style="background:#8b5cf6;"></span>APT-группы</button>
+        <button class="layer-btn" data-layer="strategic-ports" onclick="setLayer('strategic-ports')"><span class="dot" style="background:#06b6d4;"></span>Порты</button>
+        <button class="layer-btn" data-layer="instability-index" onclick="setLayer('instability-index')"><span class="dot" style="background:#ef4444;"></span>Нестабильность</button>
+        <button class="layer-btn" data-layer="internet-outages" onclick="setLayer('internet-outages')"><span class="dot" style="background:#f59e0b;"></span>Интернет</button>
+        <button class="layer-btn" data-layer="risk-heatmap" onclick="setLayer('risk-heatmap')"><span class="dot" style="background:#f97316;"></span>Риск</button>
+        <button class="layer-btn" data-layer="prediction-markets" onclick="setLayer('prediction-markets')"><span class="dot" style="background:#4ade80;"></span>Рынки</button>
+        <button class="layer-btn" data-layer="satellite-stac" onclick="setLayer('satellite-stac')"><span class="dot" style="background:#a78bfa;"></span>Спутники</button>
+
+        <!-- ===== 41 НОВЫЙ СЛОЙ ИЗ SOURCES.JSON ===== -->
+        <button class="layer-btn" data-layer="hydrosheds" onclick="setLayer('hydrosheds')"><span class="dot" style="background:#3b82f6;"></span>Реки/озёра</button>
+        <button class="layer-btn" data-layer="natural_earth_transport" onclick="setLayer('natural_earth_transport')"><span class="dot" style="background:#f59e0b;"></span>Транспорт</button>
+        <button class="layer-btn" data-layer="nasa_sedac" onclick="setLayer('nasa_sedac')"><span class="dot" style="background:#8b5cf6;"></span>Население</button>
+        <button class="layer-btn" data-layer="global_forest_watch" onclick="setLayer('global_forest_watch')"><span class="dot" style="background:#22c55e;"></span>Леса</button>
+        <button class="layer-btn" data-layer="fao_geonetwork" onclick="setLayer('fao_geonetwork')"><span class="dot" style="background:#eab308;"></span>С/х</button>
+        <button class="layer-btn" data-layer="uk_environment_agency" onclick="setLayer('uk_environment_agency')"><span class="dot" style="background:#06b6d4;"></span>Наводнения</button>
+        <button class="layer-btn" data-layer="grid_status" onclick="setLayer('grid_status')"><span class="dot" style="background:#f97316;"></span>Энергосети</button>
+        <button class="layer-btn" data-layer="maxar_open_data" onclick="setLayer('maxar_open_data')"><span class="dot" style="background:#a78bfa;"></span>Спутники</button>
+        <button class="layer-btn" data-layer="gadm" onclick="setLayer('gadm')"><span class="dot" style="background:#ec4899;"></span>Границы</button>
+        <button class="layer-btn" data-layer="natural_earth_political" onclick="setLayer('natural_earth_political')"><span class="dot" style="background:#3b82f6;"></span>Политика</button>
+        <button class="layer-btn" data-layer="yahoo_finance" onclick="setLayer('yahoo_finance')"><span class="dot" style="background:#22c55e;"></span>S&P 500</button>
+        <button class="layer-btn" data-layer="bls" onclick="setLayer('bls')"><span class="dot" style="background:#f59e0b;"></span>Безработица</button>
+        <button class="layer-btn" data-layer="world_bank_gdp" onclick="setLayer('world_bank_gdp')"><span class="dot" style="background:#3b82f6;"></span>ВВП</button>
+        <button class="layer-btn" data-layer="un_comtrade" onclick="setLayer('un_comtrade')"><span class="dot" style="background:#8b5cf6;"></span>Торговля</button>
+        <button class="layer-btn" data-layer="unhcr" onclick="setLayer('unhcr')"><span class="dot" style="background:#ef4444;"></span>Беженцы</button>
+        <button class="layer-btn" data-layer="reliefweb" onclick="setLayer('reliefweb')"><span class="dot" style="background:#f97316;"></span>Помощь</button>
+        <button class="layer-btn" data-layer="military_exercises" onclick="setLayer('military_exercises')"><span class="dot" style="background:#ef4444;"></span>Учения</button>
+        <button class="layer-btn" data-layer="nvd" onclick="setLayer('nvd')"><span class="dot" style="background:#8b5cf6;"></span>CVE</button>
+        <button class="layer-btn" data-layer="cctv_feeds" onclick="setLayer('cctv_feeds')"><span class="dot" style="background:#06b6d4;"></span>CCTV</button>
+        <button class="layer-btn" data-layer="nuclear_monitor" onclick="setLayer('nuclear_monitor')"><span class="dot" style="background:#10b981;"></span>Ядерные</button>
+        <button class="layer-btn" data-layer="ww3chance_events" onclick="setLayer('ww3chance_events')"><span class="dot" style="background:#ef4444;"></span>Геособытия</button>
+        <button class="layer-btn" data-layer="feodo_tracker_c2" onclick="setLayer('feodo_tracker_c2')"><span class="dot" style="background:#ef4444;"></span>Ботнеты</button>
+        <button class="layer-btn" data-layer="urlhaus_malware" onclick="setLayer('urlhaus_malware')"><span class="dot" style="background:#f59e0b;"></span>Вредоносы</button>
+        <button class="layer-btn" data-layer="data_centers_48" onclick="setLayer('data_centers_48')"><span class="dot" style="background:#3b82f6;"></span>Дата-центры</button>
+        <button class="layer-btn" data-layer="spaceports_27" onclick="setLayer('spaceports_27')"><span class="dot" style="background:#a78bfa;"></span>Космодромы</button>
+        <button class="layer-btn" data-layer="stock_exchanges_82" onclick="setLayer('stock_exchanges_82')"><span class="dot" style="background:#22c55e;"></span>Биржи</button>
+        <button class="layer-btn" data-layer="critical_minerals_27" onclick="setLayer('critical_minerals_27')"><span class="dot" style="background:#f59e0b;"></span>Минералы</button>
+        <button class="layer-btn" data-layer="conflict_zones_5" onclick="setLayer('conflict_zones_5')"><span class="dot" style="background:#ef4444;"></span>Зоны</button>
+        <button class="layer-btn" data-layer="cctv_network" onclick="setLayer('cctv_network')"><span class="dot" style="background:#06b6d4;"></span>CCTV сеть</button>
+        <button class="layer-btn" data-layer="opensky_aviation" onclick="setLayer('opensky_aviation')"><span class="dot" style="background:#a78bfa;"></span>ADS-B</button>
+        <button class="layer-btn" data-layer="usni_fleet_tracker" onclick="setLayer('usni_fleet_tracker')"><span class="dot" style="background:#06b6d4;"></span>Флот</button>
+        <button class="layer-btn" data-layer="rss_news_feed" onclick="setLayer('rss_news_feed')"><span class="dot" style="background:#3b82f6;"></span>Новости</button>
+        <button class="layer-btn" data-layer="strategic_ports_40" onclick="setLayer('strategic_ports_40')"><span class="dot" style="background:#06b6d4;"></span>Порты 40</button>
+        <button class="layer-btn" data-layer="undersea_cables_34" onclick="setLayer('undersea_cables_34')"><span class="dot" style="background:#3b82f6;"></span>Кабели 34</button>
+        <button class="layer-btn" data-layer="pipelines_24" onclick="setLayer('pipelines_24')"><span class="dot" style="background:#f97316;"></span>Трубы 24</button>
+        <button class="layer-btn" data-layer="nuclear_sites_24" onclick="setLayer('nuclear_sites_24')"><span class="dot" style="background:#10b981;"></span>Ядерные 24</button>
+        <button class="layer-btn" data-layer="military_bases_70" onclick="setLayer('military_bases_70')"><span class="dot" style="background:#ef4444;"></span>Базы 70+</button>
+    </div>
+
+ <!-- ===== РАЗДЕЛИТЕЛЬ МЕЖДУ ДАШБОРДАМИ И СЛОЯМИ ===== -->
+    <div 
+    style="height:2px; background: linear-gradient(90deg, transparent, rgba(91,192,248,0.3), transparent); margin:4px 0;">
+    </div>
+
+    <!-- ===== КАРТА ===== -->
+    <div class="map-container" id="map-container">
+        <div id="map"></div>
+        <div class="loading-overlay" id="loading-overlay">
+            <div class="spinner"></div>
+            <div class="text">ЗАГРУЗКА КАРТЫ...</div>
+        </div>
+
+        <div class="legend" id="legend">
+            <div class="title">🎯 Статусы стран</div>
+            <div class="item"><span class="color-box critical"></span> Критический</div>
+            <div class="item"><span class="color-box pre-war"></span> Предвоенный</div>
+            <div class="item"><span class="color-box high"></span> Высокий</div>
+            <div class="item"><span class="color-box medium"></span> Средний</div>
+            <div class="item"><span class="color-box low"></span> Нормальный</div>
+            <div class="item"><span class="color-box inactive"></span> Нет данных</div>
+            <div class="item"><span class="color-box marker"></span> События</div>
+            <div class="item"><span class="color-box heat"></span> Тепловая карта</div>
+        </div>
+
+        <div class="stats" id="stats">
+            <div class="count" id="marker-count">0</div>
+            <div class="label" id="stats-label">событий</div>
+            <div class="countries-count" id="countries-count">🌍 0 стран</div>
+        </div>
+
+        <div class="ssi-panel" id="ssi-panel">
+            <div class="ssi-title">📊 Индекс напряжённости</div>
+            <div class="ssi-bar"><div class="ssi-fill" id="ssi-fill"></div></div>
+            <div class="ssi-value" id="ssi-label">0%</div>
+        </div>
+
+        <div class="timeline-panel" id="timeline-panel">
+            <div class="timeline-title">📅 Хронология событий</div>
+            <div class="timeline-track" id="timeline-track"></div>
+            <div class="timeline-date" id="timeline-date">—</div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // 1. ПЕРЕКЛЮЧАТЕЛЬ ЯЗЫКА
+        // ============================================================
+        let currentLang = localStorage.getItem('crucix-lang') || 'ru';
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('crucix-lang', lang);
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === lang);
+            });
+            showNotification('🌐 Язык: ' + lang.toUpperCase());
+        }
+
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.lang === currentLang);
+        });
+
+        // ============================================================
+        // 2. УВЕДОМЛЕНИЯ И HELP
+        // ============================================================
+        function showNotification(msg) {
+            document.querySelectorAll('.notification').forEach(el => el.remove());
+            const el = document.createElement('div');
+            el.className = 'notification';
+            el.textContent = msg;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 2500);
+        }
+
+        function openHelp() {
+            const pageId = window.location.pathname.replace(/^\/+/, "").replace(/\.html$/, "") || "jarvis";
+            const lang = currentLang || "ru";
+            const helpFile = `/data/help/${lang}/${pageId}.txt`;
+            fetch(helpFile).then(res => res.text()).then(text => {
+                alert(text || "Справка не найдена");
+            }).catch(() => alert("Справка не найдена"));
+        }
+
+        // ============================================================
+        // 3. НАВИГАЦИЯ ПО ДАШБОРДАМ
+        // ============================================================
+        function goToDashboard(name) {
+            window.location.href = '/dashboard-' + name + '.html';
+        }
+
+        // ============================================================
+        // 4. КНОПКА КОПИРОВАТЬ — ОСНОВНАЯ ФУНКЦИЯ (из первого файла)
+        // ============================================================
+        function copyAllData() {
+            const timestamp = new Date().toLocaleString();
+            let report = '=== CRUCIX — ГЕОПОЛИТИЧЕСКАЯ КАРТА ===\n';
+            report += 'Дата: ' + timestamp + '\n';
+            report += 'URL: ' + window.location.href + '\n\n';
+
+            report += '--- СТАТИСТИКА ---\n';
+            report += 'Стран: ' + Object.keys(countryData).length + '\n';
+            report += 'Событий: ' + markerData.length + '\n\n';
+
+            report += '--- СТРАНЫ ПО СТАТУСАМ ---\n';
+            const critical = [],
+                preWar = [],
+                high = [],
+                medium = [],
+                low = [];
+            for (const [id, data] of Object.entries(countryData)) {
+                if (data.status === 'critical') critical.push(data.name);
+                else if (data.status === 'pre-war') preWar.push(data.name);
+                else if (data.status === 'high') high.push(data.name);
+                else if (data.status === 'medium') medium.push(data.name);
+                else if (data.status === 'low') low.push(data.name);
+            }
+            report += '🔴 Критический (' + critical.length + '): ' + critical.join(', ') + '\n';
+            report += '🟠 Предвоенный (' + preWar.length + '): ' + preWar.join(', ') + '\n';
+            report += '🟠 Высокий (' + high.length + '): ' + high.join(', ') + '\n';
+            report += '🟡 Средний (' + medium.length + '): ' + medium.join(', ') + '\n';
+            report += '🟢 Нормальный (' + low.length + '): ' + low.join(', ') + '\n\n';
+
+            report += '--- ИНДЕКС НАПРЯЖЁННОСТИ ---\n';
+            report += 'SSI: ' + (document.getElementById('ssi-label')?.textContent || '—') + '\n\n';
+
+            report += '--- МАРКЕРЫ СОБЫТИЙ ---\n';
+            for (const m of markerData) {
+                report += '  ' + m.name + ' (' + m.status + ') — ' + m.lat + ', ' + m.lng + ' [слой: ' + (m.layer ||
+                    'all') + ']\n';
+            }
+
+            report += '\n--- КООРДИНАТЫ КАРТЫ ---\n';
+            if (map) {
+                const center = map.getCenter();
+                const zoom = map.getZoom();
+                report += 'Центр: ' + center.lat.toFixed(4) + ', ' + center.lng.toFixed(4) + '\n';
+                report += 'Масштаб: ' + zoom + '\n';
+                const bounds = map.getBounds();
+                report += 'Границы: ' + bounds.getSouthWest().lat.toFixed(4) + ', ' + bounds.getSouthWest().lng.toFixed(
+                    4) + ' — ' + bounds.getNorthEast().lat.toFixed(4) + ', ' + bounds.getNorthEast().lng.toFixed(
+                    4) + '\n';
+            }
+
+            report += '\n--- CRUCIX OSINT TERMINAL ---\n';
+            report += '🌐 ' + window.location.origin + '/geo-map';
+
+            navigator.clipboard.writeText(report).then(() => {
+                const btn = document.getElementById('copy-btn');
+                btn.textContent = '✅ Скопировано!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = '📋 КОПИРОВАТЬ ▼';
+                    btn.classList.remove('copied');
+                }, 3000);
+                showNotification('✅ Данные скопированы');
+            }).catch(() => {
+                const textarea = document.createElement('textarea');
+                textarea.value = report;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showNotification('✅ Данные скопированы');
+            });
+        }
+
+        // --- Выпадающее меню копирования ---
+        document.getElementById('copy-btn').addEventListener('click', function(e) {
+            e.stopPropagation();
+            document.getElementById('copyDropdown').classList.toggle('show');
+        });
+
+        document.addEventListener('click', function() {
+            document.getElementById('copyDropdown').classList.remove('show');
+        });
+
+        // Обработчики для пунктов меню — все ведут на основную функцию copyAllData()
+        document.querySelectorAll('#copyDropdown button[data-format]').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                document.getElementById('copyDropdown').classList.remove('show');
+                copyAllData(); // вызываем основную функцию из первого файла
+            });
+        });
+
+        // ============================================================
+        // 5. ПЕРЕМЕННЫЕ
+        // ============================================================
+        let map = null;
+        let countryData = {};
+        let markerData = [];
+        let allMarkers = [];
+        let geoJsonLayer = null;
+        let labelsLayer = null;
+        let heatLayer = null;
+        let notamLayer = null;
+        let gpsLayer = null;
+        let heatEnabled = false;
+        let timelineEnabled = false;
+        let currentLayer = 'all';
+
+        // ============================================================
+        // 6. УПРАВЛЕНИЕ СЛОЯМИ
+        // ============================================================
+        function setLayer(layer) {
+            currentLayer = layer;
+            document.querySelectorAll('.layer-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.layer === layer);
+            });
+
+            if (layer === 'all' || layer === 'notam') {
+                loadNotamLayer();
+            } else if (notamLayer) {
+                map.removeLayer(notamLayer);
+                notamLayer = null;
+            }
+
+            if (layer === 'all' || layer === 'gps') {
+                loadGpsLayer();
+            } else if (gpsLayer) {
+                map.removeLayer(gpsLayer);
+                gpsLayer = null;
+            }
+
+            if (allMarkers.length > 0) {
+                const filtered = layer === 'all' ? allMarkers : allMarkers.filter(m => m.layer === layer || m.layer ===
+                    'all');
+                updateMarkers(filtered);
+            }
+
+            showNotification('🎯 Слой: ' + layer.toUpperCase());
+        }
+
+        // ============================================================
+        // 7. МАРКЕРЫ
+        // ============================================================
+        function updateMarkers(markers) {
+            if (window._markersLayer) {
+                map.removeLayer(window._markersLayer);
+            }
+
+            const markersLayer = L.layerGroup().addTo(map);
+            window._markersLayer = markersLayer;
+
+            const STATUS_COLORS = {
+                critical: '#ef4444',
+                'pre-war': '#f97316',
+                high: '#f59e0b',
+                medium: '#eab308',
+                low: '#22c55e'
+            };
+
+            for (const item of markers) {
+                if (!item.lat || !item.lng) continue;
+                const color = STATUS_COLORS[item.status] || '#3b82f6';
+                const size = item.status === 'critical' ? 16 : item.status === 'pre-war' ? 14 : item.status === 'high' ?
+                    13 : 11;
+
+                const icon = L.divIcon({
+                    className: 'event-marker',
+                    html: `
+                    <div style="position:relative;width:${size}px;height:${size}px;">
+                      <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:${color};border-radius:50%;border:2px solid rgba(255,255,255,0.5);box-shadow:0 0 20px ${color}80;animation:pulse 2s infinite;"></div>
+                      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:${size/3.5}px;height:${size/3.5}px;background:#fff;border-radius:50%;opacity:0.6;"></div>
+                    </div>
+                    <style>@keyframes pulse { 0%,100% { transform: scale(1); opacity:1; } 50% { transform: scale(1.25); opacity:0.7; } }</style>
+                  `,
+                    iconSize: [size, size],
+                    iconAnchor: [size / 2, size / 2]
+                });
+
+                L.marker([item.lat, item.lng], { icon })
+                    .addTo(markersLayer)
+                    .bindPopup(`
+                    <div style="padding:4px 0;">
+                      <strong style="color:#e8f0f8;font-size:14px;">${item.name}</strong><br>
+                      <span style="color:${color};font-weight:600;">${item.status.toUpperCase()}</span>
+                      <div style="color:#666;font-size:10px;margin-top:3px;">${item.type || '—'}</div>
+                      <div style="color:#4a5a6a;font-size:10px;margin-top:2px;">Слой: ${item.layer || 'all'}</div>
+                    </div>
+                  `);
+            }
+
+            document.getElementById('marker-count').textContent = markers.length;
+        }
+
+        // ============================================================
+        // 8. NOTAM
+        // ============================================================
+        async function loadNotamLayer() {
+            try {
+                const res = await fetch('/api/notam/');
+                const data = await res.json();
+
+                if (!data.success || !data.data || data.data.length === 0) {
+                    return;
+                }
+
+                if (notamLayer) {
+                    map.removeLayer(notamLayer);
+                    notamLayer = null;
+                }
+
+                const group = L.layerGroup().addTo(map);
+                notamLayer = group;
+
+                for (const item of data.data) {
+                    if (!item.lat || !item.lng) continue;
+
+                    const color = item.severity === 'critical' ? '#ef4444' :
+                        item.severity === 'high' ? '#f59e0b' : '#3b82f6';
+
+                    const icon = L.divIcon({
+                        className: 'notam-marker',
+                        html: `
+                      <div style="position:relative;width:20px;height:20px;">
+                        <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:${color};border-radius:50%;border:2px solid rgba(255,255,255,0.6);box-shadow:0 0 20px ${color}60;"></div>
+                        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:10px;color:#fff;font-weight:700;">✈</div>
+                      </div>
+                    `,
+                        iconSize: [20, 20],
+                        iconAnchor: [10, 10]
+                    });
+
+                    L.marker([item.lat, item.lng], { icon })
+                        .addTo(group)
+                        .bindPopup(`
+                      <div style="padding:4px 0;">
+                        <strong style="color:#e8f0f8;font-size:14px;">🛩️ NOTAM</strong><br>
+                        <span style="color:${color};font-weight:600;">${item.region || '—'}</span><br>
+                        <span style="color:#666;font-size:11px;">${item.description || item.label || ''}</span>
+                      </div>
+                    `);
+                }
+            } catch (e) {
+                console.error('[NOTAM] Ошибка:', e);
+            }
+        }
+
+        // ============================================================
+        // 9. GPS-ГЛУШЕНИЕ
+        // ============================================================
+        async function loadGpsLayer() {
+            try {
+                const res = await fetch('/api/gps-jamming/');
+                const data = await res.json();
+
+                if (!data.success || !data.data || data.data.length === 0) {
+                    return;
+                }
+
+                if (gpsLayer) {
+                    map.removeLayer(gpsLayer);
+                    gpsLayer = null;
+                }
+
+                const group = L.layerGroup().addTo(map);
+                gpsLayer = group;
+
+                for (const item of data.data) {
+                    if (!item.lat || !item.lng) continue;
+
+                    const color = item.severity === 'critical' ? '#ef4444' :
+                        item.severity === 'high' ? '#f59e0b' : '#8b5cf6';
+
+                    L.circle([item.lat, item.lng], {
+                        radius: item.radius || 50000,
+                        color: color,
+                        fillColor: color,
+                        fillOpacity: 0.2,
+                        weight: 2,
+                        opacity: 0.6
+                    }).addTo(group).bindPopup(`
+                    <div style="padding:4px 0;">
+                      <strong style="color:#e8f0f8;font-size:14px;">📡 GPS-глушение</strong><br>
+                      <span style="color:${color};font-weight:600;">${item.region || '—'}</span><br>
+                      <span style="color:#666;font-size:11px;">${item.description || item.label || ''}</span>
+                    </div>
+                  `);
+                }
+            } catch (e) {
+                console.error('[GPS] Ошибка:', e);
+            }
+        }
+
+        // ============================================================
+        // 10. ТЕПЛОВАЯ КАРТА
+        // ============================================================
+        function toggleHeat() {
+            heatEnabled = !heatEnabled;
+            document.getElementById('btn-heat').classList.toggle('active', heatEnabled);
+
+            if (heatLayer) {
+                map.removeLayer(heatLayer);
+                heatLayer = null;
+            }
+
+            if (heatEnabled && markerData.length > 0) {
+                const heatData = markerData.map(m => [m.lat, m.lng, 1.0]);
+                heatLayer = L.heatLayer(heatData, {
+                    radius: 30,
+                    blur: 20,
+                    maxZoom: 10,
+                    minOpacity: 0.3,
+                    gradient: {
+                        0.0: '#22c55e',
+                        0.3: '#eab308',
+                        0.6: '#f97316',
+                        0.9: '#ef4444'
+                    }
+                }).addTo(map);
+                showNotification('🌡️ Тепловая карта включена');
+            } else if (!heatEnabled) {
+                showNotification('🌡️ Тепловая карта выключена');
+            } else {
+                showNotification('❌ Нет данных');
+            }
+        }
+
+        // ============================================================
+        // 11. ВРЕМЕННАЯ ШКАЛА
+        // ============================================================
+        function toggleTimeline() {
+            timelineEnabled = !timelineEnabled;
+            document.getElementById('btn-timeline').classList.toggle('active', timelineEnabled);
+            const panel = document.getElementById('timeline-panel');
+
+            if (timelineEnabled) {
+                panel.classList.add('active');
+                buildTimeline();
+                showNotification('📅 Хронология включена');
+            } else {
+                panel.classList.remove('active');
+                showNotification('📅 Хронология выключена');
+            }
+        }
+
+        function buildTimeline() {
+            const track = document.getElementById('timeline-track');
+            const dateLabel = document.getElementById('timeline-date');
+
+            if (markerData.length === 0) {
+                track.innerHTML = '<div style="color:#555;font-size:11px;text-align:center;padding:8px;">Нет данных</div>';
+                dateLabel.textContent = '—';
+                return;
+            }
+
+            const grouped = {};
+            const today = new Date();
+            for (const m of markerData) {
+                const date = new Date(m.timestamp || today);
+                const key = date.toLocaleDateString('ru-RU');
+                if (!grouped[key]) grouped[key] = [];
+                grouped[key].push(m);
+            }
+
+            const keys = Object.keys(grouped).sort();
+            if (keys.length === 0) {
+                track.innerHTML = '<div style="color:#555;font-size:11px;text-align:center;padding:8px;">Нет данных</div>';
+                dateLabel.textContent = '—';
+                return;
+            }
+
+            let maxCount = 0;
+            for (const key of keys) {
+                if (grouped[key].length > maxCount) maxCount = grouped[key].length;
+            }
+
+            let html = '';
+            for (const key of keys) {
+                const count = grouped[key].length;
+                const height = maxCount > 0 ? Math.max(4, (count / maxCount) * 20) : 4;
+                const color = count > 5 ? '#ef4444' : count > 3 ? '#f97316' : count > 1 ? '#eab308' : '#22c55e';
+                html +=
+                    `<div class="timeline-bar" style="height:${height}px;background:${color};" title="${key}: ${count} событий"></div>`;
+            }
+
+            track.innerHTML = html;
+            dateLabel.textContent = keys.length > 0 ? `${keys[0]} — ${keys[keys.length - 1]}` : '—';
+        }
+
+        // ============================================================
+        // 12. PDF ЭКСПОРТ
+        // ============================================================
+        function exportPDF() {
+            const btn = document.querySelector('.btn-pdf');
+            btn.textContent = '⏳';
+            btn.disabled = true;
+            showNotification('⏳ Создание PDF...');
+
+            const container = document.getElementById('map-container');
+            const legend = document.querySelector('.legend');
+            const stats = document.querySelector('.stats');
+            const ssi = document.querySelector('.ssi-panel');
+            const timeline = document.getElementById('timeline-panel');
+
+            if (legend) legend.style.display = 'none';
+            if (stats) stats.style.display = 'none';
+            if (ssi) ssi.style.display = 'none';
+            if (timeline) timeline.style.display = 'none';
+
+            setTimeout(() => {
+                html2canvas(container, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#0a1a2a'
+                }).then(canvas => {
+                    if (legend) legend.style.display = 'block';
+                    if (stats) stats.style.display = 'block';
+                    if (ssi) ssi.style.display = 'block';
+                    if (timeline && timelineEnabled) timeline.style.display = 'block';
+
+                    const link = document.createElement('a');
+                    link.download =
+                        `Crucix_GeoMap_${new Date().toISOString().slice(0, 10)}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+
+                    btn.textContent = '📄 PDF';
+                    btn.disabled = false;
+                    showNotification('✅ PDF экспортирован!');
+                }).catch(err => {
+                    console.error('[PDF] Ошибка:', err);
+                    if (legend) legend.style.display = 'block';
+                    if (stats) stats.style.display = 'block';
+                    if (ssi) ssi.style.display = 'block';
+                    if (timeline && timelineEnabled) timeline.style.display = 'block';
+                    btn.textContent = '📄 PDF';
+                    btn.disabled = false;
+                    showNotification('❌ Ошибка экспорта');
+                });
+            }, 500);
+        }
+
+        // ============================================================
+        // 13. КАРТА
+        // ============================================================
+        function initMap() {
+            map = L.map('map', {
+                center: [30, 20],
+                zoom: 2.5,
+                zoomControl: true,
+                minZoom: 1.5,
+                maxZoom: 10
+            });
+
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '© OpenStreetMap, © CartoDB',
+                maxZoom: 19,
+                opacity: 0.9
+            }).addTo(map);
+
+            loadData();
+        }
+
+        async function loadData() {
+            try {
+                const [markersRes, statusRes] = await Promise.all([
+                    fetch('/api/geo/markers'),
+                    fetch('/api/geo/status')
+                ]);
+
+                const markersData = await markersRes.json();
+                const statusData = await statusRes.json();
+
+                if (statusData.success && statusData.status && statusData.status.countries) {
+                    countryData = statusData.status.countries;
+                    document.getElementById('countries-count').textContent = '🌍 ' + Object.keys(countryData).length +
+                        ' стран';
+                }
+
+                if (markersData.success && markersData.markers) {
+                    allMarkers = markersData.markers.map(m => {
+                        if (!m.layer) {
+                            if (m.name?.toLowerCase().includes('notam')) m.layer = 'notam';
+                            else if (m.name?.toLowerCase().includes('gps')) m.layer = 'gps';
+                            else if (m.name?.toLowerCase().includes('пожар')) m.layer = 'firms';
+                            else if (m.name?.toLowerCase().includes('землетряс')) m.layer = 'usgs';
+                            else if (m.name?.toLowerCase().includes('суд')) m.layer = 'ships';
+                            else if (m.name?.toLowerCase().includes('авиа')) m.layer = 'aviation';
+                            else m.layer = 'conflicts';
+                        }
+                        return m;
+                    });
+                    markerData = allMarkers;
+                    document.getElementById('marker-count').textContent = markerData.length;
+                    updateMarkers(allMarkers);
+                }
+
+                calculateSSI();
+                await loadCountryBoundaries();
+
+                loadNotamLayer();
+                loadGpsLayer();
+
+                document.getElementById('loading-overlay').style.display = 'none';
+                setTimeout(() => { if (map) map.invalidateSize(); }, 500);
+            } catch (e) {
+                console.error('[Geo Map] Ошибка:', e);
+                document.getElementById('loading-overlay').innerHTML =
+                    '<div class="text" style="color:#ef4444;">❌ ОШИБКА</div>';
+            }
+        }
+
+        // ============================================================
+        // 14. ГРАНИЦЫ + ПОДПИСИ СТРАН
+        // ============================================================
+        async function loadCountryBoundaries() {
+            try {
+                const response = await fetch(
+                    'https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson');
+                const data = await response.json();
+
+                if (!data || !data.features) return;
+
+                const COUNTRY_NAME_MAP = {
+                    'Russia': 'Россия',
+                    'Ukraine': 'Украина',
+                    'United States': 'США',
+                    'United Kingdom': 'Великобритания',
+                    'France': 'Франция',
+                    'Germany': 'Германия',
+                    'China': 'Китай',
+                    'India': 'Индия',
+                    'Turkey': 'Турция',
+                    'Japan': 'Япония',
+                    'South Korea': 'Южная Корея',
+                    'North Korea': 'Северная Корея',
+                    'Iran': 'Иран',
+                    'Israel': 'Израиль',
+                    'Saudi Arabia': 'Саудовская Аравия',
+                    'Egypt': 'Египет',
+                    'Pakistan': 'Пакистан',
+                    'Afghanistan': 'Афганистан',
+                    'Iraq': 'Ирак',
+                    'Syria': 'Сирия',
+                    'Yemen': 'Йемен',
+                    'Somalia': 'Сомали',
+                    'Ethiopia': 'Эфиопия',
+                    'Sudan': 'Судан',
+                    'Poland': 'Польша',
+                    'Lithuania': 'Литва',
+                    'Latvia': 'Латвия',
+                    'Estonia': 'Эстония',
+                    'Armenia': 'Армения',
+                    'Azerbaijan': 'Азербайджан',
+                    'Venezuela': 'Венесуэла',
+                    'Colombia': 'Колумбия',
+                    'Palestine': 'Палестина',
+                    'Lebanon': 'Ливан',
+                    'Myanmar': 'Мьянма',
+                    'Kazakhstan': 'Казахстан',
+                    'Uzbekistan': 'Узбекистан',
+                    'Turkmenistan': 'Туркменистан',
+                    'Kyrgyzstan': 'Кыргызстан',
+                    'Tajikistan': 'Таджикистан',
+                    'Mongolia': 'Монголия',
+                    'Nepal': 'Непал',
+                    'Bangladesh': 'Бангладеш',
+                    'Sri Lanka': 'Шри-Ланка',
+                    'Cambodia': 'Камбоджа',
+                    'Laos': 'Лаос',
+                    'Vietnam': 'Вьетнам',
+                    'Thailand': 'Таиланд',
+                    'Malaysia': 'Малайзия',
+                    'Indonesia': 'Индонезия',
+                    'Philippines': 'Филиппины',
+                    'Australia': 'Австралия',
+                    'New Zealand': 'Новая Зеландия',
+                    'Canada': 'Канада',
+                    'Mexico': 'Мексика',
+                    'Brazil': 'Бразилия',
+                    'Argentina': 'Аргентина',
+                    'Chile': 'Чили',
+                    'Peru': 'Перу',
+                    'South Africa': 'ЮАР',
+                    'Nigeria': 'Нигерия',
+                    'Kenya': 'Кения',
+                    'Morocco': 'Марокко',
+                    'Algeria': 'Алжир',
+                    'Tunisia': 'Тунис',
+                    'Libya': 'Ливия',
+                    'UAE': 'ОАЭ',
+                    'Qatar': 'Катар',
+                    'Oman': 'Оман',
+                    'Kuwait': 'Кувейт',
+                    'Bahrain': 'Бахрейн',
+                    'Jordan': 'Иордания'
+                };
+
+                const STATUS_COLORS = {
+                    critical: '#ef4444',
+                    'pre-war': '#f97316',
+                    high: '#f59e0b',
+                    medium: '#eab308',
+                    low: '#22c55e'
+                };
+                const INACTIVE_COLORS = ['#3a3a4a', '#454555', '#3f3f4f', '#4a4a5a', '#353545'];
+                let inactiveIndex = 0;
+
+                geoJsonLayer = L.geoJSON(data, {
+                    style: function(feature) {
+                        const nameEn = feature.properties?.name || feature.properties?.NAME || '';
+                        const nameRu = COUNTRY_NAME_MAP[nameEn] || nameEn;
+                        let fillColor = '#2a3a4a';
+                        let fillOpacity = 0.4;
+
+                        for (const [id, country] of Object.entries(countryData)) {
+                            if (country.name === nameRu || country.name === nameEn) {
+                                const status = country.status;
+                                fillColor = (STATUS_COLORS[status] || '#22c55e') + '77';
+                                fillOpacity = 0.55;
+                                break;
+                            }
+                        }
+
+                        if (fillColor === '#2a3a4a') {
+                            fillColor = INACTIVE_COLORS[inactiveIndex % INACTIVE_COLORS.length];
+                            inactiveIndex++;
+                            fillOpacity = 0.35;
+                        }
+
+                        return {
+                            fillColor: fillColor,
+                            fillOpacity: fillOpacity,
+                            color: '#ffffff',
+                            weight: 1.2,
+                            opacity: 0.7,
+                            className: 'country-boundary'
+                        };
+                    },
+                    onEachFeature: function(feature, layer) {
+                        const nameEn = feature.properties?.name || feature.properties?.NAME || '';
+                        const nameRu = COUNTRY_NAME_MAP[nameEn] || nameEn;
+                        let statusText = 'Нет данных';
+                        let color = '#22c55e';
+
+                        for (const [id, country] of Object.entries(countryData)) {
+                            if (country.name === nameRu || country.name === nameEn) {
+                                const status = country.status;
+                                color = STATUS_COLORS[status] || '#22c55e';
+                                statusText = status === 'critical' ? '🔴 Критический' :
+                                    status === 'pre-war' ? '🟠 Предвоенный' :
+                                    status === 'high' ? '🟠 Высокий' :
+                                    status === 'medium' ? '🟡 Средний' : '🟢 Нормальный';
+                                break;
+                            }
+                        }
+
+                        layer.bindPopup(`
+                      <div style="padding:4px 0;">
+                        <strong style="color:#e8f0f8;font-size:15px;">${nameRu}</strong><br>
+                        <span style="color:${color};font-weight:600;font-size:13px;">${statusText}</span>
+                      </div>
+                    `);
+
+                        layer.on('mouseover', function() {
+                            this.setStyle({ weight: 2.5, opacity: 1, fillOpacity: 0.7 });
+                            this.openPopup();
+                        });
+                        layer.on('mouseout', function() {
+                            this.setStyle({ weight: 1.2, opacity: 0.7, fillOpacity: 0.5 });
+                            this.closePopup();
+                        });
+                    }
+                }).addTo(map);
+
+                addCountryLabels(data);
+
+                try {
+                    const bounds = geoJsonLayer.getBounds();
+                    if (bounds.isValid()) map.fitBounds(bounds.pad(0.08));
+                } catch (e) { map.setView([30, 20], 2.5); }
+
+            } catch (e) {
+                console.warn('[Geo Map] Ошибка границ:', e);
+            }
+        }
+
+        function addCountryLabels(geoData) {
+            if (!geoData || !geoData.features) return;
+
+            if (labelsLayer) {
+                map.removeLayer(labelsLayer);
+                labelsLayer = null;
+            }
+
+            labelsLayer = L.layerGroup().addTo(map);
+
+            const COUNTRY_NAME_MAP = {
+                'Russia': 'Россия',
+                'Ukraine': 'Украина',
+                'United States': 'США',
+                'United Kingdom': 'Великобритания',
+                'France': 'Франция',
+                'Germany': 'Германия',
+                'China': 'Китай',
+                'India': 'Индия',
+                'Turkey': 'Турция',
+                'Japan': 'Япония',
+                'South Korea': 'Южная Корея',
+                'North Korea': 'Северная Корея',
+                'Iran': 'Иран',
+                'Israel': 'Израиль',
+                'Saudi Arabia': 'Саудовская Аравия',
+                'Egypt': 'Египет',
+                'Pakistan': 'Пакистан',
+                'Afghanistan': 'Афганистан',
+                'Iraq': 'Ирак',
+                'Syria': 'Сирия',
+                'Yemen': 'Йемен',
+                'Somalia': 'Сомали',
+                'Ethiopia': 'Эфиопия',
+                'Sudan': 'Судан',
+                'Poland': 'Польша',
+                'Lithuania': 'Литва',
+                'Latvia': 'Латвия',
+                'Estonia': 'Эстония',
+                'Armenia': 'Армения',
+                'Azerbaijan': 'Азербайджан',
+                'Venezuela': 'Венесуэла',
+                'Colombia': 'Колумбия',
+                'Palestine': 'Палестина',
+                'Lebanon': 'Ливан',
+                'Myanmar': 'Мьянма',
+                'Kazakhstan': 'Казахстан',
+                'Uzbekistan': 'Узбекистан',
+                'Turkmenistan': 'Туркменистан',
+                'Kyrgyzstan': 'Кыргызстан',
+                'Tajikistan': 'Таджикистан',
+                'Mongolia': 'Монголия',
+                'Nepal': 'Непал',
+                'Bangladesh': 'Бангладеш',
+                'Sri Lanka': 'Шри-Ланка',
+                'Cambodia': 'Камбоджа',
+                'Laos': 'Лаос',
+                'Vietnam': 'Вьетнам',
+                'Thailand': 'Таиланд',
+                'Malaysia': 'Малайзия',
+                'Indonesia': 'Индонезия',
+                'Philippines': 'Филиппины',
+                'Australia': 'Австралия',
+                'New Zealand': 'Новая Зеландия',
+                'Canada': 'Канада',
+                'Mexico': 'Мексика',
+                'Brazil': 'Бразилия',
+                'Argentina': 'Аргентина',
+                'Chile': 'Чили',
+                'Peru': 'Перу',
+                'South Africa': 'ЮАР',
+                'Nigeria': 'Нигерия',
+                'Kenya': 'Кения',
+                'Morocco': 'Марокко',
+                'Algeria': 'Алжир',
+                'Tunisia': 'Тунис',
+                'Libya': 'Ливия',
+                'UAE': 'ОАЭ',
+                'Qatar': 'Катар',
+                'Oman': 'Оман',
+                'Kuwait': 'Кувейт',
+                'Bahrain': 'Бахрейн',
+                'Jordan': 'Иордания'
+            };
+
+            for (const feature of geoData.features) {
+                const nameEn = feature.properties?.name || feature.properties?.NAME || '';
+                const nameRu = COUNTRY_NAME_MAP[nameEn] || nameEn;
+
+                if (!nameRu || nameRu.length < 2) continue;
+                if (nameRu === 'Antarctica') continue;
+
+                let isActive = false;
+                for (const [id, country] of Object.entries(countryData)) {
+                    if (country.name === nameRu || country.name === nameEn) {
+                        isActive = true;
+                        break;
+                    }
+                }
+                if (nameRu === 'Россия' || nameRu === 'США' || nameRu === 'Китай' || nameRu === 'Индия') {
+                    isActive = true;
+                }
+
+                let center = null;
+                if (feature.properties?.center) {
+                    center = feature.properties.center;
+                } else if (feature.geometry && feature.geometry.type === 'Polygon') {
+                    const coords = feature.geometry.coordinates[0];
+                    if (coords && coords.length > 0) {
+                        let lat = 0,
+                            lng = 0,
+                            count = 0;
+                        for (const c of coords) {
+                            if (c && c.length >= 2) {
+                                lat += c[1];
+                                lng += c[0];
+                                count++;
+                            }
+                        }
+                        if (count > 0) {
+                            center = { lat: lat / count, lng: lng / count };
+                        }
+                    }
+                } else if (feature.geometry && feature.geometry.type === 'MultiPolygon') {
+                    if (feature.geometry.coordinates && feature.geometry.coordinates[0]) {
+                        const coords = feature.geometry.coordinates[0][0];
+                        if (coords && coords.length > 0) {
+                            let lat = 0,
+                                lng = 0,
+                                count = 0;
+                            for (const c of coords) {
+                                if (c && c.length >= 2) {
+                                    lat += c[1];
+                                    lng += c[0];
+                                    count++;
+                                }
+                            }
+                            if (count > 0) {
+                                center = { lat: lat / count, lng: lng / count };
+                            }
+                        }
+                    }
+                }
+
+                if (center && center.lat && center.lng) {
+                    let labelClass = 'country-label';
+                    let labelText = nameRu;
+
+                    if (nameRu === 'Россия') {
+                        labelClass = 'country-label-russia';
+                    } else if (!isActive) {
+                        labelClass = 'country-label-inactive';
+                    }
+
+                    const label = L.marker([center.lat, center.lng], {
+                        icon: L.divIcon({
+                            className: labelClass,
+                            html: `<span class="${labelClass}">${labelText}</span>`,
+                            iconSize: [0, 0],
+                            iconAnchor: [0, 0]
+                        })
+                    }).addTo(labelsLayer);
+                }
+            }
+
+            console.log('[Geo Map] Подписи стран добавлены');
+        }
+
+        // ============================================================
+        // 15. SSI
+        // ============================================================
+        function calculateSSI() {
+            const total = Object.keys(countryData).length;
+            if (total === 0) return;
+
+            let score = 0;
+            for (const [id, data] of Object.entries(countryData)) {
+                if (data.status === 'critical') score += 100;
+                else if (data.status === 'pre-war') score += 80;
+                else if (data.status === 'high') score += 70;
+                else if (data.status === 'medium') score += 40;
+                else if (data.status === 'low') score += 10;
+            }
+            const clamped = Math.min(Math.max(Math.round(score / total), 0), 100);
+            document.getElementById('ssi-fill').style.width = clamped + '%';
+            document.getElementById('ssi-label').textContent = clamped + '%';
+            document.getElementById('ssi-label').style.color = clamped > 80 ? '#ef4444' : clamped > 60 ? '#f97316' :
+                clamped > 40 ? '#eab308' : '#22c55e';
+        }
+
+        // ============================================================
+        // 16. ЗАПУСК
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedLang = localStorage.getItem('crucix-lang') || 'ru';
+            setLanguage(savedLang);
+
+            if (typeof L !== 'undefined') {
+                initMap();
+            } else {
+                document.getElementById('loading-overlay').innerHTML =
+                    '<div class="text" style="color:#ef4444;">❌ ОШИБКА: Leaflet не загружен</div>';
+            }
+        });
+    </script>
+</body>
+</html>

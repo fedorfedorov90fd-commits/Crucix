@@ -1,7 +1,29 @@
-[
-  {"date": "2026-07-23", "btc": 60000, "eth": 3000, "ratio": 20.0},
-  {"date": "2026-07-24", "btc": 61000, "eth": 3050, "ratio": 20.0},
-  {"date": "2026-07-25", "btc": 59000, "eth": 2950, "ratio": 20.0},
-  {"date": "2026-07-26", "btc": 62000, "eth": 3100, "ratio": 20.0},
-  {"date": "2026-07-27", "btc": 60500, "eth": 3025, "ratio": 20.0}
-]
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "crypto-fear",
+    "source": "Crypto (demo)",
+    "source_url": "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart",
+    "fetched_at": "2026-09-20T10:38:19.148Z",
+    "normalized_at": "2026-09-20T11:28:56.949Z",
+    "collector": "collect-crypto-fear.mjs",
+    "license": "public-domain",
+    "count": 0,
+    "granularity": "daily",
+    "value_unit": "usd",
+    "value_scale": null,
+    "value_type": "price",
+    "value_range": null,
+    "period": "P30D"
+  },
+  "series": [],
+  "points": [],
+  "regions": [],
+  "extra": {
+    "adapter": "timeseries",
+    "adapter_version": "2.1.1",
+    "unique_dates": 0,
+    "unmapped_regions": [],
+    "unmapped_count": 0
+  }
+}

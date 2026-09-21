@@ -1,0 +1,50 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "openweather",
+    "source": "OpenWeatherMap (demo)",
+    "source_url": "https://api.openweathermap.org/data/2.5/weather",
+    "fetched_at": "2026-09-20T11:00:50.907Z",
+    "normalized_at": "2026-09-20T11:38:12.636Z",
+    "collector": "collect-openweather.mjs",
+    "license": "public-domain",
+    "count": 1,
+    "granularity": "snapshot",
+    "value_unit": "celsius",
+    "value_scale": null,
+    "value_type": "index",
+    "value_range": null
+  },
+  "series": [],
+  "points": [
+    {
+      "lat": 55.75,
+      "lon": 37.62,
+      "label": "облачно",
+      "region": "RUS",
+      "timestamp": "2026-09-20T11:00:50.902Z",
+      "extra": {
+        "status": "Clouds"
+      }
+    }
+  ],
+  "regions": [
+    {
+      "region": "RUS",
+      "value": 0,
+      "count": 0,
+      "aggregation": "mean",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    }
+  ],
+  "extra": {
+    "adapter": "points",
+    "adapter_version": "2.2.0",
+    "skipped_invalid_coords": 0,
+    "unmapped_regions": [],
+    "unmapped_count": 0
+  }
+}

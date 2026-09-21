@@ -1,32 +1,257 @@
-[
-  {"date": "2026-07-23", "copper": 430.5, "gold": 1950.4, "ratio": 12.8},
-  {"date": "2026-07-24", "copper": 432.1, "gold": 1962.1, "ratio": 12.7},
-  {"date": "2026-07-25", "copper": 435.3, "gold": 1975.3, "ratio": 12.5},
-  {"date": "2026-07-26", "copper": 438.5, "gold": 1988.5, "ratio": 12.3},
-  {"date": "2026-07-27", "copper": 440.2, "gold": 2001.2, "ratio": 12.1},
-  {"date": "2026-07-28", "copper": 438.8, "gold": 1995.8, "ratio": 12.2},
-  {"date": "2026-07-29", "copper": 435.4, "gold": 1982.4, "ratio": 12.4},
-  {"date": "2026-07-30", "copper": 432.1, "gold": 1970.1, "ratio": 12.6},
-  {"date": "2026-07-31", "copper": 429.8, "gold": 1965.8, "ratio": 12.8},
-  {"date": "2026-08-01", "copper": 427.2, "gold": 1958.2, "ratio": 13.0},
-  {"date": "2026-08-02", "copper": 425.5, "gold": 1952.5, "ratio": 13.1},
-  {"date": "2026-08-03", "copper": 423.3, "gold": 1948.3, "ratio": 13.3},
-  {"date": "2026-08-04", "copper": 421.1, "gold": 1942.1, "ratio": 13.5},
-  {"date": "2026-08-05", "copper": 418.5, "gold": 1938.5, "ratio": 13.7},
-  {"date": "2026-08-06", "copper": 420.2, "gold": 1945.2, "ratio": 13.5},
-  {"date": "2026-08-07", "copper": 422.8, "gold": 1952.8, "ratio": 13.3},
-  {"date": "2026-08-08", "copper": 425.4, "gold": 1960.4, "ratio": 13.1},
-  {"date": "2026-08-09", "copper": 428.1, "gold": 1968.1, "ratio": 12.9},
-  {"date": "2026-08-10", "copper": 430.8, "gold": 1975.8, "ratio": 12.7},
-  {"date": "2026-08-11", "copper": 433.5, "gold": 1983.5, "ratio": 12.5},
-  {"date": "2026-08-12", "copper": 436.2, "gold": 1991.2, "ratio": 12.3},
-  {"date": "2026-08-13", "copper": 438.9, "gold": 1998.9, "ratio": 12.1},
-  {"date": "2026-08-14", "copper": 441.6, "gold": 2006.6, "ratio": 11.9},
-  {"date": "2026-08-15", "copper": 444.3, "gold": 2014.3, "ratio": 11.7},
-  {"date": "2026-08-16", "copper": 447.0, "gold": 2022.0, "ratio": 11.5},
-  {"date": "2026-08-17", "copper": 449.7, "gold": 2029.7, "ratio": 11.3},
-  {"date": "2026-08-18", "copper": 452.4, "gold": 2037.4, "ratio": 11.1},
-  {"date": "2026-08-19", "copper": 455.1, "gold": 2045.1, "ratio": 10.9},
-  {"date": "2026-08-20", "copper": 457.8, "gold": 2052.8, "ratio": 10.7},
-  {"date": "2026-08-21", "copper": 460.5, "gold": 2060.5, "ratio": 10.5}
-]
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "copper-gold",
+    "source": "Crucix copper-gold",
+    "source_url": "local://rescan",
+    "fetched_at": "2026-09-18T21:24:17.811Z",
+    "normalized_at": "2026-09-18T21:25:55.652Z",
+    "collector": "collect-copper-gold.mjs",
+    "license": "proprietary",
+    "count": 31,
+    "granularity": "event",
+    "value_unit": "ratio",
+    "value_scale": null,
+    "value_type": "ratio",
+    "value_range": null
+  },
+  "series": [
+    {
+      "date": "2026-08-19",
+      "value": 15.31,
+      "extra": {
+        "gold": 1962
+      }
+    },
+    {
+      "date": "2026-08-20",
+      "value": 14.43,
+      "extra": {
+        "gold": 1954.43
+      }
+    },
+    {
+      "date": "2026-08-21",
+      "value": 14.34,
+      "extra": {
+        "gold": 1961.46
+      }
+    },
+    {
+      "date": "2026-08-22",
+      "value": 15.18,
+      "extra": {
+        "gold": 1947.66
+      }
+    },
+    {
+      "date": "2026-08-23",
+      "value": 14.82,
+      "extra": {
+        "gold": 1948.11
+      }
+    },
+    {
+      "date": "2026-08-24",
+      "value": 14.32,
+      "extra": {
+        "gold": 1955.76
+      }
+    },
+    {
+      "date": "2026-08-25",
+      "value": 13.72,
+      "extra": {
+        "gold": 1954.32
+      }
+    },
+    {
+      "date": "2026-08-26",
+      "value": 13.83,
+      "extra": {
+        "gold": 1951.76
+      }
+    },
+    {
+      "date": "2026-08-27",
+      "value": 13.61,
+      "extra": {
+        "gold": 1940.02
+      }
+    },
+    {
+      "date": "2026-08-28",
+      "value": 14.35,
+      "extra": {
+        "gold": 1939.9
+      }
+    },
+    {
+      "date": "2026-08-29",
+      "value": 13.28,
+      "extra": {
+        "gold": 1936.21
+      }
+    },
+    {
+      "date": "2026-08-30",
+      "value": 13.67,
+      "extra": {
+        "gold": 1944.43
+      }
+    },
+    {
+      "date": "2026-08-31",
+      "value": 14.11,
+      "extra": {
+        "gold": 1937.07
+      }
+    },
+    {
+      "date": "2026-09-01",
+      "value": 14.08,
+      "extra": {
+        "gold": 1937.38
+      }
+    },
+    {
+      "date": "2026-09-02",
+      "value": 14.02,
+      "extra": {
+        "gold": 1931.28
+      }
+    },
+    {
+      "date": "2026-09-03",
+      "value": 13.31,
+      "extra": {
+        "gold": 1925.73
+      }
+    },
+    {
+      "date": "2026-09-04",
+      "value": 13.49,
+      "extra": {
+        "gold": 1928.92
+      }
+    },
+    {
+      "date": "2026-09-05",
+      "value": 13.84,
+      "extra": {
+        "gold": 1929.01
+      }
+    },
+    {
+      "date": "2026-09-06",
+      "value": 13.69,
+      "extra": {
+        "gold": 1920.74
+      }
+    },
+    {
+      "date": "2026-09-07",
+      "value": 13.58,
+      "extra": {
+        "gold": 1918.26
+      }
+    },
+    {
+      "date": "2026-09-08",
+      "value": 13.01,
+      "extra": {
+        "gold": 1927.36
+      }
+    },
+    {
+      "date": "2026-09-09",
+      "value": 12.82,
+      "extra": {
+        "gold": 1911.94
+      }
+    },
+    {
+      "date": "2026-09-10",
+      "value": 12.85,
+      "extra": {
+        "gold": 1914.22
+      }
+    },
+    {
+      "date": "2026-09-11",
+      "value": 13.11,
+      "extra": {
+        "gold": 1909.58
+      }
+    },
+    {
+      "date": "2026-09-12",
+      "value": 12.21,
+      "extra": {
+        "gold": 1915.34
+      }
+    },
+    {
+      "date": "2026-09-13",
+      "value": 11.96,
+      "extra": {
+        "gold": 1908.36
+      }
+    },
+    {
+      "date": "2026-09-14",
+      "value": 12.94,
+      "extra": {
+        "gold": 1906.99
+      }
+    },
+    {
+      "date": "2026-09-15",
+      "value": 12.65,
+      "extra": {
+        "gold": 1909.77
+      }
+    },
+    {
+      "date": "2026-09-16",
+      "value": 12.51,
+      "extra": {
+        "gold": 1905.59
+      }
+    },
+    {
+      "date": "2026-09-17",
+      "value": 12.07,
+      "extra": {
+        "gold": 1907.32
+      }
+    },
+    {
+      "date": "2026-09-18",
+      "value": 12.55,
+      "extra": {
+        "gold": 1905.58
+      }
+    }
+  ],
+  "points": [],
+  "regions": [
+    {
+      "region": "GLOBAL",
+      "value": 13.53741935483871,
+      "count": 31,
+      "aggregation": "mean",
+      "extra": {
+        "max": 15.31,
+        "sum": 419.65999999999997
+      }
+    }
+  ],
+  "extra": {
+    "adapter": "timeseries",
+    "adapter_version": "2.0.0",
+    "unique_dates": 31,
+    "unmapped_regions": [],
+    "unmapped_count": 0
+  }
+}

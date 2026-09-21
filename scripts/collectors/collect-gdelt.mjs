@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 /**
  * Crucix Collector: GDELT news events.
- * Версия 2.0.0. Принят 18.09.2026.
+ * Версия 2.1.0. Принят 20.09.2026.
+ *
+ * Изменения v2.1: добавлен массив items[] с полями пайплайна
+ * (id, guid, title, description, link, pubDate, source, category).
+ * Оригинальный массив articles[] сохранён для совместимости.
  *
  * Роль: собирает статьи из GDELT Doc API (8 тематических запросов),
  * дедуплицирует по URL, сдаёт на склад через collector-helper.
@@ -14,6 +18,7 @@
 
 import { saveRaw } from './lib/collector-helper.mjs';
 import { pathToFileURL } from 'url';
+import crypto from 'crypto';
 
 const BROWSER_UA = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 const GDELT_TIMEOUT_MS = 30000;
@@ -62,6 +67,32 @@ async function fetchQuery(q) {
   }
 }
 
+function mapToPipeline(articles) {
+  return articles.map(a => {
+    const url = a.url || '';
+    const title = a.title || '';
+    const domain = a.domain || 'GDELT';
+    const id = crypto.createHash('md5').update(url || title).digest('hex');
+    // GDELT seendate: "20260920T073400Z" → ISO "2026-09-20T07:34:00Z"
+    let pubDate = new Date().toISOString();
+    if (a.seendate && a.seendate.length >= 14) {
+      const s = a.seendate;
+      pubDate = `${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}T${s.slice(8,10)}:${s.slice(10,12)}:${s.slice(12,14)}Z`;
+    }
+    return {
+      id,
+      guid: id,
+      title,
+      description: title + '. ' + domain,
+      link: url,
+      pubDate,
+      source: domain,
+      category: 'events',
+      _gdelt: a
+    };
+  });
+}
+
 export async function collectGDELT() {
   const start = Date.now();
   console.log('[GDELT] Запуск (browser UA, 8 запросов)');
@@ -80,11 +111,14 @@ export async function collectGDELT() {
     await new Promise(r => setTimeout(r, GDELT_PAUSE_MS));
   }
 
+  const items = mapToPipeline(allArticles);
+
   const result = {
     source: 'GDELT',
     lastUpdated: new Date().toISOString(),
     queries: QUERIES,
     articles: allArticles,
+    items: items,
     count: allArticles.length
   };
 

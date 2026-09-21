@@ -1,98 +1,33 @@
-[
-  {
-    "id": "ria-001",
-    "name": "ria #1",
-    "lat": 60.37514853385849,
-    "lng": 38.65959311692906,
-    "severity": "critical",
-    "timestamp": "2026-08-28T05:32:44.841Z"
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "ria",
+    "source": "РИА Новости (demo)",
+    "source_url": "https://ria.ru/",
+    "fetched_at": "2026-09-20T11:02:06.633Z",
+    "normalized_at": "2026-09-20T11:28:57.134Z",
+    "collector": "collect-ria.mjs",
+    "license": "public-domain",
+    "count": 0,
+    "granularity": "snapshot",
+    "value_unit": "count",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null
   },
-  {
-    "id": "ria-002",
-    "name": "ria #2",
-    "lat": 65.09876309208124,
-    "lng": 31.879055989248513,
-    "severity": "critical",
-    "timestamp": "2026-08-28T05:32:44.841Z"
-  },
-  {
-    "id": "ria-003",
-    "name": "ria #3",
-    "lat": 51.385696289457684,
-    "lng": 30.681009052810392,
-    "severity": "low",
-    "timestamp": "2026-08-28T05:32:44.841Z"
-  },
-  {
-    "id": "ria-004",
-    "name": "ria #4",
-    "lat": 62.11316452750562,
-    "lng": 43.20955815348207,
-    "severity": "high",
-    "timestamp": "2026-08-28T05:32:44.841Z"
-  },
-  {
-    "id": "ria-005",
-    "name": "ria #5",
-    "lat": 62.360244185963566,
-    "lng": 29.370896023556313,
-    "severity": "high",
-    "timestamp": "2026-08-28T05:32:44.841Z"
-  },
-  {
-    "id": "ria-006",
-    "name": "ria #6",
-    "lat": 58.7032047666273,
-    "lng": 36.12713697556413,
-    "severity": "low",
-    "timestamp": "2026-08-28T05:32:44.841Z"
-  },
-  {
-    "id": "ria-007",
-    "name": "ria #7",
-    "lat": 63.41246608351402,
-    "lng": 28.714730943111043,
-    "severity": "medium",
-    "timestamp": "2026-08-28T05:32:44.841Z"
-  },
-  {
-    "id": "ria-008",
-    "name": "ria #8",
-    "lat": 53.29134127644169,
-    "lng": 34.297958580180705,
-    "severity": "critical",
-    "timestamp": "2026-08-28T05:32:44.841Z"
-  },
-  {
-    "id": "ria-009",
-    "name": "ria #9",
-    "lat": 64.73010266888978,
-    "lng": 37.246364699887934,
-    "severity": "critical",
-    "timestamp": "2026-08-28T05:32:44.841Z"
-  },
-  {
-    "id": "ria-010",
-    "name": "ria #10",
-    "lat": 56.85239688969857,
-    "lng": 30.21321884964192,
-    "severity": "low",
-    "timestamp": "2026-08-28T05:32:44.841Z"
-  },
-  {
-    "id": "ria-011",
-    "name": "ria #11",
-    "lat": 48.39733023986833,
-    "lng": 43.92674941378159,
-    "severity": "low",
-    "timestamp": "2026-08-28T05:32:44.841Z"
-  },
-  {
-    "id": "ria-012",
-    "name": "ria #12",
-    "lat": 62.77699638012998,
-    "lng": 41.03544830706729,
-    "severity": "medium",
-    "timestamp": "2026-08-28T05:32:44.841Z"
+  "series": [],
+  "points": [],
+  "regions": [],
+  "extra": {
+    "adapter": "events",
+    "adapter_version": "2.1.0",
+    "total_events": 0,
+    "unique_dates": 0,
+    "skipped_no_date": 5,
+    "points_from_centroids": 0,
+    "unmapped_regions": [],
+    "unmapped_count": 0,
+    "source": "ria",
+    "inner_array_key": "news"
   }
-]
+}

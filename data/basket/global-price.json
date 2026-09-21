@@ -1,0 +1,88 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "global-price",
+    "source": "GlobalPrice (demo)",
+    "source_url": "https://api.globalprice.info/v1/commodities",
+    "fetched_at": "2026-09-20T11:17:12.126Z",
+    "normalized_at": "2026-09-20T11:28:57.194Z",
+    "collector": "collect-global-price.mjs",
+    "license": "public-domain",
+    "count": 1,
+    "granularity": "snapshot",
+    "value_unit": "usd",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null
+  },
+  "series": [],
+  "points": [],
+  "regions": [],
+  "extra": {
+    "adapter": "catalog",
+    "adapter_version": "1.1.0",
+    "type_counts": {
+      "unknown": 1
+    },
+    "regions_count": 0,
+    "entries": [
+      {
+        "source": "GlobalPrice (DEMO)",
+        "lastUpdated": "2026-09-20T11:17:12.123Z",
+        "commodities": [
+          {
+            "name": "Gold",
+            "price": 1920,
+            "unit": "USD/oz",
+            "change": "+1.2%"
+          },
+          {
+            "name": "Silver",
+            "price": 23.5,
+            "unit": "USD/oz",
+            "change": "+0.8%"
+          },
+          {
+            "name": "Crude Oil (WTI)",
+            "price": 78.5,
+            "unit": "USD/bbl",
+            "change": "+2.1%"
+          },
+          {
+            "name": "Brent Oil",
+            "price": 82.3,
+            "unit": "USD/bbl",
+            "change": "+1.9%"
+          },
+          {
+            "name": "Natural Gas",
+            "price": 3.2,
+            "unit": "USD/MMBtu",
+            "change": "-0.5%"
+          },
+          {
+            "name": "Copper",
+            "price": 4.2,
+            "unit": "USD/lb",
+            "change": "+0.3%"
+          },
+          {
+            "name": "Wheat",
+            "price": 6.8,
+            "unit": "USD/bu",
+            "change": "-1.2%"
+          },
+          {
+            "name": "Corn",
+            "price": 5.5,
+            "unit": "USD/bu",
+            "change": "-0.8%"
+          }
+        ],
+        "note": "Демо-данные (GlobalPrice API недоступен)"
+      }
+    ],
+    "entries_count": 1,
+    "wrapped_single_object": true
+  }
+}

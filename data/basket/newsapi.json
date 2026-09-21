@@ -1,0 +1,34 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "newsapi",
+    "source": "NewsAPI (DEMO)",
+    "source_url": "https://newsapi.org/v2/top-headlines?country=us&pageSize=20",
+    "fetched_at": "2026-09-20T10:56:31.811Z",
+    "normalized_at": "2026-09-20T11:28:57.094Z",
+    "collector": "collect-newsapi.mjs",
+    "license": "public-domain",
+    "count": 0,
+    "granularity": "snapshot",
+    "value_unit": "count",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null
+  },
+  "series": [],
+  "points": [],
+  "regions": [],
+  "extra": {
+    "adapter": "events",
+    "adapter_version": "2.1.0",
+    "total_events": 0,
+    "unique_dates": 0,
+    "skipped_no_date": 10,
+    "points_from_centroids": 0,
+    "unmapped_regions": [],
+    "unmapped_count": 0,
+    "source": "NewsAPI (DEMO)",
+    "lastUpdated": "2026-09-20T10:56:31.803Z",
+    "inner_array_key": "articles"
+  }
+}

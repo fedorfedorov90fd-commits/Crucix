@@ -1,4 +1,75 @@
-[
-  {"airport": "SVO Moscow", "flights": 234, "status": "Normal", "country": "Russia", "lat": 55.9726, "lng": 37.4146, "severity": "INFO", "timestamp": "2026-09-07T12:00:00Z"},
-  {"airport": "JFK New York", "flights": 456, "status": "Delays", "country": "United States", "lat": 40.6413, "lng": -73.7781, "severity": "LOW", "timestamp": "2026-09-07T12:00:00Z"}
-]
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "opensky",
+    "source": "OpenSky Network (demo)",
+    "source_url": "https://opensky-network.org/api/states/all",
+    "fetched_at": "2026-09-20T11:00:50.846Z",
+    "normalized_at": "2026-09-20T11:44:06.479Z",
+    "collector": "collect-opensky.mjs",
+    "license": "public-domain",
+    "count": 5,
+    "granularity": "snapshot",
+    "value_unit": "count",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null
+  },
+  "series": [],
+  "points": [
+    {
+      "lat": 55.97,
+      "lon": 37.41,
+      "extra": {
+        "id": "UUEE"
+      }
+    },
+    {
+      "lat": 55.41,
+      "lon": 37.9,
+      "extra": {
+        "id": "UUDD"
+      }
+    },
+    {
+      "lat": 55.6,
+      "lon": 37.27,
+      "extra": {
+        "id": "UUWW"
+      }
+    },
+    {
+      "lat": 51.47,
+      "lon": -0.45,
+      "extra": {
+        "id": "EGLL"
+      }
+    },
+    {
+      "lat": 50.03,
+      "lon": 8.56,
+      "extra": {
+        "id": "EDDF"
+      }
+    }
+  ],
+  "regions": [
+    {
+      "region": "GLOBAL",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    }
+  ],
+  "extra": {
+    "adapter": "points",
+    "adapter_version": "2.2.1",
+    "skipped_invalid_coords": 0,
+    "unmapped_regions": [],
+    "unmapped_count": 0
+  }
+}

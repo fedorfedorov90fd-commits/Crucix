@@ -1,138 +1,448 @@
-[
-  {
-    "id": "military-exercises-001",
-    "name": "military-exercises #1",
-    "lat": 40.140815876576774,
-    "lng": 38.82596783423263,
-    "severity": "critical",
-    "timestamp": "2026-08-28T05:32:44.828Z"
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "military-exercises",
+    "source": "OpenSky + NOTAM (demo)",
+    "source_url": "local://demo",
+    "fetched_at": "2026-09-20T10:56:30.716Z",
+    "normalized_at": "2026-09-20T11:38:12.630Z",
+    "collector": "collect-military-exercises.mjs",
+    "license": "public-domain",
+    "count": 31,
+    "granularity": "daily",
+    "value_unit": "index",
+    "value_scale": null,
+    "value_type": "index",
+    "value_range": null,
+    "period": "P30D"
   },
-  {
-    "id": "military-exercises-002",
-    "name": "military-exercises #2",
-    "lat": 30.880462455147722,
-    "lng": 46.1645770661433,
-    "severity": "high",
-    "timestamp": "2026-08-28T05:32:44.829Z"
-  },
-  {
-    "id": "military-exercises-003",
-    "name": "military-exercises #3",
-    "lat": 43.293051428257186,
-    "lng": 49.530717950681534,
-    "severity": "critical",
-    "timestamp": "2026-08-28T05:32:44.829Z"
-  },
-  {
-    "id": "military-exercises-004",
-    "name": "military-exercises #4",
-    "lat": 34.60708906851397,
-    "lng": 30.008155816371513,
-    "severity": "medium",
-    "timestamp": "2026-08-28T05:32:44.829Z"
-  },
-  {
-    "id": "military-exercises-005",
-    "name": "military-exercises #5",
-    "lat": 45.62359509884707,
-    "lng": 33.13448568714735,
-    "severity": "critical",
-    "timestamp": "2026-08-28T05:32:44.829Z"
-  },
-  {
-    "id": "military-exercises-006",
-    "name": "military-exercises #6",
-    "lat": 39.47668447944539,
-    "lng": 36.19125106341433,
-    "severity": "high",
-    "timestamp": "2026-08-28T05:32:44.829Z"
-  },
-  {
-    "id": "military-exercises-007",
-    "name": "military-exercises #7",
-    "lat": 38.849808113592985,
-    "lng": 49.07696058537293,
-    "severity": "critical",
-    "timestamp": "2026-08-28T05:32:44.829Z"
-  },
-  {
-    "id": "military-exercises-008",
-    "name": "military-exercises #8",
-    "lat": 40.8956184975372,
-    "lng": 43.41762006733286,
-    "severity": "critical",
-    "timestamp": "2026-08-28T05:32:44.829Z"
-  },
-  {
-    "id": "military-exercises-009",
-    "name": "military-exercises #9",
-    "lat": 36.46417870028219,
-    "lng": 49.60600942019733,
-    "severity": "high",
-    "timestamp": "2026-08-28T05:32:44.829Z"
-  },
-  {
-    "id": "military-exercises-010",
-    "name": "military-exercises #10",
-    "lat": 36.97791104302249,
-    "lng": 36.57405536431875,
-    "severity": "medium",
-    "timestamp": "2026-08-28T05:32:44.829Z"
-  },
-  {
-    "id": "military-exercises-011",
-    "name": "military-exercises #11",
-    "lat": 32.44378137878181,
-    "lng": 32.475172207107285,
-    "severity": "high",
-    "timestamp": "2026-08-28T05:32:44.829Z"
-  },
-  {
-    "id": "military-exercises-012",
-    "name": "military-exercises #12",
-    "lat": 43.05512677583095,
-    "lng": 31.0546853532974,
-    "severity": "low",
-    "timestamp": "2026-08-28T05:32:44.829Z"
-  },
-  {
-    "id": "military-exercises-013",
-    "name": "military-exercises #13",
-    "lat": 45.046093071027876,
-    "lng": 31.441935997994396,
-    "severity": "medium",
-    "timestamp": "2026-08-28T05:32:44.829Z"
-  },
-  {
-    "id": "military-exercises-014",
-    "name": "military-exercises #14",
-    "lat": 48.155822000299565,
-    "lng": 36.64368130658048,
-    "severity": "high",
-    "timestamp": "2026-08-28T05:32:44.829Z"
-  },
-  {
-    "id": "military-exercises-015",
-    "name": "military-exercises #15",
-    "lat": 33.024112670478516,
-    "lng": 40.35542272951625,
-    "severity": "medium",
-    "timestamp": "2026-08-28T05:32:44.829Z"
-  },
-  {
-    "id": "military-exercises-016",
-    "name": "military-exercises #16",
-    "lat": 49.01237764774017,
-    "lng": 41.603339253295964,
-    "severity": "low",
-    "timestamp": "2026-08-28T05:32:44.829Z"
-  },
-  {
-    "id": "military-exercises-017",
-    "name": "military-exercises #17",
-    "lat": 47.90390791342051,
-    "lng": 45.224149447621826,
-    "severity": "critical",
-    "timestamp": "2026-08-28T05:32:44.829Z"
+  "series": [
+    {
+      "date": "2026-08-21",
+      "value": 20.89,
+      "region": "AIA",
+      "extra": {
+        "exercises": 2,
+        "notam": 2,
+        "opensky": 10
+      }
+    },
+    {
+      "date": "2026-08-22",
+      "value": 23.01,
+      "region": "Middle East",
+      "extra": {
+        "exercises": 12,
+        "notam": 7,
+        "opensky": 6,
+        "unmapped_region": true,
+        "unmapped_original": "Middle East"
+      }
+    },
+    {
+      "date": "2026-08-23",
+      "value": 27.04,
+      "region": "Europe",
+      "extra": {
+        "exercises": 3,
+        "notam": 9,
+        "opensky": 4,
+        "unmapped_region": true,
+        "unmapped_original": "Europe"
+      }
+    },
+    {
+      "date": "2026-08-24",
+      "value": 36.98,
+      "region": "Europe",
+      "extra": {
+        "exercises": 4,
+        "notam": 20,
+        "opensky": 4,
+        "unmapped_region": true,
+        "unmapped_original": "Europe"
+      }
+    },
+    {
+      "date": "2026-08-25",
+      "value": 26.88,
+      "region": "Middle East",
+      "extra": {
+        "exercises": 8,
+        "notam": 2,
+        "opensky": 4,
+        "unmapped_region": true,
+        "unmapped_original": "Middle East"
+      }
+    },
+    {
+      "date": "2026-08-26",
+      "value": 37.22,
+      "region": "AIA",
+      "extra": {
+        "exercises": 11,
+        "notam": 2,
+        "opensky": 11
+      }
+    },
+    {
+      "date": "2026-08-27",
+      "value": 40.59,
+      "region": "AIA",
+      "extra": {
+        "exercises": 16,
+        "notam": 5,
+        "opensky": 8
+      }
+    },
+    {
+      "date": "2026-08-28",
+      "value": 41.05,
+      "region": "AIA",
+      "extra": {
+        "exercises": 14,
+        "notam": 14,
+        "opensky": 13
+      }
+    },
+    {
+      "date": "2026-08-29",
+      "value": 34.4,
+      "region": "Europe",
+      "extra": {
+        "exercises": 15,
+        "notam": 5,
+        "opensky": 8,
+        "unmapped_region": true,
+        "unmapped_original": "Europe"
+      }
+    },
+    {
+      "date": "2026-08-30",
+      "value": 32.1,
+      "region": "Middle East",
+      "extra": {
+        "exercises": 6,
+        "notam": 6,
+        "opensky": 1,
+        "unmapped_region": true,
+        "unmapped_original": "Middle East"
+      }
+    },
+    {
+      "date": "2026-08-31",
+      "value": 13.57,
+      "region": "Atlantic",
+      "extra": {
+        "exercises": 6,
+        "notam": 17,
+        "opensky": 13,
+        "unmapped_region": true,
+        "unmapped_original": "Atlantic"
+      }
+    },
+    {
+      "date": "2026-09-01",
+      "value": 38.71,
+      "region": "Europe",
+      "extra": {
+        "exercises": 11,
+        "notam": 10,
+        "opensky": 2,
+        "unmapped_region": true,
+        "unmapped_original": "Europe"
+      }
+    },
+    {
+      "date": "2026-09-02",
+      "value": 35.19,
+      "region": "Middle East",
+      "extra": {
+        "exercises": 7,
+        "notam": 18,
+        "opensky": 2,
+        "unmapped_region": true,
+        "unmapped_original": "Middle East"
+      }
+    },
+    {
+      "date": "2026-09-03",
+      "value": 20.59,
+      "region": "Pacific",
+      "extra": {
+        "exercises": 12,
+        "notam": 7,
+        "opensky": 4,
+        "unmapped_region": true,
+        "unmapped_original": "Pacific"
+      }
+    },
+    {
+      "date": "2026-09-04",
+      "value": 19.87,
+      "region": "Atlantic",
+      "extra": {
+        "exercises": 3,
+        "notam": 5,
+        "opensky": 11,
+        "unmapped_region": true,
+        "unmapped_original": "Atlantic"
+      }
+    },
+    {
+      "date": "2026-09-05",
+      "value": 16.86,
+      "region": "Pacific",
+      "extra": {
+        "exercises": 14,
+        "notam": 21,
+        "opensky": 11,
+        "unmapped_region": true,
+        "unmapped_original": "Pacific"
+      }
+    },
+    {
+      "date": "2026-09-06",
+      "value": 17.29,
+      "region": "Europe",
+      "extra": {
+        "exercises": 13,
+        "notam": 4,
+        "opensky": 14,
+        "unmapped_region": true,
+        "unmapped_original": "Europe"
+      }
+    },
+    {
+      "date": "2026-09-07",
+      "value": 16.01,
+      "region": "Europe",
+      "extra": {
+        "exercises": 14,
+        "notam": 14,
+        "opensky": 11,
+        "unmapped_region": true,
+        "unmapped_original": "Europe"
+      }
+    },
+    {
+      "date": "2026-09-08",
+      "value": 18.02,
+      "region": "Pacific",
+      "extra": {
+        "exercises": 6,
+        "notam": 4,
+        "opensky": 6,
+        "unmapped_region": true,
+        "unmapped_original": "Pacific"
+      }
+    },
+    {
+      "date": "2026-09-09",
+      "value": 24.47,
+      "region": "Pacific",
+      "extra": {
+        "exercises": 2,
+        "notam": 12,
+        "opensky": 15,
+        "unmapped_region": true,
+        "unmapped_original": "Pacific"
+      }
+    },
+    {
+      "date": "2026-09-10",
+      "value": 36.4,
+      "region": "Atlantic",
+      "extra": {
+        "exercises": 9,
+        "notam": 15,
+        "opensky": 11,
+        "unmapped_region": true,
+        "unmapped_original": "Atlantic"
+      }
+    },
+    {
+      "date": "2026-09-11",
+      "value": 27.11,
+      "region": "Atlantic",
+      "extra": {
+        "exercises": 10,
+        "notam": 7,
+        "opensky": 3,
+        "unmapped_region": true,
+        "unmapped_original": "Atlantic"
+      }
+    },
+    {
+      "date": "2026-09-12",
+      "value": 42.41,
+      "region": "Europe",
+      "extra": {
+        "exercises": 3,
+        "notam": 21,
+        "opensky": 12,
+        "unmapped_region": true,
+        "unmapped_original": "Europe"
+      }
+    },
+    {
+      "date": "2026-09-13",
+      "value": 42.13,
+      "region": "Europe",
+      "extra": {
+        "exercises": 6,
+        "notam": 5,
+        "opensky": 12,
+        "unmapped_region": true,
+        "unmapped_original": "Europe"
+      }
+    },
+    {
+      "date": "2026-09-14",
+      "value": 14.58,
+      "region": "Pacific",
+      "extra": {
+        "exercises": 10,
+        "notam": 18,
+        "opensky": 4,
+        "unmapped_region": true,
+        "unmapped_original": "Pacific"
+      }
+    },
+    {
+      "date": "2026-09-15",
+      "value": 10.97,
+      "region": "Pacific",
+      "extra": {
+        "exercises": 6,
+        "notam": 15,
+        "opensky": 5,
+        "unmapped_region": true,
+        "unmapped_original": "Pacific"
+      }
+    },
+    {
+      "date": "2026-09-16",
+      "value": 10.95,
+      "region": "Atlantic",
+      "extra": {
+        "exercises": 8,
+        "notam": 14,
+        "opensky": 1,
+        "unmapped_region": true,
+        "unmapped_original": "Atlantic"
+      }
+    },
+    {
+      "date": "2026-09-17",
+      "value": 46.84,
+      "region": "Atlantic",
+      "extra": {
+        "exercises": 7,
+        "notam": 6,
+        "opensky": 12,
+        "unmapped_region": true,
+        "unmapped_original": "Atlantic"
+      }
+    },
+    {
+      "date": "2026-09-18",
+      "value": 41.77,
+      "region": "Pacific",
+      "extra": {
+        "exercises": 9,
+        "notam": 15,
+        "opensky": 2,
+        "unmapped_region": true,
+        "unmapped_original": "Pacific"
+      }
+    },
+    {
+      "date": "2026-09-19",
+      "value": 44.62,
+      "region": "AIA",
+      "extra": {
+        "exercises": 2,
+        "notam": 17,
+        "opensky": 4
+      }
+    },
+    {
+      "date": "2026-09-20",
+      "value": 24.92,
+      "region": "Pacific",
+      "extra": {
+        "exercises": 4,
+        "notam": 16,
+        "opensky": 11,
+        "unmapped_region": true,
+        "unmapped_original": "Pacific"
+      }
+    }
+  ],
+  "points": [],
+  "regions": [
+    {
+      "region": "AIA",
+      "value": 36.874,
+      "count": 5,
+      "aggregation": "mean",
+      "extra": {
+        "max": 44.62,
+        "sum": 184.37
+      }
+    },
+    {
+      "region": "Middle East",
+      "value": 29.295,
+      "count": 4,
+      "aggregation": "mean",
+      "extra": {
+        "max": 35.19,
+        "sum": 117.18
+      }
+    },
+    {
+      "region": "Europe",
+      "value": 31.871249999999996,
+      "count": 8,
+      "aggregation": "mean",
+      "extra": {
+        "max": 42.41,
+        "sum": 254.96999999999997
+      }
+    },
+    {
+      "region": "Atlantic",
+      "value": 25.790000000000003,
+      "count": 6,
+      "aggregation": "mean",
+      "extra": {
+        "max": 46.84,
+        "sum": 154.74
+      }
+    },
+    {
+      "region": "Pacific",
+      "value": 21.5225,
+      "count": 8,
+      "aggregation": "mean",
+      "extra": {
+        "max": 41.77,
+        "sum": 172.18
+      }
+    }
+  ],
+  "extra": {
+    "adapter": "timeseries",
+    "adapter_version": "2.2.0",
+    "unique_dates": 31,
+    "unmapped_regions": [
+      "Middle East",
+      "Europe",
+      "Atlantic",
+      "Pacific"
+    ],
+    "unmapped_count": 4
   }
-]
+}

@@ -1,6 +1,141 @@
-[
-  {"id": "NOTAM-A-001", "text": "Военные учения в районе", "country": "Russia", "lat": 55.7558, "lng": 37.6173, "severity": 3},
-  {"id": "NOTAM-A-002", "text": "Закрытие воздушного пространства", "country": "Ukraine", "lat": 50.4501, "lng": 30.5234, "severity": 4},
-  {"id": "NOTAM-A-003", "text": "Учения НАТО в регионе", "country": "Poland", "lat": 52.2297, "lng": 21.0122, "severity": 3},
-  {"id": "NOTAM-A-004", "text": "Ограничения полётов", "country": "United States", "lat": 38.8951, "lng": -77.0364, "severity": 2}
-]
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "notam",
+    "source": "Eurocontrol NOTAM",
+    "source_url": "local://rescan",
+    "fetched_at": "2026-09-18T21:24:17.816Z",
+    "normalized_at": "2026-09-18T21:25:55.891Z",
+    "collector": "collect-notam.mjs",
+    "license": "public-domain",
+    "count": 5,
+    "granularity": "event",
+    "value_unit": "count",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null
+  },
+  "series": [],
+  "points": [
+    {
+      "lat": 49.422573881531754,
+      "lon": 30.518414059213995,
+      "label": "КРИТИЧЕСКИЙ",
+      "region": "Восточная Европа",
+      "extra": {
+        "id": "NOTAM-1789758378464-v6to",
+        "unmapped_region": true,
+        "unmapped_original": "Восточная Европа"
+      }
+    },
+    {
+      "lat": 43.44913335592745,
+      "lon": 35.33849400785872,
+      "label": "КРИТИЧЕСКИЙ",
+      "region": "Черное море",
+      "extra": {
+        "id": "NOTAM-1789758378465-u9uo",
+        "unmapped_region": true,
+        "unmapped_original": "Черное море"
+      }
+    },
+    {
+      "lat": 29.863804278430806,
+      "lon": 44.85407154066505,
+      "label": "ВЫСОКИЙ",
+      "region": "Ближний Восток",
+      "extra": {
+        "id": "NOTAM-1789758378465-ohlu",
+        "unmapped_region": true,
+        "unmapped_original": "Ближний Восток"
+      }
+    },
+    {
+      "lat": 14.474802624417677,
+      "lon": 114.73024516933387,
+      "label": "ВЫСОКИЙ",
+      "region": "Южно-Китайское море",
+      "extra": {
+        "id": "NOTAM-1789758378465-d65d",
+        "unmapped_region": true,
+        "unmapped_original": "Южно-Китайское море"
+      }
+    },
+    {
+      "lat": 57.88051590392003,
+      "lon": 19.918238358064848,
+      "label": "СРЕДНИЙ",
+      "region": "Балтийское море",
+      "extra": {
+        "id": "NOTAM-1789758378465-tuor",
+        "unmapped_region": true,
+        "unmapped_original": "Балтийское море"
+      }
+    }
+  ],
+  "regions": [
+    {
+      "region": "Восточная Европа",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "Черное море",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "Ближний Восток",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "Южно-Китайское море",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "Балтийское море",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    }
+  ],
+  "extra": {
+    "adapter": "points",
+    "adapter_version": "2.0.0",
+    "skipped_invalid_coords": 0,
+    "unmapped_regions": [
+      "Восточная Европа",
+      "Черное море",
+      "Ближний Восток",
+      "Южно-Китайское море",
+      "Балтийское море"
+    ],
+    "unmapped_count": 5
+  }
+}

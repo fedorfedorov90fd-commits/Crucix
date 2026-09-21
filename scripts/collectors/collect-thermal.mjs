@@ -1,40 +1,36 @@
 #!/usr/bin/env node
+/**
+ * Crucix Collector: thermal (FIRMS-совместимый, 3 региона) — demo.
+ * Версия 2.0.1. Принят 20.09.2026.
+ *
+ * Изменения от 2.0.0:
+ *   - regions переименовано в meta.regions, perRegion в meta.perRegion.
+ *     Это освобождает ключ regions для unwrapWrapper (чтобы адаптер нашёл
+ *     daily, а не regions с {id,lat,lon,radius}).
+ *   - daily остаётся в корне как основной временной ряд.
+ *   - perRegion остаётся как справочные метаданные.
+ *
+ * ВЫХОД: data/raw/thermal-<timestamp>.json + накладная.
+ */
 
-// ============================================================
-// СБОР ТЕРМАЛЬНЫХ ДАННЫХ (FIRMS)
-// Источник: NASA FIRMS API
-// ============================================================
+import { saveRaw } from './lib/collector-helper.mjs';
+import { pathToFileURL } from 'url';
 
-import { promises as fs } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath, pathToFileURL } from 'url';;
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT = join(__dirname, '..');
-const OUTPUT = join(ROOT, 'data', 'thermal', 'history.json');
-
-// Регионы для мониторинга
 const REGIONS = [
   { id: 'ukraine', lat: 48.5, lon: 31.5, radius: 500 },
   { id: 'middle_east', lat: 30.0, lon: 45.0, radius: 800 },
-  { id: 'russia', lat: 60.0, lon: 90.0, radius: 1000 }
+  { id: 'russia', lat: 60.0, lon: 90.0, radius: 1000 },
 ];
 
-async function fetchFirms(region) {
-  const url = `https://firms.modaps.eosdis.nasa.gov/api/country/csv/${process.env.FIRMS_KEY || 'demo'}/MODIS_SP/world/1`;
-  // Используем тестовый эндпоинт, так как реальный требует ключ
-  return generateTestThermal(region);
-}
+const DAYS_BACK = 30;
 
 function generateTestThermal(region) {
-  // Генерируем тестовые данные, пока нет реального API
   const data = [];
   const now = new Date();
-  for (let i = 30; i >= 0; i--) {
+  for (let i = DAYS_BACK; i >= 0; i--) {
     const d = new Date(now);
     d.setDate(d.getDate() - i);
     const date = d.toISOString().slice(0, 10);
-    // Случайное количество детекций с трендом
     const base = 50 + Math.sin(i / 5) * 30;
     const value = Math.round((base + Math.random() * 40) * 100) / 100;
     data.push({ date, value, region: region.id });
@@ -42,36 +38,55 @@ function generateTestThermal(region) {
   return data;
 }
 
-async function collectThermal() {
-  console.log('[Thermal] Начинаю сбор данных...');
-  
-  let allData = [];
+export async function collectThermal() {
+  console.log('[Thermal] Сбор...');
+  const allData = [];
   for (const region of REGIONS) {
-    const data = await fetchFirms(region);
-    allData = allData.concat(data);
-    console.log(`[Thermal] Регион ${region.id}: ${data.length} записей`);
+    const data = generateTestThermal(region);
+    allData.push(...data);
   }
-  
-  // Агрегируем по дням
+
   const daily = {};
   for (const item of allData) {
     if (!daily[item.date]) daily[item.date] = 0;
     daily[item.date] += item.value;
   }
-  
-  const result = Object.entries(daily)
+  const aggregated = Object.entries(daily)
     .map(([date, value]) => ({ date, value: Math.round(value * 100) / 100 }))
     .sort((a, b) => a.date.localeCompare(b.date));
-  
-  await fs.mkdir(join(ROOT, 'data', 'thermal'), { recursive: true });
-  await fs.writeFile(OUTPUT, JSON.stringify(result, null, 2));
-  
-  console.log(`[Thermal] Сохранено ${result.length} дней данных в ${OUTPUT}`);
+
+  const payload = {
+    source: 'NASA FIRMS (demo)',
+    daily: aggregated,
+    meta: {
+      regions: REGIONS,
+      perRegion: allData,
+      total: aggregated.length,
+    },
+  };
+
+  const result = await saveRaw('thermal', payload, {
+    collector: 'collect-thermal.mjs',
+    source: 'NASA FIRMS (demo)',
+    source_url: 'https://firms.modaps.eosdis.nasa.gov/api/',
+    license: 'public-domain',
+    format_hint: 'timeseries',
+    value_type: 'count',
+    value_unit: 'detections',
+    granularity: 'daily',
+    period: 'P30D',
+    record_count: aggregated.length,
+    notes: 'Demo: 3 региона × 31 день; regions/perRegion в meta; daily в корне; basket не перезаписывается',
+    backwardCompat: false,
+  });
+  console.log(`[Thermal] OK ${aggregated.length}
+агрегировано. длина}
+ → ${result.raw_file}
+результат. raw_file}
+`);
+  return payload;
 }
 
-// Если запускают напрямую
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  collectThermal().catch(console.error);
+  collectThermal().catch(e => { console.error('[Thermal] FATAL:', e.message); process.exit(1); });
 }
-
-export default collectThermal;

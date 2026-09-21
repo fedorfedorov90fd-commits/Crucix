@@ -1,189 +1,320 @@
 {
-  "type": "FeatureCollection",
-  "features": [
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "noaa",
+    "source": "NOAA (demo)",
+    "source_url": "https://www.noaa.gov/",
+    "fetched_at": "2026-09-20T10:57:50.883Z",
+    "normalized_at": "2026-09-20T11:28:57.107Z",
+    "collector": "collect-noaa.mjs",
+    "license": "public-domain",
+    "count": 31,
+    "granularity": "daily",
+    "value_unit": "index",
+    "value_scale": null,
+    "value_type": "index",
+    "value_range": null,
+    "period": "P30D"
+  },
+  "series": [
     {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -74,
-          40.7
-        ]
-      },
-      "properties": {
-        "name": "Нью-Йорк",
-        "id": "USW00013739",
-        "temp": 22.5,
-        "condition": "Облачно",
-        "wind": 5.2,
-        "severity": "low"
+      "date": "2026-08-21",
+      "value": 14.3,
+      "extra": {
+        "city": "London",
+        "temp": 27.23,
+        "condition": "cloudy"
       }
     },
     {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -118.2,
-          34
-        ]
-      },
-      "properties": {
-        "name": "Лос-Анджелес",
-        "id": "USW00013994",
-        "temp": 28.3,
-        "condition": "Солнечно",
-        "wind": 3.1,
-        "severity": "low"
+      "date": "2026-08-22",
+      "value": 18.41,
+      "extra": {
+        "city": "Moscow",
+        "temp": 26.9,
+        "condition": "stormy"
       }
     },
     {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -87.6,
-          41.9
-        ]
-      },
-      "properties": {
-        "name": "Чикаго",
-        "id": "USW00014826",
-        "temp": 18,
-        "condition": "Дождь",
-        "wind": 7.8,
-        "severity": "low"
+      "date": "2026-08-23",
+      "value": 24.21,
+      "extra": {
+        "city": "Sydney",
+        "temp": 11.75,
+        "condition": "stormy"
       }
     },
     {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -95.4,
-          29.9
-        ]
-      },
-      "properties": {
-        "name": "Хьюстон",
-        "id": "USW00012960",
-        "temp": 31.2,
-        "condition": "Солнечно",
-        "wind": 4.5,
-        "severity": "low"
+      "date": "2026-08-24",
+      "value": 23.77,
+      "extra": {
+        "city": "London",
+        "temp": 17.13,
+        "condition": "stormy"
       }
     },
     {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -0.1,
-          51.5
-        ]
-      },
-      "properties": {
-        "name": "Лондон",
-        "id": "USW00023174",
-        "temp": 16.5,
-        "condition": "Облачно",
-        "wind": 6.1,
-        "severity": "low"
+      "date": "2026-08-25",
+      "value": 24.9,
+      "extra": {
+        "city": "Tokyo",
+        "temp": 22.47,
+        "condition": "rainy"
       }
     },
     {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          37.6,
-          55.7
-        ]
-      },
-      "properties": {
-        "name": "Москва",
-        "id": "USW00010490",
-        "temp": 19.8,
-        "condition": "Переменная облачность",
-        "wind": 3.8,
-        "severity": "low"
+      "date": "2026-08-26",
+      "value": 28.4,
+      "extra": {
+        "city": "London",
+        "temp": 29.53,
+        "condition": "sunny"
       }
     },
     {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          116.4,
-          39.9
-        ]
-      },
-      "properties": {
-        "name": "Пекин",
-        "id": "USW00010853",
-        "temp": 25,
-        "condition": "Солнечно",
-        "wind": 2.5,
-        "severity": "low"
+      "date": "2026-08-27",
+      "value": 12.22,
+      "extra": {
+        "city": "Moscow",
+        "temp": 12.85,
+        "condition": "cloudy"
       }
     },
     {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          151.2,
-          -33.9
-        ]
-      },
-      "properties": {
-        "name": "Сидней",
-        "id": "USW00094956",
-        "temp": 14.2,
-        "condition": "Дождь",
-        "wind": 8,
-        "severity": "low"
+      "date": "2026-08-28",
+      "value": 16.85,
+      "extra": {
+        "city": "Tokyo",
+        "temp": 11.21,
+        "condition": "sunny"
       }
     },
     {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          18.4,
-          -33.9
-        ]
-      },
-      "properties": {
-        "name": "Кейптаун",
-        "id": "USW00003712",
-        "temp": 12,
-        "condition": "Ветрено",
-        "wind": 10.2,
-        "severity": "low"
+      "date": "2026-08-29",
+      "value": 26.78,
+      "extra": {
+        "city": "Singapore",
+        "temp": 16.27,
+        "condition": "cloudy"
       }
     },
     {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          139.7,
-          35.7
-        ]
-      },
-      "properties": {
-        "name": "Токио",
-        "id": "USW00000000",
-        "temp": 26.8,
-        "condition": "Солнечно",
-        "wind": 3.3,
-        "severity": "low"
+      "date": "2026-08-30",
+      "value": 20.64,
+      "extra": {
+        "city": "Sydney",
+        "temp": 34.09,
+        "condition": "sunny"
+      }
+    },
+    {
+      "date": "2026-08-31",
+      "value": 24.42,
+      "extra": {
+        "city": "Dubai",
+        "temp": 17.36,
+        "condition": "rainy"
+      }
+    },
+    {
+      "date": "2026-09-01",
+      "value": 14.34,
+      "extra": {
+        "city": "London",
+        "temp": 21.37,
+        "condition": "rainy"
+      }
+    },
+    {
+      "date": "2026-09-02",
+      "value": 10.39,
+      "extra": {
+        "city": "London",
+        "temp": 13.85,
+        "condition": "stormy"
+      }
+    },
+    {
+      "date": "2026-09-03",
+      "value": 15,
+      "extra": {
+        "city": "Sydney",
+        "temp": 27.02,
+        "condition": "cloudy"
+      }
+    },
+    {
+      "date": "2026-09-04",
+      "value": 17.16,
+      "extra": {
+        "city": "Singapore",
+        "temp": 11.15,
+        "condition": "cloudy"
+      }
+    },
+    {
+      "date": "2026-09-05",
+      "value": 22.77,
+      "extra": {
+        "city": "London",
+        "temp": 7.44,
+        "condition": "cloudy"
+      }
+    },
+    {
+      "date": "2026-09-06",
+      "value": 17.13,
+      "extra": {
+        "city": "Moscow",
+        "temp": 16.23,
+        "condition": "cloudy"
+      }
+    },
+    {
+      "date": "2026-09-07",
+      "value": 10.57,
+      "extra": {
+        "city": "Sydney",
+        "temp": 15.71,
+        "condition": "cloudy"
+      }
+    },
+    {
+      "date": "2026-09-08",
+      "value": 19.88,
+      "extra": {
+        "city": "Dubai",
+        "temp": 11.02,
+        "condition": "sunny"
+      }
+    },
+    {
+      "date": "2026-09-09",
+      "value": 25.48,
+      "extra": {
+        "city": "Singapore",
+        "temp": 27.42,
+        "condition": "stormy"
+      }
+    },
+    {
+      "date": "2026-09-10",
+      "value": 22.93,
+      "extra": {
+        "city": "Sydney",
+        "temp": 33.51,
+        "condition": "cloudy"
+      }
+    },
+    {
+      "date": "2026-09-11",
+      "value": 23.78,
+      "extra": {
+        "city": "Singapore",
+        "temp": 31.9,
+        "condition": "cloudy"
+      }
+    },
+    {
+      "date": "2026-09-12",
+      "value": 28.16,
+      "extra": {
+        "city": "London",
+        "temp": 12.06,
+        "condition": "stormy"
+      }
+    },
+    {
+      "date": "2026-09-13",
+      "value": 19.86,
+      "extra": {
+        "city": "Tokyo",
+        "temp": 25.77,
+        "condition": "cloudy"
+      }
+    },
+    {
+      "date": "2026-09-14",
+      "value": 18.31,
+      "extra": {
+        "city": "Singapore",
+        "temp": 22.45,
+        "condition": "stormy"
+      }
+    },
+    {
+      "date": "2026-09-15",
+      "value": 29.72,
+      "extra": {
+        "city": "Sydney",
+        "temp": 8.61,
+        "condition": "stormy"
+      }
+    },
+    {
+      "date": "2026-09-16",
+      "value": 22.78,
+      "extra": {
+        "city": "London",
+        "temp": 24,
+        "condition": "cloudy"
+      }
+    },
+    {
+      "date": "2026-09-17",
+      "value": 26.62,
+      "extra": {
+        "city": "Tokyo",
+        "temp": 23.66,
+        "condition": "sunny"
+      }
+    },
+    {
+      "date": "2026-09-18",
+      "value": 24.68,
+      "extra": {
+        "city": "Sydney",
+        "temp": 25.42,
+        "condition": "cloudy"
+      }
+    },
+    {
+      "date": "2026-09-19",
+      "value": 16.8,
+      "extra": {
+        "city": "New York",
+        "temp": 7.51,
+        "condition": "cloudy"
+      }
+    },
+    {
+      "date": "2026-09-20",
+      "value": 12.81,
+      "extra": {
+        "city": "Singapore",
+        "temp": 31.99,
+        "condition": "rainy"
       }
     }
   ],
-  "_meta": {
-    "source": "noaa",
-    "updated": "2026-08-28T04:49:25.284Z"
+  "points": [],
+  "regions": [
+    {
+      "region": "GLOBAL",
+      "value": 20.453870967741935,
+      "count": 31,
+      "aggregation": "mean",
+      "extra": {
+        "max": 29.72,
+        "sum": 634.0699999999999
+      }
+    }
+  ],
+  "extra": {
+    "adapter": "timeseries",
+    "adapter_version": "2.1.1",
+    "unique_dates": 31,
+    "unmapped_regions": [],
+    "unmapped_count": 0
   }
 }

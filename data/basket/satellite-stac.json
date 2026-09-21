@@ -1,0 +1,70 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "satellite-stac",
+    "source": "STAC (Sentinel/Landsat)",
+    "source_url": "https://stacspec.org/",
+    "fetched_at": "2026-09-20T11:05:25.301Z",
+    "normalized_at": "2026-09-20T11:28:57.150Z",
+    "collector": "collect-satellite-stac.mjs",
+    "license": "public-domain",
+    "count": 5,
+    "granularity": "snapshot",
+    "value_unit": "count",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null
+  },
+  "series": [],
+  "points": [
+    {
+      "lat": 48.3794,
+      "lon": 31.1656,
+      "label": "Sentinel-2",
+      "timestamp": "2026-08-24T00:00:00.000Z"
+    },
+    {
+      "lat": 32.4279,
+      "lon": 53.688,
+      "label": "Landsat-9",
+      "timestamp": "2026-08-23T00:00:00.000Z"
+    },
+    {
+      "lat": 31.0461,
+      "lon": 34.8516,
+      "label": "Sentinel-1",
+      "timestamp": "2026-08-22T00:00:00.000Z"
+    },
+    {
+      "lat": 33.9391,
+      "lon": 67.71,
+      "label": "Landsat-8",
+      "timestamp": "2026-08-21T00:00:00.000Z"
+    },
+    {
+      "lat": 34.8021,
+      "lon": 38.9968,
+      "label": "Sentinel-2",
+      "timestamp": "2026-08-20T00:00:00.000Z"
+    }
+  ],
+  "regions": [
+    {
+      "region": "GLOBAL",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    }
+  ],
+  "extra": {
+    "adapter": "points",
+    "adapter_version": "2.1.0",
+    "skipped_invalid_coords": 0,
+    "unmapped_regions": [],
+    "unmapped_count": 0
+  }
+}

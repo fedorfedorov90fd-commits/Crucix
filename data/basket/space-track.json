@@ -1,0 +1,87 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "space-track",
+    "source": "SpaceTrack (demo)",
+    "source_url": "https://api.space-track.org/basicspacetrack/query/class/decay/format/json/limit/100",
+    "fetched_at": "2026-09-20T11:17:12.506Z",
+    "normalized_at": "2026-09-20T11:28:57.196Z",
+    "collector": "collect-space-track.mjs",
+    "license": "public-domain",
+    "count": 5,
+    "granularity": "snapshot",
+    "value_unit": "objects",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null
+  },
+  "series": [],
+  "points": [],
+  "regions": [
+    {
+      "region": "USA",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
+    },
+    {
+      "region": "RUS",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
+    },
+    {
+      "region": "CHN",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
+    },
+    {
+      "region": "IND",
+      "value": 1,
+      "count": 1,
+      "aggregation": "count"
+    }
+  ],
+  "extra": {
+    "adapter": "catalog",
+    "adapter_version": "1.1.0",
+    "type_counts": {
+      "unknown": 5
+    },
+    "regions_count": 4,
+    "entries": [
+      {
+        "name": "Object A",
+        "id": "2024-001A",
+        "country": "USA"
+      },
+      {
+        "name": "Object B",
+        "id": "2024-002B",
+        "country": "RUS"
+      },
+      {
+        "name": "Object C",
+        "id": "2024-003C",
+        "country": "CHN"
+      },
+      {
+        "name": "Object D",
+        "id": "2024-004D",
+        "country": "EU"
+      },
+      {
+        "name": "Object E",
+        "id": "2024-005E",
+        "country": "IND"
+      }
+    ],
+    "entries_count": 5,
+    "source": "SpaceTrack",
+    "lastUpdated": "2026-09-20T11:17:12.503Z",
+    "totalObjects": 5,
+    "note": "Демо-данные (SpaceTrack API требует регистрации, правило 12.2)",
+    "inner_array_key": "objects"
+  }
+}

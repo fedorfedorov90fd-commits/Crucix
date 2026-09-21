@@ -1,0 +1,28 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "openaq",
+    "source": "OpenAQ API",
+    "source_url": "https://api.openaq.org/v2/latest?limit=100",
+    "fetched_at": "2026-09-20T10:59:30.158Z",
+    "normalized_at": "2026-09-20T11:44:06.474Z",
+    "collector": "collect-openaq.mjs",
+    "license": "public-domain",
+    "count": 0,
+    "granularity": "snapshot",
+    "value_unit": "µg/m³",
+    "value_scale": "air_quality_pm25",
+    "value_type": "index",
+    "value_range": null
+  },
+  "series": [],
+  "points": [],
+  "regions": [],
+  "extra": {
+    "adapter": "points",
+    "adapter_version": "2.2.1",
+    "skipped_invalid_coords": 8,
+    "unmapped_regions": [],
+    "unmapped_count": 0
+  }
+}

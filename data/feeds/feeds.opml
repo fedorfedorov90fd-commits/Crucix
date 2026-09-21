@@ -2,29 +2,60 @@
 <opml version="1.0">
   <head>
     <title>Crucix RSS Feeds</title>
-    <dateCreated>2026-09-14T17:03:21.590Z</dateCreated>
+    <dateCreated>2026-09-21T10:54:40.155Z</dateCreated>
+    <dateModified>2026-09-21T10:54:40.155Z</dateModified>
+    <ownerName>Crucix</ownerName>
+    <docs>Generated from data/feeds/rss-catalog.json (schema crucix.rss-catalog.v1)</docs>
   </head>
   <body>
-    <outline text="Импортированные ленты новостей">
-      <outline type="rss" text="ТАСС" xmlUrl="https://tass.ru/rss/v2.xml"/>
-      <outline type="rss" text="Lenta.ru" xmlUrl="https://lenta.ru/rss"/>
-      <outline type="rss" text="Аргументы и Факты" xmlUrl="http://aif.ru/rss/news.php"/>
-      <outline type="rss" text="Коммерсантъ" xmlUrl="http://www.kommersant.ru/RSS/main.xml"/>
-      <outline type="rss" text="Интерфакс" xmlUrl="http://interfax.ru/rss.asp"/>
-      <outline type="rss" text="Известия" xmlUrl="https://iz.ru/xml/rss/all.xml"/>
-      <outline type="rss" text="Ведомости" xmlUrl="http://www.vedomosti.ru/rss/issue"/>
-      <outline type="rss" text="Дни.ру" xmlUrl="http://dni.ru/rss.xml"/>
-      <outline type="rss" text="Al Jazeera" xmlUrl="https://www.aljazeera.com/xml/rss/all.xml"/>
-      <outline type="rss" text="France 24" xmlUrl="https://www.france24.com/en/rss"/>
-      <outline type="rss" text="The Guardian" xmlUrl="https://www.theguardian.com/world/rss"/>
-      <outline type="rss" text="The Economist" xmlUrl="https://www.economist.com/latest/rss.xml"/>
-      <outline type="rss" text="NYT World" xmlUrl="https://rss.nytimes.com/services/xml/rss/nyt/World.xml"/>
-      <outline type="rss" text="Nature Climate" xmlUrl="https://www.nature.com/nclimate.rss"/>
-      <outline type="rss" text="Британская Антарктика" xmlUrl="https://www.bas.ac.uk/news/feed/"/>
-      <outline type="rss" text="Sputnik" xmlUrl="https://sputnikglobe.com/export/rss2/archive/index.xml"/>
+    <outline text="Экономика">
+      <outline type="rss" text="Financial Times [T1]" xmlUrl="https://www.ft.com/rss/home/international"/>
+      <outline type="rss" text="RT — Business [T2]" xmlUrl="https://www.rt.com/rss/business/"/>
+      <outline type="rss" text="1Prime [T3]" xmlUrl="https://1prime.ru/export/rss2/archive/index.xml"/>
+      <outline type="rss" text="Ведомости [T3]" xmlUrl="https://www.vedomosti.ru/rss/issue"/>
+      <outline type="rss" text="Известия — Экономика [T3]" xmlUrl="https://iz.ru/xml/rss/economy.xml"/>
+      <outline type="rss" text="The Economist [T3]" xmlUrl="https://www.economist.com/latest/rss.xml"/>
     </outline>
-    <outline text="Test">
-      <outline type="rss" text="Test Feed" xmlUrl="https://example.com/rss.xml"/>
+    <outline text="Новости">
+      <outline type="rss" text="Интерфакс [T1]" xmlUrl="https://www.interfax.ru/rss"/>
+      <outline type="rss" text="РИА Новости [T1]" xmlUrl="https://ria.ru/export/rss2/archive/index.xml"/>
+      <outline type="rss" text="Российская газета [T1]" xmlUrl="https://rg.ru/xml/index.xml"/>
+      <outline type="rss" text="ТАСС [T1]" xmlUrl="https://tass.ru/rss/v2.xml"/>
+      <outline type="rss" text="TASS English [T1]" xmlUrl="https://tass.com/rss/v2.xml"/>
+      <outline type="rss" text="Радио Sputnik [T2]" xmlUrl="https://radiosputnik.ru/export/rss2/archive/index.xml"/>
+      <outline type="rss" text="Телеканал Звезда [T2]" xmlUrl="https://tvzvezda.ru/export/rss.xml"/>
+      <outline type="rss" text="RT — News [T2]" xmlUrl="https://www.rt.com/rss/news/"/>
+      <outline type="rss" text="RT на русском [T2]" xmlUrl="https://russian.rt.com/rss"/>
+      <outline type="rss" text="RT English [T2]" xmlUrl="https://www.rt.com/rss/"/>
+      <outline type="rss" text="Sputnik на русском [T2]" xmlUrl="https://sputniknews.ru/export/rss2/archive/index.xml"/>
+      <outline type="rss" text="Sputnik Globe [T2]" xmlUrl="https://sputnikglobe.com/export/rss2/archive/index.xml"/>
+      <outline type="rss" text="Взгляд [T3]" xmlUrl="https://vz.ru/rss.xml"/>
+      <outline type="rss" text="Известия [T3]" xmlUrl="https://iz.ru/rss"/>
+      <outline type="rss" text="Коммерсантъ [T3]" xmlUrl="https://www.kommersant.ru/rss/main.xml"/>
+      <outline type="rss" text="Аргументы и Факты [T4]" xmlUrl="https://aif.ru/rss/news.php"/>
+      <outline type="rss" text="Комсомольская правда [T4]" xmlUrl="https://www.kp.ru/rss/allsections.xml"/>
+      <outline type="rss" text="Правда.ру [T4]" xmlUrl="https://www.pravda.ru/export.xml"/>
+      <outline type="rss" text="Lenta.ru [T4]" xmlUrl="https://lenta.ru/rss"/>
+      <outline type="rss" text="Lenta.ru — Новости [T4]" xmlUrl="https://lenta.ru/rss/news"/>
+      <outline type="rss" text="Lenta.ru — Статьи [T4]" xmlUrl="https://lenta.ru/rss/articles"/>
+    </outline>
+    <outline text="Мнения">
+      <outline type="rss" text="RT — Op-Ed [T2]" xmlUrl="https://www.rt.com/rss/op-ed/"/>
+    </outline>
+    <outline text="Политика">
+      <outline type="rss" text="Газета.ру — Политика [T3]" xmlUrl="https://www.gazeta.ru/export/rss/politics.xml"/>
+      <outline type="rss" text="Известия — Политика [T3]" xmlUrl="https://iz.ru/xml/rss/politics.xml"/>
+    </outline>
+    <outline text="Мир">
+      <outline type="rss" text="Wall Street Journal [T1]" xmlUrl="https://feeds.a.dj.com/rss/RSSWorldNews.xml"/>
+      <outline type="rss" text="Al Jazeera [T2]" xmlUrl="https://www.aljazeera.com/xml/rss/all.xml"/>
+      <outline type="rss" text="Fox News World [T2]" xmlUrl="https://moxie.foxnews.com/google-publisher/world.xml"/>
+      <outline type="rss" text="France 24 [T2]" xmlUrl="https://www.france24.com/en/rss"/>
+      <outline type="rss" text="Sky News World [T2]" xmlUrl="https://feeds.skynews.com/feeds/rss/world.xml"/>
+      <outline type="rss" text="NYT World [T3]" xmlUrl="https://rss.nytimes.com/services/xml/rss/nyt/World.xml"/>
+      <outline type="rss" text="South China Morning Post [T3]" xmlUrl="https://www.scmp.com/rss/91/feed/"/>
+      <outline type="rss" text="Straits Times [T3]" xmlUrl="https://www.straitstimes.com/news/world/rss.xml"/>
+      <outline type="rss" text="The Guardian — World [T3]" xmlUrl="https://www.theguardian.com/world/rss"/>
     </outline>
   </body>
 </opml>

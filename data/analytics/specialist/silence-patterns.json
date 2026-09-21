@@ -1,0 +1,68 @@
+{
+  "_meta": {
+    "id": "silence-patterns",
+    "category": "specialist",
+    "version": "1.0.2",
+    "schema_version": "1.0.2",
+    "sources": [
+      "news",
+      "gdelt_news",
+      "interfax",
+      "ria",
+      "tass",
+      "bbc",
+      "google-trends"
+    ],
+    "calculator": "SilencePatterns",
+    "updated_at": "2026-09-21T05:05:12.930Z",
+    "period": "latest",
+    "duration_ms": 10,
+    "checksum": "d751713988987e93",
+    "stats": {
+      "mentions": 45,
+      "silences": 0,
+      "topics": 7
+    },
+    "description": "Аномальное молчание: тема исчезает из потока при обычной активности."
+  },
+  "data": {
+    "silences": [],
+    "by_topic": {
+      "россия": {
+        "baseline": 0,
+        "current": 1
+      },
+      "мобилизация": {
+        "baseline": 0,
+        "current": 1
+      },
+      "эвакуация": {
+        "baseline": 0,
+        "current": 2
+      },
+      "украина": {
+        "baseline": 0,
+        "current": 1
+      },
+      "беженцы": {
+        "baseline": 0,
+        "current": 2
+      },
+      "польша": {
+        "baseline": 0,
+        "current": 1
+      },
+      "германия": {
+        "baseline": 0,
+        "current": 1
+      }
+    },
+    "classStats": {
+      "totalMentions": 45,
+      "baselineHours": 168,
+      "currentHours": 24,
+      "minBaselineMentions": 3,
+      "now": "2026-09-21T05:05:12.935Z"
+    }
+  }
+}

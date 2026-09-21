@@ -1,14 +1,16 @@
 #!/usr/bin/env node
-// collect-newsapi-real.mjs — заменён на RSS + GDELT + HN (без ключей).
-// Правило 12.2: NewsAPI требует ключ → заменён.
-// Собирает из:
-//   - data/basket/rss.json (если есть)
-//   - data/basket/gdelt.json (свежий GDELT)
-//   - data/basket/hackernews-top.json (технические новости)
-
+/**
+ * Crucix Collector: newsapi-real — замена NewsAPI на GDELT + HN (без ключей).
+ * Версия 2.0.0. Принят 20.09.2026.
+ * Правило 12.2: NewsAPI требует ключ → заменён на GDELT + HN.
+ * ВАЖНО: читает из data/basket/ (legacy-путь), но сохраняется через saveRaw → raw + накладная.
+ * Формат: {source, updated, note, count, articles:[{id,title,url,source,publishedAt}]}. Тип — events.
+ */
 import { promises as fs } from 'fs';
 import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
+import { saveRaw } from './lib/collector-helper.mjs';
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const BASKET = join(__dirname, '..', '..', 'data', 'basket');
 const LOGS = join(__dirname, '..', '..', 'logs', 'collectors');
@@ -22,8 +24,8 @@ async function readJson(name) {
   try { return JSON.parse(await fs.readFile(join(BASKET, name), 'utf-8')); } catch { return null; }
 }
 
-async function main() {
-  await log('Запуск collect-newsapi-real (замена на RSS + GDELT + HN)');
+export async function collectNewsApiReal() {
+  await log('Запуск collect-newsapi-real (замена NewsAPI)');
   const articles = [];
 
   const gdelt = await readJson('gdelt.json');
@@ -60,9 +62,25 @@ async function main() {
     articles,
   };
 
-  await fs.mkdir(BASKET, { recursive: true });
-  await fs.writeFile(join(BASKET, 'newsapi-real.json'), JSON.stringify(result, null, 2));
-  await log(`Сохранено. Статей: ${articles.length}`);
-  console.log(`[NewsAPI-replacement] ${articles.length} статей из GDELT + HN`);
+  const saveResult = await saveRaw('newsapi-real', result, {
+    collector: 'collect-newsapi-real.mjs',
+    source: 'GDELT + HackerNews',
+    source_url: 'https://api.gdeltproject.org/',
+    license: 'public-domain',
+    format_hint: 'events',
+    value_type: 'count',
+    value_unit: 'count',
+    granularity: 'snapshot',
+    period: null,
+    record_count: articles.length,
+    notes: `Замена NewsAPI (правило 12.2): ${articles.length} статей из GDELT + HN; basket не перезаписывается`,
+    backwardCompat: false,
+  });
+  await log(`Сохранено ${articles.length} → ${saveResult.raw_file}`);
+  console.log(`[NewsAPI-replacement] OK ${articles.length} → ${saveResult.raw_file}`);
+  return result;
 }
-main().catch(async (e) => { await log(`FATAL: ${e.message}`); console.error(e.message); process.exit(1); });
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  collectNewsApiReal().catch((e) => { console.error('[NewsAPI-replacement] FATAL:', e); process.exit(1); });
+}

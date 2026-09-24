@@ -2,18 +2,18 @@
   "meta": {
     "schema_version": "crucix.registry.basket.v1",
     "generated_by": "server/build-registry.mjs",
-    "generated_at": "2026-09-21T10:54:42.826Z",
+    "generated_at": "2026-09-23T20:58:53.019Z",
     "description": "Детальный реестр корзины Crucix (data/basket/*.json). Источник: server/registry.generated.json и прямой скан файлов.",
     "help_ru_link": "docs/help/ru/basket/README.md",
     "help_en_link": "docs/help/en/basket/README.md",
     "source_dir": "data/basket",
-    "total_files": 257,
-    "total_with_meta": 115,
-    "total_without_meta": 142,
+    "total_files": 259,
+    "total_with_meta": 116,
+    "total_without_meta": 143,
     "by_status": {
-      "active": 115,
+      "active": 116,
       "legacy": 0,
-      "unknown": 142
+      "unknown": 143
     }
   },
   "items": [
@@ -980,12 +980,12 @@
       "schema": "crucix.basket.v1",
       "has_meta": true,
       "missing_meta_fields": [],
-      "series_len": 0,
+      "series_len": 31,
       "readers": [
         "dark-ships-api"
       ],
       "writers": [
-        "collect-dark-ships-real.mjs"
+        "collect-dark-ships.mjs"
       ],
       "status": "active",
       "help_ru_link": "docs/help/ru/basket/dark-ships.md",
@@ -1247,7 +1247,7 @@
       "schema": "crucix.basket.v1",
       "has_meta": true,
       "missing_meta_fields": [],
-      "series_len": 15,
+      "series_len": 10,
       "readers": [
         "earthquakes-api",
         "infrastructure-api"
@@ -1542,7 +1542,7 @@
       "schema": "crucix.basket.v1",
       "has_meta": true,
       "missing_meta_fields": [],
-      "series_len": 93,
+      "series_len": 124,
       "readers": [],
       "writers": [
         "collect-feeds.mjs"
@@ -1558,10 +1558,10 @@
       "schema": "crucix.basket.v1",
       "has_meta": true,
       "missing_meta_fields": [],
-      "series_len": 60,
+      "series_len": 31,
       "readers": [],
       "writers": [
-        "collect-fires.mjs"
+        "collect-firms.mjs"
       ],
       "status": "active",
       "help_ru_link": "docs/help/ru/basket/fires.md",
@@ -1600,13 +1600,13 @@
       "schema": "crucix.basket.v1",
       "has_meta": true,
       "missing_meta_fields": [],
-      "series_len": 60,
+      "series_len": 31,
       "readers": [
         "firms-api",
         "infrastructure-api"
       ],
       "writers": [
-        "collect-fires.mjs"
+        "collect-firms.mjs"
       ],
       "status": "active",
       "help_ru_link": "docs/help/ru/basket/firms.md",
@@ -1783,7 +1783,7 @@
         "fred-api"
       ],
       "writers": [
-        "collect-fred-real.mjs"
+        "collect-fred.mjs"
       ],
       "status": "active",
       "help_ru_link": "docs/help/ru/basket/fred.md",
@@ -1905,27 +1905,17 @@
     {
       "id": "gdelt",
       "file": "data/basket/gdelt.json",
-      "schema": null,
-      "has_meta": false,
-      "missing_meta_fields": [
-        "id",
-        "source",
-        "source_url",
-        "fetched_at",
-        "normalized_at",
-        "collector",
-        "license",
-        "count",
-        "granularity",
-        "value_unit",
-        "value_type"
-      ],
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
       "series_len": 0,
       "readers": [
         "gdelt-news-api"
       ],
-      "writers": [],
-      "status": "unknown",
+      "writers": [
+        "collect-gdelt.mjs"
+      ],
+      "status": "active",
       "help_ru_link": "docs/help/ru/basket/gdelt.md",
       "help_en_link": "docs/help/en/basket/gdelt.md",
       "parse_error": null
@@ -2946,7 +2936,7 @@
       "schema": "crucix.basket.v1",
       "has_meta": true,
       "missing_meta_fields": [],
-      "series_len": 0,
+      "series_len": 50,
       "readers": [],
       "writers": [
         "collect-map-layer-vix.mjs"
@@ -3388,7 +3378,8 @@
       "missing_meta_fields": [],
       "series_len": 0,
       "readers": [
-        "ofac-sdn-api"
+        "ofac-sdn-api",
+        "sanctions-directional-api"
       ],
       "writers": [
         "collect-ofac-sdn.mjs"
@@ -4365,7 +4356,7 @@
       "schema": "crucix.basket.v1",
       "has_meta": true,
       "missing_meta_fields": [],
-      "series_len": 3,
+      "series_len": 1,
       "readers": [
         "rss-feeds-api"
       ],
@@ -4404,19 +4395,55 @@
       "parse_error": null
     },
     {
+      "id": "rsshub.classified",
+      "file": "data/basket/rsshub.classified.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/rsshub.classified.md",
+      "help_en_link": "docs/help/en/basket/rsshub.classified.md",
+      "parse_error": null
+    },
+    {
       "id": "rsshub",
       "file": "data/basket/rsshub.json",
-      "schema": "crucix.basket.v1",
-      "has_meta": true,
-      "missing_meta_fields": [],
-      "series_len": 1,
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
       "readers": [
         "rss-feeds-api"
       ],
-      "writers": [
-        "collect-rsshub.mjs"
-      ],
-      "status": "active",
+      "writers": [],
+      "status": "unknown",
       "help_ru_link": "docs/help/ru/basket/rsshub.md",
       "help_en_link": "docs/help/en/basket/rsshub.md",
       "parse_error": null
@@ -5314,6 +5341,24 @@
       "parse_error": null
     },
     {
+      "id": "un-votes",
+      "file": "data/basket/un-votes.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 73,
+      "readers": [
+        "un-votes-api"
+      ],
+      "writers": [
+        "collect-un-votes.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/un-votes.md",
+      "help_en_link": "docs/help/en/basket/un-votes.md",
+      "parse_error": null
+    },
+    {
       "id": "undersea-cables",
       "file": "data/basket/undersea-cables.json",
       "schema": "crucix.basket.v1",
@@ -5452,7 +5497,7 @@
       "schema": "crucix.basket.v1",
       "has_meta": true,
       "missing_meta_fields": [],
-      "series_len": 254,
+      "series_len": 252,
       "readers": [
         "vix",
         "vix-api"
@@ -5679,7 +5724,7 @@
       "schema": "crucix.basket.v1",
       "has_meta": true,
       "missing_meta_fields": [],
-      "series_len": 21,
+      "series_len": 22,
       "readers": [
         "wti-brent-spread-api"
       ],

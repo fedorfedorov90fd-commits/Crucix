@@ -157,7 +157,7 @@ const MANIFEST = {
       'apis/predict/federated_hypergraph.mjs',
       'apis/predict/llm_agents.mjs',
       'apis/predict/scenario_generator.mjs',
-      'apis/predict/anomaly_detection.mjs',
+      'apis/predict/anomaly_detection-дубль.mjs',
       'apis/predict/automl.mjs',
       'apis/predict/active_learning.mjs',
       'apis/predict/notifier.mjs',

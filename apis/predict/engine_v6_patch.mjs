@@ -111,7 +111,7 @@ const CATALOG_MODULES = [
   },
   {
     name: 'anomaly_detection',
-    path: './anomaly_detection.mjs',
+    path: './models/anomaly_detection.mjs',
     fn: 'crucixAnomalyDetection',
     minHistory: 20,
     timeoutMs: 60_000,

@@ -1,24 +1,36 @@
 /**
  * apis/sources/big-mac-api.mjs — API-МОДУЛЬ: ИНДЕКС БИГ-МАКА
  *
+ * Версия 3.0.1. Принят 23.09.2026.
+ *
  * КОНТРАКТ CRUCIX v2.
- * ИСТОЧНИК: data/basket/big-mac.json — FeatureCollection с features.properties { name, value, label, unit }.
+ * ИСТОЧНИК: data/basket/big-mac.json — v1-схема, цены в extra.entries[]
+ *           {country, price, date, source}, читается через basket-loader v2.0.0.
  * Сборщик: scripts/collectors/collect-big-mac.mjs.
  *
  * Индекс Биг-Мака — неофициальный индекс паритета покупательной способности.
+ *
+ * Изменения v3.0.1:
+ *  - Перевод с прямого fs.readFile на loadWithFallback.
+ *  - extractArray: для v1-схемы приоритет extra.entries (там реальные цены),
+ *    fallback на series/points/regions (только коды без цен).
+ *  - normalizeRow: {country, price} → {name, value}, коорд. из COUNTRY_COORDS.
+ *  - Диагностика source (basket-v1 | basket-legacy | fallback | corrupted | error)
+ *    и shape в headers X-Basket-Source и X-Basket-Shape.
  *
  * ФОРМАТЫ: json, csv, stats, raw.
  * ФИЛЬТРЫ: ?min=, ?max=, ?country=, ?sort=desc|asc, ?limit=.
  */
 
-import { promises as fs } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { loadWithFallback } from './lib/basket-loader.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
 const PROJECT_ROOT = join(__dirname, '..', '..');
 const BASKET_FILE  = join(PROJECT_ROOT, 'data', 'basket', 'big-mac.json');
+const COLLECTOR_HINT = 'run scripts/collectors/collect-big-mac.mjs';
 
 export const route  = '/api/layers/big-mac';
 export const method = 'GET';
@@ -71,6 +83,27 @@ const COUNTRY_COORDS = {
   'Чили':        { lat: -33.4489, lng:  -70.6693 },
   'Украина':     { lat: 50.4501, lng:   30.5234 },
   'Израиль':     { lat: 31.7683, lng:   35.2137 },
+  // Расширение: страны из extra.entries, которых не было
+  'Австрия':     { lat: 48.2082, lng:   16.3738 },
+  'Бельгия':     { lat: 50.8503, lng:    4.3517 },
+  'Болгария':    { lat: 42.6977, lng:   23.3219 },
+  'Венгрия':     { lat: 47.4979, lng:   19.0402 },
+  'Греция':      { lat: 37.9838, lng:   23.7275 },
+  'Дания':       { lat: 55.6761, lng:   12.5683 },
+  'Ирландия':    { lat: 53.3498, lng:   -6.2603 },
+  'Латвия':      { lat: 56.9496, lng:   24.1052 },
+  'Литва':       { lat: 54.6872, lng:   25.2797 },
+  'Люксембург':  { lat: 49.6116, lng:    6.1319 },
+  'Норвегия':    { lat: 59.9139, lng:   10.7522 },
+  'Португалия':  { lat: 38.7223, lng:   -9.1393 },
+  'Румыния':     { lat: 44.4268, lng:   26.1025 },
+  'Сингапур':    { lat:  1.3521, lng:  103.8198 },
+  'Словакия':    { lat: 48.1486, lng:   17.1077 },
+  'Словения':    { lat: 46.0569, lng:   14.5058 },
+  'Финляндия':   { lat: 60.1699, lng:   24.9384 },
+  'Хорватия':    { lat: 45.8150, lng:   15.9819 },
+  'Чехия':       { lat: 50.0755, lng:   14.4378 },
+  'Эстония':     { lat: 59.4370, lng:   24.7536 },
 };
 
 function priceBand(value) {
@@ -81,32 +114,53 @@ function priceBand(value) {
   return              { level: 'very_expensive', color: '#dc2626', label: 'Очень дорого' };
 }
 
-async function loadData() {
-  let raw;
-  try { raw = await fs.readFile(BASKET_FILE, 'utf8'); }
-  catch (e) {
-    if (e.code === 'ENOENT') {
-      const err = new Error('no_data'); err.statusCode = 503;
-      err.hint = 'run scripts/collectors/collect-big-mac.mjs'; throw err;
+/**
+ * Извлекает массив записей из любой формы basket-данных.
+ * Для big-mac v1-схемы приоритет extra.entries (там реальные цены).
+ */
+function extractArray(payload) {
+  if (!payload) return { rows: null, shape: 'null' };
+
+  // v1-схема: приоритет extra.entries (цены), потом regions (только коды)
+  if (typeof payload === 'object' && payload.schema === 'crucix.basket.v1') {
+    if (payload.extra && Array.isArray(payload.extra.entries) && payload.extra.entries.length > 0) {
+      return { rows: payload.extra.entries, shape: 'v1.extra.entries' };
     }
-    throw e;
+    if (Array.isArray(payload.series) && payload.series.length > 0) return { rows: payload.series, shape: 'v1.series' };
+    if (Array.isArray(payload.points) && payload.points.length > 0) return { rows: payload.points, shape: 'v1.points' };
+    if (Array.isArray(payload.regions) && payload.regions.length > 0) return { rows: payload.regions, shape: 'v1.regions' };
+    return { rows: [], shape: 'v1.empty' };
   }
-  let parsed;
-  try { parsed = JSON.parse(raw); }
-  catch (e) { const err = new Error('invalid_json_in_basket: ' + e.message); err.statusCode = 500; throw err; }
 
-  let arr = null;
-  if (Array.isArray(parsed)) arr = parsed;
-  else if (parsed && parsed.type === 'FeatureCollection' && Array.isArray(parsed.features)) arr = parsed.features;
-  else if (parsed && Array.isArray(parsed.data)) arr = parsed.data;
-  if (!arr) { const err = new Error('unrecognized_basket_format'); err.statusCode = 500; throw err; }
+  // Legacy и прочие формы
+  if (Array.isArray(payload)) return { rows: payload, shape: 'array' };
+  if (payload.type === 'FeatureCollection' && Array.isArray(payload.features)) return { rows: payload.features, shape: 'features' };
+  if (Array.isArray(payload.features)) return { rows: payload.features, shape: 'features' };
+  if (Array.isArray(payload.data)) return { rows: payload.data, shape: 'data.array' };
+  if (payload.data && Array.isArray(payload.data.entries)) return { rows: payload.data.entries, shape: 'data.entries' };
+  if (payload.extra && Array.isArray(payload.extra.entries)) return { rows: payload.extra.entries, shape: 'extra.entries' };
+  if (payload.data && payload.data.data && Array.isArray(payload.data.data)) return { rows: payload.data.data, shape: 'data.data' };
 
-  const clean = arr.map(r => {
-    const p = (r && r.type === 'Feature') ? (r.properties || {}) : r;
+  return { rows: null, shape: 'unknown' };
+}
+
+/**
+ * Нормализация записи.
+ * Поддерживает:
+ *  - GeoJSON Feature: properties {name, value}
+ *  - extra.entries:   {country, price, date, source}
+ *  - Плоские:         {name, value} | {country, price} | {name, price} | ...
+ */
+function normalizeRow(r) {
+  if (!r) return null;
+
+  // GeoJSON Feature
+  if (r.type === 'Feature') {
+    const p = r.properties || {};
     const name = p.name || p.country || 'Unknown';
     const value = Number(p.value ?? p.price ?? p.usd);
     const coords = COUNTRY_COORDS[name] || { lat: 0, lng: 0 };
-    const geometry = (r && r.type === 'Feature' && r.geometry && r.geometry.coordinates && r.geometry.coordinates[0] !== 0)
+    const geometry = (r.geometry && r.geometry.coordinates && r.geometry.coordinates[0] !== 0)
       ? r.geometry
       : { type: 'Point', coordinates: [coords.lng, coords.lat] };
     return {
@@ -115,11 +169,76 @@ async function loadData() {
       unit: p.unit || '$',
       geometry,
       hasCoords: coords.lat !== 0 || coords.lng !== 0,
+      date: p.date || null,
+      source: p.source || null,
     };
-  }).filter(r => r.name && Number.isFinite(r.value));
+  }
 
-  if (clean.length === 0) { const err = new Error('empty_after_normalize'); err.statusCode = 500; throw err; }
-  return clean;
+  // v1 regions — {region:'AUS', value:1, count:1}: там НЕТ цен, только коды
+  if (r.region != null && r.price == null && r.country == null) {
+    // Пропускаем — нет цены и нет названия страны на русском
+    return null;
+  }
+
+  // extra.entries / плоские: {country, price} или {name, value}
+  const name = r.name || r.country || 'Unknown';
+  const value = Number(r.value ?? r.price ?? r.usd);
+  const coords = COUNTRY_COORDS[name] || { lat: 0, lng: 0 };
+  return {
+    name,
+    value,
+    unit: r.unit || '$',
+    geometry: { type: 'Point', coordinates: [coords.lng, coords.lat] },
+    hasCoords: coords.lat !== 0 || coords.lng !== 0,
+    date: r.date || null,
+    source: r.source || null,
+  };
+}
+
+async function loadData() {
+  const loaded = await loadWithFallback({
+    basketFile: BASKET_FILE,
+    fallbackData: null,
+    hint: COLLECTOR_HINT,
+  });
+
+  if (loaded.source === 'fallback') {
+    const err = new Error('no_data');
+    err.statusCode = 503;
+    err.hint = COLLECTOR_HINT;
+    throw err;
+  }
+  if (loaded.source === 'corrupted') {
+    const err = new Error('invalid_json_in_basket: ' + (loaded.error || 'CORRUPTED_JSON'));
+    err.statusCode = 500;
+    throw err;
+  }
+  if (loaded.source === 'error') {
+    const err = new Error('basket_read_error: ' + (loaded.error || 'UNKNOWN'));
+    err.statusCode = 500;
+    throw err;
+  }
+
+  const payload = loaded.legacy || loaded.data;
+  const { rows: arr, shape } = extractArray(payload);
+
+  if (!arr) {
+    const err = new Error('unrecognized_basket_format');
+    err.statusCode = 500;
+    err.hint = 'extractArray не распознал форму. Проверьте data/basket/big-mac.json.';
+    throw err;
+  }
+
+  const clean = arr.map(normalizeRow).filter(r => r && r.name && r.name !== 'Unknown' && Number.isFinite(r.value));
+
+  if (clean.length === 0) {
+    const err = new Error('empty_after_normalize');
+    err.statusCode = 500;
+    err.hint = 'basket есть, но после нормализации осталось 0 записей. Проверьте extra.entries.';
+    throw err;
+  }
+
+  return { rows: clean, source: loaded.source, shape, mtime: loaded.mtime };
 }
 
 function applyFilters(rows, query) {
@@ -142,7 +261,7 @@ function computeStats(rows) {
   for (const r of rows) { const b = priceBand(r.value).level; byBand[b] = (byBand[b] || 0) + 1; }
   const sorted = v.slice().sort((a, b) => a - b);
   const median = sorted.length % 2 === 0 ? (sorted[sorted.length/2 - 1] + sorted[sorted.length/2]) / 2 : sorted[Math.floor(sorted.length/2)];
-  const top5 = rows.slice(0, 5).map(r => ({ name: r.name, value: +r.value.toFixed(2) }));
+  const top5 = rows.slice().sort((a, b) => b.value - a.value).slice(0, 5).map(r => ({ name: r.name, value: +r.value.toFixed(2) }));
   const bottom5 = rows.slice().sort((a, b) => a.value - b.value).slice(0, 5).map(r => ({ name: r.name, value: +r.value.toFixed(2) }));
   return { count: rows.length, min: +min.toFixed(2), max: +max.toFixed(2), avg: +avg.toFixed(2), median: +median.toFixed(2), by_band: byBand, top_5: top5, bottom_5: bottom5 };
 }
@@ -161,6 +280,8 @@ function toFeatureCollection(rows) {
         bandLabel: b.label,
         color: b.color,
         hasCoords: r.hasCoords,
+        date: r.date,
+        source: r.source,
         category: 'finance',
         icon: meta.icon,
       },
@@ -179,12 +300,15 @@ function toFeatureCollection(rows) {
   };
 }
 
-function envelopeMeta(full, filtered) {
+function envelopeMeta(full, filtered, sourceInfo) {
   return {
     source: meta.source, collector: meta.collector, category: meta.category, unit: meta.unit,
     updated_at: new Date().toISOString(),
     total_countries: full.length, returned_countries: filtered.length,
     coords_available: filtered.filter(r => r.hasCoords).length,
+    basket_source: sourceInfo.source,
+    basket_shape: sourceInfo.shape,
+    basket_mtime: sourceInfo.mtime || null,
   };
 }
 
@@ -198,8 +322,8 @@ function sendText(res, status, text, ct = 'text/plain; charset=utf-8') {
   res.end(text);
 }
 function toCSVBody(rows) {
-  const lines = ['name,value,unit,band,label'];
-  for (const r of rows) { const b = priceBand(r.value); lines.push(`${r.name},${r.value},${r.unit},${b.level},${b.label}`); }
+  const lines = ['name,value,unit,band,label,date,source'];
+  for (const r of rows) { const b = priceBand(r.value); lines.push(`"${r.name}",${r.value},${r.unit},${b.level},${b.label},${r.date || ''},${r.source || ''}`); }
   return lines.join('\n') + '\n';
 }
 
@@ -209,19 +333,27 @@ export async function handler(req, res) {
     const query = Object.fromEntries(urlObj.searchParams.entries());
     const format = (query.format || 'json').toLowerCase();
 
-    const full = await loadData();
+    const loaded = await loadData();
+    const full = loaded.rows;
+    const sourceInfo = { source: loaded.source, shape: loaded.shape, mtime: loaded.mtime };
     const rows = applyFilters(full, query);
     const stats = computeStats(rows);
-    const extra = { 'X-Module': 'big-mac-api', 'X-Module-Version': '2.0.0', 'Cache-Control': `public, max-age=${meta.cache}` };
+    const extra = {
+      'X-Module': 'big-mac-api',
+      'X-Module-Version': '3.0.1',
+      'X-Basket-Source': loaded.source,
+      'X-Basket-Shape': loaded.shape,
+      'Cache-Control': `public, max-age=${meta.cache}`,
+    };
 
     if (format === 'csv') return sendText(res, 200, toCSVBody(rows), 'text/csv; charset=utf-8');
-    if (format === 'stats') return sendJSON(res, 200, { stats, meta: envelopeMeta(full, rows) }, extra);
-    if (format === 'raw') return sendJSON(res, 200, { data: rows, meta: envelopeMeta(full, rows) }, extra);
+    if (format === 'stats') return sendJSON(res, 200, { stats, meta: envelopeMeta(full, rows, sourceInfo) }, extra);
+    if (format === 'raw') return sendJSON(res, 200, { data: rows, meta: envelopeMeta(full, rows, sourceInfo) }, extra);
 
     const fc = toFeatureCollection(rows);
     return sendJSON(res, 200, {
       type: 'FeatureCollection',
-      meta: envelopeMeta(full, rows),
+      meta: envelopeMeta(full, rows, sourceInfo),
       bands: fc.bands,
       features: fc.features,
       stats,

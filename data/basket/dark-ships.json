@@ -2,84 +2,366 @@
   "schema": "crucix.basket.v1",
   "meta": {
     "id": "dark-ships",
-    "source": "Dark Ships (sample)",
-    "source_url": "https://www.marinetraffic.com/",
-    "fetched_at": "2026-09-20T10:43:22.107Z",
-    "normalized_at": "2026-09-20T11:28:56.993Z",
-    "collector": "collect-dark-ships-real.mjs",
-    "license": "public-domain",
-    "count": 5,
-    "granularity": "snapshot",
-    "value_unit": "ships",
+    "source": "Crucix dark-ships (demo)",
+    "source_url": "local://demo",
+    "fetched_at": "2026-09-23T06:51:56.362Z",
+    "normalized_at": "2026-09-23T17:51:48.442Z",
+    "collector": "collect-dark-ships.mjs",
+    "license": "proprietary",
+    "count": 31,
+    "granularity": "event",
+    "value_unit": "count",
     "value_scale": null,
     "value_type": "count",
     "value_range": null
   },
-  "series": [],
-  "points": [
+  "series": [
     {
-      "lat": 32,
-      "lon": -78,
-      "label": "Unknown-001",
+      "date": "2026-08-24",
+      "value": 2,
+      "region": "Mediterranean",
       "extra": {
-        "type": "tanker",
-        "status": "suspicious"
+        "unmapped_region": true,
+        "unmapped_original": "Mediterranean"
       }
     },
     {
-      "lat": 38,
-      "lon": -72,
-      "label": "Unknown-002",
+      "date": "2026-08-25",
+      "value": 5,
+      "region": "Persian Gulf",
       "extra": {
-        "type": "cargo",
-        "status": "suspicious"
+        "unmapped_region": true,
+        "unmapped_original": "Persian Gulf"
       }
     },
     {
-      "lat": 42,
-      "lon": -68,
-      "label": "Unknown-003",
+      "date": "2026-08-26",
+      "value": 5,
+      "region": "South China Sea",
       "extra": {
-        "type": "tanker",
-        "status": "suspicious"
+        "unmapped_region": true,
+        "unmapped_original": "South China Sea"
       }
     },
     {
-      "lat": 28,
-      "lon": -62,
-      "label": "Unknown-004",
+      "date": "2026-08-27",
+      "value": 1,
+      "region": "Black Sea",
       "extra": {
-        "type": "cargo",
-        "status": "suspicious"
+        "unmapped_region": true,
+        "unmapped_original": "Black Sea"
       }
     },
     {
-      "lat": 22,
-      "lon": -56,
-      "label": "Unknown-005",
+      "date": "2026-08-28",
+      "value": 9,
+      "region": "Persian Gulf",
       "extra": {
-        "type": "tanker",
-        "status": "suspicious"
+        "unmapped_region": true,
+        "unmapped_original": "Persian Gulf"
+      }
+    },
+    {
+      "date": "2026-08-29",
+      "value": 2,
+      "region": "Baltic Sea",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "Baltic Sea"
+      }
+    },
+    {
+      "date": "2026-08-30",
+      "value": 7,
+      "region": "Mediterranean",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "Mediterranean"
+      }
+    },
+    {
+      "date": "2026-08-31",
+      "value": 8,
+      "region": "Mediterranean",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "Mediterranean"
+      }
+    },
+    {
+      "date": "2026-09-01",
+      "value": 4,
+      "region": "South China Sea",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "South China Sea"
+      }
+    },
+    {
+      "date": "2026-09-02",
+      "value": 9,
+      "region": "Baltic Sea",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "Baltic Sea"
+      }
+    },
+    {
+      "date": "2026-09-03",
+      "value": 4,
+      "region": "Mediterranean",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "Mediterranean"
+      }
+    },
+    {
+      "date": "2026-09-04",
+      "value": 3,
+      "region": "Mediterranean",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "Mediterranean"
+      }
+    },
+    {
+      "date": "2026-09-05",
+      "value": 1,
+      "region": "Black Sea",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "Black Sea"
+      }
+    },
+    {
+      "date": "2026-09-06",
+      "value": 4,
+      "region": "Mediterranean",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "Mediterranean"
+      }
+    },
+    {
+      "date": "2026-09-07",
+      "value": 2,
+      "region": "South China Sea",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "South China Sea"
+      }
+    },
+    {
+      "date": "2026-09-08",
+      "value": 8,
+      "region": "Baltic Sea",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "Baltic Sea"
+      }
+    },
+    {
+      "date": "2026-09-09",
+      "value": 3,
+      "region": "Black Sea",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "Black Sea"
+      }
+    },
+    {
+      "date": "2026-09-10",
+      "value": 1,
+      "region": "South China Sea",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "South China Sea"
+      }
+    },
+    {
+      "date": "2026-09-11",
+      "value": 10,
+      "region": "Black Sea",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "Black Sea"
+      }
+    },
+    {
+      "date": "2026-09-12",
+      "value": 2,
+      "region": "Black Sea",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "Black Sea"
+      }
+    },
+    {
+      "date": "2026-09-13",
+      "value": 2,
+      "region": "Baltic Sea",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "Baltic Sea"
+      }
+    },
+    {
+      "date": "2026-09-14",
+      "value": 6,
+      "region": "South China Sea",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "South China Sea"
+      }
+    },
+    {
+      "date": "2026-09-15",
+      "value": 6,
+      "region": "Black Sea",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "Black Sea"
+      }
+    },
+    {
+      "date": "2026-09-16",
+      "value": 10,
+      "region": "Persian Gulf",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "Persian Gulf"
+      }
+    },
+    {
+      "date": "2026-09-17",
+      "value": 6,
+      "region": "Persian Gulf",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "Persian Gulf"
+      }
+    },
+    {
+      "date": "2026-09-18",
+      "value": 2,
+      "region": "Baltic Sea",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "Baltic Sea"
+      }
+    },
+    {
+      "date": "2026-09-19",
+      "value": 5,
+      "region": "South China Sea",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "South China Sea"
+      }
+    },
+    {
+      "date": "2026-09-20",
+      "value": 9,
+      "region": "South China Sea",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "South China Sea"
+      }
+    },
+    {
+      "date": "2026-09-21",
+      "value": 1,
+      "region": "Mediterranean",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "Mediterranean"
+      }
+    },
+    {
+      "date": "2026-09-22",
+      "value": 5,
+      "region": "Baltic Sea",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "Baltic Sea"
+      }
+    },
+    {
+      "date": "2026-09-23",
+      "value": 8,
+      "region": "Mediterranean",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "Mediterranean"
       }
     }
   ],
+  "points": [],
   "regions": [
     {
-      "region": "GLOBAL",
-      "value": 0,
-      "count": 0,
+      "region": "Mediterranean",
+      "value": 4.625,
+      "count": 8,
       "aggregation": "sum",
       "extra": {
-        "max": null,
-        "sum": 0
+        "max": 8,
+        "sum": 37
+      }
+    },
+    {
+      "region": "Persian Gulf",
+      "value": 7.5,
+      "count": 4,
+      "aggregation": "sum",
+      "extra": {
+        "max": 10,
+        "sum": 30
+      }
+    },
+    {
+      "region": "South China Sea",
+      "value": 4.571428571428571,
+      "count": 7,
+      "aggregation": "sum",
+      "extra": {
+        "max": 9,
+        "sum": 32
+      }
+    },
+    {
+      "region": "Black Sea",
+      "value": 3.8333333333333335,
+      "count": 6,
+      "aggregation": "sum",
+      "extra": {
+        "max": 10,
+        "sum": 23
+      }
+    },
+    {
+      "region": "Baltic Sea",
+      "value": 4.666666666666667,
+      "count": 6,
+      "aggregation": "sum",
+      "extra": {
+        "max": 9,
+        "sum": 28
       }
     }
   ],
+  "documents": [],
+  "graph": null,
   "extra": {
-    "adapter": "points",
-    "adapter_version": "2.1.0",
-    "skipped_invalid_coords": 0,
-    "unmapped_regions": [],
-    "unmapped_count": 0
+    "adapter": "timeseries",
+    "adapter_version": "2.2.1",
+    "unique_dates": 31,
+    "unmapped_regions": [
+      "Mediterranean",
+      "Persian Gulf",
+      "South China Sea",
+      "Black Sea",
+      "Baltic Sea"
+    ],
+    "unmapped_count": 5
   }
 }

@@ -4,8 +4,8 @@
     "id": "gscpi",
     "source": "NY Fed GSCPI (demo)",
     "source_url": "https://www.newyorkfed.org/research/policy/gscpi",
-    "fetched_at": "2026-09-20T10:53:40.759Z",
-    "normalized_at": "2026-09-20T11:28:57.077Z",
+    "fetched_at": "2026-09-23T06:57:00.564Z",
+    "normalized_at": "2026-09-23T17:51:48.828Z",
     "collector": "collect-gscpi.mjs",
     "license": "public-domain",
     "count": 31,
@@ -18,44 +18,32 @@
   },
   "series": [
     {
-      "date": "2026-08-21",
-      "value": 0.27
-    },
-    {
-      "date": "2026-08-22",
-      "value": 0.65
-    },
-    {
-      "date": "2026-08-23",
-      "value": 0.58
-    },
-    {
       "date": "2026-08-24",
-      "value": 0.4
-    },
-    {
-      "date": "2026-08-25",
       "value": 0.53
     },
     {
+      "date": "2026-08-25",
+      "value": 0.47
+    },
+    {
       "date": "2026-08-26",
-      "value": 0.58
+      "value": 0.42
     },
     {
       "date": "2026-08-27",
-      "value": 0.6
+      "value": 0.49
     },
     {
       "date": "2026-08-28",
-      "value": 0.22
+      "value": 0.41
     },
     {
       "date": "2026-08-29",
-      "value": 0.27
+      "value": 0.41
     },
     {
       "date": "2026-08-30",
-      "value": 0.29
+      "value": 0.58
     },
     {
       "date": "2026-08-31",
@@ -63,101 +51,115 @@
     },
     {
       "date": "2026-09-01",
-      "value": 0.29
-    },
-    {
-      "date": "2026-09-02",
-      "value": 0.45
-    },
-    {
-      "date": "2026-09-03",
-      "value": 0.67
-    },
-    {
-      "date": "2026-09-04",
-      "value": 0.21
-    },
-    {
-      "date": "2026-09-05",
-      "value": 0.3
-    },
-    {
-      "date": "2026-09-06",
-      "value": 0.35
-    },
-    {
-      "date": "2026-09-07",
-      "value": 0.41
-    },
-    {
-      "date": "2026-09-08",
-      "value": 0.25
-    },
-    {
-      "date": "2026-09-09",
-      "value": 0.41
-    },
-    {
-      "date": "2026-09-10",
-      "value": 0.54
-    },
-    {
-      "date": "2026-09-11",
-      "value": 0.26
-    },
-    {
-      "date": "2026-09-12",
-      "value": 0.48
-    },
-    {
-      "date": "2026-09-13",
-      "value": 0.35
-    },
-    {
-      "date": "2026-09-14",
       "value": 0.56
     },
     {
-      "date": "2026-09-15",
-      "value": 0.38
+      "date": "2026-09-02",
+      "value": 0.68
     },
     {
-      "date": "2026-09-16",
-      "value": 0.29
+      "date": "2026-09-03",
+      "value": 0.56
     },
     {
-      "date": "2026-09-17",
-      "value": 0.39
+      "date": "2026-09-04",
+      "value": 0.24
     },
     {
-      "date": "2026-09-18",
+      "date": "2026-09-05",
+      "value": 0.24
+    },
+    {
+      "date": "2026-09-06",
+      "value": 0.3
+    },
+    {
+      "date": "2026-09-07",
       "value": 0.34
     },
     {
+      "date": "2026-09-08",
+      "value": 0.29
+    },
+    {
+      "date": "2026-09-09",
+      "value": 0.49
+    },
+    {
+      "date": "2026-09-10",
+      "value": 0.52
+    },
+    {
+      "date": "2026-09-11",
+      "value": 0.3
+    },
+    {
+      "date": "2026-09-12",
+      "value": 0.54
+    },
+    {
+      "date": "2026-09-13",
+      "value": 0.53
+    },
+    {
+      "date": "2026-09-14",
+      "value": 0.34
+    },
+    {
+      "date": "2026-09-15",
+      "value": 0.44
+    },
+    {
+      "date": "2026-09-16",
+      "value": 0.49
+    },
+    {
+      "date": "2026-09-17",
+      "value": 0.52
+    },
+    {
+      "date": "2026-09-18",
+      "value": 0.56
+    },
+    {
       "date": "2026-09-19",
-      "value": 0.58
+      "value": 0.3
     },
     {
       "date": "2026-09-20",
-      "value": 0.27
+      "value": 0.34
+    },
+    {
+      "date": "2026-09-21",
+      "value": 0.67
+    },
+    {
+      "date": "2026-09-22",
+      "value": 0.29
+    },
+    {
+      "date": "2026-09-23",
+      "value": 0.49
     }
   ],
   "points": [],
   "regions": [
     {
       "region": "GLOBAL",
-      "value": 0.40225806451612905,
+      "value": 0.44,
       "count": 31,
       "aggregation": "mean",
       "extra": {
-        "max": 0.67,
-        "sum": 12.47
+        "max": 0.68,
+        "sum": 13.64
       }
     }
   ],
+  "documents": [],
+  "graph": null,
   "extra": {
     "adapter": "timeseries",
-    "adapter_version": "2.1.1",
+    "adapter_version": "2.2.1",
     "unique_dates": 31,
     "unmapped_regions": [],
     "unmapped_count": 0

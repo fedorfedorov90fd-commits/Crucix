@@ -2,503 +2,830 @@
   "schema": "crucix.basket.v1",
   "meta": {
     "id": "map-layer-vix",
-    "source": "VIX enrichment",
-    "source_url": "local://rescan",
-    "fetched_at": "2026-09-18T21:24:17.815Z",
-    "normalized_at": "2026-09-18T21:25:55.881Z",
+    "source": "VIX (обогащение координатами)",
+    "source_url": "local://vix-enrichment",
+    "fetched_at": "2026-09-23T06:57:10.856Z",
+    "normalized_at": "2026-09-23T17:51:48.910Z",
     "collector": "collect-map-layer-vix.mjs",
     "license": "public-domain",
-    "count": 42,
+    "count": 50,
     "granularity": "event",
     "value_unit": "index",
     "value_scale": null,
     "value_type": "index",
     "value_range": null
   },
-  "series": [],
+  "series": [
+    {
+      "date": "2026-08-01",
+      "value": 36.56,
+      "region": "AUS"
+    },
+    {
+      "date": "2026-08-12",
+      "value": 28.36,
+      "region": "BRA"
+    },
+    {
+      "date": "2026-07-27",
+      "value": 25.59,
+      "region": "JPN"
+    },
+    {
+      "date": "2026-08-14",
+      "value": 22.49
+    },
+    {
+      "date": "2026-09-08",
+      "value": 30.95,
+      "region": "IND"
+    },
+    {
+      "date": "2026-08-13",
+      "value": 17.47,
+      "region": "GBR"
+    },
+    {
+      "date": "2026-07-25",
+      "value": 15.54,
+      "region": "JPN"
+    },
+    {
+      "date": "2026-07-27",
+      "value": 22.02,
+      "region": "IND"
+    },
+    {
+      "date": "2026-09-12",
+      "value": 34.18,
+      "region": "RUS"
+    },
+    {
+      "date": "2026-08-03",
+      "value": 21.16,
+      "region": "RUS"
+    },
+    {
+      "date": "2026-08-18",
+      "value": 33.95,
+      "region": "AIA"
+    },
+    {
+      "date": "2026-09-08",
+      "value": 19.14,
+      "region": "AUS"
+    },
+    {
+      "date": "2026-08-23",
+      "value": 24.24
+    },
+    {
+      "date": "2026-09-08",
+      "value": 23.14,
+      "region": "BRA"
+    },
+    {
+      "date": "2026-09-02",
+      "value": 21.94,
+      "region": "RUS"
+    },
+    {
+      "date": "2026-09-20",
+      "value": 25.33,
+      "region": "USA"
+    },
+    {
+      "date": "2026-08-19",
+      "value": 27.98,
+      "region": "IND"
+    },
+    {
+      "date": "2026-08-18",
+      "value": 15.36
+    },
+    {
+      "date": "2026-09-12",
+      "value": 32.76
+    },
+    {
+      "date": "2026-09-16",
+      "value": 24.71
+    },
+    {
+      "date": "2026-08-10",
+      "value": 37.11
+    },
+    {
+      "date": "2026-08-27",
+      "value": 19.62
+    },
+    {
+      "date": "2026-09-22",
+      "value": 33.98,
+      "region": "USA"
+    },
+    {
+      "date": "2026-08-30",
+      "value": 34.64
+    },
+    {
+      "date": "2026-09-14",
+      "value": 28.48
+    },
+    {
+      "date": "2026-09-08",
+      "value": 33.46,
+      "region": "AIA"
+    },
+    {
+      "date": "2026-08-17",
+      "value": 31.6
+    },
+    {
+      "date": "2026-08-21",
+      "value": 17.33,
+      "region": "BRA"
+    },
+    {
+      "date": "2026-08-17",
+      "value": 27.35
+    },
+    {
+      "date": "2026-08-15",
+      "value": 37.39
+    },
+    {
+      "date": "2026-08-09",
+      "value": 17.67
+    },
+    {
+      "date": "2026-08-05",
+      "value": 37.41,
+      "region": "BRA"
+    },
+    {
+      "date": "2026-08-08",
+      "value": 16.59,
+      "region": "IND"
+    },
+    {
+      "date": "2026-07-27",
+      "value": 32.48
+    },
+    {
+      "date": "2026-08-13",
+      "value": 25.23,
+      "region": "AIA"
+    },
+    {
+      "date": "2026-08-04",
+      "value": 23.61
+    },
+    {
+      "date": "2026-08-31",
+      "value": 34.55
+    },
+    {
+      "date": "2026-08-21",
+      "value": 23.05
+    },
+    {
+      "date": "2026-08-23",
+      "value": 38.76,
+      "region": "IND"
+    },
+    {
+      "date": "2026-09-08",
+      "value": 26.29
+    },
+    {
+      "date": "2026-09-09",
+      "value": 28.93
+    },
+    {
+      "date": "2026-08-22",
+      "value": 31.15
+    },
+    {
+      "date": "2026-09-04",
+      "value": 38.53,
+      "region": "AIA"
+    },
+    {
+      "date": "2026-08-14",
+      "value": 16.56,
+      "region": "USA"
+    },
+    {
+      "date": "2026-09-06",
+      "value": 37.62,
+      "region": "BRA"
+    },
+    {
+      "date": "2026-08-15",
+      "value": 26.1
+    },
+    {
+      "date": "2026-07-31",
+      "value": 28.42,
+      "region": "IND"
+    },
+    {
+      "date": "2026-08-28",
+      "value": 15.56,
+      "region": "CHN"
+    },
+    {
+      "date": "2026-09-07",
+      "value": 19.3,
+      "region": "JPN"
+    },
+    {
+      "date": "2026-09-18",
+      "value": 23.95,
+      "region": "AUS"
+    }
+  ],
   "points": [
     {
-      "lat": 40.567910294140745,
-      "lon": -71.52917222132987,
-      "value": 18.5,
+      "lat": -27.47319028322064,
+      "lon": 134.1321510510579,
+      "value": 36.56,
+      "region": "AUS",
+      "timestamp": "2026-08-01T21:23:02.832Z"
+    },
+    {
+      "lat": -15.632009483171064,
+      "lon": -51.728043790040985,
+      "value": 28.36,
+      "region": "BRA",
+      "timestamp": "2026-08-12T05:34:05.587Z"
+    },
+    {
+      "lat": 37.61527349011144,
+      "lon": 138.99610462194008,
+      "value": 25.59,
+      "region": "JPN",
+      "timestamp": "2026-07-27T18:48:15.599Z"
+    },
+    {
+      "lat": 17.57544035075741,
+      "lon": 0.8183956208554244,
+      "value": 22.49,
       "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.790Z",
+      "timestamp": "2026-08-14T18:37:38.023Z",
       "extra": {
         "unmapped_region": true,
         "unmapped_original": "GLOBAL"
       }
     },
     {
-      "lat": 39.49736281383388,
-      "lon": -75.8372432683105,
-      "value": 22.1,
+      "lat": 20.379735362969715,
+      "lon": 77.89396520692486,
+      "value": 30.95,
+      "region": "IND",
+      "timestamp": "2026-09-08T15:32:32.710Z"
+    },
+    {
+      "lat": 52.35590973894298,
+      "lon": -2.606749414287781,
+      "value": 17.47,
+      "region": "GBR",
+      "timestamp": "2026-08-13T01:46:53.523Z"
+    },
+    {
+      "lat": 37.24209816062934,
+      "lon": 138.61692377861837,
+      "value": 15.54,
+      "region": "JPN",
+      "timestamp": "2026-07-25T11:05:34.320Z"
+    },
+    {
+      "lat": 18.494595280433366,
+      "lon": 77.96221527896654,
+      "value": 22.02,
+      "region": "IND",
+      "timestamp": "2026-07-27T00:02:55.642Z"
+    },
+    {
+      "lat": 60.70690361260681,
+      "lon": 105.83648176960651,
+      "value": 34.18,
+      "region": "RUS",
+      "timestamp": "2026-09-12T02:44:57.128Z"
+    },
+    {
+      "lat": 61.20310023844743,
+      "lon": 103.77210984844336,
+      "value": 21.16,
+      "region": "RUS",
+      "timestamp": "2026-08-03T07:55:45.545Z"
+    },
+    {
+      "lat": 35.611194675261125,
+      "lon": 138.14829266219172,
+      "value": 33.95,
+      "region": "AIA",
+      "timestamp": "2026-08-18T20:52:20.289Z"
+    },
+    {
+      "lat": -27.18601630299993,
+      "lon": 132.9478015152629,
+      "value": 19.14,
+      "region": "AUS",
+      "timestamp": "2026-09-08T18:49:51.034Z"
+    },
+    {
+      "lat": -9.077051090189341,
+      "lon": 32.83642630704757,
+      "value": 24.24,
+      "region": "AFRICA",
+      "timestamp": "2026-08-23T10:15:30.108Z",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "AFRICA"
+      }
+    },
+    {
+      "lat": -13.72239496667587,
+      "lon": -51.43645711817821,
+      "value": 23.14,
+      "region": "BRA",
+      "timestamp": "2026-09-08T05:35:08.192Z"
+    },
+    {
+      "lat": 63.20082693379317,
+      "lon": 106.71861762643826,
+      "value": 21.94,
+      "region": "RUS",
+      "timestamp": "2026-09-02T22:08:55.308Z"
+    },
+    {
+      "lat": 38.452499844431294,
+      "lon": -100.61468322990766,
+      "value": 25.33,
+      "region": "USA",
+      "timestamp": "2026-09-20T06:35:21.359Z"
+    },
+    {
+      "lat": 18.608416532483968,
+      "lon": 77.66737975156558,
+      "value": 27.98,
+      "region": "IND",
+      "timestamp": "2026-08-19T03:59:51.117Z"
+    },
+    {
+      "lat": 49.8216792897413,
+      "lon": 3.863576526038363,
+      "value": 15.36,
+      "region": "EU",
+      "timestamp": "2026-08-18T15:18:41.728Z",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "EU"
+      }
+    },
+    {
+      "lat": 50.840768208665246,
+      "lon": 5.490577225902034,
+      "value": 32.76,
+      "region": "EU",
+      "timestamp": "2026-09-12T10:52:15.739Z",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "EU"
+      }
+    },
+    {
+      "lat": 23.036206130876145,
+      "lon": 53.27796473774994,
+      "value": 24.71,
+      "region": "MIDDLE_EAST",
+      "timestamp": "2026-09-16T14:34:21.372Z",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "MIDDLE_EAST"
+      }
+    },
+    {
+      "lat": -7.382640694722507,
+      "lon": 35.6145778888563,
+      "value": 37.11,
+      "region": "AFRICA",
+      "timestamp": "2026-08-10T00:23:10.154Z",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "AFRICA"
+      }
+    },
+    {
+      "lat": -7.8130134469906904,
+      "lon": 33.9436516009091,
+      "value": 19.62,
+      "region": "AFRICA",
+      "timestamp": "2026-08-27T17:04:31.336Z",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "AFRICA"
+      }
+    },
+    {
+      "lat": 37.68807234066072,
+      "lon": -98.31995717007173,
+      "value": 33.98,
+      "region": "USA",
+      "timestamp": "2026-09-22T11:06:21.852Z"
+    },
+    {
+      "lat": 53.0088221589919,
+      "lon": 6.420865336285291,
+      "value": 34.64,
+      "region": "EU",
+      "timestamp": "2026-08-30T00:10:03.075Z",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "EU"
+      }
+    },
+    {
+      "lat": -8.780309666084415,
+      "lon": 36.74042532720565,
+      "value": 28.48,
+      "region": "AFRICA",
+      "timestamp": "2026-09-14T04:20:53.435Z",
+      "extra": {
+        "unmapped_region": true,
+        "unmapped_original": "AFRICA"
+      }
+    },
+    {
+      "lat": 36.73952672304464,
+      "lon": 138.82933654029003,
+      "value": 33.46,
+      "region": "AIA",
+      "timestamp": "2026-09-08T21:31:17.160Z"
+    },
+    {
+      "lat": 21.05611891278393,
+      "lon": -1.1287507806372765,
+      "value": 31.6,
       "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.790Z",
+      "timestamp": "2026-08-17T00:22:37.286Z",
       "extra": {
         "unmapped_region": true,
         "unmapped_original": "GLOBAL"
       }
     },
     {
-      "lat": 39.29704623609487,
-      "lon": -75.02138875665952,
-      "value": 26.8,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.790Z",
+      "lat": -11.879793666350263,
+      "lon": -53.78945487719669,
+      "value": 17.33,
+      "region": "BRA",
+      "timestamp": "2026-08-21T10:44:23.000Z"
+    },
+    {
+      "lat": -7.7501034839171075,
+      "lon": 32.90254166840582,
+      "value": 27.35,
+      "region": "AFRICA",
+      "timestamp": "2026-08-17T08:29:42.639Z",
       "extra": {
         "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
+        "unmapped_original": "AFRICA"
       }
     },
     {
-      "lat": 38.46315766725719,
-      "lon": -76.37846198967175,
-      "value": 31.2,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.790Z",
+      "lat": -7.936906486184868,
+      "lon": 36.00557422106111,
+      "value": 37.39,
+      "region": "AFRICA",
+      "timestamp": "2026-08-15T08:39:16.659Z",
       "extra": {
         "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
+        "unmapped_original": "AFRICA"
       }
     },
     {
-      "lat": 42.2842018655353,
-      "lon": -72.82651800711591,
-      "value": 35.7,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.790Z",
+      "lat": 22.23389275390712,
+      "lon": 54.24311474739159,
+      "value": 17.67,
+      "region": "MIDDLE_EAST",
+      "timestamp": "2026-08-09T06:25:05.205Z",
       "extra": {
         "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
+        "unmapped_original": "MIDDLE_EAST"
       }
     },
     {
-      "lat": 38.5350796241517,
-      "lon": -72.26836519012771,
-      "value": 42.3,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.790Z",
+      "lat": -13.985621483225898,
+      "lon": -51.19169737183494,
+      "value": 37.41,
+      "region": "BRA",
+      "timestamp": "2026-08-05T08:17:00.780Z"
+    },
+    {
+      "lat": 19.202207466532837,
+      "lon": 77.28518471004169,
+      "value": 16.59,
+      "region": "IND",
+      "timestamp": "2026-08-08T13:28:17.312Z"
+    },
+    {
+      "lat": -8.86635491997021,
+      "lon": 35.92376299375998,
+      "value": 32.48,
+      "region": "AFRICA",
+      "timestamp": "2026-07-27T00:46:44.034Z",
       "extra": {
         "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
+        "unmapped_original": "AFRICA"
       }
     },
     {
-      "lat": 21.04785471646881,
-      "lon": 1.3063136853803947,
-      "value": 25.5,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
+      "lat": 34.71740715595914,
+      "lon": 140.36267759121503,
+      "value": 25.23,
+      "region": "AIA",
+      "timestamp": "2026-08-13T05:16:47.690Z"
+    },
+    {
+      "lat": -9.397089142727335,
+      "lon": 32.7191396941446,
+      "value": 23.61,
+      "region": "AFRICA",
+      "timestamp": "2026-08-04T11:42:54.498Z",
       "extra": {
         "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
+        "unmapped_original": "AFRICA"
       }
     },
     {
-      "lat": 21.962869510134023,
-      "lon": 0.11138477171948158,
-      "value": 26.2,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
+      "lat": 48.96469199140345,
+      "lon": 6.627423084911502,
+      "value": 34.55,
+      "region": "EU",
+      "timestamp": "2026-08-31T17:06:30.807Z",
       "extra": {
         "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
+        "unmapped_original": "EU"
       }
     },
     {
-      "lat": 19.477521788683088,
-      "lon": -0.5954924201203915,
-      "value": 27.1,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
+      "lat": 49.61106854323923,
+      "lon": 2.5063669778234527,
+      "value": 23.05,
+      "region": "EU",
+      "timestamp": "2026-08-21T05:57:09.513Z",
       "extra": {
         "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
+        "unmapped_original": "EU"
       }
     },
     {
-      "lat": 19.66973985467297,
-      "lon": -0.4073331372551692,
-      "value": 26.8,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
+      "lat": 20.08340620216088,
+      "lon": 81.02834162735437,
+      "value": 38.76,
+      "region": "IND",
+      "timestamp": "2026-08-23T07:02:49.564Z"
+    },
+    {
+      "lat": 23.24026927316317,
+      "lon": 54.60994785825333,
+      "value": 26.29,
+      "region": "MIDDLE_EAST",
+      "timestamp": "2026-09-08T23:43:30.873Z",
       "extra": {
         "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
+        "unmapped_original": "MIDDLE_EAST"
       }
     },
     {
-      "lat": 17.83224587606029,
-      "lon": -0.46149368753554354,
-      "value": 28.3,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
+      "lat": -7.362919371663424,
+      "lon": 35.26687751083411,
+      "value": 28.93,
+      "region": "AFRICA",
+      "timestamp": "2026-09-09T11:58:25.228Z",
       "extra": {
         "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
+        "unmapped_original": "AFRICA"
       }
     },
     {
-      "lat": 19.262344919612566,
-      "lon": -0.8858320844471201,
-      "value": 29.7,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
+      "lat": 25.792273500273858,
+      "lon": 53.06195576673532,
+      "value": 31.15,
+      "region": "MIDDLE_EAST",
+      "timestamp": "2026-08-22T02:26:50.894Z",
       "extra": {
         "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
+        "unmapped_original": "MIDDLE_EAST"
       }
     },
     {
-      "lat": 21.536639198196685,
-      "lon": 0.5515694623133338,
-      "value": 30.5,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
+      "lat": 34.22842140813377,
+      "lon": 142.09087095028727,
+      "value": 38.53,
+      "region": "AIA",
+      "timestamp": "2026-09-04T09:10:43.965Z"
+    },
+    {
+      "lat": 42.27050634299664,
+      "lon": -101.04315287460184,
+      "value": 16.56,
+      "region": "USA",
+      "timestamp": "2026-08-14T23:49:04.815Z"
+    },
+    {
+      "lat": -13.451233468132632,
+      "lon": -50.34276673785982,
+      "value": 37.62,
+      "region": "BRA",
+      "timestamp": "2026-09-06T22:51:36.813Z"
+    },
+    {
+      "lat": -7.814169505818484,
+      "lon": 35.77548603227089,
+      "value": 26.1,
+      "region": "AFRICA",
+      "timestamp": "2026-08-15T20:10:20.450Z",
       "extra": {
         "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
+        "unmapped_original": "AFRICA"
       }
     },
     {
-      "lat": 21.810096237440035,
-      "lon": -0.40649225090514607,
-      "value": 31.1,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
-      "extra": {
-        "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
-      }
+      "lat": 18.97207651679514,
+      "lon": 78.2815036245288,
+      "value": 28.42,
+      "region": "IND",
+      "timestamp": "2026-07-31T16:01:04.643Z"
     },
     {
-      "lat": 17.957513111047156,
-      "lon": -1.1657469159684808,
-      "value": 32.8,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
-      "extra": {
-        "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
-      }
+      "lat": 37.60868334529065,
+      "lon": 102.01128831189874,
+      "value": 15.56,
+      "region": "CHN",
+      "timestamp": "2026-08-28T13:37:41.917Z"
     },
     {
-      "lat": 21.00979499649247,
-      "lon": -2.460092925678712,
-      "value": 33.3,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
-      "extra": {
-        "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
-      }
+      "lat": 33.284877998081015,
+      "lon": 141.62870133112085,
+      "value": 19.3,
+      "region": "JPN",
+      "timestamp": "2026-09-07T00:55:46.470Z"
     },
     {
-      "lat": 19.614865700706734,
-      "lon": -0.37992894008413436,
-      "value": 34.1,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
-      "extra": {
-        "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
-      }
-    },
-    {
-      "lat": 21.357897383404573,
-      "lon": -0.15950866306338796,
-      "value": 35.5,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
-      "extra": {
-        "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
-      }
-    },
-    {
-      "lat": 20.760338354728106,
-      "lon": -1.4306319319381477,
-      "value": 36.2,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
-      "extra": {
-        "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
-      }
-    },
-    {
-      "lat": 20.223414961634056,
-      "lon": -0.7456517862467116,
-      "value": 37.1,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
-      "extra": {
-        "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
-      }
-    },
-    {
-      "lat": 19.250846828855035,
-      "lon": 0.24466547402674288,
-      "value": 38.4,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
-      "extra": {
-        "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
-      }
-    },
-    {
-      "lat": 17.556141521762466,
-      "lon": 1.406080298226976,
-      "value": 39.2,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
-      "extra": {
-        "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
-      }
-    },
-    {
-      "lat": 21.91093215009942,
-      "lon": 1.856933816380817,
-      "value": 40,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
-      "extra": {
-        "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
-      }
-    },
-    {
-      "lat": 18.90839127556106,
-      "lon": 0.3498131197418708,
-      "value": 40.5,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
-      "extra": {
-        "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
-      }
-    },
-    {
-      "lat": 19.734534424761257,
-      "lon": -0.6463165641477542,
-      "value": 41.1,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
-      "extra": {
-        "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
-      }
-    },
-    {
-      "lat": 20.188210991055698,
-      "lon": -1.8686509339642632,
-      "value": 41.8,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
-      "extra": {
-        "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
-      }
-    },
-    {
-      "lat": 21.821846041628017,
-      "lon": 1.818459108607654,
-      "value": 42.2,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
-      "extra": {
-        "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
-      }
-    },
-    {
-      "lat": 19.440096847325506,
-      "lon": -1.0279870287696613,
-      "value": 41.9,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
-      "extra": {
-        "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
-      }
-    },
-    {
-      "lat": 20.16964294168547,
-      "lon": 1.6087031776216532,
-      "value": 41.5,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
-      "extra": {
-        "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
-      }
-    },
-    {
-      "lat": 20.788009135673413,
-      "lon": 2.175137748352176,
-      "value": 41.2,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
-      "extra": {
-        "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
-      }
-    },
-    {
-      "lat": 19.29386503264877,
-      "lon": -0.06432188629521773,
-      "value": 40.8,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
-      "extra": {
-        "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
-      }
-    },
-    {
-      "lat": 18.983816161242856,
-      "lon": -1.5593612021850967,
-      "value": 41,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
-      "extra": {
-        "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
-      }
-    },
-    {
-      "lat": 19.2038038539406,
-      "lon": 0.24532193287573834,
-      "value": 41.3,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
-      "extra": {
-        "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
-      }
-    },
-    {
-      "lat": 21.407994673698493,
-      "lon": 0.9505372964795267,
-      "value": 41.5,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
-      "extra": {
-        "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
-      }
-    },
-    {
-      "lat": 20.80806959860198,
-      "lon": -0.1893523714220091,
-      "value": 41.2,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
-      "extra": {
-        "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
-      }
-    },
-    {
-      "lat": 19.06877491451986,
-      "lon": -1.9497113065103855,
-      "value": 41,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
-      "extra": {
-        "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
-      }
-    },
-    {
-      "lat": 22.37851185193926,
-      "lon": 1.4181823596940835,
-      "value": 41.2,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
-      "extra": {
-        "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
-      }
-    },
-    {
-      "lat": 20.366131448874217,
-      "lon": 1.005500502305593,
-      "value": 0,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
-      "extra": {
-        "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
-      }
-    },
-    {
-      "lat": 19.192070642965316,
-      "lon": 1.9437486081408573,
-      "value": 0,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
-      "extra": {
-        "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
-      }
-    },
-    {
-      "lat": 20.88861053889774,
-      "lon": -1.0356610919968512,
-      "value": 0,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
-      "extra": {
-        "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
-      }
-    },
-    {
-      "lat": 20.57255892743822,
-      "lon": 1.9868136617900733,
-      "value": 0,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
-      "extra": {
-        "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
-      }
-    },
-    {
-      "lat": 20.764920636438525,
-      "lon": -1.6858420259170825,
-      "value": 0,
-      "region": "GLOBAL",
-      "timestamp": "2026-09-18T19:08:52.791Z",
-      "extra": {
-        "unmapped_region": true,
-        "unmapped_original": "GLOBAL"
-      }
+      "lat": -22.999714059851243,
+      "lon": 132.4397353364355,
+      "value": 23.95,
+      "region": "AUS",
+      "timestamp": "2026-09-18T14:33:17.314Z"
     }
   ],
   "regions": [
     {
-      "region": "GLOBAL",
-      "value": 31.109523809523814,
-      "count": 42,
+      "region": "AUS",
+      "value": 26.55,
+      "count": 3,
       "aggregation": "mean",
       "extra": {
-        "max": 42.3,
-        "sum": 1306.6000000000001
+        "max": 36.56,
+        "sum": 79.65
+      }
+    },
+    {
+      "region": "BRA",
+      "value": 28.772,
+      "count": 5,
+      "aggregation": "mean",
+      "extra": {
+        "max": 37.62,
+        "sum": 143.85999999999999
+      }
+    },
+    {
+      "region": "JPN",
+      "value": 20.14333333333333,
+      "count": 3,
+      "aggregation": "mean",
+      "extra": {
+        "max": 25.59,
+        "sum": 60.42999999999999
+      }
+    },
+    {
+      "region": "GLOBAL",
+      "value": 27.045,
+      "count": 2,
+      "aggregation": "mean",
+      "extra": {
+        "max": 31.6,
+        "sum": 54.09
+      }
+    },
+    {
+      "region": "IND",
+      "value": 27.453333333333337,
+      "count": 6,
+      "aggregation": "mean",
+      "extra": {
+        "max": 38.76,
+        "sum": 164.72000000000003
+      }
+    },
+    {
+      "region": "GBR",
+      "value": 17.47,
+      "count": 1,
+      "aggregation": "mean",
+      "extra": {
+        "max": 17.47,
+        "sum": 17.47
+      }
+    },
+    {
+      "region": "RUS",
+      "value": 25.76,
+      "count": 3,
+      "aggregation": "mean",
+      "extra": {
+        "max": 34.18,
+        "sum": 77.28
+      }
+    },
+    {
+      "region": "AIA",
+      "value": 32.792500000000004,
+      "count": 4,
+      "aggregation": "mean",
+      "extra": {
+        "max": 38.53,
+        "sum": 131.17000000000002
+      }
+    },
+    {
+      "region": "AFRICA",
+      "value": 28.531,
+      "count": 10,
+      "aggregation": "mean",
+      "extra": {
+        "max": 37.39,
+        "sum": 285.31
+      }
+    },
+    {
+      "region": "USA",
+      "value": 25.289999999999996,
+      "count": 3,
+      "aggregation": "mean",
+      "extra": {
+        "max": 33.98,
+        "sum": 75.86999999999999
+      }
+    },
+    {
+      "region": "EU",
+      "value": 28.071999999999996,
+      "count": 5,
+      "aggregation": "mean",
+      "extra": {
+        "max": 34.64,
+        "sum": 140.35999999999999
+      }
+    },
+    {
+      "region": "MIDDLE_EAST",
+      "value": 24.955,
+      "count": 4,
+      "aggregation": "mean",
+      "extra": {
+        "max": 31.15,
+        "sum": 99.82
+      }
+    },
+    {
+      "region": "CHN",
+      "value": 15.56,
+      "count": 1,
+      "aggregation": "mean",
+      "extra": {
+        "max": 15.56,
+        "sum": 15.56
       }
     }
   ],
+  "documents": [],
+  "graph": null,
   "extra": {
     "adapter": "points",
-    "adapter_version": "2.0.0",
+    "adapter_version": "2.2.1",
     "skipped_invalid_coords": 0,
     "unmapped_regions": [
-      "GLOBAL"
+      "GLOBAL",
+      "AFRICA",
+      "EU",
+      "MIDDLE_EAST"
     ],
-    "unmapped_count": 1
+    "unmapped_count": 4
   }
 }

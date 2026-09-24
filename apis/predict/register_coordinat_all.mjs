@@ -91,7 +91,7 @@ const MODULES = [
   { name: 'mcmc', path: './models/mcmc.mjs', fn: 'crucixMCMC', phase: 'T', type: 'predictive', minHistory: 20, timeoutMs: 60000, description: 'MCMC (MH/Gibbs/HMC)' },
   { name: 'physics_inspired', path: './models/physics_inspired.mjs', fn: 'crucixPhysicsInspired', phase: 'T', type: 'predictive', minHistory: 20, timeoutMs: 60000, description: 'SOC/Percolation/Catastrophe/Chaos' },
   { name: 'automl', path: './automl.mjs', fn: 'crucixAutoML', phase: 'T', type: 'meta', minHistory: 30, timeoutMs: 120000, description: 'GP + Bayesian Optimization' },
-  { name: 'anomaly_detection', path: './anomaly_detection.mjs', fn: 'crucixAnomalyDetection', phase: 'T', type: 'predictive', minHistory: 20, timeoutMs: 60000, description: 'IsolationForest/LOF/Mahalanobis/SVM/DBSCAN' },
+  { name: 'anomaly_detection', path: './models/anomaly_detection.mjs', fn: 'crucixAnomalyDetection', phase: 'T', type: 'predictive', minHistory: 20, timeoutMs: 60000, description: 'IsolationForest/LOF/Mahalanobis/SVM/DBSCAN' },
   { name: 'graph_sage', path: './models/graph_sage.mjs', fn: 'crucixGraphSAGE', phase: 'T', type: 'predictive', minHistory: 20, timeoutMs: 60000, description: 'GraphSAGE (индуктивный GNN)' },
   { name: 'actor_critic', path: './models/actor_critic.mjs', fn: 'crucixActorCritic', phase: 'T', type: 'predictive', minHistory: 30, timeoutMs: 90000, description: 'A2C + GAE' },
 

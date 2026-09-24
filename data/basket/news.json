@@ -4,8 +4,8 @@
     "id": "news",
     "source": "Crucix news (demo)",
     "source_url": "local://demo",
-    "fetched_at": "2026-09-20T10:57:50.823Z",
-    "normalized_at": "2026-09-20T11:28:57.105Z",
+    "fetched_at": "2026-09-23T06:57:11.127Z",
+    "normalized_at": "2026-09-23T17:51:48.965Z",
     "collector": "collect-news.mjs",
     "license": "public-domain",
     "count": 10,
@@ -138,13 +138,118 @@
       "aggregation": "count"
     }
   ],
+  "documents": [
+    {
+      "id": "3539443910779605",
+      "text": "Иран нанёс ракетные удары по Израилю",
+      "timestamp": "2026-08-16T10:30:00.000Z",
+      "region": "Ближний Восток",
+      "extra": {
+        "source": "Reuters",
+        "category": "geopolitics"
+      }
+    },
+    {
+      "id": "a70de9b14f46f5f4",
+      "text": "США ввели новые санкции против Ирана",
+      "timestamp": "2026-08-16T09:15:00.000Z",
+      "region": "USA",
+      "extra": {
+        "source": "AP",
+        "category": "geopolitics"
+      }
+    },
+    {
+      "id": "78e3ddf15f87bc8c",
+      "text": "ЕС одобрил новый пакет помощи Украине на 50 млрд евро",
+      "timestamp": "2026-08-16T08:45:00.000Z",
+      "region": "Европа",
+      "extra": {
+        "source": "Euronews",
+        "category": "politics"
+      }
+    },
+    {
+      "id": "8e4940aaecb4dec7",
+      "text": "Нефть Brent превысила $110 за баррель",
+      "timestamp": "2026-08-16T08:00:00.000Z",
+      "region": "Мир",
+      "extra": {
+        "source": "Bloomberg",
+        "category": "economy"
+      }
+    },
+    {
+      "id": "c63c9dd958dfb4e4",
+      "text": "Золото обновило исторический максимум — $2150 за унцию",
+      "timestamp": "2026-08-16T07:30:00.000Z",
+      "region": "Мир",
+      "extra": {
+        "source": "CNBC",
+        "category": "economy"
+      }
+    },
+    {
+      "id": "ad891ab37d4948ae",
+      "text": "Байден подписал закон о бюджете на 2026 год",
+      "timestamp": "2026-08-16T07:00:00.000Z",
+      "region": "USA",
+      "extra": {
+        "source": "NYT",
+        "category": "politics"
+      }
+    },
+    {
+      "id": "c7c691102e8b6257",
+      "text": "Китай запустил новый спутник для мониторинга океана",
+      "timestamp": "2026-08-16T06:30:00.000Z",
+      "region": "CHN",
+      "extra": {
+        "source": "Xinhua",
+        "category": "technology"
+      }
+    },
+    {
+      "id": "8e61b6d2e762f3c8",
+      "text": "Россия заявила о готовности к переговорам по Украине",
+      "timestamp": "2026-08-16T06:00:00.000Z",
+      "region": "RUS",
+      "extra": {
+        "source": "TASS",
+        "category": "diplomacy"
+      }
+    },
+    {
+      "id": "ce688edf63768ced",
+      "text": "Землетрясение магнитудой 6.2 в Индонезии",
+      "timestamp": "2026-08-16T05:30:00.000Z",
+      "region": "Азия",
+      "extra": {
+        "source": "USGS",
+        "category": "disaster"
+      }
+    },
+    {
+      "id": "3816169a16211023",
+      "text": "Индия стала третьей экономикой мира",
+      "timestamp": "2026-08-16T05:00:00.000Z",
+      "region": "IND",
+      "extra": {
+        "source": "Times of India",
+        "category": "economy"
+      }
+    }
+  ],
+  "graph": null,
   "extra": {
     "adapter": "events",
-    "adapter_version": "2.1.0",
+    "adapter_version": "2.2.0",
     "total_events": 10,
     "unique_dates": 1,
     "skipped_no_date": 0,
+    "skipped_no_text": 0,
     "points_from_centroids": 5,
+    "documents_count": 10,
     "unmapped_regions": [
       "Ближний Восток",
       "Европа",

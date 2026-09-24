@@ -54,7 +54,14 @@ __pycache__/
 venv/
 .pytest_cache/
 
-# Прочее
+
+# ─── Приватные папки (НЕ публиковать!) ───
+backups/
+reports/
+snapshots/
+snapshots_full/
+runs/
+node_modules/
 .cache/
 dist/
 build/
@@ -70,15 +77,90 @@ logs/
 1opml/
 RSS_lenta/
 
-# ─── Приватные папки (НЕ публиковать!) ───
-PROJECT/
-AI_MEMORY/
-logs/
-backups/
-reports/
-snapshots/
-snapshots_full/
-runs/
-node_modules/
-test/
-venv/
+
+# ─── Дополнительно: бэкапы с датами и суффиксами ───
+*.bak-*
+*.bak_*
+*.backup_*
+*.save
+*.save.*
+*.old-*
+
+# Дополнительно: русские имена с скобками (правило 42)
+**/*дубль*
+**/*копия*
+**/*(копия)*
+**/*(1копия)*
+**/*(70копия)*
+**/*(автомат)*
+**/*с_деморежимом*
+**/новый файл
+**/*ЛОГИ_И_РОТАЦИЯ*
+**/* (1-я копия)*
+
+# Промежуточные снапшоты (не публикуем — их слишком много)
+data/raw/**
+data/warehouse/incoming/**
+data/analytics/rss-history/**
+
+# Бэкапы OPML
+data/feeds/*.bak-*
+data/feeds/*.bak_*
+
+
+# Дубликаты README
+README.en.md
+README_ru.md
+README_en.md
+CRUCIX_FULL_REGISTRY.txt
+
+# ─── Дополнительно (очистка 24.09.2026) ───
+*.bak2
+*.bak_*
+*.bak-*
+*.bak.*
+*.backup_*
+*.backup-*
+*.backup.*
+*.orig
+*.rej
+*.swn
+*.temp
+*.log.*
+*.dump
+*.sql.gz
+*.pid
+*.lock
+core.*
+*.core
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.cache/
+.parcel-cache/
+.next/
+dist/
+build/
+coverage/
+.nyc_output/
+.turbo/
+data/raw/**
+data/warehouse/incoming/**
+data/analytics/rss-history/**
+data/feeds/*.bak-*
+data/feeds/*.bak_*
+
+# ─── Личные файлы (не публиковать!) ───
+dashboard/public/geo-map/пресеты/чат депсека с алисой.txt
+dashboard/public/geo-map/пресеты/Универсальный роут для сервера
+111
+jarvis_(панель_в_2_ряда.md
+collector-monitor-api-с_логами.md
+
+# ─── Дубликаты / мусор ───
+dashboard/public/geo-map/js/111layers.js
+
+# ─── Дубликаты README ───
+README.en.md
+README_en.md

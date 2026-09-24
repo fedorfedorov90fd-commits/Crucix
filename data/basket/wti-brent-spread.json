@@ -4,11 +4,11 @@
     "id": "wti-brent-spread",
     "source": "WTI-Brent spread (Yahoo Finance)",
     "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
-    "fetched_at": "2026-09-20T11:22:18.145Z",
-    "normalized_at": "2026-09-20T11:38:12.688Z",
+    "fetched_at": "2026-09-23T07:04:55.684Z",
+    "normalized_at": "2026-09-23T17:51:50.806Z",
     "collector": "collect-wti-brent-spread.mjs",
     "license": "public-domain",
-    "count": 21,
+    "count": 22,
     "granularity": "daily",
     "value_unit": "usd_per_bbl",
     "value_scale": null,
@@ -17,24 +17,6 @@
     "period": "P30D"
   },
   "series": [
-    {
-      "date": "2026-08-20",
-      "value": 5.95,
-      "extra": {
-        "wti": 87.83,
-        "brent": 93.78,
-        "spread": 5.95
-      }
-    },
-    {
-      "date": "2026-08-21",
-      "value": 7.33,
-      "extra": {
-        "wti": 87.06,
-        "brent": 94.39,
-        "spread": 7.33
-      }
-    },
     {
       "date": "2026-08-24",
       "value": 7.16,
@@ -199,11 +181,38 @@
     },
     {
       "date": "2026-09-18",
-      "value": 3.21,
+      "value": 3.57,
       "extra": {
-        "wti": 96.08,
-        "brent": 99.29,
-        "spread": 3.21
+        "wti": 100.3,
+        "brent": 103.87,
+        "spread": 3.57
+      }
+    },
+    {
+      "date": "2026-09-21",
+      "value": 4.56,
+      "extra": {
+        "wti": 95.78,
+        "brent": 100.34,
+        "spread": 4.56
+      }
+    },
+    {
+      "date": "2026-09-22",
+      "value": 4.66,
+      "extra": {
+        "wti": 94.59,
+        "brent": 99.25,
+        "spread": 4.66
+      }
+    },
+    {
+      "date": "2026-09-23",
+      "value": 9.15,
+      "extra": {
+        "wti": 89.41,
+        "brent": 98.56,
+        "spread": 9.15
       }
     }
   ],
@@ -211,19 +220,21 @@
   "regions": [
     {
       "region": "GLOBAL",
-      "value": 4.935238095238096,
-      "count": 21,
+      "value": 4.958636363636364,
+      "count": 22,
       "aggregation": "mean",
       "extra": {
-        "max": 7.33,
-        "sum": 103.64000000000001
+        "max": 9.15,
+        "sum": 109.09
       }
     }
   ],
+  "documents": [],
+  "graph": null,
   "extra": {
     "adapter": "timeseries",
-    "adapter_version": "2.2.0",
-    "unique_dates": 21,
+    "adapter_version": "2.2.1",
+    "unique_dates": 22,
     "unmapped_regions": [],
     "unmapped_count": 0
   }

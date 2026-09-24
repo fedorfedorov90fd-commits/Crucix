@@ -4,8 +4,8 @@
     "id": "opensanctions",
     "source": "OpenSanctions (demo)",
     "source_url": "https://www.opensanctions.org/",
-    "fetched_at": "2026-09-20T10:59:33.020Z",
-    "normalized_at": "2026-09-20T11:28:57.122Z",
+    "fetched_at": "2026-09-23T07:00:25.234Z",
+    "normalized_at": "2026-09-23T17:51:50.544Z",
     "collector": "collect-opensanctions.mjs",
     "license": "public-domain",
     "count": 31,
@@ -20,230 +20,232 @@
   "points": [],
   "regions": [
     {
-      "region": "MMR",
-      "value": 8,
-      "count": 8,
+      "region": "RUS",
+      "value": 9,
+      "count": 9,
       "aggregation": "count"
     },
     {
-      "region": "IRN",
+      "region": "CHN",
+      "value": 7,
+      "count": 7,
+      "aggregation": "count"
+    },
+    {
+      "region": "BLR",
       "value": 6,
       "count": 6,
       "aggregation": "count"
     },
     {
-      "region": "BLR",
+      "region": "MMR",
       "value": 5,
       "count": 5,
       "aggregation": "count"
     },
     {
-      "region": "CHN",
-      "value": 4,
-      "count": 4,
-      "aggregation": "count"
-    },
-    {
-      "region": "RUS",
-      "value": 3,
-      "count": 3,
+      "region": "IRN",
+      "value": 2,
+      "count": 2,
       "aggregation": "count"
     }
   ],
+  "documents": [],
+  "graph": null,
   "extra": {
     "adapter": "catalog",
     "adapter_version": "1.1.0",
     "type_counts": {
-      "Физическое лицо": 13,
-      "Организация": 11,
-      "Компания": 7
+      "Компания": 10,
+      "Организация": 12,
+      "Физическое лицо": 9
     },
     "regions_count": 5,
     "entries": [
       {
-        "date": "2026-08-21",
-        "country": "Северная Корея",
-        "type": "Физическое лицо",
-        "count": 6
-      },
-      {
-        "date": "2026-08-22",
-        "country": "Мьянма",
-        "type": "Организация",
-        "count": 4
-      },
-      {
-        "date": "2026-08-23",
-        "country": "Иран",
-        "type": "Физическое лицо",
-        "count": 13
-      },
-      {
         "date": "2026-08-24",
-        "country": "Северная Корея",
-        "type": "Физическое лицо",
-        "count": 1
+        "country": "Россия",
+        "type": "Компания",
+        "count": 11
       },
       {
         "date": "2026-08-25",
-        "country": "Китай",
-        "type": "Организация",
-        "count": 14
+        "country": "Россия",
+        "type": "Компания",
+        "count": 4
       },
       {
         "date": "2026-08-26",
-        "country": "Мьянма",
-        "type": "Организация",
-        "count": 1
+        "country": "Беларусь",
+        "type": "Компания",
+        "count": 3
       },
       {
         "date": "2026-08-27",
-        "country": "Китай",
-        "type": "Физическое лицо",
-        "count": 1
+        "country": "Россия",
+        "type": "Организация",
+        "count": 10
       },
       {
         "date": "2026-08-28",
-        "country": "Мьянма",
-        "type": "Физическое лицо",
+        "country": "Беларусь",
+        "type": "Компания",
         "count": 11
       },
       {
         "date": "2026-08-29",
         "country": "Россия",
         "type": "Компания",
-        "count": 6
+        "count": 15
       },
       {
         "date": "2026-08-30",
-        "country": "Мьянма",
-        "type": "Компания",
-        "count": 1
+        "country": "Беларусь",
+        "type": "Организация",
+        "count": 2
       },
       {
         "date": "2026-08-31",
-        "country": "Мьянма",
-        "type": "Физическое лицо",
-        "count": 5
+        "country": "Северная Корея",
+        "type": "Организация",
+        "count": 15
       },
       {
         "date": "2026-09-01",
-        "country": "Россия",
-        "type": "Организация",
-        "count": 14
+        "country": "Мьянма",
+        "type": "Физическое лицо",
+        "count": 2
       },
       {
         "date": "2026-09-02",
-        "country": "Мьянма",
-        "type": "Компания",
-        "count": 11
+        "country": "Китай",
+        "type": "Организация",
+        "count": 1
       },
       {
         "date": "2026-09-03",
         "country": "Иран",
-        "type": "Физическое лицо",
-        "count": 15
+        "type": "Организация",
+        "count": 13
       },
       {
         "date": "2026-09-04",
         "country": "Иран",
-        "type": "Организация",
-        "count": 15
+        "type": "Физическое лицо",
+        "count": 7
       },
       {
         "date": "2026-09-05",
-        "country": "Иран",
-        "type": "Компания",
-        "count": 5
+        "country": "Мьянма",
+        "type": "Физическое лицо",
+        "count": 14
       },
       {
         "date": "2026-09-06",
-        "country": "Мьянма",
-        "type": "Физическое лицо",
-        "count": 6
+        "country": "Китай",
+        "type": "Организация",
+        "count": 8
       },
       {
         "date": "2026-09-07",
-        "country": "Северная Корея",
+        "country": "Мьянма",
         "type": "Организация",
         "count": 13
       },
       {
         "date": "2026-09-08",
         "country": "Китай",
-        "type": "Компания",
-        "count": 4
+        "type": "Физическое лицо",
+        "count": 3
       },
       {
         "date": "2026-09-09",
-        "country": "Иран",
-        "type": "Организация",
-        "count": 12
+        "country": "Россия",
+        "type": "Компания",
+        "count": 15
       },
       {
         "date": "2026-09-10",
-        "country": "Мьянма",
-        "type": "Организация",
-        "count": 4
+        "country": "Китай",
+        "type": "Физическое лицо",
+        "count": 5
       },
       {
         "date": "2026-09-11",
         "country": "Беларусь",
         "type": "Компания",
-        "count": 10
+        "count": 9
       },
       {
         "date": "2026-09-12",
-        "country": "Китай",
+        "country": "Россия",
         "type": "Организация",
         "count": 9
       },
       {
         "date": "2026-09-13",
-        "country": "Иран",
+        "country": "Китай",
         "type": "Физическое лицо",
-        "count": 10
+        "count": 15
       },
       {
         "date": "2026-09-14",
-        "country": "Северная Корея",
-        "type": "Компания",
-        "count": 11
+        "country": "Россия",
+        "type": "Организация",
+        "count": 15
       },
       {
         "date": "2026-09-15",
-        "country": "Беларусь",
-        "type": "Организация",
+        "country": "Россия",
+        "type": "Физическое лицо",
         "count": 4
       },
       {
         "date": "2026-09-16",
         "country": "Беларусь",
         "type": "Физическое лицо",
-        "count": 5
+        "count": 9
       },
       {
         "date": "2026-09-17",
-        "country": "Северная Корея",
-        "type": "Физическое лицо",
-        "count": 12
-      },
-      {
-        "date": "2026-09-18",
-        "country": "Беларусь",
-        "type": "Физическое лицо",
-        "count": 15
-      },
-      {
-        "date": "2026-09-19",
-        "country": "Беларусь",
+        "country": "Мьянма",
         "type": "Организация",
         "count": 2
       },
       {
-        "date": "2026-09-20",
+        "date": "2026-09-18",
+        "country": "Китай",
+        "type": "Компания",
+        "count": 12
+      },
+      {
+        "date": "2026-09-19",
         "country": "Россия",
+        "type": "Компания",
+        "count": 4
+      },
+      {
+        "date": "2026-09-20",
+        "country": "Мьянма",
         "type": "Физическое лицо",
+        "count": 7
+      },
+      {
+        "date": "2026-09-21",
+        "country": "Беларусь",
+        "type": "Компания",
+        "count": 13
+      },
+      {
+        "date": "2026-09-22",
+        "country": "Северная Корея",
+        "type": "Организация",
+        "count": 13
+      },
+      {
+        "date": "2026-09-23",
+        "country": "Китай",
+        "type": "Организация",
         "count": 5
       }
     ],

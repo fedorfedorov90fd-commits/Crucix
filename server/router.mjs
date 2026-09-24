@@ -339,9 +339,9 @@ function applyRateLimit(req, res) {
 //  КЭШ ОТВЕТОВ
 // ============================================================
 
-function cacheKeyFor(route, method, query) {
+function cacheKeyFor(pathname, method, query) {
   const q = Object.keys(query || {}).sort().map(k => `${k}=${query[k]}`).join('&');
-  return `${method}:${route}?${q}`;
+  return `${method}:${pathname}?${q}`;
 }
 
 function cacheGet(key) {
@@ -882,7 +882,7 @@ export async function handleAPI(req, res, pathname) {
 
   const urlObj = new URL(req.url, 'http://x');
   const query = Object.fromEntries(urlObj.searchParams.entries());
-  const cacheKey = cacheKeyFor(route, req.method, query);
+  const cacheKey = cacheKeyFor(pathname, req.method, query);
   const ttl = Number(meta.cache) || 0;
   if (ttl > 0 && req.method === 'GET' && !wantsCSV(req) && !wantsJSONP(req)) {
     const cached = cacheGet(cacheKey);

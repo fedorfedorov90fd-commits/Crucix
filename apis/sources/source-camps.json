@@ -1,0 +1,79 @@
+{
+  "meta": {
+    "version": "3.1",
+    "description": "Конфигурация геополитических полюсов. Полюса вычисляются из данных, не задаются списком. Расширенный маппинг источников по подстроке.",
+    "created": "2026-09-22",
+    "principle": "data_driven_polarity"
+  },
+  "media_sources": {
+    "russian": {
+      "sources": [
+        "tass", "тасс", "ria", "риа", "interfax", "интерфакс",
+        "lenta", "лента", "kommersant", "коммерсант", "izvestia", "известия",
+        "vz", "взгляд", "kp", "комсомольская", "rg", "российская газета",
+        "1prime", "rt", "sputnik", "спутник", "правда", "звезда", "телеканал",
+        "rbc", "рбк", "gazeta", "газета", "forbes", "форбс"
+      ],
+      "language": "ru",
+      "narrative_framing": "защита суверенитета, многополярность, незаконные санкции"
+    },
+    "western": {
+      "sources": [
+        "guardian", "nyt", "bbc", "reuters", "ap", "politico",
+        "dw", "france24", "le monde", "der spiegel", "wsj", "washington post",
+        "cnn", "abc", "nbc", "cbs", "bloomberg", "financial times", "ft",
+        "economist", "the times", "telegraph"
+      ],
+      "language": "en",
+      "narrative_framing": "rules-based order, deterrence, restrictive measures"
+    },
+    "non_aligned": {
+      "sources": [
+        "aljazeera", "al jazeera", "straits times", "xinhua", "anadolu",
+        "hindustan", "scmp", "japan times", "times of india", "the hindu",
+        "global times", "arab news", "gulf news", "middle east eye"
+      ],
+      "language": "multi",
+      "narrative_framing": "независимый анализ, воздержание, третий путь"
+    }
+  },
+  "pole_cores": {
+    "russian": {
+      "core": ["russia"],
+      "baseline_satellites": ["belarus", "north_korea", "iran", "syria", "nicaragua"],
+      "affiliated": ["china", "india", "south_africa", "brazil", "cuba", "venezuela"]
+    },
+    "western": {
+      "core": ["usa", "uk"],
+      "baseline_satellites": [
+        "germany", "france", "japan", "south_korea", "australia",
+        "canada", "poland", "italy", "spain", "netherlands"
+      ],
+      "affiliated": ["ukraine", "georgia", "sweden", "finland", "norway", "denmark"]
+    },
+    "non_aligned": {
+      "core": ["india", "brazil", "south_africa", "uae", "saudi_arabia", "turkey", "egypt", "indonesia"],
+      "baseline_satellites": [],
+      "affiliated": []
+    }
+  },
+  "indicators": {
+    "basket_files": {
+      "sanctions": { "files": ["ofac.json", "ofac-sdn.json", "opensanctions.json", "sanctions.json"] },
+      "conflicts": { "files": ["conflicts.json", "acled.json", "ucdp.json"] },
+      "internet_outages": { "files": ["internet-outages.json", "internet_outages.json"] },
+      "military_bases": { "files": ["military-bases.json", "military_bases.json"] },
+      "gdelt": { "files": ["gdelt.json"] },
+      "trade": { "files": ["comtrade.json"] },
+      "unrest": { "files": ["social-unrest.json", "country-instability.json"] },
+      "diplomatic": { "files": ["diplomatic-tracker.json"] },
+      "un_votes": { "files": ["un-votes.json"] }
+    }
+  },
+  "polarity_debate": {
+    "russian_position": "Мир многополярный — каждый полюс имеет право на суверенное развитие, западный гегемонизм исторически исчерпан",
+    "western_position": "Мир однополярный — rules-based international order под лидерством Запада, альтернативы деструктивны",
+    "non_aligned_position": "Многополярность как возможность не выбирать сторону и вести многовекторную политику",
+    "crucix_method": "Не поддерживает ни одну позицию — вычисляет полярность из наблюдаемых данных"
+  }
+}

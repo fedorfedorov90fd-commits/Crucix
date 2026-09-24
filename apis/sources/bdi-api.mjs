@@ -1,24 +1,36 @@
 /**
  * apis/sources/bdi-api.mjs — API-МОДУЛЬ: BALTIC DRY INDEX
  *
+ * Версия 3.0.1. Принят 23.09.2026.
+ *
  * КОНТРАКТ CRUCIX v2.
- * ИСТОЧНИК: data/basket/bdi.json — временной ряд { date, value }.
+ * ИСТОЧНИК: data/basket/bdi.json — v1-схема, series[{date,value}],
+ *           читается через basket-loader v2.0.0 (правило 14.3).
  * Сборщик: scripts/collectors/collect-bdi.mjs.
  *
  * BDI — индекс стоимости морских грузоперевозок. Ключевой индикатор глобальной торговли.
+ *
+ * Изменения v3.0.1:
+ *  - Перевод с прямого fs.readFile на loadWithFallback.
+ *  - extractArray: для v1-схемы приоритет series (временной ряд), потом points/regions.
+ *    Для legacy — array/data/series/data.array.
+ *  - normalizeRow: {date, value} из серии.
+ *  - Диагностика source (basket-v1 | basket-legacy | fallback | corrupted | error)
+ *    и shape в headers X-Basket-Source и X-Basket-Shape.
  *
  * ФОРМАТЫ: json, csv, series, stats, raw.
  * ФИЛЬТРЫ: ?since=, ?until=, ?limit=, ?days=.
  */
 
-import { promises as fs } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { loadWithFallback } from './lib/basket-loader.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
 const PROJECT_ROOT = join(__dirname, '..', '..');
 const BASKET_FILE  = join(PROJECT_ROOT, 'data', 'basket', 'bdi.json');
+const COLLECTOR_HINT = 'run scripts/collectors/collect-bdi.mjs';
 
 export const route  = '/api/layers/bdi';
 export const method = 'GET';
@@ -53,35 +65,86 @@ const SHIPPING_HUBS = [
   { name: 'Port of Panama',           lat:  8.9824, lng: -79.5199 },
 ];
 
-async function loadSeries() {
-  let raw;
-  try { raw = await fs.readFile(BASKET_FILE, 'utf8'); }
-  catch (e) {
-    if (e.code === 'ENOENT') {
-      const err = new Error('no_data'); err.statusCode = 503;
-      err.hint = 'run scripts/collectors/collect-bdi.mjs'; throw err;
-    }
-    throw e;
+/**
+ * Извлекает массив записей из любой формы basket-данных.
+ * Для v1-схемы bdi приоритет — series (временной ряд).
+ */
+function extractArray(payload) {
+  if (!payload) return { rows: null, shape: 'null' };
+
+  // v1-схема — приоритет series (временной ряд)
+  if (typeof payload === 'object' && payload.schema === 'crucix.basket.v1') {
+    if (Array.isArray(payload.series) && payload.series.length > 0) return { rows: payload.series, shape: 'v1.series' };
+    if (Array.isArray(payload.points) && payload.points.length > 0) return { rows: payload.points, shape: 'v1.points' };
+    if (Array.isArray(payload.regions) && payload.regions.length > 0) return { rows: payload.regions, shape: 'v1.regions' };
+    return { rows: [], shape: 'v1.empty' };
   }
-  let parsed;
-  try { parsed = JSON.parse(raw); }
-  catch (e) { const err = new Error('invalid_json_in_basket: ' + e.message); err.statusCode = 500; throw err; }
 
-  let arr = null;
-  if (Array.isArray(parsed)) arr = parsed;
-  else if (parsed && Array.isArray(parsed.data)) arr = parsed.data;
-  else if (parsed && Array.isArray(parsed.series)) arr = parsed.series;
-  if (!arr) { const err = new Error('unrecognized_basket_format'); err.statusCode = 500; throw err; }
+  // Legacy-формы
+  if (Array.isArray(payload)) return { rows: payload, shape: 'array' };
+  if (Array.isArray(payload.series)) return { rows: payload.series, shape: 'series' };
+  if (Array.isArray(payload.data)) return { rows: payload.data, shape: 'data.array' };
+  if (payload.data && Array.isArray(payload.data.series)) return { rows: payload.data.series, shape: 'data.series' };
+  if (payload.data && payload.data.data && Array.isArray(payload.data.data)) return { rows: payload.data.data, shape: 'data.data' };
 
-  const clean = arr.map(r => {
-    const date = r.date || r.timestamp;
-    const value = Number(r.value ?? r.close ?? r.bdi);
-    return (date && Number.isFinite(value)) ? { date: String(date).slice(0, 10), value } : null;
-  }).filter(Boolean);
+  return { rows: null, shape: 'unknown' };
+}
 
-  if (clean.length === 0) { const err = new Error('empty_series_after_normalize'); err.statusCode = 500; throw err; }
+/**
+ * Нормализация точки временного ряда → { date, value }.
+ */
+function normalizeRow(r) {
+  if (!r) return null;
+  const date = r.date || r.timestamp;
+  const value = Number(r.value ?? r.close ?? r.bdi);
+  return (date && Number.isFinite(value)) ? { date: String(date).slice(0, 10), value } : null;
+}
+
+async function loadSeries() {
+  const loaded = await loadWithFallback({
+    basketFile: BASKET_FILE,
+    fallbackData: null,
+    hint: COLLECTOR_HINT,
+  });
+
+  if (loaded.source === 'fallback') {
+    const err = new Error('no_data');
+    err.statusCode = 503;
+    err.hint = COLLECTOR_HINT;
+    throw err;
+  }
+  if (loaded.source === 'corrupted') {
+    const err = new Error('invalid_json_in_basket: ' + (loaded.error || 'CORRUPTED_JSON'));
+    err.statusCode = 500;
+    throw err;
+  }
+  if (loaded.source === 'error') {
+    const err = new Error('basket_read_error: ' + (loaded.error || 'UNKNOWN'));
+    err.statusCode = 500;
+    throw err;
+  }
+
+  const payload = loaded.legacy || loaded.data;
+  const { rows: arr, shape } = extractArray(payload);
+
+  if (!arr) {
+    const err = new Error('unrecognized_basket_format');
+    err.statusCode = 500;
+    err.hint = 'extractArray не распознал форму. Проверьте data/basket/bdi.json.';
+    throw err;
+  }
+
+  const clean = arr.map(normalizeRow).filter(Boolean);
+
+  if (clean.length === 0) {
+    const err = new Error('empty_series_after_normalize');
+    err.statusCode = 500;
+    err.hint = 'basket есть, но после нормализации осталось 0 точек с date+value.';
+    throw err;
+  }
+
   clean.sort((a, b) => a.date.localeCompare(b.date));
-  return clean;
+  return { rows: clean, source: loaded.source, shape, mtime: loaded.mtime };
 }
 
 function applyFilters(series, query) {
@@ -142,13 +205,16 @@ function toFeatureCollection(series, stats) {
   return { type: 'FeatureCollection', features };
 }
 
-function envelopeMeta(full, filtered) {
+function envelopeMeta(full, filtered, sourceInfo) {
   return {
     source: meta.source, collector: meta.collector, category: meta.category, unit: meta.unit,
     updated_at: new Date().toISOString(),
     total_points: full.length, returned_points: filtered.length,
     date_from: filtered[0]?.date || null,
     date_to: filtered[filtered.length - 1]?.date || null,
+    basket_source: sourceInfo.source,
+    basket_shape: sourceInfo.shape,
+    basket_mtime: sourceInfo.mtime || null,
   };
 }
 
@@ -173,20 +239,28 @@ export async function handler(req, res) {
     const query = Object.fromEntries(urlObj.searchParams.entries());
     const format = (query.format || 'json').toLowerCase();
 
-    const fullSeries = await loadSeries();
+    const loaded = await loadSeries();
+    const fullSeries = loaded.rows;
+    const sourceInfo = { source: loaded.source, shape: loaded.shape, mtime: loaded.mtime };
     const series = applyFilters(fullSeries, query);
     const stats  = computeStats(series);
-    const extra = { 'X-Module': 'bdi-api', 'X-Module-Version': '2.0.0', 'Cache-Control': `public, max-age=${meta.cache}` };
+    const extra = {
+      'X-Module': 'bdi-api',
+      'X-Module-Version': '3.0.1',
+      'X-Basket-Source': loaded.source,
+      'X-Basket-Shape': loaded.shape,
+      'Cache-Control': `public, max-age=${meta.cache}`,
+    };
 
     if (format === 'csv') return sendText(res, 200, toCSVBody(series), 'text/csv; charset=utf-8');
-    if (format === 'series') return sendJSON(res, 200, { series, stats, meta: envelopeMeta(fullSeries, series) }, extra);
-    if (format === 'stats')  return sendJSON(res, 200, { stats, meta: envelopeMeta(fullSeries, series) }, extra);
-    if (format === 'raw')    return sendJSON(res, 200, { data: series, meta: envelopeMeta(fullSeries, series) }, extra);
+    if (format === 'series') return sendJSON(res, 200, { series, stats, meta: envelopeMeta(fullSeries, series, sourceInfo) }, extra);
+    if (format === 'stats')  return sendJSON(res, 200, { stats, meta: envelopeMeta(fullSeries, series, sourceInfo) }, extra);
+    if (format === 'raw')    return sendJSON(res, 200, { data: series, meta: envelopeMeta(fullSeries, series, sourceInfo) }, extra);
 
     const fc = toFeatureCollection(series, stats);
     return sendJSON(res, 200, {
       type: 'FeatureCollection',
-      meta: envelopeMeta(fullSeries, series),
+      meta: envelopeMeta(fullSeries, series, sourceInfo),
       features: fc.features,
       series,
       stats,

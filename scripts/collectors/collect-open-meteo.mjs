@@ -1,20 +1,31 @@
 #!/usr/bin/env node
 /**
  * Crucix Collector: open-meteo (погода) — ЕДИНЫЙ после синтеза 2 версий.
- * Версия 2.0.0. Принят 20.09.2026.
+ * Версия 2.1.1. Принят 23.09.2026.
  *
- * СИНТЕЗ по правилу #871:
- *   - collect-open-meteo.mjs (10 городов с кодами: Kyiv, Moscow, Beijing, Washington, London, Tokyo, Tehran, Jerusalem, Taipei, New Delhi)
- *   - collect-openmeteo.mjs  (10 городов с русскими именами: Москва, СПб, Лондон, Париж, Берлин, Нью-Йорк, Токио, Пекин, Киев, Минск)
+ * Изменения v2.1.1:
+ *  - Устранены 4 мусорные вставки, попавшие в файл при копировании v2.1.0
+ *    через терминал (строки 153, 158, 159, 160 в испорченной версии).
+ *  - Логика v2.1.0 сохранена без изменений.
  *
- * Объединение: 20 городов (дедупликация по lat/lng), все поля (temperature, wind, precipitation), русские + английские имена.
+ * Изменения v2.1:
+ *  - readJsonWithSignal(): r.json() читается под тем же AbortController, что и fetch.
+ *  - clearTimeout(timer) перенесён в finally — после чтения тела.
+ *  - Батчевая параллелизация: 15 городов по 5 в Promise.allSettled, 3 батча.
+ *  - Диагностика ошибок с e.name + e.code + e.message.
+ *
+ * СИНТЕЗ по правилу #871 (без изменений от v2.0.0):
+ *   - collect-open-meteo.mjs (10 городов с кодами)
+ *   - collect-openmeteo.mjs  (дополнительные с русскими именами)
+ *
+ * Объединение: 15 городов (дедупликация по lat/lng), все поля
+ * (temperature, wind, precipitation), русские + английские имена.
  * Тип — points.
  */
 import { saveRaw } from './lib/collector-helper.mjs';
 import { pathToFileURL } from 'url';
 
 const CITIES = [
-  // Из collect-open-meteo (10 с кодами)
   { name: 'Kyiv', nameRu: 'Киев', lat: 50.45, lng: 30.52, code: 'UKR' },
   { name: 'Moscow', nameRu: 'Москва', lat: 55.75, lng: 37.62, code: 'RUS' },
   { name: 'Beijing', nameRu: 'Пекин', lat: 39.90, lng: 116.40, code: 'CHN' },
@@ -25,7 +36,6 @@ const CITIES = [
   { name: 'Jerusalem', nameRu: 'Иерусалим', lat: 31.77, lng: 35.21, code: 'ISR' },
   { name: 'Taipei', nameRu: 'Тайбэй', lat: 25.03, lng: 121.57, code: 'TWN' },
   { name: 'New Delhi', nameRu: 'Нью-Дели', lat: 28.61, lng: 77.21, code: 'IND' },
-  // Из collect-openmeteo (дополнительные)
   { name: 'St. Petersburg', nameRu: 'Санкт-Петербург', lat: 59.93, lng: 30.31, code: 'RUS' },
   { name: 'Paris', nameRu: 'Париж', lat: 48.86, lng: 2.35, code: 'FRA' },
   { name: 'Berlin', nameRu: 'Берлин', lat: 52.52, lng: 13.40, code: 'DEU' },
@@ -34,6 +44,35 @@ const CITIES = [
 ];
 
 const TIMEOUT_MS = 15000;
+const BATCH_SIZE = 5;
+
+function readJsonWithSignal(res, signal) {
+  return new Promise((resolve, reject) => {
+    if (signal && signal.aborted) {
+      reject(new Error('aborted before read'));
+      return;
+    }
+    const onAbort = () => reject(new Error('aborted while reading body'));
+    if (signal) signal.addEventListener('abort', onAbort, { once: true });
+    res.json().then(
+      (data) => {
+        if (signal) signal.removeEventListener('abort', onAbort);
+        resolve(data);
+      },
+      (err) => {
+        if (signal) signal.removeEventListener('abort', onAbort);
+        reject(err);
+      }
+    );
+  });
+}
+
+function describeError(e) {
+  const name = e?.name || 'Error';
+  const code = e?.cause?.code || e?.code || '';
+  const msg = e?.message || '';
+  return code ? `${name}/${code}: ${msg}` : `${name}: ${msg}`;
+}
 
 async function fetchWeather(city) {
   const url = `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lng}&current=temperature_2m,wind_speed_10m,precipitation&timezone=UTC`;
@@ -41,29 +80,45 @@ async function fetchWeather(city) {
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
     const r = await fetch(url, { signal: controller.signal });
-    clearTimeout(timer);
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    const d = await r.json();
+    const d = await readJsonWithSignal(r, controller.signal);
     return {
       city: city.name, cityRu: city.nameRu, countryCode: city.code, lat: city.lat, lng: city.lng,
       temperature: d.current?.temperature_2m, windSpeed: d.current?.wind_speed_10m, precipitation: d.current?.precipitation,
       timestamp: new Date().toISOString(),
     };
   } catch (e) {
+    return { city: city.name, cityRu: city.nameRu, countryCode: city.code, lat: city.lat, lng: city.lng, error: describeError(e) };
+  } finally {
     clearTimeout(timer);
-    return { city: city.name, cityRu: city.nameRu, countryCode: city.code, lat: city.lat, lng: city.lng, error: e.message };
   }
 }
 
 export async function collectOpenMeteo() {
-  console.log(`[OpenMeteo] Загрузка ${CITIES.length} городов...`);
-  const out = [];
-  for (const c of CITIES) {
-    const w = await fetchWeather(c);
-    out.push(w);
-    await new Promise(r => setTimeout(r, 100));
+  console.log(`[OpenMeteo] Загрузка ${CITIES.length} городов (батчи по ${BATCH_SIZE})...`);
+  const out = new Array(CITIES.length);
+  for (let i = 0; i < CITIES.length; i += BATCH_SIZE) {
+    const slice = CITIES.slice(i, i + BATCH_SIZE);
+    const settled = await Promise.allSettled(slice.map(c => fetchWeather(c)));
+    for (let j = 0; j < settled.length; j++) {
+      const s = settled[j];
+      const idx = i + j;
+      if (s.status === 'fulfilled') {
+        out[idx] = s.value;
+      } else {
+        const c = slice[j];
+        out[idx] = {
+          city: c.name, cityRu: c.nameRu, countryCode: c.code, lat: c.lat, lng: c.lng,
+          error: describeError(s.reason)
+        };
+      }
+    }
+    if (i + BATCH_SIZE < CITIES.length) {
+      await new Promise(r => setTimeout(r, 100));
+    }
   }
   const successCount = out.filter(o => !o.error).length;
+  const failCount = CITIES.length - successCount;
   const result = await saveRaw('open-meteo', { source: 'OpenMeteo', updated: new Date().toISOString(), cities: out }, {
     collector: 'collect-open-meteo.mjs',
     source: 'Open-Meteo API',
@@ -75,10 +130,10 @@ export async function collectOpenMeteo() {
     granularity: 'snapshot',
     period: null,
     record_count: successCount,
-    notes: `ЕДИНЫЙ после синтеза 2 версий (#871). Городов: ${CITIES.length}, успешно: ${successCount}; basket не перезаписывается`,
+    notes: `ЕДИНЫЙ после синтеза 2 версий (#871). Городов: ${CITIES.length}, успешно: ${successCount}, ошибок: ${failCount}; basket не перезаписывается`,
     backwardCompat: false,
   });
-  console.log(`[OpenMeteo] OK ${successCount}/${CITIES.length} → ${result.raw_file}`);
+  console.log(`[OpenMeteo] OK ${successCount}/${CITIES.length} (ошибок: ${failCount}) → ${result.raw_file}`);
   return { source: 'OpenMeteo', updated: new Date().toISOString(), cities: out };
 }
 

@@ -1,0 +1,185 @@
+═══ pole-tracker-api.mjs ═══
+Версия: 3.0
+Route: /api/layers/pole-tracker
+Файл: apis/sources/pole-tracker-api.mjs
+Создан: 22.09.2026
+Связан с: pole-map.html, source-camps.json
+
+───────────────────────────────────────
+НАЗНАЧЕНИЕ
+───────────────────────────────────────
+Вычислить геополитическую полярность из данных.
+Классифицирует страны по полюсам: russian, western, non_aligned, unknown.
+
+КЛЮЧЕВОЙ ПРИНЦИП:
+  Полюс ВЫЧИСЛЯЕТСЯ из данных, а не задаётся списком.
+  Если завтра Индия отвернётся от России по санкциям — модуль это увидит
+  и сместит её confidence. Если Бразилия начнёт конфисковывать российские
+  активы — confidence изменится. Это data-driven модель.
+
+───────────────────────────────────────
+АРХИТЕКТУРА
+───────────────────────────────────────
+ВХОД (8 basket-файлов, все опциональные):
+  ofac.json, ofac-sdn.json, opensanctions.json  — санкции
+  conflicts.json, acled.json, ucdp.json          — конфликты
+  internet-outages.json                          — блокировки
+  military-bases.json                            — военные базы
+  gdelt.json                                     — медиа-потоки
+  comtrade.json                                  — торговля
+  social-unrest.json, country-instability.json   — нестабильность
+  diplomatic-tracker.json                        — дипломатия (заготовка)
+  un-votes.json                                  — голосования ООН (заготовка)
+
+МАППИНГ ФАЙЛОВ:
+  apis/sources/source-camps.json → indicators.basket_files
+
+BASELINE СТРАН:
+  apis/sources/source-camps.json → pole_cores.{russian, western, non_aligned}
+  Содержит core (ядро), baseline_satellites (сателлиты), affiliated (партнёры).
+
+ВЫХОД:
+  JSON с полями poles, polarity_index, vectors, basket_status, debate
+
+ПОТРЕБИТЕЛЬ:
+  dashboard/public/pole-map.html
+
+───────────────────────────────────────
+АЛГОРИТМ КЛАССИФИКАЦИИ
+───────────────────────────────────────
+Для каждой страны вычисляется ВЕКТОР ПРИЗНАКОВ из 8 индикаторов:
+  sanctions_against     — упоминаний в санкционных списках
+  conflicts_involved    — упоминаний в конфликтах
+  internet_outages      — упоминаний в блокировках
+  military_bases        — упоминаний в военных базах
+  gdelt_mentions        — упоминаний в медиа
+  trade_links           — упоминаний в торговле
+  unrest_level          — упоминаний в нестабильности
+  diplomatic_activity   — упоминаний в дипломатии
+
+Затем:
+
+1. Если страна в baseline (core / satellites / affiliated) → confidence = 0.5 +
+   бонусы за признаки (максимум 0.98). basis = "baseline_plus_data".
+
+2. Если не в baseline — data-driven классификация:
+   - sanctions_against → score_russian += sanctions * 0.3
+   - conflicts_involved → обе стороны +0.1
+   - military_bases → score_western += 0.15
+   - trade_links → score_non_aligned += 0.1
+   - unrest → score_non_aligned += 0.05
+   Выбирается полюс с максимальным score. basis = "data_driven".
+
+3. Если данных нет → pole = "unknown", confidence = 0.1,
+   basis = "no_data".
+
+4. Если сигналы слабые → pole = "non_aligned", confidence = 0.3,
+   basis = "weak_signals".
+
+───────────────────────────────────────
+ЭНДПОИНТЫ
+───────────────────────────────────────
+GET /api/layers/pole-tracker
+  Сводка: все полюса, все страны, индекс полярности
+
+GET /api/layers/pole-tracker?country=russia
+  Детальный запрос по одной стране — её вектор и классификация
+
+GET /api/layers/pole-tracker?detail=true
+  Полная выкладка: все классификации с векторами признаков
+
+───────────────────────────────────────
+ПОЛЯ ОТВЕТА
+───────────────────────────────────────
+timestamp        — ISO время
+debate           — три позиции по полярности + crucix_method
+polarity_index   — 0..1 (0 = однополярный мир, 1 = макс. поляризация)
+poles:
+  russian / western / non_aligned:
+    total        — сколько стран в полюсе
+    countries    — массив {country, confidence, basis} (до 30)
+    narrative_framing — краткое описание фрейминга
+    media_sources — список медиа-источников полюса
+  unknown:
+    total        — сколько не классифицировано
+    countries    — массив {country, confidence, basis} (до 20)
+vectors:
+  sanctions_flow      — detected / no_data
+  info_war            — detected / no_data
+  military_presence   — detected / no_data
+  economic_decoupling — detected / partial_data / no_data
+  diplomatic_activity — detected / no_data
+  un_voting           — detected / no_data
+basket_status:
+  по каждому индикатору:
+    loaded       — true/false
+    source_file  — какой файл подхвачен
+    records      — сколько записей
+    expected_files — список ожидаемых файлов
+
+───────────────────────────────────────
+КЛЮЧЕВЫЕ ПОНЯТИЯ
+───────────────────────────────────────
+confidence
+  0.0..0.98. Степень уверенности, что страна в этом полюсе.
+  >0.7 — высокая; 0.4..0.7 — средняя; <0.4 — низкая.
+  Сейчас большинство стран 0.5-0.6, потому что данных мало.
+
+basis
+  Источник классификации:
+  - baseline_plus_data — из baseline + усиление данными
+  - data_driven — только из данных (страна не в baseline)
+  - weak_signals — сигналы слабые
+  - no_data — данных нет
+
+polarity_index
+  Формула: ratio × balance
+  ratio = (russian + western) / total — доля поляризованных стран
+  balance = 1 - |russian - western| / (russian + western) —
+            насколько равны два полюса
+  Максимум 1.0 — когда оба полюса равны и покрывают всё.
+
+───────────────────────────────────────
+КАК РАСШИРЯТЬ
+───────────────────────────────────────
+Добавить страну в baseline:
+  apis/sources/source-camps.json → pole_cores.{pole}.core (или satellites, affiliated).
+  Минимум: core — это ядро. baseline_satellites — сателлиты. affiliated — партнёры.
+
+Добавить индикатор:
+  apis/sources/source-camps.json → indicators.basket_files.{
+    новый_ключ: { files: ["file1.json", "file2.json"] }
+  }
+  Затем в computeCountryVector добавить чтение.
+
+Добавить логику классификации:
+  Функция classifyCountry() в модуле. Сейчас веса жёстко в коде.
+
+───────────────────────────────────────
+ИЗВЕСТНЫЕ ОГРАНИЧЕНИЯ
+───────────────────────────────────────
+1. countMentions ищет ПОДСТРОКУ в JSON-blob. Это грубо.
+   Пример: страна «iran» может найтись в слове «Iranian» или «coronavirus».
+   Точное решение — парсинг полей issuer/target в санкциях.
+
+2. Многие страны попадают в unknown — потому что basket-файлы неполные.
+   Это честно: нет данных — нет уверенности.
+
+3. Направление санкций не различается (кто на кого). Нужен парсер ofac-sdn.json
+   с полями issuer/target.
+
+4. un-votes.json пока нет — поэтому голосования ООН = no_data.
+   Нужен коллектор UN Digital Library.
+
+───────────────────────────────────────
+ИСТОРИЯ
+───────────────────────────────────────
+22.09.2026 — создан v3.0 на полном контракте. Первая версия с вычислением
+полярности из данных.
+
+───────────────────────────────────────
+СВЯЗАННЫЕ ФАЙЛЫ
+───────────────────────────────────────
+- apis/sources/source-camps.json    — baseline полюсов и маппинг basket
+- dashboard/public/pole-map.html    — потребитель
+- apis/sources/narrative-splitter-api.mjs — родственный модуль (сверка нарративов)

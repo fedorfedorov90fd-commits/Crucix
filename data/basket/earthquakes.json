@@ -4,11 +4,11 @@
     "id": "earthquakes",
     "source": "USGS (sample)",
     "source_url": "https://earthquake.usgs.gov/fdsnws/event/1/query",
-    "fetched_at": "2026-09-20T10:43:22.287Z",
-    "normalized_at": "2026-09-20T11:28:56.998Z",
+    "fetched_at": "2026-09-23T06:51:56.660Z",
+    "normalized_at": "2026-09-23T17:51:48.452Z",
     "collector": "collect-earthquakes.mjs",
     "license": "public-domain",
-    "count": 15,
+    "count": 10,
     "granularity": "event",
     "value_unit": "richter",
     "value_scale": null,
@@ -18,63 +18,43 @@
   },
   "series": [
     {
-      "date": "2026-08-22",
+      "date": "2026-09-05",
       "value": 8.2
     },
     {
-      "date": "2026-08-30",
-      "value": 7.8
-    },
-    {
       "date": "2026-08-25",
-      "value": 7.8
-    },
-    {
-      "date": "2026-09-08",
       "value": 7.2
     },
     {
-      "date": "2026-09-12",
+      "date": "2026-08-26",
       "value": 7.2
     },
     {
       "date": "2026-09-19",
-      "value": 7.1
+      "value": 7
     },
     {
-      "date": "2026-09-15",
+      "date": "2026-08-27",
       "value": 6.8
     },
     {
-      "date": "2026-09-15",
+      "date": "2026-08-26",
       "value": 6.5
     },
     {
-      "date": "2026-09-09",
+      "date": "2026-09-01",
       "value": 6.5
     },
     {
-      "date": "2026-09-17",
-      "value": 6.2
-    },
-    {
-      "date": "2026-09-19",
-      "value": 6.2
-    },
-    {
-      "date": "2026-08-23",
-      "value": 6.2
-    },
-    {
-      "date": "2026-09-17",
+      "date": "2026-09-01",
       "value": 5.8
     },
     {
-      "date": "2026-08-23",
+      "date": "2026-09-07",
       "value": 5.8
     },
     {
-      "date": "2026-09-10",
+      "date": "2026-09-23",
       "value": 5.4
     }
   ],
@@ -84,41 +64,27 @@
       "lon": -71,
       "value": 8.2,
       "label": "Чили (Вальпараисо)",
-      "timestamp": "2026-08-22T00:00:00.000Z"
-    },
-    {
-      "lat": -42,
-      "lon": 173,
-      "value": 7.8,
-      "label": "Новая Зеландия (Крайстчерч)",
-      "timestamp": "2026-08-30T00:00:00.000Z"
-    },
-    {
-      "lat": 28,
-      "lon": 85,
-      "value": 7.8,
-      "label": "Непал (Катманду)",
-      "timestamp": "2026-08-25T00:00:00.000Z"
+      "timestamp": "2026-09-05T00:00:00.000Z"
     },
     {
       "lat": 35,
       "lon": -118,
       "value": 7.2,
       "label": "Калифорния, США",
-      "timestamp": "2026-09-08T00:00:00.000Z"
+      "timestamp": "2026-08-25T00:00:00.000Z"
     },
     {
       "lat": 34,
       "lon": 48,
       "value": 7.2,
       "label": "Иран (Керманшах)",
-      "timestamp": "2026-09-12T00:00:00.000Z"
+      "timestamp": "2026-08-26T00:00:00.000Z"
     },
     {
-      "lat": 18,
-      "lon": -100,
-      "value": 7.1,
-      "label": "Мексика (Поблета)",
+      "lat": -8,
+      "lon": 115,
+      "value": 7,
+      "label": "Индонезия (Бали)",
       "timestamp": "2026-09-19T00:00:00.000Z"
     },
     {
@@ -126,80 +92,61 @@
       "lon": -125,
       "value": 6.8,
       "label": "Каскадия, США",
-      "timestamp": "2026-09-15T00:00:00.000Z"
+      "timestamp": "2026-08-27T00:00:00.000Z"
     },
     {
-      "lat": -35,
-      "lon": -72,
+      "lat": 19,
+      "lon": -99,
       "value": 6.5,
-      "label": "Чили (Консепсьон)",
-      "timestamp": "2026-09-15T00:00:00.000Z"
+      "label": "Мексика (Мехико)",
+      "timestamp": "2026-08-26T00:00:00.000Z"
     },
     {
       "lat": 36,
       "lon": 139,
       "value": 6.5,
       "label": "Япония (Канто)",
-      "timestamp": "2026-09-09T00:00:00.000Z"
+      "timestamp": "2026-09-01T00:00:00.000Z"
     },
     {
-      "lat": 38,
-      "lon": 22,
-      "value": 6.2,
-      "label": "Греция (Коринф)",
-      "timestamp": "2026-09-17T00:00:00.000Z"
-    },
-    {
-      "lat": -5,
-      "lon": 105,
-      "value": 6.2,
-      "label": "Индонезия (Суматра)",
-      "timestamp": "2026-09-19T00:00:00.000Z"
-    },
-    {
-      "lat": 27.5,
-      "lon": 86,
-      "value": 6.2,
-      "label": "Непал (Эверест)",
-      "timestamp": "2026-08-23T00:00:00.000Z"
+      "lat": 37.5,
+      "lon": 23,
+      "value": 5.8,
+      "label": "Греция (Афины)",
+      "timestamp": "2026-09-01T00:00:00.000Z"
     },
     {
       "lat": 33,
       "lon": 49,
       "value": 5.8,
       "label": "Иран (Лорестан)",
-      "timestamp": "2026-09-17T00:00:00.000Z"
-    },
-    {
-      "lat": 36.5,
-      "lon": -120.5,
-      "value": 5.8,
-      "label": "Сан-Хоакин, США",
-      "timestamp": "2026-08-23T00:00:00.000Z"
+      "timestamp": "2026-09-07T00:00:00.000Z"
     },
     {
       "lat": 44.5,
       "lon": -124.8,
       "value": 5.4,
       "label": "Орегон, США",
-      "timestamp": "2026-09-10T00:00:00.000Z"
+      "timestamp": "2026-09-23T00:00:00.000Z"
     }
   ],
   "regions": [
     {
       "region": "GLOBAL",
-      "value": 6.713333333333334,
-      "count": 15,
+      "value": 6.639999999999999,
+      "count": 10,
       "aggregation": "max",
       "extra": {
         "max": 8.2,
-        "sum": 100.7
+        "sum": 66.39999999999999
       }
     }
   ],
+  "documents": [],
+  "graph": null,
   "extra": {
     "adapter": "points",
-    "adapter_version": "2.1.0",
+    "adapter_version": "2.2.1",
     "skipped_invalid_coords": 0,
     "unmapped_regions": [],
     "unmapped_count": 0

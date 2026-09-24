@@ -2,16 +2,16 @@
   "schema": "crucix.basket.v1",
   "meta": {
     "id": "infrastructure",
-    "source": "Crucix infrastructure",
-    "source_url": "local://rescan",
-    "fetched_at": "2026-09-18T21:24:17.815Z",
-    "normalized_at": "2026-09-18T21:25:55.825Z",
+    "source": "Crucix infrastructure objects",
+    "source_url": "local://data/infrastructure/objects.json",
+    "fetched_at": "2026-09-23T06:57:08.453Z",
+    "normalized_at": "2026-09-23T17:51:48.862Z",
     "collector": "collect-infrastructure.mjs",
     "license": "proprietary",
     "count": 114,
-    "granularity": "event",
+    "granularity": "snapshot",
     "value_unit": "severity_0_1",
-    "value_scale": null,
+    "value_scale": "0-1",
     "value_type": "severity",
     "value_range": [
       0,
@@ -26,7 +26,7 @@
       "value": 0.95,
       "label": "Запорожская АЭС",
       "region": "UKR",
-      "timestamp": "2026-09-18T18:09:58.068Z",
+      "timestamp": "2026-09-23T06:57:08.441Z",
       "extra": {
         "id": "npp-zaporizhzhia",
         "type": "nuclear_power_plant",
@@ -39,7 +39,7 @@
       "value": 0.7,
       "label": "Чернобыльская АЭС (зона)",
       "region": "UKR",
-      "timestamp": "2026-09-18T18:09:58.068Z",
+      "timestamp": "2026-09-23T06:57:08.441Z",
       "extra": {
         "id": "npp-chernobyl",
         "type": "nuclear_power_plant",
@@ -52,7 +52,7 @@
       "value": 0.8,
       "label": "Фукусима-1 (зона)",
       "region": "JPN",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.441Z",
       "extra": {
         "id": "npp-fukushima",
         "type": "nuclear_power_plant",
@@ -65,7 +65,7 @@
       "value": 0.45,
       "label": "Касивадзаки-Карива",
       "region": "JPN",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.441Z",
       "extra": {
         "id": "npp-kashiwazaki",
         "type": "nuclear_power_plant",
@@ -78,7 +78,7 @@
       "value": 0.3,
       "label": "Брюс (Bruce)",
       "region": "CAN",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.441Z",
       "extra": {
         "id": "npp-bruce",
         "type": "nuclear_power_plant",
@@ -91,7 +91,7 @@
       "value": 0.35,
       "label": "Ханул (Hanul)",
       "region": "KOR",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.441Z",
       "extra": {
         "id": "npp-hanul",
         "type": "nuclear_power_plant",
@@ -104,7 +104,7 @@
       "value": 0.3,
       "label": "Гравлин (Gravelines)",
       "region": "FRA",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.441Z",
       "extra": {
         "id": "npp-gravelines",
         "type": "nuclear_power_plant",
@@ -117,7 +117,7 @@
       "value": 0.3,
       "label": "Палюэль (Paluel)",
       "region": "FRA",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.441Z",
       "extra": {
         "id": "npp-paluel",
         "type": "nuclear_power_plant",
@@ -130,7 +130,7 @@
       "value": 0.35,
       "label": "Каттеном (Cattenom)",
       "region": "FRA",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.441Z",
       "extra": {
         "id": "npp-cattenom",
         "type": "nuclear_power_plant",
@@ -143,7 +143,7 @@
       "value": 0.3,
       "label": "Тайшань (Taishan)",
       "region": "CHN",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.441Z",
       "extra": {
         "id": "npp-taishan",
         "type": "nuclear_power_plant",
@@ -156,7 +156,7 @@
       "value": 0.75,
       "label": "Бушер (Bushehr)",
       "region": "IRN",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.441Z",
       "extra": {
         "id": "npp-bushehr",
         "type": "nuclear_power_plant",
@@ -169,7 +169,7 @@
       "value": 0.4,
       "label": "Куданкулам (Kudankulam)",
       "region": "IND",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.441Z",
       "extra": {
         "id": "npp-kudankulam",
         "type": "nuclear_power_plant",
@@ -182,7 +182,7 @@
       "value": 0.25,
       "label": "Барака (Barakah)",
       "region": "ARE",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.441Z",
       "extra": {
         "id": "npp-barakah",
         "type": "nuclear_power_plant",
@@ -195,7 +195,7 @@
       "value": 0.65,
       "label": "Аккую (Akkuyu)",
       "region": "TUR",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.441Z",
       "extra": {
         "id": "npp-akkuyu",
         "type": "nuclear_power_plant",
@@ -208,7 +208,7 @@
       "value": 0.25,
       "label": "Тяньвань (Tianwan)",
       "region": "CHN",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.441Z",
       "extra": {
         "id": "npp-tianwan",
         "type": "nuclear_power_plant",
@@ -221,7 +221,7 @@
       "value": 0.3,
       "label": "Сиво (Civaux)",
       "region": "FRA",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.441Z",
       "extra": {
         "id": "npp-civaux",
         "type": "nuclear_power_plant",
@@ -234,7 +234,7 @@
       "value": 0.25,
       "label": "Темелин (Temelin)",
       "region": "CZE",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "npp-temelin",
         "type": "nuclear_power_plant",
@@ -247,7 +247,7 @@
       "value": 0.6,
       "label": "Островец (БелАЭС)",
       "region": "BLR",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "npp-ostrovets",
         "type": "nuclear_power_plant",
@@ -260,7 +260,7 @@
       "value": 0.5,
       "label": "Пакш (Paks)",
       "region": "HUN",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "npp-paks",
         "type": "nuclear_power_plant",
@@ -273,7 +273,7 @@
       "value": 0.4,
       "label": "Козлодуй (Kozloduy)",
       "region": "BGR",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "npp-kozloduy",
         "type": "nuclear_power_plant",
@@ -286,7 +286,7 @@
       "value": 0.35,
       "label": "Порт Шанхай",
       "region": "CHN",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "port-shanghai",
         "type": "seaport",
@@ -299,7 +299,7 @@
       "value": 0.3,
       "label": "Порт Сингапур",
       "region": "SGP",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "port-singapore",
         "type": "seaport",
@@ -312,7 +312,7 @@
       "value": 0.35,
       "label": "Порт Нинбо-Чжоушань",
       "region": "CHN",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "port-ningbo",
         "type": "seaport",
@@ -325,7 +325,7 @@
       "value": 0.35,
       "label": "Порт Шэньчжэнь",
       "region": "CHN",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "port-shenzhen",
         "type": "seaport",
@@ -338,7 +338,7 @@
       "value": 0.35,
       "label": "Порт Пусан",
       "region": "KOR",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "port-busan",
         "type": "seaport",
@@ -351,7 +351,7 @@
       "value": 0.3,
       "label": "Порт Роттердам",
       "region": "NLD",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "port-rotterdam",
         "type": "seaport",
@@ -364,7 +364,7 @@
       "value": 0.3,
       "label": "Порт Антверпен-Брюгге",
       "region": "BEL",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "port-antwerp",
         "type": "seaport",
@@ -377,7 +377,7 @@
       "value": 0.3,
       "label": "Порт Гамбург",
       "region": "DEU",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "port-hamburg",
         "type": "seaport",
@@ -390,7 +390,7 @@
       "value": 0.3,
       "label": "Порт Лос-Анджелес",
       "region": "USA",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "port-la",
         "type": "seaport",
@@ -403,7 +403,7 @@
       "value": 0.3,
       "label": "Порт Лонг-Бич",
       "region": "USA",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "port-longbeach",
         "type": "seaport",
@@ -416,7 +416,7 @@
       "value": 0.3,
       "label": "Порт Нью-Йорк/Нью-Джерси",
       "region": "USA",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "port-newyork",
         "type": "seaport",
@@ -429,7 +429,7 @@
       "value": 0.4,
       "label": "Порт Джебель-Али (Дубай)",
       "region": "ARE",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "port-jebel-ali",
         "type": "seaport",
@@ -442,7 +442,7 @@
       "value": 0.65,
       "label": "Порт Гаосюн",
       "region": "TWN",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "port-kaohsiung",
         "type": "seaport",
@@ -455,7 +455,7 @@
       "value": 0.4,
       "label": "Порт Пирей",
       "region": "GRC",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "port-piraeus",
         "type": "seaport",
@@ -468,7 +468,7 @@
       "value": 0.3,
       "label": "Порт Валенсия",
       "region": "ESP",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "port-valencia",
         "type": "seaport",
@@ -481,7 +481,7 @@
       "value": 0.4,
       "label": "Порт Альхесирас",
       "region": "ESP",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "port-algeciras",
         "type": "seaport",
@@ -494,7 +494,7 @@
       "value": 0.55,
       "label": "Порт Дурбан",
       "region": "ZAF",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "port-durban",
         "type": "seaport",
@@ -507,7 +507,7 @@
       "value": 0.55,
       "label": "Порт Лагос (Апапа)",
       "region": "NGA",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "port-lagos",
         "type": "seaport",
@@ -520,7 +520,7 @@
       "value": 0.4,
       "label": "Порт Мумбаи (JNPT)",
       "region": "IND",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "port-mumbai",
         "type": "seaport",
@@ -533,7 +533,7 @@
       "value": 0.45,
       "label": "Порт Коломбо",
       "region": "LKA",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "port-colombo",
         "type": "seaport",
@@ -546,7 +546,7 @@
       "value": 0.4,
       "label": "Порт Кланг",
       "region": "MYS",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "port-klang",
         "type": "seaport",
@@ -559,7 +559,7 @@
       "value": 0.4,
       "label": "Порт Танджунг-Пелепас",
       "region": "MYS",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "port-tanjung-pelepas",
         "type": "seaport",
@@ -572,7 +572,7 @@
       "value": 0.45,
       "label": "Порт Сантос",
       "region": "BRA",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "port-santos",
         "type": "seaport",
@@ -585,7 +585,7 @@
       "value": 0.5,
       "label": "Порт Буэнос-Айрес",
       "region": "ARG",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "port-buenosaires",
         "type": "seaport",
@@ -598,7 +598,7 @@
       "value": 0.45,
       "label": "Порт Веракрус",
       "region": "MEX",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "port-veracruz",
         "type": "seaport",
@@ -611,7 +611,7 @@
       "value": 0.6,
       "label": "Порт Владивосток",
       "region": "RUS",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "port-vladivostok",
         "type": "seaport",
@@ -624,7 +624,7 @@
       "value": 0.9,
       "label": "Ормузский пролив",
       "region": "Iran/Oman/UAE",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "chokepoint-hormuz",
         "type": "chokepoint",
@@ -639,7 +639,7 @@
       "value": 0.7,
       "label": "Малаккский пролив",
       "region": "Malaysia/Singapore/Indonesia",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "chokepoint-malacca",
         "type": "chokepoint",
@@ -654,7 +654,7 @@
       "value": 0.6,
       "label": "Суэцкий канал",
       "region": "EGY",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "chokepoint-suez",
         "type": "chokepoint",
@@ -667,7 +667,7 @@
       "value": 0.75,
       "label": "Панамский канал",
       "region": "PAN",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "chokepoint-panama",
         "type": "chokepoint",
@@ -680,7 +680,7 @@
       "value": 0.95,
       "label": "Тайваньский пролив",
       "region": "Taiwan/China",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "chokepoint-taiwan",
         "type": "chokepoint",
@@ -695,7 +695,7 @@
       "value": 0.75,
       "label": "Босфор и Дарданеллы",
       "region": "TUR",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "chokepoint-bosphorus",
         "type": "chokepoint",
@@ -708,7 +708,7 @@
       "value": 0.5,
       "label": "Гибралтарский пролив",
       "region": "Spain/Morocco/UK",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "chokepoint-gibraltar",
         "type": "chokepoint",
@@ -723,7 +723,7 @@
       "value": 0.9,
       "label": "Баб-эль-Мандебский пролив",
       "region": "Yemen/Djibouti/Eritrea",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "chokepoint-bab-el-mandeb",
         "type": "chokepoint",
@@ -738,7 +738,7 @@
       "value": 0.5,
       "label": "Мыс Доброй Надежды",
       "region": "ZAF",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "chokepoint-cape",
         "type": "chokepoint",
@@ -751,7 +751,7 @@
       "value": 0.6,
       "label": "Корейский пролив",
       "region": "South Korea/Japan",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "chokepoint-korea",
         "type": "chokepoint",
@@ -766,7 +766,7 @@
       "value": 0.4,
       "label": "Ла-Манш / Дуврский пролив",
       "region": "UK/France",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "chokepoint-english-channel",
         "type": "chokepoint",
@@ -781,7 +781,7 @@
       "value": 0.6,
       "label": "Датские проливы (Балтика)",
       "region": "Denmark/Sweden",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "chokepoint-danish-straits",
         "type": "chokepoint",
@@ -796,7 +796,7 @@
       "value": 0.7,
       "label": "Южная часть Персидского залива",
       "region": "Saudi Arabia/Qatar/Bahrain",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "chokepoint-strait-of-hormuz-south",
         "type": "chokepoint",
@@ -811,7 +811,7 @@
       "value": 0.75,
       "label": "Северное море (газопроводы)",
       "region": "Norway/UK/Netherlands",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "chokepoint-north-sea",
         "type": "chokepoint",
@@ -826,7 +826,7 @@
       "value": 0.65,
       "label": "Северный вход Панамского канала",
       "region": "Panama/Costa Rica",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "chokepoint-panama-north",
         "type": "chokepoint",
@@ -841,7 +841,7 @@
       "value": 0.4,
       "label": "Три ущелья (Three Gorges)",
       "region": "CHN",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "dam-three-gorges",
         "type": "dam",
@@ -854,7 +854,7 @@
       "value": 0.35,
       "label": "Итайпу (Itaipu)",
       "region": "Brazil/Paraguay",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "dam-itaipu",
         "type": "dam",
@@ -869,7 +869,7 @@
       "value": 0.35,
       "label": "Силоду (Xiluodu)",
       "region": "CHN",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "dam-xiluodu",
         "type": "dam",
@@ -882,7 +882,7 @@
       "value": 0.5,
       "label": "Белу-Монте (Belo Monte)",
       "region": "BRA",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "dam-belo-monte",
         "type": "dam",
@@ -895,7 +895,7 @@
       "value": 0.85,
       "label": "Гури (Guri)",
       "region": "VEN",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "dam-guri",
         "type": "dam",
@@ -908,7 +908,7 @@
       "value": 0.35,
       "label": "Тукуруи (Tucuruí)",
       "region": "BRA",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "dam-tucurui",
         "type": "dam",
@@ -921,7 +921,7 @@
       "value": 0.3,
       "label": "Гранд-Кули (Grand Coulee)",
       "region": "USA",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "dam-grand-coulee",
         "type": "dam",
@@ -934,7 +934,7 @@
       "value": 0.5,
       "label": "Саяно-Шушенская ГЭС",
       "region": "RUS",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "dam-sayano",
         "type": "dam",
@@ -947,7 +947,7 @@
       "value": 0.4,
       "label": "Красноярская ГЭС",
       "region": "RUS",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "dam-krasnoyarsk",
         "type": "dam",
@@ -960,7 +960,7 @@
       "value": 0.4,
       "label": "Братская ГЭС",
       "region": "RUS",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "dam-bratsk",
         "type": "dam",
@@ -973,7 +973,7 @@
       "value": 1,
       "label": "Каховская ГЭС",
       "region": "UKR",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "dam-kakhovka",
         "type": "dam",
@@ -986,7 +986,7 @@
       "value": 0.45,
       "label": "Нурекская ГЭС",
       "region": "TJK",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "dam-nurek",
         "type": "dam",
@@ -999,7 +999,7 @@
       "value": 0.6,
       "label": "Рогунская ГЭС",
       "region": "TJK",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "dam-roga",
         "type": "dam",
@@ -1012,7 +1012,7 @@
       "value": 0.7,
       "label": "GERD (Возрождение)",
       "region": "ETH",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "dam-gerd",
         "type": "dam",
@@ -1025,7 +1025,7 @@
       "value": 0.65,
       "label": "Асуанская плотина",
       "region": "EGY",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "dam-aswan",
         "type": "dam",
@@ -1038,7 +1038,7 @@
       "value": 0.45,
       "label": "Eastern Interconnection (США Восток)",
       "region": "USA",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "grid-us-eastern",
         "type": "power_grid",
@@ -1051,7 +1051,7 @@
       "value": 0.45,
       "label": "Western Interconnection (США Запад)",
       "region": "USA",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "grid-us-western",
         "type": "power_grid",
@@ -1064,7 +1064,7 @@
       "value": 0.7,
       "label": "ERCOT (Техас)",
       "region": "USA",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "grid-us-texas",
         "type": "power_grid",
@@ -1077,7 +1077,7 @@
       "value": 0.4,
       "label": "ENTSO-E Central (Центральная Европа)",
       "region": "Germany/France/Poland/Czechia",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "grid-eu-central",
         "type": "power_grid",
@@ -1092,7 +1092,7 @@
       "value": 0.95,
       "label": "Укрэнерго",
       "region": "UKR",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "grid-ukraine",
         "type": "power_grid",
@@ -1105,7 +1105,7 @@
       "value": 0.35,
       "label": "Восточная энергосеть Китая (State Grid)",
       "region": "CHN",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "grid-china-east",
         "type": "power_grid",
@@ -1118,7 +1118,7 @@
       "value": 0.65,
       "label": "Northern Grid (Индия Север)",
       "region": "IND",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "grid-india-north",
         "type": "power_grid",
@@ -1131,7 +1131,7 @@
       "value": 0.5,
       "label": "ЕЭС России",
       "region": "RUS",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "grid-russia-unified",
         "type": "power_grid",
@@ -1144,7 +1144,7 @@
       "value": 0.45,
       "label": "Энергосистемы Японии (10 компаний)",
       "region": "JPN",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "grid-japan",
         "type": "power_grid",
@@ -1157,7 +1157,7 @@
       "value": 0.75,
       "label": "Taipower (Тайвань)",
       "region": "TWN",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "grid-taiwan",
         "type": "power_grid",
@@ -1170,7 +1170,7 @@
       "value": 0.5,
       "label": "Saudi Electricity Company",
       "region": "SAU",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "grid-saudi",
         "type": "power_grid",
@@ -1183,7 +1183,7 @@
       "value": 0.45,
       "label": "SIN (Бразилия)",
       "region": "BRA",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "grid-brazil",
         "type": "power_grid",
@@ -1196,7 +1196,7 @@
       "value": 0.85,
       "label": "Eskom (ЮАР)",
       "region": "ZAF",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "grid-south-africa",
         "type": "power_grid",
@@ -1209,7 +1209,7 @@
       "value": 0.3,
       "label": "Пентагон",
       "region": "USA",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "mil-pentagon",
         "type": "military_base",
@@ -1222,7 +1222,7 @@
       "value": 0.35,
       "label": "Военно-морская база Норфолк",
       "region": "USA",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "mil-norfolk",
         "type": "military_base",
@@ -1235,7 +1235,7 @@
       "value": 0.3,
       "label": "ВМБ Сан-Диего",
       "region": "USA",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "mil-san-diego",
         "type": "military_base",
@@ -1248,7 +1248,7 @@
       "value": 0.4,
       "label": "Перл-Харбор",
       "region": "USA",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "mil-pearl-harbor",
         "type": "military_base",
@@ -1261,7 +1261,7 @@
       "value": 0.35,
       "label": "Авиабаза Рамштайн",
       "region": "DEU",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "mil-ramstein",
         "type": "military_base",
@@ -1274,7 +1274,7 @@
       "value": 0.5,
       "label": "База Гуам (Андерсен)",
       "region": "USA (Guam)",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "mil-guam",
         "type": "military_base",
@@ -1289,7 +1289,7 @@
       "value": 0.55,
       "label": "База Окинава",
       "region": "JPN",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "mil-okinawa",
         "type": "military_base",
@@ -1302,7 +1302,7 @@
       "value": 0.45,
       "label": "База Диего-Гарсия",
       "region": "UK (BIOT)",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "mil-diego-garcia",
         "type": "military_base",
@@ -1317,7 +1317,7 @@
       "value": 0.4,
       "label": "База Гуантанамо",
       "region": "Cuba (US lease)",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "mil-guantanamo",
         "type": "military_base",
@@ -1332,7 +1332,7 @@
       "value": 0.9,
       "label": "ВМБ Севастополь",
       "region": "Russia (Crimea)",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "mil-sevastopol",
         "type": "military_base",
@@ -1347,7 +1347,7 @@
       "value": 0.75,
       "label": "ВМБ Тартус (Сирия)",
       "region": "SYR",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "mil-tartus",
         "type": "military_base",
@@ -1360,7 +1360,7 @@
       "value": 0.75,
       "label": "Авиабаза Хмеймим (Сирия)",
       "region": "SYR",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "mil-khmeimim",
         "type": "military_base",
@@ -1373,7 +1373,7 @@
       "value": 0.65,
       "label": "ВМБ Балтийск",
       "region": "Russia (Kaliningrad)",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "mil-baltiysk",
         "type": "military_base",
@@ -1388,7 +1388,7 @@
       "value": 0.5,
       "label": "ВМБ Владивосток",
       "region": "RUS",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "mil-vladivostok",
         "type": "military_base",
@@ -1401,7 +1401,7 @@
       "value": 0.7,
       "label": "База Санья (Хайнань)",
       "region": "CHN",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "mil-sanya",
         "type": "military_base",
@@ -1414,7 +1414,7 @@
       "value": 0.45,
       "label": "ВМБ Далянь",
       "region": "CHN",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "mil-dalian",
         "type": "military_base",
@@ -1427,7 +1427,7 @@
       "value": 0.65,
       "label": "ВМБ Чжоушань",
       "region": "CHN",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "mil-zhoushan",
         "type": "military_base",
@@ -1440,7 +1440,7 @@
       "value": 0.3,
       "label": "Авиабаза Авиано (Италия)",
       "region": "ITA",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "mil-aviano",
         "type": "military_base",
@@ -1453,7 +1453,7 @@
       "value": 0.55,
       "label": "Авиабаза Инджирлик (Турция)",
       "region": "TUR",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "mil-incirlik",
         "type": "military_base",
@@ -1466,7 +1466,7 @@
       "value": 0.4,
       "label": "Объединённый командный центр Рамштайн",
       "region": "DEU",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "mil-ramstein-nato",
         "type": "military_base",
@@ -1479,7 +1479,7 @@
       "value": 0.35,
       "label": "Порт Бремерхафен (НАТО)",
       "region": "DEU",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "mil-bremerhaven",
         "type": "military_base",
@@ -1492,7 +1492,7 @@
       "value": 0.5,
       "label": "Авиабаза Аль-Удейд (Катар)",
       "region": "QAT",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "mil-al-udeid",
         "type": "military_base",
@@ -1505,7 +1505,7 @@
       "value": 0.55,
       "label": "ВМБ Бахрейн (5-й флот)",
       "region": "BHR",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "mil-naval-bahrain",
         "type": "military_base",
@@ -1518,7 +1518,7 @@
       "value": 0.45,
       "label": "ВМБ Йокосука (Япония)",
       "region": "JPN",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "mil-yokosuka",
         "type": "military_base",
@@ -1531,7 +1531,7 @@
       "value": 0.6,
       "label": "Лагерь Хамфрис (Южная Корея)",
       "region": "KOR",
-      "timestamp": "2026-09-18T18:09:58.069Z",
+      "timestamp": "2026-09-23T06:57:08.442Z",
       "extra": {
         "id": "mil-camp-humphreys",
         "type": "military_base",
@@ -2121,9 +2121,11 @@
       }
     }
   ],
+  "documents": [],
+  "graph": null,
   "extra": {
     "adapter": "points",
-    "adapter_version": "2.0.0",
+    "adapter_version": "2.2.1",
     "skipped_invalid_coords": 0,
     "unmapped_regions": [
       "Iran/Oman/UAE",

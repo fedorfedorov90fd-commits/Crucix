@@ -4,11 +4,11 @@
     "id": "vix",
     "source": "Yahoo Finance (^VIX)",
     "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/%5EVIX?interval=1d&range=1y",
-    "fetched_at": "2026-09-20T11:20:53.540Z",
-    "normalized_at": "2026-09-20T11:28:57.265Z",
+    "fetched_at": "2026-09-23T07:04:27.017Z",
+    "normalized_at": "2026-09-23T17:51:50.759Z",
     "collector": "collect-vix.mjs",
     "license": "public-domain",
-    "count": 254,
+    "count": 252,
     "granularity": "daily",
     "value_unit": "index",
     "value_scale": null,
@@ -17,18 +17,6 @@
     "period": "P365D"
   },
   "series": [
-    {
-      "date": "2025-09-18",
-      "value": 15.7
-    },
-    {
-      "date": "2025-09-19",
-      "value": 15.45
-    },
-    {
-      "date": "2025-09-22",
-      "value": 16.1
-    },
     {
       "date": "2025-09-23",
       "value": 16.64
@@ -1032,25 +1020,31 @@
     {
       "date": "2026-09-18",
       "value": 14.81
+    },
+    {
+      "date": "2026-09-21",
+      "value": 14.87
     }
   ],
   "points": [],
   "regions": [
     {
       "region": "GLOBAL",
-      "value": 18.135590551181107,
-      "count": 254,
+      "value": 18.15103174603175,
+      "count": 252,
       "aggregation": "mean",
       "extra": {
         "max": 31.05,
-        "sum": 4606.440000000001
+        "sum": 4574.060000000001
       }
     }
   ],
+  "documents": [],
+  "graph": null,
   "extra": {
     "adapter": "timeseries",
-    "adapter_version": "2.1.1",
-    "unique_dates": 254,
+    "adapter_version": "2.2.1",
+    "unique_dates": 252,
     "unmapped_regions": [],
     "unmapped_count": 0
   }

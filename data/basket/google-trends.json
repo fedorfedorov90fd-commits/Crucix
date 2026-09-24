@@ -3,9 +3,9 @@
   "meta": {
     "id": "google-trends",
     "source": "Google Trends RSS",
-    "source_url": "local://rescan",
-    "fetched_at": "2026-09-18T21:24:17.814Z",
-    "normalized_at": "2026-09-18T21:25:55.796Z",
+    "source_url": "https://trends.google.com/trends/trendingsearches/daily/rss",
+    "fetched_at": "2026-09-23T06:56:59.353Z",
+    "normalized_at": "2026-09-23T17:51:48.822Z",
     "collector": "collect-google-trends.mjs",
     "license": "public-domain",
     "count": 5,
@@ -18,48 +18,48 @@
   "series": [],
   "points": [
     {
-      "lat": 60.361995621399295,
-      "lon": 89.46937213040985,
+      "lat": 60.350525557012325,
+      "lon": 89.87927339951649,
       "label": "мобилизация в Россия",
       "region": "RUS",
       "extra": {
-        "id": "TREND-1789758174493-yhag"
+        "id": "TREND-1790146619344-797m"
       }
     },
     {
-      "lat": 49.08106435449409,
-      "lon": 30.87730348036873,
-      "label": "эвакуация в Украина",
+      "lat": 48.8081902342252,
+      "lon": 30.976034927597226,
+      "label": "мобилизация в Украина",
       "region": "UKR",
       "extra": {
-        "id": "TREND-1789758174494-ipw5"
+        "id": "TREND-1790146619345-5r7s"
       }
     },
     {
-      "lat": 51.125694817248124,
-      "lon": 19.6290252489599,
-      "label": "беженцы в Польша",
+      "lat": 51.50855354984861,
+      "lon": 19.77378606209525,
+      "label": "кризис в Польша",
       "region": "POL",
       "extra": {
-        "id": "TREND-1789758174494-vblj"
+        "id": "TREND-1790146619345-cvun"
       }
     },
     {
-      "lat": 51.85485832593613,
-      "lon": 9.734302270570403,
+      "lat": 51.202634983631334,
+      "lon": 9.340470713221297,
       "label": "беженцы в Германия",
       "region": "DEU",
       "extra": {
-        "id": "TREND-1789758174494-9j5l"
+        "id": "TREND-1790146619345-4c65"
       }
     },
     {
-      "lat": 39.86883110704234,
-      "lon": -99.41085413616372,
-      "label": "эвакуация в США",
+      "lat": 40.91672282008819,
+      "lon": -100.03045267962847,
+      "label": "мобилизация в США",
       "region": "USA",
       "extra": {
-        "id": "TREND-1789758174494-hqri"
+        "id": "TREND-1790146619345-qn6j"
       }
     }
   ],
@@ -115,9 +115,11 @@
       }
     }
   ],
+  "documents": [],
+  "graph": null,
   "extra": {
     "adapter": "points",
-    "adapter_version": "2.0.0",
+    "adapter_version": "2.2.1",
     "skipped_invalid_coords": 0,
     "unmapped_regions": [],
     "unmapped_count": 0

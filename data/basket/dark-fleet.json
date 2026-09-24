@@ -4,8 +4,8 @@
     "id": "dark-fleet",
     "source": "Dark Ships + OFAC (demo)",
     "source_url": "https://ofac.treasury.gov/sanctions-list-service",
-    "fetched_at": "2026-09-20T10:43:22.049Z",
-    "normalized_at": "2026-09-20T11:28:56.991Z",
+    "fetched_at": "2026-09-23T06:51:56.153Z",
+    "normalized_at": "2026-09-23T17:51:48.399Z",
     "collector": "collect-dark-fleet.mjs",
     "license": "public-domain",
     "count": 31,
@@ -18,104 +18,92 @@
   },
   "series": [
     {
-      "date": "2026-08-21",
-      "value": 3
-    },
-    {
-      "date": "2026-08-22",
-      "value": 7
-    },
-    {
-      "date": "2026-08-23",
-      "value": 9
-    },
-    {
       "date": "2026-08-24",
-      "value": 9
+      "value": 6
     },
     {
       "date": "2026-08-25",
-      "value": 5
-    },
-    {
-      "date": "2026-08-26",
-      "value": 12
-    },
-    {
-      "date": "2026-08-27",
-      "value": 3
-    },
-    {
-      "date": "2026-08-28",
-      "value": 3
-    },
-    {
-      "date": "2026-08-29",
-      "value": 13
-    },
-    {
-      "date": "2026-08-30",
-      "value": 5
-    },
-    {
-      "date": "2026-08-31",
-      "value": 16
-    },
-    {
-      "date": "2026-09-01",
       "value": 10
     },
     {
-      "date": "2026-09-02",
-      "value": 2
-    },
-    {
-      "date": "2026-09-03",
-      "value": 8
-    },
-    {
-      "date": "2026-09-04",
-      "value": 14
-    },
-    {
-      "date": "2026-09-05",
-      "value": 14
-    },
-    {
-      "date": "2026-09-06",
-      "value": 6
-    },
-    {
-      "date": "2026-09-07",
-      "value": 6
-    },
-    {
-      "date": "2026-09-08",
-      "value": 13
-    },
-    {
-      "date": "2026-09-09",
-      "value": 13
-    },
-    {
-      "date": "2026-09-10",
-      "value": 16
-    },
-    {
-      "date": "2026-09-11",
-      "value": 11
-    },
-    {
-      "date": "2026-09-12",
-      "value": 15
-    },
-    {
-      "date": "2026-09-13",
+      "date": "2026-08-26",
       "value": 5
     },
     {
-      "date": "2026-09-14",
+      "date": "2026-08-27",
       "value": 4
+    },
+    {
+      "date": "2026-08-28",
+      "value": 4
+    },
+    {
+      "date": "2026-08-29",
+      "value": 4
+    },
+    {
+      "date": "2026-08-30",
+      "value": 16
+    },
+    {
+      "date": "2026-08-31",
+      "value": 2
+    },
+    {
+      "date": "2026-09-01",
+      "value": 11
+    },
+    {
+      "date": "2026-09-02",
+      "value": 15
+    },
+    {
+      "date": "2026-09-03",
+      "value": 11
+    },
+    {
+      "date": "2026-09-04",
+      "value": 4
+    },
+    {
+      "date": "2026-09-05",
+      "value": 2
+    },
+    {
+      "date": "2026-09-06",
+      "value": 4
+    },
+    {
+      "date": "2026-09-07",
+      "value": 9
+    },
+    {
+      "date": "2026-09-08",
+      "value": 4
+    },
+    {
+      "date": "2026-09-09",
+      "value": 7
+    },
+    {
+      "date": "2026-09-10",
+      "value": 15
+    },
+    {
+      "date": "2026-09-11",
+      "value": 6
+    },
+    {
+      "date": "2026-09-12",
+      "value": 3
+    },
+    {
+      "date": "2026-09-13",
+      "value": 12
+    },
+    {
+      "date": "2026-09-14",
+      "value": 11
     },
     {
       "date": "2026-09-15",
@@ -123,7 +111,7 @@
     },
     {
       "date": "2026-09-16",
-      "value": 3
+      "value": 8
     },
     {
       "date": "2026-09-17",
@@ -131,15 +119,27 @@
     },
     {
       "date": "2026-09-18",
-      "value": 2
+      "value": 15
     },
     {
       "date": "2026-09-19",
-      "value": 12
+      "value": 13
     },
     {
       "date": "2026-09-20",
-      "value": 14
+      "value": 10
+    },
+    {
+      "date": "2026-09-21",
+      "value": 15
+    },
+    {
+      "date": "2026-09-22",
+      "value": 5
+    },
+    {
+      "date": "2026-09-23",
+      "value": 5
     }
   ],
   "points": [],
@@ -151,17 +151,21 @@
       "aggregation": "count"
     }
   ],
+  "documents": [],
+  "graph": null,
   "extra": {
     "adapter": "events",
-    "adapter_version": "2.1.0",
+    "adapter_version": "2.2.0",
     "total_events": 31,
     "unique_dates": 31,
     "skipped_no_date": 0,
+    "skipped_no_text": 31,
     "points_from_centroids": 0,
+    "documents_count": 0,
     "unmapped_regions": [],
     "unmapped_count": 0,
     "source": "Dark Ships + OFAC",
-    "lastUpdated": "2026-09-20T10:43:22.045Z",
+    "lastUpdated": "2026-09-23T06:51:56.147Z",
     "inner_array_key": "data"
   }
 }

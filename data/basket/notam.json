@@ -2,10 +2,10 @@
   "schema": "crucix.basket.v1",
   "meta": {
     "id": "notam",
-    "source": "Eurocontrol NOTAM",
-    "source_url": "local://rescan",
-    "fetched_at": "2026-09-18T21:24:17.816Z",
-    "normalized_at": "2026-09-18T21:25:55.891Z",
+    "source": "Eurocontrol NOTAM RSS",
+    "source_url": "https://www.eurocontrol.int/rss/notam",
+    "fetched_at": "2026-09-23T06:57:16.758Z",
+    "normalized_at": "2026-09-23T17:51:48.977Z",
     "collector": "collect-notam.mjs",
     "license": "public-domain",
     "count": 5,
@@ -18,56 +18,56 @@
   "series": [],
   "points": [
     {
-      "lat": 49.422573881531754,
-      "lon": 30.518414059213995,
+      "lat": 49.56834346446981,
+      "lon": 30.171029952685398,
       "label": "КРИТИЧЕСКИЙ",
       "region": "Восточная Европа",
       "extra": {
-        "id": "NOTAM-1789758378464-v6to",
+        "id": "NOTAM-1790146636748-901a",
         "unmapped_region": true,
         "unmapped_original": "Восточная Европа"
       }
     },
     {
-      "lat": 43.44913335592745,
-      "lon": 35.33849400785872,
+      "lat": 43.162107152736944,
+      "lon": 35.37881524679198,
       "label": "КРИТИЧЕСКИЙ",
       "region": "Черное море",
       "extra": {
-        "id": "NOTAM-1789758378465-u9uo",
+        "id": "NOTAM-1790146636749-f0pa",
         "unmapped_region": true,
         "unmapped_original": "Черное море"
       }
     },
     {
-      "lat": 29.863804278430806,
-      "lon": 44.85407154066505,
+      "lat": 29.86312394371498,
+      "lon": 45.65577937466578,
       "label": "ВЫСОКИЙ",
       "region": "Ближний Восток",
       "extra": {
-        "id": "NOTAM-1789758378465-ohlu",
+        "id": "NOTAM-1790146636749-ot72",
         "unmapped_region": true,
         "unmapped_original": "Ближний Восток"
       }
     },
     {
-      "lat": 14.474802624417677,
-      "lon": 114.73024516933387,
+      "lat": 15.156229770073075,
+      "lon": 114.8741105648682,
       "label": "ВЫСОКИЙ",
       "region": "Южно-Китайское море",
       "extra": {
-        "id": "NOTAM-1789758378465-d65d",
+        "id": "NOTAM-1790146636749-jqcq",
         "unmapped_region": true,
         "unmapped_original": "Южно-Китайское море"
       }
     },
     {
-      "lat": 57.88051590392003,
-      "lon": 19.918238358064848,
+      "lat": 58.94210107271326,
+      "lon": 20.695055435272558,
       "label": "СРЕДНИЙ",
       "region": "Балтийское море",
       "extra": {
-        "id": "NOTAM-1789758378465-tuor",
+        "id": "NOTAM-1790146636749-x09x",
         "unmapped_region": true,
         "unmapped_original": "Балтийское море"
       }
@@ -125,9 +125,11 @@
       }
     }
   ],
+  "documents": [],
+  "graph": null,
   "extra": {
     "adapter": "points",
-    "adapter_version": "2.0.0",
+    "adapter_version": "2.2.1",
     "skipped_invalid_coords": 0,
     "unmapped_regions": [
       "Восточная Европа",

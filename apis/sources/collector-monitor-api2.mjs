@@ -456,27 +456,4 @@ export async function handleCollectorMonitor(req, res) {
         return await handleCollectorMonitorErrors(req, res);
     }
 
-    // Динамический эндпоинт для логов: /api/collector/logs/{name}
-    if (pathname.startsWith('/api/collector/logs/')) {
-        return await handleCollectorLogs(req, res, url);
-    }
-
-    // 404
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ success: false, error: 'Endpoint not found' }));
-    return true;
-}
-
-// ============================================================
-// ЭКСПОРТЫ
-// ============================================================
-
-export default {
-    handleCollectorMonitor,
-    handleCollectorMonitorStatus,
-    handleCollectorMonitorSummary,
-    handleCollectorMonitorScan,
-    handleCollectorMonitorErrors,
-    handleCollectorLogs,
-    getCollectorStatus
-};
+    if (pathname.startsWith

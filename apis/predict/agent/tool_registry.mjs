@@ -219,7 +219,7 @@ const TOOL_DEFINITIONS = {
     category: 'catalog',
     returns: '{ summary, lastSweep, topAnomalies, explanation }',
     when: 'Поиск аномальных sweep\'ов, объяснение отклонений.',
-    path: './anomaly_detection.mjs',
+    path: './models/anomaly_detection.mjs',
     fn: 'crucixAnomalyDetection',
   },
 

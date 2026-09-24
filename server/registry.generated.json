@@ -2,32 +2,32 @@
   "meta": {
     "schema_version": "crucix.registry.generated.v1",
     "generated_by": "server/build-registry.mjs",
-    "generated_at": "2026-09-21T10:54:42.822Z",
-    "description": "Единый реестр Crucix: маршруты API (layers + services) и корзина данных (basket).",
+    "generated_at": "2026-09-23T20:58:53.015Z",
+    "description": "Единый реестр Crucix: маршруты API (layers + services), корзина данных (basket), версии всех модулей (modules).",
     "help_ru_link": "docs/help/ru/api/build-registry.md",
     "help_en_link": "docs/help/en/api/build-registry.md",
     "source_dir": "apis/sources",
-    "total_scanned": 487,
-    "total_modules": 214,
-    "total_layers": 186,
+    "total_scanned": 490,
+    "total_modules": 218,
+    "total_layers": 190,
     "total_services": 28,
-    "total_routes": 372,
+    "total_routes": 380,
     "total_service_routes": 56,
-    "skipped": 273,
+    "skipped": 272,
     "duplicates": 0,
     "warnings": 7,
-    "total_basket_files": 257,
-    "total_basket_with_meta": 115,
-    "total_basket_without_meta": 142,
-    "total_basket_with_readers": 116,
+    "total_basket_files": 259,
+    "total_basket_with_meta": 116,
+    "total_basket_without_meta": 143,
+    "total_basket_with_readers": 117,
     "basket_by_status": {
-      "active": 115,
+      "active": 116,
       "legacy": 0,
-      "unknown": 142
+      "unknown": 143
     },
     "layer_by_category": {
-      "geopolitical": 8,
-      "semantic": 9,
+      "geopolitical": 11,
+      "semantic": 10,
       "forecast": 5,
       "specialist": 24,
       "other": 6,
@@ -57,6 +57,26 @@
       "DELETE": 8,
       "PUT": 2,
       "PATCH": 1
+    },
+    "total_modules_all": 828,
+    "modules_with_version": 185,
+    "modules_without_version": 643,
+    "versions_summary": {
+      "1": 29,
+      "2": 123,
+      "3": 8,
+      "6": 12,
+      "7": 6,
+      "8": 7
+    },
+    "versioning_policy": {
+      "apis_sources": "Контракт CRUCIX v2. Версия модуля в шапке НЕ указывается. Единый стиль: \"КОНТРАКТ CRUCIX v2\" + описание источника. Semver модуля не применяется.",
+      "scripts_collectors": "Стандарт \"* Версия X.Y.Z. Принят <дата>\" в шапке. Semver модуля по истории изменений.",
+      "scripts_warehouse": "Стандарт \"* Версия X.Y.Z. Принят <дата>\" в шапке. Semver модуля по истории изменений.",
+      "scripts_analyzers": "Стандарт \"* Версия X.Y.Z. Принят <дата>\" в шапке. Semver модуля по истории изменений.",
+      "apis_predict": "Стандарт \"// Версия: X.Y.Z\" в шапке или ENGINE_VERSION = \"...\" в теле. Semver модуля.",
+      "scripts_logs": "Версия в шапке не указывается. Модули инфраструктуры логирования.",
+      "server": "Версия в шапке не указывается (кроме build-registry.mjs — версия в первой строке комментария)."
     }
   },
   "routes": {
@@ -272,7 +292,8 @@
         "description": "Единая точка входа: вопрос → сводный ответ из 44 файлов аналитики (8 категорий, 30 наук)",
         "unit": "index"
       },
-      "method": "GET"
+      "method": "GET",
+      "version": "1.0.1"
     },
     "/api/layers/analyze-situation/*": {
       "moduleId": "analyze-situation-api",
@@ -289,6 +310,7 @@
         "unit": "index"
       },
       "method": "GET",
+      "version": "1.0.1",
       "subpath": true
     },
     "/api/layers/arms-transfer-tracker": {
@@ -333,12 +355,13 @@
         "color": "#f97316",
         "vizType": "marker",
         "source": "basket/aviation.json",
-        "collector": "collect-aviation-real.mjs",
+        "collector": "collect-aviation.mjs",
         "cache": 60,
         "description": "Авиационный мониторинг — рейсы, высоты, типы ВС",
         "unit": "flights"
       },
-      "method": "GET"
+      "method": "GET",
+      "version": "3.0.1"
     },
     "/api/layers/aviation/*": {
       "moduleId": "aviation-api",
@@ -349,12 +372,13 @@
         "color": "#f97316",
         "vizType": "marker",
         "source": "basket/aviation.json",
-        "collector": "collect-aviation-real.mjs",
+        "collector": "collect-aviation.mjs",
         "cache": 60,
         "description": "Авиационный мониторинг — рейсы, высоты, типы ВС",
         "unit": "flights"
       },
       "method": "GET",
+      "version": "3.0.1",
       "subpath": true
     },
     "/api/layers/baseline-alerting": {
@@ -404,7 +428,8 @@
         "description": "Baltic Dry Index — индекс стоимости морских грузоперевозок",
         "unit": "index"
       },
-      "method": "GET"
+      "method": "GET",
+      "version": "3.0.1"
     },
     "/api/layers/bdi/*": {
       "moduleId": "bdi-api",
@@ -421,6 +446,7 @@
         "unit": "index"
       },
       "method": "GET",
+      "version": "3.0.1",
       "subpath": true
     },
     "/api/layers/big-mac-alt": {
@@ -470,7 +496,8 @@
         "description": "Индекс Биг-Мака — цена бургера в странах (неофициальный PPP)",
         "unit": "$"
       },
-      "method": "GET"
+      "method": "GET",
+      "version": "3.0.1"
     },
     "/api/layers/big-mac/*": {
       "moduleId": "big-mac-api",
@@ -487,6 +514,7 @@
         "unit": "$"
       },
       "method": "GET",
+      "version": "3.0.1",
       "subpath": true
     },
     "/api/layers/big-mac-main": {
@@ -536,7 +564,8 @@
         "description": "Ботнеты и C2-инфраструктура",
         "unit": "bots"
       },
-      "method": "GET"
+      "method": "GET",
+      "version": "3.0.1"
     },
     "/api/layers/botnets/*": {
       "moduleId": "botnets-api",
@@ -553,6 +582,7 @@
         "unit": "bots"
       },
       "method": "GET",
+      "version": "3.0.1",
       "subpath": true
     },
     "/api/layers/business-optimism": {
@@ -1031,7 +1061,8 @@
         "description": "Страновой брифинг: нестабильность + стратегический риск + устойчивость + схождения сигналов",
         "unit": "index"
       },
-      "method": "GET"
+      "method": "GET",
+      "version": "1.0.1"
     },
     "/api/layers/country-brief/*": {
       "moduleId": "country-brief-api",
@@ -1048,6 +1079,7 @@
         "unit": "index"
       },
       "method": "GET",
+      "version": "1.0.1",
       "subpath": true
     },
     "/api/layers/country-instability": {
@@ -3525,6 +3557,39 @@
       "method": "GET",
       "subpath": true
     },
+    "/api/layers/narrative-splitter": {
+      "moduleId": "narrative-splitter-api",
+      "file": "narrative-splitter-api.mjs",
+      "meta": {
+        "category": "semantic",
+        "icon": "⚡",
+        "color": "#ff9800",
+        "vizType": "comparison",
+        "source": "data/basket/rsshub.json (36 источников, 500 items)",
+        "collector": "collect-rsshub.mjs",
+        "cache": 120,
+        "description": "Сверить российский и западный нарративы по теме. Расхождения, замалчивания, двойные стандарты.",
+        "unit": "claims"
+      },
+      "method": "GET"
+    },
+    "/api/layers/narrative-splitter/*": {
+      "moduleId": "narrative-splitter-api",
+      "file": "narrative-splitter-api.mjs",
+      "meta": {
+        "category": "semantic",
+        "icon": "⚡",
+        "color": "#ff9800",
+        "vizType": "comparison",
+        "source": "data/basket/rsshub.json (36 источников, 500 items)",
+        "collector": "collect-rsshub.mjs",
+        "cache": 120,
+        "description": "Сверить российский и западный нарративы по теме. Расхождения, замалчивания, двойные стандарты.",
+        "unit": "claims"
+      },
+      "method": "GET",
+      "subpath": true
+    },
     "/api/layers/news": {
       "moduleId": "news-api",
       "file": "news-api.mjs",
@@ -3949,6 +4014,39 @@
         "collector": "collect-pmi.mjs",
         "cache": 300,
         "description": "PMI — индекс менеджеров по закупкам (порог 50)",
+        "unit": "index"
+      },
+      "method": "GET",
+      "subpath": true
+    },
+    "/api/layers/pole-tracker": {
+      "moduleId": "pole-tracker-api",
+      "file": "pole-tracker-api.mjs",
+      "meta": {
+        "category": "geopolitical",
+        "icon": "🌐",
+        "color": "#4fc3f7",
+        "vizType": "map",
+        "source": "Crucix basket (ofac, conflicts, internet-outages, military-bases, gdelt, comtrade, social-unrest)",
+        "collector": null,
+        "cache": 60,
+        "description": "Вычисление геополитической полярности из данных. Полюс не задаётся списком — вычисляется из вектора признаков каждой страны.",
+        "unit": "index"
+      },
+      "method": "GET"
+    },
+    "/api/layers/pole-tracker/*": {
+      "moduleId": "pole-tracker-api",
+      "file": "pole-tracker-api.mjs",
+      "meta": {
+        "category": "geopolitical",
+        "icon": "🌐",
+        "color": "#4fc3f7",
+        "vizType": "map",
+        "source": "Crucix basket (ofac, conflicts, internet-outages, military-bases, gdelt, comtrade, social-unrest)",
+        "collector": null,
+        "cache": 60,
+        "description": "Вычисление геополитической полярности из данных. Полюс не задаётся списком — вычисляется из вектора признаков каждой страны.",
         "unit": "index"
       },
       "method": "GET",
@@ -4381,6 +4479,41 @@
         "unit": "CPM"
       },
       "method": "GET",
+      "subpath": true
+    },
+    "/api/layers/sanctions-directional": {
+      "moduleId": "sanctions-directional-api",
+      "file": "sanctions-directional-api.mjs",
+      "meta": {
+        "category": "geopolitical",
+        "icon": "⚖️",
+        "color": "#8b0000",
+        "vizType": "choropleth",
+        "source": "basket/ofac-sdn.json",
+        "collector": "collect-ofac-sdn.mjs",
+        "cache": 3600,
+        "description": "Направленные санкции США (OFAC) по странам и программам — issuer=США",
+        "unit": "records"
+      },
+      "method": "GET",
+      "version": "1.0.0"
+    },
+    "/api/layers/sanctions-directional/*": {
+      "moduleId": "sanctions-directional-api",
+      "file": "sanctions-directional-api.mjs",
+      "meta": {
+        "category": "geopolitical",
+        "icon": "⚖️",
+        "color": "#8b0000",
+        "vizType": "choropleth",
+        "source": "basket/ofac-sdn.json",
+        "collector": "collect-ofac-sdn.mjs",
+        "cache": 3600,
+        "description": "Направленные санкции США (OFAC) по странам и программам — issuer=США",
+        "unit": "records"
+      },
+      "method": "GET",
+      "version": "1.0.0",
       "subpath": true
     },
     "/api/layers/sanctions-pressure": {
@@ -5573,6 +5706,41 @@
       "method": "GET",
       "subpath": true
     },
+    "/api/layers/un-votes": {
+      "moduleId": "un-votes-api",
+      "file": "un-votes-api.mjs",
+      "meta": {
+        "category": "geopolitical",
+        "icon": "🗳️",
+        "color": "#4a90d9",
+        "vizType": "choropleth",
+        "source": "basket/un-votes.json",
+        "collector": "collect-un-votes.mjs",
+        "cache": 3600,
+        "description": "Голосования ГА ООН (ideal points, Erik Voeten dataset) — ось запад↔остальные",
+        "unit": "ideal_point"
+      },
+      "method": "GET",
+      "version": "1.0.0"
+    },
+    "/api/layers/un-votes/*": {
+      "moduleId": "un-votes-api",
+      "file": "un-votes-api.mjs",
+      "meta": {
+        "category": "geopolitical",
+        "icon": "🗳️",
+        "color": "#4a90d9",
+        "vizType": "choropleth",
+        "source": "basket/un-votes.json",
+        "collector": "collect-un-votes.mjs",
+        "cache": 3600,
+        "description": "Голосования ГА ООН (ideal points, Erik Voeten dataset) — ось запад↔остальные",
+        "unit": "ideal_point"
+      },
+      "method": "GET",
+      "version": "1.0.0",
+      "subpath": true
+    },
     "/api/layers/undersea-cables": {
       "moduleId": "undersea-cables-api",
       "file": "undersea-cables-api.mjs",
@@ -5620,7 +5788,8 @@
         "description": "Безработица по странам мира: ставки, режимы, региональные сравнения",
         "unit": "percent"
       },
-      "method": "GET"
+      "method": "GET",
+      "version": "3.0.1"
     },
     "/api/layers/unemployment/*": {
       "moduleId": "unemployment-api",
@@ -5637,6 +5806,7 @@
         "unit": "percent"
       },
       "method": "GET",
+      "version": "3.0.1",
       "subpath": true
     },
     "/api/layers/unemployment-claims": {
@@ -5686,7 +5856,8 @@
         "description": "Косвенные индикаторы разведактивности: Пицца Пентагона, Такси в Лэнгли",
         "unit": "index"
       },
-      "method": "GET"
+      "method": "GET",
+      "version": "3.0.0"
     },
     "/api/layers/unique-indicators/*": {
       "moduleId": "unique-indicators-api",
@@ -5703,6 +5874,7 @@
         "unit": "index"
       },
       "method": "GET",
+      "version": "3.0.0",
       "subpath": true
     },
     "/api/layers/uranium": {
@@ -6115,7 +6287,8 @@
         "description": "Мировой брифинг: convergences (схождение анализаторов) + topRisk + topInstability + topEvents + newsPairs (пары новостей RSS↔GDELT)",
         "unit": "index"
       },
-      "method": "GET"
+      "method": "GET",
+      "version": "1.0.1"
     },
     "/api/layers/world-brief/*": {
       "moduleId": "world-brief-api",
@@ -6132,6 +6305,7 @@
         "unit": "index"
       },
       "method": "GET",
+      "version": "1.0.1",
       "subpath": true
     },
     "/api/layers/wti-brent-spread": {
@@ -6181,7 +6355,8 @@
         "description": "Кривая доходности US Treasury (10Y-2Y): инверсия, нормализация, сигнал рецессии",
         "unit": "percent"
       },
-      "method": "GET"
+      "method": "GET",
+      "version": "3.0.1"
     },
     "/api/layers/yield-curve/*": {
       "moduleId": "yield-curve-api",
@@ -6198,6 +6373,7 @@
         "unit": "percent"
       },
       "method": "GET",
+      "version": "3.0.1",
       "subpath": true
     }
   },
@@ -7915,12 +8091,12 @@
       "schema": "crucix.basket.v1",
       "has_meta": true,
       "missing_meta_fields": [],
-      "series_len": 0,
+      "series_len": 31,
       "readers": [
         "dark-ships-api"
       ],
       "writers": [
-        "collect-dark-ships-real.mjs"
+        "collect-dark-ships.mjs"
       ],
       "status": "active",
       "help_ru_link": "docs/help/ru/basket/dark-ships.md",
@@ -8182,7 +8358,7 @@
       "schema": "crucix.basket.v1",
       "has_meta": true,
       "missing_meta_fields": [],
-      "series_len": 15,
+      "series_len": 10,
       "readers": [
         "earthquakes-api",
         "infrastructure-api"
@@ -8477,7 +8653,7 @@
       "schema": "crucix.basket.v1",
       "has_meta": true,
       "missing_meta_fields": [],
-      "series_len": 93,
+      "series_len": 124,
       "readers": [],
       "writers": [
         "collect-feeds.mjs"
@@ -8493,10 +8669,10 @@
       "schema": "crucix.basket.v1",
       "has_meta": true,
       "missing_meta_fields": [],
-      "series_len": 60,
+      "series_len": 31,
       "readers": [],
       "writers": [
-        "collect-fires.mjs"
+        "collect-firms.mjs"
       ],
       "status": "active",
       "help_ru_link": "docs/help/ru/basket/fires.md",
@@ -8535,13 +8711,13 @@
       "schema": "crucix.basket.v1",
       "has_meta": true,
       "missing_meta_fields": [],
-      "series_len": 60,
+      "series_len": 31,
       "readers": [
         "firms-api",
         "infrastructure-api"
       ],
       "writers": [
-        "collect-fires.mjs"
+        "collect-firms.mjs"
       ],
       "status": "active",
       "help_ru_link": "docs/help/ru/basket/firms.md",
@@ -8718,7 +8894,7 @@
         "fred-api"
       ],
       "writers": [
-        "collect-fred-real.mjs"
+        "collect-fred.mjs"
       ],
       "status": "active",
       "help_ru_link": "docs/help/ru/basket/fred.md",
@@ -8840,27 +9016,17 @@
     {
       "id": "gdelt",
       "file": "data/basket/gdelt.json",
-      "schema": null,
-      "has_meta": false,
-      "missing_meta_fields": [
-        "id",
-        "source",
-        "source_url",
-        "fetched_at",
-        "normalized_at",
-        "collector",
-        "license",
-        "count",
-        "granularity",
-        "value_unit",
-        "value_type"
-      ],
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
       "series_len": 0,
       "readers": [
         "gdelt-news-api"
       ],
-      "writers": [],
-      "status": "unknown",
+      "writers": [
+        "collect-gdelt.mjs"
+      ],
+      "status": "active",
       "help_ru_link": "docs/help/ru/basket/gdelt.md",
       "help_en_link": "docs/help/en/basket/gdelt.md",
       "parse_error": null
@@ -9881,7 +10047,7 @@
       "schema": "crucix.basket.v1",
       "has_meta": true,
       "missing_meta_fields": [],
-      "series_len": 0,
+      "series_len": 50,
       "readers": [],
       "writers": [
         "collect-map-layer-vix.mjs"
@@ -10323,7 +10489,8 @@
       "missing_meta_fields": [],
       "series_len": 0,
       "readers": [
-        "ofac-sdn-api"
+        "ofac-sdn-api",
+        "sanctions-directional-api"
       ],
       "writers": [
         "collect-ofac-sdn.mjs"
@@ -11300,7 +11467,7 @@
       "schema": "crucix.basket.v1",
       "has_meta": true,
       "missing_meta_fields": [],
-      "series_len": 3,
+      "series_len": 1,
       "readers": [
         "rss-feeds-api"
       ],
@@ -11339,19 +11506,55 @@
       "parse_error": null
     },
     {
+      "id": "rsshub.classified",
+      "file": "data/basket/rsshub.classified.json",
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [],
+      "writers": [],
+      "status": "unknown",
+      "help_ru_link": "docs/help/ru/basket/rsshub.classified.md",
+      "help_en_link": "docs/help/en/basket/rsshub.classified.md",
+      "parse_error": null
+    },
+    {
       "id": "rsshub",
       "file": "data/basket/rsshub.json",
-      "schema": "crucix.basket.v1",
-      "has_meta": true,
-      "missing_meta_fields": [],
-      "series_len": 1,
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
       "readers": [
         "rss-feeds-api"
       ],
-      "writers": [
-        "collect-rsshub.mjs"
-      ],
-      "status": "active",
+      "writers": [],
+      "status": "unknown",
       "help_ru_link": "docs/help/ru/basket/rsshub.md",
       "help_en_link": "docs/help/en/basket/rsshub.md",
       "parse_error": null
@@ -12249,6 +12452,24 @@
       "parse_error": null
     },
     {
+      "id": "un-votes",
+      "file": "data/basket/un-votes.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": true,
+      "missing_meta_fields": [],
+      "series_len": 73,
+      "readers": [
+        "un-votes-api"
+      ],
+      "writers": [
+        "collect-un-votes.mjs"
+      ],
+      "status": "active",
+      "help_ru_link": "docs/help/ru/basket/un-votes.md",
+      "help_en_link": "docs/help/en/basket/un-votes.md",
+      "parse_error": null
+    },
+    {
       "id": "undersea-cables",
       "file": "data/basket/undersea-cables.json",
       "schema": "crucix.basket.v1",
@@ -12387,7 +12608,7 @@
       "schema": "crucix.basket.v1",
       "has_meta": true,
       "missing_meta_fields": [],
-      "series_len": 254,
+      "series_len": 252,
       "readers": [
         "vix",
         "vix-api"
@@ -12614,7 +12835,7 @@
       "schema": "crucix.basket.v1",
       "has_meta": true,
       "missing_meta_fields": [],
-      "series_len": 21,
+      "series_len": 22,
       "readers": [
         "wti-brent-spread-api"
       ],
@@ -12739,6 +12960,4148 @@
       "parse_error": null
     }
   ],
+  "modules": {
+    "apis/sources/BaseModule.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/RSSManager.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/acled-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/acled.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/adaptive-news-clustering-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/adaptive-news-clustering.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/adsb.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/aeon.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/agents.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/ai-chat-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/ai-filter.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/ai-forecasts-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/ai-forecasts.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/ai-gateway.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/ai-news-analyzer.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/ai-news-rating.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/ai-news-synthesis-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/ai-news-synthesis.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/ai-processor.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/aif.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/ais-tracker/index.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/alert-dispatcher-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/alert-dispatcher.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/analysis-events-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/analytics/index.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/analyze-situation-api.mjs": {
+      "version": "1.0.1",
+      "has_header_version": true,
+      "dir": "apis/sources"
+    },
+    "apis/sources/animations.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/anomalies.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/anomaly-detector.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/arms-transfer-tracker-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/arms-transfer-tracker.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/automated-reports.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/aviation-api.mjs": {
+      "version": "3.0.1",
+      "has_header_version": true,
+      "dir": "apis/sources"
+    },
+    "apis/sources/aviation-monitor.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/bas.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/base.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/baseline-alerting-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/baseline-alerting.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/basket-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/basket-reader-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/bdi-api.mjs": {
+      "version": "3.0.1",
+      "has_header_version": true,
+      "dir": "apis/sources"
+    },
+    "apis/sources/big-mac-alt-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/big-mac-api.mjs": {
+      "version": "3.0.1",
+      "has_header_version": true,
+      "dir": "apis/sources"
+    },
+    "apis/sources/big-mac-main-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/blockchain.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/bls.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/bluesky.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/botnets-api.mjs": {
+      "version": "3.0.1",
+      "has_header_version": true,
+      "dir": "apis/sources"
+    },
+    "apis/sources/business-optimism-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/cache-manager-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/cache-manager.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/cbr.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/central-bank-predictor-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/central-bank-predictor.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/cii-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/cii-calculator.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/cisa-kev-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/cisa-kev.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/cisa.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/cli-analytics-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/cli-analytics.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/cloudflare-radar.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/collect-unemployment-claims.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/collector-config-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/collector-monitor-api-с_логами.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/collector-monitor-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/collector-monitor-api0.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/collector-monitor-api1.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/collector-monitor-api2.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/collector-monitor-api4.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/collector-monitor-api_.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/comtrade.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/config-validator-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/config-validator.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/conflict-escalation-tracker-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/conflict-escalation-tracker.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/conflict-predictor.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/conflict-zone-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/conflict-zone.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/consumer-confidence-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/consumer-expectations-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/convergence-engine-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/convergence-engine.mjs": {
+      "version": "1.0.0",
+      "has_header_version": true,
+      "dir": "apis/sources"
+    },
+    "apis/sources/copper-gold-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/copper-gold-ratio-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/correlation-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/correlation.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/country-brief-api.mjs": {
+      "version": "1.0.1",
+      "has_header_version": true,
+      "dir": "apis/sources"
+    },
+    "apis/sources/country-instability-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/cross-stream-correlation-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/cross-stream-correlation.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/crucix-doctor-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/crucix-doctor.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/crypto-fear-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/currents-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/cve.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/cyber-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/cyber-apt-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/cyber-attack-monitor-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/cyber-attack-monitor.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/cyber-intel.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/cyber-threat-index-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/cyber-threats.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/daily-briefing.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/daily-briefing/index.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/dark-fleet-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/dark-ships-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/dark-ships.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/dark-web-monitor.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/darkweb-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/darkweb.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/dashboard-indicators-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/dashboard-indicators.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/dashboard.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/data-discrepancy-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/data-discrepancy.mjs": {
+      "version": "1.0.0",
+      "has_header_version": true,
+      "dir": "apis/sources"
+    },
+    "apis/sources/debt-gdp-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/deception-index-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/decision.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/deepfake.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/derived-market-analytics-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/derived-market-analytics.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/diagnostic-tool-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/diagnostic-tool.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/diagnostics-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/diplomatic-tracker-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/diplomatic-tracker.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/dxy-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/early-warning.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/earthquake-zone-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/earthquake-zone.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/earthquakes-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/economic.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/economist.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/economy-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/education-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/eia-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/eia.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/emotion-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/emotion.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/energy-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/energy-market-intelligence-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/energy-market-intelligence.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/energy-monitor.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/energy.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/entity-extraction-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/entity-extraction.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/entity-graph-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/entity-resolution.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/environment-monitor.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/epa-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/epa.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/epidemics-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/esg.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/etf-flow-analysis-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/etf-flow-analysis.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/event-deduplicator-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/event-deduplicator.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/events-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/export-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/export-map.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/export.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/extensions-index.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/favorites-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/financial.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/firms-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/firms.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/flood-zone-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/flood-zone.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/focal-point-detection-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/focal-point-detection.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/food-security-monitor-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/food-security-monitor.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/fred-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/fred.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/fx-reserves-monitor-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/fx-reserves-monitor.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/gateway-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/gdelt-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/gdelt-curl.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/gdelt-news-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/gdelt-v1.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/gdelt.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/geo-convergence-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/geo-convergence.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "apis/sources"
+    },
+    "apis/sources/geo-markers-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/geocode.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/geopolitical-reports.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/geopolitical.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/github-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/github.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/global-index-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/gold-oil-ratio-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/gold-silver-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/gold.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/google-trends-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/gps-jamming-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/gps-jamming.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/gscpi.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/guardian_science.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/hackernews-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/hackernews.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/happiness-alt-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/happiness-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/health-monitor.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/health.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/heatmap-generator.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/heatmap-risk.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/help-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/hidden-links.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/historical-analysis-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/hurricanes-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/hy-spread-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/index.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/indirect-indicators-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/inflation-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/infrastructure-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/infrastructure-cargo-anomaly.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/infrastructure-cascade-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/infrastructure-cascade.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/infrastructure-chokepoint-monitor.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/infrastructure-eia-global.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/infrastructure-eia.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/infrastructure-firms.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/infrastructure-graph-core.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/infrastructure-military-monitor.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/infrastructure-monte-carlo.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/infrastructure-nuclear-monitor.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/infrastructure-ofac.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/infrastructure-pagerank-critical.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/infrastructure-predict.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/infrastructure-propagation.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/infrastructure-scenario-engine.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/infrastructure-ships.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/infrastructure-supply-chain.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/infrastructure-temporal.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/infrastructure-vulnerability-calc.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/instability-index-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/intelligence-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/intelligence.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/interfax.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/internet-outages-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/izvestia.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/kiwisdr.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/kommersant.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/langgraph-orchestrator-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/langgraph-orchestrator.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/launches-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/layer-filters.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/layer-manager.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/layer-popup.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/layer-timeline.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/lenses-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/lenta.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/lib/basket-legacy.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/lib/basket-loader.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/link-analysis.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/live-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/llm-analyzer.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/local.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/logistics-anomalies-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/logistics-anomalies.mjs": {
+      "version": "1.0.0",
+      "has_header_version": true,
+      "dir": "apis/sources"
+    },
+    "apis/sources/malware-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/map-layer-cyber.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/map-layer-economy.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/map-layer-energy.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/map-layer-military-zones.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/map-layer-sanctions.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/map-layer-social.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/map-layer-vix.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/maritime-monitor.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/market-composite-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/market-composite.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/market-predictor.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/masa.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/max-driver.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/mcp-server-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/mcp-server.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/mcp-server/index.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/mediacloud.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/migration-flow-tracker-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/migration-flow-tracker.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/military-base.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/military-bases-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/military-exercises-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/military.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/module-registration-controller-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/module-registration-controller.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/monitor-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/multi-source-corroboration-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/multi-source-corroboration.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/narrative-drift-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/narrative-drift.mjs": {
+      "version": "1.0.0",
+      "has_header_version": true,
+      "dir": "apis/sources"
+    },
+    "apis/sources/narrative-splitter-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/news-aggregator.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/news-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/newsapi-basket-integration.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/newsapi.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/nlp-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/noaa-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/noaa.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/notam-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/notam.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/nuclear-monitor-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/nyt.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/ocean-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/ofac-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/ofac-sdn-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/ofac.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/oil-gas-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/oil.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/opensanctions.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/opensky-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/opensky.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/ovx-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/p2p.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/patents.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/pipelines-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/pizza-index-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/pizza-index.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/pmi-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/pole-tracker-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/political-stability-monitor-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/political-stability-monitor.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/popup.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/predict-layer.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/predict.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/prediction-intel.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/prediction-markets-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/prediction-markets.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/predictive.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/preset-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/progressive-disclosure-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/progressive-disclosure.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/quanta.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/quantum.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/rag-advanced.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/rag-ai-router.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/rag-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/rag-chat.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/rag-indexer.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/rag-module/rag-ai-router.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/rag-module/rag-indexer.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/rag-module/rag-server.mjs": {
+      "version": "1.0.0",
+      "has_header_version": true,
+      "dir": "apis/sources"
+    },
+    "apis/sources/rag-multi.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/rag-server.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/rag-summary.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/rag-upload.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/rag.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/rate-limiter-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/rate-limiter.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/recession-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/reddit-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/reddit.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/reference-data-provider-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/reference-data-provider.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/registry-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/registry-test.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/registry.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/reliefweb.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/reports-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/resilience-index-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/resilience-index.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/risk-heatmap-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/risk-signal-aggregator-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/risk-signal-aggregator.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/route-explorer-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/route-explorer.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/route-explorer/index.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/router.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/rss-convergence-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/rss-convergence.mjs": {
+      "version": "1.0.3",
+      "has_header_version": true,
+      "dir": "apis/sources"
+    },
+    "apis/sources/rss-feeds-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/rss-manager-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/rublev-dubai-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/safecast-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/safecast.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/sanction-list.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/sanctions-directional-api.mjs": {
+      "version": "1.0.0",
+      "has_header_version": true,
+      "dir": "apis/sources"
+    },
+    "apis/sources/sanctions-pressure-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/sanctions-pressure.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/satellite-analyzer-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/satellite-analyzer.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/satellite-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/satellite-internet.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/satellite-stac-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/satellite/index.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/scan-pages-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/scenario-engine/index.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/scenario-generator.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/scenario-simulation-engine-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/scenario-simulation-engine.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/scenarios-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/scheduler-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/sciencenews.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/semantic-analysis.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/sentiment-analyzer.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/shipping-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/shipping-route.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/ships-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/ships.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/shodan.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/signal-aggregator-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/signal-aggregator.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/silence-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/silence-patterns-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/silence-patterns.mjs": {
+      "version": "1.0.0",
+      "has_header_version": true,
+      "dir": "apis/sources"
+    },
+    "apis/sources/silent-signal.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/snapshot-system-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/snapshot-system.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/social-briefing-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/social-briefing-engine-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/social-briefing-engine.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/social-sentiment-analyzer-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/social-sentiment-analyzer.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/social-unrest-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/social.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/source-coordination-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/source-coordination.mjs": {
+      "version": "1.0.0",
+      "has_header_version": true,
+      "dir": "apis/sources"
+    },
+    "apis/sources/source-credibility-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/source-credibility.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/sp500-vix-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/space-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/space-debris-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/space-debris.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/space-monitor.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/space.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/sputnik.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/ssi.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/stablecoin-monitor-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/stablecoin-monitor.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/starlink-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/storage-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/strategic-intel.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/strategic-layer.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/strategic-ports-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/strategic-risk-composite-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/strategic-risk-composite.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/submarine-cable-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/submarine-cable.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/supply-chain-cascade-engine-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/supply-chain-cascade-engine.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/supply-chain-monitor.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/supply-chain-resilience-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/supply-chain-resilience.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/supply-chain.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/surge-detection-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/surge-detection.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/tanker-fleet-monitor-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/tanker-fleet-monitor.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/tass.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/telegram-driver.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/telegram.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/temporal-analysis.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/thehindu.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/thinktanks-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/threat-classification-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/threat-classification.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/threat-intel.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/threats-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/tick-data-analyzer-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/tick-data-analyzer.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/timeline.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/timesofindia.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/tips-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/trade-monitor.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/treasury-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/treasury.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/trends.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/trust-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/un-votes-api.mjs": {
+      "version": "1.0.0",
+      "has_header_version": true,
+      "dir": "apis/sources"
+    },
+    "apis/sources/undersea-cables-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/unemployment-api.mjs": {
+      "version": "3.0.1",
+      "has_header_version": true,
+      "dir": "apis/sources"
+    },
+    "apis/sources/unemployment-claims-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/unique-indicators-api.mjs": {
+      "version": "3.0.0",
+      "has_header_version": true,
+      "dir": "apis/sources"
+    },
+    "apis/sources/unique-indicators-дубль.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/uranium-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/usaspending.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/user-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/usgs-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/usgs.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/vedomosti.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/viirs-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/vix-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/vix.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/voice.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/volcanoes-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/vulnerabilities-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/vulnerability-db.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/vxx-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/war-preparation-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/watchdog-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/watchdog.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/weather-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/weather-monitor.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/weather.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/who-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/who.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/wildfires-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/world-brief-api.mjs": {
+      "version": "1.0.1",
+      "has_header_version": true,
+      "dir": "apis/sources"
+    },
+    "apis/sources/wti-brent-spread-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/yfinance.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/yield-curve-api.mjs": {
+      "version": "3.0.1",
+      "has_header_version": true,
+      "dir": "apis/sources"
+    },
+    "apis/sources/{name}.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/predict/active_learning.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/adversarial_coevolution.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/agent/agent_core.mjs": {
+      "version": "8.0.0",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/agent/executor.mjs": {
+      "version": "8.0.0",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/agent/narrator.mjs": {
+      "version": "8.0.0",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/agent/planner.mjs": {
+      "version": "8.0.0",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/agent/server.mjs": {
+      "version": "8.0.0",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/agent/tool_registry.mjs": {
+      "version": "8.0.0",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/anomaly_detection-дубль.mjs": {
+      "version": "6.0.0",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/attention_dynamics.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/automl.mjs": {
+      "version": "6.0.0",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/bayesian.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/bayesian_causal.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/calibration.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/cascade.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/causal.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/composite_risk.mjs": {
+      "version": "1.0.1",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/core/linear_algebra.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/core/optim.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/core/stats.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/crucix_engine_v3.mjs": {
+      "version": "1.0.1",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/engine.mjs": {
+      "version": "8.0.0",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/engine_v6_patch.mjs": {
+      "version": "1.0.0",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/engine_v7_patch.mjs": {
+      "version": "1.0.0",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/ensemble.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/exotic/chaos.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/exotic/game_theory.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/exotic/infogeo.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/exotic/networks.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/exotic/quantum_sa.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/exotic/signal_advanced.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/exotic/wasserstein.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/explainability.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/extended_tracker.mjs": {
+      "version": "3.0.0",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/federated/fl_node.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/federated/fl_protocol.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/federated_hypergraph.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/gametheory.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/hypergraph_contagion.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/hypergraph_discovery.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/llm_agents.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/markov.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/meta_ensemble.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/models/actor_critic.mjs": {
+      "version": "6.0.0",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/models/anomaly_detection.mjs": {
+      "version": "7.0.0",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/models/bayesnet.mjs": {
+      "version": "6.0.1",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/models/bocpd.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/models/contagion.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/models/copula.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/models/diffusion.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/models/evt.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/models/graph_neural.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/models/graph_sage.mjs": {
+      "version": "6.0.0",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/models/hawkes.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/models/hmm.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/models/ising.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/models/kalman.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/models/mcmc.mjs": {
+      "version": "6.0.0",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/models/neural.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/models/ornstein.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/models/particle.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/models/physics_inspired.mjs": {
+      "version": "6.0.0",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/models/reinforcement.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/models/transferentropy.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/models/transformer.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/models/vae.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/montecarlo.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/multilayer_causal.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/multiscale_attention.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/naivebayes.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/narrative.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/narrative_unified.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/narrative_warfare.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/notifier.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/opponent_ppo.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/plugins_api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/python_bridge.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/reflexive.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/regime_shift.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/register_coordinat_all.mjs": {
+      "version": "1.0.0",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/resource_exhaustion.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/scenario_generator.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/sources/cascade.mjs": {
+      "version": "1.0.0",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/sources/conflict.mjs": {
+      "version": "1.0.0",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/sources/geopolitical.mjs": {
+      "version": "1.0.0",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/sources/market.mjs": {
+      "version": "1.0.0",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/sources/multilang.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/sources/prediction_markets.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/sources/satellite.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/swarm.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/temporal_causal.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/timeseries.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/v6/causal_rl.mjs": {
+      "version": "6.0.0",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/v6/continual_learning.mjs": {
+      "version": "6.0.0",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/v6/neural_causal_discovery.mjs": {
+      "version": "6.0.0",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/v6/quantum_hypergraph.mjs": {
+      "version": "6.0.0",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/v6/zk_federated.mjs": {
+      "version": "6.0.0",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/v7/continuous_causal.mjs": {
+      "version": "7.0.0",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/v7/dreamer.mjs": {
+      "version": "7.0.0",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/v7/neural_ode.mjs": {
+      "version": "7.0.0",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/v7/simulation_engine.mjs": {
+      "version": "7.0.0",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/v7/world_model.mjs": {
+      "version": "7.0.0",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/wasm/simd_loader.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/webgl/example_gpu.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/webgl/gpu.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/webgl/shaders.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/workers/crucix_worker.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/workers/example_parallel.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/workers/montecarlo_worker.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/workers/pool.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/ws.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "apis/predict/ws_v4_patch.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/predict"
+    },
+    "scripts/analyzers/adaptive-news-clustering.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/ai-forecasts.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/ai-news-synthesis.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/alert-dispatcher.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/arms-transfer-tracker.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/baseline-alerting.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/cache-manager.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/central-bank-predictor.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/cli-analytics.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/config-validator.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/conflict-escalation-tracker.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/convergence-engine.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/country-instability.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/cross-stream-correlation.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/crucix-doctor.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/cyber-attack-monitor.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/dashboard-indicators.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/data-discrepancy.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/deception-index.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/derived-market-analytics.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/diplomatic-tracker.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/energy-market-intelligence.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/entity-extraction.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/etf-flow-analysis.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/event-deduplicator.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/focal-point-detection.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/food-security-monitor.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/fx-reserves-monitor.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/geo-convergence.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/langgraph-orchestrator.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/logistics-anomalies.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/market-composite.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/mcp-server.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/migration-flow-tracker.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/module-registration-controller.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/multi-source-corroboration.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/narrative-drift.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/pizza-index.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/political-stability-monitor.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/prediction-markets.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/progressive-disclosure.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/quality-report.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/rate-limiter.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/reference-data-provider.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/resilience-index.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/risk-signal-aggregator.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/route-explorer.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/rss-convergence.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/run-all.mjs": {
+      "version": "1.0.1",
+      "has_header_version": true,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/sanctions-pressure.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/satellite-analyzer.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/scenario-simulation-engine.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/signal-aggregator.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/silence-patterns.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/snapshot-system.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/social-briefing-engine.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/social-sentiment-analyzer.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/source-coordination.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/source-credibility.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/stablecoin-monitor.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/strategic-risk-composite.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/supply-chain-cascade-engine.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/supply-chain-resilience.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/surge-detection.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/tanker-fleet-monitor.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/threat-classification.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/tick-data-analyzer.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/analyzers/watchdog.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/analyzers"
+    },
+    "scripts/warehouse/adapters/catalog.mjs": {
+      "version": "1.1.1",
+      "has_header_version": true,
+      "dir": "scripts/warehouse"
+    },
+    "scripts/warehouse/adapters/events.mjs": {
+      "version": "2.2.0",
+      "has_header_version": true,
+      "dir": "scripts/warehouse"
+    },
+    "scripts/warehouse/adapters/hierarchical.mjs": {
+      "version": "1.1.0",
+      "has_header_version": true,
+      "dir": "scripts/warehouse"
+    },
+    "scripts/warehouse/adapters/points.mjs": {
+      "version": "2.2.1",
+      "has_header_version": true,
+      "dir": "scripts/warehouse"
+    },
+    "scripts/warehouse/adapters/regions.mjs": {
+      "version": "2.1.0",
+      "has_header_version": true,
+      "dir": "scripts/warehouse"
+    },
+    "scripts/warehouse/adapters/timeseries.mjs": {
+      "version": "2.2.1",
+      "has_header_version": true,
+      "dir": "scripts/warehouse"
+    },
+    "scripts/warehouse/lineage.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/warehouse"
+    },
+    "scripts/warehouse/managerbasket.mjs": {
+      "version": "1.2.0",
+      "has_header_version": true,
+      "dir": "scripts/warehouse"
+    },
+    "scripts/warehouse/quality.mjs": {
+      "version": "1.1.0",
+      "has_header_version": true,
+      "dir": "scripts/warehouse"
+    },
+    "scripts/warehouse/region-mapper.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/warehouse"
+    },
+    "scripts/warehouse/validate.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/warehouse"
+    },
+    "scripts/collectors/collect-acled.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-aviation.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-bdi.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-big-mac.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-bls.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-business-optimism.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-celestrak.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-cisa-kev.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-cisa.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-coingecko.mjs": {
+      "version": "2.0.1",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-comtrade.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-conflict-zones.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-conflicts.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-consumer-confidence.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-consumer-expectations.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-copper-gold.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-covid.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-crypto-fear.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-cyber-apt.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-cyber-attacks.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-cyber-threat-index.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-cyber-threats.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-daily-report.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-dark-fleet.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-dark-ships-real.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-dark-ships.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-debt-gdp.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-dxy.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-earthquakes.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-ecb.mjs": {
+      "version": "2.0.1",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-economy.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-eia-real.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-eia.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-epa.mjs": {
+      "version": "2.0.1",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-feeds.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-fires.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-firms.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-frankfurter.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-fred-real.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-fred.mjs": {
+      "version": "2.0.1",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-frostbyte.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-gdelt.mjs": {
+      "version": "2.5.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-geo-data.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-global-price.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-gold-oil.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-gold-silver.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-google-trends.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-gps-jamming.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-gscpi.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-hackernews.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-happiness.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-hy-spread.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-indirect-indicators.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-inflation.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-infrastructure.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-instability-index.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-internet-outages.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-iss.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-launches.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-map-layer-vix.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-maritime-monitor.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-military-bases.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-military-exercises.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-news.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-newsapi-real.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-newsapi.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-noaa.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-notam.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-nuclear-monitor.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-ofac-sdn.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-ofac.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-oil-gas.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-open-meteo (копия).mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-open-meteo.mjs": {
+      "version": "2.1.1",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-openaq.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-opensanctions.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-opensky.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-openweather.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-ovx.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-pipelines.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-pmi.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-prediction-markets.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-recession.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-rest-countries.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-ria.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-risk-heatmap.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-rss-extra.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-rss-universal.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-rsshub.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-rublev-dubai.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-russian-sources.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-safecast.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-satellite-stac.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-ships.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-social-unrest.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-sp500-vix.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-space-track.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-starlink.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-strategic-ports.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-thermal.mjs": {
+      "version": "2.0.1",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-thinktanks.mjs": {
+      "version": "2.4.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-tips.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-trading-economics.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-treasury.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-ucdp.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-un-votes.mjs": {
+      "version": "1.0.1",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-undersea-cables.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-unemployment.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-unique-indicators.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-uranium.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-usgs.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-viirs.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-vix.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-vxx.mjs": {
+      "version": "1.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-war-preparation.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-who.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-worldbank.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-wti-brent-spread.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-yahoo.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-yield-curve.mjs": {
+      "version": "2.0.0",
+      "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/lib/collector-helper.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/collectors"
+    },
+    "scripts/logs/logs-config.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/logs"
+    },
+    "scripts/logs/logs-maintenance.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/logs"
+    },
+    "scripts/logs/logs-writer.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/logs"
+    },
+    "server/api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "server"
+    },
+    "server/basket-reader.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "server"
+    },
+    "server/build-registry.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "server"
+    },
+    "server/config.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "server"
+    },
+    "server/loader.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "server"
+    },
+    "server/pages.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "server"
+    },
+    "server/router.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "server"
+    },
+    "server/static.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "server"
+    },
+    "server/utils.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "server"
+    }
+  },
   "skipped": [
     {
       "file": "BaseModule.mjs",
@@ -14037,11 +18400,6 @@
     },
     {
       "file": "trends.mjs",
-      "reason": "no_route",
-      "hasHandler": false
-    },
-    {
-      "file": "unique-indicators.mjs",
       "reason": "no_route",
       "hasHandler": false
     },

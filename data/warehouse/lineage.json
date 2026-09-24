@@ -1,6 +1,6 @@
 {
   "schema": "crucix.warehouse.lineage.v1",
-  "updated_at": "2026-09-20T20:05:29.801Z",
+  "updated_at": "2026-09-23T17:53:09.646Z",
   "items": {
     "vxx": [
       {
@@ -51,6 +51,20 @@
         "raw_checksum": "6140c5aec95228d5c25e08e1b8625e38169e519de3abc9549be69635481d7380",
         "adapter": "timeseries",
         "adapter_version": "2.1.1",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.762Z",
+        "raw_file": "data/raw/vxx-2026-09-23T07-04-27Z.json",
+        "raw_checksum": "bf9b79682ceafc1f09453479e85bbfb7c0d4b86e73c21bdddc4f6bc0df98e52b",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
         "records_in": 31,
         "records_out": 31,
         "dropped_fields": [],
@@ -172,6 +186,20 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.501Z",
+        "raw_file": "data/raw/ofac-sdn-2026-09-23T06-57-45Z.json",
+        "raw_checksum": "7903d28fb21df30f0ce73dbb6a62727d8053e767ac6f2f5e10a3466817ea1d8e",
+        "adapter": "catalog",
+        "adapter_version": "1.1.0",
+        "records_in": 19393,
+        "records_out": 19393,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "bdi": [
@@ -181,6 +209,34 @@
         "raw_checksum": "a5e21e64ce13bae131e1950221d2f5973f25852aa2ff6a610048bd3e860f3f37",
         "adapter": "timeseries",
         "adapter_version": "2.0.0",
+        "records_in": 366,
+        "records_out": 366,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:47.871Z",
+        "raw_file": "data/raw/bdi-2026-09-22T19-00-21Z.json",
+        "raw_checksum": "55df7bc43f04a800e9a53c2eebe4c359906f173df353dc8c72c5bd3fd56c2e81",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 366,
+        "records_out": 366,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.226Z",
+        "raw_file": "data/raw/bdi-2026-09-23T06-51-48Z.json",
+        "raw_checksum": "712834a5933aaf8fd44ed1d9b583704bce4dfc7c911be88d7180335f4fbe3778",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
         "records_in": 366,
         "records_out": 366,
         "dropped_fields": [],
@@ -204,6 +260,34 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:47.999Z",
+        "raw_file": "data/raw/copper-gold-2026-09-22T19-00-57Z.json",
+        "raw_checksum": "7475368e9d4aea310cb29ba725e5471821cc7de1210305a6ec4413a35069a158",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.341Z",
+        "raw_file": "data/raw/copper-gold-2026-09-23T06-51-54Z.json",
+        "raw_checksum": "7f73d7634a8a2ad0ae3497c3512c61b12253cf0a6483c8d72511c8201ed1ad71",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "cyber-threats": [
@@ -220,6 +304,34 @@
         "unmapped_count": 3,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.072Z",
+        "raw_file": "data/raw/cyber-threats-2026-09-22T19-00-59Z.json",
+        "raw_checksum": "dda87d33644dc83086f758fd38784804cfa094e730ec35e2b9e88d61805d645d",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 3,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.396Z",
+        "raw_file": "data/raw/cyber-threats-2026-09-23T06-51-56Z.json",
+        "raw_checksum": "dbf191999d22bcb224b14ff0f686e53b91e8eef8d31451c1b51fbb01b102a6be",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 3,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "daily-report": [
@@ -229,6 +341,34 @@
         "raw_checksum": "824258725926ea2815d9c9439c2f5b5130751eb558a29d266136e2a3191d4ebf",
         "adapter": "catalog",
         "adapter_version": "1.0.0",
+        "records_in": 1,
+        "records_out": 1,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.074Z",
+        "raw_file": "data/raw/daily-report-2026-09-22T19-00-59Z.json",
+        "raw_checksum": "bf9e629ec7d9786f47a5dee53e47e24cc4795b29820449ec5af4881639aabecd",
+        "adapter": "catalog",
+        "adapter_version": "1.1.0",
+        "records_in": 1,
+        "records_out": 1,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.397Z",
+        "raw_file": "data/raw/daily-report-2026-09-23T06-51-56Z.json",
+        "raw_checksum": "2b8d73ce299e6158c3731c063c96ab6bfe13e44da507c78cc81eaf7d8c2af4e8",
+        "adapter": "catalog",
+        "adapter_version": "1.1.0",
         "records_in": 1,
         "records_out": 1,
         "dropped_fields": [],
@@ -266,6 +406,34 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.154Z",
+        "raw_file": "data/raw/dark-ships-2026-09-22T19-00-59Z.json",
+        "raw_checksum": "92166f63e4e78ff3b3c7043ff3e381d878fa25f79e595309db2a34c13c9df85e",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 5,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.443Z",
+        "raw_file": "data/raw/dark-ships-2026-09-23T06-51-56Z.json",
+        "raw_checksum": "2b838ea61f8b8e7809a6463099b9c7b869e219eda9f3382ae9a0f2b3162258de",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 5,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "firms": [
@@ -275,6 +443,20 @@
         "raw_checksum": "3a0d4173f82210196f65ac94261d6b820b2405339b0561ee3ab857658b5c4073",
         "adapter": "timeseries",
         "adapter_version": "2.0.0",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 1,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.798Z",
+        "raw_file": "data/raw/firms-2026-09-23T06-53-27Z.json",
+        "raw_checksum": "0601a8fbffdce8df77f34961c46572d8b75f472bcc0701df326ae5a8f6f324a3",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
         "records_in": 31,
         "records_out": 31,
         "dropped_fields": [],
@@ -293,6 +475,20 @@
         "adapter_version": "2.0.0",
         "records_in": 100,
         "records_out": 100,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.816Z",
+        "raw_file": "data/raw/gdelt-2026-09-23T13-41-27Z.json",
+        "raw_checksum": "c82b0c02721b73a3b59ce8e24a38426dbc60b72ee204b8a6699a44000948797c",
+        "adapter": "events",
+        "adapter_version": "2.2.0",
+        "records_in": 0,
+        "records_out": 0,
         "dropped_fields": [],
         "added_fields": [],
         "unmapped_count": 0,
@@ -330,6 +526,20 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.824Z",
+        "raw_file": "data/raw/google-trends-2026-09-23T06-56-59Z.json",
+        "raw_checksum": "73acf40f284774384d4bbabce07a84f5f56dc7961241e97e92cc665be18c99f0",
+        "adapter": "points",
+        "adapter_version": "2.2.1",
+        "records_in": 5,
+        "records_out": 5,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "infrastructure": [
@@ -339,6 +549,20 @@
         "raw_checksum": "79a9e679d5bc8c4f3d6f73c5c97ce1764d1c16705969fa4c9b31f59f6b6b5342",
         "adapter": "points",
         "adapter_version": "2.0.0",
+        "records_in": 114,
+        "records_out": 114,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 18,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.864Z",
+        "raw_file": "data/raw/infrastructure-2026-09-23T06-57-08Z.json",
+        "raw_checksum": "11697ba5c5f98facad621d590a5869626746a356378a4bd6f00c7da420b5381e",
+        "adapter": "points",
+        "adapter_version": "2.2.1",
         "records_in": 114,
         "records_out": 114,
         "dropped_fields": [],
@@ -362,6 +586,20 @@
         "unmapped_count": 1,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.911Z",
+        "raw_file": "data/raw/map-layer-vix-2026-09-23T06-57-10Z.json",
+        "raw_checksum": "faf26c5ed0eef8a5a301d2e226ad4368159a39b13cbae13038fc429dcde2f67a",
+        "adapter": "points",
+        "adapter_version": "2.2.1",
+        "records_in": 50,
+        "records_out": 50,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 4,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "military-bases": [
@@ -378,6 +616,20 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.916Z",
+        "raw_file": "data/raw/military-bases-2026-09-23T06-57-10Z.json",
+        "raw_checksum": "60eb9e71f60bc42ea29c324edc4ad81f01e4bbc05138a98adaf09215b1831886",
+        "adapter": "points",
+        "adapter_version": "2.2.1",
+        "records_in": 61,
+        "records_out": 61,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "notam": [
@@ -387,6 +639,20 @@
         "raw_checksum": "0ba7583354d8bc1ac8cfb9c4a5908f983ca80f1c1ddf18698fc02084c57f866f",
         "adapter": "points",
         "adapter_version": "2.0.0",
+        "records_in": 5,
+        "records_out": 5,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 5,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.978Z",
+        "raw_file": "data/raw/notam-2026-09-23T06-57-16Z.json",
+        "raw_checksum": "c79ede5c998247facf510bbcf92b6f7a9f1c0f8d8ba8e9f2831340bbf792d6da",
+        "adapter": "points",
+        "adapter_version": "2.2.1",
         "records_in": 5,
         "records_out": 5,
         "dropped_fields": [],
@@ -452,6 +718,34 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.206Z",
+        "raw_file": "data/raw/rsshub-2026-09-22T21-03-40Z.json",
+        "raw_checksum": "624b4c46cb670678c146ce7f5a9f6f3bd9b7f0639656445a30b6d8b420f194fc",
+        "adapter": "events",
+        "adapter_version": "2.2.0",
+        "records_in": 500,
+        "records_out": 500,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.844Z",
+        "raw_file": "data/raw/rsshub-2026-09-23T17-03-06Z.json",
+        "raw_checksum": "80c8bbb1969a5e6c56ec0a6ba5ba1862e5fde5e0421b07239b502996b30328ad",
+        "adapter": "events",
+        "adapter_version": "2.2.0",
+        "records_in": 500,
+        "records_out": 500,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "sp500-vix": [
@@ -461,6 +755,20 @@
         "raw_checksum": "d5373b048a7fc0781e6ae6bbfcd14d9eea02f91eeacc49a0ec7f1b0f08c548af",
         "adapter": "timeseries",
         "adapter_version": "2.0.0",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.663Z",
+        "raw_file": "data/raw/sp500-vix-2026-09-23T07-02-24Z.json",
+        "raw_checksum": "9030acd6d5a44aff453977086e7d379d39d69b660e8f187ed2c74e860ca075d9",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
         "records_in": 31,
         "records_out": 31,
         "dropped_fields": [],
@@ -512,6 +820,20 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.714Z",
+        "raw_file": "data/raw/usgs-2026-09-23T07-04-25Z.json",
+        "raw_checksum": "3c5006a99b90b1e11386019b960d177cfd031879562007272c2660f767a1ba91",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "worldbank": [
@@ -528,6 +850,20 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.804Z",
+        "raw_file": "data/raw/worldbank-2026-09-23T07-04-52Z.json",
+        "raw_checksum": "093e934a57a76f45f71822a89b9b5da43d68594438f00a6333a1291272db58a5",
+        "adapter": "catalog",
+        "adapter_version": "1.1.0",
+        "records_in": 197,
+        "records_out": 197,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "yield-curve": [
@@ -537,6 +873,20 @@
         "raw_checksum": "d97a4cb7cdf9939b8208280f526d7a6029e67b533c6ed8f0b66cd9661e4e9ef2",
         "adapter": "timeseries",
         "adapter_version": "2.0.0",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.811Z",
+        "raw_file": "data/raw/yield-curve-2026-09-23T07-04-55Z.json",
+        "raw_checksum": "bd102645362ddfa25fe0307d57e82eb2363889b5bab8d32660d4dae4d3c38079",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
         "records_in": 31,
         "records_out": 31,
         "dropped_fields": [],
@@ -579,6 +929,34 @@
         "ts": "2026-09-19T05:16:38.822Z",
         "raw_file": "data/raw/coingecko-2026-09-18T22-43-27Z.json",
         "raw_checksum": "69350ccd86dc3848bb3aaf80f94b76018e6bf742d790a2bc4e2b33d8be78beb0",
+        "adapter": "catalog",
+        "adapter_version": "1.1.0",
+        "records_in": 50,
+        "records_out": 50,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:47.982Z",
+        "raw_file": "data/raw/coingecko-2026-09-22T19-00-56Z.json",
+        "raw_checksum": "c61434dd422bdc3f9ac341c74aed908838ce77cc730d1fd688cf5b494f6ebb3c",
+        "adapter": "catalog",
+        "adapter_version": "1.1.0",
+        "records_in": 50,
+        "records_out": 50,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.321Z",
+        "raw_file": "data/raw/coingecko-2026-09-23T06-51-54Z.json",
+        "raw_checksum": "da36d80bbee4ac8f3cc5f795305f08fc291abf186894e94fe71096735452061c",
         "adapter": "catalog",
         "adapter_version": "1.1.0",
         "records_in": 50,
@@ -632,6 +1010,20 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.802Z",
+        "raw_file": "data/raw/fred-2026-09-23T06-53-30Z.json",
+        "raw_checksum": "7cbd02ff9eaed1969783cc9190e2d44502f59402934909870e16126ac731aeb3",
+        "adapter": "catalog",
+        "adapter_version": "1.1.0",
+        "records_in": 3,
+        "records_out": 3,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "cisa": [
@@ -643,6 +1035,34 @@
         "adapter_version": "1.1.0",
         "records_in": 1716,
         "records_out": 1716,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:47.977Z",
+        "raw_file": "data/raw/cisa-2026-09-22T19-00-56Z.json",
+        "raw_checksum": "6dd035695379bc7e1ca9d644b894c09d7e6b96fbf16710e244666de24928cbf0",
+        "adapter": "catalog",
+        "adapter_version": "1.1.0",
+        "records_in": 1717,
+        "records_out": 1717,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.309Z",
+        "raw_file": "data/raw/cisa-2026-09-23T06-51-53Z.json",
+        "raw_checksum": "afc575652c78aa7f3b8cff19ad163938d935d69359856f5ba15adf032ce16c68",
+        "adapter": "catalog",
+        "adapter_version": "1.1.0",
+        "records_in": 1721,
+        "records_out": 1721,
         "dropped_fields": [],
         "added_fields": [],
         "unmapped_count": 0,
@@ -671,6 +1091,34 @@
         "raw_checksum": "c5a83d36662f491a2bbcc41bfc8ac68b145e66b48a578d79dabbec3078501783",
         "adapter": "timeseries",
         "adapter_version": "2.1.0",
+        "records_in": 110,
+        "records_out": 110,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.173Z",
+        "raw_file": "data/raw/eia-2026-09-22T19-01-03Z.json",
+        "raw_checksum": "7e8c6df905ccea35f0ceb076a9cce6e6655c5dc2e31e5ba53bb302145b102538",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 105,
+        "records_out": 105,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.461Z",
+        "raw_file": "data/raw/eia-2026-09-23T06-51-59Z.json",
+        "raw_checksum": "c10187eae603447bd7772b810a6b3fc85c06271eef233752f86061a209af7c66",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
         "records_in": 110,
         "records_out": 110,
         "dropped_fields": [],
@@ -750,6 +1198,20 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.551Z",
+        "raw_file": "data/raw/epa-2026-09-23T06-52-22Z.json",
+        "raw_checksum": "3d313aad54799da1aa4954db68704ee532fa01d2b998d406c898fe8388ba28e6",
+        "adapter": "points",
+        "adapter_version": "2.2.1",
+        "records_in": 12250,
+        "records_out": 12250,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "bls": [
@@ -766,6 +1228,34 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:47.880Z",
+        "raw_file": "data/raw/bls-2026-09-22T19-00-21Z.json",
+        "raw_checksum": "a94e5f53afe9df84c371b5f61e4e2f4bca993afb32b971d45b1a3d87dc4ccace",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.233Z",
+        "raw_file": "data/raw/bls-2026-09-23T06-51-48Z.json",
+        "raw_checksum": "f381946602bebb7f8d60770343097eb3b8a0d41da83e18ef38a0c89f75bf4d07",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "big-mac": [
@@ -773,6 +1263,34 @@
         "ts": "2026-09-20T11:28:56.942Z",
         "raw_file": "data/raw/big-mac-2026-09-20T10-34-47Z.json",
         "raw_checksum": "d854d6173cb925023710158f5e04abf1e734b559d45f57217ec0c39e195d13ea",
+        "adapter": "catalog",
+        "adapter_version": "1.1.0",
+        "records_in": 41,
+        "records_out": 41,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:47.877Z",
+        "raw_file": "data/raw/big-mac-2026-09-22T19-00-21Z.json",
+        "raw_checksum": "7a72779f414912d365ce2c6e08251069923e88d68a902380bf804a2be9ad3fe8",
+        "adapter": "catalog",
+        "adapter_version": "1.1.0",
+        "records_in": 41,
+        "records_out": 41,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.230Z",
+        "raw_file": "data/raw/big-mac-2026-09-23T06-51-48Z.json",
+        "raw_checksum": "39c339cbd6810c6e6d94951fd9f7db13bad1bf4bb5b467024a98f2080308aff6",
         "adapter": "catalog",
         "adapter_version": "1.1.0",
         "records_in": 41,
@@ -798,6 +1316,34 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:47.993Z",
+        "raw_file": "data/raw/consumer-confidence-2026-09-22T19-00-56Z.json",
+        "raw_checksum": "8e77da3a8d7502f19ec9cfaf1412ab2716de7663ecfe12c35e6242ef8dc6ecd7",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 30,
+        "records_out": 30,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.336Z",
+        "raw_file": "data/raw/consumer-confidence-2026-09-23T06-51-54Z.json",
+        "raw_checksum": "fc2ef363d5a42559db1c9e1eaf9d99a5e87ef4baab5dc38a3b898d44467cae6f",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 30,
+        "records_out": 30,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "covid": [
@@ -805,6 +1351,34 @@
         "ts": "2026-09-20T11:28:56.947Z",
         "raw_file": "data/raw/covid-2026-09-20T10-38-19Z.json",
         "raw_checksum": "5052640bbe3ec325a884b993910ec60163e7d710cdd8d9a784ff49ee31336880",
+        "adapter": "catalog",
+        "adapter_version": "1.1.0",
+        "records_in": 1,
+        "records_out": 1,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.003Z",
+        "raw_file": "data/raw/covid-2026-09-22T19-00-59Z.json",
+        "raw_checksum": "6af24d0869240d6016d2677af9e9439c825f02d2fb6ef5610e62db7bedc9fd97",
+        "adapter": "catalog",
+        "adapter_version": "1.1.0",
+        "records_in": 1,
+        "records_out": 1,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.344Z",
+        "raw_file": "data/raw/covid-2026-09-23T06-51-55Z.json",
+        "raw_checksum": "2f9c9cfec82a3d5f271225479d391ec0484c47617c4d3ad5074fe450071040ce",
         "adapter": "catalog",
         "adapter_version": "1.1.0",
         "records_in": 1,
@@ -830,6 +1404,34 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.005Z",
+        "raw_file": "data/raw/crypto-fear-2026-09-22T19-00-59Z.json",
+        "raw_checksum": "1e6d758aeae6b36f5a57f93a823116f3294270a65c73b7cf125e576a245beb17",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 0,
+        "records_out": 0,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.345Z",
+        "raw_file": "data/raw/crypto-fear-2026-09-23T06-51-55Z.json",
+        "raw_checksum": "0e1ae1c4ac64131994fd87a9452cf890934da951c3fb538676f92c55f4e736af",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 0,
+        "records_out": 0,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "cyber-apt": [
@@ -837,6 +1439,34 @@
         "ts": "2026-09-20T11:28:56.957Z",
         "raw_file": "data/raw/cyber-apt-2026-09-20T10-38-19Z.json",
         "raw_checksum": "82197efa7f599e9bd2581d068327ec3fb1bc3135a22662b65e45e01f7d53d3b8",
+        "adapter": "catalog",
+        "adapter_version": "1.1.0",
+        "records_in": 8,
+        "records_out": 8,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.011Z",
+        "raw_file": "data/raw/cyber-apt-2026-09-22T19-00-59Z.json",
+        "raw_checksum": "eacc3cf8fb6b4f1d918be4be096aa51b05853e38e257b332638a07265740e51d",
+        "adapter": "catalog",
+        "adapter_version": "1.1.0",
+        "records_in": 8,
+        "records_out": 8,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.349Z",
+        "raw_file": "data/raw/cyber-apt-2026-09-23T06-51-55Z.json",
+        "raw_checksum": "ed831917210a22f4f361409d3f7ebdf93d0b75a75d68e64f12008cf9565532c5",
         "adapter": "catalog",
         "adapter_version": "1.1.0",
         "records_in": 8,
@@ -862,6 +1492,34 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:47.896Z",
+        "raw_file": "data/raw/cisa-kev-2026-09-22T19-00-55Z.json",
+        "raw_checksum": "93d779ad561246988323b1424410c910a26be66d3929c882204a295b399c6c7f",
+        "adapter": "catalog",
+        "adapter_version": "1.1.0",
+        "records_in": 1,
+        "records_out": 1,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.245Z",
+        "raw_file": "data/raw/cisa-kev-2026-09-23T06-51-53Z.json",
+        "raw_checksum": "1748750c41602cfc3a633a01ff2440b740828dc1e3dd5032ea32cd72d5dcfb71",
+        "adapter": "catalog",
+        "adapter_version": "1.1.0",
+        "records_in": 1,
+        "records_out": 1,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "comtrade": [
@@ -871,6 +1529,34 @@
         "raw_checksum": "6614d2369c90813eef921fa556f88fff5545c6f7909fe542ad68e085a82dc62f",
         "adapter": "timeseries",
         "adapter_version": "2.1.1",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:47.986Z",
+        "raw_file": "data/raw/comtrade-2026-09-22T19-00-56Z.json",
+        "raw_checksum": "27f201137f070c4c4aac99808d9b7eaab6cb8e4ccb0c482da246b96cb77748a6",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.324Z",
+        "raw_file": "data/raw/comtrade-2026-09-23T06-51-54Z.json",
+        "raw_checksum": "47191af28cbd7744cd0d8562c6545025c863352424a269aa194b35499bad5f70",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
         "records_in": 31,
         "records_out": 31,
         "dropped_fields": [],
@@ -894,6 +1580,34 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:47.991Z",
+        "raw_file": "data/raw/conflicts-2026-09-22T19-00-56Z.json",
+        "raw_checksum": "5dd8d6c04c5f37faba6d6d8845474ca2d5d8da114e13b2858cdc90bccf68da64",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.332Z",
+        "raw_file": "data/raw/conflicts-2026-09-23T06-51-54Z.json",
+        "raw_checksum": "8aedddfc123a7c3c8304ebd5bd34e9d0789d62f0ecc53c7a7b2683f21aa60c77",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "conflict-zones": [
@@ -903,6 +1617,34 @@
         "raw_checksum": "ba1358f523d84ea1ef049e39288e135b312b7ac1f382f023c010cec0e2b4eb4f",
         "adapter": "points",
         "adapter_version": "2.1.0",
+        "records_in": 18,
+        "records_out": 18,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:47.989Z",
+        "raw_file": "data/raw/conflict-zones-2026-09-22T19-00-56Z.json",
+        "raw_checksum": "3e5fb25075f57e21573508e4f219b6116961e1bc79e32e519b4ee19d4bb471b8",
+        "adapter": "points",
+        "adapter_version": "2.2.1",
+        "records_in": 18,
+        "records_out": 18,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.326Z",
+        "raw_file": "data/raw/conflict-zones-2026-09-23T06-51-54Z.json",
+        "raw_checksum": "e841c4b265fc7b39b6480927cff18e7899c2cc079b0b9be36e034348ed2a7f18",
+        "adapter": "points",
+        "adapter_version": "2.2.1",
         "records_in": 18,
         "records_out": 18,
         "dropped_fields": [],
@@ -926,6 +1668,34 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.014Z",
+        "raw_file": "data/raw/cyber-attacks-2026-09-22T19-00-59Z.json",
+        "raw_checksum": "996adbd033db53b236e485b1f8a41385df1dec558c51a3e5c98958b85d213584",
+        "adapter": "points",
+        "adapter_version": "2.2.1",
+        "records_in": 15,
+        "records_out": 15,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.352Z",
+        "raw_file": "data/raw/cyber-attacks-2026-09-23T06-51-55Z.json",
+        "raw_checksum": "f4631a1da62aab20198e95b02afae18fcf1780f79dd6a0ac3adc43bf0dfd56e6",
+        "adapter": "points",
+        "adapter_version": "2.2.1",
+        "records_in": 15,
+        "records_out": 15,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "dark-fleet": [
@@ -935,6 +1705,34 @@
         "raw_checksum": "01fe5a6cf3f32d522daca17ecad44732bebcc6a9872c10ba2261ec609d708a6a",
         "adapter": "events",
         "adapter_version": "2.1.0",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.117Z",
+        "raw_file": "data/raw/dark-fleet-2026-09-22T19-00-59Z.json",
+        "raw_checksum": "2cc4c3ff0c0ae2653ff22084b6938be42f5c4015b713080299b576ef318117fb",
+        "adapter": "events",
+        "adapter_version": "2.2.0",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.400Z",
+        "raw_file": "data/raw/dark-fleet-2026-09-23T06-51-56Z.json",
+        "raw_checksum": "7b19a618d4a560ddba3790e5845c61633a27dc760738b3e5f72ad7bf74e192d0",
+        "adapter": "events",
+        "adapter_version": "2.2.0",
         "records_in": 31,
         "records_out": 31,
         "dropped_fields": [],
@@ -958,6 +1756,34 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.157Z",
+        "raw_file": "data/raw/debt-gdp-2026-09-22T19-01-00Z.json",
+        "raw_checksum": "9b879421f7501553b3f40596adbe9e91de5a0e97f661dca086b109c8c3a617a0",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 0,
+        "records_out": 0,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.446Z",
+        "raw_file": "data/raw/debt-gdp-2026-09-23T06-51-56Z.json",
+        "raw_checksum": "9aefd607dc73eafdacf16c14af0b0459a16bd60ceb513f7cd29bac80ba54f149",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 0,
+        "records_out": 0,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "dxy": [
@@ -967,6 +1793,34 @@
         "raw_checksum": "2183c0555b2ba80aed26cddb26d195ab765b2a8517b5d29d50908f5e9b42c6cb",
         "adapter": "timeseries",
         "adapter_version": "2.1.1",
+        "records_in": 30,
+        "records_out": 30,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.159Z",
+        "raw_file": "data/raw/dxy-2026-09-22T19-01-00Z.json",
+        "raw_checksum": "ced3a4e5c6dc72c80e60cf760b1cb58a7fc6026e4bc58d990f78618efc587c55",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 30,
+        "records_out": 30,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.450Z",
+        "raw_file": "data/raw/dxy-2026-09-23T06-51-56Z.json",
+        "raw_checksum": "380e96b7f4f35dff360dc0d2905aa5a1ee0e00707a0014af065e3918ad426d6b",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
         "records_in": 30,
         "records_out": 30,
         "dropped_fields": [],
@@ -990,6 +1844,34 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.162Z",
+        "raw_file": "data/raw/earthquakes-2026-09-22T19-01-00Z.json",
+        "raw_checksum": "6222f466cd8ebab667e29a53e092969cedfbbe141263cbc54e08f20cbd0b9c19",
+        "adapter": "points",
+        "adapter_version": "2.2.1",
+        "records_in": 14,
+        "records_out": 14,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.453Z",
+        "raw_file": "data/raw/earthquakes-2026-09-23T06-51-56Z.json",
+        "raw_checksum": "bddd4dcbd52109b576acd2a97a4c6ceffe9462e04c9287e489397c13e80b378b",
+        "adapter": "points",
+        "adapter_version": "2.2.1",
+        "records_in": 10,
+        "records_out": 10,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "economy": [
@@ -1006,6 +1888,34 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.168Z",
+        "raw_file": "data/raw/economy-2026-09-22T19-01-01Z.json",
+        "raw_checksum": "4b85204ef1f9fe2dcff71266ccd9d1bff25c8ab7ecfc4b7cf9850a26e7ba1d65",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 93,
+        "records_out": 93,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.456Z",
+        "raw_file": "data/raw/economy-2026-09-23T06-51-57Z.json",
+        "raw_checksum": "b6cfa9cd06ae0f45bb5a87ab84697290e592fd527dc1fc1ade74b85352fea9b5",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 93,
+        "records_out": 93,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "eia-real": [
@@ -1013,6 +1923,34 @@
         "ts": "2026-09-20T11:28:57.004Z",
         "raw_file": "data/raw/eia-real-2026-09-20T10-44-59Z.json",
         "raw_checksum": "4d034584b8ac27a653cf052cb7a99110ecc57c6f14ef0a60fbef6c970c3e3d59",
+        "adapter": "catalog",
+        "adapter_version": "1.1.0",
+        "records_in": 1,
+        "records_out": 1,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.170Z",
+        "raw_file": "data/raw/eia-real-2026-09-22T19-01-01Z.json",
+        "raw_checksum": "e6ec237ae1c62cb5eaed8cd73461bd38765a924c680af448d44db6e3296d2a46",
+        "adapter": "catalog",
+        "adapter_version": "1.1.0",
+        "records_in": 1,
+        "records_out": 1,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.458Z",
+        "raw_file": "data/raw/eia-real-2026-09-23T06-51-57Z.json",
+        "raw_checksum": "c078676d3869afc19ab87b35eab3dac4d3208de35048b1b57c7c42c0583ee5b0",
         "adapter": "catalog",
         "adapter_version": "1.1.0",
         "records_in": 1,
@@ -1038,6 +1976,20 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.734Z",
+        "raw_file": "data/raw/feeds-2026-09-23T06-53-27Z.json",
+        "raw_checksum": "fed2a8487c49cf4692b980515ac8ae8b1f248e1d83e0dc422c69455468a25739",
+        "adapter": "events",
+        "adapter_version": "2.2.0",
+        "records_in": 3298,
+        "records_out": 3298,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "fires": [
@@ -1054,6 +2006,20 @@
         "unmapped_count": 1,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.768Z",
+        "raw_file": "data/raw/fires-2026-09-23T06-53-27Z.json",
+        "raw_checksum": "f2e1f580a766fa3d667046d106a2fd424e0311b7fd6902a3fd6d350b17c4ee9d",
+        "adapter": "points",
+        "adapter_version": "2.2.1",
+        "records_in": 60,
+        "records_out": 60,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 1,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "fx-rates": [
@@ -1061,6 +2027,20 @@
         "ts": "2026-09-20T11:28:57.059Z",
         "raw_file": "data/raw/fx-rates-2026-09-20T10-47-34Z.json",
         "raw_checksum": "443478b6f71653f8e9e693c34dc525dccc15de5c802b3a46854ecad3f496c778",
+        "adapter": "catalog",
+        "adapter_version": "1.1.0",
+        "records_in": 1,
+        "records_out": 1,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.800Z",
+        "raw_file": "data/raw/fx-rates-2026-09-23T06-53-28Z.json",
+        "raw_checksum": "967953e580e45e8ba6079aaa49b4c9ad7ebc450fb79832e6d737e8e68a2d702a",
         "adapter": "catalog",
         "adapter_version": "1.1.0",
         "records_in": 1,
@@ -1086,6 +2066,20 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.804Z",
+        "raw_file": "data/raw/frostbyte-2026-09-23T06-53-31Z.json",
+        "raw_checksum": "70a84799f0e4ea37b3cb9577d3fa85d0c681e3b81ed56ea8401398cabeda493e",
+        "adapter": "catalog",
+        "adapter_version": "1.1.0",
+        "records_in": 1,
+        "records_out": 1,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "geo-data": [
@@ -1093,6 +2087,20 @@
         "ts": "2026-09-20T11:28:57.065Z",
         "raw_file": "data/raw/geo-data-2026-09-20T10-47-38Z.json",
         "raw_checksum": "9db846110a2cc19eff3e70ee127c11cefab31cb0ac9e71a5b22f5b233649f872",
+        "adapter": "hierarchical",
+        "adapter_version": "1.1.0",
+        "records_in": 0,
+        "records_out": 0,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.809Z",
+        "raw_file": "data/raw/geo-data-2026-09-23T06-56-55Z.json",
+        "raw_checksum": "9eeb5cd9cfdc9e375b7c02a1da4ceffe0f0756e1dd4b398cd014efd29f63b1e6",
         "adapter": "hierarchical",
         "adapter_version": "1.1.0",
         "records_in": 0,
@@ -1118,6 +2126,20 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.815Z",
+        "raw_file": "data/raw/gold-oil-2026-09-23T06-56-56Z.json",
+        "raw_checksum": "61ad3aa5c4bb8c89af9f0aed1e6c0d633849d7d1d4c53d244ab6bec197ffe88f",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 0,
+        "records_out": 0,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "gold-silver": [
@@ -1127,6 +2149,20 @@
         "raw_checksum": "b6b0700a4ce1047711dff087aa073b58902ae1ec5e13c79838e8d103b7c0d838",
         "adapter": "timeseries",
         "adapter_version": "2.1.1",
+        "records_in": 0,
+        "records_out": 0,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.820Z",
+        "raw_file": "data/raw/gold-silver-2026-09-23T06-56-57Z.json",
+        "raw_checksum": "215a3a966525ef2970dff7ae12a306f802672c8dd178da3c2bbeffb52754d627",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
         "records_in": 0,
         "records_out": 0,
         "dropped_fields": [],
@@ -1150,6 +2186,20 @@
         "unmapped_count": 2,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.827Z",
+        "raw_file": "data/raw/gps-jamming-2026-09-23T06-57-00Z.json",
+        "raw_checksum": "95a568bb558126dd53ac5805755ac9afe8833148c8a781c95d0763aaeda75755",
+        "adapter": "points",
+        "adapter_version": "2.2.1",
+        "records_in": 1,
+        "records_out": 1,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 1,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "gscpi": [
@@ -1159,6 +2209,20 @@
         "raw_checksum": "ac26c727387418421bd695b7f139c7ff92d66bb789edbb787142f28a28fa659b",
         "adapter": "timeseries",
         "adapter_version": "2.1.1",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.829Z",
+        "raw_file": "data/raw/gscpi-2026-09-23T06-57-00Z.json",
+        "raw_checksum": "4a247d0efa9975c4780802061c091d94a5389d64904ceb40fa290d73a81d7d83",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
         "records_in": 31,
         "records_out": 31,
         "dropped_fields": [],
@@ -1182,6 +2246,20 @@
         "unmapped_count": 0,
         "skipped_count": 30,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.832Z",
+        "raw_file": "data/raw/hackernews-2026-09-23T06-57-07Z.json",
+        "raw_checksum": "204b0072388beadbebd1a293b79bc241f08f666c668a4ebb0971e5887edc4266",
+        "adapter": "events",
+        "adapter_version": "2.2.0",
+        "records_in": 0,
+        "records_out": 0,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 30,
+        "notes": null
       }
     ],
     "happiness": [
@@ -1189,6 +2267,20 @@
         "ts": "2026-09-20T11:28:57.080Z",
         "raw_file": "data/raw/happiness-2026-09-20T10-53-46Z.json",
         "raw_checksum": "fe56abf14957ca8f6a56f2337234d4b409916d9219947c41be5ece6847a4f3f6",
+        "adapter": "catalog",
+        "adapter_version": "1.1.0",
+        "records_in": 30,
+        "records_out": 30,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.834Z",
+        "raw_file": "data/raw/happiness-2026-09-23T06-57-07Z.json",
+        "raw_checksum": "37a99e71366f13aad52bfe5cf998f29401bd2d70371387bef442eb8294a43922",
         "adapter": "catalog",
         "adapter_version": "1.1.0",
         "records_in": 30,
@@ -1214,6 +2306,20 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.836Z",
+        "raw_file": "data/raw/hy-spread-2026-09-23T06-57-07Z.json",
+        "raw_checksum": "0e6f67f9eb3673cabd5fdc126ab31130e01eb88b96e45662f20914e6cc167d97",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 30,
+        "records_out": 30,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "inflation": [
@@ -1223,6 +2329,20 @@
         "raw_checksum": "ba0866925624553c18befcd54d8ba517cd6815fc70d2b4ef378579ea050446c7",
         "adapter": "timeseries",
         "adapter_version": "2.1.1",
+        "records_in": 366,
+        "records_out": 366,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.841Z",
+        "raw_file": "data/raw/inflation-2026-09-23T06-57-08Z.json",
+        "raw_checksum": "c04010e1e51f20bbe303c689aab8aebd1347ad76cae841066aee69ef06f53d00",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
         "records_in": 366,
         "records_out": 366,
         "dropped_fields": [],
@@ -1246,6 +2366,20 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.867Z",
+        "raw_file": "data/raw/instability-index-2026-09-23T06-57-08Z.json",
+        "raw_checksum": "9cde7848b01dfe9d15647d08b818032fcf2972eb1bb00d288e7068602c372244",
+        "adapter": "points",
+        "adapter_version": "2.2.1",
+        "records_in": 15,
+        "records_out": 15,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "internet-outages": [
@@ -1255,6 +2389,20 @@
         "raw_checksum": "b2fe6feb33eda11aeca742e6076a388300dabeaf2d2e0ecdf277103faac56db2",
         "adapter": "points",
         "adapter_version": "2.1.0",
+        "records_in": 5,
+        "records_out": 5,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.869Z",
+        "raw_file": "data/raw/internet-outages-2026-09-23T06-57-08Z.json",
+        "raw_checksum": "936e69e1afa76177abf376d9020bf650a52cbf98f13139455ace8207eeb5bd68",
+        "adapter": "points",
+        "adapter_version": "2.2.1",
         "records_in": 5,
         "records_out": 5,
         "dropped_fields": [],
@@ -1278,6 +2426,20 @@
         "unmapped_count": 0,
         "skipped_count": 1,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.873Z",
+        "raw_file": "data/raw/launches-2026-09-23T06-57-10Z.json",
+        "raw_checksum": "9a60fce3e0b7d7c8417adce28f2002714bba03156569b515d5b88d2c0f573f39",
+        "adapter": "events",
+        "adapter_version": "2.2.0",
+        "records_in": 0,
+        "records_out": 0,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 1,
+        "notes": null
       }
     ],
     "maritime-monitor": [
@@ -1287,6 +2449,20 @@
         "raw_checksum": "fa46e22dee374848de31616cd63488bc62972cf785bd95c81c706fd227d43373",
         "adapter": "timeseries",
         "adapter_version": "2.1.1",
+        "records_in": 0,
+        "records_out": 0,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.914Z",
+        "raw_file": "data/raw/maritime-monitor-2026-09-23T06-57-10Z.json",
+        "raw_checksum": "cdd59f879f54e3bfb309fd4e896e4ae3418de8926cf43b3a47a2234279705bed",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
         "records_in": 0,
         "records_out": 0,
         "dropped_fields": [],
@@ -1310,6 +2486,20 @@
         "unmapped_count": 0,
         "skipped_count": 10,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.970Z",
+        "raw_file": "data/raw/newsapi-2026-09-23T06-57-12Z.json",
+        "raw_checksum": "cfaf01f7664ecaa5f9b758fe19d1235bb446a3d8d2d324883a832af05df78c5b",
+        "adapter": "events",
+        "adapter_version": "2.2.0",
+        "records_in": 0,
+        "records_out": 0,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 10,
+        "notes": null
       }
     ],
     "newsapi-real": [
@@ -1319,6 +2509,20 @@
         "raw_checksum": "1b80151962eea0db2d81678e08d2dcd7bc44c3ad85b01487b952f1384aeab8cb",
         "adapter": "events",
         "adapter_version": "2.1.0",
+        "records_in": 0,
+        "records_out": 0,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 130,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.969Z",
+        "raw_file": "data/raw/newsapi-real-2026-09-23T06-57-11Z.json",
+        "raw_checksum": "32336c74955580a277fab82ea25fc18289fadb84d4f39105a68ef679809ac6c9",
+        "adapter": "events",
+        "adapter_version": "2.2.0",
         "records_in": 0,
         "records_out": 0,
         "dropped_fields": [],
@@ -1342,6 +2546,20 @@
         "unmapped_count": 4,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.966Z",
+        "raw_file": "data/raw/news-2026-09-23T06-57-11Z.json",
+        "raw_checksum": "d27e8b973a310f1deffb6aae34b6feca8ec9ebc0abfe7c84f549f52f39763f07",
+        "adapter": "events",
+        "adapter_version": "2.2.0",
+        "records_in": 10,
+        "records_out": 10,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 4,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "noaa": [
@@ -1351,6 +2569,20 @@
         "raw_checksum": "29654b3383910253d7badca8dda39b57414332f7ea17d970d3704b3710051cf9",
         "adapter": "timeseries",
         "adapter_version": "2.1.1",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.972Z",
+        "raw_file": "data/raw/noaa-2026-09-23T06-57-12Z.json",
+        "raw_checksum": "0360bdbf041615989c7f090fd4f2fe24867cbd260e95ad85714dba98188d4740",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
         "records_in": 31,
         "records_out": 31,
         "dropped_fields": [],
@@ -1374,6 +2606,20 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.981Z",
+        "raw_file": "data/raw/nuclear-monitor-2026-09-23T06-57-16Z.json",
+        "raw_checksum": "682221f7e7f5ea0d370e19a0062aa8ff474940f03afb4b32c39ec069a71052e4",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 30,
+        "records_out": 30,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "ofac": [
@@ -1381,6 +2627,20 @@
         "ts": "2026-09-20T11:28:57.113Z",
         "raw_file": "data/raw/ofac-2026-09-20T10-57-51Z.json",
         "raw_checksum": "33611e1bc2cf335633ab9a4a2f83a259bf8477ce879cae21aa51de453e380c57",
+        "adapter": "catalog",
+        "adapter_version": "1.1.0",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.518Z",
+        "raw_file": "data/raw/ofac-2026-09-23T06-57-45Z.json",
+        "raw_checksum": "2dfcac955535a19191e988169f411e1fb363f046add30fd0a4a8e69dcd2a1110",
         "adapter": "catalog",
         "adapter_version": "1.1.0",
         "records_in": 31,
@@ -1406,6 +2666,20 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.521Z",
+        "raw_file": "data/raw/oil-gas-2026-09-23T06-57-45Z.json",
+        "raw_checksum": "62943454550664a4ddece4cafcf249384d78157e36cebdc228952ad6942fb772",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 0,
+        "records_out": 0,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "opensanctions": [
@@ -1413,6 +2687,20 @@
         "ts": "2026-09-20T11:28:57.122Z",
         "raw_file": "data/raw/opensanctions-2026-09-20T10-59-33Z.json",
         "raw_checksum": "a19e163aa92c93f4f7b1a5f0f5d60b69bb19285ee553f2fa5b15c3b81e356fa8",
+        "adapter": "catalog",
+        "adapter_version": "1.1.0",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.545Z",
+        "raw_file": "data/raw/opensanctions-2026-09-23T07-00-25Z.json",
+        "raw_checksum": "d94ea5931150ac682e4a2e772c386b9c15bc62e6770385fe5aa191a9a5b8fd0f",
         "adapter": "catalog",
         "adapter_version": "1.1.0",
         "records_in": 31,
@@ -1438,6 +2726,20 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.562Z",
+        "raw_file": "data/raw/ovx-2026-09-23T07-00-25Z.json",
+        "raw_checksum": "6e19f7d96871687b5d1a3337f9895f0127fd050376d61d2fe2f4bd195505b5a2",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 30,
+        "records_out": 30,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "pipelines": [
@@ -1447,6 +2749,20 @@
         "raw_checksum": "b69e2770f56f9173a4b6aef8a863f1e54bcc1ba016e8e2ca091c42ae7d54a892",
         "adapter": "points",
         "adapter_version": "2.1.0",
+        "records_in": 0,
+        "records_out": 0,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 6,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.564Z",
+        "raw_file": "data/raw/pipelines-2026-09-23T07-00-25Z.json",
+        "raw_checksum": "11c9ec07d394d7d14cf0dcc7142ac10973b714e2317499d2d7d52ca5ceffbdfa",
+        "adapter": "points",
+        "adapter_version": "2.2.1",
         "records_in": 0,
         "records_out": 0,
         "dropped_fields": [],
@@ -1470,6 +2786,20 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.568Z",
+        "raw_file": "data/raw/pmi-2026-09-23T07-00-25Z.json",
+        "raw_checksum": "079ceaa7f6ae0c7d784b9a83ed44553dfae2dc4739f0fcb30ee6f58007dbf74e",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "prediction-markets": [
@@ -1479,6 +2809,20 @@
         "raw_checksum": "5afdeccbd16fe54078e399ab039ddee55994d2d402c44f9bee1e26e39434e6bb",
         "adapter": "events",
         "adapter_version": "2.1.0",
+        "records_in": 0,
+        "records_out": 0,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 5,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.569Z",
+        "raw_file": "data/raw/prediction-markets-2026-09-23T07-00-25Z.json",
+        "raw_checksum": "d7642b6883a04e47c0a977f215368b9b6c42bd0bf66ca18abec134617e471eb7",
+        "adapter": "events",
+        "adapter_version": "2.2.0",
         "records_in": 0,
         "records_out": 0,
         "dropped_fields": [],
@@ -1502,6 +2846,20 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.571Z",
+        "raw_file": "data/raw/recession-2026-09-23T07-00-25Z.json",
+        "raw_checksum": "eb9f7909435f69050c964dd7590a419e43ebd7f29f0d3f16eaf95f13c4d85a07",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "rest-countries": [
@@ -1509,6 +2867,20 @@
         "ts": "2026-09-20T11:28:57.134Z",
         "raw_file": "data/raw/rest-countries-2026-09-20T11-02-06Z.json",
         "raw_checksum": "476ff2fc5be2cc07d4b002672fd9a6aedc2d8192cf9b3c63864924a98afea8fc",
+        "adapter": "hierarchical",
+        "adapter_version": "1.1.0",
+        "records_in": 0,
+        "records_out": 0,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.577Z",
+        "raw_file": "data/raw/rest-countries-2026-09-23T07-00-26Z.json",
+        "raw_checksum": "a831443a44d7872eb6ff650df410036a567a673e4effc4d59a83b64caa332afe",
         "adapter": "hierarchical",
         "adapter_version": "1.1.0",
         "records_in": 0,
@@ -1534,6 +2906,20 @@
         "unmapped_count": 0,
         "skipped_count": 5,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.578Z",
+        "raw_file": "data/raw/ria-2026-09-23T07-00-26Z.json",
+        "raw_checksum": "e7256fe48328c039fe2b87274e314e6cbd3ac162218c9742d3183f90161e3f55",
+        "adapter": "events",
+        "adapter_version": "2.2.0",
+        "records_in": 0,
+        "records_out": 0,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 5,
+        "notes": null
       }
     ],
     "risk-heatmap": [
@@ -1543,6 +2929,20 @@
         "raw_checksum": "5ac64bab8ebe8a482177318f4d0617d34c25ae548fb6eb341850110504b8b6dc",
         "adapter": "points",
         "adapter_version": "2.1.0",
+        "records_in": 11,
+        "records_out": 11,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.581Z",
+        "raw_file": "data/raw/risk-heatmap-2026-09-23T07-00-26Z.json",
+        "raw_checksum": "80dd5d9a639ec2f0eea2048644843cfdc5214d3c42a8548d741df3fd6f56750a",
+        "adapter": "points",
+        "adapter_version": "2.2.1",
         "records_in": 11,
         "records_out": 11,
         "dropped_fields": [],
@@ -1566,6 +2966,20 @@
         "unmapped_count": 0,
         "skipped_count": 2,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.584Z",
+        "raw_file": "data/raw/rss-extra-2026-09-23T07-00-26Z.json",
+        "raw_checksum": "cc0c39092b8f4ccf2a6bf8155da3f0cfcfa69baf17c61c2a958dc1eebd98a5a9",
+        "adapter": "events",
+        "adapter_version": "2.2.0",
+        "records_in": 0,
+        "records_out": 0,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 2,
+        "notes": null
       }
     ],
     "russian-sources": [
@@ -1573,6 +2987,20 @@
         "ts": "2026-09-20T11:28:57.139Z",
         "raw_file": "data/raw/russian-sources-2026-09-20T11-03-20Z.json",
         "raw_checksum": "bbfd9aa6a3bb16a47f2b56f5f8fc48fff6a29ad2fde07f4bf9cfa1059ac9c40e",
+        "adapter": "hierarchical",
+        "adapter_version": "1.1.0",
+        "records_in": 0,
+        "records_out": 0,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.617Z",
+        "raw_file": "data/raw/russian-sources-2026-09-23T07-02-23Z.json",
+        "raw_checksum": "e12f8ebf6032f061e90f6778438b89681a02b9d531e30e74d2edd4b7066127ea",
         "adapter": "hierarchical",
         "adapter_version": "1.1.0",
         "records_in": 0,
@@ -1598,6 +3026,20 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.613Z",
+        "raw_file": "data/raw/rss-universal-2026-09-23T07-01-31Z.json",
+        "raw_checksum": "29145116c86a452ffd481c50358cda5bbea41bbaae31fad8a7076856f45ee476",
+        "adapter": "events",
+        "adapter_version": "2.2.0",
+        "records_in": 500,
+        "records_out": 500,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "safecast": [
@@ -1607,6 +3049,20 @@
         "raw_checksum": "7721043a28337c7ec729754386054f32a66290be2d5ba531170f4866a1cb621c",
         "adapter": "timeseries",
         "adapter_version": "2.1.1",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.619Z",
+        "raw_file": "data/raw/safecast-2026-09-23T07-02-23Z.json",
+        "raw_checksum": "a40cfed13945949a81b9770ee16618d31ccdf339c3297d09dab5b9677a3eb701",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
         "records_in": 31,
         "records_out": 31,
         "dropped_fields": [],
@@ -1630,6 +3086,20 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.620Z",
+        "raw_file": "data/raw/satellite-stac-2026-09-23T07-02-23Z.json",
+        "raw_checksum": "667ff074bf852016e727cb1475a5ef28a9ea8fd416d26ed13cb0ce40baaeb31a",
+        "adapter": "points",
+        "adapter_version": "2.2.1",
+        "records_in": 5,
+        "records_out": 5,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "social-unrest": [
@@ -1646,6 +3116,20 @@
         "unmapped_count": 5,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.661Z",
+        "raw_file": "data/raw/social-unrest-2026-09-23T07-02-24Z.json",
+        "raw_checksum": "2c224663f92dc274c9e755a2671f4a5f836ad8dad75e987e9df7704faabb5b26",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 30,
+        "records_out": 30,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 5,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "thinktanks": [
@@ -1653,6 +3137,20 @@
         "ts": "2026-09-20T11:28:57.191Z",
         "raw_file": "data/raw/thinktanks-2026-09-20T11-14-06Z.json",
         "raw_checksum": "ca1fb75b6e5c2c1f9dbc49f996c73e82fae692c0ed63bf7fe521fd990d7c5e68",
+        "adapter": "hierarchical",
+        "adapter_version": "1.1.0",
+        "records_in": 0,
+        "records_out": 0,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.819Z",
+        "raw_file": "data/raw/thinktanks-2026-09-23T13-49-56Z.json",
+        "raw_checksum": "8ddf7bbfe52ef2c60f596199b3e57dea6b278586099e7594b6c576a036834361",
         "adapter": "hierarchical",
         "adapter_version": "1.1.0",
         "records_in": 0,
@@ -1678,6 +3176,20 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.811Z",
+        "raw_file": "data/raw/global-price-2026-09-23T06-56-55Z.json",
+        "raw_checksum": "29681f2ab3cf2fe73c5fb74e4344ea2dc065bafa1491e8b99ae16b98125e561f",
+        "adapter": "catalog",
+        "adapter_version": "1.1.0",
+        "records_in": 1,
+        "records_out": 1,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "space-track": [
@@ -1685,6 +3197,20 @@
         "ts": "2026-09-20T11:28:57.197Z",
         "raw_file": "data/raw/space-track-2026-09-20T11-17-12Z.json",
         "raw_checksum": "a4843bf546d0178776343ab67b317ec0a82b63b4e5ec07cf1df97503a16e4683",
+        "adapter": "catalog",
+        "adapter_version": "1.1.0",
+        "records_in": 5,
+        "records_out": 5,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.665Z",
+        "raw_file": "data/raw/space-track-2026-09-23T07-02-24Z.json",
+        "raw_checksum": "366f01d2116fb80833e8b6081157eec8ceb8740a8fe2089ed1ae3744a8b66a7d",
         "adapter": "catalog",
         "adapter_version": "1.1.0",
         "records_in": 5,
@@ -1710,6 +3236,20 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.667Z",
+        "raw_file": "data/raw/starlink-2026-09-23T07-02-24Z.json",
+        "raw_checksum": "174bdb956752a22ab8294ca7fc528aed37c2df043d35d241387e1dbd58948ea9",
+        "adapter": "points",
+        "adapter_version": "2.2.1",
+        "records_in": 18,
+        "records_out": 18,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "tips": [
@@ -1726,6 +3266,20 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.700Z",
+        "raw_file": "data/raw/tips-2026-09-23T07-04-22Z.json",
+        "raw_checksum": "99b048680e983a6e68636bd899b89477176f51bf6de12b072e45558d84a44a3e",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 30,
+        "records_out": 30,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "trading-economics": [
@@ -1733,6 +3287,20 @@
         "ts": "2026-09-20T11:28:57.200Z",
         "raw_file": "data/raw/trading-economics-2026-09-20T11-17-12Z.json",
         "raw_checksum": "4c8d4c591f6f968c52946b8befe45440294f9bbacbfd51ad7b3231ac62d4eee2",
+        "adapter": "catalog",
+        "adapter_version": "1.1.0",
+        "records_in": 1,
+        "records_out": 1,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.701Z",
+        "raw_file": "data/raw/trading-economics-2026-09-23T07-04-22Z.json",
+        "raw_checksum": "01244797491794cc77bf59f0a3c411814328f59d06a615642dc17ac1d23691cf",
         "adapter": "catalog",
         "adapter_version": "1.1.0",
         "records_in": 1,
@@ -1758,6 +3326,20 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.705Z",
+        "raw_file": "data/raw/ucdp-2026-09-23T07-04-24Z.json",
+        "raw_checksum": "0a01bd835f4334932331685fbde3634aaf230a34f6cea5bd25f9eb9d6848c984",
+        "adapter": "catalog",
+        "adapter_version": "1.1.0",
+        "records_in": 1,
+        "records_out": 1,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "undersea-cables": [
@@ -1767,6 +3349,20 @@
         "raw_checksum": "8da5d4deae04a9bb82ac427d65c00e6f04c236945b45042337fc643003341201",
         "adapter": "points",
         "adapter_version": "2.1.0",
+        "records_in": 0,
+        "records_out": 0,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 8,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.706Z",
+        "raw_file": "data/raw/undersea-cables-2026-09-23T07-04-24Z.json",
+        "raw_checksum": "386c7b170f19beee7875ae06117c92572e5e3da2c8ff86315d72e24ba573c470",
+        "adapter": "points",
+        "adapter_version": "2.2.1",
         "records_in": 0,
         "records_out": 0,
         "dropped_fields": [],
@@ -1790,6 +3386,20 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.708Z",
+        "raw_file": "data/raw/unemployment-2026-09-23T07-04-24Z.json",
+        "raw_checksum": "55054fa3fd1e68d3bb486b5219c17e1285953d2685bce2d7e03aead6506af174",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "uranium": [
@@ -1799,6 +3409,20 @@
         "raw_checksum": "6b5090064ac9af602e35e670070abf6945b40f0a09934d349ae540fd1d2b401a",
         "adapter": "timeseries",
         "adapter_version": "2.1.1",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.712Z",
+        "raw_file": "data/raw/uranium-2026-09-23T07-04-25Z.json",
+        "raw_checksum": "bd51f67205a5f562adb4204c529d91c8f77210678cba84f027ead153306cfa6f",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
         "records_in": 31,
         "records_out": 31,
         "dropped_fields": [],
@@ -1822,6 +3446,20 @@
         "unmapped_count": 1,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.756Z",
+        "raw_file": "data/raw/viirs-2026-09-23T07-04-25Z.json",
+        "raw_checksum": "38cfc355205eb6dff77a47d921095f193cb1644dce19a8a621a4cac36953bf5c",
+        "adapter": "points",
+        "adapter_version": "2.2.1",
+        "records_in": 155,
+        "records_out": 155,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 1,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "vix": [
@@ -1833,6 +3471,20 @@
         "adapter_version": "2.1.1",
         "records_in": 254,
         "records_out": 254,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.760Z",
+        "raw_file": "data/raw/vix-2026-09-23T07-04-27Z.json",
+        "raw_checksum": "14ef06a2d0d7b85a87e2f15047240c3f15636fc687d34a2cd76628f63f871d52",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 252,
+        "records_out": 252,
         "dropped_fields": [],
         "added_fields": [],
         "unmapped_count": 0,
@@ -1854,6 +3506,20 @@
         "unmapped_count": 5,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.792Z",
+        "raw_file": "data/raw/war-preparation-2026-09-23T07-04-27Z.json",
+        "raw_checksum": "6e0a1240307061131c5a84751bd2495b5e9ccd0a3eb2ea940ec7110f3e7f900c",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 30,
+        "records_out": 30,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 5,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "who": [
@@ -1861,6 +3527,20 @@
         "ts": "2026-09-20T11:28:57.302Z",
         "raw_file": "data/raw/who-2026-09-20T11-20-53Z.json",
         "raw_checksum": "6c7df80918ead49ebf5f718d5725f6578284202a6929e4f56e96fa2dcc81e186",
+        "adapter": "catalog",
+        "adapter_version": "1.1.0",
+        "records_in": 1,
+        "records_out": 1,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.795Z",
+        "raw_file": "data/raw/who-2026-09-23T07-04-27Z.json",
+        "raw_checksum": "ba8efb33f87fff69da486e90b40a70502732f0c4ef8e8a0bdd0e41f3d392d5d2",
         "adapter": "catalog",
         "adapter_version": "1.1.0",
         "records_in": 1,
@@ -1886,6 +3566,20 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.809Z",
+        "raw_file": "data/raw/yahoo-2026-09-23T07-04-55Z.json",
+        "raw_checksum": "795238308b30d08ce1fc428e2d5eb5967775cf5c0942e9f640b0aa490f70dac5",
+        "adapter": "catalog",
+        "adapter_version": "1.1.0",
+        "records_in": 1,
+        "records_out": 1,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "celestrak": [
@@ -1902,6 +3596,34 @@
         "unmapped_count": 0,
         "skipped_count": 415,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:47.892Z",
+        "raw_file": "data/raw/celestrak-2026-09-22T19-00-54Z.json",
+        "raw_checksum": "469d0e898358594091cb95154c72778128e905f4f7422f4500dc585305b03a81",
+        "adapter": "points",
+        "adapter_version": "2.2.1",
+        "records_in": 0,
+        "records_out": 0,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 415,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.242Z",
+        "raw_file": "data/raw/celestrak-2026-09-23T06-51-52Z.json",
+        "raw_checksum": "58cd013408aded32903e4df8bdf38aa69dcaba843860674280652d854bf574a6",
+        "adapter": "points",
+        "adapter_version": "2.2.1",
+        "records_in": 0,
+        "records_out": 0,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 315,
+        "notes": null
       }
     ],
     "business-optimism": [
@@ -1911,6 +3633,34 @@
         "raw_checksum": "5014665741b20bf72b45d5c4edcdcb8e969d75197984800e6f021ed59f15deba",
         "adapter": "timeseries",
         "adapter_version": "2.2.0",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:47.884Z",
+        "raw_file": "data/raw/business-optimism-2026-09-22T19-00-21Z.json",
+        "raw_checksum": "1d92a47c36921d42bda75c0fd915c505d33f9b6717506cce0fa1a714823b1f97",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.235Z",
+        "raw_file": "data/raw/business-optimism-2026-09-23T06-51-48Z.json",
+        "raw_checksum": "92dce8382b59757f13d33dda2c0f68a3e144ce9b9a78d38fc135659cfe2bd56b",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
         "records_in": 31,
         "records_out": 31,
         "dropped_fields": [],
@@ -1934,6 +3684,34 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:47.996Z",
+        "raw_file": "data/raw/consumer-expectations-2026-09-22T19-00-56Z.json",
+        "raw_checksum": "cd27b117537d3ed4e57aa4cf8194c2823e007aa571c0c5088a8308f74967a703",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.338Z",
+        "raw_file": "data/raw/consumer-expectations-2026-09-23T06-51-54Z.json",
+        "raw_checksum": "2c9b533d84867b60b92d4db9975e94e2b3c60b97731b55afa6a34eda1094a65b",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "aviation": [
@@ -1943,6 +3721,34 @@
         "raw_checksum": "5c3f802cc10355f7f21e175887c1f594ad2449c8d18710775a75131d0453fda7",
         "adapter": "points",
         "adapter_version": "2.2.0",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:47.857Z",
+        "raw_file": "data/raw/aviation-2026-09-22T19-00-19Z.json",
+        "raw_checksum": "ae753ba4cff16d6d5f5afdd3dd557f5f168f561b667ff86f454fdc3c57ac5ab5",
+        "adapter": "points",
+        "adapter_version": "2.2.1",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.213Z",
+        "raw_file": "data/raw/aviation-2026-09-23T06-51-47Z.json",
+        "raw_checksum": "778c1d8b088e5450a1c84a6d0b9115de1dd45645bbd208dbd82f0729649425a9",
+        "adapter": "points",
+        "adapter_version": "2.2.1",
         "records_in": 31,
         "records_out": 31,
         "dropped_fields": [],
@@ -1966,6 +3772,34 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.017Z",
+        "raw_file": "data/raw/cyber-threat-index-2026-09-22T19-00-59Z.json",
+        "raw_checksum": "fb53a28a52052331a1beb28feccc03a8ffb9bd4962900b05ef14342d28f9ab9b",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.354Z",
+        "raw_file": "data/raw/cyber-threat-index-2026-09-23T06-51-55Z.json",
+        "raw_checksum": "6f957fcfcd8dad8f76817a5150f00fb14ae982feda8f6900879d71d7e86bfe68",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "indirect-indicators": [
@@ -1975,6 +3809,20 @@
         "raw_checksum": "c3579c111904098b365f9ddd97600b3fa708cf20e5bc17b505d128490e14990b",
         "adapter": "timeseries",
         "adapter_version": "2.2.0",
+        "records_in": 0,
+        "records_out": 0,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.837Z",
+        "raw_file": "data/raw/indirect-indicators-2026-09-23T06-57-07Z.json",
+        "raw_checksum": "611c347bfcb46602594cccc9368bb99f7b356e23446ec7e05cc3b725e8c276f7",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
         "records_in": 0,
         "records_out": 0,
         "dropped_fields": [],
@@ -1998,6 +3846,20 @@
         "unmapped_count": 4,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.957Z",
+        "raw_file": "data/raw/military-exercises-2026-09-23T06-57-11Z.json",
+        "raw_checksum": "b174e99599c5f6afb7e3921203e2e39052ee215ccf0190f8428adc3c72cf10a5",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 4,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "openweather": [
@@ -2007,6 +3869,20 @@
         "raw_checksum": "8a982eadd1f2bdc511236cb446702cf0984894c5bd3f744a5a34758b29a01bb3",
         "adapter": "points",
         "adapter_version": "2.2.0",
+        "records_in": 1,
+        "records_out": 1,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.557Z",
+        "raw_file": "data/raw/openweather-2026-09-23T07-00-25Z.json",
+        "raw_checksum": "acc03561f6700e4d126cd92fd73b1a5cc27bb0f005be18bf79cc653f47a6427d",
+        "adapter": "points",
+        "adapter_version": "2.2.1",
         "records_in": 1,
         "records_out": 1,
         "dropped_fields": [],
@@ -2030,6 +3906,20 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.615Z",
+        "raw_file": "data/raw/rublev-dubai-2026-09-23T07-02-23Z.json",
+        "raw_checksum": "6f433f9be56ef080ed44c27d94cb16b33e0eb1b1283520bceee8c50886e74199",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 0,
+        "records_out": 0,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "ships": [
@@ -2039,6 +3929,20 @@
         "raw_checksum": "680e1ad44820307c20fdfa73aa166bfd7324c3ecffeee0ffa1a204d87b027d26",
         "adapter": "points",
         "adapter_version": "2.2.0",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.625Z",
+        "raw_file": "data/raw/ships-2026-09-23T07-02-23Z.json",
+        "raw_checksum": "9f39cbfee68c2ba15f6379ea79866b22a9df7b992bdea3e02b11d4fb2a9bda6c",
+        "adapter": "points",
+        "adapter_version": "2.2.1",
         "records_in": 31,
         "records_out": 31,
         "dropped_fields": [],
@@ -2062,6 +3966,20 @@
         "unmapped_count": 5,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.695Z",
+        "raw_file": "data/raw/strategic-ports-2026-09-23T07-02-25Z.json",
+        "raw_checksum": "2670c4c237e198af9fc1a9c1d9879f861054e0d872a3aabe1fadf1b9c6a699fb",
+        "adapter": "points",
+        "adapter_version": "2.2.1",
+        "records_in": 20,
+        "records_out": 20,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 5,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "treasury-debt": [
@@ -2071,6 +3989,20 @@
         "raw_checksum": "3bcfe05af1f10efbda10a686fa5c8f7e868d3c9c02b208ce252a95e4a2cee747",
         "adapter": "timeseries",
         "adapter_version": "2.2.0",
+        "records_in": 0,
+        "records_out": 0,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.703Z",
+        "raw_file": "data/raw/treasury-debt-2026-09-23T07-04-23Z.json",
+        "raw_checksum": "455b177fbd520b16e4baf6b8d2f3d4451fc356161090d06bb12391c3b4f2841c",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
         "records_in": 0,
         "records_out": 0,
         "dropped_fields": [],
@@ -2094,6 +4026,20 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.807Z",
+        "raw_file": "data/raw/wti-brent-spread-2026-09-23T07-04-55Z.json",
+        "raw_checksum": "1bdb7c171e97446427d3a836b10fba2d7687358209be69b12e0b8e09e3dc433a",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 22,
+        "records_out": 22,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "iss": [
@@ -2101,6 +4047,20 @@
         "ts": "2026-09-20T11:44:06.473Z",
         "raw_file": "data/raw/iss-2026-09-20T10-56-29Z.json",
         "raw_checksum": "8f8fad498899b73a2b036388f0a7f2d2fae73bbd6a4d4d894fc40fa0aa688560",
+        "adapter": "points",
+        "adapter_version": "2.2.1",
+        "records_in": 1,
+        "records_out": 1,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.871Z",
+        "raw_file": "data/raw/iss-2026-09-23T06-57-09Z.json",
+        "raw_checksum": "8a254b157b81393b949eceb3ac8238a3bbe841f1af4afb83620e6fd3ba251976",
         "adapter": "points",
         "adapter_version": "2.2.1",
         "records_in": 1,
@@ -2126,6 +4086,20 @@
         "unmapped_count": 0,
         "skipped_count": 8,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.532Z",
+        "raw_file": "data/raw/openaq-2026-09-23T07-00-25Z.json",
+        "raw_checksum": "122b68fbb6b80d6ae3d49556ec5a2cc76eb8097ba74bc5bbf5fdfbcf9e23cbe2",
+        "adapter": "points",
+        "adapter_version": "2.2.1",
+        "records_in": 0,
+        "records_out": 0,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 8,
+        "notes": null
       }
     ],
     "open-meteo": [
@@ -2133,6 +4107,20 @@
         "ts": "2026-09-20T11:44:06.478Z",
         "raw_file": "data/raw/open-meteo-2026-09-20T10-59-32Z.json",
         "raw_checksum": "778fc9ff945c830f01d9ca6580b203ef538104ae821fc328981e3265e9e83215",
+        "adapter": "points",
+        "adapter_version": "2.2.1",
+        "records_in": 15,
+        "records_out": 15,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.814Z",
+        "raw_file": "data/raw/open-meteo-2026-09-23T07-42-11Z.json",
+        "raw_checksum": "1dd34551262c05caa582a31ad4a57ccf870d63dca25fd7b96587a3c27e29e186",
         "adapter": "points",
         "adapter_version": "2.2.1",
         "records_in": 15,
@@ -2158,6 +4146,20 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.554Z",
+        "raw_file": "data/raw/opensky-2026-09-23T07-00-25Z.json",
+        "raw_checksum": "81c7d2fd3b2be502ba9c10a39990aeca0e06ac169843a9c08562c96bc2a3aed8",
+        "adapter": "points",
+        "adapter_version": "2.2.1",
+        "records_in": 5,
+        "records_out": 5,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "unique-indicators": [
@@ -2174,6 +4176,20 @@
         "unmapped_count": 0,
         "skipped_count": 0,
         "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.711Z",
+        "raw_file": "data/raw/unique-indicators-2026-09-23T07-04-25Z.json",
+        "raw_checksum": "98bd42992473d1345abcd139fcb6d3ed200832ef5ef5f38f74cac5800111ffb3",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 0,
+        "records_out": 0,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
       }
     ],
     "thermal": [
@@ -2181,6 +4197,20 @@
         "ts": "2026-09-20T11:46:46.784Z",
         "raw_file": "data/raw/thermal-2026-09-20T11-46-46Z.json",
         "raw_checksum": "089287d128b69ced9032900cddcc37334d0e9321e3191538a4035aa4703c7e33",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 31,
+        "records_out": 31,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:50.698Z",
+        "raw_file": "data/raw/thermal-2026-09-23T07-02-25Z.json",
+        "raw_checksum": "a16cd43e4a3b3df6f96887e8c4df2049a829895ac3cfa1141e23ad1dd8041b9a",
         "adapter": "timeseries",
         "adapter_version": "2.2.1",
         "records_in": 31,
@@ -2215,6 +4245,50 @@
         "adapter_version": "2.2.1",
         "records_in": 10,
         "records_out": 10,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.165Z",
+        "raw_file": "data/raw/ecb-usd-eur-2026-09-22T19-01-01Z.json",
+        "raw_checksum": "475e0a6528e61caa4c4bb6cada33dd0810376899be8bc4f85a2c3c881b7b4a0f",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 10,
+        "records_out": 10,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      },
+      {
+        "ts": "2026-09-23T17:51:48.454Z",
+        "raw_file": "data/raw/ecb-usd-eur-2026-09-23T06-51-57Z.json",
+        "raw_checksum": "79dc32b5b16264722bad6939270289bfd42eabd5bf8c5e05d2de28fa40e77bf9",
+        "adapter": "timeseries",
+        "adapter_version": "2.2.1",
+        "records_in": 10,
+        "records_out": 10,
+        "dropped_fields": [],
+        "added_fields": [],
+        "unmapped_count": 0,
+        "skipped_count": 0,
+        "notes": null
+      }
+    ],
+    "un-votes": [
+      {
+        "ts": "2026-09-23T17:53:09.623Z",
+        "raw_file": "data/raw/un-votes-2026-09-23T17-53-03Z.json",
+        "raw_checksum": "69103795cd5b9f649e1685875f457aa23dfb5666b61e18205173200d47b4f140",
+        "adapter": "regions",
+        "adapter_version": "2.1.0",
+        "records_in": 270,
+        "records_out": 270,
         "dropped_fields": [],
         "added_fields": [],
         "unmapped_count": 0,

@@ -7,7 +7,6 @@
 import { promises as fs } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { existsSync } from 'fs';
 
 // ============================================================
 // КОНСТАНТЫ
@@ -15,24 +14,6 @@ import { existsSync } from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
-// Синхронное определение корня проекта (без await)
-function resolveProjectRoot() {
-    let current = __dirname;
-    const maxDepth = 10;
-    for (let i = 0; i < maxDepth; i++) {
-        const testPath = join(current, 'data', 'basket');
-        if (existsSync(testPath)) {
-            return current;
-        }
-        const parent = dirname(current);
-        if (parent === current) break;
-        current = parent;
-    }
-    // fallback: поднимаемся на 2 уровня от текущей папки
-    return join(__dirname, '..', '..');
-}
-
 const PROJECT_ROOT = resolveProjectRoot();
 
 const BASKET_DIR = join(PROJECT_ROOT, 'data', 'basket');
@@ -75,6 +56,22 @@ const EXPECTED_COUNTS = {
 // ============================================================
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 // ============================================================
+
+function resolveProjectRoot() {
+    // Определяем корень проекта относительно текущего файла
+    let current = __dirname;
+    while (current !== '/') {
+        const testPath = join(current, 'data', 'basket');
+        try {
+            const fsSync = await import('fs');
+            if (fsSync.existsSync(testPath)) {
+                return current;
+            }
+        } catch {}
+        current = dirname(current);
+    }
+    return join(__dirname, '..', '..'); // fallback
+}
 
 function safeReadFile(filePath) {
     try {
@@ -306,7 +303,7 @@ export async function handleCollectorMonitorSummary(req, res) {
 export async function handleCollectorLogs(req, res, url) {
     try {
         const pathParts = url.pathname.split('/').filter(Boolean);
-        const name = pathParts[pathParts.length - 1];
+        const name = pathParts[pathParts.length - 1]; // последний сегмент
 
         if (!name) {
             res.writeHead(400, { 'Content-Type': 'application/json' });
@@ -317,6 +314,7 @@ export async function handleCollectorLogs(req, res, url) {
         const linesCount = parseInt(url.searchParams.get('lines') || '100', 10);
         const logPath = join(LOGS_DIR, `collect-${name}.log`);
 
+        // Проверяем существование файла
         try {
             await fs.access(logPath);
         } catch {
@@ -328,10 +326,12 @@ export async function handleCollectorLogs(req, res, url) {
             return;
         }
 
+        // Читаем лог
         const content = await fs.readFile(logPath, 'utf8');
         const lines = content.split('\n').filter(Boolean);
         const lastLines = lines.slice(-linesCount);
 
+        // Собираем статистику по логу
         const errorLines = lines.filter(line =>
             /\[ERROR\]|\[WARN\]|\[FAIL\]|\[ERR\]|Error:|Failed:|❌|Ошибка/i.test(line)
         );
@@ -345,7 +345,7 @@ export async function handleCollectorLogs(req, res, url) {
                 errorCount: errorLines.length,
                 lastLines: lastLines,
                 log: lastLines.join('\n'),
-                fullLog: content
+                fullLog: content // можно убрать, если слишком большой
             }
         }));
     } catch (error) {

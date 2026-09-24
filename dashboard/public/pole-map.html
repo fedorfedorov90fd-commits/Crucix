@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Карта полюсов — Crucix</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0a0a1a; color: #e0e0e0; font-family: -apple-system, 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+
+        .topbar { position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(10,10,20,0.95); backdrop-filter: blur(12px); border-bottom: 2px solid rgba(91,192,248,0.25); box-shadow: 0 2px 20px rgba(91,192,248,0.08); z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
+        .topbar::after { content: ""; position: absolute; bottom: -2px; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, #5bc0f8, transparent); opacity: 0.6; }
+        .topbar-left { display: flex; align-items: center; gap: 12px; }
+        .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; }
+        .topbar-right { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .topbar-btn { height: 28px; padding: 0 12px; border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; background: rgba(255,255,255,0.03); color: #888; font-size: 11px; font-weight: 500; text-transform: uppercase; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 4px; font-family: inherit; }
+        .topbar-btn:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+        .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
+        .btn-copy { color: #5bc0f8; border-color: rgba(91,192,248,0.15); background: rgba(91,192,248,0.06); }
+        .btn-copy.copied { background: rgba(76,175,80,0.2); border-color: #4caf50; color: #4caf50; }
+        .btn-rss { color: #f26522; border-color: rgba(242,101,34,0.2); background: rgba(242,101,34,0.06); }
+        .btn-help { color: #a78bfa; border-color: rgba(167,139,250,0.2); background: rgba(167,139,250,0.06); }
+
+        .lang-switch { display: flex; gap: 2px; padding: 2px; background: rgba(255,255,255,0.03); border-radius: 4px; border: 1px solid rgba(255,255,255,0.06); }
+        .lang-btn { padding: 2px 8px; border: none; background: transparent; color: #666; font-size: 11px; font-weight: 500; cursor: pointer; border-radius: 3px; transition: all 0.2s; font-family: inherit; }
+        .lang-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.1); }
+
+        .copy-dropdown { position: relative; display: inline-block; }
+        .copy-dropdown-content { display: none; position: absolute; right: 0; top: 32px; background: #0a0a1a; min-width: 220px; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; box-shadow: 0 12px 40px rgba(0,0,0,0.6); z-index: 200; padding: 6px 0; }
+        .copy-dropdown-content.show { display: block; }
+        .copy-dropdown-content button { display: block; width: 100%; padding: 8px 16px; background: transparent; border: none; color: #c8d0d8; font-size: 12px; text-align: left; cursor: pointer; transition: all 0.15s; font-family: inherit; }
+        .copy-dropdown-content button:hover { background: rgba(91,192,248,0.08); color: #5bc0f8; }
+        .copy-dropdown-content .divider { height: 1px; background: rgba(255,255,255,0.05); margin: 4px 12px; }
+        .copy-dropdown-content .label { padding: 4px 16px; font-size: 10px; color: #4a5a6a; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .nav-dashboards { position: fixed; top: 60px; left: 0; right: 0; height: 38px; background: rgba(6,10,18,0.92); backdrop-filter: blur(8px); border-bottom: 1px solid rgba(255,255,255,0.04); z-index: 99; display: flex; align-items: center; padding: 0 20px; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+        .nav-dashboards::-webkit-scrollbar { display: none; }
+        .nav-btn { padding: 4px 10px; border: 1px solid transparent; border-radius: 4px; background: transparent; color: #666; font-size: 10px; font-weight: 500; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-family: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 3px; }
+        .nav-btn:hover { color: #c8d0d8; background: rgba(255,255,255,0.04); }
+        .nav-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.08); border-color: rgba(91,192,248,0.15); }
+
+        .main-content { padding-top: 114px; max-width: 1440px; margin: 0 auto; padding-left: 20px; padding-right: 20px; padding-bottom: 40px; min-height: calc(100vh - 114px); }
+
+        .page-title { font-size: 28px; font-weight: 700; color: #e8f0f8; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .page-title .badge { font-size: 12px; font-weight: 400; padding: 2px 12px; border-radius: 20px; border: 1px solid; }
+        .badge-low { background: rgba(74,222,128,0.15); color: #4ade80; border-color: rgba(74,222,128,0.2); }
+        .badge-mid { background: rgba(251,191,36,0.15); color: #fbbf24; border-color: rgba(251,191,36,0.2); }
+        .badge-high { background: rgba(239,68,68,0.15); color: #ef4444; border-color: rgba(239,68,68,0.2); }
+        .page-subtitle { color: #8899aa; font-size: 14px; margin-bottom: 24px; }
+
+        .debate { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .debate-card { padding: 14px 16px; border-radius: 8px; font-size: 12px; line-height: 1.6; }
+        .debate-card h3 { font-size: 13px; margin-bottom: 6px; }
+        .debate-card p { color: #999; }
+        .debate-ru { background: rgba(211,47,47,0.08); border-left: 3px solid #d32f2f; }
+        .debate-ru h3 { color: #ef5350; }
+        .debate-west { background: rgba(76,175,80,0.08); border-left: 3px solid #4caf50; }
+        .debate-west h3 { color: #66bb6a; }
+        .debate-neutral { background: rgba(255,193,7,0.08); border-left: 3px solid #ffc107; }
+        .debate-neutral h3 { color: #ffd54f; }
+
+        .poles { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+        .pole { padding: 18px; border-radius: 10px; min-height: 300px; }
+        .pole-ru { background: rgba(211,47,47,0.05); border: 1px solid rgba(211,47,47,0.2); }
+        .pole-west { background: rgba(76,175,80,0.05); border: 1px solid rgba(76,175,80,0.2); }
+        .pole-neutral { background: rgba(255,193,7,0.05); border: 1px solid rgba(255,193,7,0.2); }
+        .pole h2 { font-size: 15px; margin-bottom: 4px; }
+        .pole .framing { font-size: 11px; color: #777; margin-bottom: 12px; font-style: italic; }
+        .pole .total { font-size: 11px; color: #888; margin-bottom: 10px; }
+
+        .country-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 8px; margin: 3px 0; border-radius: 4px; background: rgba(255,255,255,0.03); font-size: 12px; }
+        .country-row .name { color: #ccc; }
+        .country-row .conf { font-weight: bold; font-family: monospace; }
+        .conf-high { color: #4fc3f7; }
+        .conf-mid { color: #ffa726; }
+        .conf-low { color: #757575; }
+        .conf-bar { width: 50px; height: 4px; border-radius: 2px; background: #333; margin-left: 8px; overflow: hidden; display: inline-block; vertical-align: middle; }
+        .conf-bar-fill { height: 100%; border-radius: 2px; }
+
+        .vectors { padding: 16px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 20px; }
+        .vectors h3 { font-size: 13px; color: #4fc3f7; margin-bottom: 10px; }
+        .vector-row { display: flex; gap: 12px; font-size: 12px; margin: 4px 0; align-items: center; }
+        .vector-row .label { color: #888; min-width: 200px; }
+        .vector-row .value { color: #e0e0e0; font-family: monospace; }
+        .vector-row .status { font-size: 10px; padding: 2px 8px; border-radius: 10px; }
+        .status-detected { background: rgba(74,222,128,0.15); color: #4ade80; }
+        .status-no-data { background: rgba(255,255,255,0.05); color: #888; }
+        .status-partial { background: rgba(251,191,36,0.15); color: #fbbf24; }
+
+        .basket-status { padding: 16px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; }
+        .basket-status h3 { font-size: 13px; color: #4fc3f7; margin-bottom: 10px; }
+        .basket-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px; }
+        .basket-item { padding: 8px 12px; border-radius: 6px; font-size: 11px; display: flex; justify-content: space-between; }
+        .basket-loaded { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.2); }
+        .basket-empty { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); }
+        .basket-item .key { color: #aaa; }
+        .basket-item .recs { font-weight: bold; font-family: monospace; }
+        .basket-loaded .recs { color: #81c784; }
+        .basket-empty .recs { color: #757575; }
+
+        .loader { text-align: center; padding: 60px; color: #555; font-size: 14px; }
+        .notification { position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); color: #fff; padding: 8px 20px; border-radius: 6px; font-size: 13px; z-index: 100001; border: 1px solid rgba(255,255,255,0.1); animation: notif-fade 2.5s forwards; }
+        @keyframes notif-fade { 0% { opacity: 0; transform: translateX(-50%) translateY(10px); } 10% { opacity: 1; transform: translateX(-50%) translateY(0); } 80% { opacity: 1; } 100% { opacity: 0; transform: translateX(-50%) translateY(-20px); } }
+
+        @media (max-width: 992px) { .debate, .poles { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) {
+            .topbar { padding: 0 12px; height: 52px; }
+            .topbar-brand { font-size: 12px; }
+            .topbar-btn { font-size: 10px; padding: 0 8px; height: 24px; }
+            .nav-dashboards { top: 52px; height: 34px; padding: 0 10px; gap: 2px; }
+            .nav-btn { font-size: 9px; padding: 2px 6px; }
+            .main-content { padding-top: 102px; padding-left: 12px; padding-right: 12px; }
+            .page-title { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="topbar">
+    <div class="topbar-left"><span class="topbar-brand">🌐 КАРТА ПОЛЮСОВ</span></div>
+    <div class="topbar-right">
+        <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+        <div class="copy-dropdown">
+            <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ ▼</button>
+            <div class="copy-dropdown-content" id="copyDropdown">
+                <div class="label">ФОРМАТЫ КОПИРОВАНИЯ</div>
+                <button data-format="text">📄 Как текст (полный снапшот)</button>
+                <button data-format="markdown">📝 Как Markdown</button>
+                <button data-format="json">📊 Как JSON</button>
+                <button data-format="csv">📋 Как CSV (таблицы)</button>
+                <div class="divider"></div>
+                <button data-format="dom">🌳 DOM-дерево</button>
+                <button data-format="api">📡 API-запросы страницы</button>
+                <div class="divider"></div>
+                <button data-format="all">📦 ВСЁ В ОДНОМ</button>
+            </div>
+        </div>
+        <button class="topbar-btn btn-rss" onclick="window.location.href='/registry'">📡 Реестр</button>
+        <button class="topbar-btn btn-help" onclick="openHelp()">❓ HELP</button>
+        <div class="lang-switch">
+            <button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
+            <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+        </div>
+    </div>
+</header>
+
+<nav class="nav-dashboards">
+    <button class="nav-btn" onclick="window.location.href='/dashboard-5in1'"><span>🎯</span>Центр аналитики</button>
+    <button class="nav-btn active" onclick="window.location.href='/pole-map'"><span>🌐</span>Полюса</button>
+    <button class="nav-btn" onclick="window.location.href='/narrative-arena'"><span>⚡</span>Сверить нарративы</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-economic'"><span>📊</span>Экономика</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-financial'"><span>💰</span>Финансы</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-military'"><span>🛡️</span>Военный</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-geopolitical'"><span>🌍</span>Геополитика</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-cyber'"><span>🔒</span>Кибер</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-news'"><span>📰</span>Новости</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-ai'"><span>🧠</span>AI</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-threats'"><span>⚡</span>Угрозы</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-health'"><span>🏥</span>Здоровье</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-energy'"><span>⛽</span>Энергетика</button>
+    <button class="nav-btn" onclick="window.location.href='/registry'"><span>📋</span>Реестр</button>
+</nav>
+
+<main class="main-content">
+    <div class="page-title">
+        🌐 Карта геополитических полюсов
+        <span class="badge badge-low" id="polarityBadge">—</span>
+    </div>
+    <div class="page-subtitle">
+        Полюс вычисляется из данных, не задаётся списком
+    </div>
+
+    <div class="debate" id="debate"></div>
+    <div class="poles" id="poles"><div class="loader">Загрузка данных полюсов...</div></div>
+    <div class="vectors" id="vectors" style="display:none">
+        <h3>Векторы полярности</h3>
+        <div id="vectorList"></div>
+    </div>
+    <div class="basket-status" id="basketStatus" style="display:none">
+        <h3>Статус basket-данных</h3>
+        <div class="basket-grid" id="basketGrid"></div>
+    </div>
+</main>
+
+<script>
+let currentLang = localStorage.getItem('crucix-lang') || 'ru';
+function switchLang(lang) {
+    currentLang = lang;
+    localStorage.setItem('crucix-lang', lang);
+    document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.lang === lang));
+    showNotification('🌐 Язык: ' + lang.toUpperCase());
+}
+document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.lang === currentLang));
+
+function showNotification(msg) {
+    document.querySelectorAll('.notification').forEach(el => el.remove());
+    const el = document.createElement('div');
+    el.className = 'notification';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2500);
+}
+function openHelp() {
+    const pageId = 'pole-map';
+    const lang = currentLang || 'ru';
+    fetch(`/data/help/${lang}/${pageId}.txt`).then(res => res.text()).then(text => alert(text || 'Справка не найдена')).catch(() => alert('Справка не найдена'));
+}
+
+document.getElementById('copy-btn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    document.getElementById('copyDropdown').classList.toggle('show');
+});
+document.addEventListener('click', function() {
+    document.getElementById('copyDropdown').classList.remove('show');
+});
+
+let lastPolesData = null;
+
+function copyPageData(format) {
+    const timestamp = new Date().toLocaleString();
+    const url = window.location.href;
+    let report = '=== CRUCIX — КАРТА ПОЛЮСОВ ===\n';
+    report += 'Дата: ' + timestamp + '\n';
+    report += 'URL: ' + url + '\n\n';
+
+    if (lastPolesData) {
+        report += '--- ИНДЕКС ПОЛЯРНОСТИ ---\n';
+        report += (lastPolesData.polarity_index || 0).toFixed(2) + '\n\n';
+
+        report += '--- ПОЛЮСА ---\n';
+        for (const key of ['russian', 'western', 'non_aligned']) {
+            const p = lastPolesData.poles?.[key];
+            if (!p) continue;
+            report += '\n' + key + ' (всего ' + p.total + '):\n';
+            (p.countries || []).forEach(c => {
+                report += '  ' + c.country + ': ' + Math.round((c.confidence || 0) * 100) + '%\n';
+            });
+        }
+    } else {
+        report += 'Данные не загружены.\n';
+    }
+
+    if (report.length > 200000) {
+        report = report.slice(0, 190000) + '\n\n[... ОБРЕЗАНО ...]';
+    }
+
+    navigator.clipboard.writeText(report).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = '✅ ' + format.toUpperCase();
+        btn.classList.add('copied');
+        setTimeout(() => {
+            btn.textContent = '📋 КОПИРОВАТЬ ▼';
+            btn.classList.remove('copied');
+        }, 3000);
+        showNotification('✅ Скопировано: ' + format.toUpperCase());
+    }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = report;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        showNotification('✅ Скопировано: ' + format.toUpperCase());
+    });
+}
+
+document.querySelectorAll('#copyDropdown button[data-format]').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        document.getElementById('copyDropdown').classList.remove('show');
+        copyPageData(this.dataset.format);
+    });
+});
+
+async function loadPoles() {
+    try {
+        const r = await fetch('/api/layers/pole-tracker');
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const j = await r.json();
+        if (j.success) {
+            lastPolesData = j.data;
+            renderPoles(j.data);
+        } else {
+            throw new Error(j.error || 'unknown');
+        }
+    } catch (e) {
+        document.getElementById('poles').innerHTML = '<div class="loader">Ошибка: ' + e.message + '</div>';
+    }
+}
+
+function renderPoles(d) {
+    const idx = d.polarity_index || 0;
+    const badge = document.getElementById('polarityBadge');
+    badge.textContent = 'Индекс: ' + idx.toFixed(2);
+    badge.className = 'badge ' + (idx < 0.3 ? 'badge-low' : idx < 0.6 ? 'badge-mid' : 'badge-high');
+
+    if (d.debate) {
+        const db = d.debate;
+        document.getElementById('debate').innerHTML = `
+            <div class="debate-card debate-ru"><h3>🇷🇺 Позиция России</h3><p>${db.russian_position || ''}</p></div>
+            <div class="debate-card debate-west"><h3>🇺🇸 Позиция Запада</h3><p>${db.western_position || ''}</p></div>
+            <div class="debate-card debate-neutral"><h3>🌍 Неприсоединившиеся</h3><p>${db.non_aligned_position || ''}</p></div>
+        `;
+    }
+
+    const poleMap = {
+        russian: { cls: 'pole-ru', title: '🇷🇺 Российский полюс' },
+        western: { cls: 'pole-west', title: '🇺🇸 Западный полюс' },
+        non_aligned: { cls: 'pole-neutral', title: '🌍 Неприсоединившиеся' }
+    };
+
+    const html = Object.entries(poleMap).map(([key, info]) => {
+        const p = d.poles?.[key] || {};
+        const countries = (p.countries || []).slice(0, 20);
+        const rows = countries.map(c => {
+            const conf = c.confidence || 0;
+            const cls = conf >= 0.7 ? 'conf-high' : conf >= 0.4 ? 'conf-mid' : 'conf-low';
+            const color = conf >= 0.7 ? '#4fc3f7' : conf >= 0.4 ? '#ffa726' : '#757575';
+            return `<div class="country-row"><span class="name">${c.country}</span><span><span class="conf ${cls}">${(conf * 100).toFixed(0)}%</span><span class="conf-bar"><span class="conf-bar-fill" style="width:${conf*100}%;background:${color}"></span></span></span></div>`;
+        }).join('');
+        return `<div class="pole ${info.cls}"><h2>${info.title}</h2><div class="framing">${p.narrative_framing || ''}</div><div class="total">Стран: ${p.total || 0}</div>${rows || '<div style="color:#555;font-size:12px;padding:8px">Нет данных</div>'}</div>`;
+    }).join('');
+
+    const unknown = d.poles?.unknown || {};
+    let unknownHtml = '';
+    if (unknown.total > 0) {
+        unknownHtml = `<div class="pole" style="grid-column:1/-1;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);margin-top:8px"><h2 style="color:#757575">❓ Не классифицированы</h2><div class="total">Стран: ${unknown.total}</div><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">${(unknown.countries || []).map(c => `<span style="font-size:11px;color:#757575;padding:3px 8px;background:rgba(255,255,255,0.03);border-radius:4px">${c.country}</span>`).join('')}</div></div>`;
+    }
+    document.getElementById('poles').innerHTML = html + unknownHtml;
+
+    if (d.vectors) {
+        const labels = {
+            sanctions_flow: 'Поток санкций',
+            info_war: 'Информационная война',
+            military_presence: 'Военное присутствие',
+            economic_decoupling: 'Экономический разрыв',
+            diplomatic_activity: 'Дипломатическая активность',
+            un_voting: 'Голосования в ООН'
+        };
+        const vh = Object.entries(d.vectors).map(([k, v]) => {
+            const stCls = v === 'detected' ? 'status-detected' : v === 'no_data' ? 'status-no-data' : 'status-partial';
+            return `<div class="vector-row"><span class="label">${labels[k] || k}</span><span class="value">${v}</span><span class="status ${stCls}">${v}</span></div>`;
+        }).join('');
+        document.getElementById('vectorList').innerHTML = vh;
+        document.getElementById('vectors').style.display = 'block';
+    }
+
+    if (d.basket_status) {
+        const bh = Object.entries(d.basket_status).map(([k, v]) => {
+            const cls = v.loaded ? 'basket-loaded' : 'basket-empty';
+            return `<div class="basket-item ${cls}"><span class="key">${k}</span><span class="recs">${v.loaded ? v.records + ' rec' : 'нет'}</span></div>`;
+        }).join('');
+        document.getElementById('basketGrid').innerHTML = bh;
+        document.getElementById('basketStatus').style.display = 'block';
+    }
+}
+
+loadPoles();
+setInterval(loadPoles, 60000);
+</script>
+</body>
+</html>

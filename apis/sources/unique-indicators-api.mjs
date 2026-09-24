@@ -1,9 +1,12 @@
 /**
  * apis/sources/unique-indicators-api.mjs — API-МОДУЛЬ: УНИКАЛЬНЫЕ КОСВЕННЫЕ ИНДИКАТОРЫ
  *
+ * Версия 3.0.0. Принят 23.09.2026.
+ *
  * КОНТРАКТ CRUCIX v2 (Layer).
  * ИСТОЧНИК: data/basket/pentagon-pizza.json + data/basket/langley-taxis.json —
  *           [{ date, value, trend?, timestamp? }] ИЛИ { data:[...] } ИЛИ { series:[...] }.
+ *           Читается через basket-loader v2.0.0 (правило 14.3).
  * Сборщик: scripts/collectors/collect-unique-indicators.mjs.
  *
  * Уникальные косвенные индикаторы разведактивности:
@@ -23,6 +26,12 @@
  * Пороги:
  *   pentagon-pizza: warning 50, critical 100
  *   langley-taxis:  warning 20, critical 50
+ *
+ * Изменения v3.0.0:
+ *  - Перевод с прямого fs.readFile на loadWithFallback из ./lib/basket-loader.mjs
+ *    (правило 14.3: потребитель не читает raw, только basket через basket-loader).
+ *  - Диагностика source (basket-v1 | basket-legacy | fallback | corrupted | error)
+ *    и shape в meta и headers X-Basket-Source / X-Basket-Shape.
  *
  * ФОРМАТЫ: json (FC + series + stats), csv, series, stats, raw, report, text.
  * ФИЛЬТРЫ: ?indicator=, ?regime=, ?since=, ?until=, ?min_value=, ?max_value=, ?limit=, ?top=, ?sort=.
@@ -47,9 +56,9 @@
  *   /builtin                       — встроенный fallback
  */
 
-import { promises as fs } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { loadWithFallback } from './lib/basket-loader.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
@@ -111,6 +120,8 @@ const INDICATORS = {
     thresholds: { warning: 20, critical: 50 },
   },
 };
+
+const COLLECTOR_HINT = 'run scripts/collectors/collect-unique-indicators.mjs';
 
 function regimeOf(value, thresholds) {
   const n = Number(value);
@@ -177,37 +188,67 @@ function cachePut(key, value) { _cache.set(key, { value, expires: Date.now() + C
 function cacheClear() { _cache.clear(); return _cache.size; }
 
 // ============================================================
-//  ЗАГРУЗКА
+//  ЗАГРУЗКА (через basket-loader)
 // ============================================================
 
-async function loadIndicatorFile(filename) {
-  const filePath = join(BASKET_DIR, filename);
-  try {
-    const raw = await fs.readFile(filePath, 'utf8');
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed)) return parsed;
-    if (parsed && Array.isArray(parsed.data)) return parsed.data;
-    if (parsed && Array.isArray(parsed.series)) return parsed.series;
-    return [];
-  } catch (e) {
-    return null;
+/**
+ * Извлекает массив записей из любой формы basket-данных.
+ * Для v1-схемы — series, потом points, потом regions, потом extra.entries.
+ * Для legacy — массив, {data}, {series}.
+ */
+function extractArray(payload) {
+  if (!payload) return { rows: null, shape: 'null' };
+  if (typeof payload === 'object' && payload.schema === 'crucix.basket.v1') {
+    if (Array.isArray(payload.series) && payload.series.length > 0) return { rows: payload.series, shape: 'v1.series' };
+    if (Array.isArray(payload.points) && payload.points.length > 0) return { rows: payload.points, shape: 'v1.points' };
+    if (Array.isArray(payload.regions) && payload.regions.length > 0) return { rows: payload.regions, shape: 'v1.regions' };
+    if (payload.extra && Array.isArray(payload.extra.entries) && payload.extra.entries.length > 0) return { rows: payload.extra.entries, shape: 'v1.extra.entries' };
+    return { rows: [], shape: 'v1.empty' };
   }
+  if (Array.isArray(payload)) return { rows: payload, shape: 'array' };
+  if (payload.data && Array.isArray(payload.data)) return { rows: payload.data, shape: 'data.array' };
+  if (Array.isArray(payload.series)) return { rows: payload.series, shape: 'series' };
+  return { rows: null, shape: 'unknown' };
 }
 
-function extractPoints(doc) {
-  if (Array.isArray(doc)) return doc;
-  if (doc && Array.isArray(doc.data)) return doc.data;
-  if (doc && Array.isArray(doc.series)) return doc.series;
-  return [];
+/**
+ * Загрузка одного индикатора через basket-loader.
+ * Возвращает { points, source, shape, mtime } или { points: null, source: 'fallback'|'corrupted'|'error' }.
+ */
+async function loadIndicatorFile(filename) {
+  const filePath = join(BASKET_DIR, filename);
+  const loaded = await loadWithFallback({
+    basketFile: filePath,
+    fallbackData: null,
+    hint: COLLECTOR_HINT,
+  });
+
+  if (loaded.source === 'fallback')  return { points: null, source: 'fallback',  shape: 'empty', mtime: null };
+  if (loaded.source === 'corrupted') return { points: null, source: 'corrupted', shape: 'empty', mtime: null };
+  if (loaded.source === 'error')     return { points: null, source: 'error',     shape: 'empty', mtime: null };
+
+  const payload = loaded.legacy || loaded.data;
+  const { rows, shape } = extractArray(payload);
+  return { points: rows, source: loaded.source, shape, mtime: loaded.mtime };
 }
 
 async function loadAll() {
   const out = {};
   for (const [id, meta_] of Object.entries(INDICATORS)) {
-    const raw = await loadIndicatorFile(meta_.file);
-    const source = raw ? 'basket' : 'builtin';
-    const points = (raw || BUILTIN_DATA[id] || []).map(p => normalizePoint(p, id));
-    out[id] = { id, meta: meta_, points, source };
+    const res = await loadIndicatorFile(meta_.file);
+    const hasData = Array.isArray(res.points) && res.points.length > 0;
+    const source = hasData ? 'basket' : 'builtin';
+    const rawPoints = hasData ? res.points : (BUILTIN_DATA[id] || []);
+    const points = rawPoints.map(p => normalizePoint(p, id));
+    out[id] = {
+      id,
+      meta: meta_,
+      points,
+      source,
+      basket_source: res.source,
+      basket_shape: res.shape,
+      basket_mtime: res.mtime,
+    };
   }
   return out;
 }
@@ -364,7 +405,7 @@ function toReport(data) {
   for (const [id, item] of Object.entries(data)) {
     const stats = computeStats(item.points);
     lines.push(`[${item.meta.icon} ${item.meta.name}]`);
-    lines.push(`  Источник: ${item.source}`);
+    lines.push(`  Источник: ${item.source} (${item.basket_source || 'n/a'})`);
     lines.push(`  Точек: ${stats.count}`);
     if (stats.value) lines.push(`  Value — min: ${stats.value.min}  max: ${stats.value.max}  mean: ${stats.value.mean}`);
     if (stats.last_value != null) lines.push(`  Последнее (${stats.last_date}): ${stats.last_value} — ${stats.last_regimeLabel}`);
@@ -380,7 +421,6 @@ function toReport(data) {
 // ============================================================
 
 function toFeatureCollection(rows) {
-  // каждая точка — маркер в Пентагоне/Лэнгли (сгруппированные по локации)
   const features = [];
   for (const ind of Object.values(INDICATORS)) {
     const indPoints = rows.filter(r => r.indicator === ind.id);
@@ -499,7 +539,7 @@ export async function handler(req, res) {
 
     const extra = {
       'X-Module': 'unique-indicators-api',
-      'X-Module-Version': '2.0.0',
+      'X-Module-Version': '3.0.0',
       'Cache-Control': `public, max-age=${meta.cache}`,
       'Access-Control-Allow-Origin': '*',
     };
@@ -508,6 +548,13 @@ export async function handler(req, res) {
     const allPoints = Object.values(data).flatMap(d => d.points);
     const usedFallback = Object.values(data).some(d => d.source === 'builtin');
 
+    // Диагностика basket в headers (первый не-fallback источник)
+    const sampleSource = Object.values(data).find(d => d.source === 'basket');
+    if (sampleSource) {
+      extra['X-Basket-Source'] = sampleSource.basket_source || 'unknown';
+      extra['X-Basket-Shape']  = sampleSource.basket_shape  || 'unknown';
+    }
+
     if (sub === '/health') {
       return sendJSON(res, 200, {
         status: 'online',
@@ -515,6 +562,7 @@ export async function handler(req, res) {
         indicators: Object.keys(INDICATORS).length,
         total_points: allPoints.length,
         cache_size: _cache.size,
+        sources: Object.fromEntries(Object.entries(data).map(([id, d]) => [id, { source: d.source, basket_source: d.basket_source, basket_shape: d.basket_shape, basket_mtime: d.basket_mtime, points: d.points.length }])),
         generated_at: new Date().toISOString(),
       }, extra);
     }
@@ -555,7 +603,7 @@ export async function handler(req, res) {
     if (sub === '/stats' || format === 'stats') {
       const statMap = {};
       for (const [id, item] of Object.entries(data)) {
-        statMap[id] = { stats: computeStats(item.points), source: item.source };
+        statMap[id] = { stats: computeStats(item.points), source: item.source, basket_source: item.basket_source, basket_shape: item.basket_shape };
       }
       return sendJSON(res, 200, {
         indicators: statMap,
@@ -587,6 +635,8 @@ export async function handler(req, res) {
           ...ind,
           points: data[ind.id]?.points.length ?? 0,
           source: data[ind.id]?.source ?? 'unknown',
+          basket_source: data[ind.id]?.basket_source ?? null,
+          basket_shape: data[ind.id]?.basket_shape ?? null,
           current: currentOf(data[ind.id]?.points ?? []),
         })),
         count: Object.keys(INDICATORS).length,
@@ -602,6 +652,8 @@ export async function handler(req, res) {
         points,
         stats: computeStats(points),
         source: data[id]?.source ?? 'unknown',
+        basket_source: data[id]?.basket_source ?? null,
+        basket_shape: data[id]?.basket_shape ?? null,
         current: currentOf(points),
       }, extra);
     }
@@ -750,6 +802,9 @@ export async function handler(req, res) {
         name: item.meta.name,
         description: item.meta.description,
         source: item.source,
+        basket_source: item.basket_source,
+        basket_shape: item.basket_shape,
+        basket_mtime: item.basket_mtime,
         icon: item.meta.icon,
         color: item.meta.color,
         location: item.meta.location,

@@ -4,8 +4,8 @@
     "id": "ecb-usd-eur",
     "source": "European Central Bank Data API",
     "source_url": "https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?lastNObservations=10&format=jsondata",
-    "fetched_at": "2026-09-20T11:49:47.042Z",
-    "normalized_at": "2026-09-20T11:56:20.497Z",
+    "fetched_at": "2026-09-23T06:51:57.174Z",
+    "normalized_at": "2026-09-23T17:51:48.454Z",
     "collector": "collect-ecb.mjs",
     "license": "public-domain",
     "count": 10,
@@ -16,14 +16,6 @@
     "value_range": null
   },
   "series": [
-    {
-      "date": "2026-09-07",
-      "value": 1.1622
-    },
-    {
-      "date": "2026-09-08",
-      "value": 1.1614
-    },
     {
       "date": "2026-09-09",
       "value": 1.1652
@@ -55,21 +47,31 @@
     {
       "date": "2026-09-18",
       "value": 1.146
+    },
+    {
+      "date": "2026-09-21",
+      "value": 1.149
+    },
+    {
+      "date": "2026-09-22",
+      "value": 1.1463
     }
   ],
   "points": [],
   "regions": [
     {
       "region": "GLOBAL",
-      "value": 1.15664,
+      "value": 1.15381,
       "count": 10,
       "aggregation": "mean",
       "extra": {
         "max": 1.1652,
-        "sum": 11.566399999999998
+        "sum": 11.5381
       }
     }
   ],
+  "documents": [],
+  "graph": null,
   "extra": {
     "adapter": "timeseries",
     "adapter_version": "2.2.1",

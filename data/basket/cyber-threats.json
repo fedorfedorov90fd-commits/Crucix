@@ -2,10 +2,10 @@
   "schema": "crucix.basket.v1",
   "meta": {
     "id": "cyber-threats",
-    "source": "Crucix cyber-threats",
-    "source_url": "local://rescan",
-    "fetched_at": "2026-09-18T21:24:17.811Z",
-    "normalized_at": "2026-09-18T21:25:55.706Z",
+    "source": "Crucix cyber-threats (demo)",
+    "source_url": "local://demo",
+    "fetched_at": "2026-09-23T06:51:56.003Z",
+    "normalized_at": "2026-09-23T17:51:48.394Z",
     "collector": "collect-cyber-threats.mjs",
     "license": "proprietary",
     "count": 31,
@@ -17,349 +17,386 @@
   },
   "series": [
     {
-      "date": "2026-08-19",
-      "value": 30,
-      "region": "Europe",
-      "extra": {
-        "count": 30,
-        "unmapped_region": true,
-        "unmapped_original": "Europe"
-      }
-    },
-    {
-      "date": "2026-08-20",
-      "value": 46,
-      "region": "Europe",
-      "extra": {
-        "count": 46,
-        "unmapped_region": true,
-        "unmapped_original": "Europe"
-      }
-    },
-    {
-      "date": "2026-08-21",
-      "value": 43,
-      "region": "Europe",
-      "extra": {
-        "count": 43,
-        "unmapped_region": true,
-        "unmapped_original": "Europe"
-      }
-    },
-    {
-      "date": "2026-08-22",
-      "value": 50,
-      "region": "Europe",
-      "extra": {
-        "count": 50,
-        "unmapped_region": true,
-        "unmapped_original": "Europe"
-      }
-    },
-    {
-      "date": "2026-08-23",
-      "value": 48,
-      "region": "North America",
-      "extra": {
-        "count": 48,
-        "unmapped_region": true,
-        "unmapped_original": "North America"
-      }
-    },
-    {
       "date": "2026-08-24",
-      "value": 44,
+      "value": 3,
       "region": "Middle East",
       "extra": {
-        "count": 44,
+        "threat": "APT",
+        "count": 3,
         "unmapped_region": true,
         "unmapped_original": "Middle East"
       }
     },
     {
       "date": "2026-08-25",
-      "value": 21,
+      "value": 2,
       "region": "North America",
       "extra": {
-        "count": 21,
+        "threat": "DDoS",
+        "count": 2,
         "unmapped_region": true,
         "unmapped_original": "North America"
       }
     },
     {
       "date": "2026-08-26",
-      "value": 32,
-      "region": "AIA",
+      "value": 34,
+      "region": "Europe",
       "extra": {
-        "count": 32
+        "threat": "Ransomware",
+        "count": 34,
+        "unmapped_region": true,
+        "unmapped_original": "Europe"
       }
     },
     {
       "date": "2026-08-27",
-      "value": 6,
-      "region": "Europe",
+      "value": 41,
+      "region": "AIA",
       "extra": {
-        "count": 6,
-        "unmapped_region": true,
-        "unmapped_original": "Europe"
+        "threat": "Data Breach",
+        "count": 41
       }
     },
     {
       "date": "2026-08-28",
-      "value": 36,
-      "region": "Middle East",
-      "extra": {
-        "count": 36,
-        "unmapped_region": true,
-        "unmapped_original": "Middle East"
-      }
-    },
-    {
-      "date": "2026-08-29",
-      "value": 13,
-      "region": "Middle East",
-      "extra": {
-        "count": 13,
-        "unmapped_region": true,
-        "unmapped_original": "Middle East"
-      }
-    },
-    {
-      "date": "2026-08-30",
-      "value": 9,
+      "value": 47,
       "region": "Europe",
       "extra": {
-        "count": 9,
+        "threat": "Data Breach",
+        "count": 47,
         "unmapped_region": true,
         "unmapped_original": "Europe"
       }
     },
     {
-      "date": "2026-08-31",
-      "value": 20,
+      "date": "2026-08-29",
+      "value": 41,
+      "region": "Europe",
+      "extra": {
+        "threat": "APT",
+        "count": 41,
+        "unmapped_region": true,
+        "unmapped_original": "Europe"
+      }
+    },
+    {
+      "date": "2026-08-30",
+      "value": 27,
       "region": "AIA",
       "extra": {
-        "count": 20
+        "threat": "Ransomware",
+        "count": 27
+      }
+    },
+    {
+      "date": "2026-08-31",
+      "value": 22,
+      "region": "Middle East",
+      "extra": {
+        "threat": "APT",
+        "count": 22,
+        "unmapped_region": true,
+        "unmapped_original": "Middle East"
       }
     },
     {
       "date": "2026-09-01",
-      "value": 35,
+      "value": 42,
       "region": "North America",
       "extra": {
-        "count": 35,
+        "threat": "Malware",
+        "count": 42,
         "unmapped_region": true,
         "unmapped_original": "North America"
       }
     },
     {
       "date": "2026-09-02",
-      "value": 42,
-      "region": "Middle East",
+      "value": 34,
+      "region": "Europe",
       "extra": {
-        "count": 42,
+        "threat": "Ransomware",
+        "count": 34,
         "unmapped_region": true,
-        "unmapped_original": "Middle East"
+        "unmapped_original": "Europe"
       }
     },
     {
       "date": "2026-09-03",
-      "value": 15,
+      "value": 48,
       "region": "Europe",
       "extra": {
-        "count": 15,
+        "threat": "Phishing",
+        "count": 48,
         "unmapped_region": true,
         "unmapped_original": "Europe"
       }
     },
     {
       "date": "2026-09-04",
-      "value": 44,
-      "region": "AIA",
-      "extra": {
-        "count": 44
-      }
-    },
-    {
-      "date": "2026-09-05",
-      "value": 43,
-      "region": "AIA",
-      "extra": {
-        "count": 43
-      }
-    },
-    {
-      "date": "2026-09-06",
-      "value": 30,
-      "region": "North America",
-      "extra": {
-        "count": 30,
-        "unmapped_region": true,
-        "unmapped_original": "North America"
-      }
-    },
-    {
-      "date": "2026-09-07",
-      "value": 31,
-      "region": "Europe",
-      "extra": {
-        "count": 31,
-        "unmapped_region": true,
-        "unmapped_original": "Europe"
-      }
-    },
-    {
-      "date": "2026-09-08",
-      "value": 49,
-      "region": "Middle East",
-      "extra": {
-        "count": 49,
-        "unmapped_region": true,
-        "unmapped_original": "Middle East"
-      }
-    },
-    {
-      "date": "2026-09-09",
-      "value": 41,
-      "region": "AIA",
-      "extra": {
-        "count": 41
-      }
-    },
-    {
-      "date": "2026-09-10",
-      "value": 43,
-      "region": "AIA",
-      "extra": {
-        "count": 43
-      }
-    },
-    {
-      "date": "2026-09-11",
-      "value": 45,
-      "region": "North America",
-      "extra": {
-        "count": 45,
-        "unmapped_region": true,
-        "unmapped_original": "North America"
-      }
-    },
-    {
-      "date": "2026-09-12",
       "value": 14,
       "region": "Europe",
       "extra": {
+        "threat": "Ransomware",
         "count": 14,
         "unmapped_region": true,
         "unmapped_original": "Europe"
       }
     },
     {
-      "date": "2026-09-13",
-      "value": 4,
-      "region": "AIA",
-      "extra": {
-        "count": 4
-      }
-    },
-    {
-      "date": "2026-09-14",
-      "value": 5,
-      "region": "AIA",
-      "extra": {
-        "count": 5
-      }
-    },
-    {
-      "date": "2026-09-15",
-      "value": 35,
-      "region": "North America",
-      "extra": {
-        "count": 35,
-        "unmapped_region": true,
-        "unmapped_original": "North America"
-      }
-    },
-    {
-      "date": "2026-09-16",
-      "value": 20,
-      "region": "AIA",
-      "extra": {
-        "count": 20
-      }
-    },
-    {
-      "date": "2026-09-17",
-      "value": 47,
+      "date": "2026-09-05",
+      "value": 7,
       "region": "Middle East",
       "extra": {
-        "count": 47,
+        "threat": "DDoS",
+        "count": 7,
         "unmapped_region": true,
         "unmapped_original": "Middle East"
       }
     },
     {
-      "date": "2026-09-18",
-      "value": 11,
+      "date": "2026-09-06",
+      "value": 28,
+      "region": "Middle East",
+      "extra": {
+        "threat": "Ransomware",
+        "count": 28,
+        "unmapped_region": true,
+        "unmapped_original": "Middle East"
+      }
+    },
+    {
+      "date": "2026-09-07",
+      "value": 21,
+      "region": "North America",
+      "extra": {
+        "threat": "APT",
+        "count": 21,
+        "unmapped_region": true,
+        "unmapped_original": "North America"
+      }
+    },
+    {
+      "date": "2026-09-08",
+      "value": 41,
+      "region": "AIA",
+      "extra": {
+        "threat": "Phishing",
+        "count": 41
+      }
+    },
+    {
+      "date": "2026-09-09",
+      "value": 40,
+      "region": "Middle East",
+      "extra": {
+        "threat": "Ransomware",
+        "count": 40,
+        "unmapped_region": true,
+        "unmapped_original": "Middle East"
+      }
+    },
+    {
+      "date": "2026-09-10",
+      "value": 1,
       "region": "Europe",
       "extra": {
-        "count": 11,
+        "threat": "APT",
+        "count": 1,
         "unmapped_region": true,
         "unmapped_original": "Europe"
+      }
+    },
+    {
+      "date": "2026-09-11",
+      "value": 9,
+      "region": "Europe",
+      "extra": {
+        "threat": "Phishing",
+        "count": 9,
+        "unmapped_region": true,
+        "unmapped_original": "Europe"
+      }
+    },
+    {
+      "date": "2026-09-12",
+      "value": 17,
+      "region": "Europe",
+      "extra": {
+        "threat": "Phishing",
+        "count": 17,
+        "unmapped_region": true,
+        "unmapped_original": "Europe"
+      }
+    },
+    {
+      "date": "2026-09-13",
+      "value": 47,
+      "region": "Europe",
+      "extra": {
+        "threat": "Phishing",
+        "count": 47,
+        "unmapped_region": true,
+        "unmapped_original": "Europe"
+      }
+    },
+    {
+      "date": "2026-09-14",
+      "value": 48,
+      "region": "Europe",
+      "extra": {
+        "threat": "APT",
+        "count": 48,
+        "unmapped_region": true,
+        "unmapped_original": "Europe"
+      }
+    },
+    {
+      "date": "2026-09-15",
+      "value": 48,
+      "region": "AIA",
+      "extra": {
+        "threat": "Malware",
+        "count": 48
+      }
+    },
+    {
+      "date": "2026-09-16",
+      "value": 8,
+      "region": "Middle East",
+      "extra": {
+        "threat": "Ransomware",
+        "count": 8,
+        "unmapped_region": true,
+        "unmapped_original": "Middle East"
+      }
+    },
+    {
+      "date": "2026-09-17",
+      "value": 3,
+      "region": "North America",
+      "extra": {
+        "threat": "Malware",
+        "count": 3,
+        "unmapped_region": true,
+        "unmapped_original": "North America"
+      }
+    },
+    {
+      "date": "2026-09-18",
+      "value": 16,
+      "region": "Europe",
+      "extra": {
+        "threat": "Phishing",
+        "count": 16,
+        "unmapped_region": true,
+        "unmapped_original": "Europe"
+      }
+    },
+    {
+      "date": "2026-09-19",
+      "value": 43,
+      "region": "AIA",
+      "extra": {
+        "threat": "Ransomware",
+        "count": 43
+      }
+    },
+    {
+      "date": "2026-09-20",
+      "value": 50,
+      "region": "AIA",
+      "extra": {
+        "threat": "DDoS",
+        "count": 50
+      }
+    },
+    {
+      "date": "2026-09-21",
+      "value": 26,
+      "region": "North America",
+      "extra": {
+        "threat": "Malware",
+        "count": 26,
+        "unmapped_region": true,
+        "unmapped_original": "North America"
+      }
+    },
+    {
+      "date": "2026-09-22",
+      "value": 31,
+      "region": "Middle East",
+      "extra": {
+        "threat": "DDoS",
+        "count": 31,
+        "unmapped_region": true,
+        "unmapped_original": "Middle East"
+      }
+    },
+    {
+      "date": "2026-09-23",
+      "value": 11,
+      "region": "AIA",
+      "extra": {
+        "threat": "Data Breach",
+        "count": 11
       }
     }
   ],
   "points": [],
   "regions": [
     {
-      "region": "Europe",
-      "value": 25.5,
-      "count": 10,
+      "region": "Middle East",
+      "value": 19.857142857142858,
+      "count": 7,
       "aggregation": "sum",
       "extra": {
-        "max": 50,
-        "sum": 255
+        "max": 40,
+        "sum": 139
       }
     },
     {
       "region": "North America",
-      "value": 35.666666666666664,
-      "count": 6,
+      "value": 18.8,
+      "count": 5,
       "aggregation": "sum",
       "extra": {
-        "max": 48,
-        "sum": 214
+        "max": 42,
+        "sum": 94
       }
     },
     {
-      "region": "Middle East",
-      "value": 38.5,
-      "count": 6,
+      "region": "Europe",
+      "value": 29.666666666666668,
+      "count": 12,
       "aggregation": "sum",
       "extra": {
-        "max": 49,
-        "sum": 231
+        "max": 48,
+        "sum": 356
       }
     },
     {
       "region": "AIA",
-      "value": 28,
-      "count": 9,
+      "value": 37.285714285714285,
+      "count": 7,
       "aggregation": "sum",
       "extra": {
-        "max": 44,
-        "sum": 252
+        "max": 50,
+        "sum": 261
       }
     }
   ],
+  "documents": [],
+  "graph": null,
   "extra": {
     "adapter": "timeseries",
-    "adapter_version": "2.0.0",
+    "adapter_version": "2.2.1",
     "unique_dates": 31,
     "unmapped_regions": [
-      "Europe",
+      "Middle East",
       "North America",
-      "Middle East"
+      "Europe"
     ],
     "unmapped_count": 3
   }

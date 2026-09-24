@@ -1,1652 +1,2078 @@
 [
   {
-    "path": "/api/layers/acled-api",
-    "module": "acled-api",
-    "method": "GET"
+    "id": "acled-api",
+    "endpoint": "/api/layers/acled",
+    "method": "GET",
+    "module": "acled-api"
   },
   {
-    "path": "/api/layers/acled",
-    "module": "acled",
-    "method": "GET"
+    "id": "acled",
+    "endpoint": "/api/acled/events",
+    "method": "GET",
+    "module": "acled"
   },
   {
-    "path": "/api/layers/adsb",
-    "module": "adsb",
-    "method": "GET"
+    "id": "adaptive-news-clustering-api",
+    "endpoint": "/api/layers/adaptive-news-clustering",
+    "method": "GET",
+    "module": "adaptive-news-clustering-api"
   },
   {
-    "path": "/api/layers/aeon",
-    "module": "aeon",
-    "method": "GET"
+    "id": "adsb",
+    "endpoint": "/api/adsb/status",
+    "method": "GET",
+    "module": "adsb"
   },
   {
-    "path": "/api/layers/agents",
-    "module": "agents",
-    "method": "GET"
+    "id": "aeon",
+    "endpoint": "/api/aeon/status",
+    "method": "GET",
+    "module": "aeon"
   },
   {
-    "path": "/api/layers/ai-chat-api",
-    "module": "ai-chat-api",
-    "method": "GET"
+    "id": "agents",
+    "endpoint": "/api/agents/status",
+    "method": "GET",
+    "module": "agents"
   },
   {
-    "path": "/api/layers/ai-filter",
-    "module": "ai-filter",
-    "method": "GET"
+    "id": "ai-chat-api",
+    "endpoint": "/api/services/ai-chat",
+    "method": "GET",
+    "module": "ai-chat-api"
   },
   {
-    "path": "/api/layers/aif",
-    "module": "aif",
-    "method": "GET"
+    "id": "ai-filter",
+    "endpoint": "/api/ai-filter/status",
+    "method": "GET",
+    "module": "ai-filter"
   },
   {
-    "path": "/api/layers/ai-gateway",
-    "module": "ai-gateway",
-    "method": "GET"
+    "id": "ai-forecasts-api",
+    "endpoint": "/api/layers/ai-forecasts",
+    "method": "GET",
+    "module": "ai-forecasts-api"
   },
   {
-    "path": "/api/layers/ai-news-analyzer",
-    "module": "ai-news-analyzer",
-    "method": "GET"
+    "id": "ai-gateway",
+    "endpoint": "/api/ai-gateway/status",
+    "method": "POST",
+    "module": "ai-gateway"
   },
   {
-    "path": "/api/layers/ai-news-rating",
-    "module": "ai-news-rating",
-    "method": "GET"
+    "id": "ai-news-analyzer",
+    "endpoint": "/api/ai/analyze/all",
+    "method": "POST",
+    "module": "ai-news-analyzer"
   },
   {
-    "path": "/api/layers/ai-processor",
-    "module": "ai-processor",
-    "method": "GET"
+    "id": "ai-news-rating",
+    "endpoint": "/api/ai/rate",
+    "method": "GET",
+    "module": "ai-news-rating"
   },
   {
-    "path": "/api/layers/analysis-events-api",
-    "module": "analysis-events-api",
-    "method": "GET"
+    "id": "ai-news-synthesis-api",
+    "endpoint": "/api/layers/ai-news-synthesis",
+    "method": "GET",
+    "module": "ai-news-synthesis-api"
   },
   {
-    "path": "/api/layers/animations",
-    "module": "animations",
-    "method": "GET"
+    "id": "ai-processor",
+    "endpoint": "/api/ai-processor/status",
+    "method": "POST",
+    "module": "ai-processor"
   },
   {
-    "path": "/api/layers/anomalies",
-    "module": "anomalies",
-    "method": "GET"
+    "id": "aif",
+    "endpoint": "/api/aif/status",
+    "method": "GET",
+    "module": "aif"
   },
   {
-    "path": "/api/layers/anomaly-detector",
-    "module": "anomaly-detector",
-    "method": "GET"
+    "id": "alert-dispatcher-api",
+    "endpoint": "/api/layers/alert-dispatcher",
+    "method": "GET",
+    "module": "alert-dispatcher-api"
   },
   {
-    "path": "/api/layers/automated-reports",
-    "module": "automated-reports",
-    "method": "GET"
+    "id": "analysis-events-api",
+    "endpoint": "/api/layers/analysis-events",
+    "method": "GET",
+    "module": "analysis-events-api"
   },
   {
-    "path": "/api/layers/aviation-api",
-    "module": "aviation-api",
-    "method": "GET"
+    "id": "analyze-situation-api",
+    "endpoint": "/api/layers/analyze-situation",
+    "method": "GET",
+    "module": "analyze-situation-api"
   },
   {
-    "path": "/api/layers/aviation-monitor",
-    "module": "aviation-monitor",
-    "method": "GET"
+    "id": "anomaly-detector",
+    "endpoint": "/api/anomaly-detector/status",
+    "method": "GET",
+    "module": "anomaly-detector"
   },
   {
-    "path": "/api/layers/base",
-    "module": "base",
-    "method": "GET"
+    "id": "arms-transfer-tracker-api",
+    "endpoint": "/api/layers/arms-transfer-tracker",
+    "method": "GET",
+    "module": "arms-transfer-tracker-api"
   },
   {
-    "path": "/api/layers/basket-api",
-    "module": "basket-api",
-    "method": "GET"
+    "id": "automated-reports",
+    "endpoint": "/api/reports/status",
+    "method": "GET",
+    "module": "automated-reports"
   },
   {
-    "path": "/api/layers/basket-reader-api",
-    "module": "basket-reader-api",
-    "method": "GET"
+    "id": "aviation-api",
+    "endpoint": "/api/layers/aviation",
+    "method": "GET",
+    "module": "aviation-api"
   },
   {
-    "path": "/api/layers/bas",
-    "module": "bas",
-    "method": "GET"
+    "id": "aviation-monitor",
+    "endpoint": "/api/aviation/status",
+    "method": "GET",
+    "module": "aviation-monitor"
   },
   {
-    "path": "/api/layers/bdi-api",
-    "module": "bdi-api",
-    "method": "GET"
+    "id": "bas",
+    "endpoint": "/api/bas/status",
+    "method": "GET",
+    "module": "bas"
   },
   {
-    "path": "/api/layers/big-mac-alt-api",
-    "module": "big-mac-alt-api",
-    "method": "GET"
+    "id": "baseline-alerting-api",
+    "endpoint": "/api/layers/baseline-alerting",
+    "method": "GET",
+    "module": "baseline-alerting-api"
   },
   {
-    "path": "/api/layers/big-mac-api",
-    "module": "big-mac-api",
-    "method": "GET"
+    "id": "basket-api",
+    "endpoint": "/api/services/basket",
+    "method": "GET",
+    "module": "basket-api"
   },
   {
-    "path": "/api/layers/big-mac-main-api",
-    "module": "big-mac-main-api",
-    "method": "GET"
+    "id": "basket-reader-api",
+    "endpoint": "/api/services/basket-reader",
+    "method": "GET",
+    "module": "basket-reader-api"
   },
   {
-    "path": "/api/layers/blockchain",
-    "module": "blockchain",
-    "method": "GET"
+    "id": "bdi-api",
+    "endpoint": "/api/layers/bdi",
+    "method": "GET",
+    "module": "bdi-api"
   },
   {
-    "path": "/api/layers/bls",
-    "module": "bls",
-    "method": "GET"
+    "id": "big-mac-alt-api",
+    "endpoint": "/api/layers/big-mac-alt",
+    "method": "GET",
+    "module": "big-mac-alt-api"
   },
   {
-    "path": "/api/layers/bluesky",
-    "module": "bluesky",
-    "method": "GET"
+    "id": "big-mac-api",
+    "endpoint": "/api/layers/big-mac",
+    "method": "GET",
+    "module": "big-mac-api"
   },
   {
-    "path": "/api/layers/business-optimism-api",
-    "module": "business-optimism-api",
-    "method": "GET"
+    "id": "big-mac-main-api",
+    "endpoint": "/api/layers/big-mac-main",
+    "method": "GET",
+    "module": "big-mac-main-api"
   },
   {
-    "path": "/api/layers/cbr",
-    "module": "cbr",
-    "method": "GET"
+    "id": "blockchain",
+    "endpoint": "/api/blockchain/status",
+    "method": "GET",
+    "module": "blockchain"
   },
   {
-    "path": "/api/layers/cii-api",
-    "module": "cii-api",
-    "method": "GET"
+    "id": "bls",
+    "endpoint": "/api/bls/status",
+    "method": "GET",
+    "module": "bls"
   },
   {
-    "path": "/api/layers/cii-calculator",
-    "module": "cii-calculator",
-    "method": "GET"
+    "id": "bluesky",
+    "endpoint": "/api/bluesky/status",
+    "method": "GET",
+    "module": "bluesky"
   },
   {
-    "path": "/api/layers/cisa-kev",
-    "module": "cisa-kev",
-    "method": "GET"
+    "id": "botnets-api",
+    "endpoint": "/api/layers/botnets",
+    "method": "GET",
+    "module": "botnets-api"
   },
   {
-    "path": "/api/layers/cisa",
-    "module": "cisa",
-    "method": "GET"
+    "id": "business-optimism-api",
+    "endpoint": "/api/layers/business-optimism",
+    "method": "GET",
+    "module": "business-optimism-api"
   },
   {
-    "path": "/api/layers/cloudflare-radar",
-    "module": "cloudflare-radar",
-    "method": "GET"
+    "id": "cache-manager-api",
+    "endpoint": "/api/layers/cache-manager",
+    "method": "GET",
+    "module": "cache-manager-api"
   },
   {
-    "path": "/api/layers/collector-config-api",
-    "module": "collector-config-api",
-    "method": "GET"
+    "id": "cbr",
+    "endpoint": "/api/cbr/status",
+    "method": "GET",
+    "module": "cbr"
   },
   {
-    "path": "/api/layers/=collector-logs-api",
-    "module": "=collector-logs-api",
-    "method": "GET"
+    "id": "central-bank-predictor-api",
+    "endpoint": "/api/layers/central-bank-predictor",
+    "method": "GET",
+    "module": "central-bank-predictor-api"
   },
   {
-    "path": "/api/layers/collector-monitor-api0",
-    "module": "collector-monitor-api0",
-    "method": "GET"
+    "id": "cii-api",
+    "endpoint": "/api/layers/cii",
+    "method": "GET",
+    "module": "cii-api"
   },
   {
-    "path": "/api/layers/collector-monitor-api1",
-    "module": "collector-monitor-api1",
-    "method": "GET"
+    "id": "cii-calculator",
+    "endpoint": "/api/cii/status",
+    "method": "GET",
+    "module": "cii-calculator"
   },
   {
-    "path": "/api/layers/collector-monitor-api2",
-    "module": "collector-monitor-api2",
-    "method": "GET"
+    "id": "cisa-kev-api",
+    "endpoint": "/api/layers/cisa-kev",
+    "method": "GET",
+    "module": "cisa-kev-api"
   },
   {
-    "path": "/api/layers/collector-monitor-api4",
-    "module": "collector-monitor-api4",
-    "method": "GET"
+    "id": "cisa-kev",
+    "endpoint": "/api/cisa/status",
+    "method": "GET",
+    "module": "cisa-kev"
   },
   {
-    "path": "/api/layers/collector-monitor-api",
-    "module": "collector-monitor-api",
-    "method": "GET"
+    "id": "cli-analytics-api",
+    "endpoint": "/api/layers/cli-analytics",
+    "method": "GET",
+    "module": "cli-analytics-api"
   },
   {
-    "path": "/api/layers/collector-monitor-api_",
-    "module": "collector-monitor-api_",
-    "method": "GET"
+    "id": "cloudflare-radar",
+    "endpoint": "/api/cloudflare-radar/status",
+    "method": "GET",
+    "module": "cloudflare-radar"
   },
   {
-    "path": "/api/layers/collector-monitor-api_(кбитыйя)",
-    "module": "collector-monitor-api_(кбитыйя)",
-    "method": "GET"
+    "id": "collector-config-api",
+    "endpoint": "/api/services/collector-config",
+    "method": "GET",
+    "module": "collector-config-api"
   },
   {
-    "path": "/api/layers/collector-monitor-api_(копия)",
-    "module": "collector-monitor-api_(копия)",
-    "method": "GET"
+    "id": "collector-monitor-api-с_логами",
+    "endpoint": "/api/collector-monitor/status",
+    "method": "GET",
+    "module": "collector-monitor-api-с_логами"
   },
   {
-    "path": "/api/layers/collector-monitor-api-с_логами",
-    "module": "collector-monitor-api-с_логами",
-    "method": "GET"
+    "id": "collector-monitor-api",
+    "endpoint": "/api/services/collector-monitor",
+    "method": "GET",
+    "module": "collector-monitor-api"
   },
   {
-    "path": "/api/layers/collect-unemployment-claims",
-    "module": "collect-unemployment-claims",
-    "method": "GET"
+    "id": "collector-monitor-api0",
+    "endpoint": "/api/collector-monitor/status",
+    "method": "GET",
+    "module": "collector-monitor-api0"
   },
   {
-    "path": "/api/layers/comtrade",
-    "module": "comtrade",
-    "method": "GET"
+    "id": "collector-monitor-api1",
+    "endpoint": "/api/collector-monitor/status",
+    "method": "GET",
+    "module": "collector-monitor-api1"
   },
   {
-    "path": "/api/layers/conflict-predictor",
-    "module": "conflict-predictor",
-    "method": "GET"
+    "id": "collector-monitor-api2",
+    "endpoint": "/api/collector-monitor/status",
+    "method": "GET",
+    "module": "collector-monitor-api2"
   },
   {
-    "path": "/api/layers/conflict-zone",
-    "module": "conflict-zone",
-    "method": "GET"
+    "id": "collector-monitor-api4",
+    "endpoint": "/api/collector-monitor/status",
+    "method": "GET",
+    "module": "collector-monitor-api4"
   },
   {
-    "path": "/api/layers/consumer-confidence-api",
-    "module": "consumer-confidence-api",
-    "method": "GET"
+    "id": "collector-monitor-api_",
+    "endpoint": "/api/collector-monitor/status",
+    "method": "GET",
+    "module": "collector-monitor-api_"
   },
   {
-    "path": "/api/layers/consumer-expectations-api",
-    "module": "consumer-expectations-api",
-    "method": "GET"
+    "id": "comtrade",
+    "endpoint": "/api/comtrade/data",
+    "method": "GET",
+    "module": "comtrade"
   },
   {
-    "path": "/api/layers/copper-gold-api",
-    "module": "copper-gold-api",
-    "method": "GET"
+    "id": "config-validator-api",
+    "endpoint": "/api/layers/config-validator",
+    "method": "GET",
+    "module": "config-validator-api"
   },
   {
-    "path": "/api/layers/copper-gold-ratio-api",
-    "module": "copper-gold-ratio-api",
-    "method": "GET"
+    "id": "conflict-escalation-tracker-api",
+    "endpoint": "/api/layers/conflict-escalation-tracker",
+    "method": "GET",
+    "module": "conflict-escalation-tracker-api"
   },
   {
-    "path": "/api/layers/correlation-api",
-    "module": "correlation-api",
-    "method": "GET"
+    "id": "conflict-predictor",
+    "endpoint": "/api/conflict/status",
+    "method": "GET",
+    "module": "conflict-predictor"
   },
   {
-    "path": "/api/layers/correlation",
-    "module": "correlation",
-    "method": "GET"
+    "id": "conflict-zone-api",
+    "endpoint": "/api/layers/conflict-zone",
+    "method": "GET",
+    "module": "conflict-zone-api"
   },
   {
-    "path": "/api/layers/crypto-fear-api",
-    "module": "crypto-fear-api",
-    "method": "GET"
+    "id": "consumer-confidence-api",
+    "endpoint": "/api/layers/consumer-confidence",
+    "method": "GET",
+    "module": "consumer-confidence-api"
   },
   {
-    "path": "/api/layers/currents-api",
-    "module": "currents-api",
-    "method": "GET"
+    "id": "consumer-expectations-api",
+    "endpoint": "/api/layers/consumer-expectations",
+    "method": "GET",
+    "module": "consumer-expectations-api"
   },
   {
-    "path": "/api/layers/cve",
-    "module": "cve",
-    "method": "GET"
+    "id": "convergence-engine-api",
+    "endpoint": "/api/layers/convergence-engine",
+    "method": "GET",
+    "module": "convergence-engine-api"
   },
   {
-    "path": "/api/layers/cyber-api",
-    "module": "cyber-api",
-    "method": "GET"
+    "id": "copper-gold-api",
+    "endpoint": "/api/layers/copper-gold",
+    "method": "GET",
+    "module": "copper-gold-api"
   },
   {
-    "path": "/api/layers/cyber-apt-api",
-    "module": "cyber-apt-api",
-    "method": "GET"
+    "id": "copper-gold-ratio-api",
+    "endpoint": "/api/layers/copper-gold-ratio",
+    "method": "GET",
+    "module": "copper-gold-ratio-api"
   },
   {
-    "path": "/api/layers/cyber-intel",
-    "module": "cyber-intel",
-    "method": "GET"
+    "id": "correlation-api",
+    "endpoint": "/api/services/correlation",
+    "method": "GET",
+    "module": "correlation-api"
   },
   {
-    "path": "/api/layers/cyber-threat-index-api",
-    "module": "cyber-threat-index-api",
-    "method": "GET"
+    "id": "country-brief-api",
+    "endpoint": "/api/layers/country-brief",
+    "method": "GET",
+    "module": "country-brief-api"
   },
   {
-    "path": "/api/layers/cyber-threats",
-    "module": "cyber-threats",
-    "method": "GET"
+    "id": "country-instability-api",
+    "endpoint": "/api/layers/country-instability",
+    "method": "GET",
+    "module": "country-instability-api"
   },
   {
-    "path": "/api/layers/daily-briefing",
-    "module": "daily-briefing",
-    "method": "GET"
+    "id": "cross-stream-correlation-api",
+    "endpoint": "/api/layers/cross-stream-correlation",
+    "method": "GET",
+    "module": "cross-stream-correlation-api"
   },
   {
-    "path": "/api/layers/dark-fleet-api",
-    "module": "dark-fleet-api",
-    "method": "GET"
+    "id": "crucix-doctor-api",
+    "endpoint": "/api/layers/crucix-doctor",
+    "method": "GET",
+    "module": "crucix-doctor-api"
   },
   {
-    "path": "/api/layers/dark-ships",
-    "module": "dark-ships",
-    "method": "GET"
+    "id": "crypto-fear-api",
+    "endpoint": "/api/layers/crypto-fear",
+    "method": "GET",
+    "module": "crypto-fear-api"
   },
   {
-    "path": "/api/layers/darkweb",
-    "module": "darkweb",
-    "method": "GET"
+    "id": "currents-api",
+    "endpoint": "/api/layers/currents",
+    "method": "GET",
+    "module": "currents-api"
   },
   {
-    "path": "/api/layers/dark-web-monitor",
-    "module": "dark-web-monitor",
-    "method": "GET"
+    "id": "cyber-api",
+    "endpoint": "/api/layers/cyber",
+    "method": "GET",
+    "module": "cyber-api"
   },
   {
-    "path": "/api/layers/dashboard",
-    "module": "dashboard",
-    "method": "GET"
+    "id": "cyber-apt-api",
+    "endpoint": "/api/layers/cyber-apt",
+    "method": "GET",
+    "module": "cyber-apt-api"
   },
   {
-    "path": "/api/layers/debt-gdp-api",
-    "module": "debt-gdp-api",
-    "method": "GET"
+    "id": "cyber-attack-monitor-api",
+    "endpoint": "/api/layers/cyber-attack-monitor",
+    "method": "GET",
+    "module": "cyber-attack-monitor-api"
   },
   {
-    "path": "/api/layers/decision",
-    "module": "decision",
-    "method": "GET"
+    "id": "cyber-intel",
+    "endpoint": "/api/cyber-intel/status",
+    "method": "GET",
+    "module": "cyber-intel"
   },
   {
-    "path": "/api/layers/deepfake",
-    "module": "deepfake",
-    "method": "GET"
+    "id": "cyber-threat-index-api",
+    "endpoint": "/api/layers/cyber-threat-index",
+    "method": "GET",
+    "module": "cyber-threat-index-api"
   },
   {
-    "path": "/api/layers/diagnostics-api",
-    "module": "diagnostics-api",
-    "method": "GET"
+    "id": "cyber-threats",
+    "endpoint": "/api/cyber/status",
+    "method": "GET",
+    "module": "cyber-threats"
   },
   {
-    "path": "/api/layers/diagnostic-tool-api",
-    "module": "diagnostic-tool-api",
-    "method": "GET"
+    "id": "daily-briefing",
+    "endpoint": "/api/daily-briefing/",
+    "method": "POST",
+    "module": "daily-briefing"
   },
   {
-    "path": "/api/layers/diagnostic-tool",
-    "module": "diagnostic-tool",
-    "method": "GET"
+    "id": "index",
+    "endpoint": "/api/daily-briefing/status",
+    "method": "GET",
+    "module": "index"
   },
   {
-    "path": "/api/layers/dxy-api",
-    "module": "dxy-api",
-    "method": "GET"
+    "id": "dark-fleet-api",
+    "endpoint": "/api/layers/dark-fleet",
+    "method": "GET",
+    "module": "dark-fleet-api"
   },
   {
-    "path": "/api/layers/early-warning",
-    "module": "early-warning",
-    "method": "GET"
+    "id": "dark-ships-api",
+    "endpoint": "/api/layers/dark-ships",
+    "method": "GET",
+    "module": "dark-ships-api"
   },
   {
-    "path": "/api/layers/earthquake-zone",
-    "module": "earthquake-zone",
-    "method": "GET"
+    "id": "dark-ships",
+    "endpoint": "/api/dark-ships/status",
+    "method": "GET",
+    "module": "dark-ships"
   },
   {
-    "path": "/api/layers/economic",
-    "module": "economic",
-    "method": "GET"
+    "id": "dark-web-monitor",
+    "endpoint": "/api/darkweb/collect",
+    "method": "POST",
+    "module": "dark-web-monitor"
   },
   {
-    "path": "/api/layers/economist",
-    "module": "economist",
-    "method": "GET"
+    "id": "darkweb-api",
+    "endpoint": "/api/layers/darkweb",
+    "method": "GET",
+    "module": "darkweb-api"
   },
   {
-    "path": "/api/layers/economy-api",
-    "module": "economy-api",
-    "method": "GET"
+    "id": "darkweb",
+    "endpoint": "/api/darkweb/status",
+    "method": "GET",
+    "module": "darkweb"
   },
   {
-    "path": "/api/layers/eia",
-    "module": "eia",
-    "method": "GET"
+    "id": "dashboard-indicators-api",
+    "endpoint": "/api/layers/dashboard-indicators",
+    "method": "GET",
+    "module": "dashboard-indicators-api"
   },
   {
-    "path": "/api/layers/emotion",
-    "module": "emotion",
-    "method": "GET"
+    "id": "data-discrepancy-api",
+    "endpoint": "/api/layers/data-discrepancy",
+    "method": "GET",
+    "module": "data-discrepancy-api"
   },
   {
-    "path": "/api/layers/energy",
-    "module": "energy",
-    "method": "GET"
+    "id": "debt-gdp-api",
+    "endpoint": "/api/layers/debt-gdp",
+    "method": "GET",
+    "module": "debt-gdp-api"
   },
   {
-    "path": "/api/layers/energy-monitor",
-    "module": "energy-monitor",
-    "method": "GET"
+    "id": "deception-index-api",
+    "endpoint": "/api/layers/deception-index",
+    "method": "GET",
+    "module": "deception-index-api"
   },
   {
-    "path": "/api/layers/entity-resolution",
-    "module": "entity-resolution",
-    "method": "GET"
+    "id": "decision",
+    "endpoint": "/api/geo/index",
+    "method": "GET",
+    "module": "decision"
   },
   {
-    "path": "/api/layers/environment-monitor",
-    "module": "environment-monitor",
-    "method": "GET"
+    "id": "deepfake",
+    "endpoint": "/api/deepfake/status",
+    "method": "GET",
+    "module": "deepfake"
   },
   {
-    "path": "/api/layers/epa-api",
-    "module": "epa-api",
-    "method": "GET"
+    "id": "derived-market-analytics-api",
+    "endpoint": "/api/layers/derived-market-analytics",
+    "method": "GET",
+    "module": "derived-market-analytics-api"
   },
   {
-    "path": "/api/layers/epa",
-    "module": "epa",
-    "method": "GET"
+    "id": "diagnostic-tool-api",
+    "endpoint": "/api/services/diagnostic-tool",
+    "method": "GET",
+    "module": "diagnostic-tool-api"
   },
   {
-    "path": "/api/layers/esg",
-    "module": "esg",
-    "method": "GET"
+    "id": "diagnostics-api",
+    "endpoint": "/api/services/diagnostics",
+    "method": "GET",
+    "module": "diagnostics-api"
   },
   {
-    "path": "/api/layers/events-api",
-    "module": "events-api",
-    "method": "GET"
+    "id": "diplomatic-tracker-api",
+    "endpoint": "/api/layers/diplomatic-tracker",
+    "method": "GET",
+    "module": "diplomatic-tracker-api"
   },
   {
-    "path": "/api/layers/export-api",
-    "module": "export-api",
-    "method": "GET"
+    "id": "dxy-api",
+    "endpoint": "/api/layers/dxy",
+    "method": "GET",
+    "module": "dxy-api"
   },
   {
-    "path": "/api/layers/export-map",
-    "module": "export-map",
-    "method": "GET"
+    "id": "early-warning",
+    "endpoint": "/api/early-warning/status",
+    "method": "GET",
+    "module": "early-warning"
   },
   {
-    "path": "/api/layers/export",
-    "module": "export",
-    "method": "GET"
+    "id": "earthquake-zone-api",
+    "endpoint": "/api/layers/earthquake-zone",
+    "method": "GET",
+    "module": "earthquake-zone-api"
   },
   {
-    "path": "/api/layers/extensions-index",
-    "module": "extensions-index",
-    "method": "GET"
+    "id": "earthquakes-api",
+    "endpoint": "/api/layers/earthquakes",
+    "method": "GET",
+    "module": "earthquakes-api"
   },
   {
-    "path": "/api/layers/financial",
-    "module": "financial",
-    "method": "GET"
+    "id": "economist",
+    "endpoint": "/api/economist/status",
+    "method": "GET",
+    "module": "economist"
   },
   {
-    "path": "/api/layers/firms-api",
-    "module": "firms-api",
-    "method": "GET"
+    "id": "economy-api",
+    "endpoint": "/api/layers/economy",
+    "method": "GET",
+    "module": "economy-api"
   },
   {
-    "path": "/api/layers/firms",
-    "module": "firms",
-    "method": "GET"
+    "id": "education-api",
+    "endpoint": "/api/layers/education",
+    "method": "GET",
+    "module": "education-api"
   },
   {
-    "path": "/api/layers/flood-zone",
-    "module": "flood-zone",
-    "method": "GET"
+    "id": "eia-api",
+    "endpoint": "/api/layers/eia",
+    "method": "GET",
+    "module": "eia-api"
   },
   {
-    "path": "/api/layers/fred",
-    "module": "fred",
-    "method": "GET"
+    "id": "eia",
+    "endpoint": "/api/eia/status",
+    "method": "GET",
+    "module": "eia"
   },
   {
-    "path": "/api/layers/gateway-api",
-    "module": "gateway-api",
-    "method": "GET"
+    "id": "emotion-api",
+    "endpoint": "/api/layers/emotion",
+    "method": "GET",
+    "module": "emotion-api"
   },
   {
-    "path": "/api/layers/gdelt-api",
-    "module": "gdelt-api",
-    "method": "GET"
+    "id": "emotion",
+    "endpoint": "/api/emotion/status",
+    "method": "GET",
+    "module": "emotion"
   },
   {
-    "path": "/api/layers/gdelt-curl",
-    "module": "gdelt-curl",
-    "method": "GET"
+    "id": "energy-api",
+    "endpoint": "/api/layers/energy",
+    "method": "GET",
+    "module": "energy-api"
   },
   {
-    "path": "/api/layers/gdelt",
-    "module": "gdelt",
-    "method": "GET"
+    "id": "energy-market-intelligence-api",
+    "endpoint": "/api/layers/energy-market-intelligence",
+    "method": "GET",
+    "module": "energy-market-intelligence-api"
   },
   {
-    "path": "/api/layers/gdelt-v1",
-    "module": "gdelt-v1",
-    "method": "GET"
+    "id": "energy-monitor",
+    "endpoint": "/api/energy/status",
+    "method": "GET",
+    "module": "energy-monitor"
   },
   {
-    "path": "/api/layers/geocode",
-    "module": "geocode",
-    "method": "GET"
+    "id": "entity-extraction-api",
+    "endpoint": "/api/layers/entity-extraction",
+    "method": "GET",
+    "module": "entity-extraction-api"
   },
   {
-    "path": "/api/layers/geo-convergence",
-    "module": "geo-convergence",
-    "method": "GET"
+    "id": "entity-graph-api",
+    "endpoint": "/api/layers/entity-graph",
+    "method": "GET",
+    "module": "entity-graph-api"
   },
   {
-    "path": "/api/layers/geo-markers-api",
-    "module": "geo-markers-api",
-    "method": "GET"
+    "id": "entity-resolution",
+    "endpoint": "/api/entities/resolve",
+    "method": "POST",
+    "module": "entity-resolution"
   },
   {
-    "path": "/api/layers/geopolitical",
-    "module": "geopolitical",
-    "method": "GET"
+    "id": "environment-monitor",
+    "endpoint": "/api/environment/status",
+    "method": "GET",
+    "module": "environment-monitor"
   },
   {
-    "path": "/api/layers/geopolitical-reports",
-    "module": "geopolitical-reports",
-    "method": "GET"
+    "id": "epa-api",
+    "endpoint": "/api/layers/epa",
+    "method": "GET",
+    "module": "epa-api"
   },
   {
-    "path": "/api/layers/github",
-    "module": "github",
-    "method": "GET"
+    "id": "epa",
+    "endpoint": "/api/epa/data",
+    "method": "GET",
+    "module": "epa"
   },
   {
-    "path": "/api/layers/global-index-api",
-    "module": "global-index-api",
-    "method": "GET"
+    "id": "epidemics-api",
+    "endpoint": "/api/layers/epidemics",
+    "method": "GET",
+    "module": "epidemics-api"
   },
   {
-    "path": "/api/layers/gold",
-    "module": "gold",
-    "method": "GET"
+    "id": "etf-flow-analysis-api",
+    "endpoint": "/api/layers/etf-flow-analysis",
+    "method": "GET",
+    "module": "etf-flow-analysis-api"
   },
   {
-    "path": "/api/layers/gold-oil-ratio-api",
-    "module": "gold-oil-ratio-api",
-    "method": "GET"
+    "id": "event-deduplicator-api",
+    "endpoint": "/api/layers/event-deduplicator",
+    "method": "GET",
+    "module": "event-deduplicator-api"
   },
   {
-    "path": "/api/layers/gold-silver-api",
-    "module": "gold-silver-api",
-    "method": "GET"
+    "id": "events-api",
+    "endpoint": "/api/layers/events",
+    "method": "GET",
+    "module": "events-api"
   },
   {
-    "path": "/api/layers/google-trends-api",
-    "module": "google-trends-api",
-    "method": "GET"
+    "id": "export-api",
+    "endpoint": "/api/services/export",
+    "method": "POST",
+    "module": "export-api"
   },
   {
-    "path": "/api/layers/gps-jamming-api",
-    "module": "gps-jamming-api",
-    "method": "GET"
+    "id": "extensions-index",
+    "endpoint": "/api/ais-tracker/",
+    "method": "GET",
+    "module": "extensions-index"
   },
   {
-    "path": "/api/layers/gps-jamming",
-    "module": "gps-jamming",
-    "method": "GET"
+    "id": "favorites-api",
+    "endpoint": "/api/services/favorites",
+    "method": "GET",
+    "module": "favorites-api"
   },
   {
-    "path": "/api/layers/gscpi",
-    "module": "gscpi",
-    "method": "GET"
+    "id": "firms-api",
+    "endpoint": "/api/layers/firms",
+    "method": "GET",
+    "module": "firms-api"
   },
   {
-    "path": "/api/layers/guardian_science",
-    "module": "guardian_science",
-    "method": "GET"
+    "id": "firms",
+    "endpoint": "/api/firms/fires",
+    "method": "GET",
+    "module": "firms"
   },
   {
-    "path": "/api/layers/hackernews",
-    "module": "hackernews",
-    "method": "GET"
+    "id": "flood-zone-api",
+    "endpoint": "/api/layers/flood-zone",
+    "method": "GET",
+    "module": "flood-zone-api"
   },
   {
-    "path": "/api/layers/happiness-alt-api",
-    "module": "happiness-alt-api",
-    "method": "GET"
+    "id": "focal-point-detection-api",
+    "endpoint": "/api/layers/focal-point-detection",
+    "method": "GET",
+    "module": "focal-point-detection-api"
   },
   {
-    "path": "/api/layers/happiness-api",
-    "module": "happiness-api",
-    "method": "GET"
+    "id": "food-security-monitor-api",
+    "endpoint": "/api/layers/food-security-monitor",
+    "method": "GET",
+    "module": "food-security-monitor-api"
   },
   {
-    "path": "/api/layers/health",
-    "module": "health",
-    "method": "GET"
+    "id": "fred-api",
+    "endpoint": "/api/layers/fred",
+    "method": "GET",
+    "module": "fred-api"
   },
   {
-    "path": "/api/layers/health-monitor",
-    "module": "health-monitor",
-    "method": "GET"
+    "id": "fred",
+    "endpoint": "/api/fred/economy",
+    "method": "GET",
+    "module": "fred"
   },
   {
-    "path": "/api/layers/heatmap-generator",
-    "module": "heatmap-generator",
-    "method": "GET"
+    "id": "fx-reserves-monitor-api",
+    "endpoint": "/api/layers/fx-reserves-monitor",
+    "method": "GET",
+    "module": "fx-reserves-monitor-api"
   },
   {
-    "path": "/api/layers/heatmap-risk",
-    "module": "heatmap-risk",
-    "method": "GET"
+    "id": "gateway-api",
+    "endpoint": "/api/services/gateway",
+    "method": "GET",
+    "module": "gateway-api"
   },
   {
-    "path": "/api/layers/help-api",
-    "module": "help-api",
-    "method": "GET"
+    "id": "gdelt-api",
+    "endpoint": "/api/layers/gdelt",
+    "method": "GET",
+    "module": "gdelt-api"
   },
   {
-    "path": "/api/layers/hidden-links",
-    "module": "hidden-links",
-    "method": "GET"
+    "id": "gdelt-curl",
+    "endpoint": "/api/gdelt/",
+    "method": "GET",
+    "module": "gdelt-curl"
   },
   {
-    "path": "/api/layers/historical-analysis-api",
-    "module": "historical-analysis-api",
-    "method": "GET"
+    "id": "gdelt-news-api",
+    "endpoint": "/api/layers/gdelt-news",
+    "method": "GET",
+    "module": "gdelt-news-api"
   },
   {
-    "path": "/api/layers/hy-spread-api",
-    "module": "hy-spread-api",
-    "method": "GET"
+    "id": "gdelt-v1",
+    "endpoint": "/api/gdelt/",
+    "method": "GET",
+    "module": "gdelt-v1"
   },
   {
-    "path": "/api/layers/index",
-    "module": "index",
-    "method": "GET"
+    "id": "geo-convergence-api",
+    "endpoint": "/api/layers/geo-convergence",
+    "method": "GET",
+    "module": "geo-convergence-api"
   },
   {
-    "path": "/api/layers/indirect-indicators-api",
-    "module": "indirect-indicators-api",
-    "method": "GET"
+    "id": "geo-markers-api",
+    "endpoint": "/api/layers/geo-markers",
+    "method": "GET",
+    "module": "geo-markers-api"
   },
   {
-    "path": "/api/layers/inflation-api",
-    "module": "inflation-api",
-    "method": "GET"
+    "id": "geopolitical-reports",
+    "endpoint": "/api/geopolitical-reports/status",
+    "method": "GET",
+    "module": "geopolitical-reports"
   },
   {
-    "path": "/api/layers/infrastructure-api",
-    "module": "infrastructure-api",
-    "method": "GET"
+    "id": "github-api",
+    "endpoint": "/api/layers/github",
+    "method": "GET",
+    "module": "github-api"
   },
   {
-    "path": "/api/layers/infrastructure-cascade",
-    "module": "infrastructure-cascade",
-    "method": "GET"
+    "id": "global-index-api",
+    "endpoint": "/api/layers/global-index",
+    "method": "GET",
+    "module": "global-index-api"
   },
   {
-    "path": "/api/layers/infrastructure-eia-global",
-    "module": "infrastructure-eia-global",
-    "method": "GET"
+    "id": "gold-oil-ratio-api",
+    "endpoint": "/api/layers/gold-oil-ratio",
+    "method": "GET",
+    "module": "gold-oil-ratio-api"
   },
   {
-    "path": "/api/layers/infrastructure-eia",
-    "module": "infrastructure-eia",
-    "method": "GET"
+    "id": "gold-silver-api",
+    "endpoint": "/api/layers/gold-silver",
+    "method": "GET",
+    "module": "gold-silver-api"
   },
   {
-    "path": "/api/layers/infrastructure-firms",
-    "module": "infrastructure-firms",
-    "method": "GET"
+    "id": "google-trends-api",
+    "endpoint": "/api/layers/google-trends",
+    "method": "GET",
+    "module": "google-trends-api"
   },
   {
-    "path": "/api/layers/infrastructure-ofac",
-    "module": "infrastructure-ofac",
-    "method": "GET"
+    "id": "gps-jamming-api",
+    "endpoint": "/api/layers/gps-jamming",
+    "method": "GET",
+    "module": "gps-jamming-api"
   },
   {
-    "path": "/api/layers/infrastructure-predict",
-    "module": "infrastructure-predict",
-    "method": "GET"
+    "id": "gscpi",
+    "endpoint": "/api/gscpi/data",
+    "method": "GET",
+    "module": "gscpi"
   },
   {
-    "path": "/api/layers/infrastructure-ships",
-    "module": "infrastructure-ships",
-    "method": "GET"
+    "id": "guardian_science",
+    "endpoint": "/api/guardian_science/status",
+    "method": "GET",
+    "module": "guardian_science"
   },
   {
-    "path": "/api/layers/instability-index-api",
-    "module": "instability-index-api",
-    "method": "GET"
+    "id": "hackernews-api",
+    "endpoint": "/api/layers/hackernews",
+    "method": "GET",
+    "module": "hackernews-api"
   },
   {
-    "path": "/api/layers/intelligence",
-    "module": "intelligence",
-    "method": "GET"
+    "id": "happiness-alt-api",
+    "endpoint": "/api/layers/happiness-alt",
+    "method": "GET",
+    "module": "happiness-alt-api"
   },
   {
-    "path": "/api/layers/interfax",
-    "module": "interfax",
-    "method": "GET"
+    "id": "happiness-api",
+    "endpoint": "/api/layers/happiness",
+    "method": "GET",
+    "module": "happiness-api"
   },
   {
-    "path": "/api/layers/internet-outages-api",
-    "module": "internet-outages-api",
-    "method": "GET"
+    "id": "health-monitor",
+    "endpoint": "/api/health/status",
+    "method": "GET",
+    "module": "health-monitor"
   },
   {
-    "path": "/api/layers/izvestia",
-    "module": "izvestia",
-    "method": "GET"
+    "id": "help-api",
+    "endpoint": "/api/services/help",
+    "method": "GET",
+    "module": "help-api"
   },
   {
-    "path": "/api/layers/kiwisdr",
-    "module": "kiwisdr",
-    "method": "GET"
+    "id": "hidden-links",
+    "endpoint": "/api/hidden-links/status",
+    "method": "GET",
+    "module": "hidden-links"
   },
   {
-    "path": "/api/layers/kommersant",
-    "module": "kommersant",
-    "method": "GET"
+    "id": "historical-analysis-api",
+    "endpoint": "/api/layers/historical-analysis",
+    "method": "GET",
+    "module": "historical-analysis-api"
   },
   {
-    "path": "/api/layers/layer-filters",
-    "module": "layer-filters",
-    "method": "GET"
+    "id": "hurricanes-api",
+    "endpoint": "/api/layers/hurricanes",
+    "method": "GET",
+    "module": "hurricanes-api"
   },
   {
-    "path": "/api/layers/layer-manager",
-    "module": "layer-manager",
-    "method": "GET"
+    "id": "hy-spread-api",
+    "endpoint": "/api/layers/hy-spread",
+    "method": "GET",
+    "module": "hy-spread-api"
   },
   {
-    "path": "/api/layers/layer-popup",
-    "module": "layer-popup",
-    "method": "GET"
+    "id": "indirect-indicators-api",
+    "endpoint": "/api/layers/indirect-indicators",
+    "method": "GET",
+    "module": "indirect-indicators-api"
   },
   {
-    "path": "/api/layers/layer-timeline",
-    "module": "layer-timeline",
-    "method": "GET"
+    "id": "inflation-api",
+    "endpoint": "/api/layers/inflation",
+    "method": "GET",
+    "module": "inflation-api"
   },
   {
-    "path": "/api/layers/lenses-api",
-    "module": "lenses-api",
-    "method": "GET"
+    "id": "infrastructure-api",
+    "endpoint": "/api/services/infrastructure",
+    "method": "GET",
+    "module": "infrastructure-api"
   },
   {
-    "path": "/api/layers/lenta",
-    "module": "lenta",
-    "method": "GET"
+    "id": "infrastructure-cascade-api",
+    "endpoint": "/api/layers/infrastructure-cascade",
+    "method": "GET",
+    "module": "infrastructure-cascade-api"
   },
   {
-    "path": "/api/layers/link-analysis",
-    "module": "link-analysis",
-    "method": "GET"
+    "id": "infrastructure-cascade",
+    "endpoint": "/api/infrastructure/cascade/",
+    "method": "GET",
+    "module": "infrastructure-cascade"
   },
   {
-    "path": "/api/layers/live-api",
-    "module": "live-api",
-    "method": "GET"
+    "id": "infrastructure-eia-global",
+    "endpoint": "/api/infrastructure/global/plants",
+    "method": "GET",
+    "module": "infrastructure-eia-global"
   },
   {
-    "path": "/api/layers/llm-analyzer",
-    "module": "llm-analyzer",
-    "method": "GET"
+    "id": "infrastructure-eia",
+    "endpoint": "/api/infrastructure/eia/plants",
+    "method": "GET",
+    "module": "infrastructure-eia"
   },
   {
-    "path": "/api/layers/local",
-    "module": "local",
-    "method": "GET"
+    "id": "infrastructure-firms",
+    "endpoint": "/api/infrastructure/firms/fires",
+    "method": "GET",
+    "module": "infrastructure-firms"
   },
   {
-    "path": "/api/layers/map-layer-cyber",
-    "module": "map-layer-cyber",
-    "method": "GET"
+    "id": "infrastructure-ofac",
+    "endpoint": "/api/infrastructure/ofac/list",
+    "method": "GET",
+    "module": "infrastructure-ofac"
   },
   {
-    "path": "/api/layers/map-layer-economy",
-    "module": "map-layer-economy",
-    "method": "GET"
+    "id": "infrastructure-predict",
+    "endpoint": "/api/infrastructure/predict/",
+    "method": "POST",
+    "module": "infrastructure-predict"
   },
   {
-    "path": "/api/layers/map-layer-energy",
-    "module": "map-layer-energy",
-    "method": "GET"
+    "id": "infrastructure-ships",
+    "endpoint": "/api/infrastructure/ships/ports",
+    "method": "GET",
+    "module": "infrastructure-ships"
   },
   {
-    "path": "/api/layers/map-layer-military-zones",
-    "module": "map-layer-military-zones",
-    "method": "GET"
+    "id": "instability-index-api",
+    "endpoint": "/api/layers/instability-index",
+    "method": "GET",
+    "module": "instability-index-api"
   },
   {
-    "path": "/api/layers/map-layer-sanctions",
-    "module": "map-layer-sanctions",
-    "method": "GET"
+    "id": "intelligence-api",
+    "endpoint": "/api/layers/intelligence",
+    "method": "GET",
+    "module": "intelligence-api"
   },
   {
-    "path": "/api/layers/map-layer-social",
-    "module": "map-layer-social",
-    "method": "GET"
+    "id": "interfax",
+    "endpoint": "/api/interfax/status",
+    "method": "GET",
+    "module": "interfax"
   },
   {
-    "path": "/api/layers/map-layer-vix",
-    "module": "map-layer-vix",
-    "method": "GET"
+    "id": "internet-outages-api",
+    "endpoint": "/api/layers/internet-outages",
+    "method": "GET",
+    "module": "internet-outages-api"
   },
   {
-    "path": "/api/layers/maritime-monitor",
-    "module": "maritime-monitor",
-    "method": "GET"
+    "id": "izvestia",
+    "endpoint": "/api/izvestia/status",
+    "method": "GET",
+    "module": "izvestia"
   },
   {
-    "path": "/api/layers/market-predictor",
-    "module": "market-predictor",
-    "method": "GET"
+    "id": "kiwisdr",
+    "endpoint": "/api/kiwisdr/status",
+    "method": "GET",
+    "module": "kiwisdr"
   },
   {
-    "path": "/api/layers/masa",
-    "module": "masa",
-    "method": "GET"
+    "id": "kommersant",
+    "endpoint": "/api/kommersant/status",
+    "method": "GET",
+    "module": "kommersant"
   },
   {
-    "path": "/api/layers/max-driver",
-    "module": "max-driver",
-    "method": "GET"
+    "id": "langgraph-orchestrator-api",
+    "endpoint": "/api/layers/langgraph-orchestrator",
+    "method": "GET",
+    "module": "langgraph-orchestrator-api"
   },
   {
-    "path": "/api/layers/mcp-server",
-    "module": "mcp-server",
-    "method": "GET"
+    "id": "launches-api",
+    "endpoint": "/api/layers/launches",
+    "method": "GET",
+    "module": "launches-api"
   },
   {
-    "path": "/api/layers/mediacloud",
-    "module": "mediacloud",
-    "method": "GET"
+    "id": "layer-filters",
+    "endpoint": "/api/layers/filter/:layerId",
+    "method": "POST",
+    "module": "layer-filters"
   },
   {
-    "path": "/api/layers/military-base",
-    "module": "military-base",
-    "method": "GET"
+    "id": "layer-manager",
+    "endpoint": "/api/layers/",
+    "method": "GET",
+    "module": "layer-manager"
   },
   {
-    "path": "/api/layers/military-bases-api",
-    "module": "military-bases-api",
-    "method": "GET"
+    "id": "layer-popup",
+    "endpoint": "/api/popup/generate",
+    "method": "POST",
+    "module": "layer-popup"
   },
   {
-    "path": "/api/layers/military-exercises-api",
-    "module": "military-exercises-api",
-    "method": "GET"
+    "id": "layer-timeline",
+    "endpoint": "/api/timeline/:layerId",
+    "method": "GET",
+    "module": "layer-timeline"
   },
   {
-    "path": "/api/layers/military",
-    "module": "military",
-    "method": "GET"
+    "id": "lenses-api",
+    "endpoint": "/api/services/lenses",
+    "method": "GET",
+    "module": "lenses-api"
   },
   {
-    "path": "/api/layers/monitor-api",
-    "module": "monitor-api",
-    "method": "GET"
+    "id": "lenta",
+    "endpoint": "/api/lenta/status",
+    "method": "GET",
+    "module": "lenta"
   },
   {
-    "path": "/api/layers/{name}",
-    "module": "{name}",
-    "method": "GET"
+    "id": "link-analysis",
+    "endpoint": "/api/links/analyze",
+    "method": "POST",
+    "module": "link-analysis"
   },
   {
-    "path": "/api/layers/news-aggregator",
-    "module": "news-aggregator",
-    "method": "GET"
+    "id": "live-api",
+    "endpoint": "/api/layers/live",
+    "method": "GET",
+    "module": "live-api"
   },
   {
-    "path": "/api/layers/newsapi-basket-integration",
-    "module": "newsapi-basket-integration",
-    "method": "GET"
+    "id": "llm-analyzer",
+    "endpoint": "/api/llm/analyze",
+    "method": "POST",
+    "module": "llm-analyzer"
   },
   {
-    "path": "/api/layers/news-api",
-    "module": "news-api",
-    "method": "GET"
+    "id": "local",
+    "endpoint": "/api/local/status",
+    "method": "GET",
+    "module": "local"
   },
   {
-    "path": "/api/layers/newsapi",
-    "module": "newsapi",
-    "method": "GET"
+    "id": "logistics-anomalies-api",
+    "endpoint": "/api/layers/logistics-anomalies",
+    "method": "GET",
+    "module": "logistics-anomalies-api"
   },
   {
-    "path": "/api/layers/nlp-api",
-    "module": "nlp-api",
-    "method": "GET"
+    "id": "malware-api",
+    "endpoint": "/api/layers/malware",
+    "method": "GET",
+    "module": "malware-api"
   },
   {
-    "path": "/api/layers/noaa-api",
-    "module": "noaa-api",
-    "method": "GET"
+    "id": "maritime-monitor",
+    "endpoint": "/api/maritime/status",
+    "method": "GET",
+    "module": "maritime-monitor"
   },
   {
-    "path": "/api/layers/noaa",
-    "module": "noaa",
-    "method": "GET"
+    "id": "market-composite-api",
+    "endpoint": "/api/layers/market-composite",
+    "method": "GET",
+    "module": "market-composite-api"
   },
   {
-    "path": "/api/layers/notam-api",
-    "module": "notam-api",
-    "method": "GET"
+    "id": "market-predictor",
+    "endpoint": "/api/market/status",
+    "method": "GET",
+    "module": "market-predictor"
   },
   {
-    "path": "/api/layers/notam",
-    "module": "notam",
-    "method": "GET"
+    "id": "masa",
+    "endpoint": "/api/masa/status",
+    "method": "GET",
+    "module": "masa"
   },
   {
-    "path": "/api/layers/nuclear-monitor-api",
-    "module": "nuclear-monitor-api",
-    "method": "GET"
+    "id": "mcp-server-api",
+    "endpoint": "/api/layers/mcp-server",
+    "method": "GET",
+    "module": "mcp-server-api"
   },
   {
-    "path": "/api/layers/nyt",
-    "module": "nyt",
-    "method": "GET"
+    "id": "index",
+    "endpoint": "/api/mcp/status",
+    "method": "GET",
+    "module": "index"
   },
   {
-    "path": "/api/layers/ofac",
-    "module": "ofac",
-    "method": "GET"
+    "id": "migration-flow-tracker-api",
+    "endpoint": "/api/layers/migration-flow-tracker",
+    "method": "GET",
+    "module": "migration-flow-tracker-api"
   },
   {
-    "path": "/api/layers/oil-gas-api",
-    "module": "oil-gas-api",
-    "method": "GET"
+    "id": "military-bases-api",
+    "endpoint": "/api/layers/military-bases",
+    "method": "GET",
+    "module": "military-bases-api"
   },
   {
-    "path": "/api/layers/oil",
-    "module": "oil",
-    "method": "GET"
+    "id": "military-exercises-api",
+    "endpoint": "/api/layers/military-exercises",
+    "method": "GET",
+    "module": "military-exercises-api"
   },
   {
-    "path": "/api/layers/opensanctions",
-    "module": "opensanctions",
-    "method": "GET"
+    "id": "module-registration-controller-api",
+    "endpoint": "/api/layers/module-registration-controller",
+    "method": "GET",
+    "module": "module-registration-controller-api"
   },
   {
-    "path": "/api/layers/opensky-api",
-    "module": "opensky-api",
-    "method": "GET"
+    "id": "monitor-api",
+    "endpoint": "/api/services/monitor",
+    "method": "GET",
+    "module": "monitor-api"
   },
   {
-    "path": "/api/layers/opensky",
-    "module": "opensky",
-    "method": "GET"
+    "id": "multi-source-corroboration-api",
+    "endpoint": "/api/layers/multi-source-corroboration",
+    "method": "GET",
+    "module": "multi-source-corroboration-api"
   },
   {
-    "path": "/api/layers/ovx-api",
-    "module": "ovx-api",
-    "method": "GET"
+    "id": "narrative-drift-api",
+    "endpoint": "/api/layers/narrative-drift",
+    "method": "GET",
+    "module": "narrative-drift-api"
   },
   {
-    "path": "/api/layers/p2p",
-    "module": "p2p",
-    "method": "GET"
+    "id": "narrative-splitter-api",
+    "endpoint": "/api/layers/narrative-splitter",
+    "method": "GET",
+    "module": "narrative-splitter-api"
   },
   {
-    "path": "/api/layers/patents",
-    "module": "patents",
-    "method": "GET"
+    "id": "news-aggregator",
+    "endpoint": "/api/news-aggregator/status",
+    "method": "GET",
+    "module": "news-aggregator"
   },
   {
-    "path": "/api/layers/pipelines-api",
-    "module": "pipelines-api",
-    "method": "GET"
+    "id": "news-api",
+    "endpoint": "/api/layers/news",
+    "method": "GET",
+    "module": "news-api"
   },
   {
-    "path": "/api/layers/pmi-api",
-    "module": "pmi-api",
-    "method": "GET"
+    "id": "newsapi-basket-integration",
+    "endpoint": "/api/newsapi/basket",
+    "method": "GET",
+    "module": "newsapi-basket-integration"
   },
   {
-    "path": "/api/layers/popup",
-    "module": "popup",
-    "method": "GET"
+    "id": "newsapi",
+    "endpoint": "/api/newsapi/ping",
+    "method": "GET",
+    "module": "newsapi"
   },
   {
-    "path": "/api/layers/prediction-intel",
-    "module": "prediction-intel",
-    "method": "GET"
+    "id": "nlp-api",
+    "endpoint": "/api/services/nlp",
+    "method": "GET",
+    "module": "nlp-api"
   },
   {
-    "path": "/api/layers/prediction-markets-api",
-    "module": "prediction-markets-api",
-    "method": "GET"
+    "id": "noaa-api",
+    "endpoint": "/api/layers/noaa",
+    "method": "GET",
+    "module": "noaa-api"
   },
   {
-    "path": "/api/layers/predictive",
-    "module": "predictive",
-    "method": "GET"
+    "id": "noaa",
+    "endpoint": "/api/noaa/status",
+    "method": "GET",
+    "module": "noaa"
   },
   {
-    "path": "/api/layers/predict-layer",
-    "module": "predict-layer",
-    "method": "GET"
+    "id": "notam-api",
+    "endpoint": "/api/layers/notam",
+    "method": "GET",
+    "module": "notam-api"
   },
   {
-    "path": "/api/layers/predict",
-    "module": "predict",
-    "method": "GET"
+    "id": "nuclear-monitor-api",
+    "endpoint": "/api/layers/nuclear-monitor",
+    "method": "GET",
+    "module": "nuclear-monitor-api"
   },
   {
-    "path": "/api/layers/quanta",
-    "module": "quanta",
-    "method": "GET"
+    "id": "nyt",
+    "endpoint": "/api/nyt/status",
+    "method": "GET",
+    "module": "nyt"
   },
   {
-    "path": "/api/layers/quantum",
-    "module": "quantum",
-    "method": "GET"
+    "id": "ocean-api",
+    "endpoint": "/api/layers/ocean",
+    "method": "GET",
+    "module": "ocean-api"
   },
   {
-    "path": "/api/layers/rag-advanced",
-    "module": "rag-advanced",
-    "method": "GET"
+    "id": "ofac-api",
+    "endpoint": "/api/layers/ofac",
+    "method": "GET",
+    "module": "ofac-api"
   },
   {
-    "path": "/api/layers/rag-ai-router",
-    "module": "rag-ai-router",
-    "method": "GET"
+    "id": "ofac-sdn-api",
+    "endpoint": "/api/layers/ofac-sdn",
+    "method": "GET",
+    "module": "ofac-sdn-api"
   },
   {
-    "path": "/api/layers/rag-api",
-    "module": "rag-api",
-    "method": "GET"
+    "id": "oil-gas-api",
+    "endpoint": "/api/layers/oil-gas",
+    "method": "GET",
+    "module": "oil-gas-api"
   },
   {
-    "path": "/api/layers/rag-chat",
-    "module": "rag-chat",
-    "method": "GET"
+    "id": "opensanctions",
+    "endpoint": "/api/opensanctions/data",
+    "method": "GET",
+    "module": "opensanctions"
   },
   {
-    "path": "/api/layers/rag-indexer",
-    "module": "rag-indexer",
-    "method": "GET"
+    "id": "opensky-api",
+    "endpoint": "/api/layers/opensky",
+    "method": "GET",
+    "module": "opensky-api"
   },
   {
-    "path": "/api/layers/rag",
-    "module": "rag",
-    "method": "GET"
+    "id": "ovx-api",
+    "endpoint": "/api/layers/ovx",
+    "method": "GET",
+    "module": "ovx-api"
   },
   {
-    "path": "/api/layers/rag-multi",
-    "module": "rag-multi",
-    "method": "GET"
+    "id": "p2p",
+    "endpoint": "/api/p2p/status",
+    "method": "GET",
+    "module": "p2p"
   },
   {
-    "path": "/api/layers/rag-server",
-    "module": "rag-server",
-    "method": "GET"
+    "id": "patents",
+    "endpoint": "/api/patents/status",
+    "method": "GET",
+    "module": "patents"
   },
   {
-    "path": "/api/layers/rag-summary",
-    "module": "rag-summary",
-    "method": "GET"
+    "id": "pipelines-api",
+    "endpoint": "/api/layers/pipelines",
+    "method": "GET",
+    "module": "pipelines-api"
   },
   {
-    "path": "/api/layers/rag-upload",
-    "module": "rag-upload",
-    "method": "GET"
+    "id": "pizza-index-api",
+    "endpoint": "/api/layers/pizza-index",
+    "method": "GET",
+    "module": "pizza-index-api"
   },
   {
-    "path": "/api/layers/recession-api",
-    "module": "recession-api",
-    "method": "GET"
+    "id": "pmi-api",
+    "endpoint": "/api/layers/pmi",
+    "method": "GET",
+    "module": "pmi-api"
   },
   {
-    "path": "/api/layers/reddit",
-    "module": "reddit",
-    "method": "GET"
+    "id": "pole-tracker-api",
+    "endpoint": "/api/layers/pole-tracker",
+    "method": "GET",
+    "module": "pole-tracker-api"
   },
   {
-    "path": "/api/layers/registry-api",
-    "module": "registry-api",
-    "method": "GET"
+    "id": "political-stability-monitor-api",
+    "endpoint": "/api/layers/political-stability-monitor",
+    "method": "GET",
+    "module": "political-stability-monitor-api"
   },
   {
-    "path": "/api/layers/reliefweb",
-    "module": "reliefweb",
-    "method": "GET"
+    "id": "prediction-intel",
+    "endpoint": "/api/prediction/status",
+    "method": "GET",
+    "module": "prediction-intel"
   },
   {
-    "path": "/api/layers/reports-api",
-    "module": "reports-api",
-    "method": "GET"
+    "id": "prediction-markets-api",
+    "endpoint": "/api/layers/prediction-markets",
+    "method": "GET",
+    "module": "prediction-markets-api"
   },
   {
-    "path": "/api/layers/risk-heatmap-api",
-    "module": "risk-heatmap-api",
-    "method": "GET"
+    "id": "predictive",
+    "endpoint": "/api/predictive/status",
+    "method": "GET",
+    "module": "predictive"
   },
   {
-    "path": "/api/layers/router",
-    "module": "router",
-    "method": "GET"
+    "id": "preset-api",
+    "endpoint": "/api/services/preset",
+    "method": "GET",
+    "module": "preset-api"
   },
   {
-    "path": "/api/layers/rss-manager-api",
-    "module": "rss-manager-api",
-    "method": "GET"
+    "id": "progressive-disclosure-api",
+    "endpoint": "/api/services/progressive-disclosure",
+    "method": "GET",
+    "module": "progressive-disclosure-api"
   },
   {
-    "path": "/api/layers/rublev-dubai-api",
-    "module": "rublev-dubai-api",
-    "method": "GET"
+    "id": "quanta",
+    "endpoint": "/api/quanta/status",
+    "method": "GET",
+    "module": "quanta"
   },
   {
-    "path": "/api/layers/safecast-api",
-    "module": "safecast-api",
-    "method": "GET"
+    "id": "quantum",
+    "endpoint": "/api/quantum/status",
+    "method": "GET",
+    "module": "quantum"
   },
   {
-    "path": "/api/layers/safecast",
-    "module": "safecast",
-    "method": "GET"
+    "id": "rag-api",
+    "endpoint": "/api/services/rag",
+    "method": "GET",
+    "module": "rag-api"
   },
   {
-    "path": "/api/layers/sanction-list",
-    "module": "sanction-list",
-    "method": "GET"
+    "id": "rag-chat",
+    "endpoint": "/api/rag/chat",
+    "method": "POST",
+    "module": "rag-chat"
   },
   {
-    "path": "/api/layers/satellite-api",
-    "module": "satellite-api",
-    "method": "GET"
+    "id": "rag-ai-router",
+    "endpoint": "/api/rag/query",
+    "method": "POST",
+    "module": "rag-ai-router"
   },
   {
-    "path": "/api/layers/satellite-internet",
-    "module": "satellite-internet",
-    "method": "GET"
+    "id": "rag-server",
+    "endpoint": "/api/rag/status",
+    "method": "POST",
+    "module": "rag-server"
   },
   {
-    "path": "/api/layers/satellite-stac-api",
-    "module": "satellite-stac-api",
-    "method": "GET"
+    "id": "rag-server",
+    "endpoint": "/api/query",
+    "method": "GET",
+    "module": "rag-server"
   },
   {
-    "path": "/api/layers/scan-pages-api",
-    "module": "scan-pages-api",
-    "method": "GET"
+    "id": "rate-limiter-api",
+    "endpoint": "/api/services/rate-limiter",
+    "method": "GET",
+    "module": "rate-limiter-api"
   },
   {
-    "path": "/api/layers/scenario-generator",
-    "module": "scenario-generator",
-    "method": "GET"
+    "id": "recession-api",
+    "endpoint": "/api/layers/recession",
+    "method": "GET",
+    "module": "recession-api"
   },
   {
-    "path": "/api/layers/scenarios-api",
-    "module": "scenarios-api",
-    "method": "GET"
+    "id": "reddit-api",
+    "endpoint": "/api/layers/reddit",
+    "method": "GET",
+    "module": "reddit-api"
   },
   {
-    "path": "/api/layers/scheduler-api",
-    "module": "scheduler-api",
-    "method": "GET"
+    "id": "reference-data-provider-api",
+    "endpoint": "/api/services/reference-data-provider",
+    "method": "GET",
+    "module": "reference-data-provider-api"
   },
   {
-    "path": "/api/layers/sciencenews",
-    "module": "sciencenews",
-    "method": "GET"
+    "id": "registry-api",
+    "endpoint": "/api/services/registry",
+    "method": "GET",
+    "module": "registry-api"
   },
   {
-    "path": "/api/layers/semantic-analysis",
-    "module": "semantic-analysis",
-    "method": "GET"
+    "id": "reliefweb",
+    "endpoint": "/api/reliefweb/status",
+    "method": "GET",
+    "module": "reliefweb"
   },
   {
-    "path": "/api/layers/sentiment-analyzer",
-    "module": "sentiment-analyzer",
-    "method": "GET"
+    "id": "reports-api",
+    "endpoint": "/api/layers/reports",
+    "method": "GET",
+    "module": "reports-api"
   },
   {
-    "path": "/api/layers/shipping-api",
-    "module": "shipping-api",
-    "method": "GET"
+    "id": "resilience-index-api",
+    "endpoint": "/api/layers/resilience-index",
+    "method": "GET",
+    "module": "resilience-index-api"
   },
   {
-    "path": "/api/layers/shipping-route",
-    "module": "shipping-route",
-    "method": "GET"
+    "id": "risk-heatmap-api",
+    "endpoint": "/api/layers/risk-heatmap",
+    "method": "GET",
+    "module": "risk-heatmap-api"
   },
   {
-    "path": "/api/layers/ships-api",
-    "module": "ships-api",
-    "method": "GET"
+    "id": "risk-signal-aggregator-api",
+    "endpoint": "/api/layers/risk-signal-aggregator",
+    "method": "GET",
+    "module": "risk-signal-aggregator-api"
   },
   {
-    "path": "/api/layers/ships",
-    "module": "ships",
-    "method": "GET"
+    "id": "route-explorer-api",
+    "endpoint": "/api/layers/route-explorer",
+    "method": "GET",
+    "module": "route-explorer-api"
   },
   {
-    "path": "/api/layers/shodan",
-    "module": "shodan",
-    "method": "GET"
+    "id": "index",
+    "endpoint": "/api/route-explorer/chokepoints",
+    "method": "GET",
+    "module": "index"
   },
   {
-    "path": "/api/layers/silence-api",
-    "module": "silence-api",
-    "method": "GET"
+    "id": "rss-convergence-api",
+    "endpoint": "/api/layers/rss-convergence",
+    "method": "GET",
+    "module": "rss-convergence-api"
   },
   {
-    "path": "/api/layers/silent-signal",
-    "module": "silent-signal",
-    "method": "GET"
+    "id": "rss-feeds-api",
+    "endpoint": "/api/layers/rss-feeds",
+    "method": "GET",
+    "module": "rss-feeds-api"
   },
   {
-    "path": "/api/layers/social",
-    "module": "social",
-    "method": "GET"
+    "id": "rss-manager-api",
+    "endpoint": "/api/services/rss-manager",
+    "method": "GET",
+    "module": "rss-manager-api"
   },
   {
-    "path": "/api/layers/social-unrest-api",
-    "module": "social-unrest-api",
-    "method": "GET"
+    "id": "rublev-dubai-api",
+    "endpoint": "/api/layers/rublev-dubai",
+    "method": "GET",
+    "module": "rublev-dubai-api"
   },
   {
-    "path": "/api/layers/sp500-vix-api",
-    "module": "sp500-vix-api",
-    "method": "GET"
+    "id": "safecast-api",
+    "endpoint": "/api/layers/safecast",
+    "method": "GET",
+    "module": "safecast-api"
   },
   {
-    "path": "/api/layers/space-debris",
-    "module": "space-debris",
-    "method": "GET"
+    "id": "safecast",
+    "endpoint": "/api/safecast/status",
+    "method": "GET",
+    "module": "safecast"
   },
   {
-    "path": "/api/layers/space",
-    "module": "space",
-    "method": "GET"
+    "id": "sanctions-directional-api",
+    "endpoint": "/api/layers/sanctions-directional",
+    "method": "GET",
+    "module": "sanctions-directional-api"
   },
   {
-    "path": "/api/layers/space-monitor",
-    "module": "space-monitor",
-    "method": "GET"
+    "id": "sanctions-pressure-api",
+    "endpoint": "/api/layers/sanctions-pressure",
+    "method": "GET",
+    "module": "sanctions-pressure-api"
   },
   {
-    "path": "/api/layers/sputnik",
-    "module": "sputnik",
-    "method": "GET"
+    "id": "satellite-analyzer-api",
+    "endpoint": "/api/layers/satellite-analyzer",
+    "method": "GET",
+    "module": "satellite-analyzer-api"
   },
   {
-    "path": "/api/layers/ssi",
-    "module": "ssi",
-    "method": "GET"
+    "id": "satellite-api",
+    "endpoint": "/api/layers/satellite",
+    "method": "GET",
+    "module": "satellite-api"
   },
   {
-    "path": "/api/layers/storage-api",
-    "module": "storage-api",
-    "method": "GET"
+    "id": "satellite-internet",
+    "endpoint": "/api/satellite-internet/status",
+    "method": "GET",
+    "module": "satellite-internet"
   },
   {
-    "path": "/api/layers/strategic-intel",
-    "module": "strategic-intel",
-    "method": "GET"
+    "id": "satellite-stac-api",
+    "endpoint": "/api/layers/satellite-stac",
+    "method": "GET",
+    "module": "satellite-stac-api"
   },
   {
-    "path": "/api/layers/strategic-layer",
-    "module": "strategic-layer",
-    "method": "GET"
+    "id": "index",
+    "endpoint": "/api/satellite-ext/list",
+    "method": "GET",
+    "module": "index"
   },
   {
-    "path": "/api/layers/strategic-ports-api",
-    "module": "strategic-ports-api",
-    "method": "GET"
+    "id": "scan-pages-api",
+    "endpoint": "/api/layers/scan-pages",
+    "method": "GET",
+    "module": "scan-pages-api"
   },
   {
-    "path": "/api/layers/submarine-cable",
-    "module": "submarine-cable",
-    "method": "GET"
+    "id": "index",
+    "endpoint": "/api/scenario-engine/list",
+    "method": "GET",
+    "module": "index"
   },
   {
-    "path": "/api/layers/supply-chain",
-    "module": "supply-chain",
-    "method": "GET"
+    "id": "scenario-generator",
+    "endpoint": "/api/scenario-generator/status",
+    "method": "GET",
+    "module": "scenario-generator"
   },
   {
-    "path": "/api/layers/supply-chain-monitor",
-    "module": "supply-chain-monitor",
-    "method": "GET"
+    "id": "scenario-simulation-engine-api",
+    "endpoint": "/api/layers/scenario-simulation-engine",
+    "method": "GET",
+    "module": "scenario-simulation-engine-api"
   },
   {
-    "path": "/api/layers/tass",
-    "module": "tass",
-    "method": "GET"
+    "id": "scenarios-api",
+    "endpoint": "/api/services/scenarios",
+    "method": "GET",
+    "module": "scenarios-api"
   },
   {
-    "path": "/api/layers/telegram-driver",
-    "module": "telegram-driver",
-    "method": "GET"
+    "id": "scheduler-api",
+    "endpoint": "/api/services/scheduler",
+    "method": "GET",
+    "module": "scheduler-api"
   },
   {
-    "path": "/api/layers/telegram",
-    "module": "telegram",
-    "method": "GET"
+    "id": "sciencenews",
+    "endpoint": "/api/sciencenews/status",
+    "method": "GET",
+    "module": "sciencenews"
   },
   {
-    "path": "/api/layers/temporal-analysis",
-    "module": "temporal-analysis",
-    "method": "GET"
+    "id": "semantic-analysis",
+    "endpoint": "/api/semantic/status",
+    "method": "POST",
+    "module": "semantic-analysis"
   },
   {
-    "path": "/api/layers/thehindu",
-    "module": "thehindu",
-    "method": "GET"
+    "id": "sentiment-analyzer",
+    "endpoint": "/api/sentiment/status",
+    "method": "GET",
+    "module": "sentiment-analyzer"
   },
   {
-    "path": "/api/layers/thinktanks-api",
-    "module": "thinktanks-api",
-    "method": "GET"
+    "id": "shipping-api",
+    "endpoint": "/api/layers/shipping",
+    "method": "GET",
+    "module": "shipping-api"
   },
   {
-    "path": "/api/layers/threat-intel",
-    "module": "threat-intel",
-    "method": "GET"
+    "id": "ships-api",
+    "endpoint": "/api/layers/ships",
+    "method": "GET",
+    "module": "ships-api"
   },
   {
-    "path": "/api/layers/timeline",
-    "module": "timeline",
-    "method": "GET"
+    "id": "ships",
+    "endpoint": "/api/ships/vessels",
+    "method": "GET",
+    "module": "ships"
   },
   {
-    "path": "/api/layers/timesofindia",
-    "module": "timesofindia",
-    "method": "GET"
+    "id": "signal-aggregator-api",
+    "endpoint": "/api/layers/signal-aggregator",
+    "method": "GET",
+    "module": "signal-aggregator-api"
   },
   {
-    "path": "/api/layers/tips-api",
-    "module": "tips-api",
-    "method": "GET"
+    "id": "silence-api",
+    "endpoint": "/api/layers/silence",
+    "method": "GET",
+    "module": "silence-api"
   },
   {
-    "path": "/api/layers/trade-monitor",
-    "module": "trade-monitor",
-    "method": "GET"
+    "id": "silence-patterns-api",
+    "endpoint": "/api/layers/silence-patterns",
+    "method": "GET",
+    "module": "silence-patterns-api"
   },
   {
-    "path": "/api/layers/treasury",
-    "module": "treasury",
-    "method": "GET"
+    "id": "snapshot-system-api",
+    "endpoint": "/api/layers/snapshot-system",
+    "method": "GET",
+    "module": "snapshot-system-api"
   },
   {
-    "path": "/api/layers/trends",
-    "module": "trends",
-    "method": "GET"
+    "id": "social-briefing-api",
+    "endpoint": "/api/layers/social-briefing",
+    "method": "GET",
+    "module": "social-briefing-api"
   },
   {
-    "path": "/api/layers/trust-api",
-    "module": "trust-api",
-    "method": "GET"
+    "id": "social-briefing-engine-api",
+    "endpoint": "/api/layers/social-briefing-engine",
+    "method": "GET",
+    "module": "social-briefing-engine-api"
   },
   {
-    "path": "/api/layers/undersea-cables-api",
-    "module": "undersea-cables-api",
-    "method": "GET"
+    "id": "social-sentiment-analyzer-api",
+    "endpoint": "/api/layers/social-sentiment-analyzer",
+    "method": "GET",
+    "module": "social-sentiment-analyzer-api"
   },
   {
-    "path": "/api/layers/unemployment-api",
-    "module": "unemployment-api",
-    "method": "GET"
+    "id": "social-unrest-api",
+    "endpoint": "/api/layers/social-unrest",
+    "method": "GET",
+    "module": "social-unrest-api"
   },
   {
-    "path": "/api/layers/unemployment-claims-api",
-    "module": "unemployment-claims-api",
-    "method": "GET"
+    "id": "source-coordination-api",
+    "endpoint": "/api/layers/source-coordination",
+    "method": "GET",
+    "module": "source-coordination-api"
   },
   {
-    "path": "/api/layers/unique-indicators-api",
-    "module": "unique-indicators-api",
-    "method": "GET"
+    "id": "source-credibility-api",
+    "endpoint": "/api/layers/source-credibility",
+    "method": "GET",
+    "module": "source-credibility-api"
   },
   {
-    "path": "/api/layers/uranium-api",
-    "module": "uranium-api",
-    "method": "GET"
+    "id": "sp500-vix-api",
+    "endpoint": "/api/layers/sp500-vix",
+    "method": "GET",
+    "module": "sp500-vix-api"
   },
   {
-    "path": "/api/layers/usaspending",
-    "module": "usaspending",
-    "method": "GET"
+    "id": "space-api",
+    "endpoint": "/api/layers/space",
+    "method": "GET",
+    "module": "space-api"
   },
   {
-    "path": "/api/layers/user-api",
-    "module": "user-api",
-    "method": "GET"
+    "id": "space-debris-api",
+    "endpoint": "/api/layers/space-debris",
+    "method": "GET",
+    "module": "space-debris-api"
   },
   {
-    "path": "/api/layers/usgs-api",
-    "module": "usgs-api",
-    "method": "GET"
+    "id": "space-monitor",
+    "endpoint": "/api/space-monitor/status",
+    "method": "GET",
+    "module": "space-monitor"
   },
   {
-    "path": "/api/layers/usgs",
-    "module": "usgs",
-    "method": "GET"
+    "id": "sputnik",
+    "endpoint": "/api/sputnik/status",
+    "method": "GET",
+    "module": "sputnik"
   },
   {
-    "path": "/api/layers/vedomosti",
-    "module": "vedomosti",
-    "method": "GET"
+    "id": "stablecoin-monitor-api",
+    "endpoint": "/api/layers/stablecoin-monitor",
+    "method": "GET",
+    "module": "stablecoin-monitor-api"
   },
   {
-    "path": "/api/layers/viirs-api",
-    "module": "viirs-api",
-    "method": "GET"
+    "id": "starlink-api",
+    "endpoint": "/api/layers/starlink",
+    "method": "GET",
+    "module": "starlink-api"
   },
   {
-    "path": "/api/layers/vix-api",
-    "module": "vix-api",
-    "method": "GET"
+    "id": "storage-api",
+    "endpoint": "/api/services/storage",
+    "method": "GET",
+    "module": "storage-api"
   },
   {
-    "path": "/api/layers/vix",
-    "module": "vix",
-    "method": "GET"
+    "id": "strategic-intel",
+    "endpoint": "/api/strategic-intel/status",
+    "method": "GET",
+    "module": "strategic-intel"
   },
   {
-    "path": "/api/layers/voice",
-    "module": "voice",
-    "method": "GET"
+    "id": "strategic-layer",
+    "endpoint": "/api/strategic/status",
+    "method": "GET",
+    "module": "strategic-layer"
   },
   {
-    "path": "/api/layers/vulnerability-db",
-    "module": "vulnerability-db",
-    "method": "GET"
+    "id": "strategic-ports-api",
+    "endpoint": "/api/layers/strategic-ports",
+    "method": "GET",
+    "module": "strategic-ports-api"
   },
   {
-    "path": "/api/layers/vxx-api",
-    "module": "vxx-api",
-    "method": "GET"
+    "id": "strategic-risk-composite-api",
+    "endpoint": "/api/layers/strategic-risk-composite",
+    "method": "GET",
+    "module": "strategic-risk-composite-api"
   },
   {
-    "path": "/api/layers/war-preparation-api",
-    "module": "war-preparation-api",
-    "method": "GET"
+    "id": "submarine-cable-api",
+    "endpoint": "/api/layers/submarine-cable",
+    "method": "GET",
+    "module": "submarine-cable-api"
   },
   {
-    "path": "/api/layers/weather",
-    "module": "weather",
-    "method": "GET"
+    "id": "supply-chain-cascade-engine-api",
+    "endpoint": "/api/layers/supply-chain-cascade-engine",
+    "method": "GET",
+    "module": "supply-chain-cascade-engine-api"
   },
   {
-    "path": "/api/layers/weather-monitor",
-    "module": "weather-monitor",
-    "method": "GET"
+    "id": "supply-chain-monitor",
+    "endpoint": "/api/supply-chain/status",
+    "method": "GET",
+    "module": "supply-chain-monitor"
   },
   {
-    "path": "/api/layers/who",
-    "module": "who",
-    "method": "GET"
+    "id": "supply-chain-resilience-api",
+    "endpoint": "/api/layers/supply-chain-resilience",
+    "method": "GET",
+    "module": "supply-chain-resilience-api"
   },
   {
-    "path": "/api/layers/wti-brent-spread-api",
-    "module": "wti-brent-spread-api",
-    "method": "GET"
+    "id": "surge-detection-api",
+    "endpoint": "/api/layers/surge-detection",
+    "method": "GET",
+    "module": "surge-detection-api"
   },
   {
-    "path": "/api/layers/yfinance",
-    "module": "yfinance",
-    "method": "GET"
+    "id": "tanker-fleet-monitor-api",
+    "endpoint": "/api/layers/tanker-fleet-monitor",
+    "method": "GET",
+    "module": "tanker-fleet-monitor-api"
   },
   {
-    "path": "/api/layers/yield-curve-api",
-    "module": "yield-curve-api",
-    "method": "GET"
+    "id": "tass",
+    "endpoint": "/api/tass/news",
+    "method": "GET",
+    "module": "tass"
   },
   {
-    "path": "/api/reference/countries",
-    "module": "cii-api",
-    "method": "GET"
+    "id": "telegram",
+    "endpoint": "/api/telegram/status",
+    "method": "GET",
+    "module": "telegram"
   },
   {
-    "path": "/api/reference/aliases",
-    "module": "cii-api",
-    "method": "GET"
+    "id": "temporal-analysis",
+    "endpoint": "/api/temporal/analyze/:layerId",
+    "method": "GET",
+    "module": "temporal-analysis"
   },
   {
-    "path": "/api/cii",
-    "module": "cii-api",
-    "method": "GET"
+    "id": "thehindu",
+    "endpoint": "/api/thehindu/status",
+    "method": "GET",
+    "module": "thehindu"
   },
   {
-    "path": "/api/layers/country-instability",
-    "module": "country-instability-api",
-    "method": "GET"
+    "id": "thinktanks-api",
+    "endpoint": "/api/layers/thinktanks",
+    "method": "GET",
+    "module": "thinktanks-api"
   },
   {
-    "path": "/api/rss/feeds",
-    "module": "rss-feeds-api",
-    "method": "GET"
+    "id": "threat-classification-api",
+    "endpoint": "/api/layers/threat-classification",
+    "method": "GET",
+    "module": "threat-classification-api"
   },
   {
-    "path": "/api/layers/resilience-index",
-    "module": "resilience-index-api",
-    "method": "GET"
+    "id": "threat-intel",
+    "endpoint": "/api/threats/collect",
+    "method": "POST",
+    "module": "threat-intel"
   },
   {
-    "path": "/api/layers/infrastructure-api/*",
-    "module": "infrastructure-api",
-    "method": "GET"
+    "id": "threats-api",
+    "endpoint": "/api/layers/threats",
+    "method": "GET",
+    "module": "threats-api"
   },
   {
-    "path": "/api/layers/social-briefing",
-    "module": "social-briefing-engine-api",
-    "method": "GET"
+    "id": "tick-data-analyzer-api",
+    "endpoint": "/api/layers/tick-data-analyzer",
+    "method": "GET",
+    "module": "tick-data-analyzer-api"
   },
   {
-    "path": "/api/layers/social-briefing/*",
-    "module": "social-briefing-engine-api",
-    "method": "GET"
+    "id": "timesofindia",
+    "endpoint": "/api/timesofindia/status",
+    "method": "GET",
+    "module": "timesofindia"
   },
   {
-    "path": "/api/layers/preset",
-    "module": "preset-api",
-    "method": "GET"
+    "id": "tips-api",
+    "endpoint": "/api/layers/tips",
+    "method": "GET",
+    "module": "tips-api"
   },
   {
-    "path": "/api/layers/preset/",
-    "module": "preset-api",
-    "method": "GET"
+    "id": "trade-monitor",
+    "endpoint": "/api/trade/status",
+    "method": "GET",
+    "module": "trade-monitor"
   },
   {
-    "path": "/api/layers/preset/*",
-    "module": "preset-api",
-    "method": "GET"
+    "id": "treasury-api",
+    "endpoint": "/api/layers/treasury",
+    "method": "GET",
+    "module": "treasury-api"
   },
   {
-    "path": "/api/layers/preset/*",
-    "module": "preset-api",
-    "method": "POST"
+    "id": "treasury",
+    "endpoint": "/api/treasury/status",
+    "method": "GET",
+    "module": "treasury"
   },
   {
-    "path": "/api/layers/preset/*",
-    "module": "preset-api",
-    "method": "DELETE"
+    "id": "trust-api",
+    "endpoint": "/api/services/trust",
+    "method": "GET",
+    "module": "trust-api"
   },
   {
-    "path": "/api/cii-api",
-    "module": "cii-api",
-    "method": "GET"
+    "id": "un-votes-api",
+    "endpoint": "/api/layers/un-votes",
+    "method": "GET",
+    "module": "un-votes-api"
   },
   {
-    "path": "/api/layers/education",
-    "module": "education-api",
-    "method": "GET"
+    "id": "undersea-cables-api",
+    "endpoint": "/api/layers/undersea-cables",
+    "method": "GET",
+    "module": "undersea-cables-api"
   },
   {
-    "path": "/api/layers/education/*",
-    "module": "education-api",
-    "method": "GET"
+    "id": "unemployment-api",
+    "endpoint": "/api/layers/unemployment",
+    "method": "GET",
+    "module": "unemployment-api"
   },
   {
-    "path": "/api/layers/botnets",
-    "module": "botnets-api",
-    "method": "GET"
+    "id": "unemployment-claims-api",
+    "endpoint": "/api/layers/unemployment-claims",
+    "method": "GET",
+    "module": "unemployment-claims-api"
   },
   {
-    "path": "/api/layers/botnets/*",
-    "module": "botnets-api",
-    "method": "GET"
+    "id": "unique-indicators-api",
+    "endpoint": "/api/layers/unique-indicators",
+    "method": "GET",
+    "module": "unique-indicators-api"
   },
   {
-    "path": "/api/gdelt",
-    "module": "gdelt-news-api",
-    "method": "GET"
+    "id": "unique-indicators",
+    "endpoint": "/api/unique/pentagon-pizza",
+    "method": "GET",
+    "module": "unique-indicators"
   },
   {
-    "path": "/api/gdelt/status",
-    "module": "gdelt-news-api",
-    "method": "GET"
+    "id": "uranium-api",
+    "endpoint": "/api/layers/uranium",
+    "method": "GET",
+    "module": "uranium-api"
   },
   {
-    "path": "/api/gdelt/featurecollection",
-    "module": "gdelt-news-api",
-    "method": "GET"
+    "id": "usaspending",
+    "endpoint": "/api/usaspending/status",
+    "method": "GET",
+    "module": "usaspending"
   },
   {
-    "path": "/api/basket",
-    "module": "basket-api",
-    "method": "GET"
+    "id": "user-api",
+    "endpoint": "/api/services/user",
+    "method": "GET",
+    "module": "user-api"
   },
   {
-    "path": "/api/basket/*",
-    "module": "basket-api",
-    "method": "GET"
+    "id": "usgs-api",
+    "endpoint": "/api/layers/usgs",
+    "method": "GET",
+    "module": "usgs-api"
   },
   {
-    "path": "/api/layers/country-brief",
-    "module": "country-brief-api",
-    "method": "GET"
+    "id": "vedomosti",
+    "endpoint": "/api/vedomosti/status",
+    "method": "GET",
+    "module": "vedomosti"
   },
   {
-    "path": "/api/layers/world-brief",
-    "module": "world-brief-api",
-    "method": "GET"
+    "id": "viirs-api",
+    "endpoint": "/api/layers/viirs",
+    "method": "GET",
+    "module": "viirs-api"
   },
   {
-    "path": "/api/layers/analyze-situation",
-    "module": "analyze-situation-api",
-    "method": "GET"
+    "id": "vix-api",
+    "endpoint": "/api/layers/vix",
+    "method": "GET",
+    "module": "vix-api"
   },
   {
-    "path": "/api/layers/entity-graph",
-    "module": "entity-graph-api",
-    "method": "GET"
+    "id": "voice",
+    "endpoint": "/api/voice/status",
+    "method": "GET",
+    "module": "voice"
+  },
+  {
+    "id": "volcanoes-api",
+    "endpoint": "/api/layers/volcanoes",
+    "method": "GET",
+    "module": "volcanoes-api"
+  },
+  {
+    "id": "vulnerabilities-api",
+    "endpoint": "/api/layers/vulnerabilities",
+    "method": "GET",
+    "module": "vulnerabilities-api"
+  },
+  {
+    "id": "vulnerability-db",
+    "endpoint": "/api/vulns/collect",
+    "method": "PATCH",
+    "module": "vulnerability-db"
+  },
+  {
+    "id": "vxx-api",
+    "endpoint": "/api/layers/vxx",
+    "method": "GET",
+    "module": "vxx-api"
+  },
+  {
+    "id": "war-preparation-api",
+    "endpoint": "/api/layers/war-preparation",
+    "method": "GET",
+    "module": "war-preparation-api"
+  },
+  {
+    "id": "watchdog-api",
+    "endpoint": "/api/layers/watchdog",
+    "method": "GET",
+    "module": "watchdog-api"
+  },
+  {
+    "id": "weather-api",
+    "endpoint": "/api/layers/weather",
+    "method": "GET",
+    "module": "weather-api"
+  },
+  {
+    "id": "weather-monitor",
+    "endpoint": "/api/weather/status",
+    "method": "GET",
+    "module": "weather-monitor"
+  },
+  {
+    "id": "who-api",
+    "endpoint": "/api/layers/who",
+    "method": "GET",
+    "module": "who-api"
+  },
+  {
+    "id": "who",
+    "endpoint": "/api/who/status",
+    "method": "GET",
+    "module": "who"
+  },
+  {
+    "id": "wildfires-api",
+    "endpoint": "/api/layers/wildfires",
+    "method": "GET",
+    "module": "wildfires-api"
+  },
+  {
+    "id": "world-brief-api",
+    "endpoint": "/api/layers/world-brief",
+    "method": "GET",
+    "module": "world-brief-api"
+  },
+  {
+    "id": "wti-brent-spread-api",
+    "endpoint": "/api/layers/wti-brent-spread",
+    "method": "GET",
+    "module": "wti-brent-spread-api"
+  },
+  {
+    "id": "yfinance",
+    "endpoint": "/api/yfinance/status",
+    "method": "GET",
+    "module": "yfinance"
+  },
+  {
+    "id": "yield-curve-api",
+    "endpoint": "/api/layers/yield-curve",
+    "method": "GET",
+    "module": "yield-curve-api"
+  },
+  {
+    "id": "{name}",
+    "endpoint": "/api/{name}/status",
+    "method": "GET",
+    "module": "{name}"
   }
 ]

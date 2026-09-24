@@ -1,0 +1,182 @@
+═══ narrative-splitter-api.mjs ═══
+Версия: 1.0.0
+Route: /api/layers/narrative-splitter
+Файл: apis/sources/narrative-splitter-api.mjs
+Создан: 22.09.2026
+Связан с: narrative-arena.html, source-camps.json
+
+───────────────────────────────────────
+НАЗНАЧЕНИЕ
+───────────────────────────────────────
+Сверить российский и западный нарративы по заданной теме.
+Читает rsshub.json, разбивает источники по полюсам, фильтрует по теме,
+сортирует по дате, формирует точки расхождений.
+
+Это НЕ анализ отдельных новостей — это СВЕРКА нарративов.
+Задача: показать, где две стороны освещают тему по-разному,
+где одна сторона молчит, где есть признаки двойных стандартов.
+
+───────────────────────────────────────
+АРХИТЕКТУРА (откуда что берётся)
+───────────────────────────────────────
+ВХОД:
+  data/basket/rsshub.json  ← основной (500 items, 36 источников)
+  data/basket/gdelt_news.json ← fallback, если rsshub пустой
+
+МАППИНГ ПОЛЮСОВ:
+  apis/sources/source-camps.json → media_sources.{russian, western, non_aligned}.sources
+  Сопоставление — по подстроке в поле item.source (lowercase)
+
+ВЫХОД:
+  JSON с полями russian_narrative, western_narrative, non_aligned_narrative,
+  welding_points, timeline, stats
+
+ПОТРЕБИТЕЛЬ:
+  dashboard/public/narrative-arena.html — вызывает этот модуль
+
+───────────────────────────────────────
+ЭНДПОИНТЫ (все GET)
+───────────────────────────────────────
+GET /api/layers/narrative-splitter
+  Все темы, все полюса
+
+GET /api/layers/narrative-splitter?topic=санкции
+  Фильтр по теме (префиксный поиск)
+
+GET /api/layers/narrative-splitter?topic=Украина&limit=10
+  Фильтр + ограничение количества claims на полюс (по умолчанию 15, макс 50)
+
+GET /api/layers/narrative-splitter?detail=true
+  Дополнительно выводит russian_items, western_items, non_aligned_items
+
+GET /api/layers/narrative-splitter?format=csv
+  CSV выгрузка всех claims (pole, title, source, date, link)
+
+GET /api/layers/narrative-splitter?format=stats
+  Только статистика (для дашбордов)
+
+───────────────────────────────────────
+ПАРАМЕТРЫ
+───────────────────────────────────────
+topic    — тема для фильтра. Поиск по ПРЕФИКСУ (не точно)
+           «санкции» → prefix «санкци» → находит «санкции», «санкция», «санкционный»
+           «Украина» → prefix «Украин» → находит «Украине», «Украины», «украинский»
+           Пусто → без фильтра (все items)
+
+limit    — сколько claims вернуть на полюс. По умолчанию 15, максимум 50.
+
+detail   — «true» → добавить полный список items с полями
+           (title, source, date, link) для каждой стороны
+
+format   — json (по умолчанию) / csv / stats
+
+───────────────────────────────────────
+ПОЛЯ ОТВЕТА
+───────────────────────────────────────
+topic              — какая тема искалась
+topic_prefix       — какой префикс применён (для отладки)
+scanned_at         — timestamp сканирования
+source_file        — какой basket-файл использован (rsshub.json или gdelt_news.json)
+
+stats:
+  total_scanned      — сколько items обработано после нормализации
+  topic_matches      — сколько совпало с префиксом
+  russian_count      — сколько items в российском полюсе
+  western_count      — сколько в западном
+  non_aligned_count  — сколько в неприсоединившихся
+  unknown_count      — сколько не классифицировано
+
+russian_narrative (и western, и non_aligned):
+  framing  — человекочитаемое название
+  count    — всего упоминаний
+  sources_count — сколько уникальных источников
+  sources  — список уникальных источников (до 15)
+  claims   — массив свежих упоминаний (до limit):
+    text   — заголовок
+    source — источник (например, «ТАСС [T1]»)
+    link   — URL
+    date   — ISO timestamp
+    region — регион (если есть)
+
+welding_points — точки расхождений:
+  type        — silence / framing_gap / double_standard / omission
+  severity    — high / medium
+  description — человекочитаемое описание
+  evidence    — ссылка на источники
+
+timeline — хронология (до limit):
+  date   — ISO
+  event  — заголовок
+  source — источник
+  pole   — russian / western
+
+───────────────────────────────────────
+КЛЮЧЕВЫЕ ПОНЯТИЯ
+───────────────────────────────────────
+topic_prefix
+  Префикс для поиска. Убрана последняя гласная буква для учёта падежей.
+  «санкции» → «санкци». Это позволяет найти «санкция», «санкции», «санкционный»
+  без стеммера.
+
+silence (замалчивание)
+  Одна сторона пишет (N > 0), другая молчит (0 упоминаний).
+  severity = high, потому что это самый сильный сигнал.
+  Пример: российские СМИ пишут о снятии санкций с Усманова, западные — молчат.
+
+framing_gap (расхождение)
+  Обе стороны пишут, но с разным фреймингом или в разном объёме.
+  severity = medium.
+
+double_standard (двойной стандарт)
+  Дисбаланс освещения >3x в одну сторону.
+  Например, российских упоминаний в 4 раза больше, чем западных.
+  severity = medium.
+
+omission (пропуск)
+  Резервный тип (пока не используется).
+
+───────────────────────────────────────
+КАК РАСШИРЯТЬ
+───────────────────────────────────────
+Добавить новый источник в полюс:
+  Открой apis/sources/source-camps.json → media_sources.russian.sources (или western, non_aligned)
+  Добавь подстроку в lowercase. Например, «kremlin.ru» или «mid.ru».
+  Маппинг ищет подстроку в item.source.toLowerCase(), поэтому «kremlin» найдёт и «Kremlin.ru», и «kremlin-press».
+
+Добавить целую новую категорию полюсов (например, «china_bloc»):
+  Это сложнее — надо править POLE_MAP в модуле и добавить блок в source-camps.json.
+  Сейчас три полюса жёстко зашиты: russian, western, non_aligned.
+
+Изменить логику префикса:
+  Функция topicPrefix() в модуле. Сейчас убирает последнюю гласную (для русских
+  окончаний). Если нужно другое — правь там.
+
+───────────────────────────────────────
+ИЗВЕСТНЫЕ ОГРАНИЧЕНИЯ
+───────────────────────────────────────
+1. link содержит CDATA в исходных данных — уже исправлено в normalizeItem
+   (stripCdata). Если увидишь CDATA в ответе — значит патч не применился.
+
+2. HTML-entities (&quot;, &#34;) — уже исправлено (decodeHtmlEntities).
+
+3. Баланс источников в фиде 429 vs 9 (russian vs western).
+   Это проблема ФИДА, не модуля. Решение: добавить BBC, Reuters, DW,
+   France24, Politico в feeds.opml и пересобрать rsshub.json.
+
+4. Свежесть: rsshub.json обновляется редко. Если тема не покрыта в текущем
+   снимке — пусто в обеих колонках. Это не баг.
+
+───────────────────────────────────────
+ИСТОРИЯ
+───────────────────────────────────────
+22.09.2026 — создан. Заменил попытку использовать multi-source-corroboration
+для сверки нарративов (не тот тип анализа).
+22.09.2026 23:00 — патч HTML-entities и CDATA после теста на теме «Украина».
+
+───────────────────────────────────────
+СВЯЗАННЫЕ ФАЙЛЫ
+───────────────────────────────────────
+- apis/sources/source-camps.json  — маппинг источников по полюсам
+- dashboard/public/narrative-arena.html — потребитель API
+- apis/sources/pole-tracker-api.mjs — родственный модуль (полярность стран)
+- data/basket/rsshub.json — источник данных

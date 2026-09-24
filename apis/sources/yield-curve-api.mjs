@@ -1,15 +1,19 @@
 /**
  * apis/sources/yield-curve-api.mjs — API-МОДУЛЬ: КРИВАЯ ДОХОДНОСТИ (10Y-2Y SPREAD)
  *
+ * Версия 3.0.1. Принят 23.09.2026.
+ *
  * КОНТРАКТ CRUCIX v2 (Layer).
- * ИСТОЧНИК: data/basket/yield-curve.json — [{ date, spread, y10?, y2? }] ИЛИ { data:[...] } ИЛИ { series:[...] }.
+ * ИСТОЧНИК: data/basket/yield-curve.json — v1-схема, series[{date, value, extra:{y10,y2}}],
+ *           читается через basket-loader v2.0.0 (правило 14.3).
  * Сборщик: scripts/collectors/collect-yield-curve.mjs.
  *
  * Кривая доходности US Treasury — спред между 10-летними и 2-летними облигациями.
  * Инвертированная кривая (spread < 0) — исторический предвестник рецессии.
  * Нормализация после инверсии — сигнал начала рецессии в течение 6-18 месяцев.
  *
- * Точка: { date, spread, y10?, y2? }
+ * Точка: { date, value, extra:{y10, y2} }  (в v1-схеме)
+ *       { date, spread, y10?, y2? }        (в legacy)
  *
  * Режимы (по значению spread, %):
  *   inverted     (< 0)     — инвертированная (классический сигнал рецессии)
@@ -17,6 +21,13 @@
  *   normal       (0.5-1.5) — нормальная
  *   steep        (1.5-2.5) — крутая (рост экономики)
  *   very_steep   (> 2.5)   — очень крутая (агрессивное смягчение)
+ *
+ * Изменения v3.0.1:
+ *  - Перевод с прямого fs.readFile на loadWithFallback.
+ *  - extractSeries: поддержка v1-схемы (schema='crucix.basket.v1' → doc.series).
+ *  - normalizePoint: spread из p.spread ?? p.value, y10/y2 из p.y10 ?? p.extra?.y10.
+ *  - Диагностика source (basket-v1 | basket-legacy | fallback | corrupted | error)
+ *    и shape в headers X-Basket-Source, X-Basket-Shape.
  *
  * ФОРМАТЫ: json (FC + series + stats + regimes), csv, series, stats, raw, report, text.
  * ФИЛЬТРЫ: ?since=, ?until=, ?min_value=, ?max_value=, ?regime=, ?limit=, ?top=, ?sort=.
@@ -42,14 +53,15 @@
  *   /builtin                — встроенный fallback (30 точек)
  */
 
-import { promises as fs } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { loadWithFallback } from './lib/basket-loader.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
 const PROJECT_ROOT = join(__dirname, '..', '..');
 const BASKET_FILE  = join(PROJECT_ROOT, 'data', 'basket', 'yield-curve.json');
+const COLLECTOR_HINT = 'run scripts/collectors/collect-yield-curve.mjs';
 
 export const route  = '/api/layers/yield-curve';
 export const method = 'GET';
@@ -160,44 +172,79 @@ function parseSince(value) {
 }
 
 // ============================================================
-//  ЗАГРУЗКА BASKET
+//  ЗАГРУЗКА BASKET (через basket-loader)
 // ============================================================
 
 async function loadData() {
-  let raw;
-  try { raw = await fs.readFile(BASKET_FILE, 'utf8'); }
-  catch (e) {
-    if (e.code === 'ENOENT') {
-      const err = new Error('no_data'); err.statusCode = 503;
-      err.hint = 'run scripts/collectors/collect-yield-curve.mjs';
-      throw err;
-    }
-    throw e;
+  const loaded = await loadWithFallback({
+    basketFile: BASKET_FILE,
+    fallbackData: null,
+    hint: COLLECTOR_HINT,
+  });
+
+  if (loaded.source === 'fallback') {
+    const err = new Error('no_data');
+    err.statusCode = 503;
+    err.hint = COLLECTOR_HINT;
+    throw err;
   }
-  let parsed;
-  try { parsed = JSON.parse(raw); }
-  catch (e) { const err = new Error('invalid_json_in_basket: ' + e.message); err.statusCode = 500; throw err; }
-  return parsed;
+  if (loaded.source === 'corrupted') {
+    const err = new Error('invalid_json_in_basket: ' + (loaded.error || 'CORRUPTED_JSON'));
+    err.statusCode = 500;
+    throw err;
+  }
+  if (loaded.source === 'error') {
+    const err = new Error('basket_read_error: ' + (loaded.error || 'UNKNOWN'));
+    err.statusCode = 500;
+    throw err;
+  }
+
+  return {
+    doc: loaded.legacy || loaded.data,
+    source: loaded.source,
+    shape: loaded.shape || 'unknown',
+    mtime: loaded.mtime,
+  };
 }
 
+/**
+ * Извлечение серии из документа.
+ * Поддерживает v1-схему (schema='crucix.basket.v1' → doc.series),
+ * legacy-формы (array/data/series/items).
+ */
 function extractSeries(doc) {
-  if (Array.isArray(doc)) return { series: doc, source: null, meta: null };
-  if (!doc || typeof doc !== 'object') return { series: [], source: null, meta: null };
-  if (Array.isArray(doc.data))   return { series: doc.data,   source: doc.source || null, meta: doc.meta || null };
-  if (Array.isArray(doc.series)) return { series: doc.series, source: doc.source || null, meta: doc.meta || null };
-  if (Array.isArray(doc.items))  return { series: doc.items,  source: doc.source || null, meta: doc.meta || null };
-  return { series: [], source: null, meta: null };
+  if (Array.isArray(doc)) return { series: doc, source: null, meta: null, shape: 'array' };
+  if (!doc || typeof doc !== 'object') return { series: [], source: null, meta: null, shape: 'unknown' };
+
+  // v1-схема: series — временной ряд
+  if (doc.schema === 'crucix.basket.v1') {
+    if (Array.isArray(doc.series) && doc.series.length > 0) return { series: doc.series, source: doc.meta?.source || null, meta: doc.meta || null, shape: 'v1.series' };
+    if (Array.isArray(doc.points) && doc.points.length > 0) return { series: doc.points, source: doc.meta?.source || null, meta: doc.meta || null, shape: 'v1.points' };
+    if (Array.isArray(doc.regions) && doc.regions.length > 0) return { series: doc.regions, source: doc.meta?.source || null, meta: doc.meta || null, shape: 'v1.regions' };
+    return { series: [], source: doc.meta?.source || null, meta: doc.meta || null, shape: 'v1.empty' };
+  }
+
+  // Legacy
+  if (Array.isArray(doc.data))   return { series: doc.data,   source: doc.source || null, meta: doc.meta || null, shape: 'data' };
+  if (Array.isArray(doc.series)) return { series: doc.series, source: doc.source || null, meta: doc.meta || null, shape: 'series' };
+  if (Array.isArray(doc.items))  return { series: doc.items,  source: doc.source || null, meta: doc.meta || null, shape: 'items' };
+  return { series: [], source: null, meta: null, shape: 'unknown' };
 }
 
 // ============================================================
 //  НОРМАЛИЗАЦИЯ
 // ============================================================
 
+/**
+ * Нормализация точки.
+ * В v1-схеме поле spread называется value, а y10/y2 лежат в extra.
+ * Поддерживаем оба варианта.
+ */
 function normalizePoint(p, i) {
   const date = String(p.date || p.timestamp || '').slice(0, 10) || null;
   const spread = Number(p.spread ?? p.value ?? p.diff);
-  const y10 = Number(p.y10 ?? p.ten_year);
-  const y2 = Number(p.y2 ?? p.two_year);
+  const y10 = Number(p.y10 ?? p.ten_year ?? p.extra?.y10);
+  const y2 = Number(p.y2 ?? p.two_year ?? p.extra?.y2);
   const regime = regimeOf(spread);
 
   return {
@@ -417,10 +464,8 @@ function computeRecessionSignal(rows) {
   const inversionPeriods = computeInversionHistory(rows);
   const now = new Date();
   if (inversionPeriods.length === 0) {
-    // Если никогда не было инверсии в этом окне — сигнала нет
     return { active: false, reason: 'no_inversion_in_period', periods: 0 };
   }
-  // Рецессия следует через 6-18 месяцев после окончания инверсии
   const lastPeriod = inversionPeriods[inversionPeriods.length - 1];
   if (lastPeriod.ongoing) {
     return { active: false, reason: 'inversion_ongoing', note: 'Инверсия сейчас — сигнал ещё не активирован', period: lastPeriod };
@@ -553,7 +598,7 @@ export async function handler(req, res) {
 
     const extra = {
       'X-Module': 'yield-curve-api',
-      'X-Module-Version': '2.0.0',
+      'X-Module-Version': '3.0.1',
       'Cache-Control': `public, max-age=${meta.cache}`,
       'Access-Control-Allow-Origin': '*',
     };
@@ -587,8 +632,8 @@ export async function handler(req, res) {
       return sendJSON(res, 200, { presets: FILTER_PRESETS, count: FILTER_PRESETS.length }, extra);
     }
 
-    let doc;
-    try { doc = await loadData(); }
+    let loaded;
+    try { loaded = await loadData(); }
     catch (e) {
       if (e.statusCode === 503 && (sub === '/health' || sub === '/status')) {
         return sendJSON(res, 200, {
@@ -599,12 +644,17 @@ export async function handler(req, res) {
       throw e;
     }
 
+    const { doc, source: basketSource, shape: basketShape, mtime: basketMtime } = loaded;
+    extra['X-Basket-Source'] = basketSource;
+    extra['X-Basket-Shape'] = basketShape;
+
     const { series: rawArr, source, meta: srcMeta } = extractSeries(doc);
     const all = rawArr.map(normalizePoint);
 
     if (sub === '/health') {
       return sendJSON(res, 200, {
         status: 'online', basket_available: true, points: all.length,
+        basket_source: basketSource, basket_shape: basketShape, basket_mtime: basketMtime,
         cache_size: _cache.size, generated_at: new Date().toISOString(),
       }, extra);
     }
@@ -618,14 +668,15 @@ export async function handler(req, res) {
       }, extra);
     }
     if (sub === '/stats' || format === 'stats') {
-      return sendJSON(res, 200, { stats: computeStats(all), source, src_meta: srcMeta }, extra);
+      return sendJSON(res, 200, { stats: computeStats(all), source, src_meta: srcMeta, basket_source: basketSource, basket_shape: basketShape }, extra);
     }
     if (sub === '/status') {
       const st = computeStats(all);
       return sendJSON(res, 200, {
         status: 'online', points: all.length,
         last_spread: st.last_spread, last_regime: st.last_regime,
-        source, generated_at: new Date().toISOString(),
+        source, basket_source: basketSource, basket_shape: basketShape,
+        generated_at: new Date().toISOString(),
       }, extra);
     }
     if (sub === '/series') {
@@ -754,7 +805,7 @@ export async function handler(req, res) {
 
     if (format === 'csv')    return sendText(res, 200, toCSV(rows), 'text/csv; charset=utf-8');
     if (format === 'series') return sendJSON(res, 200, { series: toSeries(rows), meta: { count: rows.length } }, extra);
-    if (format === 'raw')    return sendJSON(res, 200, { data: rows, source, src_meta: srcMeta }, extra);
+    if (format === 'raw')    return sendJSON(res, 200, { data: rows, source, src_meta: srcMeta, basket_source: basketSource, basket_shape: basketShape }, extra);
 
     const stats = computeStats(rows);
     const inversionPeriods = computeInversionHistory(rows);
@@ -767,6 +818,7 @@ export async function handler(req, res) {
         source: meta.source, category: meta.category, unit: meta.unit,
         total_points: all.length, returned_points: rows.length,
         upstream_source: source, upstream_meta: srcMeta,
+        basket_source: basketSource, basket_shape: basketShape, basket_mtime: basketMtime,
         generated_at: new Date().toISOString(),
       },
       series: toSeries(rows),

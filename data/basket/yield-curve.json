@@ -2,16 +2,16 @@
   "schema": "crucix.basket.v1",
   "meta": {
     "id": "yield-curve",
-    "source": "Crucix yield-curve",
-    "source_url": "local://rescan",
-    "fetched_at": "2026-09-18T21:24:17.916Z",
-    "normalized_at": "2026-09-18T21:25:57.393Z",
+    "source": "Crucix yield-curve (demo)",
+    "source_url": "local://demo",
+    "fetched_at": "2026-09-23T07:04:55.912Z",
+    "normalized_at": "2026-09-23T17:51:50.810Z",
     "collector": "collect-yield-curve.mjs",
     "license": "proprietary",
     "count": 31,
-    "granularity": "event",
+    "granularity": "daily",
     "value_unit": "percent",
-    "value_scale": null,
+    "value_scale": "10y_minus_2y",
     "value_type": "ratio",
     "value_range": [
       0,
@@ -20,146 +20,272 @@
   },
   "series": [
     {
-      "date": "2026-08-19",
-      "value": -0.01
-    },
-    {
-      "date": "2026-08-20",
-      "value": -1.22
-    },
-    {
-      "date": "2026-08-21",
-      "value": 0.51
-    },
-    {
-      "date": "2026-08-22",
-      "value": -1.19
-    },
-    {
-      "date": "2026-08-23",
-      "value": -0.39
-    },
-    {
       "date": "2026-08-24",
-      "value": 0.98
+      "value": 0.55,
+      "extra": {
+        "y10": 4.99,
+        "y2": 4.44
+      }
     },
     {
       "date": "2026-08-25",
-      "value": -1.18
+      "value": 0.78,
+      "extra": {
+        "y10": 4.53,
+        "y2": 3.75
+      }
     },
     {
       "date": "2026-08-26",
-      "value": -0.04
+      "value": -0.63,
+      "extra": {
+        "y10": 3.86,
+        "y2": 4.5
+      }
     },
     {
       "date": "2026-08-27",
-      "value": -0.15
+      "value": 0.14,
+      "extra": {
+        "y10": 4.66,
+        "y2": 4.52
+      }
     },
     {
       "date": "2026-08-28",
-      "value": -0.79
+      "value": 1.11,
+      "extra": {
+        "y10": 4.35,
+        "y2": 3.25
+      }
     },
     {
       "date": "2026-08-29",
-      "value": 0.04
+      "value": -0.04,
+      "extra": {
+        "y10": 3.88,
+        "y2": 3.92
+      }
     },
     {
       "date": "2026-08-30",
-      "value": 0.08
+      "value": 0.92,
+      "extra": {
+        "y10": 4.05,
+        "y2": 3.13
+      }
     },
     {
       "date": "2026-08-31",
-      "value": 0.95
+      "value": 0.01,
+      "extra": {
+        "y10": 4.31,
+        "y2": 4.3
+      }
     },
     {
       "date": "2026-09-01",
-      "value": 1.32
+      "value": 0.15,
+      "extra": {
+        "y10": 5,
+        "y2": 4.85
+      }
     },
     {
       "date": "2026-09-02",
-      "value": 0.69
+      "value": 1.15,
+      "extra": {
+        "y10": 4.6,
+        "y2": 3.44
+      }
     },
     {
       "date": "2026-09-03",
-      "value": 0.13
+      "value": 0.77,
+      "extra": {
+        "y10": 4.22,
+        "y2": 3.45
+      }
     },
     {
       "date": "2026-09-04",
-      "value": 0.06
+      "value": 0.97,
+      "extra": {
+        "y10": 4.05,
+        "y2": 3.09
+      }
     },
     {
       "date": "2026-09-05",
-      "value": 0.53
+      "value": 0.02,
+      "extra": {
+        "y10": 4.75,
+        "y2": 4.73
+      }
     },
     {
       "date": "2026-09-06",
-      "value": 0.11
+      "value": 0.06,
+      "extra": {
+        "y10": 3.71,
+        "y2": 3.65
+      }
     },
     {
       "date": "2026-09-07",
-      "value": -0.95
+      "value": -0.27,
+      "extra": {
+        "y10": 3.86,
+        "y2": 4.13
+      }
     },
     {
       "date": "2026-09-08",
-      "value": 0.56
+      "value": 0.27,
+      "extra": {
+        "y10": 4.25,
+        "y2": 3.98
+      }
     },
     {
       "date": "2026-09-09",
-      "value": 0.82
+      "value": 0.99,
+      "extra": {
+        "y10": 4.49,
+        "y2": 3.5
+      }
     },
     {
       "date": "2026-09-10",
-      "value": 0.53
+      "value": -0.44,
+      "extra": {
+        "y10": 3.93,
+        "y2": 4.37
+      }
     },
     {
       "date": "2026-09-11",
-      "value": 0.38
+      "value": 0.35,
+      "extra": {
+        "y10": 4.82,
+        "y2": 4.47
+      }
     },
     {
       "date": "2026-09-12",
-      "value": -0.54
+      "value": 1.36,
+      "extra": {
+        "y10": 4.76,
+        "y2": 3.4
+      }
     },
     {
       "date": "2026-09-13",
-      "value": 0.11
+      "value": 1.51,
+      "extra": {
+        "y10": 4.84,
+        "y2": 3.33
+      }
     },
     {
       "date": "2026-09-14",
-      "value": 0.56
+      "value": 0.02,
+      "extra": {
+        "y10": 4.19,
+        "y2": 4.17
+      }
     },
     {
       "date": "2026-09-15",
-      "value": 0.91
+      "value": 1.12,
+      "extra": {
+        "y10": 4.72,
+        "y2": 3.61
+      }
     },
     {
       "date": "2026-09-16",
-      "value": 0.31
+      "value": -0.76,
+      "extra": {
+        "y10": 3.64,
+        "y2": 4.4
+      }
     },
     {
       "date": "2026-09-17",
-      "value": 1.31
+      "value": 0.93,
+      "extra": {
+        "y10": 4.44,
+        "y2": 3.51
+      }
     },
     {
       "date": "2026-09-18",
-      "value": 0.38
+      "value": -0.94,
+      "extra": {
+        "y10": 3.97,
+        "y2": 4.91
+      }
+    },
+    {
+      "date": "2026-09-19",
+      "value": 1.53,
+      "extra": {
+        "y10": 4.55,
+        "y2": 3.02
+      }
+    },
+    {
+      "date": "2026-09-20",
+      "value": 0.95,
+      "extra": {
+        "y10": 4.7,
+        "y2": 3.74
+      }
+    },
+    {
+      "date": "2026-09-21",
+      "value": -0.51,
+      "extra": {
+        "y10": 4.11,
+        "y2": 4.62
+      }
+    },
+    {
+      "date": "2026-09-22",
+      "value": -0.1,
+      "extra": {
+        "y10": 3.54,
+        "y2": 3.64
+      }
+    },
+    {
+      "date": "2026-09-23",
+      "value": 0.62,
+      "extra": {
+        "y10": 4.65,
+        "y2": 4.03
+      }
     }
   ],
   "points": [],
   "regions": [
     {
       "region": "GLOBAL",
-      "value": 0.15516129032258064,
+      "value": 0.4061290322580644,
       "count": 31,
       "aggregation": "mean",
       "extra": {
-        "max": 1.32,
-        "sum": 4.81
+        "max": 1.53,
+        "sum": 12.589999999999996
       }
     }
   ],
+  "documents": [],
+  "graph": null,
   "extra": {
     "adapter": "timeseries",
-    "adapter_version": "2.0.0",
+    "adapter_version": "2.2.1",
     "unique_dates": 31,
     "unmapped_regions": [],
     "unmapped_count": 0

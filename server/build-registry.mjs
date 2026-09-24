@@ -1,18 +1,23 @@
 /**
- * server/build-registry.mjs — ГЕНЕРАТОР РЕЕСТРА CRUCIX v3.3.1
+ * server/build-registry.mjs — ГЕНЕРАТОР РЕЕСТРА CRUCIX v3.4.0
  *
  * ШАПКА-ПАСПОРТ (требование А от 20.09.2026):
  *   Создан:      scripts-командой Crucix (AI-ассистент под руководством хозяина)
  *   Принят:      20.09.2026
+ *   Обновлён:    23.09.2026 — v3.4.0 (версии модулей во всём проекте)
  *   Назначение:  генерация единого реестра Crucix из фактов файловой системы
  *   Справка RU:  docs/help/ru/api/build-registry.md
  *   Справка EN:  docs/help/en/api/build-registry.md
  *   Схема meta:  crucix.registry.generated.v1
  *
- * ТРИ СЕКЦИИ РЕЕСТРА:
+ * ТРИ СЕКЦИИ РЕЕСТРА (v3.3.1) + ОДНА НОВАЯ (v3.4.0):
  *   routes   — Layer-модули (слои карты, /api/layers/*).
  *   services — Service-модули (инфраструктура, /api/services/*).
  *   basket   — реестр корзины данных (data/basket/*.json).
+ *   modules  — НОВОЕ v3.4.0: сводка по всем .mjs проекта
+ *              (apis/sources/, apis/predict/, scripts/analyzers/,
+ *              scripts/warehouse/, scripts/collectors/, scripts/logs/, server/)
+ *              с полем version, извлечённым из шапки файла.
  *
  * КОНТРАКТЫ:
  *   LAYER (single-method):
@@ -53,23 +58,31 @@
  *  13. Генерация ВТОРОГО файла: data/registry/registry-basket.json.
  *  14. Шапка-паспорт в meta основного реестра.
  *
- * НОВОЕ в v3.3.1 (20.09.2026):
- *  15. РАСШИРЕННЫЙ сбор readers. Теперь ловятся ТРИ паттерна:
- *      - 'basket/<id>.json' (было в v3.3.0);
- *      - "basket/<id>.json" (двойные кавычки);
- *      - BASKET_DIR, '<id>.json' (переменная пути — новый паттерн).
- *      После расширения readers появятся у inflation, news, rss, rss-latest
- *      и других модулей, читающих basket через переменную BASKET_DIR.
- *  16. РАЗДЕЛЕНИЕ warnings на три категории:
- *      - basket_file_missing_static — статическая ссылка на отсутствующий файл;
- *      - basket_source_multi — meta.source содержит '+', парсер разбирает пути;
- *      - read_error / route_does_not_start_with_api / unknown_category — как было.
- *  17. РАЗБОР meta.source СО ЗНАКОМ '+'. Если meta.source = 'basket/a.json + basket/b.json',
- *      парсер разделяет по '+' и проверяет КАЖДЫЙ путь отдельно. Ложное
- *      предупреждение у unique-indicators-api (pentagon-pizza + langley-taxis)
- *      больше не возникает — оба файла на месте.
- *  18. Поле basket_readers_count в meta — сколько basket-файлов имеют хотя бы
- *      одного reader.
+ * ВОЗМОЖНОСТИ v3.3.1 (сохранены полностью):
+ *  15. РАСШИРЕННЫЙ сбор readers: 'basket/<id>.json', "basket/<id>.json",
+ *      BASKET_DIR, '<id>.json', join(BASKET_DIR, '<id>.json').
+ *  16. РАЗДЕЛЕНИЕ warnings на три категории.
+ *  17. РАЗБОР meta.source СО ЗНАКОМ '+'.
+ *  18. Поле basket_readers_count в meta.
+ *
+ * НОВОЕ в v3.4.0 (23.09.2026):
+ *  19. Функция extractVersionFromHeader(source) — 6 паттернов:
+ *      // Версия: X.Y.Z  |  * Версия X.Y.Z  |  export const version = 'X.Y.Z'
+ *      |  const (ENGINE_)?VERSION = 'X.Y.Z'.
+ *      Ограничение: только первые 200 строк файла (шапка).
+ *  20. Секция modules — сводка по всем .mjs в 7 директориях проекта:
+ *      apis/sources/, apis/predict/, scripts/analyzers/, scripts/warehouse/,
+ *      scripts/collectors/, scripts/logs/, server/.
+ *      Каждая запись: { version, has_header_version, dir }.
+ *  21. Поле version в записях routes — из шапки соответствующего *-api.mjs.
+ *  22. meta.total_modules_all, meta.modules_with_version, meta.modules_without_version,
+ *      meta.versions_summary (распределение по major).
+ *  23. meta.versioning_policy — описание трёх категорий модулей по версионированию
+ *      (факт реальности проекта на 23.09.2026).
+ *
+ * ПРИНЦИП (правило хозяина 23.09.2026): версии модулей РАЗНЫЕ ПО СМЫСЛУ —
+ * это норма (semver каждого модуля по своей истории). Реестр ФИКСИРУЕТ
+ * фактические версии, НЕ синхронизирует их. Один источник правды.
  */
 
 import { promises as fs, watch } from 'fs';
@@ -89,6 +102,17 @@ const SCRIPT_PATH  = 'server/build-registry.mjs';
 const SCHEMA_VER   = 'crucix.registry.generated.v1';
 const BASKET_SCHEMA_VER = 'crucix.registry.basket.v1';
 
+// НОВОЕ v3.4.0: директории для сканирования секции modules.
+const MODULE_DIRS = [
+  { path: join(PROJECT_ROOT, 'apis', 'sources'),       label: 'apis/sources' },
+  { path: join(PROJECT_ROOT, 'apis', 'predict'),       label: 'apis/predict' },
+  { path: join(PROJECT_ROOT, 'scripts', 'analyzers'),  label: 'scripts/analyzers' },
+  { path: join(PROJECT_ROOT, 'scripts', 'warehouse'),  label: 'scripts/warehouse' },
+  { path: join(PROJECT_ROOT, 'scripts', 'collectors'), label: 'scripts/collectors' },
+  { path: join(PROJECT_ROOT, 'scripts', 'logs'),       label: 'scripts/logs' },
+  { path: join(PROJECT_ROOT, 'server'),                label: 'server' },
+];
+
 const CHECK_MODE = process.argv.includes('--check');
 const WATCH_MODE = process.argv.includes('--watch');
 
@@ -106,7 +130,7 @@ const BASKET_REQUIRED_META = [
 ];
 
 // ============================================================
-//  ИЗВЛЕЧЕНИЕ ПОЛЕЙ (без изменений с v3.2.0)
+//  ИЗВЛЕЧЕНИЕ ПОЛЕЙ (без изменений с v3.3.1)
 // ============================================================
 
 function extractStringConst(source, name) {
@@ -183,25 +207,53 @@ function hasHandler(source) {
 }
 
 // ============================================================
-//  РАЗБОР META.SOURCE (новое в v3.3.1)
+//  НОВОЕ v3.4.0: ИЗВЛЕЧЕНИЕ ВЕРСИИ ИЗ ШАПКИ МОДУЛЯ
 // ============================================================
 
 /**
- * Разбирает meta.source и извлекает список basket-имён файлов.
+ * Извлекает версию модуля из шапки-комментария или экспортируемой константы.
  *
- * Примеры:
- *   'basket/acled.json' → ['acled.json']
- *   'basket/pentagon-pizza.json + basket/langley-taxis.json' → ['pentagon-pizza.json', 'langley-taxis.json']
- *   'FRED GSCPI + Shipping Indicators' → [] (не basket-пути)
+ * Паттерн 1: // Версия: X.Y.Z        (однострочный комментарий с двоеточием)
+ * Паттерн 2: // Версия X.Y.Z         (однострочный комментарий без двоеточия)
+ * Паттерн 3: * Версия X.Y.Z. Принят ... (многострочный комментарий)
+ * Паттерн 4: export const version = 'X.Y.Z'
+ * Паттерн 5: const VERSION = 'X.Y.Z'
+ * Паттерн 6: const ENGINE_VERSION = 'X.Y.Z' (или любой *VERSION)
  *
- * Возвращает { paths: [...], isBasket: true|false }.
- * isBasket = true, если хотя бы один путь начинается с 'basket/'.
+ * Возвращает строку 'X.Y.Z' или null, если версия не найдена.
+ * Ищет только в первых 200 строках (шапка файла), чтобы не поймать
+ * случайное совпадение внутри тела модуля.
  */
+function extractVersionFromHeader(source) {
+  const header = source.split('\n').slice(0, 200).join('\n');
+
+  // Паттерн 1, 2: // Версия: X.Y.Z  или  // Версия X.Y.Z
+  let m = header.match(/\/\/\s*Версия[:\s]+([0-9]+\.[0-9]+\.[0-9]+)/);
+  if (m) return m[1];
+
+  // Паттерн 3: * Версия X.Y.Z
+  m = header.match(/\*\s*Версия\s+([0-9]+\.[0-9]+\.[0-9]+)/);
+  if (m) return m[1];
+
+  // Паттерн 4: export const version = 'X.Y.Z'
+  m = header.match(/export\s+const\s+version\s*=\s*['"`]([0-9]+\.[0-9]+\.[0-9]+)/);
+  if (m) return m[1];
+
+  // Паттерн 5, 6: const (ENGINE_)?VERSION = 'X.Y.Z'
+  m = header.match(/(?:const|let|var)\s+(?:[A-Z_]*VERSION|[A-Z_]+_VERSION)\s*=\s*['"`]([0-9]+\.[0-9]+\.[0-9]+)/);
+  if (m) return m[1];
+
+  return null;
+}
+
+// ============================================================
+//  РАЗБОР META.SOURCE (v3.3.1)
+// ============================================================
+
 function parseMetaSource(source) {
   if (typeof source !== 'string' || source.length === 0) {
     return { paths: [], isBasket: false };
   }
-  // Разбиваем по '+' и по ',' (оба встречаются как разделители).
   const parts = source.split(/[+,]/).map(s => s.trim()).filter(Boolean);
   const paths = [];
   let isBasket = false;
@@ -216,7 +268,7 @@ function parseMetaSource(source) {
 }
 
 // ============================================================
-//  СКАНИРОВАНИЕ МОДУЛЕЙ (расширено в v3.3.1)
+//  СКАНИРОВАНИЕ МОДУЛЕЙ (routes/services) — v3.3.1
 // ============================================================
 
 function isOfficial(filename) {
@@ -227,37 +279,15 @@ function isOfficial(filename) {
   return true;
 }
 
-/**
- * Извлекает из источника модуля все ссылки на basket-файлы.
- *
- * Паттерн 1 (v3.3.0): строковые литералы 'basket/<id>.json' или "basket/<id>.json"
- * Паттерн 2 (v3.3.1): строковые литералы BASKET_DIR, '<id>.json' или "…"
- *
- * Динамические чтения (join(BASKET_DIR, filename)) не обнаруживаются статически
- * и остаются вне readers — это не ошибка, а ограничение метода.
- */
 function extractBasketRefs(source) {
   const refs = new Set();
-
-  // Паттерн 1: 'basket/<id>.json' в любых кавычках.
-  const re1 = /['"`](?:data\/)?basket\/([a-z0-9_\-]+)\.json['"`]/gi;
   let m;
-  while ((m = re1.exec(source)) !== null) {
-    refs.add(m[1]);
-  }
-
-  // Паттерн 2: BASKET_DIR, '<id>.json' или BASKET_DIR, "<id>.json"
+  const re1 = /['"`](?:data\/)?basket\/([a-z0-9_\-]+)\.json['"`]/gi;
+  while ((m = re1.exec(source)) !== null) refs.add(m[1]);
   const re2 = /BASKET_DIR\s*,\s*['"`]([a-z0-9_\-]+)\.json['"`]/gi;
-  while ((m = re2.exec(source)) !== null) {
-    refs.add(m[1]);
-  }
-
-  // Паттерн 3: join(BASKET_DIR, '<id>.json') или join(BASKET_DIR, "<id>.json")
+  while ((m = re2.exec(source)) !== null) refs.add(m[1]);
   const re3 = /join\s*\(\s*BASKET_DIR\s*,\s*['"`]([a-z0-9_\-]+)\.json['"`]/gi;
-  while ((m = re3.exec(source)) !== null) {
-    refs.add(m[1]);
-  }
-
+  while ((m = re3.exec(source)) !== null) refs.add(m[1]);
   return Array.from(refs);
 }
 
@@ -280,11 +310,12 @@ async function scanModules() {
     try { source = await fs.readFile(fullPath, 'utf8'); }
     catch (e) { warnings.push({ file, reason: 'read_error', message: e.message }); continue; }
 
-    const route  = extractStringConst(source, 'route');
-    const method = extractStringConst(source, 'method');
+    const route   = extractStringConst(source, 'route');
+    const method  = extractStringConst(source, 'method');
     const methods = extractStringArray(source, 'methods');
-    const meta   = extractMeta(source) || {};
+    const meta    = extractMeta(source) || {};
     const handlerOk = hasHandler(source);
+    const version = extractVersionFromHeader(source); // НОВОЕ v3.4.0
 
     const moduleId = file.replace(/\.mjs$/, '');
 
@@ -304,6 +335,7 @@ async function scanModules() {
     const entry = { moduleId, file, route, meta, kind };
     if (methods) entry.methods = methods;
     if (method)  entry.method = method.toUpperCase();
+    if (version) entry.version = version; // НОВОЕ v3.4.0
 
     if (kind === 'service') {
       if (meta.category && !ALLOWED_CATEGORIES.includes(meta.category)) {
@@ -319,7 +351,6 @@ async function scanModules() {
       if (parsed.isBasket) {
         const missing = parsed.paths.filter(p => !basketFiles.has(p));
         if (missing.length === parsed.paths.length && parsed.paths.length > 0) {
-          // Ни одного из указанных файлов нет.
           warnings.push({
             file,
             reason: 'basket_file_missing_static',
@@ -327,7 +358,6 @@ async function scanModules() {
             basket_expected: parsed.paths,
           });
         } else if (missing.length > 0) {
-          // Часть есть, часть нет.
           warnings.push({
             file,
             reason: 'basket_file_missing_static',
@@ -336,15 +366,92 @@ async function scanModules() {
             basket_found: parsed.paths.filter(p => basketFiles.has(p)),
           });
         }
-        // Если все найдены — предупреждения нет.
-        // Случай multi (meta.source содержит '+' и все пути найдены) —
-        // это НЕ предупреждение, это корректная работа с несколькими файлами.
       }
       layers.push(entry);
     }
   }
 
   return { layers, services, skipped, warnings, basketReaders };
+}
+
+// ============================================================
+//  НОВОЕ v3.4.0: СКАНИРОВАНИЕ ВСЕХ МОДУЛЕЙ ПРОЕКТА (для секции modules)
+// ============================================================
+
+/**
+ * Рекурсивно собирает все .mjs файлы в директории (глубина ограничена 3 уровнями).
+ * Пропускает служебные файлы (начинающиеся с точки).
+ * Возвращает отсортированный массив абсолютных путей.
+ */
+async function collectMjsFiles(rootDir, maxDepth = 3) {
+  const result = [];
+  const walk = async (dir, depth) => {
+    if (depth > maxDepth) return;
+    let entries = [];
+    try { entries = await fs.readdir(dir, { withFileTypes: true }); } catch { return; }
+    for (const e of entries) {
+      if (e.isFile() && e.name.endsWith('.mjs') && !e.name.startsWith('.')) {
+        result.push(join(dir, e.name));
+      } else if (e.isDirectory() && !e.name.startsWith('.')) {
+        await walk(join(dir, e.name), depth + 1);
+      }
+    }
+  };
+  await walk(rootDir, 1);
+  return result.sort();
+}
+
+/**
+ * Сканирует все MODULE_DIRS, извлекает версии, возвращает:
+ *   { modules: {relativePath: {version, has_header_version, dir}}, summary: {...} }
+ *
+ * Записи с версией: version = 'X.Y.Z', has_header_version = true.
+ * Записи без версии: version = null, has_header_version = false.
+ *
+ * by_major: распределение по мажорной версии, только для файлов с версией.
+ */
+async function scanAllModules() {
+  const modules = {};
+  let withVersion = 0;
+  let withoutVersion = 0;
+  const byMajor = {};
+
+  for (const { path: dir, label } of MODULE_DIRS) {
+    let files = [];
+    try { files = await collectMjsFiles(dir, 3); } catch { continue; }
+
+    for (const fullPath of files) {
+      let source = '';
+      try { source = await fs.readFile(fullPath, 'utf8'); } catch { continue; }
+
+      const version = extractVersionFromHeader(source);
+      const relativePath = fullPath.replace(PROJECT_ROOT + '/', '');
+
+      modules[relativePath] = {
+        version: version || null,
+        has_header_version: version !== null,
+        dir: label,
+      };
+
+      if (version) {
+        withVersion++;
+        const major = version.split('.')[0];
+        byMajor[major] = (byMajor[major] || 0) + 1;
+      } else {
+        withoutVersion++;
+      }
+    }
+  }
+
+  return {
+    modules,
+    summary: {
+      total: withVersion + withoutVersion,
+      with_version: withVersion,
+      without_version: withoutVersion,
+      by_major: byMajor,
+    },
+  };
 }
 
 // ============================================================
@@ -403,9 +510,7 @@ async function scanBasket(basketReaders) {
     else if (data && Array.isArray(data.regions)) seriesLen = data.regions.length;
 
     const status = classifyBasketStatus(data, hasMeta);
-
     const readers = basketReaders.has(id) ? Array.from(basketReaders.get(id)).sort() : [];
-
     const writers = meta && typeof meta.collector === 'string' && meta.collector.length > 0
       ? [meta.collector] : [];
 
@@ -452,6 +557,7 @@ function indexByRoute(modules, label) {
     const entry = { moduleId: m.moduleId, file: m.file, meta: m.meta };
     if (m.methods) entry.methods = m.methods;
     if (m.method)  entry.method = m.method;
+    if (m.version) entry.version = m.version; // НОВОЕ v3.4.0
     byRoute[m.route] = entry;
 
     const wildcardRoute = m.route.endsWith('/*') ? m.route : (m.route + '/*');
@@ -462,7 +568,7 @@ function indexByRoute(modules, label) {
   return { byRoute, duplicates };
 }
 
-function buildRegistry(scan, basketScan) {
+function buildRegistry(scan, basketScan, allModulesScan) {
   const layersIdx = indexByRoute(scan.layers, 'routes');
   const servicesIdx = indexByRoute(scan.services, 'services');
 
@@ -484,7 +590,6 @@ function buildRegistry(scan, basketScan) {
     }
   }
 
-  // Сколько basket-файлов имеют хотя бы одного reader (v3.3.1).
   let basketReadersCount = 0;
   for (const it of basketScan.items) {
     if (it.readers && it.readers.length > 0) basketReadersCount++;
@@ -495,7 +600,7 @@ function buildRegistry(scan, basketScan) {
       schema_version: SCHEMA_VER,
       generated_by: SCRIPT_PATH,
       generated_at: new Date().toISOString(),
-      description: 'Единый реестр Crucix: маршруты API (layers + services) и корзина данных (basket).',
+      description: 'Единый реестр Crucix: маршруты API (layers + services), корзина данных (basket), версии всех модулей (modules).',
       help_ru_link: 'docs/help/ru/api/build-registry.md',
       help_en_link: 'docs/help/en/api/build-registry.md',
       source_dir: 'apis/sources',
@@ -518,10 +623,28 @@ function buildRegistry(scan, basketScan) {
 
       layer_by_category: layerByCategory,
       services_by_method: servicesByMethod,
+
+      // НОВОЕ v3.4.0: сводка по всем модулям проекта.
+      total_modules_all: allModulesScan.summary.total,
+      modules_with_version: allModulesScan.summary.with_version,
+      modules_without_version: allModulesScan.summary.without_version,
+      versions_summary: allModulesScan.summary.by_major,
+
+      // НОВОЕ v3.4.0: описание трёх категорий версионирования (факт реальности на 23.09.2026).
+      versioning_policy: {
+        apis_sources: 'Контракт CRUCIX v2. Версия модуля в шапке НЕ указывается. Единый стиль: "КОНТРАКТ CRUCIX v2" + описание источника. Semver модуля не применяется.',
+        scripts_collectors: 'Стандарт "* Версия X.Y.Z. Принят <дата>" в шапке. Semver модуля по истории изменений.',
+        scripts_warehouse: 'Стандарт "* Версия X.Y.Z. Принят <дата>" в шапке. Semver модуля по истории изменений.',
+        scripts_analyzers: 'Стандарт "* Версия X.Y.Z. Принят <дата>" в шапке. Semver модуля по истории изменений.',
+        apis_predict: 'Стандарт "// Версия: X.Y.Z" в шапке или ENGINE_VERSION = "..." в теле. Semver модуля.',
+        scripts_logs: 'Версия в шапке не указывается. Модули инфраструктуры логирования.',
+        server: 'Версия в шапке не указывается (кроме build-registry.mjs — версия в первой строке комментария).',
+      },
     },
     routes: layersIdx.byRoute,
     services: servicesIdx.byRoute,
     basket: basketScan.items,
+    modules: allModulesScan.modules, // НОВОЕ v3.4.0
     skipped: scan.skipped,
     duplicates: [...layersIdx.duplicates, ...servicesIdx.duplicates],
     warnings: scan.warnings,
@@ -534,49 +657,34 @@ function buildRegistry(scan, basketScan) {
 
 function printSummary(registry) {
   const m = registry.meta;
-  console.log('=== BUILD REGISTRY v3.3.1 ===\n');
-  console.log(`Просканировано файлов:     ${m.total_scanned}
-м. total_scanned}
-`);
-  console.log(`Модулей с route+handler:   ${m.total_modules}
-м. total_modules}
-`);
-  console.log(`  ├─ Layer (карта):        ${m.total_layers}
-m. total_layers}
-  →  ${m.total_routes}
-м. total_routes}
- маршрутов (точный + wildcard)`);
-  console.log(`  └─ Service (инфра):      ${m.total_services}
-м. total_services}
-  →  ${m.total_service_routes}
-м. total_service_routes}
- маршрутов (точный + wildcard)`);
-  console.log(`Пропущено:                 ${m.skipped}
-m. skipped}
-`);
-  console.log(`Дубликатов маршрутов:      ${m.duplicates}
-m. дублирует}
-`);
-  console.log(`Предупреждений:            ${m.warnings}
-м. предупреждения}
-`);
+  console.log('=== BUILD REGISTRY v3.4.0 ===\n');
+  console.log(`Просканировано файлов:     ${m.total_scanned}`);
+  console.log(`Модулей с route+handler:   ${m.total_modules}`);
+  console.log(`  ├─ Layer (карта):        ${m.total_layers}  →  ${m.total_routes} маршрутов (точный + wildcard)`);
+  console.log(`  └─ Service (инфра):      ${m.total_services}  →  ${m.total_service_routes} маршрутов (точный + wildcard)`);
+  console.log(`Пропущено:                 ${m.skipped}`);
+  console.log(`Дубликатов маршрутов:      ${m.duplicates}`);
+  console.log(`Предупреждений:            ${m.warnings}`);
   console.log('');
   console.log(`КОРЗИНА (data/basket/):`);
-  console.log(`  Всего файлов:            ${m.total_basket_files}
-м. total_basket_files}
-`);
-  console.log(`  С полным meta:           ${m.total_basket_with_meta}
-m. total_basket_with_meta}
-`);
-  console.log(`  Без полного meta:        ${m.total_basket_without_meta}
-м. total_basket_without_meta}
-`);
-  console.log(`  С readers (кто-то читает): ${m.total_basket_with_readers}
-m. total_basket_with_readers}
-`);
+  console.log(`  Всего файлов:            ${m.total_basket_files}`);
+  console.log(`  С полным meta:           ${m.total_basket_with_meta}`);
+  console.log(`  Без полного meta:        ${m.total_basket_without_meta}`);
+  console.log(`  С readers (кто-то читает): ${m.total_basket_with_readers}`);
   console.log(`  По статусу:`);
   for (const [st, n] of Object.entries(m.basket_by_status).sort((a,b)=>b[1]-a[1])) {
     console.log(`    ${st.padEnd(12)} ${n}`);
+  }
+  console.log('');
+  console.log(`ВСЕ МОДУЛИ ПРОЕКТА (секция modules, 7 директорий):`);
+  console.log(`  Всего .mjs файлов:       ${m.total_modules_all}`);
+  console.log(`  С версией в шапке:       ${m.modules_with_version}`);
+  console.log(`  Без версии в шапке:      ${m.modules_without_version}`);
+  if (Object.keys(m.versions_summary).length > 0) {
+    console.log(`  Распределение по major:`);
+    for (const [major, n] of Object.entries(m.versions_summary).sort((a,b)=>parseInt(b[0])-parseInt(a[0]))) {
+      console.log(`    v${major}.x.x             ${n}`);
+    }
   }
   console.log('');
 
@@ -608,11 +716,7 @@ m. total_basket_with_readers}
     console.log('Предупреждения (первые 20):');
     for (const w of registry.warnings.slice(0, 20)) {
       const extra = w.basket ? ' ' + w.basket : (w.category ? ' ' + w.category : (w.route ? ' ' + w.route : ''));
-      console.log(`  ${w.file}
-w. file}
-  [${w.reason}
-w. reason}
-]${extra}`);
+      console.log(`  ${w.file}  [${w.reason}]${extra}`);
     }
     console.log('');
   }
@@ -644,7 +748,8 @@ function buildBasketRegistry(basketScan) {
 async function buildOnce() {
   const scan = await scanModules();
   const basketScan = await scanBasket(scan.basketReaders);
-  const registry = buildRegistry(scan, basketScan);
+  const allModulesScan = await scanAllModules(); // НОВОЕ v3.4.0
+  const registry = buildRegistry(scan, basketScan, allModulesScan);
   const json = JSON.stringify(registry, null, 2);
   const sizeKB = (json.length / 1024).toFixed(1);
 
@@ -682,7 +787,7 @@ async function main() {
     return;
   }
 
-  console.log('[watch] следим за apis/sources/*.mjs и data/basket/ — Ctrl+C для выхода');
+  console.log('[watch] следим за apis/sources/*.mjs, data/basket/ и MODULE_DIRS — Ctrl+C для выхода');
   await buildOnce();
 
   let timer = null;
@@ -692,6 +797,9 @@ async function main() {
   };
   watch(API_SOURCES, { persistent: true }, debounce);
   watch(BASKET_DIR, { persistent: true }, debounce);
+  for (const { path } of MODULE_DIRS) {
+    try { watch(path, { persistent: true }, debounce); } catch {}
+  }
 }
 
 main().catch(e => { console.error('ОШИБКА:', e); process.exit(1); });

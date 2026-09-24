@@ -1,65 +1,49 @@
-# shipping-api
+# shipping — Морской трекинг и детектор тёмных судов
 
-## 📋 О МОДУЛЕ / ABOUT
-
+## 📋 Описание
 **Русский:**
-API для работы с морскими данными.
+Модуль **shipping-api** отдаёт морской трекинг AIS-судов с детектором тёмных судов (vessels с выключенным AIS или без сигнала). Отображает хотспоты: Суэц, Босфор, Ормуз, Малакка, Баб-эль-Мандеб.
 
 **English:**
-API for working with maritime data.
+The **shipping-api** module provides AIS vessel tracking with dark vessel detection (vessels with disabled AIS or no signal). Displays hotspots: Suez, Bosphorus, Hormuz, Malacca, Bab-el-Mandeb.
+
+## 🎯 Назначение
+- Отображение морских судов на карте.
+- Детектор тёмных судов (dark fleet).
+- Мониторинг морских хотспотов.
+- Анализ морской активности.
+
+## 🚀 Использование
+- Страница: `/shipping` (или через панель слоёв на `/geo-map`)
+- API-эндпоинт: `GET /api/layers/shipping`
+- Подпути: `?format=json|csv|series|stats|raw`
+- Фильтры: `?type=`, `?flag=`, `?dark=true`, `?hotspot=`, `?limit=`
+
+## 📍 Местоположение
+| Файл | Путь |
+|------|------|
+| API-модуль | `apis/sources/shipping-api.mjs` |
+| Корзина | `data/basket/shipping.json` |
+| Сборщик | `scripts/collectors/collect-shipping.mjs` |
+| Help | `docs/help/ru/shipping.md` |
+
+## 📊 Параметры слоя
+| Параметр | Значение |
+|----------|----------|
+| Route | `/api/layers/shipping` |
+| Method | `GET` |
+| Category | `transport` |
+| Icon | 🚢 |
+| Color | `#0891b2` |
+| VizType | `marker` |
+| Cache | 300 сек |
+| Unit | `vessels` |
+
+## ⚠️ Статус
+**Ожидает источник данных.** Basket-файл `data/basket/shipping.json` отсутствует — модуль зарегистрирован в реестре, синтаксически корректен, но не имеет данных. Связано с задачей `sources-001`. Смежные файлы: `data/basket/shipping-lanes.json`, `data/basket/shipping-route.json` — другие аспекты морской активности.
 
 ---
 
-## 🎯 НАЗНАЧЕНИЕ / PURPOSE
-
-**Русский:**
-Модуль `shipping-api` относится к категории **Интеграции / Integrations**.
-
-**English:**
-Module `shipping-api` belongs to the **Интеграции / Integrations** category.
-
----
-
-## 🚀 КАК ИСПОЛЬЗОВАТЬ / HOW TO USE
-
-**Русский:**
-1. Модуль доступен через API: `/api/shipping-api/`
-2. Для проверки статуса: `GET /api/shipping-api/status`
-3. Для получения данных: `GET /api/shipping-api/`
-
-**English:**
-1. Module is available via API: `/api/shipping-api/`
-2. For status check: `GET /api/shipping-api/status`
-3. For data retrieval: `GET /api/shipping-api/`
-
----
-
-## 📍 МЕСТОПОЛОЖЕНИЕ / LOCATION
-
-| Файл / File | Путь / Path |
-|-------------|-------------|
-| API | `apis/sources/shipping-api.mjs` |
-| Страница / Page | /shipping-api |
-| Справка / Help | `docs/help/shipping-api.md` |
-
----
-
-## 📊 СТАТУС / STATUS
-
-**Русский:**
-🟡 Неактивен (есть в папке) / Inactive (in folder)
-
-**English:**
-🟡 Inactive (есть в папке) / Inactive (in folder)
-
----
-
-## 🔗 СВЯЗАННЫЕ МОДУЛИ / RELATED MODULES
-
-- [Связанные модули будут добавлены позже]
-
----
-
-**Версия:** 1.0
-**Дата обновления:** 2026-08-17
-**Категория:** Интеграции / Integrations
+**Статус:** 🟡 Ожидает источник данных
+**Версия:** 2.0
+**Обновлено:** 2026-09-23

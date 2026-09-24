@@ -1,33 +1,43 @@
-// apis/predict/anomaly_detection.mjs
+// apis/predict/models/anomaly_detection.mjs
 // Anomaly Detection для прогностического слоя Crucix
 // Пять методов + ансамбль: Isolation Forest, LOF, Mahalanobis, One-Class SVM, DBSCAN
 //
+// Версия: 7.0.0 (синтез 23.09.2026)
+// Источник синтеза: apis/predict/anomaly_detection.mjs (корень, v6.0.0, 787 строк) +
+//                   apis/predict/models/anomaly_detection.mjs (models/, v6.0.0, 930 строк)
+// Правило #1070: объединение всего функционала обоих, без усечения, без выбора.
+//
+// Различия, устранённые синтезом:
+//   - matMul, matTranspose (мёртвый код в models/, но сохраняется по правилу «не удалять наработки»)
+//   - DBSCANOutlier.predictOne() (заглушка из models/, сохранена с явным комментарием)
+//   - anomalies[].details (расширенная информация из models/)
+//   - Путь сохранения: три уровня вверх (из models/ → Crucix/runs/predictions/)
+//
 // Теоретическая основа:
 //   Isolation Forest:
-//     - Liu, F. T., Ting, K. M., & Zhou, Z. H. (2008). "Isolation Forest".
-//       ICDM 2008.
-//     - Liu, F. T., Ting, K. M., & Zhou, Z. H. (2012). "Isolation-Based
-//       Anomaly Detection". ACM TKDD.
+//     - Liu, F. T., Ting, K. M., & Zhou, Z. H. (2008). "Isolation Forest". ICDM 2008.
+//     - Liu, F. T., Ting, K. M., & Zhou, Z. H. (2012). "Isolation-Based Anomaly Detection". ACM TKDD.
 //
 //   LOF (Local Outlier Factor):
 //     - Breunig, M. M., Kriegel, H. P., Ng, R. T., & Sander, J. (2000).
 //       "LOF: Identifying Density-Based Local Outliers". SIGMOD 2000.
 //
 //   Mahalanobis:
-//     - Mahalanobis, P. C. (1936). "On the generalised distance in
-//       statistics". Proceedings of the National Institute of Sciences
-//       of India.
+//     - Mahalanobis, P. C. (1936). "On the generalised distance in statistics".
+//       Proceedings of the National Institute of Sciences of India.
 //
 //   One-Class SVM (упрощённый через RBF):
-//     - Schölkopf, B., et al. (2001). "Estimating the support of a
-//       high-dimensional distribution". Neural Computation.
+//     - Schölkopf, B., et al. (2001). "Estimating the support of a high-dimensional
+//       distribution". Neural Computation.
 //
 //   DBSCAN:
-//     - Ester, M., Kriegel, H. P., Sander, J., & Xu, X. (1996).
-//       "A density-based algorithm for discovering clusters in large
-//       spatial databases with noise". KDD 1996.
+//     - Ester, M., Kriegel, H. P., Sander, J., & Xu, X. (1996). "A density-based
+//       algorithm for discovering clusters in large spatial databases with noise". KDD 1996.
 //
-// Версия: 6.0.0
+// Ансамбль:
+//   - Голосование пяти детекторов (majority >= 2).
+//   - Взвешенный скор по каждому детектору.
+//   - Объяснение аномалий через z-score признаков.
 
 import { writeFileSync, mkdirSync, existsSync, readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -98,6 +108,8 @@ function standardize(X) {
 
 /**
  * Матричное умножение (n×m · m×p).
+ * Сохранено из models/ по правилу «не удалять наработки».
+ * В текущей версии не вызывается, но доступно для расширения.
  */
 function matMul(A, B) {
   const n = A.length;
@@ -116,12 +128,16 @@ function matMul(A, B) {
   return C;
 }
 
+/**
+ * Транспонирование матрицы.
+ * Сохранено из models/ по правилу «не удалять наработки».
+ */
 function matTranspose(A) {
   return A[0].map((_, i) => A.map(row => row[i]));
 }
 
 /**
- * Обращение матрицы через Gauss-Jordan.
+ * Обращение матрицы через Gauss-Jordan с частичным пивотированием.
  */
 function matInverse(A) {
   const n = A.length;
@@ -131,7 +147,6 @@ function matInverse(A) {
   ]);
 
   for (let i = 0; i < n; i++) {
-    // Pivot
     let maxRow = i;
     for (let k = i + 1; k < n; k++) {
       if (Math.abs(M[k][i]) > Math.abs(M[maxRow][i])) maxRow = k;
@@ -145,9 +160,7 @@ function matInverse(A) {
     for (let k = 0; k < n; k++) {
       if (k === i) continue;
       const factor = M[k][i];
-      for (let j = 0; j < 2 * n; j++) {
-        M[k][j] -= factor * M[i][j];
-      }
+      for (let j = 0; j < 2 * n; j++) M[k][j] -= factor * M[i][j];
     }
   }
 
@@ -155,7 +168,7 @@ function matInverse(A) {
 }
 
 /**
- * Ковариационная матрица.
+ * Ковариационная матрица + средние.
  */
 function covarianceMatrix(X) {
   const n = X.length;
@@ -183,9 +196,6 @@ function covarianceMatrix(X) {
 // 1. ISOLATION FOREST
 // ═══════════════════════════════════════════════════════════════════
 
-/**
- * Узел изоляционного дерева.
- */
 class ITreeNode {
   constructor(depth, size) {
     this.depth = depth;
@@ -201,16 +211,9 @@ class ITreeNode {
   }
 }
 
-/**
- * Isolation Tree — рекурсивное разбиение с случайным выбором
- * признака и случайным порогом между min и max.
- */
 function buildITree(X, depth, maxDepth) {
   const node = new ITreeNode(depth, X.length);
-
-  if (depth >= maxDepth || X.length <= 1) {
-    return node;
-  }
+  if (depth >= maxDepth || X.length <= 1) return node;
 
   const d = X[0].length;
   const feature = Math.floor(Math.random() * d);
@@ -218,9 +221,7 @@ function buildITree(X, depth, maxDepth) {
   const minV = Math.min(...values);
   const maxV = Math.max(...values);
 
-  if (minV === maxV) {
-    return node;
-  }
+  if (minV === maxV) return node;
 
   const threshold = minV + Math.random() * (maxV - minV);
   const left = [];
@@ -231,45 +232,27 @@ function buildITree(X, depth, maxDepth) {
     else right.push(row);
   }
 
-  if (left.length === 0 || right.length === 0) {
-    return node;
-  }
+  if (left.length === 0 || right.length === 0) return node;
 
   node.feature = feature;
   node.threshold = threshold;
   node.left = buildITree(left, depth + 1, maxDepth);
   node.right = buildITree(right, depth + 1, maxDepth);
-
   return node;
 }
 
-/**
- * Длина пути точки в дереве (усреднённая до листа).
- */
 function pathLength(x, node, depth = 0) {
-  if (node.isLeaf) {
-    return depth + cFactor(node.size);
-  }
-  if (x[node.feature] < node.threshold) {
-    return pathLength(x, node.left, depth + 1);
-  }
+  if (node.isLeaf) return depth + cFactor(node.size);
+  if (x[node.feature] < node.threshold) return pathLength(x, node.left, depth + 1);
   return pathLength(x, node.right, depth + 1);
 }
 
-/**
- * Фактор коррекции для незавершённых узлов:
- * c(n) = 2·H(n-1) - 2·(n-1)/n
- * где H(k) ≈ ln(k) + γ (Euler-Mascheroni constant).
- */
 function cFactor(n) {
   if (n <= 1) return 0;
   if (n === 2) return 1;
   return 2 * (Math.log(n - 1) + 0.5772156649) - 2 * (n - 1) / n;
 }
 
-/**
- * Isolation Forest.
- */
 class IsolationForest {
   constructor(config = {}) {
     this.nTrees = config.nTrees || 100;
@@ -280,16 +263,12 @@ class IsolationForest {
     this.trained = false;
   }
 
-  /**
-   * Обучение.
-   */
   fit(X) {
     if (X.length < 2) {
       this.trees = [];
       this.trained = false;
       return this;
     }
-
     const n = X.length;
     const sampleSize = Math.min(this.sampleSize, n);
     const maxDepth = Math.ceil(Math.log2(sampleSize));
@@ -297,7 +276,6 @@ class IsolationForest {
 
     this.trees = [];
     for (let i = 0; i < this.nTrees; i++) {
-      // Bootstrap sample
       const sample = [];
       for (let j = 0; j < sampleSize; j++) {
         sample.push(X[Math.floor(Math.random() * n)]);
@@ -305,18 +283,12 @@ class IsolationForest {
       this.trees.push(buildITree(sample, 0, maxDepth));
     }
 
-    // Вычисление порога по обучающим данным
     const scores = X.map(x => this._score(x));
     this.threshold = quantile(scores, 1 - this.contamination);
     this.trained = true;
-
     return this;
   }
 
-  /**
-   * Anomaly score s(x, n) = 2^(-E[h(x)] / c(n)).
-   * > 0.5 — аномалия, < 0.5 — норма.
-   */
   _score(x) {
     if (this.trees.length === 0) return 0.5;
     const avgPath = mean(this.trees.map(t => pathLength(x, t)));
@@ -324,21 +296,11 @@ class IsolationForest {
     return Math.pow(2, -avgPath / Math.max(c, 1e-10));
   }
 
-  /**
-   * Предсказание одной точки.
-   */
   predictOne(x) {
     const score = this._score(x);
-    return {
-      score,
-      isAnomaly: score > this.threshold,
-      threshold: this.threshold,
-    };
+    return { score, isAnomaly: score > this.threshold, threshold: this.threshold };
   }
 
-  /**
-   * Пакетное предсказание.
-   */
   predict(X) {
     return X.map(x => this.predictOne(x));
   }
@@ -348,17 +310,6 @@ class IsolationForest {
 // 2. LOCAL OUTLIER FACTOR (LOF)
 // ═══════════════════════════════════════════════════════════════════
 
-/**
- * LOF: сравнение локальной плотности точки с плотностью её соседей.
- *
- * k-distance(p) = расстояние до k-го ближайшего соседа
- * N_k(p) = все точки в пределах k-distance
- * reach-dist_k(p, o) = max(k-distance(o), d(p, o))
- * lrd_k(p) = 1 / mean(reach-dist_k(p, o)) для o ∈ N_k(p)
- * LOF_k(p) = mean(lrd_k(o) / lrd_k(p)) для o ∈ N_k(p)
- *
- * LOF ≈ 1 — норма, LOF > 1.5 — аномалия.
- */
 class LocalOutlierFactor {
   constructor(config = {}) {
     this.k = config.k || 20;
@@ -370,23 +321,17 @@ class LocalOutlierFactor {
     this.threshold = 1.5;
   }
 
-  /**
-   * Обучение.
-   */
   fit(X) {
     this.X = X;
     const n = X.length;
     const k = Math.min(this.k, n - 1);
-
     if (k < 1) {
       this.lofValues = new Array(n).fill(1);
       return this;
     }
 
-    // 1. k-расстояния и k-соседи
     this.kDistances = new Array(n);
     this.kNeighbors = new Array(n);
-
     for (let i = 0; i < n; i++) {
       const distances = [];
       for (let j = 0; j < n; j++) {
@@ -398,7 +343,6 @@ class LocalOutlierFactor {
       this.kNeighbors[i] = distances.slice(0, k);
     }
 
-    // 2. Local reachability density (LRD)
     this.lrd = new Array(n);
     for (let i = 0; i < n; i++) {
       let sumReach = 0;
@@ -408,7 +352,6 @@ class LocalOutlierFactor {
       this.lrd[i] = this.kNeighbors[i].length / Math.max(sumReach, 1e-10);
     }
 
-    // 3. LOF values
     this.lofValues = new Array(n);
     for (let i = 0; i < n; i++) {
       let sum = 0;
@@ -418,20 +361,14 @@ class LocalOutlierFactor {
       this.lofValues[i] = sum / Math.max(this.kNeighbors[i].length, 1);
     }
 
-    // Threshold — квантиль 1 - contamination (default 0.05)
     this.threshold = quantile(this.lofValues, 0.95);
-
     return this;
   }
 
-  /**
-   * LOF для новой точки.
-   */
   scoreOne(x) {
     if (!this.X) return 1;
     const n = this.X.length;
     const k = Math.min(this.k, n);
-
     const distances = this.X.map((xi, j) => ({ j, d: euclidean(x, xi) }));
     distances.sort((a, b) => a.d - b.d);
     const neighbors = distances.slice(0, k);
@@ -463,10 +400,6 @@ class LocalOutlierFactor {
 // 3. MAHALANOBIS DISTANCE
 // ═══════════════════════════════════════════════════════════════════
 
-/**
- * Mahalanobis: расстояние с учётом ковариационной структуры.
- * d(x) = sqrt((x - μ)ᵀ Σ⁻¹ (x - μ))
- */
 class MahalanobisDetector {
   constructor(config = {}) {
     this.contamination = config.contamination ?? 0.05;
@@ -478,10 +411,8 @@ class MahalanobisDetector {
 
   fit(X) {
     if (X.length < 3) return this;
-
     const { matrix, means } = covarianceMatrix(X);
 
-    // Регуляризация: добавляем ε на диагональ для устойчивости
     const d = matrix.length;
     const regularized = matrix.map((row, i) =>
       row.map((v, j) => v + (i === j ? 1e-6 : 0))
@@ -493,16 +424,13 @@ class MahalanobisDetector {
     try {
       this.covInv = matInverse(regularized);
     } catch (e) {
-      // Fallback: диагональная ковариация
       this.covInv = regularized.map((row, i) =>
         row.map((_, j) => i === j ? 1 / Math.max(regularized[i][i], 1e-6) : 0)
       );
     }
 
-    // Вычисление порога
     const distances = X.map(x => this._distance(x));
     this.threshold = quantile(distances, 1 - this.contamination);
-
     return this;
   }
 
@@ -531,37 +459,22 @@ class MahalanobisDetector {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// 4. ONE-CLASS SVM (упрощённый через RBF)
+// 4. ONE-CLASS SVM (RBF approximation)
 // ═══════════════════════════════════════════════════════════════════
 
-/**
- * Упрощённый One-Class SVM через RBF-ядро.
- *
- * Идея: строим границу вокруг "нормальных" точек, используя
- * взвешенную сумму гауссовых ядер с центром в опорных точках.
- * Точки далеко от всех центров → аномалии.
- *
- * Здесь используется аппроксимация: k(x) = Σ exp(-||x - x_i||²/(2σ²))
- * Устанавливаем порог на 5-й перцентиль ядерной функции на обучающих данных.
- */
 class OneClassSVM {
   constructor(config = {}) {
-    this.gamma = config.gamma ?? 0.1; // 1/(2σ²)
+    this.gamma = config.gamma ?? 0.1;
     this.contamination = config.contamination ?? 0.05;
     this.supportVectors = null;
     this.threshold = 0;
   }
 
   fit(X) {
-    // Уменьшаем число support vectors если много точек
     const maxSV = 100;
-    this.supportVectors = X.length <= maxSV
-      ? X
-      : this._subsample(X, maxSV);
-
+    this.supportVectors = X.length <= maxSV ? X : this._subsample(X, maxSV);
     const scores = X.map(x => this._score(x));
     this.threshold = quantile(scores, this.contamination);
-
     return this;
   }
 
@@ -597,10 +510,6 @@ class OneClassSVM {
 // 5. DBSCAN-BASED OUTLIER DETECTION
 // ═══════════════════════════════════════════════════════════════════
 
-/**
- * DBSCAN для обнаружения шума.
- * Точки, не попавшие ни в один кластер (label = -1) — аномалии.
- */
 class DBSCANOutlier {
   constructor(config = {}) {
     this.eps = config.eps ?? 1;
@@ -611,19 +520,17 @@ class DBSCANOutlier {
 
   fit(X) {
     const n = X.length;
-    const labels = new Array(n).fill(-1); // -1 = шум
+    const labels = new Array(n).fill(-1);
     let clusterId = 0;
-
     const visited = new Array(n).fill(false);
 
     for (let i = 0; i < n; i++) {
       if (visited[i]) continue;
       visited[i] = true;
-
       const neighbors = this._regionQuery(X, i);
 
       if (neighbors.length < this.minPts) {
-        labels[i] = -1; // noise
+        labels[i] = -1;
       } else {
         this._expandCluster(X, labels, i, neighbors, clusterId, visited);
         clusterId++;
@@ -662,8 +569,13 @@ class DBSCANOutlier {
     }
   }
 
+  /**
+   * DBSCAN не поддерживает онлайн-предсказание для новых точек.
+   * Метод существует для совместимости с интерфейсом других детекторов
+   * (predictOne присутствует у всех — используется в ансамбле через dbscanIndex).
+   * Сохранено из models/ по правилу «не удалять наработки».
+   */
   predictOne() {
-    // DBSCAN не поддерживает онлайн-предсказание для новых точек
     return { isAnomaly: false };
   }
 
@@ -676,10 +588,6 @@ class DBSCANOutlier {
 // 6. АНСАМБЛЬ
 // ═══════════════════════════════════════════════════════════════════
 
-/**
- * Ансамбль аномалий: голосование нескольких детекторов.
- * Каждая точка получает "голоса" (0..5) — сколько детекторов её отметили.
- */
 class AnomalyEnsemble {
   constructor(config = {}) {
     this.contamination = config.contamination ?? 0.05;
@@ -687,7 +595,10 @@ class AnomalyEnsemble {
     this.lof = new LocalOutlierFactor({ k: config.lofK || 20 });
     this.mahalanobis = new MahalanobisDetector({ contamination: this.contamination });
     this.oneClassSVM = new OneClassSVM({ contamination: this.contamination });
-    this.dbscan = new DBSCANOutlier({ eps: config.dbscanEps || 1.5, minPts: config.dbscanMinPts || 5 });
+    this.dbscan = new DBSCANOutlier({
+      eps: config.dbscanEps || 1.5,
+      minPts: config.dbscanMinPts || 5,
+    });
     this.trained = false;
   }
 
@@ -718,7 +629,6 @@ class AnomalyEnsemble {
       dbResult.isAnomaly,
     ].filter(Boolean).length;
 
-    // Взвешенный score
     const avgScore = (
       ifResult.score * 0.3 +
       Math.min(1, lofResult.lof / 2) * 0.25 +
@@ -728,7 +638,7 @@ class AnomalyEnsemble {
     );
 
     return {
-      isAnomaly: votes >= 2, // минимум 2 детектора
+      isAnomaly: votes >= 2,
       votes,
       totalDetectors: 5,
       avgScore,
@@ -798,13 +708,9 @@ export function crucixAnomalyDetection(history, options = {}) {
     nSweeps: history.length,
   };
 
-  // Извлечение признаков
   const X = history.map(sweepToFeatureVector);
+  const { X: Xs } = standardize(X);
 
-  // Стандартизация
-  const { X: Xs, means, stds } = standardize(X);
-
-  // Ансамбль
   const ensemble = new AnomalyEnsemble({
     contamination: options.contamination ?? 0.05,
     lofK: options.lofK || 20,
@@ -822,14 +728,12 @@ export function crucixAnomalyDetection(history, options = {}) {
 
   const predictions = ensemble.predict(Xs);
 
-  // Статистика по детекторам
   const ifAnomalies = predictions.filter(p => p.details.isolationForest.isAnomaly).length;
   const lofAnomalies = predictions.filter(p => p.details.lof.isAnomaly).length;
   const mahAnomalies = predictions.filter(p => p.details.mahalanobis.isAnomaly).length;
   const svmAnomalies = predictions.filter(p => p.details.oneClassSVM.isAnomaly).length;
   const dbAnomalies = predictions.filter(p => p.details.dbscan.isAnomaly).length;
 
-  // Список аномальных sweep'ов
   const anomalies = [];
   for (let i = 0; i < predictions.length; i++) {
     if (predictions[i].isAnomaly) {
@@ -844,10 +748,8 @@ export function crucixAnomalyDetection(history, options = {}) {
     }
   }
 
-  // Аномальность последнего sweep
   const lastPrediction = predictions[predictions.length - 1];
 
-  // Топ-5 самых аномальных sweep'ов
   const topAnomalies = [...predictions]
     .map((p, i) => ({ index: i, ...p }))
     .sort((a, b) => b.avgScore - a.avgScore)
@@ -859,12 +761,13 @@ export function crucixAnomalyDetection(history, options = {}) {
       votes: p.votes,
     }));
 
-  // Объяснение аномалий: какие признаки отклонились
   let anomalyExplanation = null;
   if (lastPrediction.isAnomaly) {
     const lastVec = Xs[Xs.length - 1];
-    const featureNames = ['vix', 'hySpread', 'treasury10y', 'conflicts', 'sanctions',
-                          'oilPrice', 'goldPrice', 'dxy', 'radiation', 'newAlerts', 'escalatedAlerts'];
+    const featureNames = [
+      'vix', 'hySpread', 'treasury10y', 'conflicts', 'sanctions',
+      'oilPrice', 'goldPrice', 'dxy', 'radiation', 'newAlerts', 'escalatedAlerts',
+    ];
     const deviations = lastVec.map((z, j) => ({
       feature: featureNames[j],
       zScore: Math.round(z * 100) / 100,
@@ -896,7 +799,7 @@ export function crucixAnomalyDetection(history, options = {}) {
   };
 
   result.topAnomalies = topAnomalies;
-  result.anomalies = anomalies.slice(-20); // последние 20
+  result.anomalies = anomalies.slice(-20);
   result.explanation = anomalyExplanation;
 
   result.interpretation = lastPrediction.isAnomaly
@@ -905,7 +808,7 @@ export function crucixAnomalyDetection(history, options = {}) {
 
   result.elapsedMs = Date.now() - t0;
 
-  // Сохранение
+  // Три уровня вверх: models/ → predict/ → apis/ → Crucix/
   const dir = join(__dirname, '..', '..', '..', 'runs', 'predictions');
   ensureDir(dir);
   saveJSON(join(dir, 'anomaly_detection.json'), result);

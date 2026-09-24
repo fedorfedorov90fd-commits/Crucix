@@ -331,7 +331,7 @@ function toggleLayerPanel() {
     setTimeout(() => { if (window.map) window.map.invalidateSize(); }, 300);
 }
 
-function enableAllLayers() {
+async function enableAllLayers() {
     document.querySelectorAll('.layer-btn').forEach(btn => {
         const id = btn.dataset.layerId;
         if (id && id !== 'all') {
@@ -340,7 +340,38 @@ function enableAllLayers() {
         }
     });
     updateActiveCount();
-    loadLayer('all');
+
+    const layers = (window.allLayers || []).filter(l => l.id !== 'all');
+    let ok = 0, empty = 0, fail = 0;
+    const total = layers.length;
+
+    if (typeof window.showNotification === 'function') {
+        window.showNotification('🌍 Загрузка ' + total + ' слоёв...');
+    }
+
+    for (const layer of layers) {
+        if (window.layerCache && window.layerCache[layer.id] &&
+            window.layerCache[layer.id].length > 0) {
+            ok++;
+            continue;
+        }
+        try {
+            await loadLayer(layer.id);
+            const after = window.layerCache ? window.layerCache[layer.id] : null;
+            if (after && after.length > 0) ok++;
+            else if (after && after.length === 0) empty++;
+            else fail++;
+        } catch (e) {
+            fail++;
+            console.warn('[enableAllLayers] Ошибка слоя ' + layer.id + ':', e.message);
+        }
+        await new Promise(r => setTimeout(r, 30));
+    }
+
+    if (typeof window.showNotification === 'function') {
+        window.showNotification('🌍 Готово: ' + ok + ' с данными, ' + empty + ' пусто, ' + fail + ' ошибок');
+    }
+    console.log('[enableAllLayers] Всего: ' + total + ', с данными: ' + ok + ', пусто: ' + empty + ', ошибок: ' + fail);
 }
 
 function disableAllLayers() {

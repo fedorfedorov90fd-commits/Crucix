@@ -3,9 +3,9 @@
   "meta": {
     "id": "daily-report",
     "source": "Crucix daily aggregate",
-    "source_url": "local://rescan",
-    "fetched_at": "2026-09-18T21:24:17.812Z",
-    "normalized_at": "2026-09-18T21:25:55.710Z",
+    "source_url": "local://daily-report",
+    "fetched_at": "2026-09-23T06:51:56.078Z",
+    "normalized_at": "2026-09-23T17:51:48.397Z",
     "collector": "collect-daily-report.mjs",
     "license": "proprietary",
     "count": 1,
@@ -18,17 +18,19 @@
   "series": [],
   "points": [],
   "regions": [],
+  "documents": [],
+  "graph": null,
   "extra": {
     "adapter": "catalog",
-    "adapter_version": "1.0.0",
+    "adapter_version": "1.1.0",
     "type_counts": {
       "unknown": 1
     },
     "regions_count": 0,
     "entries": [
       {
-        "date": "2026-09-18",
-        "timestamp": "2026-09-18T19:11:04.914Z",
+        "date": "2026-09-23",
+        "timestamp": "2026-09-23T06:51:56.073Z",
         "summary": {
           "total_critical": 0,
           "total_warning": 1,
@@ -40,7 +42,7 @@
             "critical": 0
           },
           "gps": {
-            "count": 4,
+            "count": 2,
             "critical": 0
           },
           "trends": {
@@ -48,19 +50,19 @@
             "critical": 0
           },
           "vix": {
+            "current": 14.81,
+            "status": {
+              "status": "normal",
+              "color": "#4ade80",
+              "label": "Норма"
+            }
+          },
+          "yield_curve": {
             "current": null,
             "status": {
               "status": "unknown",
               "color": "#888",
               "label": "Нет данных"
-            }
-          },
-          "yield_curve": {
-            "current": 0.39,
-            "status": {
-              "status": "normal",
-              "color": "#4ade80",
-              "label": "Норма"
             }
           },
           "gold_oil": {
@@ -72,7 +74,7 @@
             }
           },
           "bdi": {
-            "current": 2070,
+            "current": 1714,
             "status": {
               "status": "normal",
               "color": "#4ade80",

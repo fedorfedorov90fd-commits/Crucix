@@ -1,15 +1,21 @@
 /**
  * apis/sources/unemployment-api.mjs — API-МОДУЛЬ: БЕЗРАБОТИЦА ПО СТРАНАМ
  *
- * КОНТРАКТ CRUCIX v2 (Layer).
- * ИСТОЧНИК: data/basket/unemployment.json — [{ name, lat, lng, rate, date, country_code?, region? }]
- *           ИЛИ [{ date, value, country }] (временной ряд).
- * Сборщик: scripts/collectors/collect-unemployment.mjs.
+ * Версия 3.0.1. Принят 23.09.2026.
  *
- * Безработица по странам мира — ключевой макроэкономический индикатор
- * здоровья рынка труда. Данные по 20+ странам + региональные агрегаты.
+ * КОНТРАКТ CRUCIX v2 (Layer).
+ * ИСТОЧНИК: data/basket/unemployment.json — читается через basket-loader v2.0.0.
+ *
+ * Два режима данных:
+ *  1. v1-схема (crucix.basket.v1) — глобальный временной ряд: series[{date, value}],
+ *     regions[{region:'GLOBAL', value, count, extra}]. Нет данных по странам.
+ *  2. Legacy-массив стран: [{name, lat, lng, rate, date, country_code?, region?}].
+ *
+ * Режим series: глобальный временной ряд безработицы (тренд, волатильность, режимы).
+ * Режим countries: массив стран с координатами (FeatureCollection, топы, bbox).
  *
  * Точка страны: { name, lat, lng, rate, date }
+ * Точка series: { date, value }
  *
  * Режимы (по ставке безработицы %):
  *   low     (< 3.5) — перегрев рынка труда
@@ -18,8 +24,14 @@
  *   high    (8–12) — серьёзные проблемы
  *   severe  (> 12) — кризис рынка труда
  *
+ * Изменения v3.0.1:
+ *  - Перевод с прямого fs.readFile на loadWithFallback.
+ *  - extractData определяет режим: 'series' (v1) или 'countries' (legacy/массив).
+ *  - Все подпути адаптированы под оба режима (Series отдают время, Countries — карту).
+ *  - Диагностика source/shape в headers X-Basket-Source, X-Basket-Shape.
+ *
  * ФОРМАТЫ: json (FC + series + stats + regimes), csv, series, stats, raw, report, text.
- * ФИЛЬТРЫ: ?country=, ?region=, ?regime=, ?q=, ?min_rate=, ?max_rate=, ?since=, ?limit=, ?top=, ?sort=.
+ * ФИЛЬТРЫ: ?country=, ?region=, ?regime=, ?q=, ?min_rate=, ?max_rate=, ?since=, ?until=, ?limit=, ?top=, ?sort=.
  *
  * ОСНОВНЫЕ ПОДПУТИ:
  *   /                          — сводка (FC + series + stats + regime)
@@ -41,14 +53,15 @@
  *   /builtin                   — встроенный fallback (20 стран)
  */
 
-import { promises as fs } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { loadWithFallback } from './lib/basket-loader.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
 const PROJECT_ROOT = join(__dirname, '..', '..');
 const BASKET_FILE  = join(PROJECT_ROOT, 'data', 'basket', 'unemployment.json');
+const COLLECTOR_HINT = 'run scripts/collectors/collect-unemployment.mjs';
 
 export const route  = '/api/layers/unemployment';
 export const method = 'GET';
@@ -149,33 +162,73 @@ function cachePut(key, value) { _cache.set(key, { value, expires: Date.now() + C
 function cacheClear() { _cache.clear(); return _cache.size; }
 
 // ============================================================
-//  ЗАГРУЗКА BASKET
+//  ЗАГРУЗКА BASKET (через basket-loader)
 // ============================================================
 
 async function loadData() {
-  let raw;
-  try { raw = await fs.readFile(BASKET_FILE, 'utf8'); }
-  catch (e) {
-    if (e.code === 'ENOENT') {
-      const err = new Error('no_data'); err.statusCode = 503;
-      err.hint = 'run scripts/collectors/collect-unemployment.mjs';
-      throw err;
-    }
-    throw e;
+  const loaded = await loadWithFallback({
+    basketFile: BASKET_FILE,
+    fallbackData: null,
+    hint: COLLECTOR_HINT,
+  });
+
+  if (loaded.source === 'fallback') {
+    const err = new Error('no_data');
+    err.statusCode = 503;
+    err.hint = COLLECTOR_HINT;
+    throw err;
   }
-  let parsed;
-  try { parsed = JSON.parse(raw); }
-  catch (e) { const err = new Error('invalid_json_in_basket: ' + e.message); err.statusCode = 500; throw err; }
-  return parsed;
+  if (loaded.source === 'corrupted') {
+    const err = new Error('invalid_json_in_basket: ' + (loaded.error || 'CORRUPTED_JSON'));
+    err.statusCode = 500;
+    throw err;
+  }
+  if (loaded.source === 'error') {
+    const err = new Error('basket_read_error: ' + (loaded.error || 'UNKNOWN'));
+    err.statusCode = 500;
+    throw err;
+  }
+
+  return {
+    doc: loaded.legacy || loaded.data,
+    source: loaded.source,
+    shape: loaded.shape || 'unknown',
+    mtime: loaded.mtime,
+  };
 }
 
-function extractCountries(doc) {
-  if (Array.isArray(doc)) return { countries: doc, source: null, meta: null };
-  if (!doc || typeof doc !== 'object') return { countries: [], source: null, meta: null };
-  if (Array.isArray(doc.countries)) return { countries: doc.countries, source: doc.source || null, meta: doc.meta || null };
-  if (Array.isArray(doc.data))      return { countries: doc.data,      source: doc.source || null, meta: doc.meta || null };
-  if (Array.isArray(doc.items))     return { countries: doc.items,     source: doc.source || null, meta: doc.meta || null };
-  return { countries: [], source: null, meta: null };
+/**
+ * Определяет режим данных и извлекает соответствующий массив.
+ * Возвращает { mode: 'series'|'countries', rows, source, meta }.
+ *
+ * Режимы:
+ *   'series'   — v1-схема с series[{date, value}] (глобальный временной ряд)
+ *   'countries'— legacy-массив или doc.countries/doc.data со странами
+ */
+function extractData(doc) {
+  if (Array.isArray(doc)) return { mode: 'countries', rows: doc, source: null, meta: null };
+
+  if (!doc || typeof doc !== 'object') return { mode: 'countries', rows: [], source: null, meta: null };
+
+  // v1-схема — определяем по schema
+  if (doc.schema === 'crucix.basket.v1') {
+    // Приоритет: если есть series — это временной ряд
+    if (Array.isArray(doc.series) && doc.series.length > 0) {
+      return { mode: 'series', rows: doc.series, source: doc.meta?.source || null, meta: doc.meta || null };
+    }
+    if (Array.isArray(doc.points) && doc.points.length > 0) {
+      return { mode: 'countries', rows: doc.points, source: doc.meta?.source || null, meta: doc.meta || null };
+    }
+    return { mode: 'countries', rows: [], source: doc.meta?.source || null, meta: doc.meta || null };
+  }
+
+  // Legacy
+  if (Array.isArray(doc.countries)) return { mode: 'countries', rows: doc.countries, source: doc.source || null, meta: doc.meta || null };
+  if (Array.isArray(doc.data))      return { mode: 'countries', rows: doc.data,      source: doc.source || null, meta: doc.meta || null };
+  if (Array.isArray(doc.items))     return { mode: 'countries', rows: doc.items,     source: doc.source || null, meta: doc.meta || null };
+  if (Array.isArray(doc.series))    return { mode: 'series',    rows: doc.series,    source: doc.source || null, meta: doc.meta || null };
+
+  return { mode: 'countries', rows: [], source: null, meta: null };
 }
 
 // ============================================================
@@ -199,6 +252,28 @@ function normalizeCountry(c, i) {
     lng: Number.isFinite(lng) ? Number(lng.toFixed(4)) : null,
     rate: Number.isFinite(rate) ? Number(rate.toFixed(2)) : null,
     date,
+    regime: regime.key,
+    regimeLabel: regime.label,
+    regimeColor: regime.color,
+    severity: regime.severity,
+    category_: 'economics',
+    icon: meta.icon,
+  };
+}
+
+/**
+ * Нормализация точки временного ряда.
+ * v1: {date, value} → {date, rate, regime, regimeLabel, regimeColor, severity}
+ */
+function normalizeSeriesPoint(p, i) {
+  const date = String(p.date || p.timestamp || '').slice(0, 10) || null;
+  const rate = Number(p.value ?? p.rate ?? p.unemployment);
+  const regime = regimeOf(rate);
+  return {
+    id: `series-${i}`,
+    name: 'GLOBAL',
+    date,
+    rate: Number.isFinite(rate) ? Number(rate.toFixed(2)) : null,
     regime: regime.key,
     regimeLabel: regime.label,
     regimeColor: regime.color,
@@ -237,12 +312,14 @@ function applyFilters(rows, query) {
   const sortKey = query.sort || 'rate-desc';
   if (sortKey === 'rate-desc')  r.sort((a, b) => (b.rate ?? -1) - (a.rate ?? -1));
   else if (sortKey === 'rate-asc')   r.sort((a, b) => (a.rate ?? 1e9) - (b.rate ?? 1e9));
-  else if (sortKey === 'name')       r.sort((a, b) => a.name.localeCompare(b.name));
+  else if (sortKey === 'name')       r.sort((a, b) => String(a.name).localeCompare(String(b.name)));
   else if (sortKey === 'region')     r.sort((a, b) => String(a.region || '').localeCompare(String(b.region || '')));
+  else if (sortKey === 'date-asc')   r.sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
+  else if (sortKey === 'date-desc')  r.sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
   else if (sortKey === 'severity')   r.sort((a, b) => (b.severity ?? 0) - (a.severity ?? 0));
 
   if (query.top)   { const n = parseInt(query.top, 10);   if (n > 0) r = r.slice(0, n); }
-  if (query.limit) { const n = parseInt(query.limit, 10); if (n > 0) r = r.slice(0, n); }
+  if (query.limit) { const n = parseInt(query.limit, 10); if (n > 0) r = r.slice(-n); }
   return r;
 }
 
@@ -325,6 +402,37 @@ function computeAnomalies(rows) {
     .sort((a, b) => Math.abs(b.z_score) - Math.abs(a.z_score));
 }
 
+function computeTrends(rows) {
+  const tail = rows.slice(-7);
+  const prev = rows.slice(-14, -7);
+  if (!tail.length || !prev.length) return null;
+  const m = a => a.reduce((s, r) => s + (r.rate ?? 0), 0) / a.length;
+  const mNew = m(tail), mOld = m(prev);
+  const delta = mOld === 0 ? null : ((mNew - mOld) / Math.abs(mOld) * 100);
+  return {
+    last7_mean: Number(mNew.toFixed(2)),
+    prev7_mean: Number(mOld.toFixed(2)),
+    delta_pct: delta != null ? Number(delta.toFixed(2)) : null,
+    direction: delta == null ? 'unknown' : (delta > 2 ? 'rising' : (delta < -2 ? 'falling' : 'stable')),
+  };
+}
+
+function computeVolatility(rows) {
+  const values = rows.map(r => r.rate).filter(Number.isFinite);
+  if (values.length < 3) return null;
+  const mean = values.reduce((a, b) => a + b, 0) / values.length;
+  const variance = values.reduce((a, v) => a + (v - mean) ** 2, 0) / values.length;
+  const stddev = Math.sqrt(variance);
+  return {
+    window: values.length,
+    mean: Number(mean.toFixed(2)),
+    stddev: Number(stddev.toFixed(2)),
+    coefficient_pct: mean !== 0 ? Number((stddev / Math.abs(mean) * 100).toFixed(2)) : null,
+    min: Number(Math.min(...values).toFixed(2)),
+    max: Number(Math.max(...values).toFixed(2)),
+  };
+}
+
 function toReport(rows, stats) {
   const lines = [];
   lines.push('='.repeat(60));
@@ -332,7 +440,7 @@ function toReport(rows, stats) {
   lines.push(`  Generated: ${new Date().toISOString()}`);
   lines.push('='.repeat(60));
   lines.push('');
-  lines.push(`Всего стран/регионов: ${stats.count}`);
+  lines.push(`Всего записей: ${stats.count}`);
   lines.push('');
   lines.push('РЕЖИМЫ:');
   for (const [k, v] of Object.entries(stats.by_regime)) lines.push(`  ${k.padEnd(10)} ${v}`);
@@ -440,7 +548,7 @@ export async function handler(req, res) {
 
     const extra = {
       'X-Module': 'unemployment-api',
-      'X-Module-Version': '2.0.0',
+      'X-Module-Version': '3.0.1',
       'Cache-Control': `public, max-age=${meta.cache}`,
       'Access-Control-Allow-Origin': '*',
     };
@@ -454,7 +562,7 @@ export async function handler(req, res) {
         legend: fc.legend,
         series: toSeries(rows),
         stats: computeStats(rows),
-        meta: { source: 'builtin', count: rows.length, generated_at: new Date().toISOString() },
+        meta: { source: 'builtin', count: rows.length, mode: 'countries', generated_at: new Date().toISOString() },
       }, extra);
     }
 
@@ -471,8 +579,8 @@ export async function handler(req, res) {
       return sendJSON(res, 200, { presets: FILTER_PRESETS, count: FILTER_PRESETS.length }, extra);
     }
 
-    let doc;
-    try { doc = await loadData(); }
+    let loaded;
+    try { loaded = await loadData(); }
     catch (e) {
       if (e.statusCode === 503 && (sub === '/health' || sub === '/status')) {
         return sendJSON(res, 200, {
@@ -483,12 +591,21 @@ export async function handler(req, res) {
       throw e;
     }
 
-    const { countries: rawArr, source, meta: srcMeta } = extractCountries(doc);
-    const all = rawArr.map(normalizeCountry);
+    const { doc, source: basketSource, shape: basketShape, mtime: basketMtime } = loaded;
+    extra['X-Basket-Source'] = basketSource;
+    extra['X-Basket-Shape'] = basketShape;
+
+    const { mode, rows: rawArr, source, meta: srcMeta } = extractData(doc);
+
+    // Нормализация в зависимости от режима
+    const all = mode === 'series'
+      ? rawArr.map(normalizeSeriesPoint)
+      : rawArr.map(normalizeCountry);
 
     if (sub === '/health') {
       return sendJSON(res, 200, {
-        status: 'online', basket_available: true, countries: all.length,
+        status: 'online', basket_available: true, mode, entries: all.length,
+        basket_source: basketSource, basket_shape: basketShape, basket_mtime: basketMtime,
         cache_size: _cache.size, generated_at: new Date().toISOString(),
       }, extra);
     }
@@ -496,39 +613,45 @@ export async function handler(req, res) {
       const stats = computeStats(all);
       return sendJSON(res, 200, {
         total: stats.count,
+        mode,
         date_from: stats.date_from,
         date_to: stats.date_to,
         by_regime: stats.by_regime,
       }, extra);
     }
     if (sub === '/stats' || format === 'stats') {
-      return sendJSON(res, 200, { stats: computeStats(all), source, src_meta: srcMeta }, extra);
+      return sendJSON(res, 200, {
+        stats: computeStats(all),
+        mode, source, src_meta: srcMeta,
+        basket_source: basketSource, basket_shape: basketShape,
+      }, extra);
     }
     if (sub === '/status') {
       const st = computeStats(all);
       return sendJSON(res, 200, {
-        status: 'online', countries: all.length,
+        status: 'online', mode, entries: all.length,
         highest: st.highest, lowest: st.lowest,
-        source, generated_at: new Date().toISOString(),
+        source, basket_source: basketSource, basket_shape: basketShape,
+        generated_at: new Date().toISOString(),
       }, extra);
     }
     if (sub === '/series') {
       const rows = applyFilters(all, query);
-      return sendJSON(res, 200, { series: toSeries(rows), count: rows.length, total: all.length }, extra);
+      return sendJSON(res, 200, { series: toSeries(rows), count: rows.length, total: all.length, mode }, extra);
     }
     if (sub === '/countries') {
       const rows = applyFilters(all, query);
-      return sendJSON(res, 200, { countries: rows, count: rows.length, total: all.length }, extra);
+      return sendJSON(res, 200, { countries: rows, count: rows.length, total: all.length, mode }, extra);
     }
     if (sub.startsWith('/countries/')) {
       const name = decodeURIComponent(sub.slice('/countries/'.length));
-      const country = all.find(c => c.name.toLowerCase() === name.toLowerCase());
+      const country = all.find(c => String(c.name).toLowerCase() === name.toLowerCase());
       if (!country) return sendJSON(res, 404, { error: 'country_not_found', name }, extra);
       return sendJSON(res, 200, { country }, extra);
     }
     if (sub === '/latest') {
       const latest = all.slice().sort((a, b) => String(b.date || '').localeCompare(String(a.date || ''))).slice(0, 20);
-      return sendJSON(res, 200, { latest, count: latest.length }, extra);
+      return sendJSON(res, 200, { latest, count: latest.length, mode }, extra);
     }
     if (sub === '/top') {
       const n = parseInt(query.n || query.top, 10) || 10;
@@ -552,6 +675,7 @@ export async function handler(req, res) {
     if (sub === '/current-regime') {
       const st = computeStats(all);
       return sendJSON(res, 200, {
+        mode,
         global_mean: st.rate?.mean ?? null,
         distribution: st.by_regime,
         highest: st.highest,
@@ -582,7 +706,7 @@ export async function handler(req, res) {
       const byRegion = {};
       for (const r of all) {
         const reg = r.region || 'unknown';
-        if (!byRegion[reg]) byRegion[reg] = { region: reg, count: 0, avg_rate: 0, rates: [], countries: [] };
+        if (!byRegion[reg]) byRegion[reg] = { region: reg, count: 0, rates: [], countries: [] };
         byRegion[reg].count++;
         if (r.rate != null) byRegion[reg].rates.push(r.rate);
         byRegion[reg].countries.push(r.name);
@@ -604,6 +728,24 @@ export async function handler(req, res) {
       }
       return sendJSON(res, 200, { regimes: Object.values(byRegime), total: Object.keys(byRegime).length }, extra);
     }
+    if (sub === '/by-country') {
+      const byCountry = {};
+      for (const r of all) {
+        const key = r.name || 'unknown';
+        if (!byCountry[key]) byCountry[key] = { country: key, count: 0, rates: [], dates: [] };
+        byCountry[key].count++;
+        if (r.rate != null) byCountry[key].rates.push(r.rate);
+        if (r.date) byCountry[key].dates.push(r.date);
+      }
+      const result = Object.values(byCountry).map(x => ({
+        country: x.country,
+        count: x.count,
+        avg_rate: x.rates.length ? Number((x.rates.reduce((a, b) => a + b, 0) / x.rates.length).toFixed(2)) : null,
+        date_from: x.dates.sort()[0] || null,
+        date_to: x.dates.sort().slice(-1)[0] || null,
+      }));
+      return sendJSON(res, 200, { countries: result, total: result.length }, extra);
+    }
     if (sub === '/distribution') {
       const distribution = computeDistribution(all);
       return sendJSON(res, 200, { distribution }, extra);
@@ -622,13 +764,13 @@ export async function handler(req, res) {
     }
     if (sub === '/compare') {
       const names = String(query.names || '').split(',').map(s => s.trim()).filter(Boolean);
-      const results = names.map(n => all.find(c => c.name.toLowerCase() === n.toLowerCase())).filter(Boolean);
+      const results = names.map(n => all.find(c => String(c.name).toLowerCase() === n.toLowerCase())).filter(Boolean);
       return sendJSON(res, 200, { count: results.length, results }, extra);
     }
     if (sub === '/search') {
       const q = String(query.q || '').toLowerCase();
       if (!q) return sendJSON(res, 400, { error: 'field_required: q' }, extra);
-      const rows = all.filter(c => (c.name + ' ' + (c.region || '')).toLowerCase().includes(q));
+      const rows = all.filter(c => (String(c.name) + ' ' + (c.region || '')).toLowerCase().includes(q));
       return sendJSON(res, 200, { query: q, results: rows, count: rows.length }, extra);
     }
     if (sub === '/bbox') {
@@ -646,19 +788,26 @@ export async function handler(req, res) {
         byDate[c.date].countries.push(c.name);
       }
       const timeline = Object.values(byDate).sort((a, b) => a.date.localeCompare(b.date));
-      return sendJSON(res, 200, { timeline, days: timeline.length }, extra);
+      return sendJSON(res, 200, { timeline, days: timeline.length, mode }, extra);
     }
     if (sub === '/trends') {
       const cached = cacheGet('trends');
       if (cached) return sendJSON(res, 200, { trends: cached, cached: true }, extra);
       const stats = computeStats(all);
       const trends = {
+        mode,
         top_regions: stats.top_regions,
         by_regime: stats.by_regime,
         rate_stats: stats.rate,
+        rolling: computeTrends(all),
+        volatility: computeVolatility(all),
       };
       cachePut('trends', trends);
       return sendJSON(res, 200, { trends }, extra);
+    }
+    if (sub === '/volatility' || sub === '/vol') {
+      const vol = computeVolatility(all);
+      return sendJSON(res, 200, { volatility: vol }, extra);
     }
     if (sub === '/export' || format === 'report') {
       const stats = computeStats(all);
@@ -682,16 +831,17 @@ export async function handler(req, res) {
     const rows = applyFilters(all, query);
 
     if (format === 'csv')    return sendText(res, 200, toCSV(rows), 'text/csv; charset=utf-8');
-    if (format === 'series') return sendJSON(res, 200, { series: toSeries(rows), meta: { count: rows.length } }, extra);
-    if (format === 'raw')    return sendJSON(res, 200, { data: rows, source, src_meta: srcMeta }, extra);
+    if (format === 'series') return sendJSON(res, 200, { series: toSeries(rows), meta: { count: rows.length, mode } }, extra);
+    if (format === 'raw')    return sendJSON(res, 200, { data: rows, mode, source, src_meta: srcMeta, basket_source: basketSource, basket_shape: basketShape }, extra);
 
     const fc = toFeatureCollection(rows);
     return sendJSON(res, 200, {
       type: 'FeatureCollection',
       meta: {
         source: meta.source, category: meta.category, unit: meta.unit,
-        total_countries: all.length, returned_countries: rows.length,
+        mode, total_entries: all.length, returned_entries: rows.length,
         upstream_source: source, upstream_meta: srcMeta,
+        basket_source: basketSource, basket_shape: basketShape, basket_mtime: basketMtime,
         generated_at: new Date().toISOString(),
       },
       features: fc.features,
@@ -710,4 +860,3 @@ export async function handler(req, res) {
     try { sendJSON(res, status, payload); } catch (e2) {}
   }
 }
-

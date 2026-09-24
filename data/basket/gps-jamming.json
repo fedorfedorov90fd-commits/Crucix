@@ -4,11 +4,11 @@
     "id": "gps-jamming",
     "source": "OpenSky Network",
     "source_url": "https://opensky-network.org/api/states/all",
-    "fetched_at": "2026-09-20T10:53:40.690Z",
-    "normalized_at": "2026-09-20T11:28:57.075Z",
+    "fetched_at": "2026-09-23T06:57:00.482Z",
+    "normalized_at": "2026-09-23T17:51:48.826Z",
     "collector": "collect-gps-jamming.mjs",
     "license": "public-domain",
-    "count": 2,
+    "count": 1,
     "granularity": "snapshot",
     "value_unit": "aircraft",
     "value_scale": null,
@@ -18,23 +18,12 @@
   "series": [],
   "points": [
     {
-      "lat": 43.430790525741756,
-      "lon": 34.3948770329934,
-      "label": "КРИТИЧЕСКИЙ",
-      "region": "Черное море",
-      "extra": {
-        "id": "JAM-1789901620438-ttdf",
-        "unmapped_region": true,
-        "unmapped_original": "Черное море"
-      }
-    },
-    {
-      "lat": 58.358414391936606,
-      "lon": 19.308477277944867,
+      "lat": 58.89086363105612,
+      "lon": 19.860702907474433,
       "label": "ВЫСОКИЙ",
       "region": "Балтийское море",
       "extra": {
-        "id": "JAM-1789901620683-xysb",
+        "id": "JAM-1790146620474-854r",
         "unmapped_region": true,
         "unmapped_original": "Балтийское море"
       }
@@ -42,16 +31,6 @@
   ],
   "regions": [
     {
-      "region": "Черное море",
-      "value": 0,
-      "count": 0,
-      "aggregation": "sum",
-      "extra": {
-        "max": null,
-        "sum": 0
-      }
-    },
-    {
       "region": "Балтийское море",
       "value": 0,
       "count": 0,
@@ -62,14 +41,15 @@
       }
     }
   ],
+  "documents": [],
+  "graph": null,
   "extra": {
     "adapter": "points",
-    "adapter_version": "2.1.0",
+    "adapter_version": "2.2.1",
     "skipped_invalid_coords": 0,
     "unmapped_regions": [
-      "Черное море",
       "Балтийское море"
     ],
-    "unmapped_count": 2
+    "unmapped_count": 1
   }
 }

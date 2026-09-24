@@ -1,0 +1,139 @@
+{
+  "generated_at": "2026-09-24T04:22:58.135Z",
+  "total": 7,
+  "counts": {
+    "direct": 0,
+    "tor": 2,
+    "dead": 5
+  },
+  "results": [
+    {
+      "url": "https://www.cfr.org/feed",
+      "category": "dead",
+      "direct": {
+        "channel": "direct",
+        "status": 0,
+        "ok": false,
+        "elapsed_ms": 92,
+        "error": "EAI_AGAIN: getaddrinfo EAI_AGAIN www.cfr.org"
+      },
+      "tor": {
+        "channel": "tor",
+        "status": 0,
+        "ok": false,
+        "elapsed_ms": 30024,
+        "error": "Error: Proxy connection timed out"
+      }
+    },
+    {
+      "url": "https://news.google.com/rss/search?q=site:csis.org+when:7d&hl=en-US&gl=US&ceid=US:en",
+      "category": "dead",
+      "direct": {
+        "channel": "direct",
+        "status": 0,
+        "ok": false,
+        "elapsed_ms": 48,
+        "error": "EAI_AGAIN: getaddrinfo EAI_AGAIN news.google.com"
+      },
+      "tor": {
+        "channel": "tor",
+        "status": 0,
+        "ok": false,
+        "elapsed_ms": 30028,
+        "error": "Error: Proxy connection timed out"
+      }
+    },
+    {
+      "url": "https://news.google.com/rss/search?q=site:iiss.org+when:7d&hl=en-US&gl=US&ceid=US:en",
+      "category": "dead",
+      "direct": {
+        "channel": "direct",
+        "status": 0,
+        "ok": false,
+        "elapsed_ms": 53,
+        "error": "EAI_AGAIN: getaddrinfo EAI_AGAIN news.google.com"
+      },
+      "tor": {
+        "channel": "tor",
+        "status": 0,
+        "ok": false,
+        "elapsed_ms": 30028,
+        "error": "Error: Proxy connection timed out"
+      }
+    },
+    {
+      "url": "https://dataverse.harvard.edu/api/datasets/:persistentId/?persistentId=doi:10.7910/DVN/LEJUQZ",
+      "category": "dead",
+      "direct": {
+        "channel": "direct",
+        "status": 0,
+        "ok": false,
+        "elapsed_ms": 53,
+        "error": "EAI_AGAIN: getaddrinfo EAI_AGAIN dataverse.harvard.edu"
+      },
+      "tor": {
+        "channel": "tor",
+        "status": 0,
+        "ok": false,
+        "elapsed_ms": 30047,
+        "error": "Error: Proxy connection timed out"
+      }
+    },
+    {
+      "url": "https://digitallibrary.un.org",
+      "category": "dead",
+      "direct": {
+        "channel": "direct",
+        "status": 0,
+        "ok": false,
+        "elapsed_ms": 54,
+        "error": "EAI_AGAIN: getaddrinfo EAI_AGAIN digitallibrary.un.org"
+      },
+      "tor": {
+        "channel": "tor",
+        "status": 0,
+        "ok": false,
+        "elapsed_ms": 30042,
+        "error": "Error: Proxy connection timed out"
+      }
+    },
+    {
+      "url": "https://tass.ru/rss/v2.xml",
+      "category": "tor",
+      "direct": {
+        "channel": "direct",
+        "status": 0,
+        "ok": false,
+        "elapsed_ms": 25,
+        "error": "EAI_AGAIN: getaddrinfo EAI_AGAIN tass.ru"
+      },
+      "tor": {
+        "channel": "tor",
+        "status": 200,
+        "ok": true,
+        "elapsed_ms": 30904,
+        "content_type": "application/rss+xml, application/rdf+xml;q=0.8, application/atom+xml;q=0.6, application/xml;q=0.4, text/xml;q=0.4; charset=utf-8",
+        "size": 50595
+      }
+    },
+    {
+      "url": "https://ria.ru/export/rss2/index.xml",
+      "category": "tor",
+      "direct": {
+        "channel": "direct",
+        "status": 0,
+        "ok": false,
+        "elapsed_ms": 22,
+        "error": "EAI_AGAIN: getaddrinfo EAI_AGAIN ria.ru"
+      },
+      "tor": {
+        "channel": "tor",
+        "status": 200,
+        "ok": true,
+        "elapsed_ms": 27232,
+        "content_type": "text/xml; charset=utf-8",
+        "size": 12125
+      }
+    }
+  ]
+}

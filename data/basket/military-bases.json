@@ -2,14 +2,14 @@
   "schema": "crucix.basket.v1",
   "meta": {
     "id": "military-bases",
-    "source": "Military bases",
-    "source_url": "local://rescan",
-    "fetched_at": "2026-09-18T21:24:17.815Z",
-    "normalized_at": "2026-09-18T21:25:55.884Z",
+    "source": "Open source military bases database",
+    "source_url": "local://military-bases",
+    "fetched_at": "2026-09-23T06:57:10.983Z",
+    "normalized_at": "2026-09-23T17:51:48.915Z",
     "collector": "collect-military-bases.mjs",
     "license": "public-domain",
     "count": 61,
-    "granularity": "event",
+    "granularity": "snapshot",
     "value_unit": "count",
     "value_scale": null,
     "value_type": "count",
@@ -749,9 +749,11 @@
       }
     }
   ],
+  "documents": [],
+  "graph": null,
   "extra": {
     "adapter": "points",
-    "adapter_version": "2.0.0",
+    "adapter_version": "2.2.1",
     "skipped_invalid_coords": 0,
     "unmapped_regions": [],
     "unmapped_count": 0

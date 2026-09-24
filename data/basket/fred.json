@@ -2,54 +2,58 @@
   "schema": "crucix.basket.v1",
   "meta": {
     "id": "fred",
-    "source": "FRED-replacement (ECB+Treasury+WorldBank)",
-    "source_url": "https://fred.stlouisfed.org/",
-    "fetched_at": "2026-09-20T10:47:38.149Z",
-    "normalized_at": "2026-09-20T11:28:57.059Z",
-    "collector": "collect-fred-real.mjs",
+    "source": "ECB + US Treasury + World Bank",
+    "source_url": "https://data-api.ecb.europa.eu / https://api.fiscaldata.treasury.gov / https://api.worldbank.org",
+    "fetched_at": "2026-09-23T06:53:30.944Z",
+    "normalized_at": "2026-09-23T17:51:48.802Z",
+    "collector": "collect-fred.mjs",
     "license": "public-domain",
-    "count": 1,
+    "count": 3,
     "granularity": "snapshot",
-    "value_unit": "count",
-    "value_scale": null,
+    "value_unit": "mixed",
+    "value_scale": "macro_indicators",
     "value_type": "count",
     "value_range": null
   },
   "series": [],
   "points": [],
   "regions": [],
+  "documents": [],
+  "graph": null,
   "extra": {
     "adapter": "catalog",
     "adapter_version": "1.1.0",
     "type_counts": {
-      "unknown": 1
+      "unknown": 3
     },
     "regions_count": 0,
     "entries": [
       {
-        "source": "FRED-replacement (ECB + Treasury)",
-        "updated": "2026-09-20T10:47:34.533Z",
-        "note": "FRED требует API-ключ. Согласно правилу 12.2 заменён на открытые источники.",
-        "indicators": {
-          "usd_eur": {
-            "value": 1.146,
-            "period": "0",
-            "source": "ECB"
-          },
-          "us_national_debt": {
-            "value": 40093343468150.5,
-            "date": "2026-09-17",
-            "source": "US Treasury"
-          },
-          "us_gdp": {
-            "value": 30769700000000,
-            "year": "2025",
-            "source": "World Bank"
-          }
-        }
+        "id": "usd_eur",
+        "value": 1.1463,
+        "period": "0",
+        "source": "ECB",
+        "indicator": "USD/EUR курс"
+      },
+      {
+        "id": "us_national_debt",
+        "value": 40112118151111.92,
+        "date": "2026-09-21",
+        "source": "US Treasury",
+        "indicator": "Госдолг США (USD)"
+      },
+      {
+        "id": "us_gdp",
+        "value": 30769700000000,
+        "year": "2025",
+        "source": "World Bank",
+        "indicator": "ВВП США (USD)"
       }
     ],
-    "entries_count": 1,
-    "wrapped_single_object": true
+    "entries_count": 3,
+    "source": "FRED-replacement (ECB + Treasury + World Bank)",
+    "updated": "2026-09-23T06:53:30.921Z",
+    "note": "FRED требует API-ключ. Заменён на открытые источники без ключей.",
+    "inner_array_key": "indicators"
   }
 }

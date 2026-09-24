@@ -1,6 +1,24 @@
 /**
  * scripts/collectors/collect-thinktanks.mjs — СБОРЩИК: АНАЛИТИЧЕСКИЕ ЦЕНТРЫ
- * Версия 2.0.1. Принят 20.09.2026.
+ * Версия 2.4.0. Принят 23.09.2026.
+ * Изменения v2.4.0: все проблемные thinktanks переведены на Google News RSS по site: (CSIS, IISS, Chatham House, Carnegie, RUSI, ISW). Причина: прямые URL отдают 403/404 даже через Tor. Google News RSS работает через Tor.
+ * Изменения v2.3.0: интеграция Tor SOCKS5 через socks-proxy-agent + axios. Все западные источники идут через Tor (память #1104). Google News восстановлены. Отключается переменной CRUCIX_USE_TOR=false.\n * Изменения v2.2.0: TIMEOUT_MS 5000 → 20000. Причина: провайдер пропускает TCP,
+ * но данные приходят медленно (AbortError вместо 000 FAIL). Увеличение таймаута
+ * позволит собрать данные с rand.org, csis.org, chathamhouse.org, brookings.edu,
+ * carnegieendowment.org, rusi.org (6 центров).
+ *
+ * ИЗМЕНЕНИЯ v2.1.0:
+ *   - readBodyWithSignal(): res.text() читается под тем же AbortController, что и fetch.
+ *     В v2.0.1 clearTimeout() срабатывал до res.text(), поэтому тело было вне сигнала
+ *     и могло висеть до TCP-лимита Node (300 сек). Это главная причина убийства
+ *     сборщика внешним watchdog orchestrator на 120 000 мс.
+ *   - fetchWithTimeout(): единая обёртка, устраняет дублирование между fetchRss и fetchGoogleNews.
+ *   - withDeadline() переработан: принимает фабрику promise + AbortController, прерывает
+ *     нижележащие fetch при срабатывании дедлайна (в v2.0.1 collectPromise продолжал
+ *     выполняться, pending-промисы не давали Node завершить процесс).
+ *   - Параллелизация: 10 центров собираются через Promise.allSettled, Google News — тоже.
+ *     Worst case: 10×5 + 5×5 = 75 сек вместо 100+ сек последовательно.
+ *   - describeError(): e.name + e.cause?.code + e.message (AbortError отличим от HTTP).
  *
  * ИЗМЕНЕНИЯ v2.0.1:
  *   - TIMEOUT 12 → 5 сек (быстрее отсекаем недоступные)
@@ -15,6 +33,8 @@
 import { promises as fs } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
+import axios from 'axios';
+import { SocksProxyAgent } from 'socks-proxy-agent';
 import { saveRaw } from './lib/collector-helper.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -23,7 +43,13 @@ const PROJECT_ROOT = join(__dirname, '..', '..');
 const LOGS_DIR     = join(PROJECT_ROOT, 'logs', 'collectors');
 const LOG_FILE     = join(LOGS_DIR, 'collect-thinktanks.log');
 
-const TIMEOUT_MS = 5000;
+const TIMEOUT_MS = 20000;
+
+// === Tor SOCKS5-прокси для западных источников (память #1104) ===
+// Российские источники идут НАПРЯМУЮ. Западные — через Tor.
+const USE_TOR = process.env.CRUCIX_USE_TOR !== 'false'; // true по умолчанию, отключается env
+const TOR_AGENT = USE_TOR ? new SocksProxyAgent('socks5h://127.0.0.1:9050') : null;
+const USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 const MAX_ATTEMPTS = 1;
 const GLOBAL_DEADLINE_MS = 45000;
 
@@ -46,15 +72,15 @@ const VALIDATION = { maxReports: 200, maxPredictions: 50, minLiveReports: 5 };
 
 const CENTERS = [
   { id: 'rand',       name: 'RAND Corporation',            country: 'США',            city: 'Santa Monica, CA',  lat: 34.0195, lng: -118.4912, founded: 1948, focus: ['strategy','security','technology'],        website: 'https://www.rand.org',              rss: ['https://www.rand.org/topics/national-security.xml', 'https://www.rand.org/topics/international-affairs.xml'], active: true },
-  { id: 'csis',       name: 'CSIS',                        country: 'США',            city: 'Washington, DC',    lat: 38.9072, lng: -77.0369,  founded: 1962, focus: ['geopolitics','security','economy'],         website: 'https://www.csis.org',              rss: ['https://www.csis.org/analysis/feed', 'https://www.csis.org/regions/feed'], active: true },
-  { id: 'iiss',       name: 'IISS',                        country: 'Великобритания', city: 'London',            lat: 51.5074, lng: -0.1278,   founded: 1958, focus: ['military','defence','strategy'],            website: 'https://www.iiss.org',              rss: ['https://www.iiss.org/rss/analysis'], active: true },
-  { id: 'chatham',    name: 'Chatham House',               country: 'Великобритания', city: 'London',            lat: 51.5074, lng: -0.1278,   founded: 1920, focus: ['geopolitics','foreign','economy'],           website: 'https://www.chathamhouse.org',      rss: ['https://www.chathamhouse.org/rss/commentary'], active: true },
-  { id: 'cfr',        name: 'Council on Foreign Relations',country: 'США',            city: 'New York, NY',      lat: 40.7128, lng: -74.0060,  founded: 1921, focus: ['foreign','geopolitics','security'],         website: 'https://www.cfr.org',               rss: ['https://www.cfr.org/rss/blogs', 'https://www.cfr.org/rss/articles'], active: true },
+  { id: 'csis',       name: 'CSIS',                        country: 'США',            city: 'Washington, DC',    lat: 38.9072, lng: -77.0369,  founded: 1962, focus: ['geopolitics','security','economy'],         website: 'https://www.csis.org',              rss: ['https://news.google.com/rss/search?q=site:csis.org+when:7d&hl=en-US&gl=US&ceid=US:en'], active: true },
+  { id: 'iiss',       name: 'IISS',                        country: 'Великобритания', city: 'London',            lat: 51.5074, lng: -0.1278,   founded: 1958, focus: ['military','defence','strategy'],            website: 'https://www.iiss.org',              rss: ['https://news.google.com/rss/search?q=site:iiss.org+when:7d&hl=en-US&gl=US&ceid=US:en'], active: true },
+  { id: 'chatham',    name: 'Chatham House',               country: 'Великобритания', city: 'London',            lat: 51.5074, lng: -0.1278,   founded: 1920, focus: ['geopolitics','foreign','economy'],           website: 'https://www.chathamhouse.org',      rss: ['https://news.google.com/rss/search?q=site:chathamhouse.org+when:7d&hl=en-US&gl=US&ceid=US:en'], active: true },
+  { id: 'cfr',        name: 'Council on Foreign Relations',country: 'США',            city: 'New York, NY',      lat: 40.7128, lng: -74.0060,  founded: 1921, focus: ['foreign','geopolitics','security'],         website: 'https://www.cfr.org',               rss: ['https://www.cfr.org/feed'], active: true },
   { id: 'brookings',  name: 'Brookings Institution',       country: 'США',            city: 'Washington, DC',    lat: 38.9072, lng: -77.0369,  founded: 1916, focus: ['economy','geopolitics','foreign'],          website: 'https://www.brookings.edu',         rss: ['https://www.brookings.edu/feed/'], active: true },
-  { id: 'carnegie',   name: 'Carnegie Endowment',          country: 'США / Россия',   city: 'Washington, DC',    lat: 38.9072, lng: -77.0369,  founded: 1910, focus: ['nuclear','foreign','geopolitics'],          website: 'https://carnegieendowment.org',     rss: ['https://carnegieendowment.org/rss/solr/?fa=rss'], active: true },
+  { id: 'carnegie',   name: 'Carnegie Endowment',          country: 'США / Россия',   city: 'Washington, DC',    lat: 38.9072, lng: -77.0369,  founded: 1910, focus: ['nuclear','foreign','geopolitics'],          website: 'https://carnegieendowment.org',     rss: ['https://news.google.com/rss/search?q=site:carnegieendowment.org+when:7d&hl=en-US&gl=US&ceid=US:en'], active: true },
   { id: 'swp',        name: 'SWP',                         country: 'Германия',       city: 'Berlin',            lat: 52.5200, lng: 13.4050,   founded: 1962, focus: ['geopolitics','security','europe'],          website: 'https://www.swp-berlin.org',        rss: [], active: true },
-  { id: 'rusi',       name: 'RUSI',                        country: 'Великобритания', city: 'London',            lat: 51.5074, lng: -0.1278,   founded: 1831, focus: ['defence','security','military'],            website: 'https://www.rusi.org',              rss: ['https://rusi.org/rss/commentary'], active: true },
-  { id: 'isw',        name: 'ISW',                         country: 'США',            city: 'Washington, DC',    lat: 38.9072, lng: -77.0369,  founded: 2007, focus: ['military','geopolitics','security'],        website: 'https://www.understandingwar.org',  rss: ['https://www.understandingwar.org/backgrounder/rss.xml'], active: true },
+  { id: 'rusi',       name: 'RUSI',                        country: 'Великобритания', city: 'London',            lat: 51.5074, lng: -0.1278,   founded: 1831, focus: ['defence','security','military'],            website: 'https://www.rusi.org',              rss: ['https://news.google.com/rss/search?q=site:rusi.org+when:3d&hl=en-US&gl=US&ceid=US:en'], active: true },
+  { id: 'isw',        name: 'ISW',                         country: 'США',            city: 'Washington, DC',    lat: 38.9072, lng: -77.0369,  founded: 2007, focus: ['military','geopolitics','security'],        website: 'https://www.understandingwar.org',  rss: ['https://news.google.com/rss/search?q=site:understandingwar.org+when:2d&hl=en-US&gl=US&ceid=US:en'], active: true },
 ];
 
 const GOOGLE_NEWS_FEEDS = [
@@ -114,16 +140,65 @@ function decodeXmlEntities(s) {
   return String(s).replace(/<!\[CDATA\[|\]\]>/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&apos;/g, "'").replace(/&amp;/g, '&');
 }
 
-async function fetchRss(url) {
+function describeError(e) {
+  const name = e?.name || 'Error';
+  const code = e?.cause?.code || e?.code || '';
+  const msg = e?.message || '';
+  return code ? `${name}/${code}: ${msg}` : `${name}: ${msg}`;
+}
+
+function readBodyWithSignal(res, signal) {
+  return new Promise((resolve, reject) => {
+    if (signal && signal.aborted) {
+      reject(new Error('aborted before read'));
+      return;
+    }
+    const onAbort = () => reject(new Error('aborted while reading body'));
+    if (signal) signal.addEventListener('abort', onAbort, { once: true });
+    res.text().then(
+      (text) => {
+        if (signal) signal.removeEventListener('abort', onAbort);
+        resolve(text);
+      },
+      (err) => {
+        if (signal) signal.removeEventListener('abort', onAbort);
+        reject(err);
+      }
+    );
+  });
+}
+
+async function fetchWithTimeout(url, headers, timeoutMs, externalSignal) {
+  const opts = {
+    httpAgent: TOR_AGENT,
+    httpsAgent: TOR_AGENT,
+    proxy: false,
+    timeout: timeoutMs,
+    maxRedirects: 5,
+    responseType: 'text',
+    transformResponse: [(data) => data],  // не парсить JSON — мы ждём текст
+    headers: {
+      'User-Agent': USER_AGENT,
+      'Accept': 'application/rss+xml, application/xml, text/xml, */*',
+      ...headers
+    },
+    validateStatus: () => true,  // не бросать исключение на 4xx/5xx
+    signal: externalSignal
+  };
+  if (!USE_TOR) {
+    delete opts.httpAgent;
+    delete opts.httpsAgent;
+  }
+  const res = await axios.request({ url, method: 'GET', ...opts });
+  return { res: { ok: res.status >= 200 && res.status < 300, status: res.status }, text: res.data };
+}
+
+async function fetchRss(url, externalSignal) {
   if (!RATE_LIMIT.check()) return [];
   const headers = { 'User-Agent': 'Mozilla/5.0 (CrucixBot/2.0; +http://localhost)' };
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
-    const res = await fetch(url, { headers, signal: controller.signal });
-    clearTimeout(timeout);
+    const { res, text } = await fetchWithTimeout(url, headers, TIMEOUT_MS, externalSignal);
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    const text = await res.text();
     const items = [...text.matchAll(/<item>([\s\S]*?)<\/item>/gi)];
     const parsed = [];
     for (const m of items.slice(0, 10)) {
@@ -142,22 +217,18 @@ async function fetchRss(url) {
     }
     return parsed;
   } catch (e) {
-    await log('WARN', `RSS ${url.slice(0, 60)}... ${e.message}`);
+    await log('WARN', `RSS ${url.slice(0, 60)}... ${describeError(e)}`);
     return [];
   }
 }
 
-async function fetchGoogleNews(feed) {
+async function fetchGoogleNews(feed, externalSignal) {
   if (!RATE_LIMIT.check()) return [];
   const url = `https://news.google.com/rss/search?q=${encodeURIComponent(feed.query)}&hl=en-US&gl=US&ceid=US:en`;
   const headers = { 'User-Agent': 'Mozilla/5.0 (CrucixBot/2.0; +http://localhost)' };
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
-    const res = await fetch(url, { headers, signal: controller.signal });
-    clearTimeout(timeout);
+    const { res, text } = await fetchWithTimeout(url, headers, TIMEOUT_MS, externalSignal);
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    const text = await res.text();
     const items = [...text.matchAll(/<item>([\s\S]*?)<\/item>/gi)];
     const parsed = [];
     for (const m of items.slice(0, 5)) {
@@ -174,7 +245,7 @@ async function fetchGoogleNews(feed) {
     }
     return parsed;
   } catch (e) {
-    await log('WARN', `GoogleNews ${feed.id}: ${e.message}`);
+    await log('WARN', `GoogleNews ${feed.id}: ${describeError(e)}`);
     return [];
   }
 }
@@ -186,8 +257,8 @@ function generateReports() {
     const topics = CENTER_TOPICS[center.id] || [];
     for (const topic of topics) {
       reports.push({ id: `rpt-${String(counter).padStart(3, '0')}`, center: center.id, title: topic.title, date: daysAgo(randInt(1, 14)), region: topic.region, summary: `${topic.title} — аналитический отчёт центра ${center.name}. ${topic.keyPoints.join('. ')}.`, keyPoints: topic.keyPoints, confidence: randInt(topic.confidence[0], topic.confidence[1]), severity: topic.severity, tags: topic.tags, url: center.website, source: 'generated' });
-      counter++;
     }
+    counter++;
   }
   return reports;
 }
@@ -205,32 +276,42 @@ function generatePredictions() {
   return predictions;
 }
 
-async function collectCenterRss() {
+async function collectOneCenter(center, externalSignal) {
   const reports = [];
+  if (!Array.isArray(center.rss) || !center.rss.length) return reports;
+  const items = [];
+  for (const url of center.rss) {
+    const fetched = await fetchRss(url, externalSignal);
+    items.push(...fetched);
+    if (items.length >= 5) break;
+  }
   let counter = 1;
-  for (const center of CENTERS) {
-    if (!Array.isArray(center.rss) || !center.rss.length) continue;
-    const items = [];
-    for (const url of center.rss) {
-      const fetched = await fetchRss(url);
-      items.push(...fetched);
-      if (items.length >= 5) break;
-    }
-    for (const item of items.slice(0, 5)) {
-      const template = CENTER_TOPICS[center.id]?.[0];
-      reports.push({ id: `rpt-${String(counter).padStart(3, '0')}`, center: center.id, title: item.title, date: item.date, region: template?.region || 'global', summary: item.summary || `${center.name}: ${item.title}`, keyPoints: [item.title], confidence: randInt(65, 85), severity: template?.severity || 'medium', tags: template?.tags || ['analysis'], url: item.url || center.website, source: 'rss' });
-      counter++;
-    }
+  for (const item of items.slice(0, 5)) {
+    const template = CENTER_TOPICS[center.id]?.[0];
+    reports.push({ id: `rpt-${center.id}-${String(counter).padStart(2, '0')}`, center: center.id, title: item.title, date: item.date, region: template?.region || 'global', summary: item.summary || `${center.name}: ${item.title}`, keyPoints: [item.title], confidence: randInt(65, 85), severity: template?.severity || 'medium', tags: template?.tags || ['analysis'], url: item.url || center.website, source: 'rss' });
+    counter++;
   }
   return reports;
 }
 
-async function collectGoogleNews() {
+async function collectCenterRss(externalSignal) {
+  const settled = await Promise.allSettled(CENTERS.map(c => collectOneCenter(c, externalSignal)));
+  const reports = [];
+  for (const s of settled) {
+    if (s.status === 'fulfilled') reports.push(...s.value);
+  }
+  return reports;
+}
+
+async function collectGoogleNews(externalSignal) {
+  const settled = await Promise.allSettled(GOOGLE_NEWS_FEEDS.map(f => fetchGoogleNews(f, externalSignal)));
   const reports = [];
   let counter = 1000;
-  for (const feed of GOOGLE_NEWS_FEEDS) {
-    const items = await fetchGoogleNews(feed);
-    for (const item of items) {
+  for (let i = 0; i < settled.length; i++) {
+    const s = settled[i];
+    if (s.status !== 'fulfilled') continue;
+    const feed = GOOGLE_NEWS_FEEDS[i];
+    for (const item of s.value) {
       reports.push({ id: `rpt-gn-${String(counter).padStart(4, '0')}`, center: feed.id, title: item.title, date: item.date, region: item.region, summary: item.summary || item.title, keyPoints: [item.title], confidence: randInt(55, 75), severity: 'medium', tags: item.tags, url: item.url, source: 'google-news' });
       counter++;
     }
@@ -283,20 +364,28 @@ function computeQualityScore(reports) {
   return Math.min(100, score);
 }
 
-async function withDeadline(promise, ms, onTimeout) {
+async function withDeadline(factory, ms, onTimeout) {
+  const controller = new AbortController();
   let timer;
+  let timedOut = false;
   const timeout = new Promise((resolve) => {
-    timer = setTimeout(() => { onTimeout(); resolve(null); }, ms);
+    timer = setTimeout(async () => {
+      timedOut = true;
+      controller.abort();
+      if (onTimeout) await onTimeout();
+      resolve(null);
+    }, ms);
   });
   try {
-    return await Promise.race([promise, timeout]);
+    const result = await Promise.race([factory(controller.signal), timeout]);
+    return { result, timedOut, controller };
   } finally {
     clearTimeout(timer);
   }
 }
 
 export async function collectThinktanks() {
-  await log('INFO', '🚀 Запуск сборщика thinktanks (v2.0.1, TIMEOUT=' + TIMEOUT_MS + 'ms, deadline=' + GLOBAL_DEADLINE_MS + 'ms)');
+  await log('INFO', '🚀 Запуск сборщика thinktanks (v2.1.0, TIMEOUT=' + TIMEOUT_MS + 'ms, deadline=' + GLOBAL_DEADLINE_MS + 'ms)');
   const started = Date.now();
   RATE_LIMIT.reset();
 
@@ -308,24 +397,23 @@ export async function collectThinktanks() {
     reports = generateReports();
     sourcesAttempted.push('generated');
   } else {
-    let deadlineHit = false;
-    const collectPromise = (async () => {
+    const factory = async (signal) => {
       try {
-        const rssReports = await collectCenterRss();
+        const rssReports = await collectCenterRss(signal);
         if (rssReports.length) { reports.push(...rssReports); sourcesAttempted.push('rss'); await log('INFO', `✅ RSS центров: ${rssReports.length} отчётов`); }
-      } catch (e) { await log('WARN', `RSS центров упал: ${e.message}`); }
+      } catch (e) { await log('WARN', `RSS центров упал: ${describeError(e)}`); }
+      if (signal.aborted) return;
       try {
-        const gnReports = await collectGoogleNews();
+        const gnReports = await collectGoogleNews(signal);
         if (gnReports.length) { reports.push(...gnReports); sourcesAttempted.push('google-news'); await log('INFO', `✅ Google News: ${gnReports.length} отчётов`); }
-      } catch (e) { await log('WARN', `Google News упал: ${e.message}`); }
-    })();
+      } catch (e) { await log('WARN', `Google News упал: ${describeError(e)}`); }
+    };
 
-    const result = await withDeadline(collectPromise, GLOBAL_DEADLINE_MS, async () => {
-      deadlineHit = true;
+    const { timedOut } = await withDeadline(factory, GLOBAL_DEADLINE_MS, async () => {
       await log('WARN', `⏰ Дедлайн ${GLOBAL_DEADLINE_MS}ms превышен, используем то, что успели собрать`);
     });
 
-    if (deadlineHit || reports.length < VALIDATION.minLiveReports) {
+    if (timedOut || reports.length < VALIDATION.minLiveReports) {
       const genReports = generateReports();
       reports.push(...genReports);
       sourcesAttempted.push('generated');

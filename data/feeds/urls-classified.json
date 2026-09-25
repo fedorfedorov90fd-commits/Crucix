@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-09-24T04:22:58.135Z",
+  "generated_at": "2026-09-25T02:01:36.226Z",
   "total": 7,
   "counts": {
     "direct": 0,
-    "tor": 2,
-    "dead": 5
+    "tor": 0,
+    "dead": 7
   },
   "results": [
     {
@@ -14,14 +14,14 @@
         "channel": "direct",
         "status": 0,
         "ok": false,
-        "elapsed_ms": 92,
+        "elapsed_ms": 43,
         "error": "EAI_AGAIN: getaddrinfo EAI_AGAIN www.cfr.org"
       },
       "tor": {
         "channel": "tor",
         "status": 0,
         "ok": false,
-        "elapsed_ms": 30024,
+        "elapsed_ms": 30025,
         "error": "Error: Proxy connection timed out"
       }
     },
@@ -32,14 +32,14 @@
         "channel": "direct",
         "status": 0,
         "ok": false,
-        "elapsed_ms": 48,
+        "elapsed_ms": 22,
         "error": "EAI_AGAIN: getaddrinfo EAI_AGAIN news.google.com"
       },
       "tor": {
         "channel": "tor",
         "status": 0,
         "ok": false,
-        "elapsed_ms": 30028,
+        "elapsed_ms": 30030,
         "error": "Error: Proxy connection timed out"
       }
     },
@@ -50,14 +50,14 @@
         "channel": "direct",
         "status": 0,
         "ok": false,
-        "elapsed_ms": 53,
+        "elapsed_ms": 23,
         "error": "EAI_AGAIN: getaddrinfo EAI_AGAIN news.google.com"
       },
       "tor": {
         "channel": "tor",
         "status": 0,
         "ok": false,
-        "elapsed_ms": 30028,
+        "elapsed_ms": 30033,
         "error": "Error: Proxy connection timed out"
       }
     },
@@ -68,14 +68,14 @@
         "channel": "direct",
         "status": 0,
         "ok": false,
-        "elapsed_ms": 53,
+        "elapsed_ms": 20,
         "error": "EAI_AGAIN: getaddrinfo EAI_AGAIN dataverse.harvard.edu"
       },
       "tor": {
         "channel": "tor",
         "status": 0,
         "ok": false,
-        "elapsed_ms": 30047,
+        "elapsed_ms": 30032,
         "error": "Error: Proxy connection timed out"
       }
     },
@@ -86,53 +86,51 @@
         "channel": "direct",
         "status": 0,
         "ok": false,
-        "elapsed_ms": 54,
+        "elapsed_ms": 23,
         "error": "EAI_AGAIN: getaddrinfo EAI_AGAIN digitallibrary.un.org"
       },
       "tor": {
         "channel": "tor",
         "status": 0,
         "ok": false,
-        "elapsed_ms": 30042,
+        "elapsed_ms": 30028,
         "error": "Error: Proxy connection timed out"
       }
     },
     {
       "url": "https://tass.ru/rss/v2.xml",
-      "category": "tor",
+      "category": "dead",
       "direct": {
         "channel": "direct",
         "status": 0,
         "ok": false,
-        "elapsed_ms": 25,
+        "elapsed_ms": 17,
         "error": "EAI_AGAIN: getaddrinfo EAI_AGAIN tass.ru"
       },
       "tor": {
         "channel": "tor",
-        "status": 200,
-        "ok": true,
-        "elapsed_ms": 30904,
-        "content_type": "application/rss+xml, application/rdf+xml;q=0.8, application/atom+xml;q=0.6, application/xml;q=0.4, text/xml;q=0.4; charset=utf-8",
-        "size": 50595
+        "status": 0,
+        "ok": false,
+        "elapsed_ms": 30029,
+        "error": "Error: Proxy connection timed out"
       }
     },
     {
       "url": "https://ria.ru/export/rss2/index.xml",
-      "category": "tor",
+      "category": "dead",
       "direct": {
         "channel": "direct",
         "status": 0,
         "ok": false,
-        "elapsed_ms": 22,
+        "elapsed_ms": 13,
         "error": "EAI_AGAIN: getaddrinfo EAI_AGAIN ria.ru"
       },
       "tor": {
         "channel": "tor",
-        "status": 200,
-        "ok": true,
-        "elapsed_ms": 27232,
-        "content_type": "text/xml; charset=utf-8",
-        "size": 12125
+        "status": 0,
+        "ok": false,
+        "elapsed_ms": 30026,
+        "error": "Error: Proxy connection timed out"
       }
     }
   ]

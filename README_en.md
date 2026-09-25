@@ -27,23 +27,24 @@
 10. [Architecture](#-architecture)
 11. [Modular Server Architecture](#-modular-server-architecture)
 12. [🗺️ Geopolitical Map (geo-map)](#️-geopolitical-map-geo-map)
-13. [Data Sources](#-data-sources)
-14. [npm Scripts](#-npm-scripts)
-15. [Configuration](#-configuration)
-16. [API Endpoints](#-api-endpoints)
-17. [Troubleshooting](#-troubleshooting)
-18. [Extensions](#-extensions)
-19. [AI Chat](#-ai-chat)
-20. [Contributing](#-contributing)
-21. [License](#-license)
-
----
+13. [🧭 Polarity and Narrative Comparison System](#-polarity-and-narrative-comparison-system)
+14. [Data Sources](#-data-sources)
+15. [npm Scripts](#-npm-scripts)
+16. [Configuration](#-configuration)
+17. [API Endpoints](#-api-endpoints)
+18. [Troubleshooting](#-troubleshooting)
+19. [Extensions](#-extensions)
+20. [AI Chat](#-ai-chat)
+21. [Contributing](#-contributing)
+22. [🧠 Crucix Predictive Core](#-crucix-predictive-core)
+23. [📰 SmartScroll — RSS and Telegram Integration](#-smartscroll--rss-and-telegram-integration)
+24. [License](#-license)
 
 ## 🚀 Description
 
-**Crucix** is a platform for collecting, analyzing, and visualizing data from open sources. Designed for real-time monitoring of geopolitical, economic, military, and environmental conditions.
+**Crucix** is a platform for collecting, analyzing, and visualizing open source data. It is designed for real-time monitoring of geopolitical, economic, military, and environmental situations.
 
-The architecture follows the **"Basket → AI → Map"** principle:
+The architecture follows the principle **"Basket → AI → Map"**:
 
 - **Collection** — data arrives from 226 sources into the basket (`data/basket/`)
 - **Analysis** — 59 analyzers compute indices, composites, forecasts (`data/analytics/`)
@@ -54,13 +55,13 @@ The architecture follows the **"Basket → AI → Map"** principle:
 
 - ✅ **226 OSINT sources** — satellites, aviation, conflicts, economy, ecology
 - ✅ **59 analyzers** — indices, detectors, forecasts, composites
-- ✅ **370+ API modules** — all endpoints read from the basket
+- ✅ **370+ API modules** — all endpoints read data from the basket
 - ✅ **8 analytics categories** — index, detector, forecast, semantic, flow, market, specialist, space
 - ✅ **3D WebGL Globe** + 2D map with 9 marker types
-- ✅ **Leaflet map** with 237 layers, heatmap, and timeline
-- ✅ **Infrastructure analyzer** — 114 objects, 15 endpoints
+- ✅ **Leaflet map** with 237 layers, heat map, and timeline
+- ✅ **Infrastructure Analyzer** — 114 objects, 15 endpoints
 - ✅ **Auto-refresh** every 15 minutes via SSE
-- ✅ **Telegram + Discord bots** with bidirectional control
+- ✅ **Telegram + Discord bots** with two-way control
 - ✅ **AI analytics** via Ollama (local, no cloud)
 - ✅ **Modular architecture** — easy to extend
 - ✅ **Zero cloud, zero telemetry, zero subscriptions**
@@ -74,7 +75,7 @@ The architecture follows the **"Basket → AI → Map"** principle:
 | | |
 |-|-|
 |![image](docs/dashboard.png)|![image](docs/boot.png)|
-|**Main dashboard**|**Boot animation**|
+|**Main dashboard**|**Loading animation**|
 
 | |
 |-|
@@ -100,166 +101,207 @@ cd Crucix
 # 2. Install dependencies (Express only)
 npm install
 
-# 3. Copy .env template and add API keys (optional)
+# 3. Copy .env template and add API keys
 cp .env.example .env
 
 # 4. Start the dashboard
 npm run dev
-```
+The dashboard opens at http://localhost:3117
 
-Dashboard opens at `http://localhost:3117`
+If npm run dev does not work, run directly:
 
-If `npm run dev` doesn't work, run directly:
-
-```bash
+bash
 node --trace-warnings server.mjs
-```
-
-### Docker
-
-```bash
+Docker
+bash
 git clone https://github.com/calesthio/Crucix.git
 cd Crucix
 cp .env.example .env
 docker compose up -d
-```
+🎯 What You Get
+Dashboard
+3D WebGL Globe (Globe.gl) with atmosphere and star field
 
----
+2D map (D3) with 9 marker types
 
-## 🎯 What You Get
+Leaflet map with 237 layers, heat map, and timeline
 
-### Dashboard
+Animated flight arcs between aviation hubs
 
-- **3D WebGL Globe** (Globe.gl) with atmosphere and star field
-- **2D map** (D3) with 9 marker types
-- **Leaflet map** with 237 layers, heatmap, and timeline
-- **Animated flight arcs** between aviation hubs
-- **Region filters** (World, Americas, Europe, Middle East, Asia, Africa)
-- **Real-time market data** (indices, crypto, energy, metals)
+Region filters (World, Americas, Europe, Middle East, Asia, Africa)
 
-### Analytics
+Real-time market data (indices, crypto, energy, metals)
 
-- **59 analyzers** — from base indices to composite risks
-- **197 countries** in the characteristics reference
-- **147 countries** with real Gini coefficient
-- **194 countries** with World Bank macro data
-- **114 critical infrastructure objects** (25 military bases, 20 NPPs, 26 ports, 15 chokepoints, 15 dams, 13 power grids)
-- **8 analytics categories** in `data/analytics/`
+Analytics
+59 analyzers — from base indices to composite risks
 
-### AI Capabilities
+197 countries in the characteristics reference
 
-- **Local LLM** via Ollama
-- **AI briefs** (daily, alert, summary)
-- **Forecasts** via AI
-- **Semantic search** over news (TF-IDF + cosine similarity)
-- **Entity extraction** (NER) from text
+147 countries with real Gini coefficient
 
-### Integrations
+194 countries with World Bank macroeconomics
 
-- **Telegram bot** (bidirectional)
-- **Discord bot** (bidirectional)
-- **MCP Server** (Model Context Protocol) — access Crucix from external AI clients
-- **CLI analytics** — query analyzers from terminal
+114 critical infrastructure objects (25 military bases, 20 nuclear plants, 26 ports, 15 chokepoints, 15 dams, 13 power grids)
 
----
+8 analytics categories in data/analytics/
 
-## 📊 Analytics Platform
+AI Capabilities
+Local LLM via Ollama
 
-Crucix includes a **full analytics platform** — 59 analyzers from Party #2, split into **8 categories**.
+AI briefs (daily, alert, summary)
 
-### Analyzer Categories
+Forecasts via AI
 
-| Category | Description | Count |
-|---|---|---|
-| **index** | Indices (country, regional) | 2 |
-| **detector** | Event and anomaly detectors | 8 |
-| **forecast** | Predictive models | 4 |
-| **semantic** | Text semantic analysis | 6 |
-| **flow** | Flows (trade, migration, resources) | 10 |
-| **market** | Market indicators | 7 |
-| **specialist** | Specialized (infra, nuclear, sanctions) | 21 |
-| **space** | Space | 1 |
-| **TOTAL** | | **59** |
+Semantic search across news (TF-IDF + cosine similarity)
 
-### Key Analyzers
+Entity extraction (NER) from texts
 
-**Indices (index):**
-- `country-instability` — Country Instability Index (CII). Reference implementation.
-- `resilience-index` — Resilience Index (197 countries, 152 unique scores)
+Integrations
+Telegram bot (two-way)
 
-**Composites (specialist):**
-- `strategic-risk-composite` — Strategic risk (instability + resilience deficit + infrastructure + geopolitics)
-- `infrastructure-cascade` — Cascading infrastructure analysis (13 files, 15 endpoints)
+Discord bot (two-way)
 
-**Forecasts (forecast):**
-- `conflict-escalation-tracker` — Conflict escalation (6 levels)
-- `ai-forecasts` — Forecasts via LLM
-- `social-briefing` — Briefs via LLM (daily, alert, summary)
-- `central-bank-predictor` — Central bank action predictor
+MCP Server (Model Context Protocol) — access to Crucix from external AI clients
 
-**Detectors (detector):**
-- `geo-convergence` — Geographic convergence
-- `threat-classification` — Threat classification
-- `surge-detection` — Surge detection
-- `focal-point-detection` — Focal point activity
-- `baseline-alerting` — Threshold alerts
-- `cyber-attack-monitor` — Cyber attacks
-- `snapshot-system` — State snapshots
-- `pizza-index` — Activity near HQs (internal index)
+CLI analytics — query analyzers from the terminal
 
-**Semantics (semantic):**
-- `adaptive-news-clustering` — News clustering (TF-IDF)
-- `ai-news-synthesis` — AI news synthesis
-- `entity-extraction` — NER
-- `multi-source-corroboration` — Fact verification
-- `source-credibility` — Source credibility
-- `social-sentiment-analyzer` — Social sentiment
+📊 Analytics Platform
+Crucix includes a full analytics platform — 59 analyzers from batch №2, split into 8 categories.
 
-**Flows (flow):**
-- `cross-stream-correlation` — Cross-stream correlation
-- `route-explorer` — Alternative routes
-- `supply-chain-cascade-engine` — Supply chain cascades
-- `supply-chain-resilience` — Supply resilience
-- `tanker-fleet-monitor` — Tanker fleet (dark ships)
-- `arms-transfer-tracker` — Arms transfers
-- `diplomatic-tracker` — Diplomatic activity
-- `migration-flow-tracker` — Migration flows
-- `signal-aggregator` — Signal aggregation
-- `risk-signal-aggregator` — Risk aggregation
+Analyzer Categories
+Category	Description	Count
+index	Indices (country, regional)	2
+detector	Event and anomaly detectors	8
+forecast	Forecast models	4
+semantic	Semantic text analysis	6
+flow	Flows (trade, migration, resources)	10
+market	Market indicators	7
+specialist	Specialized (infra, nuclear, sanctions)	21
+space	Space	1
+TOTAL		59
+Key Analyzers
+Indices (index):
 
-**Markets (market):**
-- `market-composite` — Market composite (VIX, oil, gold, DXY)
-- `derived-market-analytics` — Derived metrics (Gold/Oil, Copper/Gold)
-- `energy-market-intelligence` — Energy markets
-- `prediction-markets` — Prediction markets
-- `stablecoin-monitor` — Stablecoins
-- `etf-flow-analysis` — ETF flows
-- `fx-reserves-monitor` — FX reserves
-- `tick-data-analyzer` — Tick data
+country-instability — Country Instability Index (CII). Reference implementation.
 
-**Specialists (specialist) — continued:**
-- `sanctions-pressure` — Sanctions pressure
-- `political-stability-monitor` — Political stability
-- `food-security-monitor` — Food security
+resilience-index — Resilience Index (197 countries, 152 unique scores)
 
-**Space (space):**
-- `satellite-analyzer` — Satellite analysis
+Composites (specialist):
 
-### How Analytics Work
+strategic-risk-composite — Strategic risk (instability + resilience deficit + infrastructure + geopolitics)
 
-1. **Collection** — collectors (`scripts/collectors/`) put data into basket `data/basket/`
-2. **Computation** — analyzers (`scripts/analyzers/`) read basket + references, compute indices, write to `data/analytics/{category}/`
-3. **Serving** — API modules (`apis/sources/{name}-api.mjs`) read results, serve via `/api/layers/{name}`
-4. **Display** — map layer (`dashboard/public/geo-map/js/layers.js`) shows the result
+infrastructure-cascade — Infrastructure cascade analysis (13 files, 15 endpoints)
 
-### Structure of `data/analytics/`
+Forecasts (forecast):
 
-```
+conflict-escalation-tracker — Conflict escalation (6 levels)
+
+ai-forecasts — Forecasts via LLM
+
+social-briefing — Briefs via LLM (daily, alert, summary)
+
+central-bank-predictor — Central bank action forecast
+
+Detectors (detector):
+
+geo-convergence — Geographic convergence
+
+threat-classification — Threat classification
+
+surge-detection — Anomaly surges
+
+focal-point-detection — Focal points of activity
+
+baseline-alerting — Threshold alerts
+
+cyber-attack-monitor — Cyber attacks
+
+snapshot-system — State snapshots
+
+pizza-index — Activity near headquarters (internal index)
+
+Semantics (semantic):
+
+adaptive-news-clustering — News clustering (TF-IDF)
+
+ai-news-synthesis — AI news synthesis
+
+entity-extraction — NER
+
+multi-source-corroboration — Fact verification
+
+source-credibility — Source credibility
+
+social-sentiment-analyzer — Social sentiment
+
+Flows (flow):
+
+cross-stream-correlation — Cross-stream correlation
+
+route-explorer — Alternative routes
+
+supply-chain-cascade-engine — Supply chain cascades
+
+supply-chain-resilience — Supply resilience
+
+tanker-fleet-monitor — Tanker fleet (dark vessels)
+
+arms-transfer-tracker — Arms transfers
+
+diplomatic-tracker — Diplomatic activity
+
+migration-flow-tracker — Migration flows
+
+signal-aggregator — Signal aggregation
+
+risk-signal-aggregator — Risk aggregation
+
+Markets (market):
+
+market-composite — Market composite (VIX, oil, gold, DXY)
+
+derived-market-analytics — Derived metrics (Gold/Oil, Copper/Gold)
+
+energy-market-intelligence — Energy markets
+
+prediction-markets — Prediction markets
+
+stablecoin-monitor — Stablecoins
+
+etf-flow-analysis — ETF flows
+
+fx-reserves-monitor — FX reserves
+
+tick-data-analyzer — Tick data
+
+Specialists (specialist) — continued:
+
+sanctions-pressure — Sanctions pressure
+
+political-stability-monitor — Political stability
+
+food-security-monitor — Food security
+
+Space (space):
+
+satellite-analyzer — Satellite analysis
+
+How Analytics Work
+Collection — collectors (scripts/collectors/) put data into the basket data/basket/
+
+Computation — analyzers (scripts/analyzers/) read the basket + references, compute indices, write to data/analytics/{category}/
+
+Serving — API modules (apis/sources/{name}-api.mjs) read results, serve via /api/layers/{name}
+
+Display — map layer (dashboard/public/geo-map/js/layers.js) shows the result
+
+Structure of data/analytics/
+text
 data/analytics/
 ├── _manifest.json     # registry of all analyzers
 ├── _catalog.json      # class catalog
 ├── _lineage.json      # data lineage
-├── _health.json       # health status
+├── _health.json       # status
 ├── _schema.json       # schema
 ├── index/             # indices
 ├── detector/          # detectors
@@ -269,11 +311,8 @@ data/analytics/
 ├── market/            # markets
 ├── specialist/        # specialists
 └── space/             # space
-```
-
-### Running an Analyzer
-
-```bash
+Running an Analyzer
+bash
 # One analyzer
 node scripts/analyzers/resilience-index.mjs
 
@@ -284,50 +323,59 @@ for f in scripts/analyzers/*.mjs; do node "$f"; done
 node scripts/collectors/collect-worldbank.mjs
 node scripts/analyzers/strategic-risk-composite.mjs
 curl http://localhost:3117/api/layers/strategic-risk-composite/stats
-```
+🏗️ Infrastructure Analyzer
+Infrastructure Cascade is the most complex analyzer in Crucix. It consists of 13 files and serves 15 endpoints.
 
----
+Files
+Block A (core):
 
-## 🏗️ Infrastructure Analyzer
+infrastructure-graph-core.mjs — graph, haversine
 
-**Infrastructure Cascade** — the most complex analyzer in Crucix. Consists of **13 files** and serves **15 endpoints**.
+infrastructure-propagation.mjs — cascade propagation
 
-### Files
+infrastructure-pagerank-critical.mjs — PageRank, betweenness
 
-**Block A (core):**
-- `infrastructure-graph-core.mjs` — graph, haversine
-- `infrastructure-propagation.mjs` — cascading propagation
-- `infrastructure-pagerank-critical.mjs` — PageRank, betweenness
-- `infrastructure-temporal.mjs` — temporal decay
+infrastructure-temporal.mjs — temporal decay
 
-**Block B (computation):**
-- `infrastructure-vulnerability-calc.mjs` — adaptive vulnerability calculation
-- `infrastructure-monte-carlo.mjs` — Monte Carlo, sensitivity
-- `infrastructure-scenario-engine.mjs` — 8 scenarios (Hormuz, Taiwan, NPP...)
+Block B (computation):
 
-**Block C (monitoring):**
-- `infrastructure-military-monitor.mjs` — military bases
-- `infrastructure-chokepoint-monitor.mjs` — straits, canals
-- `infrastructure-nuclear-monitor.mjs` — NPPs
-- `infrastructure-supply-chain.mjs` — HHI concentration
-- `infrastructure-cargo-anomaly.mjs` — cargo anomalies
+infrastructure-vulnerability-calc.mjs — adaptive vulnerability calculation
 
-**+ `infrastructure-api.mjs`** — HTTP handler
+infrastructure-monte-carlo.mjs — Monte Carlo, sensitivity
 
-### Infrastructure Objects
+infrastructure-scenario-engine.mjs — 8 scenarios (Hormuz, Taiwan, NPP...)
 
-`data/infrastructure/objects.json` — **114 objects:**
+Block C (monitoring):
 
-- 25 military bases (USA, Russia, China, NATO)
-- 20 nuclear power plants (Zaporizhzhia, Fukushima, Bushehr, Akkuyu...)
-- 26 ports (Shanghai, Singapore, Rotterdam...)
-- 15 chokepoints (Hormuz, Suez, Taiwan, Bab-el-Mandeb...)
-- 15 dams (Three Gorges, Itaipu, Kakhovka...)
-- 13 power grids (East China, ERCOT, Ukrenergo...)
+infrastructure-military-monitor.mjs — military bases
 
-### 15 Endpoints
+infrastructure-chokepoint-monitor.mjs — straits, canals
 
-```
+infrastructure-nuclear-monitor.mjs — nuclear plants
+
+infrastructure-supply-chain.mjs — HHI concentration
+
+infrastructure-cargo-anomaly.mjs — cargo anomalies
+
++ infrastructure-api.mjs — HTTP handler
+
+Infrastructure Objects
+data/infrastructure/objects.json — 114 objects:
+
+25 military bases (US, Russia, China, NATO)
+
+20 nuclear plants (Zaporizhzhia, Fukushima, Bushehr, Akkuyu...)
+
+26 ports (Shanghai, Singapore, Rotterdam...)
+
+15 chokepoints (Hormuz, Suez, Taiwan, Bab-el-Mandeb...)
+
+15 dams (Three Gorges, Itaipu, Kakhovka...)
+
+13 power grids (East China, ERCOT, Ukrenergo...)
+
+15 Endpoints
+text
 GET /api/layers/infrastructure-api                    — root
 GET /api/layers/infrastructure-api/vulnerability      — vulnerability
 GET /api/layers/infrastructure-api/cascade            — cascade
@@ -338,138 +386,144 @@ GET /api/layers/infrastructure-api/sensitivity        — sensitivity
 GET /api/layers/infrastructure-api/featurecollection  — GeoJSON
 GET /api/layers/infrastructure-api/stats              — statistics
 GET /api/layers/infrastructure-api/military           — military objects
-GET /api/layers/infrastructure-api/chokepoints        — chokepoints
-GET /api/layers/infrastructure-api/nuclear            — NPPs
+GET /api/layers/infrastructure-api/chokepoints        — straits
+GET /api/layers/infrastructure-api/nuclear            — nuclear plants
 GET /api/layers/infrastructure-api/supply-chain       — supply chains
 GET /api/layers/infrastructure-api/cargo-anomalies    — anomalies
 GET /api/layers/infrastructure-api/scenarios          — scenarios
-```
+Key Results
+PageRank → chokepoint-taiwan (most connected node)
 
-### Key Results
+Top bottleneck → chokepoint-malacca
 
-- **PageRank → chokepoint-taiwan** (most connected node)
-- **Top bottleneck → chokepoint-malacca**
-- **Vulnerability max → npp-zaporizhzhia**
-- **Sensitivity → exposure** (most influential factor)
-- **Scenario Taiwan-blockade → 3 nodes affected**
-- **Scenario Hormuz-closure → 5 nodes affected**
+Vulnerability max → npp-zaporizhzhia
 
----
+Sensitivity → exposure (most influential factor)
 
-## 🔀 Router v3.1 — Mechanism A+B
+Taiwan-blockade scenario → 3 nodes affected
 
-**Router** (`server/router.mjs`) — a key component. Determines which module handles a request.
+Hormuz-closure scenario → 5 nodes affected
 
-### 4 Lookup Mechanisms
+🔀 Router v3.1 — Mechanism A+B
+Router (server/router.mjs) is a key component. It determines which module handles a request.
 
-**1. Mechanism A (priority) — `export const route`:**
+4 Lookup Mechanisms
+1. Mechanism A (priority) — export const route:
 
 An API module declares its own prefix:
-```javascript
+
+javascript
 export const route = '/api/layers/infrastructure-api';
 export default handleInfrastructureAPI;
-```
+Router reads module.route when loading the module and registers it in modulePrefixCache. All subsequent requests to /api/layers/infrastructure-api/* go through the cache in microseconds.
 
-Router reads `module.route` on module load and registers it in `modulePrefixCache`. All subsequent requests to `/api/layers/infrastructure-api/*` are served **in microseconds** from cache.
+2. routes-api.json — exact match:
 
-**2. routes-api.json — exact match:**
+Entry { path: '/api/layers/country-instability', module: 'country-instability-api' }. Works for legacy modules.
 
-Entry `{ path: '/api/layers/country-instability', module: 'country-instability-api' }`. Works for legacy modules.
+3. routes-api.json — wildcard:
 
-**3. routes-api.json — wildcard:**
+Entry { path: '/api/layers/infrastructure-api/*', module: 'infrastructure-api' }. Works as fallback.
 
-Entry `{ path: '/api/layers/infrastructure-api/*', module: 'infrastructure-api' }`. Works as fallback.
+4. Mechanism B — auto-prefix:
 
-**4. Mechanism B — auto-prefix:**
+If a file in apis/sources/ is named {name}-api.mjs — it is automatically available via /api/layers/{name}/*. For 300+ legacy modules.
 
-If a file in `apis/sources/` is named `{name}-api.mjs` — automatically accessible via `/api/layers/{name}/*`. For 300+ legacy modules.
+Lookup Priority
+modulePrefixCache (Mechanism A) — fastest
 
-### Lookup Priority
+routes-api.json (exact) — exact match
 
-1. `modulePrefixCache` (Mechanism A) — fastest
-2. `routes-api.json (exact)` — exact match
-3. `routes-api.json (wildcard)` — with `*`
-4. `autoPrefixCache` (Mechanism B) — by filename
+routes-api.json (wildcard) — with *
 
-### For Developers
+autoPrefixCache (Mechanism B) — by filename
 
-**New API module** — recommended to add `export const route` (Mechanism A):
+For Developers
+New API module — recommended to add export const route (Mechanism A):
 
-```javascript
+javascript
 // apis/sources/my-module-api.mjs
 export const route = '/api/layers/my-module';
 
 export default async function handler(req, res) {
   // ...
 }
-```
+No longer needed to add an entry to routes-api.json manually. The module registers itself.
 
-**No longer need** to add a record in `routes-api.json` manually. The module registers itself.
+🧪 AI Laboratory
+The AI Laboratory is an environment where the local LLM (Ollama) becomes an active participant in analysis.
 
----
+Components
+Ollama — http://localhost:11434, models: llama3.1:8b, mistral:7b, phi3:3.8b
 
-## 🧪 AI Laboratory
+AI Gateway — apis/sources/ai-gateway.mjs
 
-The AI Laboratory is an environment where a local LLM (Ollama) becomes an active participant in analysis.
+RAG module — apis/sources/rag-module/, port 3120
 
-### Components
+AI Chat — http://localhost:8080
 
-- **Ollama** — `http://localhost:11434`, models: llama3.1:8b, mistral:7b, phi3:3.8b
-- **AI Gateway** — `apis/sources/ai-gateway.mjs`
-- **RAG module** — `apis/sources/rag-module/`, port 3120
-- **AI Chat** — `http://localhost:8080`
+AI Laboratory Pipeline
+Data collection → data/basket/*.json
 
-### AI Laboratory Pipeline
+Analyzer computation → data/analytics/{category}/*.json
 
-1. **Data collection** → `data/basket/*.json`
-2. **Analyzer computation** → `data/analytics/{category}/*.json`
-3. **Serving via API** → `GET /api/layers/{name}`
-4. **AI forecasting** → `data/analytics/forecast/*.json`
-5. **Brief generation** → `daily-briefing.mjs` via Ollama
-6. **Semantic search** → RAG module on port 3120
+API serving → GET /api/layers/{name}
 
-### AI Modules
+AI forecasting → data/analytics/forecast/*.json
 
-- **ai-news-synthesis** — news synthesis via LLM
-- **ai-forecasts** — probabilistic forecast
-- **social-briefing** — 3 brief formats (daily, alert, summary)
-- **daily-briefing.mjs** — daily digest
+Brief generation → daily-briefing.mjs via Ollama
 
----
+Semantic search → RAG module on port 3120
 
-## 🔑 API Keys
+AI Modules
+ai-news-synthesis — news synthesis via LLM
 
-Crucix **runs without API keys** — only open sources are used. Project rule (12.2): no registrations, keys, or OAuth.
+ai-forecasts — probabilistic forecast
 
-### Open Sources (no keys)
+social-briefing — 3 brief formats (daily, alert, summary)
 
-- **USGS Earthquakes** — earthquakes
-- **NOAA SWPC** — space weather
-- **OpenSky Network** — aircraft (anonymous)
-- **Open-Meteo** — weather
-- **Where the ISS at** — ISS
-- **Launch Library 2** — space launches
-- **Frankfurter** — ECB FX rates
-- **Hacker News** — top news
-- **mledoze/countries** — 250 countries reference
-- **CISA KEV** — vulnerabilities
-- **CoinGecko** — crypto
-- **US Treasury** — US debt
-- **ECB Data Portal** — EU macro
-- **World Bank** — macro for 197 countries
-- **GDELT** — news (requires browser User-Agent, pause ≥5 sec)
+daily-briefing.mjs — daily digest
 
-### If a Key Is Needed
+🔑 API Keys
+Crucix works without API keys — only open sources are used. Project rule (12.2): no registrations, keys, OAuth.
 
-One key (may be useful): `OLLAMA_HOST` for an external Ollama. This is local — no registration required.
+Open Sources (no keys)
+USGS Earthquakes — earthquakes
 
----
+NOAA SWPC — space weather
 
-## 🏛️ Architecture
+OpenSky Network — aircraft (anonymous)
 
-### The "Basket → AI → Map" Principle
+Open-Meteo — weather
 
-```
+Where the ISS at — ISS
+
+Launch Library 2 — space launches
+
+Frankfurter — ECB FX rates
+
+Hacker News — top news
+
+mledoze/countries — 250-country reference
+
+CISA KEV — vulnerabilities
+
+CoinGecko — crypto
+
+US Treasury — US debt
+
+ECB Data Portal — EU macro
+
+World Bank — macro for 197 countries
+
+GDELT — news (requires browser User-Agent, pause ≥5 sec)
+
+If a Key Is Needed
+One key (may be useful): OLLAMA_HOST for external Ollama. This is local — no registration required.
+
+🏛️ Architecture
+The "Basket → AI → Map" Principle
+text
 External API
     ↓
 Collector (scripts/collectors/collect-*.mjs)
@@ -483,19 +537,15 @@ Analytics (data/analytics/{category}/*.json)
 API module (apis/sources/*-api.mjs)
     ↓
 Map (dashboard/public/geo-map/)
-```
+Key Rule
+No module fetches from external APIs. All data comes only from the basket. The only exception is collectors that fill the basket.
 
-### Key Rule
-
-**No module makes fetch calls to external APIs.** All data comes only from the basket. The only exception is collectors, which fill the basket.
-
-### Project Structure
-
-```
+Project Structure
+text
 Crucix/
 ├── apis/sources/            # 370+ API modules
 ├── scripts/
-│   ├── collectors/          # collectors to basket
+│   ├── collectors/          # collectors into basket
 │   └── analyzers/           # analyzers
 ├── data/
 │   ├── basket/              # 226 data files
@@ -510,295 +560,463 @@ Crucix/
 │   ├── routes-api.json      # legacy routes
 │   └── server.mjs           # entry point
 ├── dashboard/public/        # pages and geo-map
-├── docs/help/               # help files ru/en
+├── docs/help/               # ru/en help
 ├── ai-memory-sync/          # AI memory files
 └── logs/collectors/         # collector logs
-```
+🧩 Modular Server Architecture
+All server files are in server/:
 
----
+server.mjs — entry point (30 lines)
 
-## 🧩 Modular Server Architecture
+router.mjs — API router (Mechanism A+B)
 
-All server files are in `server/`:
+loader.mjs — module loader from modules.json
 
-- `server.mjs` — entry point (30 lines)
-- `router.mjs` — API router (Mechanism A+B)
-- `loader.mjs` — module loader from `modules.json`
-- `api.mjs` — API routes (registry, etc.)
-- `pages.mjs` — page routes
-- `utils.mjs` — utilities (`sendJSON`, `sendError`)
-- `config.mjs` — port, MIME types
-- `static.mjs` — static file serving
-- `modules.json` — API module registry (370+)
-- `routes-api.json` — API routes (legacy)
-- `pages.json` — page registry
-- `routes-pages.json` — page routes
+api.mjs — API routes (registry, etc.)
 
----
+pages.mjs — page routes
 
-## 🗺️ Geopolitical Map (geo-map)
+utils.mjs — utilities (sendJSON, sendError)
 
-Main file: `dashboard/public/geo-map.html`.
+config.mjs — port, MIME types
 
-Scripts in `dashboard/public/geo-map/js/`:
+static.mjs — static serving
 
-- `core.js` — map core
-- `countries.js` — country data
-- `layers.js` — **237 layers**, 16 categories
-- `markers.js` — markers
-- `map-controls.js` — map controls (markers / choropleth / heatmap)
-- `copy-data.js` — COPY button
-- `heat-timeline.js` — heatmap and timeline
-- `ssi.js` — tension index
-- `refresh.js` — auto-refresh
-- `logger.js` — logging
-- `init.js` — initialization
+modules.json — API module registry (370+)
 
-### How to Add a Layer
+routes-api.json — API routes (legacy)
 
-1. Create API module in `apis/sources/{id}-api.mjs` with `export const route`
-2. Create analyzer in `scripts/analyzers/{id}.mjs` (if needed)
-3. Add layer to `layers.js` (array `DEMO_LAYERS`)
-4. Restart the server
+pages.json — page registry
 
-See more in `docs/help/ru/layers/`.
+routes-pages.json — page routes
 
----
+🗺️ Geopolitical Map (geo-map)
+Main file: dashboard/public/geo-map.html.
 
-## 📡 Data Sources
+Scripts in dashboard/public/geo-map/js/:
 
-226 files in `data/basket/`. Key files:
+core.js — map core
 
-### Geopolitics and Conflicts
-- `acled.json` — armed conflicts
-- `gdelt.json` — news and events
-- `ucdp-latest.json` — UCDP data
-- `conflict-zone.json` — conflict zones
+countries.js — country data
 
-### Military
-- `military-bases.json` — military bases
-- `military-exercises.json` — exercises
-- `military-spending.json` — spending
-- `nuclear-monitor.json` — nuclear monitoring
+layers.js — 237 layers, 16 categories
 
-### Economy and Markets
-- `worldbank-latest.json` — 194 countries from World Bank
-- `coingecko-latest.json` — crypto
-- `fred.json` — macro (ECB + Treasury + WB)
-- `fx-rates.json` — FX rates (Frankfurter)
-- `vix.json`, `gold.json`, `oil.json`, `dxy.json` — market indicators
-- `treasury-debt.json` — US debt
+markers.js — markers
 
-### Natural Phenomena
-- `earthquakes.json` — earthquakes (USGS)
-- `firms.json` — fires (NASA FIRMS)
-- `noaa.json` — space weather
-- `open-meteo.json` — weather (10 cities)
-- `wildfires.json` — wildfires
+map-controls.js — map control (markers / choropleth / heatmap)
 
-### Space
-- `satellites.json` — satellites
-- `iss-live.json` — ISS live
-- `launches-upcoming.json` — upcoming launches
-- `space-debris.json` — space debris
+copy-data.js — COPY button
 
-### Infrastructure
-- `data/infrastructure/objects.json` — **114 objects**
+heat-timeline.js — heat map and timeline
 
-### References
-- `data/reference/country-characteristics.json` — **197 countries**
-- `data/reference/gini-index.json` — **147 countries with Gini**
-- `data/reference/country-aliases.json` — 152 aliases
-- `data/reference/rest-countries.json` — 250 countries (mledoze)
+ssi.js — stress index
 
-### Technology and Cybersecurity
-- `cisa-kev.json` — known exploited vulnerabilities
-- `cve.json` — CVE
-- `botnets.json` — botnets
-- `ransomware.json` — ransomware
+refresh.js — auto-refresh
 
-### Other
-- `hackernews-top.json` — HN
-- `cables_24.json` — submarine cables
-- `pipelines_24.json` — pipelines
-- `datacenters.json` — data centers
+logger.js — logging
 
----
+init.js — initialization
 
-## 📜 npm Scripts
+How to Add a Layer
+Create an API module in apis/sources/{id}-api.mjs with export const route
 
-```bash
+Create an analyzer in scripts/analyzers/{id}.mjs (if needed)
+
+Add the layer to layers.js (array DEMO_LAYERS)
+
+Restart the server
+
+More details — in docs/help/ru/layers/.
+
+🧭 Polarity and Narrative Comparison System
+Version: 1.0 · Added: 22–23.09.2026
+
+What it is
+A system that computes geopolitical polarity from data and compares Russian and Western narratives on a given topic. Not propaganda — comparative framing analysis on observable data.
+
+Key principle: the pole is computed, not assigned by a list. If data changes — the pole changes automatically.
+
+Components
+File	Type	Purpose
+apis/sources/pole-tracker-api.mjs	API	Computes country polarity from 8 basket indicators
+apis/sources/narrative-splitter-api.mjs	API	Compares Russian and Western narratives by topic
+apis/sources/source-camps.json	Config	Source mapping and country baselines by pole
+dashboard/public/pole-map.html	Page	Pole map: countries, confidence, vectors
+dashboard/public/narrative-arena.html	Page	Narrative comparison: Russia / West / Divergences
+scripts/snapshot-rsshub.mjs	Script	News history accumulation (systemd timer)
+Pages
+🌐 Pole Map — http://localhost:3117/pole-map
+Shows three poles (russian / western / non_aligned) with countries, polarity index, vectors (sanctions, info-war, military presence), basket status.
+
+⚡ Compare Narratives — http://localhost:3117/narrative-arena
+Three columns: Russian narrative / Western narrative / divergences. Presets: sanctions, Ukraine, energy transition, conflict, gas.
+
+API endpoints
+bash
+# All poles
+curl http://localhost:3117/api/layers/pole-tracker
+
+# One country in detail
+curl "http://localhost:3117/api/layers/pole-tracker?country=russia"
+
+# Narrative comparison by topic
+curl -G http://localhost:3117/api/layers/narrative-splitter \
+    --data-urlencode "topic=Ukraine" \
+    --data-urlencode "limit=10"
+
+# Detailed output
+curl "http://localhost:3117/api/layers/narrative-splitter?topic=sanctions&detail=true"
+Terms
+Term	Meaning
+silence	One side writes (N>0), the other is silent (0). Strongest signal of silencing
+framing_gap	Both sides write, but with different framing
+double_standard	Coverage imbalance >3x in one direction
+polarity_index	0..1: 0 = unipolar world, 1 = maximum polarity
+confidence	0..0.98: confidence in country classification
+basis	Classification source: baseline_plus_data / data_driven / weak_signals / no_data
+History accumulation
+Script scripts/snapshot-rsshub.mjs runs on a systemd timer every hour at minute 02:
+
+Refreshes data/basket/rsshub.json via collect-rsshub.mjs
+
+Copies the snapshot to data/analytics/rss-history/rsshub-<timestamp>.json
+
+Maintains the index index.json
+
+Trims the archive to 168 snapshots (7 days)
+
+bash
+# Timer management
+systemctl --user status crucix-rsshub-snapshot.timer
+systemctl --user list-timers crucix-rsshub-snapshot.timer
+tail -20 logs/rss-history/systemd.log
+
+# Manual run
+node scripts/snapshot-rsshub.mjs
+Why: after a week, 84,000 items will accumulate — enough for real co-occurrence analysis of topics (threat inflation, selective framing).
+
+Help files
+Full help for each page and module:
+
+data/help/ru/pole-tracker-api.txt — polarity module API
+
+data/help/ru/narrative-splitter-api.txt — comparison module API
+
+data/help/ru/pole-map.txt — pole map page
+
+data/help/ru/narrative-arena.txt — narrative comparison page
+
+data/help/ru/CRUCIX_POLARITY_OVERVIEW.txt — system overview
+
+How to extend
+Add a source to a pole:
+Edit apis/sources/source-camps.json → media_sources.{pole}.sources. Mapping — by substring in lowercase.
+
+Add an indicator:
+Edit apis/sources/source-camps.json → indicators.basket_files. Then add reading in computeCountryVector() in pole-tracker-api.mjs.
+
+Add a country to baseline:
+Edit apis/sources/source-camps.json → pole_cores.{pole}.core (or baseline_satellites, affiliated).
+
+Principles
+The pole is computed, not assigned. Data changes — the pole changes.
+
+Comparison is symmetric. The system shows divergences on both the Russian and Western sides.
+
+The method is transparent. Anyone can open a basket file and see which records the classification is based on.
+
+This is a tool, not a verdict. The system does not say "who is right" — it shows where the sides diverge.
+
+📡 Data Sources
+226 files in data/basket/. Key ones:
+
+Geopolitics and Conflicts
+acled.json — armed conflicts
+
+gdelt.json — news and events
+
+ucdp-latest.json — UCDP data
+
+conflict-zone.json — conflict zones
+
+Military
+military-bases.json — military bases
+
+military-exercises.json — exercises
+
+military-spending.json — spending
+
+nuclear-monitor.json — nuclear monitoring
+
+Economy and Markets
+worldbank-latest.json — 194 World Bank countries
+
+coingecko-latest.json — crypto
+
+fred.json — macro (ECB + Treasury + WB)
+
+fx-rates.json — FX rates (Frankfurter)
+
+vix.json, gold.json, oil.json, dxy.json — market indicators
+
+treasury-debt.json — US debt
+
+Natural Phenomena
+earthquakes.json — earthquakes (USGS)
+
+firms.json — fires (NASA FIRMS)
+
+noaa.json — space weather
+
+open-meteo.json — weather (10 cities)
+
+wildfires.json — wildfires
+
+Space
+satellites.json — satellites
+
+iss-live.json — ISS live
+
+launches-upcoming.json — upcoming launches
+
+space-debris.json — space debris
+
+Infrastructure
+data/infrastructure/objects.json — 114 objects
+
+References
+data/reference/country-characteristics.json — 197 countries
+
+data/reference/gini-index.json — 147 countries with Gini
+
+data/reference/country-aliases.json — 152 aliases
+
+data/reference/rest-countries.json — 250 countries (mledoze)
+
+Technology and Cybersecurity
+cisa-kev.json — known vulnerabilities
+
+cve.json — CVE
+
+botnets.json — botnets
+
+ransomware.json — ransomware
+
+Other
+hackernews-top.json — HN
+
+cables_24.json — submarine cables
+
+pipelines_24.json — pipelines
+
+datacenters.json — data centers
+
+📜 npm Scripts
+bash
 npm run dev              # start server (port 3117)
 npm run collect          # run all collectors
 npm run analyze          # run all analyzers
-npm run daily-briefing   # generate daily briefing
+npm run daily-briefing   # generate daily brief
 npm run registry         # generate registry
-```
+⚙️ Configuration
+Environment Variables
+Copy .env.example to .env. Key variables:
 
----
+PORT — server port (default 3117)
 
-## ⚙️ Configuration
+OLLAMA_HOST — Ollama URL (default http://localhost:11434)
 
-### Environment Variables
+TELEGRAM_BOT_TOKEN — bot token (optional)
 
-Copy `.env.example` to `.env`. Main variables:
+DISCORD_WEBHOOK_URL — Discord webhook (optional)
 
-- `PORT` — server port (default 3117)
-- `OLLAMA_HOST` — Ollama URL (default `http://localhost:11434`)
-- `TELEGRAM_BOT_TOKEN` — bot token (optional)
-- `DISCORD_WEBHOOK_URL` — Discord webhook (optional)
+Important
+Crucix works without API keys. All sources are open. If a key is needed — it is not in the project, use alternatives.
 
-### Important
+🔌 API Endpoints
+Core
+GET /api/registry/ — module registry
 
-**Crucix runs without API keys.** All sources are open. If a key is needed — it's not in the project, use alternatives.
+GET /api/geo/markers — map markers
 
----
+GET /api/geo/status — status
 
-## 🔌 API Endpoints
+GET /api/layers — layer list
 
-### Core
+Analytics (new)
+Indices:
 
-- `GET /api/registry/` — module registry
-- `GET /api/geo/markers` — map markers
-- `GET /api/geo/status` — status
-- `GET /api/layers` — layer list
+GET /api/layers/country-instability/stats
 
-### Analytics (new)
+GET /api/layers/resilience-index/stats
 
-**Indices:**
-- `GET /api/layers/country-instability/stats`
-- `GET /api/layers/resilience-index/stats`
+Composites:
 
-**Composites:**
-- `GET /api/layers/strategic-risk-composite/stats`
-- `GET /api/layers/strategic-risk-composite/top?n=10`
-- `GET /api/layers/strategic-risk-composite/bottom?n=10`
+GET /api/layers/strategic-risk-composite/stats
 
-**Infrastructure:**
-- `GET /api/layers/infrastructure-api/stats`
-- `GET /api/layers/infrastructure-api/military`
-- `GET /api/layers/infrastructure-api/nuclear`
-- `GET /api/layers/infrastructure-api/chokepoints`
-- `GET /api/layers/infrastructure-api/scenarios`
-- ...and 10 more endpoints
+GET /api/layers/strategic-risk-composite/top?n=10
 
-**Markets:**
-- `GET /api/layers/market-composite/score`
-- `GET /api/layers/derived-market-analytics/stats`
-- `GET /api/layers/energy-market-intelligence/stats`
+GET /api/layers/strategic-risk-composite/bottom?n=10
 
-**Forecasts:**
-- `GET /api/layers/conflict-escalation-tracker/stats`
-- `GET /api/layers/social-briefing/text`
-- `GET /api/layers/ai-forecasts/stats`
+Infrastructure:
 
-**Detectors:**
-- `GET /api/layers/geo-convergence/stats`
-- `GET /api/layers/threat-classification/stats`
-- `GET /api/layers/surge-detection/stats`
-- `GET /api/layers/focal-point-detection/stats`
+GET /api/layers/infrastructure-api/stats
 
-**Semantics:**
-- `GET /api/layers/adaptive-news-clustering/stats`
-- `GET /api/layers/ai-news-synthesis/stats`
-- `GET /api/layers/entity-extraction/stats`
-- `GET /api/layers/source-credibility/stats`
+GET /api/layers/infrastructure-api/military
 
-**Flows:**
-- `GET /api/layers/cross-stream-correlation/stats`
-- `GET /api/layers/route-explorer/stats`
-- `GET /api/layers/tanker-fleet-monitor/stats`
-- `GET /api/layers/arms-transfer-tracker/stats`
+GET /api/layers/infrastructure-api/nuclear
 
-**Specialists:**
-- `GET /api/layers/sanctions-pressure/stats`
-- `GET /api/layers/political-stability-monitor/stats`
-- `GET /api/layers/food-security-monitor/stats`
+GET /api/layers/infrastructure-api/chokepoints
 
-**System:**
-- `GET /api/layers/mcp-server/stats`
-- `GET /api/layers/crucix-doctor/stats`
-- `GET /api/layers/module-registration-controller/stats`
-- `GET /api/layers/watchdog/stats`
+GET /api/layers/infrastructure-api/scenarios
 
----
+...and 10 more endpoints
 
-## 🔧 Troubleshooting
+Markets:
 
-### Server Doesn't Start
+GET /api/layers/market-composite/score
 
-- Check `node --version` — Node 22+ required
-- Check `npm install`
-- Check log `/tmp/crucix-server.log`
+GET /api/layers/derived-market-analytics/stats
 
-### Analyzer Doesn't Work
+GET /api/layers/energy-market-intelligence/stats
 
-- `node scripts/analyzers/{name}.mjs` — check output
-- `curl http://localhost:3117/api/layers/{name}/stats` — check endpoint
-- Check `data/analytics/{category}/{name}.json` — was the file created
+Forecasts:
 
-### Collector Returns 0 Data
+GET /api/layers/conflict-escalation-tracker/stats
 
-- Check source availability: `curl {url}`
-- Check log `logs/collectors/collect-{name}.log`
-- Make sure there's no API key (rule 12.2)
+GET /api/layers/social-briefing/text
 
-### GDELT Returns 429
+GET /api/layers/ai-forecasts/stats
 
-- Browser User-Agent required
-- Pause ≥5 seconds between requests required
-- Timeout ≥30 seconds
+Detectors:
 
----
+GET /api/layers/geo-convergence/stats
 
-## 🧩 Extensions
+GET /api/layers/threat-classification/stats
 
-### How to Create a New Analyzer
+GET /api/layers/surge-detection/stats
 
-1. **Computing class** — `apis/sources/{name}.mjs`
-   - `export default class {Name}`
-   - Method `compute(input)` returns `{ score, components, ... }`
+GET /api/layers/focal-point-detection/stats
 
-2. **Analyzer** — `scripts/analyzers/{name}.mjs`
-   - Imports the class
-   - Reads `data/basket/` and `data/reference/`
-   - Writes `data/analytics/{category}/{name}.json`
-   - In `_meta`: id, category, version, sources, calculator, updated_at, checksum
+Semantics:
 
-3. **API module** — `apis/sources/{name}-api.mjs`
-   - `export const route = '/api/layers/{name}'`
-   - `export default async function handler(req, res)`
-   - Reads `data/analytics/{category}/{name}.json`
+GET /api/layers/adaptive-news-clustering/stats
 
-4. **Registration** — `server/modules.json`:
-   ```json
-   { "id": "{name}-api", "path": "./apis/sources/{name}-api" }
-   ```
+GET /api/layers/ai-news-synthesis/stats
 
-5. **Map layer** — `layers.js` (array `DEMO_LAYERS`):
-   ```javascript
-   { id: '{name}', name: 'Name', color: '#color', icon: '🎯', category: 'category', vizType: 'marker' }
-   ```
+GET /api/layers/entity-extraction/stats
 
-6. **Restart the server.**
+GET /api/layers/source-credibility/stats
 
-### How to Create a New Collector
+Flows:
 
-1. File `scripts/collectors/collect-{name}.mjs`
-2. Import from an open API (no key)
-3. Save to `data/basket/{name}.json`
-4. Log to `logs/collectors/collect-{name}.log`
-5. Register in cron
+GET /api/layers/cross-stream-correlation/stats
 
----
+GET /api/layers/route-explorer/stats
 
-## 💬 AI Chat
+GET /api/layers/tanker-fleet-monitor/stats
 
-AI Chat runs via local Ollama.
+GET /api/layers/arms-transfer-tracker/stats
 
-### Installing Ollama
+Specialists:
 
-```bash
+GET /api/layers/sanctions-pressure/stats
+
+GET /api/layers/political-stability-monitor/stats
+
+GET /api/layers/food-security-monitor/stats
+
+System:
+
+GET /api/layers/mcp-server/stats
+
+GET /api/layers/crucix-doctor/stats
+
+GET /api/layers/module-registration-controller/stats
+
+GET /api/layers/watchdog/stats
+
+🔧 Troubleshooting
+Server Doesn't Start
+Check node --version — Node 22+ required
+
+Check npm install
+
+Check log /tmp/crucix-server.log
+
+Analyzer Doesn't Work
+node scripts/analyzers/{name}.mjs — check output
+
+curl http://localhost:3117/api/layers/{name}/stats — check endpoint
+
+Check data/analytics/{category}/{name}.json — file created
+
+Collector Returns 0 Data
+Check source availability: curl {url}
+
+Check log logs/collectors/collect-{name}.log
+
+Ensure no API key is required (rule 12.2)
+
+GDELT Returns 429
+Browser User-Agent required
+
+Pause ≥5 seconds between requests required
+
+Timeout ≥30 seconds
+
+🧩 Extensions
+How to Create a New Analyzer
+Calculator class — apis/sources/{name}.mjs
+
+export default class {Name}
+
+Method compute(input) returns { score, components, ... }
+
+Analyzer — scripts/analyzers/{name}.mjs
+
+Imports the class
+
+Reads data/basket/ and data/reference/
+
+Writes data/analytics/{category}/{name}.json
+
+In _meta: id, category, version, sources, calculator, updated_at, checksum
+
+API module — apis/sources/{name}-api.mjs
+
+export const route = '/api/layers/{name}'
+
+export default async function handler(req, res)
+
+Reads data/analytics/{category}/{name}.json
+
+Registration — server/modules.json:
+
+json
+{ "id": "{name}-api", "path": "./apis/sources/{name}-api" }
+Map layer — layers.js (array DEMO_LAYERS):
+
+javascript
+{ id: '{name}', name: 'Title', color: '#color', icon: '🎯', category: 'category', vizType: 'marker' }
+Restart the server.
+
+How to Create a New Collector
+File scripts/collectors/collect-{name}.mjs
+
+Import from an open API (no key)
+
+Save to data/basket/{name}.json
+
+Log to logs/collectors/collect-{name}.log
+
+Register in cron
+
+💬 AI Chat
+AI Chat works via local Ollama.
+
+Installing Ollama
+bash
 # 1. Install Ollama
 curl -fsSL https://ollama.com/install.sh | sh
 
@@ -810,74 +1028,161 @@ ollama serve &
 
 # 4. Open AI Chat
 open http://localhost:3117/ai-chat
-```
-
-### Prompts
-
+Prompts
 AI Chat uses analyzer data as context. The model answers questions about:
-- Current geopolitical situation
-- Country risks
-- Market indicators
-- Infrastructure threats
-- Forecasts
 
----
+Current geopolitical situation
 
-## 🤝 Contributing
+Country risks
 
+Market indicators
+
+Infrastructure threats
+
+Forecasts
+
+🤝 Contributing
 Welcome:
 
-1. **New analyzers** — per the reference (class → analyzer → API → layer)
-2. **New collectors** — only open APIs (no keys)
-3. **New references** in `data/reference/`
-4. **Improvements** to existing modules
-5. **Help files in two languages** (ru + en)
+New analyzers — by the reference (class → analyzer → API → layer)
 
-### Rules
+New collectors — open APIs only (no keys)
 
-- Follow the "Basket → AI → Map" architecture
-- Don't use API keys (rule 12.2)
-- Write help files in ru + en
-- Don't delete existing modules (rule 7.6)
+New references in data/reference/
 
----
+Improvements to existing modules
 
+Help files in two languages (ru + en)
 
-## 🧠 Crucix Predictive Core
+Rules
+Follow the "Basket → AI → Map" architecture
 
-Since 18.09.2026 the project includes a **predictive core** — a 16-phase pipeline (A–R, S, T, U, Z) of 22 modules built on 30 scientific disciplines.
+Do not use API keys (rule 12.2)
 
-### Key Facts
+Write help in ru + en
 
-- **Engine**: `apis/predict/engine.mjs` v8.0.0 — 16-phase pipeline.
-- **22 modules**: Bayesian core, Naive Bayes, Markov chains, Monte Carlo, time series, Brier calibration, cascade chains, ensemble, LLM agents, Hawkes process, HMM, Kalman filter, Ising model, transfer entropy, SIR/SEIR, EVT, Ornstein-Uhlenbeck, copulas, BOCPD, Particle Filter, MLP, GCN+DQN.
-- **Sources**: `apis/predict/sources/` — prediction_markets (Polymarket/Metaculus/Kalshi/Manifold), multilang (100+ languages), satellite (Sentinel-2/Landsat/SAR).
-- **Knowledge graph**: `apis/knowledge/graph.mjs`.
-- **New pages**: /cockpit, /agent, /hypergraph, /plugins, /realtime, /advanced, /attention, /coevolution, /crucix, /predictions_composite.
-- **Plugins**: `plugins/` — loader, sandbox, hooks, registry, manifest_schema.
-- **Integrations**: `integrations/` — Slack, Notion, Obsidian, RSS, Email, Webhook.
-- **Observability**: `observability/` — OpenTelemetry, Prometheus, Grafana.
-- **Tests**: `tests/` — 42 files (unit, property, fuzz, mutation, integration, chaos, load). Smoke test: 22/22 OK.
-- **Deployment**: `docker/` — Dockerfile.engine + docker-compose.engine.yml. `k8s/` — 11 manifests.
-- **Docs**: `docs/handbook/` — 800+ page handbook, `docs/help/ru` and `docs/help/en` — module references.
+Do not delete existing modules (rule 7.6)
 
-### Running Tests
+🧠 Crucix Predictive Core
+Since 18.09.2026 the project has integrated a predictive core — a 16-phase pipeline (A–R, S, T, U, Z) of 22 modules operating on 30 scientific disciplines.
 
-```bash
+Key Facts
+Engine apis/predict/engine.mjs v8.0.0 — 16-phase pipeline.
+
+22 modules of the predictive core: Bayesian core, naive Bayes, Markov chains, Monte Carlo, time series, Brier calibration, cascade chains, ensemble, LLM agents, Hawkes process, HMM, Kalman filter, Ising, transfer entropy, SIR/SEIR, EVT, Ornstein-Uhlenbeck, copulas, BOCPD, Particle Filter, MLP, GCN+DQN.
+
+Sources: apis/predict/sources/ — prediction_markets (Polymarket/Metaculus/Kalshi/Manifold), multilang (100+ languages), satellite (Sentinel-2/Landsat/SAR).
+
+Knowledge graph: apis/knowledge/graph.mjs.
+
+New pages: /cockpit, /agent, /hypergraph, /plugins, /realtime, /advanced, /attention, /coevolution, /crucix, /predictions_composite.
+
+Plugins: plugins/ — loader, sandbox, hooks, registry, manifest_schema.
+
+Integrations: integrations/ — Slack, Notion, Obsidian, RSS, Email, Webhook.
+
+Observability: observability/ — OpenTelemetry, Prometheus, Grafana.
+
+Tests: tests/ — 42 files (unit, property, fuzz, mutation, integration, chaos, load). Smoke test: 22/22 OK.
+
+Deployment: docker/ — Dockerfile.engine + docker-compose.engine.yml. k8s/ — 11 manifests.
+
+Documentation: docs/handbook/ — 800+ page book, docs/help/ru and docs/help/en — help files.
+
+Running Tests
+bash
 npm run test:all-modules       # smoke test of 22 modules
 npm run test:unit              # unit tests
-npm run test:integration       # integration tests
-npm run test:property          # property-based tests
+npm run test:integration       # integration
+npm run test:property          # property-based
 npm run test:fuzz              # fuzz tests
-npm run test:mutation          # mutation tests
-```
+npm run test:mutation          # mutation
+📰 SmartScroll — RSS and Telegram Integration
+Since 24.09.2026 the project has integrated SmartScroll 1.0.0 — a package for collecting, deduplicating, clustering, and summarizing news streams from RSS and Telegram. The output — stories, timelines, and summaries embedded into the Crucix knowledge graph.
 
----
+Key Facts
+Package: apis/sources/smartscroll* — 16 modules, 3 operating modes (external / local / auto).
 
-## 📜 License
+Collectors: RSS 2.0 + Atom and public Telegram channels via t.me/s/ — without API keys and tokens.
 
-AGPLv3. See `LICENSE`.
+Deduplication: 4 levels — content hash, entity signature, Jaccard shingles, TF-IDF cosine.
 
----
+Clustering: inverted index on entities — candidate lookup in O(1) instead of O(N).
 
-**Crucix** — your personal intelligence center. 226 sources. 59 analyzers. One command. Zero cloud.
+Summarization: extractive (TF-IDF + MMR) + abstractive via local Ollama with automatic fallback.
+
+HTTP server: 8 endpoints on port 3157 (variable SMARTSCROLL_HTTP_PORT).
+
+Metrics: time per cycle stage (collect, normalize, dedup, cluster, summarize, store).
+
+Resilience: rate limiter (token bucket) and circuit breaker in the external adapter.
+
+Date validation: rejects events older than 10 years and future events more than 24 hours ahead.
+
+Package Contents
+text
+apis/sources/smartscroll-interface.mjs         — common interface (contract v3)
+apis/sources/smartscroll.mjs                    — external adapter with rate limiter and circuit breaker
+apis/sources/smartscroll-local/index.mjs        — source factory (external / local / auto)
+apis/sources/smartscroll-local/engine.mjs       — cycle core with per-stage metrics
+apis/sources/smartscroll-local/processing/     — normalization, dedup, clustering, summary, timeline
+apis/sources/smartscroll-local/storage/        — JSON file storage for stories
+apis/entity-model/story-layer.mjs               — entity model: mapping stories into knowledge graph
+apis/ingest/event-ingestion-api.mjs             — SmartScroll HTTP server
+scripts/collectors/lib/rss-collector.mjs        — RSS 2.0 + Atom with date validation
+scripts/collectors/lib/telegram-collector.mjs   — public Telegram channels reader
+scripts/collectors/collect-smartscroll.mjs      — package collector (writes to basket)
+config/smartscroll.json                         — package configuration
+test/smartscroll/                               — 6 test files (unit + integration)
+HTTP Endpoints
+text
+GET  /health                     — source and graph state
+GET  /metrics                    — per-stage performance metrics
+GET  /stats                      — stories and events summary
+GET  /stories?limit=N&since=ISO  — list of stories
+GET  /stories/:id                — story details
+GET  /stories/:id/timeline       — story timeline
+POST /run                        — ingestion of stories into graph
+POST /collect                    — full collection cycle from sources
+Running
+bash
+# Run the collector
+cd /home/ta8_/Рабочий\ стол/Crucix && node scripts/collectors/collect-smartscroll.mjs
+
+# Run the SmartScroll HTTP server
+cd /home/ta8_/Рабочий\ стол/Crucix && SMARTSCROLL_HTTP_PORT=3157 node apis/ingest/event-ingestion-api.mjs
+
+# Run tests
+cd /home/ta8_/Рабочий\ стол/Crucix && node test/smartscroll/run-all.mjs
+Metrics
+Operating modes: 3 (external / local / auto)
+
+Collectors: 2 (RSS, Telegram)
+
+Deduplication levels: 4
+
+Clustering weights: 3 (entities 0.5, title 0.3, body 0.2)
+
+Summarization methods: 2 (extractive + abstractive)
+
+Entity model node types: 3 (Story, TimelineEvent, Entity)
+
+Edge types: 4 (contains, mentions, related_to, evolves_into)
+
+HTTP endpoints: 8
+
+Tests: 51 (30 unit + 21 integration)
+
+Documentation
+Detailed documentation for each module:
+
+Russian: docs/help/ru/modules/smartscroll/ — 17 files, table of contents + 16 module reference files.
+
+English: docs/help/en/modules/smartscroll/ — 17 files, table of contents + 16 module reference files.
+
+Package manifest: MANIFEST-smartscroll.md.
+
+Each help file contains: purpose, location, methods, algorithms, relations with other modules, examples.
+
+📜 License
+AGPLv3. See LICENSE.

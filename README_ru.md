@@ -14,7 +14,6 @@
 ---
 
 ## 📖 Оглавление
-
 1. [Описание](#-описание)
 2. [Скриншоты](#-скриншоты)
 3. [Быстрый старт](#-быстрый-старт)
@@ -27,17 +26,18 @@
 10. [Архитектура](#-архитектура)
 11. [Модульная архитектура сервера](#-модульная-архитектура-сервера)
 12. [🗺️ Геополитическая карта (geo-map)](#️-геополитическая-карта-geo-map)
-13. [Источники данных](#-источники-данных)
-14. [npm-скрипты](#-npm-скрипты)
-15. [Конфигурация](#-конфигурация)
-16. [API-эндпоинты](#-api-эндпоинты)
-17. [Устранение неполадок](#-устранение-неполадок)
-18. [Расширения](#-расширения)
-19. [AI-чат](#-ai-чат)
-20. [Вклад в проект](#-вклад-в-проект)
-21. [Лицензия](#-лицензия)
-
----
+13. [🧭 Система полярности и сверки нарративов](#-система-полярности-и-сверки-нарративов)
+14. [Источники данных](#-источники-данных)
+15. [npm-скрипты](#-npm-скрипты)
+16. [Конфигурация](#-конфигурация)
+17. [API-эндпоинты](#-api-эндпоинты)
+18. [Устранение неполадок](#-устранение-неполадок)
+19. [Расширения](#-расширения)
+20. [AI-чат](#-ai-чат)
+21. [Вклад в проект](#-вклад-в-проект)
+22. [🧠 Прогностическое ядро Crucix](#-прогностическое-ядро-crucix)
+23. [📰 SmartScroll — интеграция RSS и Telegram](#-smartscroll--интеграция-rss-и-telegram)
+24. [Лицензия](#-лицензия)
 
 ## 🚀 Описание
 
@@ -565,6 +565,114 @@ Crucix/
 
 ---
 
+## 🧭 Система полярности и сверки нарративов
+
+**Версия:** 1.0 · **Добавлено:** 22–23.09.2026
+
+### Что это
+
+Система, которая **вычисляет геополитическую полярность из данных** и **сверяет российский и западный нарративы по заданной теме**. Не пропаганда — сравнительный анализ фреймингов (comparative framing analysis) на наблюдаемых данных.
+
+**Ключевой принцип:** полюс **вычисляется**, а не задаётся списком. Если данные изменятся — полюс изменится автоматически.
+
+### Компоненты
+
+| Файл | Тип | Назначение |
+|------|-----|------------|
+| `apis/sources/pole-tracker-api.mjs` | API | Вычисляет полярность стран из 8 basket-индикаторов |
+| `apis/sources/narrative-splitter-api.mjs` | API | Сверяет российский и западный нарративы по теме |
+| `apis/sources/source-camps.json` | Конфиг | Маппинг источников и baseline стран по полюсам |
+| `dashboard/public/pole-map.html` | Страница | Карта полюсов: страны, confidence, векторы |
+| `dashboard/public/narrative-arena.html` | Страница | Сверка нарративов: Россия / Запад / Расхождения |
+| `scripts/snapshot-rsshub.mjs` | Скрипт | Накопление истории новостей (systemd timer) |
+
+### Страницы
+
+- **🌐 Карта полюсов** — [http://localhost:3117/pole-map](http://localhost:3117/pole-map)
+  Показывает три полюса (russian / western / non_aligned) со странами, индекс полярности, векторы (санкции, инфовойна, военное присутствие), basket-статус.
+
+- **⚡ Сверить нарративы** — [http://localhost:3117/narrative-arena](http://localhost:3117/narrative-arena)
+  Три колонки: российский нарратив / западный нарратив / расхождения. Пресеты: санкции, Украина, энергопереход, конфликт, газ.
+
+### API-эндпоинты
+
+```bash
+# Все полюса
+curl http://localhost:3117/api/layers/pole-tracker
+
+# Одна страна детально
+curl "http://localhost:3117/api/layers/pole-tracker?country=russia"
+
+# Сверка нарративов по теме
+curl -G http://localhost:3117/api/layers/narrative-splitter \
+    --data-urlencode "topic=Украина" \
+    --data-urlencode "limit=10"
+
+# Детальный вывод
+curl "http://localhost:3117/api/layers/narrative-splitter?topic=санкции&detail=true"
+```
+
+### Что означают термины
+
+| Термин | Смысл |
+|--------|-------|
+| **silence** | Одна сторона пишет (N>0), другая молчит (0). Сильнейший сигнал замалчивания |
+| **framing_gap** | Обе стороны пишут, но с разным фреймингом |
+| **double_standard** | Дисбаланс освещения >3x в одну сторону |
+| **polarity_index** | 0..1: 0 = однополярный мир, 1 = максимальная полярность |
+| **confidence** | 0..0.98: уверенность в классификации страны |
+| **basis** | Источник классификации: `baseline_plus_data` / `data_driven` / `weak_signals` / `no_data` |
+
+### Накопление истории
+
+Скрипт `scripts/snapshot-rsshub.mjs` запускается по **systemd timer каждый час в 02 минуты**:
+
+- Обновляет `data/basket/rsshub.json` через `collect-rsshub.mjs`
+- Копирует снимок в `data/analytics/rss-history/rsshub-<timestamp>.json`
+- Ведёт индекс `index.json`
+- Обрезает архив до 168 снимков (7 дней)
+
+```bash
+# Управление таймером
+systemctl --user status crucix-rsshub-snapshot.timer
+systemctl --user list-timers crucix-rsshub-snapshot.timer
+tail -20 logs/rss-history/systemd.log
+
+# Ручной запуск
+node scripts/snapshot-rsshub.mjs
+```
+
+**Зачем:** через неделю накопится 84 000 items — достаточно для реального анализа co-occurrence тем (threat inflation, selective framing).
+
+### Справки
+
+Полные справки по каждой странице и модулю:
+- `data/help/ru/pole-tracker-api.txt` — API модуля полярности
+- `data/help/ru/narrative-splitter-api.txt` — API модуля сверки
+- `data/help/ru/pole-map.txt` — страница карты полюсов
+- `data/help/ru/narrative-arena.txt` — страница сверки нарративов
+- `data/help/ru/CRUCIX_POLARITY_OVERVIEW.txt` — общий обзор системы
+
+### Как расширять
+
+**Добавить источник в полюс:**
+Редактируй `apis/sources/source-camps.json` → `media_sources.{pole}.sources`. Маппинг — по подстроке в lowercase.
+
+**Добавить индикатор:**
+Редактируй `apis/sources/source-camps.json` → `indicators.basket_files`. Затем добавь чтение в `computeCountryVector()` в `pole-tracker-api.mjs`.
+
+**Добавить страну в baseline:**
+Редактируй `apis/sources/source-camps.json` → `pole_cores.{pole}.core` (или `baseline_satellites`, `affiliated`).
+
+### Принципы
+
+1. **Полюс вычисляется, а не задаётся.** Данные изменятся — полюс изменится.
+2. **Сравнение симметрично.** Система показывает расхождения и у российской, и у западной стороны.
+3. **Метод прозрачный.** Любой может открыть basket-файл и увидеть, на каких записях основана классификация.
+4. **Это инструмент, а не приговор.** Система не говорит «кто прав» — она показывает, где стороны расходятся.
+
+---
+
 ## 📡 Источники данных
 
 226 файлов в `data/basket/`. Ключевые:
@@ -873,6 +981,88 @@ npm run test:mutation          # мутационные
 ```
 
 ---
+
+## 📰 SmartScroll — интеграция RSS и Telegram
+
+С 24.09.2026 в проект интегрирован **SmartScroll 1.0.0** — комплект сбора, дедупликации, кластеризации и суммаризации новостных потоков из RSS и Telegram. Результат работы — сюжеты, таймлайны и сводки, встроенные в граф знаний Crucix.
+
+### Ключевое
+
+- **Комплект**: `apis/sources/smartscroll*` — 16 модулей, 3 режима работы (external / local / auto).
+- **Коллекторы**: RSS 2.0 + Atom и публичные Telegram-каналы через `t.me/s/` — без API-ключей и токенов.
+- **Дедупликация**: 4 уровня — хеш контента, сигнатура сущностей, шинглы Jaccard, косинус TF-IDF.
+- **Кластеризация**: inverted index по сущностям — поиск кандидатов за O(1) вместо O(N).
+- **Суммаризация**: extractive (TF-IDF + MMR) + abstractive через локальный Ollama с автоматическим fallback.
+- **HTTP-сервер**: 8 эндпоинтов на порту `3157` (переменная `SMARTSCROLL_HTTP_PORT`).
+- **Метрики**: время по каждой стадии цикла (collect, normalize, dedup, cluster, summarize, store).
+- **Отказоустойчивость**: rate limiter (token bucket) и circuit breaker во внешнем адаптере.
+- **Валидация дат**: отсев событий старше 10 лет и будущих более чем на 24 часа.
+
+### Состав комплекта
+
+```
+apis/sources/smartscroll-interface.mjs         — общий интерфейс (контракт v3)
+apis/sources/smartscroll.mjs                    — внешний адаптер с rate limiter и circuit breaker
+apis/sources/smartscroll-local/index.mjs        — фабрика источника (external / local / auto)
+apis/sources/smartscroll-local/engine.mjs       — ядро цикла с per-stage метриками
+apis/sources/smartscroll-local/processing/     — нормализация, дедупликация, кластеризация, сводка, таймлайн
+apis/sources/smartscroll-local/storage/        — файловое JSON-хранилище сюжетов
+apis/entity-model/story-layer.mjs               — модель сущностей: маппинг сюжетов в граф знаний
+apis/ingest/event-ingestion-api.mjs             — HTTP-сервер SmartScroll
+scripts/collectors/lib/rss-collector.mjs        — RSS 2.0 + Atom с валидацией дат
+scripts/collectors/lib/telegram-collector.mjs   — чтение публичных Telegram-каналов
+scripts/collectors/collect-smartscroll.mjs      — сборщик комплекта (пишет в корзину)
+config/smartscroll.json                         — конфигурация комплекта
+test/smartscroll/                               — 6 тестовых файлов (юнит + интеграция)
+```
+
+### HTTP-эндпоинты
+
+```
+GET  /health                     — состояние источника и графа
+GET  /metrics                    — метрики производительности по стадиям
+GET  /stats                      — сводка по сюжетам и событиям
+GET  /stories?limit=N&since=ISO  — список сюжетов
+GET  /stories/:id                — детали сюжета
+GET  /stories/:id/timeline       — таймлайн сюжета
+POST /run                        — ингестия сюжетов в граф
+POST /collect                    — полный цикл сбора из источников
+```
+
+### Запуск
+
+```bash
+# Запустить сборщик
+cd /home/ta8_/Рабочий\ стол/Crucix && node scripts/collectors/collect-smartscroll.mjs
+
+# Запустить HTTP-сервер SmartScroll
+cd /home/ta8_/Рабочий\ стол/Crucix && SMARTSCROLL_HTTP_PORT=3157 node apis/ingest/event-ingestion-api.mjs
+
+# Запустить тесты
+cd /home/ta8_/Рабочий\ стол/Crucix && node test/smartscroll/run-all.mjs
+```
+
+### Метрики
+
+- Режимов работы: 3 (external / local / auto)
+- Коллекторов: 2 (RSS, Telegram)
+- Уровней дедупликации: 4
+- Весов кластеризации: 3 (сущности 0.5, заголовок 0.3, тело 0.2)
+- Методов суммаризации: 2 (extractive + abstractive)
+- Типов узлов модели сущностей: 3 (Story, TimelineEvent, Entity)
+- Типов рёбер: 4 (contains, mentions, related_to, evolves_into)
+- HTTP-эндпоинтов: 8
+- Тестов: 51 (30 юнит + 21 интеграция)
+
+### Документация
+
+Подробная документация по каждому модулю:
+
+- **Русский**: [`docs/help/ru/modules/smartscroll/`](docs/help/ru/modules/smartscroll/INDEX.md) — 17 файлов, оглавление + 16 справок по модулям.
+- **English**: [`docs/help/en/modules/smartscroll/`](docs/help/en/modules/smartscroll/INDEX.md) — 17 files, table of contents + 16 module reference files.
+- **Манифест комплекта**: [`MANIFEST-smartscroll.md`](MANIFEST-smartscroll.md).
+
+Каждый файл справки содержит: назначение, расположение, методы, алгоритмы, связи с другими модулями, примеры.
 
 ## 📜 Лицензия
 

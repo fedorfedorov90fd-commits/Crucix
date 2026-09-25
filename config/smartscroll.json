@@ -1,0 +1,57 @@
+{
+  "version": "1.0.0",
+  "mode": "auto",
+  "collect_interval_ms": 300000,
+  "max_story_age_hours": 168,
+  "max_events_per_story": 200,
+
+  "external": {
+    "base_url": "https://api.smartscroll.example.com",
+    "api_key": "",
+    "timeout_ms": 10000,
+    "retries": 3,
+    "retry_delay_ms": 2000
+  },
+
+  "local": {
+    "collect_interval_ms": 300000,
+    "max_story_age_hours": 168,
+    "max_events_per_story": 200,
+    "dedup_threshold": 0.82,
+    "story_similarity_threshold": 0.45,
+    "summary_sentences": 3,
+    "storage_dir": "data/smartscroll",
+    "cleanup_interval_ms": 3600000
+  },
+
+  "sources": {
+    "rss": [
+      {
+        "url": "https://feeds.feedburner.com/TheHackersNews",
+        "name": "The Hacker News",
+        "category": "security",
+        "enabled": true
+      },
+      {
+        "url": "https://www.aviationnow.com/rss",
+        "name": "Aviation Week",
+        "category": "aviation",
+        "enabled": true
+      }
+    ],
+    "telegram": [
+      {
+        "channel": "durov",
+        "name": "Durov Channel",
+        "category": "tech",
+        "enabled": true
+      }
+    ]
+  },
+
+  "entity_model": {
+    "story_node_type": "Story",
+    "event_node_type": "TimelineEvent",
+    "prefix": "smartscroll"
+  }
+}

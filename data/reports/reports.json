@@ -1,0 +1,31 @@
+[
+  {
+    "id": "report-1786962380801",
+    "type": "daily",
+    "timestamp": "2026-08-17T10:26:20.801Z",
+    "date": "17.08.2026",
+    "time": "13:26:20",
+    "data": {
+      "timestamp": "2026-08-17T10:26:20.791Z",
+      "sources": {},
+      "summary": {
+        "highRiskRegions": [],
+        "conflictRisk": 0,
+        "cyberThreats": 5,
+        "criticalThreats": 0,
+        "darkShips": 6,
+        "suspiciousShips": 6,
+        "totalSatellites": 11770,
+        "operationalSatellites": 10563
+      },
+      "topEvents": [],
+      "sentiment": {
+        "positive": 0,
+        "negative": 0,
+        "neutral": 0
+      }
+    },
+    "summary": "📊 ДАЙДЖЕСТ НА 17.08.2026\n\n⚔️ КОНФЛИКТНЫЙ РИСК: 0 регионов с высоким риском\n🛡️ КИБЕРУГРОЗЫ: 5 активных\n🚢 ТЁМНЫЕ СУДА: 6 без AIS, 6 подозрительных\n🛰️ СПУТНИКИ: 10563/11770 активных\n",
+    "html": "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Отчёт Crucix 17.08.2026</title>\n  <style>\n    body { font-family: -apple-system, monospace; background: #0a0a0f; color: #c8d0d8; padding: 40px; max-width: 900px; margin: 0 auto; }\n    h1 { color: #5bc0f8; font-size: 24px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 16px; }\n    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }\n    .card { background: rgba(255,255,255,0.04); padding: 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06); }\n    .card .label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }\n    .card .value { font-size: 24px; font-weight: 700; color: #e8f0f8; margin: 4px 0; }\n    .card .sub { font-size: 13px; color: #888; }\n    .event { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }\n    .event .title { color: #c8d0d8; }\n    .event .date { font-size: 11px; color: #555; }\n    .footer { margin-top: 30px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.06); color: #444; font-size: 12px; text-align: center; }\n    .status-online { color: #22c55e; }\n    .status-warning { color: #f97316; }\n    .status-critical { color: #ef4444; }\n    @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }\n  </style>\n</head>\n<body>\n  <h1>⚡ CRUCIX — АВТОМАТИЧЕСКИЙ ОТЧЁТ</h1>\n  <p style=\"color:#666;\">17.08.2026, 13:26:20</p>\n  \n  <div class=\"grid\">\n    <div class=\"card\">\n      <div class=\"label\">🌍 Глобальный индекс</div>\n      <div class=\"value\">—</div>\n      <div class=\"sub\">➡️ Стабилен</div>\n    </div>\n    <div class=\"card\">\n      <div class=\"label\">⚔️ Конфликтный риск</div>\n      <div class=\"value\">0</div>\n      <div class=\"sub\">Нет</div>\n    </div>\n    <div class=\"card\">\n      <div class=\"label\">🛡️ Киберугрозы</div>\n      <div class=\"value\">5</div>\n      <div class=\"sub\">0 критических</div>\n    </div>\n    <div class=\"card\">\n      <div class=\"label\">🚢 Тёмные суда</div>\n      <div class=\"value\">6</div>\n      <div class=\"sub\">6 подозрительных</div>\n    </div>\n    <div class=\"card\" style=\"grid-column: span 2;\">\n      <div class=\"label\">🛰️ Спутниковый интернет</div>\n      <div class=\"value\">10563/11770</div>\n      <div class=\"sub\">активных спутников</div>\n    </div>\n  </div>\n  \n  <h2 style=\"color:#888;font-size:14px;margin:20px 0 12px;\">📰 Топ событий</h2>\n  \n  \n  <div class=\"footer\">\n    CRUCIX OSINT TERMINAL · Автоматический отчёт · 17.08.2026\n  </div>\n</body>\n</html>"
+  }
+]

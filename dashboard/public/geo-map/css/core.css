@@ -1,0 +1,160 @@
+/* ============================================================
+   CORE.CSS — Базовые стили для геокарты
+   ============================================================ */
+
+/* ===== RESET & BASE ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    background: #0a0a0f;
+    color: #c8d0d8;
+    font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+/* ===== СКРОЛЛБАРЫ ===== */
+::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(91, 192, 248, 0.3);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(91, 192, 248, 0.5);
+}
+
+/* ===== ВСПОМОГАТЕЛЬНЫЕ ===== */
+.hidden {
+    display: none !important;
+}
+.flex {
+    display: flex !important;
+}
+.flex-center {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+.gap-2 { gap: 2px; }
+.gap-4 { gap: 4px; }
+.gap-8 { gap: 8px; }
+.gap-12 { gap: 12px; }
+
+.text-muted { color: #4a5a6a; }
+.text-light { color: #c8d0d8; }
+.text-white { color: #ffffff; }
+.text-accent { color: #5bc0f8; }
+.text-success { color: #22c55e; }
+.text-warning { color: #eab308; }
+.text-danger { color: #ef4444; }
+
+/* ===== КНОПКИ ===== */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 4px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.03);
+    color: #888;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    white-space: nowrap;
+    height: 28px;
+}
+.btn:hover {
+    background: rgba(255, 255, 255, 0.06);
+    transform: translateY(-1px);
+}
+.btn:active {
+    transform: translateY(0);
+}
+.btn-primary {
+    color: #5bc0f8;
+    border-color: rgba(91, 192, 248, 0.2);
+    background: rgba(91, 192, 248, 0.06);
+}
+.btn-primary:hover {
+    background: rgba(91, 192, 248, 0.15);
+}
+.btn-success {
+    color: #22c55e;
+    border-color: rgba(34, 197, 94, 0.2);
+    background: rgba(34, 197, 94, 0.06);
+}
+.btn-success:hover {
+    background: rgba(34, 197, 94, 0.15);
+}
+.btn-danger {
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.2);
+    background: rgba(239, 68, 68, 0.06);
+}
+.btn-danger:hover {
+    background: rgba(239, 68, 68, 0.15);
+}
+.btn-warning {
+    color: #eab308;
+    border-color: rgba(234, 179, 8, 0.2);
+    background: rgba(234, 179, 8, 0.06);
+}
+.btn-warning:hover {
+    background: rgba(234, 179, 8, 0.15);
+}
+.btn-sm {
+    height: 22px;
+    padding: 0 8px;
+    font-size: 9px;
+}
+.btn-xs {
+    height: 18px;
+    padding: 0 5px;
+    font-size: 8px;
+}
+.btn-icon {
+    width: 28px;
+    padding: 0;
+}
+
+/* ===== БЭЙДЖИ ===== */
+.badge {
+    display: inline-block;
+    padding: 0 6px;
+    font-size: 9px;
+    font-weight: 600;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.06);
+    color: #4a5a6a;
+}
+.badge-primary {
+    background: rgba(91, 192, 248, 0.15);
+    color: #5bc0f8;
+}
+.badge-success {
+    background: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+}
+.badge-danger {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+}
+.badge-warning {
+    background: rgba(234, 179, 8, 0.15);
+    color: #eab308;
+}

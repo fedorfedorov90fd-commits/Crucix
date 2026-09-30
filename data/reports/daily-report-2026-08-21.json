@@ -1,0 +1,21 @@
+{
+  "date": "2026-08-21",
+  "timestamp": "2026-08-21T17:30:00.000Z",
+  "summary": {
+    "total_critical": 3,
+    "total_warning": 3,
+    "total_normal": 1
+  },
+  "indicators": {
+    "notam": { "count": 5, "critical": 2, "high": 2 },
+    "gps": { "count": 5, "critical": 2, "high": 2 },
+    "trends": { "count": 5, "critical": 2, "high": 2 },
+    "vix": { "current": 34.20, "min": 18.50, "max": 34.20, "avg": 27.61, "change": 2.1, "status": { "status": "critical", "color": "#ef4444", "label": "Высокий страх" } },
+    "yield_curve": { "current": 0.50, "min": -0.30, "max": 0.65, "avg": 0.15, "change": 0.05, "status": { "status": "normal", "color": "#4ade80", "label": "Нормально" } },
+    "gold_oil": { "current": 24.56, "min": 23.58, "max": 25.44, "avg": 24.10, "change": 0.38, "status": { "status": "warning", "color": "#f59e0b", "label": "Средний риск" } },
+    "copper_gold": { "current": 10.50, "min": 10.50, "max": 13.70, "avg": 12.37, "change": -0.50, "status": { "status": "critical", "color": "#ef4444", "label": "Рецессия" } },
+    "bdi": { "current": 2070, "min": 1760, "max": 2070, "avg": 1891, "change": 20, "status": { "status": "normal", "color": "#4ade80", "label": "Нормально" } },
+    "viirs": { "current": 54.0, "min": 48.9, "max": 61.0, "avg": 55.6, "change": -2.0, "status": { "status": "warning", "color": "#f59e0b", "label": "Снижение" } },
+    "uranium": { "current": 68.00, "min": 48.00, "max": 68.00, "avg": 54.71, "change": 1.50, "status": { "status": "warning", "color": "#f59e0b", "label": "Средний спрос" } }
+  }
+}

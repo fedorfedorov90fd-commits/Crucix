@@ -1,0 +1,339 @@
+[
+  {
+    "id": "global-monitor",
+    "name": "Global Monitor",
+    "description": "Демонстратор: глобальный мониторинг",
+    "icon": "🌐",
+    "theme": {
+      "name": "default",
+      "bg": "#0f0f1a",
+      "surface": "#1a1a2e",
+      "accent": "#e94560",
+      "accentWarm": "#0f3460",
+      "text": "#eee",
+      "textDim": "#888",
+      "layerOpacity": 0.75,
+      "glow": false,
+      "scanlines": false
+    },
+    "layers": [
+      "country-instability",
+      "acled-conflicts",
+      "gdelt-events",
+      "firms-fires",
+      "usgs-earthquakes",
+      "noaa-weather",
+      "viirs-night-lights",
+      "migration-flow",
+      "food-security"
+    ],
+    "modules": [
+      "country-instability",
+      "resilience-index",
+      "ai-news-synthesis",
+      "focal-point-detection",
+      "energy-market-intelligence",
+      "political-stability-monitor"
+    ],
+    "panels": [
+      "instability-index",
+      "country-ranking",
+      "ai-briefing",
+      "weather",
+      "trends"
+    ],
+    "camera": {
+      "center": [
+        0,
+        20
+      ],
+      "zoom": 1.5,
+      "pitch": 0,
+      "bearing": 0
+    },
+    "render": {
+      "cluster": true,
+      "clusterRadius": 40,
+      "heatmap": false,
+      "terrain3D": false,
+      "dayNight": true
+    },
+    "metadata": {
+      "created": "2026-09-12T22:21:06.197Z",
+      "modified": "2026-09-12T22:21:06.198Z",
+      "version": "2.0.0",
+      "isBuiltin": true
+    }
+  },
+  {
+    "id": "entity-graph",
+    "name": "Entity Graph",
+    "description": "Демонстратор: граф сущностей",
+    "icon": "◆",
+    "theme": {
+      "name": "default",
+      "bg": "#0f0f1a",
+      "surface": "#1a1a2e",
+      "accent": "#e94560",
+      "accentWarm": "#0f3460",
+      "text": "#eee",
+      "textDim": "#888",
+      "layerOpacity": 0.75,
+      "glow": false,
+      "scanlines": false
+    },
+    "layers": [
+      "entity-graph",
+      "diplomatic-relations",
+      "sanctions-map",
+      "infrastructure-critical",
+      "arms-transfers",
+      "conflict-escalation",
+      "cyber-attacks"
+    ],
+    "modules": [
+      "entity-graph-engine",
+      "entity-model-engine",
+      "living-dossier",
+      "target-workbench",
+      "geotime-timeline",
+      "gaia-map-linker",
+      "multi-source-corroboration",
+      "source-credibility",
+      "scenario-simulation-engine",
+      "strategic-risk-composite"
+    ],
+    "panels": [
+      "entity-graph",
+      "dossier",
+      "timeline",
+      "f2t2ea",
+      "risk-composite"
+    ],
+    "camera": {
+      "center": [
+        30,
+        50
+      ],
+      "zoom": 3,
+      "pitch": 30,
+      "bearing": 0
+    },
+    "render": {
+      "cluster": false,
+      "clusterRadius": 0,
+      "heatmap": false,
+      "terrain3D": false,
+      "dayNight": false
+    },
+    "metadata": {
+      "created": "2026-09-12T22:21:06.198Z",
+      "modified": "2026-09-12T22:21:06.198Z",
+      "version": "2.0.0",
+      "isBuiltin": true
+    }
+  },
+  {
+    "id": "recon",
+    "name": "Recon",
+    "description": "Демонстратор: RECON",
+    "icon": "◈",
+    "theme": {
+      "name": "dark",
+      "bg": "#050708",
+      "surface": "#0a0e10",
+      "accent": "#00ff88",
+      "accentWarm": "#ff6b35",
+      "text": "#c8ffd4",
+      "textDim": "#1a5c3a",
+      "layerOpacity": 0.65,
+      "glow": true,
+      "scanlines": true
+    },
+    "layers": [
+      "recon-results",
+      "ofac-sdn",
+      "cyber-threats",
+      "aviation-opensky",
+      "maritime-ais",
+      "dark-fleet",
+      "satellite-viirs",
+      "gps-jamming",
+      "notam"
+    ],
+    "modules": [
+      "recon-toolkit",
+      "recon-sidecar",
+      "intel-feed",
+      "telegram-osint-layer",
+      "crypto-wallet-trace",
+      "ai-analyst-context",
+      "cyber-attack-monitor",
+      "sanctions-pressure"
+    ],
+    "panels": [
+      "recon",
+      "intel-feed",
+      "wallet-trace",
+      "telegram",
+      "port-scan",
+      "ssl-inspect"
+    ],
+    "camera": {
+      "center": [
+        0,
+        30
+      ],
+      "zoom": 2,
+      "pitch": 45,
+      "bearing": 0
+    },
+    "render": {
+      "cluster": true,
+      "clusterRadius": 50,
+      "heatmap": true,
+      "terrain3D": true,
+      "dayNight": true
+    },
+    "metadata": {
+      "created": "2026-09-12T22:21:06.198Z",
+      "modified": "2026-09-12T22:21:06.198Z",
+      "version": "2.0.0",
+      "isBuiltin": true
+    }
+  },
+  {
+    "id": "custom",
+    "name": "Custom",
+    "description": "Пустой пользовательский",
+    "icon": "★",
+    "theme": {
+      "name": "default",
+      "bg": "#0f0f1a",
+      "surface": "#1a1a2e",
+      "accent": "#e94560",
+      "accentWarm": "#0f3460",
+      "text": "#eee",
+      "textDim": "#888",
+      "layerOpacity": 0.75,
+      "glow": false,
+      "scanlines": false
+    },
+    "layers": [],
+    "modules": [],
+    "panels": [],
+    "camera": {
+      "center": [
+        0,
+        20
+      ],
+      "zoom": 1.5,
+      "pitch": 0,
+      "bearing": 0
+    },
+    "render": {
+      "cluster": true,
+      "clusterRadius": 40,
+      "heatmap": false,
+      "terrain3D": false,
+      "dayNight": false
+    },
+    "metadata": {
+      "created": "2026-09-12T22:21:06.198Z",
+      "modified": "2026-09-12T22:21:06.198Z",
+      "version": "2.0.0",
+      "isBuiltin": true
+    }
+  },
+  {
+    "id": "custom_f83da0d57e07",
+    "name": "Test Save",
+    "description": "Пользовательский пресет, создан 2026-09-12T22:21:53.641Z",
+    "icon": "★",
+    "theme": {
+      "name": "default",
+      "bg": "#0f0f1a",
+      "surface": "#1a1a2e",
+      "accent": "#e94560",
+      "accentWarm": "#0f3460",
+      "text": "#eee",
+      "textDim": "#888",
+      "layerOpacity": 0.75,
+      "glow": false,
+      "scanlines": false
+    },
+    "layers": [
+      "a",
+      "b"
+    ],
+    "modules": [],
+    "panels": [],
+    "camera": {
+      "center": [
+        0,
+        20
+      ],
+      "zoom": 1.5,
+      "pitch": 0,
+      "bearing": 0
+    },
+    "render": {
+      "cluster": true,
+      "clusterRadius": 40,
+      "heatmap": false,
+      "terrain3D": false,
+      "dayNight": false
+    },
+    "metadata": {
+      "created": "2026-09-12T22:21:53.641Z",
+      "modified": "2026-09-12T22:21:53.641Z",
+      "version": "2.0.0",
+      "isBuiltin": false
+    }
+  },
+  {
+    "id": "custom_66b23f29fe3f",
+    "name": "Temp Test",
+    "description": "Пользовательский пресет, создан 2026-09-12T22:24:08.141Z",
+    "icon": "★",
+    "theme": {
+      "name": "default",
+      "bg": "#0f0f1a",
+      "surface": "#1a1a2e",
+      "accent": "#e94560",
+      "accentWarm": "#0f3460",
+      "text": "#eee",
+      "textDim": "#888",
+      "layerOpacity": 0.75,
+      "glow": false,
+      "scanlines": false
+    },
+    "layers": [
+      "a"
+    ],
+    "modules": [],
+    "panels": [],
+    "camera": {
+      "center": [
+        0,
+        20
+      ],
+      "zoom": 1.5,
+      "pitch": 0,
+      "bearing": 0
+    },
+    "render": {
+      "cluster": true,
+      "clusterRadius": 40,
+      "heatmap": false,
+      "terrain3D": false,
+      "dayNight": false
+    },
+    "metadata": {
+      "created": "2026-09-12T22:24:08.141Z",
+      "modified": "2026-09-12T22:24:08.141Z",
+      "version": "2.0.0",
+      "isBuiltin": false
+    }
+  }
+]

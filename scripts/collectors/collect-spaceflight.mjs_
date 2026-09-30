@@ -1,0 +1,36 @@
+#!/usr/bin/env node
+
+// ============================================================
+// collect-spaceflight.mjs — Новости космоса (без ключа)
+// ============================================================
+// API: https://api.spaceflightnewsapi.net/v3/articles
+// Сохраняет: data/basket/spaceflight.json
+// ============================================================
+
+import { promises as fs } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const PROJECT_ROOT = join(__dirname, '..', '..');
+const BASKET_DIR = join(PROJECT_ROOT, 'data', 'basket');
+const FILE_PATH = join(BASKET_DIR, 'spaceflight.json');
+
+async function fetchSpaceflight() {
+  try {
+    const url = 'https://api.spaceflightnewsapi.net/v3/articles?limit=10';
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    await fs.mkdir(BASKET_DIR, { recursive: true });
+    await fs.writeFile(FILE_PATH, JSON.stringify(data, null, 2));
+    console.log('[Spaceflight] ✅ Данные сохранены');
+  } catch (error) {
+    console.error('[Spaceflight]', error.message);
+  }
+}
+
+fetchSpaceflight();

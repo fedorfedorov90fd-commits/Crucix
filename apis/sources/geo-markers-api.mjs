@@ -131,27 +131,10 @@ async function loadMarkers() {
       };
     });
   }
-
-
-  let arr = null;
-  if (Array.isArray(parsed)) arr = parsed;
-  else if (parsed && Array.isArray(parsed.markers)) arr = parsed.markers;
-  else if (parsed && Array.isArray(parsed.data)) arr = parsed.data;
-  else if (parsed && Array.isArray(parsed.items)) arr = parsed.items;
-  if (!arr) { const err = new Error('unrecognized_markers_format'); err.statusCode = 500; throw err; }
-  return arr;
+  return parsed;
 }
 
-async function loadStatuses() {
-  for (const file of [STATUS_FILE, STATUS_FALLBACK]) {
-    try {
-      const raw = await fs.readFile(file, 'utf8');
-      const parsed = JSON.parse(raw);
-      return parsed;
-    } catch { continue; }
-  }
-  return null;
-}
+
 
 async function loadBoundariesRaw() {
   try { return await fs.readFile(BOUNDARIES_FILE, 'utf8'); }

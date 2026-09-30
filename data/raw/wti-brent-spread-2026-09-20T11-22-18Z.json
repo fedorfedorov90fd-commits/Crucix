@@ -1,0 +1,187 @@
+{
+  "source": "Yahoo Finance",
+  "lastUpdated": "2026-09-20T11:22:18.143Z",
+  "data": [
+    {
+      "date": "2026-08-20",
+      "value": 5.95,
+      "wti": 87.83,
+      "brent": 93.78,
+      "spread": 5.95
+    },
+    {
+      "date": "2026-08-21",
+      "value": 7.33,
+      "wti": 87.06,
+      "brent": 94.39,
+      "spread": 7.33
+    },
+    {
+      "date": "2026-08-24",
+      "value": 7.16,
+      "wti": 85.01,
+      "brent": 92.17,
+      "spread": 7.16
+    },
+    {
+      "date": "2026-08-25",
+      "value": 6.22,
+      "wti": 82.36,
+      "brent": 88.58,
+      "spread": 6.22
+    },
+    {
+      "date": "2026-08-26",
+      "value": 5.61,
+      "wti": 82.23,
+      "brent": 87.84,
+      "spread": 5.61
+    },
+    {
+      "date": "2026-08-27",
+      "value": 6.17,
+      "wti": 83.53,
+      "brent": 89.7,
+      "spread": 6.17
+    },
+    {
+      "date": "2026-08-28",
+      "value": 5.91,
+      "wti": 83.4,
+      "brent": 89.31,
+      "spread": 5.91
+    },
+    {
+      "date": "2026-08-31",
+      "value": 4.73,
+      "wti": 85.76,
+      "brent": 90.49,
+      "spread": 4.73
+    },
+    {
+      "date": "2026-09-01",
+      "value": 4.43,
+      "wti": 90.22,
+      "brent": 94.65,
+      "spread": 4.43
+    },
+    {
+      "date": "2026-09-02",
+      "value": 4.62,
+      "wti": 91.01,
+      "brent": 95.63,
+      "spread": 4.62
+    },
+    {
+      "date": "2026-09-03",
+      "value": 4.22,
+      "wti": 91.3,
+      "brent": 95.52,
+      "spread": 4.22
+    },
+    {
+      "date": "2026-09-04",
+      "value": 4.8,
+      "wti": 91.48,
+      "brent": 96.28,
+      "spread": 4.8
+    },
+    {
+      "date": "2026-09-08",
+      "value": 4.89,
+      "wti": 93.03,
+      "brent": 97.92,
+      "spread": 4.89
+    },
+    {
+      "date": "2026-09-09",
+      "value": 5.16,
+      "wti": 96.05,
+      "brent": 101.21,
+      "spread": 5.16
+    },
+    {
+      "date": "2026-09-10",
+      "value": 5.15,
+      "wti": 102.48,
+      "brent": 107.63,
+      "spread": 5.15
+    },
+    {
+      "date": "2026-09-11",
+      "value": 4.56,
+      "wti": 100.05,
+      "brent": 104.61,
+      "spread": 4.56
+    },
+    {
+      "date": "2026-09-14",
+      "value": 4.29,
+      "wti": 101.39,
+      "brent": 105.68,
+      "spread": 4.29
+    },
+    {
+      "date": "2026-09-15",
+      "value": 2.92,
+      "wti": 105.83,
+      "brent": 108.75,
+      "spread": 2.92
+    },
+    {
+      "date": "2026-09-16",
+      "value": 3.4,
+      "wti": 102.43,
+      "brent": 105.83,
+      "spread": 3.4
+    },
+    {
+      "date": "2026-09-17",
+      "value": 2.91,
+      "wti": 101.91,
+      "brent": 104.82,
+      "spread": 2.91
+    },
+    {
+      "date": "2026-09-18",
+      "value": 3.21,
+      "wti": 96.08,
+      "brent": 99.29,
+      "spread": 3.21
+    }
+  ],
+  "meta": {
+    "description": "Спред между WTI и Brent",
+    "unit": "долларов за баррель",
+    "isDemo": false,
+    "components": [
+      "WTI",
+      "Brent"
+    ],
+    "points_count": 21,
+    "coverage_days": 21,
+    "sources_attempted": [
+      "yahoo"
+    ],
+    "quality_score": 100,
+    "rolling_stats": {
+      "window": 7,
+      "samples": 7,
+      "mean": 3.777,
+      "stddev": 0.82,
+      "min": 2.91,
+      "max": 5.15,
+      "ema": 3.661,
+      "p25": 2.92,
+      "p75": 4.29
+    },
+    "rsi": 36.62,
+    "regime": "normal",
+    "cli": {
+      "force": false,
+      "demo": false,
+      "days": 30
+    },
+    "rate_limit_hits": 2
+  }
+}

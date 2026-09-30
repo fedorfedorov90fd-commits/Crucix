@@ -1,0 +1,114 @@
+{
+  "timestamp": "2026-08-28T15:13:35.943Z",
+  "bases": 66,
+  "nuclear": 24,
+  "cables": 13,
+  "assets": 12,
+  "alerts": [
+    {
+      "type": "cable_intercept_risk",
+      "severity": "HIGH",
+      "base": "Norfolk Naval Base",
+      "cable": "Marea",
+      "distance": 16
+    },
+    {
+      "type": "cable_intercept_risk",
+      "severity": "MEDIUM",
+      "base": "Yokosuka Naval Base",
+      "cable": "Japan-US Cable",
+      "distance": 44
+    },
+    {
+      "type": "cable_intercept_risk",
+      "severity": "MEDIUM",
+      "base": "Yokosuka Naval Base",
+      "cable": "APCN-2",
+      "distance": 44
+    },
+    {
+      "type": "nuclear_incident_risk",
+      "severity": "CRITICAL",
+      "site": "Zaporizhzhia NPP",
+      "status": "damaged",
+      "country": "Ukraine"
+    },
+    {
+      "type": "nuclear_incident_risk",
+      "severity": "CRITICAL",
+      "site": "Fukushima Daiichi",
+      "status": "shutdown",
+      "country": "Japan"
+    },
+    {
+      "type": "nuclear_incident_risk",
+      "severity": "CRITICAL",
+      "site": "Chernobyl Exclusion Zone",
+      "status": "shutdown",
+      "country": "Ukraine"
+    },
+    {
+      "type": "nuclear_incident_risk",
+      "severity": "CRITICAL",
+      "site": "Brokdorf NPP",
+      "status": "shutdown",
+      "country": "Germany"
+    },
+    {
+      "type": "nuclear_incident_risk",
+      "severity": "CRITICAL",
+      "site": "Grohnde NPP",
+      "status": "shutdown",
+      "country": "Germany"
+    },
+    {
+      "type": "nuclear_incident_risk",
+      "severity": "CRITICAL",
+      "site": "Krümmel NPP",
+      "status": "shutdown",
+      "country": "Germany"
+    },
+    {
+      "type": "oil_terminal",
+      "severity": "HIGH",
+      "asset": "Ras Tanura Oil Terminal",
+      "country": "Saudi Arabia"
+    },
+    {
+      "type": "oil_plant",
+      "severity": "HIGH",
+      "asset": "Abqaiq Oil Processing",
+      "country": "Saudi Arabia"
+    },
+    {
+      "type": "oil_terminal",
+      "severity": "HIGH",
+      "asset": "Odessa Oil Terminal",
+      "country": "Ukraine"
+    },
+    {
+      "type": "gas_pipeline",
+      "severity": "HIGH",
+      "asset": "Nord Stream 1",
+      "country": "Germany"
+    },
+    {
+      "type": "gas_pipeline",
+      "severity": "HIGH",
+      "asset": "Nord Stream 2",
+      "country": "Germany"
+    },
+    {
+      "type": "port",
+      "severity": "HIGH",
+      "asset": "Port of Shanghai",
+      "country": "China"
+    },
+    {
+      "type": "port",
+      "severity": "HIGH",
+      "asset": "Port of Singapore",
+      "country": "Singapore"
+    }
+  ]
+}

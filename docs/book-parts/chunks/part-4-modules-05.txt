@@ -1,0 +1,736 @@
+===== ЧАСТЬ part-4-modules · КУСОК 05/28 · 33.4 KB =====
+
+FILE: apis/predict/multilayer_causal.mjs
+SIZE: 19340 bytes
+SHA1: 34b098b3da7bf793
+========================================================================
+
+// apis/predict/multilayer_causal.mjs
+// Слой 2: Multi-Layer Causal DAG — единый причинный граф через четыре слоя реальности.
+//
+// Четыре слоя:
+//   CYBER    — кибератаки, утечки, ransomware, взлом инфраструктуры, DDoS.
+//   INFO     — дезинформация, смена нарратива, пропаганда, паника, медиаблокировка.
+//   FINANCE  — VIX, обвал рынка, санкции, валютный кризис, отток капитала, кредит.
+//   PHYSICAL — спутниковые аномалии, морское движение, наращивание, эскалация,
+//              радиация, повреждение инфраструктуры.
+//
+// Возможности:
+//   1. Кросс-слойные связи (инфраструктура → рынок, дезинформация → паника).
+//   2. Bayesian propagation — распространение вероятностей по графу на глубину 3-5.
+//   3. Do-intervention — «что если установить X = 0.8?» и увидеть каскад по слоям.
+//   4. Рекурсивный counterfactual — цепочки «A → B → C → D».
+//   5. Cross-layer influence — оценка «заражения» между слоями.
+//
+// Контракт 2 (внутренний predict-модуль):
+//   - Нет route (не HTTP-эндпоинт).
+//   - Есть meta (описание, категория, версия, зависимости).
+//   - Экспорт именованных функций и классов. Никаких дефолтных экспортов.
+//   - try/catch с параметром.
+//
+// Портабельность:
+//   Все пути строятся относительно файла через import.meta.url.
+
+import { writeFileSync, mkdirSync, existsSync, readFileSync } from 'node:fs';
+import { join, dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const PROJECT_ROOT = resolve(__dirname, '..', '..');
+const RUNS_DIR = join(PROJECT_ROOT, 'runs');
+const PRED_DIR = join(RUNS_DIR, 'predictions');
+
+// ─── МЕТАДАННЫЕ МОДУЛЯ ──────────────────────────────────────────
+
+export const meta = {
+  id: 'multilayer_causal',
+  name: 'Многослойный причинный граф (Multi-Layer Causal DAG)',
+  layer: 2,
+  category: 'causal',
+  description: 'Единый причинный граф через четыре слоя реальности: кибер, информация, финансы, физический. Кросс-слойные связи, do-intervention, рекурсивный counterfactual.',
+  version: '2.0.0',
+  depends: [],
+  exports: [
+    'LAYERS',
+    'NODE_DEFINITIONS',
+    'CAUSAL_EDGES',
+    'MultiLayerCausalGraph',
+    'crucixMultiLayerCausal',
+  ],
+};
+
+// ─── КОНФИГУРАЦИЯ СЛОЁВ ─────────────────────────────────────────
+
+export const LAYERS = {
+  CYBER: 'cyber',
+  INFO: 'info',
+  FINANCE: 'finance',
+  PHYSICAL: 'physical',
+};
+
+// ─── УЗЛЫ ПО СЛОЯМ ─────────────────────────────────────────────
+
+export const NODE_DEFINITIONS = {
+  // Слой 1: Кибер
+  cyberAttack:          { layer: LAYERS.CYBER,    name: 'Кибератака',              category: 'event' },
+  dataLeak:             { layer: LAYERS.CYBER,    name: 'Утечка данных',           category: 'event' },
+  ransomwareWave:       { layer: LAYERS.CYBER,    name: 'Волна ransomware',        category: 'event' },
+  infrastructureBreach: { layer: LAYERS.CYBER,    name: 'Взлом инфраструктуры',    category: 'event' },
+  ddosCampaign:         { layer: LAYERS.CYBER,    name: 'DDoS-кампания',           category: 'event' },
+
+  // Слой 2: Информация
+  disinformation:       { layer: LAYERS.INFO,     name: 'Дезинформация',           category: 'event' },
+  narrativeShift:       { layer: LAYERS.INFO,     name: 'Смена нарратива',         category: 'event' },
+  propagandaSpike:      { layer: LAYERS.INFO,     name: 'Всплеск пропаганды',      category: 'event' },
+  mediaBlackout:        { layer: LAYERS.INFO,     name: 'Медиаблокировка',         category: 'event' },
+  panicSelling:         { layer: LAYERS.INFO,     name: 'Панические настроения',   category: 'state' },
+
+  // Слой 3: Финансы
+  vixSpike:             { layer: LAYERS.FINANCE,  name: 'Скачок VIX',              category: 'market' },
+  marketCrash:          { layer: LAYERS.FINANCE,  name: 'Обвал рынка',             category: 'market' },
+  sanctionsExpansion:   { layer: LAYERS.FINANCE,  name: 'Расширение санкций',      category: 'policy' },
+  currencyCrisis:       { layer: LAYERS.FINANCE,  name: 'Валютный кризис',         category: 'market' },
+  capitalFlight:        { layer: LAYERS.FINANCE,  name: 'Отток капитала',          category: 'market' },
+  creditFreeze:         { layer: LAYERS.FINANCE,  name: 'Кредитное сжатие',        category: 'market' },
+
+  // Слой 4: Физический
+  satelliteAnomaly:     { layer: LAYERS.PHYSICAL, name: 'Спутниковая аномалия',    category: 'observation' },
+  navalMovement:        { layer: LAYERS.PHYSICAL, name: 'Морское движение',        category: 'observation' },
+  militaryBuildUp:      { layer: LAYERS.PHYSICAL, name: 'Военное наращивание',     category: 'observation' },
+  conflictEscalation:   { layer: LAYERS.PHYSICAL, name: 'Эскалация конфликта',     category: 'event' },
+  radiationAnomaly:     { layer: LAYERS.PHYSICAL, name: 'Радиационная аномалия',   category: 'observation' },
+  infrastructureDamage: { layer: LAYERS.PHYSICAL, name: 'Повреждение инфраструктуры', category: 'event' },
+};
+
+// ─── КРОСС-СЛОЙНЫЕ СВЯЗИ ────────────────────────────────────────
+
+export const CAUSAL_EDGES = [
+  // Кибер → Финансы
+  { from: 'cyberAttack',          to: 'vixSpike',             strength: 1.5, lagHours: 2,   crossLayer: true,  description: 'Кибератака → рост волатильности' },
+  { from: 'infrastructureBreach', to: 'marketCrash',          strength: 2.2, lagHours: 6,   crossLayer: true,  description: 'Взлом инфраструктуры → обвал' },
+  { from: 'ransomwareWave',       to: 'creditFreeze',         strength: 1.8, lagHours: 12,  crossLayer: true,  description: 'Ransomware → кредитное сжатие' },
+  { from: 'dataLeak',             to: 'capitalFlight',        strength: 1.4, lagHours: 24,  crossLayer: true,  description: 'Утечка → отток капитала' },
+
+  // Кибер → Информация
+  { from: 'cyberAttack',          to: 'disinformation',       strength: 1.6, lagHours: 1,   crossLayer: true,  description: 'Атака → волна дезинформации' },
+  { from: 'dataLeak',             to: 'propagandaSpike',      strength: 1.8, lagHours: 3,   crossLayer: true,  description: 'Утечка → пропагандистский всплеск' },
+
+  // Информация → Финансы
+  { from: 'disinformation',       to: 'panicSelling',         strength: 2.0, lagHours: 4,   crossLayer: true,  description: 'Дезинформация → паника' },
+  { from: 'panicSelling',         to: 'vixSpike',             strength: 2.5, lagHours: 1,   crossLayer: true,  description: 'Паника → VIX' },
+  { from: 'narrativeShift',       to: 'capitalFlight',        strength: 1.5, lagHours: 12,  crossLayer: true,  description: 'Смена нарратива → отток' },
+
+  // Финансы → Физический
+  { from: 'sanctionsExpansion',   to: 'militaryBuildUp',      strength: 1.7, lagHours: 168, crossLayer: true,  description: 'Санкции → военная эскалация' },
+  { from: 'marketCrash',          to: 'infrastructureDamage', strength: 1.2, lagHours: 240, crossLayer: true,  description: 'Обвал → деградация инфраструктуры' },
+
+  // Физический → Финансы
+  { from: 'conflictEscalation',   to: 'vixSpike',             strength: 2.8, lagHours: 2,   crossLayer: true,  description: 'Конфликт → VIX' },
+  { from: 'navalMovement',        to: 'vixSpike',             strength: 1.4, lagHours: 6,   crossLayer: true,  description: 'Флот → нервозность рынков' },
+  { from: 'radiationAnomaly',     to: 'vixSpike',             strength: 3.0, lagHours: 1,   crossLayer: true,  description: 'Радиация → паника' },
+  { from: 'militaryBuildUp',      to: 'sanctionsExpansion',   strength: 1.9, lagHours: 72,  crossLayer: true,  description: 'Наращивание → санкции' },
+
+  // Внутри слоя Финансы
+  { from: 'vixSpike',             to: 'marketCrash',          strength: 2.4, lagHours: 4,   crossLayer: false, description: 'VIX → обвал' },
+  { from: 'marketCrash',          to: 'creditFreeze',         strength: 2.0, lagHours: 8,   crossLayer: false, description: 'Обвал → сжатие' },
+  { from: 'currencyCrisis',       to: 'capitalFlight',        strength: 2.2, lagHours: 2,   crossLayer: false, description: 'Валютный кризис → отток' },
+
+  // Внутри слоя Физический
+  { from: 'militaryBuildUp',      to: 'conflictEscalation',   strength: 2.5, lagHours: 48,  crossLayer: false, description: 'Наращивание → эскалация' },
+  { from: 'satelliteAnomaly',     to: 'militaryBuildUp',      strength: 1.8, lagHours: 24,  crossLayer: false, description: 'Спутник → наращивание' },
+
+  // Внутри слоя Информация
+  { from: 'propagandaSpike',      to: 'narrativeShift',       strength: 1.6, lagHours: 8,   crossLayer: false, description: 'Пропаганда → смена нарратива' },
+  { from: 'mediaBlackout',        to: 'disinformation',       strength: 1.9, lagHours: 4,   crossLayer: false, description: 'Блокировка → рост дезинформации' },
+];
+
+// ─── ГРАФ ──────────────────────────────────────────────────────
+
+export class MultiLayerCausalGraph {
+  constructor() {
+    this.nodes = new Map();
+    this.edges = new Map();
+    this.crossLayerEdges = [];
+    this._initializeGraph();
+  }
+
+  _initializeGraph() {
+    for (const [id, def] of Object.entries(NODE_DEFINITIONS)) {
+      this.nodes.set(id, { id, ...def, currentProb: 0.5, baseProb: 0.5 });
+    }
+    for (const [id] of this.nodes) this.edges.set(id, []);
+    for (const edge of CAUSAL_EDGES) {
+      if (!this.nodes.has(edge.from) || !this.nodes.has(edge.to)) continue;
+      this.edges.get(edge.from).push(edge);
+      if (edge.crossLayer) this.crossLayerEdges.push(edge);
+    }
+  }
+
+  observe(nodeId, probability, confidence = 1.0) {
+    const node = this.nodes.get(nodeId);
+    if (!node) return;
+    node.currentProb = node.currentProb * (1 - confidence) + probability * confidence;
+    node.currentProb = Math.max(0.001, Math.min(0.999, node.currentProb));
+    node.lastObservation = Date.now();
+  }
+
+  propagate(maxDepth = 3) {
+    const visited = new Set();
+    const queue = [];
+    for (const [id, node] of this.nodes) {
+      if (node.lastObservation && Date.now() - node.lastObservation < 3600000) {
+        queue.push({ id, depth: 0, prob: node.currentProb });
+        visited.add(id);
+      }
+    }
+    const updates = [];
+    while (queue.length) {
+      const { id, depth, prob } = queue.shift();
+      if (depth >= maxDepth) continue;
+      const outEdges = this.edges.get(id) || [];
+      for (const edge of outEdges) {
+        const targetNode = this.nodes.get(edge.to);
+        if (!targetNode) continue;
+        const delta = (prob - 0.5) * (edge.strength - 1) * 0.3;
+        const newProb = Math.max(0.001, Math.min(0.999, targetNode.currentProb + delta));
+        if (Math.abs(newProb - targetNode.currentProb) > 0.001) {
+          updates.push({
+            from: id, to: edge.to,
+            oldProb: targetNode.currentProb, newProb,
+            delta: newProb - targetNode.currentProb,
+            strength: edge.strength,
+            lagHours: edge.lagHours,
+            crossLayer: edge.crossLayer,
+            description: edge.description,
+          });
+          targetNode.currentProb = newProb;
+        }
+        if (!visited.has(edge.to)) {
+          visited.add(edge.to);
+          queue.push({ id: edge.to, depth: depth + 1, prob: newProb });
+        }
+      }
+    }
+    return updates;
+  }
+
+  doIntervention(nodeId, newProb) {
+    const node = this.nodes.get(nodeId);
+    if (!node) return null;
+    const snapshot = new Map();
+    for (const [id, n] of this.nodes) snapshot.set(id, n.currentProb);
+    node.currentProb = newProb;
+    node.lastObservation = Date.now();
+    const updates = this.propagate(5);
+    const layerImpact = {};
+    for (const u of updates) {
+      const targetNode = this.nodes.get(u.to);
+      if (!targetNode) continue;
+      const layer = targetNode.layer;
+      if (!layerImpact[layer]) layerImpact[layer] = [];
+      layerImpact[layer].push(u);
+    }
+    for (const [id, n] of this.nodes) {
+      if (id !== nodeId) n.currentProb = snapshot.get(id);
+    }
+    return {
+      intervention: { nodeId, newProb },
+      directUpdates: updates.length,
+      crossLayerUpdates: updates.filter(u => u.crossLayer).length,
+      layerImpact,
+      totalImpact: updates.reduce((s, u) => s + Math.abs(u.delta), 0),
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  crossLayerInfluence() {
+    const influence = {};
+    for (const edge of this.crossLayerEdges) {
+      const fromNode = this.nodes.get(edge.from);
+      const toNode = this.nodes.get(edge.to);
+      if (!fromNode || !toNode) continue;
+      const key = `${fromNode.layer} → ${toNode.layer}`;
+      if (!influence[key]) influence[key] = { count: 0, totalStrength: 0, edges: [] };
+      influence[key].count++;
+      influence[key].totalStrength += edge.strength;
+      influence[key].edges.push(edge.description);
+    }
+    for (const key of Object.keys(influence)) {
+      influence[key].avgStrength = influence[key].totalStrength / influence[key].count;
+    }
+    return influence;
+  }
+
+  recursiveCounterfactual(startNode, newProb, chainLength = 3) {
+    const chains = [];
+    const visited = new Set();
+    const explore = (nodeId, prob, depth, path) => {
+      if (depth >= chainLength || visited.has(nodeId)) {
+        chains.push([...path]);
+        return;
+      }
+      visited.add(nodeId);
+      const outEdges = this.edges.get(nodeId) || [];
+      for (const edge of outEdges) {
+        const targetNode = this.nodes.get(edge.to);
+        if (!targetNode) continue;
+        const delta = (prob - 0.5) * (edge.strength - 1) * 0.3;
+        const newTargetProb = Math.max(0.001, Math.min(0.999, targetNode.currentProb + delta));
+        path.push({
+          from: nodeId, to: edge.to,
+          probability: newTargetProb,
+          lagHours: edge.lagHours,
+          crossLayer: edge.crossLayer,
+        });
+        explore(edge.to, newTargetProb, depth + 1, path);
+        path.pop();
+      }
+      visited.delete(nodeId);
+    };
+    explore(startNode, newProb, 0, []);
+    chains.sort((a, b) => {
+      const aEffect = a.length > 0 ? Math.abs(a[a.length - 1].probability - 0.5) : 0;
+      const bEffect = b.length > 0 ? Math.abs(b[b.length - 1].probability - 0.5) : 0;
+      return bEffect - aEffect;
+    });
+    return chains.slice(0, 5);
+  }
+
+  toJSON() {
+    return {
+      nodes: [...this.nodes.values()].map(n => ({
+        id: n.id, name: n.name, layer: n.layer,
+        category: n.category, currentProb: n.currentProb,
+      })),
+      edges: [...this.edges.entries()].flatMap(([from, edges]) =>
+        edges.map(e => ({
+          from, to: e.to, strength: e.strength,
+          lagHours: e.lagHours, crossLayer: e.crossLayer,
+          description: e.description,
+        }))
+      ),
+      crossLayerInfluence: this.crossLayerInfluence(),
+      stats: {
+        nodeCount: this.nodes.size,
+        edgeCount: [...this.edges.values()].reduce((s, e) => s + e.length, 0),
+        crossLayerEdgeCount: this.crossLayerEdges.length,
+        layers: Object.values(LAYERS).length,
+      },
+    };
+  }
+}
+
+// ─── ИНТЕГРАЦИЯ С CRUCIX ───────────────────────────────────────
+
+export function crucixMultiLayerCausal(latest, history) {
+  const graph = new MultiLayerCausalGraph();
+
+  if (latest.fred?.vix > 25) {
+    graph.observe('vixSpike', Math.min(0.95, (latest.fred.vix - 20) / 20), 0.9);
+  }
+  if (latest.gdelt?.conflictEvents?.length > 8) {
+    graph.observe('conflictEscalation', Math.min(0.95, latest.gdelt.conflictEvents.length / 20), 0.85);
+  }
+  if (latest.sanctions?.count > 3) {
+    graph.observe('sanctionsExpansion', Math.min(0.9, latest.sanctions.count / 10), 0.9);
+  }
+  if (latest.radiation?.max > 150) {
+    graph.observe('radiationAnomaly', 0.8, 0.95);
+  }
+  if (latest.delta?.escalatedAlerts > 2) {
+    graph.observe('panicSelling', Math.min(0.9, latest.delta.escalatedAlerts / 8), 0.7);
+  }
+
+  const propagation = graph.propagate(4);
+  const crossLayer = graph.crossLayerInfluence();
+  const scenario1 = graph.doIntervention('infrastructureBreach', 0.8);
+  const scenario2 = graph.doIntervention('radiationAnomaly', 0.7);
+  const scenario3 = graph.doIntervention('sanctionsExpansion', 0.9);
+  const counterfactualChains = graph.recursiveCounterfactual('militaryBuildUp', 0.85, 4);
+
+  const result = {
+    module: 'multilayer_causal',
+    graphStats: graph.toJSON().stats,
+    crossLayerInfluence: crossLayer,
+    propagation: {
+      totalUpdates: propagation.length,
+      crossLayerUpdates: propagation.filter(u => u.crossLayer).length,
+      updates: propagation.slice(0, 20),
+    },
+    scenarios: { scenario1, scenario2, scenario3 },
+    counterfactualChains,
+    timestamp: new Date().toISOString(),
+  };
+
+  if (!existsSync(PRED_DIR)) {
+    try { mkdirSync(PRED_DIR, { recursive: true }); }
+    catch (e) { console.warn('[multilayer_causal] Не удалось создать PRED_DIR:', e.message); }
+  }
+  try {
+    writeFileSync(
+      join(PRED_DIR, `multilayer_causal_${Date.now()}.json`),
+      JSON.stringify(result, null, 2)
+    );
+  } catch (e) {
+    console.warn('[multilayer_causal] Не удалось сохранить результат:', e.message);
+  }
+
+  return result;
+}
+
+
+
+========================================================================
+
+FILE: apis/predict/temporal_causal.mjs
+SIZE: 14446 bytes
+SHA1: 2b4b0830f35641f3
+========================================================================
+
+// apis/predict/temporal_causal.mjs
+// Слой 1: Temporal Causal Discovery — моделирование задержек между причиной и следствием.
+//
+// Ключевая идея:
+//   Задержка (lag) между событием A и событием B — не константа, а случайная
+//   величина с распределением P(lag | A, B). Система обучается на истории sweeps
+//   и извлекает эмпирические распределения задержек для каждой пары событий.
+//
+// Сигналы:
+//   - Сокращение задержки → ускорение эскалации.
+//   - Рост задержки → деградация системы.
+//   - Модель окон уязвимости: система наиболее уязвима в определённые
+//     дни недели, часы и месяцы.
+//
+// Контракт 2 (внутренний predict-модуль):
+//   - Нет route (не HTTP-эндпоинт).
+//   - Есть meta (описание, категория, версия, зависимости).
+//   - Экспорт именованных функций и классов. Никаких export default.
+//   - try/catch с параметром.
+//
+// Портабельность:
+//   Все пути строятся относительно файла через import.meta.url.
+
+import { writeFileSync, mkdirSync, existsSync, readFileSync } from 'node:fs';
+import { join, dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const PROJECT_ROOT = resolve(__dirname, '..', '..');
+const RUNS_DIR = join(PROJECT_ROOT, 'runs');
+const PRED_DIR = join(RUNS_DIR, 'predictions');
+
+// ─── МЕТАДАННЫЕ МОДУЛЯ ──────────────────────────────────────────
+
+export const meta = {
+  id: 'temporal_causal',
+  name: 'Временная причинная сеть (Temporal Causal Discovery)',
+  layer: 1,
+  category: 'causal',
+  description: 'Моделирование задержек между событиями как случайных величин. Детекция ускорения эскалации и деградации системы.',
+  version: '2.0.0',
+  depends: [],
+  exports: [
+    'TemporalLagNetwork',
+    'VulnerabilityWindowModel',
+    'crucixTemporalCausalAnalysis',
+  ],
+};
+
+// ─── ЯДРО: ВРЕМЕННАЯ СЕТЬ ЗАДЕРЖЕК ──────────────────────────────
+
+export class TemporalLagNetwork {
+  constructor() {
+    this.lagDistributions = new Map();
+    this.eventTimeline = [];
+    this.minObservations = 3;
+  }
+
+  recordEvent(eventId, timestampMs, magnitude = 1.0) {
+    this.eventTimeline.push({ t: timestampMs, eventId, magnitude });
+    this.eventTimeline.sort((a, b) => a.t - b.t);
+  }
+
+  extractLags(maxLagMs = 30 * 24 * 3600 * 1000) {
+    const pairs = new Map();
+    for (let i = 0; i < this.eventTimeline.length; i++) {
+      const a = this.eventTimeline[i];
+      for (let j = i + 1; j < this.eventTimeline.length; j++) {
+        const b = this.eventTimeline[j];
+        const lag = b.t - a.t;
+        if (lag > maxLagMs) break;
+        const key = `${a.eventId}→${b.eventId}`;
+        if (!pairs.has(key)) pairs.set(key, []);
+        pairs.get(key).push({
+          lag,
+          magnitudeA: a.magnitude,
+          magnitudeB: b.magnitude,
+          timestamp: b.t,
+        });
+      }
+    }
+    return pairs;
+  }
+
+  fit(maxLagMs = 30 * 24 * 3600 * 1000) {
+    const pairs = this.extractLags(maxLagMs);
+    for (const [key, observations] of pairs) {
+      if (observations.length < this.minObservations) continue;
+      const lags = observations.map(o => o.lag).sort((a, b) => a - b);
+      const mean = lags.reduce((a, b) => a + b, 0) / lags.length;
+      const variance = lags.reduce((s, v) => s + (v - mean) ** 2, 0) / lags.length;
+      const std = Math.sqrt(variance);
+      const [from, to] = key.split('→');
+      if (!this.lagDistributions.has(from)) this.lagDistributions.set(from, new Map());
+      this.lagDistributions.get(from).set(to, {
+        samples: lags,
+        count: lags.length,
+        mean,
+        std,
+        p05: lags[Math.floor(lags.length * 0.05)],
+        p25: lags[Math.floor(lags.length * 0.25)],
+        p50: lags[Math.floor(lags.length * 0.50)],
+        p75: lags[Math.floor(lags.length * 0.75)],
+        p95: lags[Math.floor(lags.length * 0.95)],
+        min: lags[0],
+        max: lags[lags.length - 1],
+        observations,
+        lastUpdate: Date.now(),
+      });
+    }
+    return this.lagDistributions;
+  }
+
+  detectLagShift(from, to, recentWindow = 3) {
+    const dist = this.lagDistributions.get(from)?.get(to);
+    if (!dist || dist.observations.length < recentWindow * 2) {
+      return { detected: false, reason: 'insufficient_data' };
+    }
+    const sorted = [...dist.observations].sort((a, b) => a.timestamp - b.timestamp);
+    const recent = sorted.slice(-recentWindow);
+    const historical = sorted.slice(0, -recentWindow);
+    const recentMean = recent.reduce((s, o) => s + o.lag, 0) / recent.length;
+    const histMean = historical.reduce((s, o) => s + o.lag, 0) / historical.length;
+    const histStd = Math.sqrt(
+      historical.reduce((s, o) => s + (o.lag - histMean) ** 2, 0) / historical.length
+    );
+    const zScore = histStd > 0 ? (recentMean - histMean) / histStd : 0;
+    let type = 'stable';
+    let severity = 'none';
+    if (zScore < -2) { type = 'accelerating'; severity = 'high'; }
+    else if (zScore < -1) { type = 'accelerating'; severity = 'medium'; }
+    else if (zScore > 2) { type = 'decelerating'; severity = 'high'; }
+    else if (zScore > 1) { type = 'decelerating'; severity = 'medium'; }
+    return {
+      detected: type !== 'stable',
+      type, severity, from, to,
+      historicalMean: histMean,
+      recentMean,
+      shiftPct: histMean > 0 ? ((recentMean - histMean) / histMean) * 100 : 0,
+      zScore,
+      recentSamples: recent.length,
+      historicalSamples: historical.length,
+      interpretation: this._interpretLagShift(type, severity, histMean, recentMean),
+    };
+  }
+
+  _interpretLagShift(type, severity, histMean, recentMean) {
+    const histH = (histMean / 3600000).toFixed(1);
+    const recH = (recentMean / 3600000).toFixed(1);
+    if (type === 'accelerating') {
+      return `Задержка сокращается: было ${histH}ч → стало ${recH}ч. Признак ускорения эскалации.`;
+    }
+    if (type === 'decelerating') {
+      return `Задержка растёт: было ${histH}ч → стало ${recH}ч. Признак деградации системы.`;
+    }
+    return 'Задержка стабильна.';
+  }
+
+  predictNextB(from, to) {
+    const dist = this.lagDistributions.get(from)?.get(to);
+    if (!dist) return null;
+    const now = Date.now();
+    const lastA = [...this.eventTimeline].reverse().find(e => e.eventId === from);
+    if (!lastA) return null;
+    return {
+      from, to,
+      expectedLagMs: dist.mean,
+      p05: dist.p05,
+      p50: dist.p50,
+      p95: dist.p95,
+      probabilityB: this._computeProbability(dist, now, lastA.t),
+      confidence: Math.min(1, dist.count / 20),
+    };
+  }
+
+  _computeProbability(dist, now, lastATimestamp) {
+    const elapsed = now - lastATimestamp;
+    const ratio = elapsed / Math.max(dist.mean, 1);
+    return Math.min(0.95, 1 - Math.exp(-ratio));
+  }
+
+  serialize() {
+    const data = { timeline: this.eventTimeline, distributions: {} };
+    for (const [from, targets] of this.lagDistributions) {
+      data.distributions[from] = {};
+      for (const [to, d] of targets) {
+        data.distributions[from][to] = {
+          ...d,
+          observations: d.observations.slice(-100),
+          samples: d.samples.slice(-100),
+        };
+      }
+    }
+    return JSON.stringify(data);
+  }
+
+  static deserialize(json) {
+    const data = JSON.parse(json);
+    const net = new TemporalLagNetwork();
+    net.eventTimeline = data.timeline || [];
+    for (const [from, targets] of Object.entries(data.distributions || {})) {
+      net.lagDistributions.set(from, new Map());
+      for (const [to, d] of Object.entries(targets)) {
+        net.lagDistributions.get(from).set(to, d);
+      }
+    }
+    return net;
+  }
+}
+
+// ─── МОДЕЛЬ ВРЕМЕННЫХ ОКОН УЯЗВИМОСТИ ───────────────────────────
+
+export class VulnerabilityWindowModel {
+  constructor() {
+    this.temporalPatterns = {
+      dayOfWeek: new Array(7).fill(0).map(() => ({ events: 0, hits: 0 })),
+      hour: new Array(24).fill(0).map(() => ({ events: 0, hits: 0 })),
+      month: new Array(12).fill(0).map(() => ({ events: 0, hits: 0 })),
+    };
+  }
+
+  fit(history, threshold = 0.7) {
+    for (const h of history) {
+      if (!h.timestamp) continue;
+      const t = new Date(h.timestamp);
+      const severity = this._computeSeverity(h);
+      const isHigh = severity > threshold;
+      this.temporalPatterns.dayOfWeek[t.getDay()].events++;
+      this.temporalPatterns.hour[t.getHours()].events++;
+      this.temporalPatterns.month[t.getMonth()].events++;
+      if (isHigh) {
+        this.temporalPatterns.dayOfWeek[t.getDay()].hits++;
+        this.temporalPatterns.hour[t.getHours()].hits++;
+        this.temporalPatterns.month[t.getMonth()].hits++;
+      }
+    }
+    return this.temporalPatterns;
+  }
+
+  _computeSeverity(h) {
+    const vix = (h.fred?.vix || 20) / 50;
+    const conflicts = (h.gdelt?.conflictEvents?.length || 0) / 20;
+    const alerts = (h.delta?.newAlerts || 0) / 10;
+    return Math.min(1, vix * 0.4 + conflicts * 0.4 + alerts * 0.2);
+  }
+
+  assess(date = new Date()) {
+    const dow = this.temporalPatterns.dayOfWeek[date.getDay()];
+    const hour = this.temporalPatterns.hour[date.getHours()];
+    const month = this.temporalPatterns.month[date.getMonth()];
+    const dowRate = dow.events > 0 ? dow.hits / dow.events : 0;
+    const hourRate = hour.events > 0 ? hour.hits / hour.events : 0;
+    const monthRate = month.events > 0 ? month.hits / month.events : 0;
+    const overall = dowRate * 0.3 + hourRate * 0.4 + monthRate * 0.3;
+    let level = 'low';
+    if (overall > 0.5) level = 'critical';
+    else if (overall > 0.35) level = 'high';
+    else if (overall > 0.2) level = 'medium';
+    return {
+      vulnerability: overall,
+      level,
+      context: {
+        dayOfWeek: date.getDay(),
+        hour: date.getHours(),
+        month: date.getMonth(),
+        dowRate, hourRate, monthRate,
+      },
+      interpretation: this._interpret(level, date),
+    };
+  }
+
+  _interpret(level, date) {
+    const days = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
+    if (level === 'critical') return `Критическое окно уязвимости: ${days[date.getDay()]}, ${date.getHours()}:00. Исторически высокий риск событий.`;
+    if (level === 'high') return `Повышенная уязвимость: ${days[date.getDay()]}, ${date.getHours()}:00.`;
+    if (level === 'medium') return 'Средняя уязвимость.';
+    return 'Низкая уязвимость. Стандартный режим.';
+  }
+}
+
+// ─── ИНТЕГРАЦИЯ С ПРОГНОСТИЧЕСКИМ КОНВЕЙЕРОМ ────────────────────
+
+export function crucixTemporalCausalAnalysis(history, stateFile = null) {
+  if (!history || history.length < 10) {
+    return { available: false, reason: 'insufficient_history', requiredSweeps: 10, actualSweeps: history?.length || 0 };
+  }
+  const filepath = stateFile || join(PRED_DIR, 'temporal_causal.json');
+  if (!existsSync(PRED_DIR)) {
+    try { mkdirSync(PRED_DIR, { recursive: true }); }
+    catch (e) { console.warn('[temporal_causal] Не удалось создать PRED_DIR:', e.message); }
+  }
+  let net;
+  try {
+    net = existsSync(filepath)
+      ? TemporalLagNetwork.deserialize(readFileSync(filepath, 'utf-8'))
+      : new TemporalLagNetwork();
+  } catch (e) {
+    console.warn('[temporal_causal] Ошибка загрузки состояния, создаём заново:', e.message);
+    net = new TemporalLagNetwork();
+  }
+  for (const h of history) {
+    if (!h.timestamp) continue;
+    const t = new Date(h.timestamp).getTime();
+    if ((h.fred?.vix || 0) > 25) net.recordEvent('vix_spike', t, (h.fred.vix - 25) / 20);
+    if ((h.gdelt?.conflictEvents?.length || 0) > 8) net.recordEvent('conflict_spike', t, (h.gdelt.conflictEvents.length - 8) / 15);
+    if ((h.sanctions?.count || 0) > 3) net.recordEvent('sanctions_spike', t, h.sanctions.count / 10);
+    if ((h.delta?.newAlerts || 0) > 5) net.recordEvent('alert_spike', t, h.delta.newAlerts / 15);
+    if ((h.delta?.escalatedAlerts || 0) > 2) net.recordEvent('escalation_spike', t, h.delta.escalatedAlerts / 8);
+  }
+  net.fit();
+  const shiftDetections = [];
+  for (const [from, targets] of net.lagDistributions) {
+    for (const [to] of targets) {
+      const shift = net.detectLagShift(from, to);
+      if (shift.detected) shiftDetections.push(shift);
+    }
+  }
+  const predictions = [];
+  for (const [from, targets] of net.lagDistributions) {
+    for (const [to] of targets) {
+      const pred = net.predictNextB(from, to);
+      if (pred && pred.confidence > 0.3) predictions.push(pred);
+    }
+  }
+  const vulnModel = new VulnerabilityWindowModel();
+  vulnModel.fit(history);
+  const currentVuln = vulnModel.assess();
+  try { writeFileSync(filepath, net.serialize()); }
+  catch (e) { console.warn('[temporal_causal] Не удалось сохранить состояние:', e.message); }
+  return {
+    module: 'temporal_causal',
+    available: true,
+    lagNetworkSize: net.lagDistributions.size,
+    totalEvents: net.eventTimeline.length,
+    shiftDetections,
+    predictions: predictions.sort((a, b) => b.probabilityB - a.probabilityB).slice(0, 10),
+    vulnerabilityWindow: currentVuln,
+    topShifts: shiftDetections.sort((a, b) => Math.abs(b.zScore) - Math.abs(a.zScore)).slice(0, 5),
+    timestamp: new Date().toISOString(),
+  };
+}
+
+
+
+========================================================================

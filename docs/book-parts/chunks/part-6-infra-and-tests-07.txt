@@ -1,0 +1,1212 @@
+===== ЧАСТЬ part-6-infra-and-tests · КУСОК 07/23 · 37.5 KB =====
+
+FILE: tests/chaos/fault_injection.mjs
+SIZE: 10121 bytes
+SHA1: 7cb5b4b849949fa6
+========================================================================
+
+// tests/chaos/fault_injection.mjs
+// Инъекция сбоев в Crucix модули
+//
+// Принципы:
+//   1. Инжектим — измеряем — откатываем
+//   2. Не убиваем production
+//   3. Всегда логируем результаты
+
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const CHAOS_DIR = join(__dirname, '..', '..', 'runs', 'chaos');
+
+class FaultInjector {
+  constructor(name) {
+    this.name = name;
+    this.active = false;
+    this.injections = 0;
+  }
+
+  activate() {
+    this.active = true;
+    console.log(`[chaos] ${this.name} активирован`);
+  }
+
+  deactivate() {
+    this.active = false;
+    console.log(`[chaos] ${this.name} деактивирован (инъекций: ${this.injections})`);
+  }
+
+  shouldInject() {
+    return this.active;
+  }
+}
+
+class ThrowErrorInjector extends FaultInjector {
+  constructor(probability = 0.5) {
+    super('ThrowError');
+    this.probability = probability;
+  }
+
+  wrap(fn, fnName) {
+    const self = this;
+    return function (...args) {
+      if (self.shouldInject() && Math.random() < self.probability) {
+        self.injections++;
+        throw new Error(`CHAOS: injected error in ${fnName}`);
+      }
+      return fn.apply(this, args);
+    };
+  }
+}
+
+class LatencyInjector extends FaultInjector {
+  constructor(minMs = 100, maxMs = 500, probability = 0.3) {
+    super('Latency');
+    this.minMs = minMs;
+    this.maxMs = maxMs;
+    this.probability = probability;
+  }
+
+  wrap(fn, fnName) {
+    const self = this;
+    return async function (...args) {
+      if (self.shouldInject() && Math.random() < self.probability) {
+        const delay = self.minMs + Math.random() * (self.maxMs - self.minMs);
+        self.injections++;
+        await new Promise(r => setTimeout(r, delay));
+      }
+      return fn.apply(this, args);
+    };
+  }
+}
+
+class MemoryPressureInjector extends FaultInjector {
+  constructor(sizeMB = 100) {
+    super('MemoryPressure');
+    this.sizeMB = sizeMB;
+    this.buffers = [];
+  }
+
+  activate() {
+    super.activate();
+    const chunkSize = 1024 * 1024;
+    const numChunks = this.sizeMB;
+
+    for (let i = 0; i < numChunks; i++) {
+      const chunk = Buffer.alloc(chunkSize);
+      chunk.fill(0x42);
+      this.buffers.push(chunk);
+    }
+
+    console.log(`[chaos] Выделено ${this.sizeMB} MB`);
+  }
+
+  deactivate() {
+    this.buffers = [];
+    if (global.gc) global.gc();
+    super.deactivate();
+  }
+}
+
+class NetworkDelayInjector extends FaultInjector {
+  constructor(baseDelayMs = 50, jitterMs = 100) {
+    super('NetworkDelay');
+    this.baseDelayMs = baseDelayMs;
+    this.jitterMs = jitterMs;
+  }
+
+  wrap(fn) {
+    const self = this;
+    return async function (...args) {
+      if (self.shouldInject()) {
+        const delay = self.baseDelayMs + Math.random() * self.jitterMs;
+        self.injections++;
+        await new Promise(r => setTimeout(r, delay));
+      }
+      return fn.apply(this, args);
+    };
+  }
+}
+
+class RandomKillInjector extends FaultInjector {
+  constructor(probability = 0.01) {
+    super('RandomKill');
+    this.probability = probability;
+  }
+
+  wrap(fn) {
+    const self = this;
+    return function (...args) {
+      if (self.shouldInject() && Math.random() < self.probability) {
+        self.injections++;
+        return undefined;
+      }
+      return fn.apply(this, args);
+    };
+  }
+}
+
+class DataCorruptionInjector extends FaultInjector {
+  constructor(probability = 0.05) {
+    super('DataCorruption');
+    this.probability = probability;
+  }
+
+  wrap(fn) {
+    const self = this;
+    return function (...args) {
+      const result = fn.apply(this, args);
+
+      if (self.shouldInject() && Math.random() < self.probability) {
+        self.injections++;
+        if (typeof result === 'number') return NaN;
+        if (typeof result === 'object' && result !== null) {
+          if (Array.isArray(result)) return [...result].map(() => NaN);
+          return { ...result, corrupted: true };
+        }
+      }
+      return result;
+    };
+  }
+}
+
+class PartialFailureInjector extends FaultInjector {
+  constructor(failRate = 0.5) {
+    super('PartialFailure');
+    this.failRate = failRate;
+    this.successCount = 0;
+    this.failCount = 0;
+  }
+
+  wrapAsync(fn) {
+    const self = this;
+    return async function (...args) {
+      if (self.shouldInject()) {
+        if (Math.random() < self.failRate) {
+          self.failCount++;
+          throw new Error(`CHAOS: partial failure (${self.failCount} fails)`);
+        } else {
+          self.successCount++;
+        }
+      }
+      return fn.apply(this, args);
+    };
+  }
+}
+
+class ChaosMonkey {
+  constructor() {
+    this.injectors = new Map();
+    this.startTime = null;
+    this.results = [];
+  }
+
+  register(name, injector) {
+    this.injectors.set(name, injector);
+    return this;
+  }
+
+  activate(names = null) {
+    this.startTime = Date.now();
+    const targets = names || Array.from(this.injectors.keys());
+    for (const name of targets) {
+      const inj = this.injectors.get(name);
+      if (inj) inj.activate();
+    }
+  }
+
+  deactivate() {
+    for (const inj of this.injectors.values()) {
+      inj.deactivate();
+    }
+
+    if (this.startTime) {
+      this.results.push({
+        startTime: new Date(this.startTime).toISOString(),
+        endTime: new Date().toISOString(),
+        durationMs: Date.now() - this.startTime,
+        injections: Object.fromEntries(
+          Array.from(this.injectors.entries()).map(([k, v]) => [k, v.injections])
+        ),
+      });
+    }
+  }
+
+  wrap(fn, fnName) {
+    let wrapped = fn;
+    for (const inj of this.injectors.values()) {
+      if (typeof inj.wrap === 'function') {
+        wrapped = inj.wrap(wrapped, fnName);
+      }
+    }
+    return wrapped;
+  }
+
+  report() {
+    return {
+      totalInjections: Array.from(this.injectors.values()).reduce((s, i) => s + i.injections, 0),
+      byInjector: Object.fromEntries(
+        Array.from(this.injectors.entries()).map(([k, v]) => [k, v.injections])
+      ),
+      history: this.results,
+    };
+  }
+}
+
+async function chaosSlowNetwork() {
+  console.log('\n========================================');
+  console.log('  Chaos: Slow Network');
+  console.log('========================================');
+
+  const monkey = new ChaosMonkey();
+  monkey.register('latency', new LatencyInjector(100, 500, 0.5));
+  monkey.activate();
+
+  const workFn = () => { let s = 0; for (let i = 0; i < 1e6; i++) s += i; return s; };
+  const wrapped = monkey.wrap(workFn, 'work');
+
+  const t0 = Date.now();
+  for (let i = 0; i < 20; i++) {
+    await wrapped();
+  }
+  const duration = Date.now() - t0;
+
+  monkey.deactivate();
+  console.log(`  Total duration: ${duration}ms`);
+  console.log(`  Report:`, JSON.stringify(monkey.report(), null, 2));
+
+  return duration;
+}
+
+async function chaosMemoryPressure() {
+  console.log('\n========================================');
+  console.log('  Chaos: Memory Pressure');
+  console.log('========================================');
+
+  const memBefore = process.memoryUsage();
+
+  const monkey = new ChaosMonkey();
+  monkey.register('memory', new MemoryPressureInjector(200));
+  monkey.activate();
+
+  await new Promise(r => setTimeout(r, 3000));
+
+  const memDuring = process.memoryUsage();
+
+  monkey.deactivate();
+
+  await new Promise(r => setTimeout(r, 1000));
+  const memAfter = process.memoryUsage();
+
+  console.log(`  Memory before: ${(memBefore.heapUsed / 1024 / 1024).toFixed(1)} MB`);
+  console.log(`  Memory during: ${(memDuring.heapUsed / 1024 / 1024).toFixed(1)} MB`);
+  console.log(`  Memory after:  ${(memAfter.heapUsed / 1024 / 1024).toFixed(1)} MB`);
+
+  return { memBefore, memDuring, memAfter };
+}
+
+async function chaosRandomFailures() {
+  console.log('\n========================================');
+  console.log('  Chaos: Random Failures');
+  console.log('========================================');
+
+  const monkey = new ChaosMonkey();
+  monkey.register('throw', new ThrowErrorInjector(0.3));
+  monkey.register('partial', new PartialFailureInjector(0.4));
+  monkey.activate();
+
+  const modules = ['hawkes', 'hmm', 'ising', 'evt', 'copula', 'bocpd'];
+  const results = {};
+
+  for (const mod of modules) {
+    const fn = () => ({ module: mod, value: Math.random() });
+    const wrapped = monkey.wrap(fn, mod);
+
+    try {
+      const result = await wrapped();
+      results[mod] = { ok: true, result };
+    } catch (e) {
+      results[mod] = { ok: false, error: e.message };
+    }
+  }
+
+  monkey.deactivate();
+
+  const okCount = Object.values(results).filter(r => r.ok).length;
+  console.log(`  Успешных модулей: ${okCount}/${modules.length}`);
+  console.log(`  Детали:`, JSON.stringify(results, null, 2));
+
+  return results;
+}
+
+if (process.argv[1] && process.argv[1].endsWith('fault_injection.mjs')) {
+  const scenario = process.argv[2] || 'all';
+
+  (async () => {
+    const allResults = {};
+
+    if (scenario === 'all' || scenario === 'network') {
+      allResults.slowNetwork = await chaosSlowNetwork();
+    }
+    if (scenario === 'all' || scenario === 'memory') {
+      allResults.memoryPressure = await chaosMemoryPressure();
+    }
+    if (scenario === 'all' || scenario === 'failures') {
+      allResults.randomFailures = await chaosRandomFailures();
+    }
+
+    if (!existsSync(CHAOS_DIR)) mkdirSync(CHAOS_DIR, { recursive: true });
+    const reportPath = join(CHAOS_DIR, `chaos_report_${Date.now()}.json`);
+    writeFileSync(reportPath, JSON.stringify({
+      timestamp: new Date().toISOString(),
+      results: allResults,
+    }, null, 2));
+
+    console.log(`\n[chaos] Отчёт: ${reportPath}`);
+  })().catch(e => {
+    console.error('Ошибка chaos:', e);
+    process.exit(1);
+  });
+}
+
+export {
+  FaultInjector,
+  ThrowErrorInjector,
+  LatencyInjector,
+  MemoryPressureInjector,
+  NetworkDelayInjector,
+  RandomKillInjector,
+  DataCorruptionInjector,
+  PartialFailureInjector,
+  ChaosMonkey,
+  chaosSlowNetwork,
+  chaosMemoryPressure,
+  chaosRandomFailures,
+};
+
+
+
+========================================================================
+
+FILE: tests/mutation/run_all.mjs
+SIZE: 15084 bytes
+SHA1: c911e4f99d6a9d0b
+========================================================================
+
+// tests/mutation/run_all.mjs
+//
+// Оркестратор мутационного тестирования Crucix.
+//
+// АРХИТЕКТУРА:
+//   Не импортирует runMutationTests из младших файлов, а запускает каждый
+//   набор как дочерний процесс (child_process.spawn) с env CRUCIX_MUTATION_JSON=1.
+//   Это даёт:
+//     - изоляцию (упавший набор не валит оркестратор);
+//     - параллелизм (все 4 набора работают одновременно);
+//     - отсутствие проблем с общим ESM-кэшем модулей;
+//     - независимость от process.exit внутри младших файлов.
+//
+// ФУНКЦИОНАЛ:
+//   1. Параллельный запуск 4 наборов.
+//   2. Таймаут на набор (по умолчанию 60 сек, SIGKILL при превышении).
+//   3. Взвешенное агрегирование через поле weight в SUITES.
+//   4. Регрессионный трекинг: сравнение с runs/mutation/report.json
+//      от прошлого запуска.
+//   5. Два отчёта: runs/mutation/report.json и runs/mutation/report.md.
+//   6. Порог через env CRUCIX_MUTATION_THRESHOLD (дефолт 0.70).
+//   7. CLI: --suite=<name> для одного набора, --threshold=<число>.
+//
+// ЗАПУСК:
+//   node tests/mutation/run_all.mjs
+//   node tests/mutation/run_all.mjs --suite=coevolution
+//   node tests/mutation/run_all.mjs --threshold=0.8
+//   CRUCIX_MUTATION_THRESHOLD=0.75 node tests/mutation/run_all.mjs
+
+import { spawn } from 'node:child_process';
+import { writeFileSync, mkdirSync, existsSync, readFileSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const TESTS_MUTATION_DIR = __dirname;
+const PROJECT_ROOT = join(__dirname, '..', '..');
+const RUNS_DIR = join(PROJECT_ROOT, 'runs', 'mutation');
+
+// ─── КОНФИГУРАЦИЯ ─────────────────────────────────
+
+const SUITES = [
+  {
+    name: 'MetaLearner',
+    id: 'meta_learner',
+    file: 'meta_learner.mutate.mjs',
+    weight: 1.0,
+  },
+  {
+    name: 'Hypergraph Contagion',
+    id: 'hypergraph',
+    file: 'hypergraph.mutate.mjs',
+    weight: 1.0,
+  },
+  {
+    name: 'Attention Dynamics',
+    id: 'attention',
+    file: 'attention.mutate.mjs',
+    weight: 1.0,
+  },
+  {
+    name: 'Adversarial Co-evolution',
+    id: 'coevolution',
+    file: 'coevolution.mutate.mjs',
+    weight: 1.0,
+  },
+];
+
+const DEFAULT_THRESHOLD = 0.70;
+const DEFAULT_TIMEOUT_MS = 60000;
+
+// ─── РАЗБОР CLI ───────────────────────────────────
+
+function parseArgs(argv) {
+  const opts = {
+    threshold: null,
+    suiteFilter: null,
+  };
+  for (const arg of argv) {
+    if (arg.startsWith('--threshold=')) {
+      const v = parseFloat(arg.slice('--threshold='.length));
+      if (!isNaN(v) && v > 0 && v <= 1) opts.threshold = v;
+    } else if (arg.startsWith('--suite=')) {
+      opts.suiteFilter = arg.slice('--suite='.length);
+    }
+  }
+  return opts;
+}
+
+const cliOpts = parseArgs(process.argv.slice(2));
+
+const envThreshold = parseFloat(process.env.CRUCIX_MUTATION_THRESHOLD || '');
+const THRESHOLD = cliOpts.threshold
+  ?? ((envThreshold > 0 && envThreshold <= 1) ? envThreshold : DEFAULT_THRESHOLD);
+
+// ─── ЗАПУСК ОДНОГО НАБОРА ─────────────────────────
+
+function runSuite(suite) {
+  return new Promise((resolve) => {
+    const startMs = Date.now();
+    const filePath = join(TESTS_MUTATION_DIR, suite.file);
+
+    if (!existsSync(filePath)) {
+      resolve({
+        name: suite.name,
+        id: suite.id,
+        weight: suite.weight,
+        status: 'missing',
+        reason: `file not found: ${suite.file}`,
+        elapsedMs: 0,
+      });
+      return;
+    }
+
+    let stdout = '';
+    let stderr = '';
+    let timedOut = false;
+
+    const child = spawn('node', [filePath], {
+      cwd: PROJECT_ROOT,
+      env: { ...process.env, CRUCIX_MUTATION_JSON: '1' },
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+
+    const timer = setTimeout(() => {
+      timedOut = true;
+      try {
+        child.kill('SIGKILL');
+      } catch (e) {
+        // ignore
+      }
+    }, DEFAULT_TIMEOUT_MS);
+
+    child.stdout.on('data', (chunk) => {
+      stdout += chunk.toString('utf-8');
+    });
+    child.stderr.on('data', (chunk) => {
+      stderr += chunk.toString('utf-8');
+    });
+
+    child.on('error', (e) => {
+      clearTimeout(timer);
+      resolve({
+        name: suite.name,
+        id: suite.id,
+        weight: suite.weight,
+        status: 'crash',
+        reason: `spawn error: ${e.message}`,
+        elapsedMs: Date.now() - startMs,
+      });
+    });
+
+    child.on('close', (code) => {
+      clearTimeout(timer);
+
+      if (timedOut) {
+        resolve({
+          name: suite.name,
+          id: suite.id,
+          weight: suite.weight,
+          status: 'timeout',
+          reason: `exceeded ${DEFAULT_TIMEOUT_MS}ms`,
+          elapsedMs: Date.now() - startMs,
+        });
+        return;
+      }
+
+      const trimmed = stdout.trim();
+      if (!trimmed) {
+        resolve({
+          name: suite.name,
+          id: suite.id,
+          weight: suite.weight,
+          status: 'crash',
+          reason: `empty stdout (exit code ${code})${stderr ? '; stderr: ' + stderr.slice(0, 200) : ''}`,
+          elapsedMs: Date.now() - startMs,
+        });
+        return;
+      }
+
+      // Парсим последнюю строку stdout, начинающуюся с '{'
+      const lines = trimmed.split('\n');
+      let jsonLine = null;
+      for (let i = lines.length - 1; i >= 0; i--) {
+        const l = lines[i].trim();
+        if (l.startsWith('{') && l.endsWith('}')) {
+          jsonLine = l;
+          break;
+        }
+      }
+
+      if (!jsonLine) {
+        resolve({
+          name: suite.name,
+          id: suite.id,
+          weight: suite.weight,
+          status: 'crash',
+          reason: `no JSON line in stdout`,
+          elapsedMs: Date.now() - startMs,
+        });
+        return;
+      }
+
+      let parsed;
+      try {
+        parsed = JSON.parse(jsonLine);
+      } catch (e) {
+        resolve({
+          name: suite.name,
+          id: suite.id,
+          weight: suite.weight,
+          status: 'crash',
+          reason: `JSON parse error: ${e.message}`,
+          elapsedMs: Date.now() - startMs,
+        });
+        return;
+      }
+
+      if (parsed.crash) {
+        resolve({
+          name: suite.name,
+          id: suite.id,
+          weight: suite.weight,
+          status: 'crash',
+          reason: parsed.reason || 'suite reported crash',
+          elapsedMs: Date.now() - startMs,
+        });
+        return;
+      }
+
+      resolve({
+        name: suite.name,
+        id: suite.id,
+        weight: suite.weight,
+        status: 'ok',
+        killed: parsed.killed || 0,
+        survived: parsed.survived || 0,
+        errors: parsed.errors || 0,
+        total: parsed.total || (parsed.killed || 0) + (parsed.survived || 0),
+        score: typeof parsed.score === 'number' ? parsed.score : 0,
+        details: parsed.details || [],
+        elapsedMs: Date.now() - startMs,
+      });
+    });
+  });
+}
+
+// ─── РЕГРЕССИОННЫЙ ТРЕКИНГ ────────────────────────
+
+function loadPreviousReport() {
+  const path = join(RUNS_DIR, 'report.json');
+  if (!existsSync(path)) return null;
+  try {
+    return JSON.parse(readFileSync(path, 'utf-8'));
+  } catch (e) {
+    return null;
+  }
+}
+
+function compareWithPrevious(current, previous) {
+  if (!previous || !previous.suites) return {};
+  const map = {};
+  for (const s of current) {
+    if (s.status !== 'ok') continue;
+    const prev = previous.suites.find(p => p.id === s.id && p.status === 'ok');
+    if (!prev) {
+      map[s.id] = { delta: null, trend: 'new' };
+      continue;
+    }
+    const delta = s.score - prev.score;
+    let trend = 'same';
+    if (delta > 0.001) trend = 'up';
+    else if (delta < -0.001) trend = 'down';
+    map[s.id] = { delta, trend, prevScore: prev.score };
+  }
+  return map;
+}
+
+// ─── ФОРМАТТЕРЫ ───────────────────────────────────
+
+function trendSymbol(trend) {
+  if (trend === 'up') return '^';
+  if (trend === 'down') return 'v';
+  if (trend === 'same') return '=';
+  if (trend === 'new') return '*';
+  return ' ';
+}
+
+function bar(score, width = 20) {
+  const filled = Math.round(score * width);
+  return '#'.repeat(filled) + '.'.repeat(width - filled);
+}
+
+function statusLabel(s) {
+  if (s.status === 'ok') {
+    return s.score >= THRESHOLD ? 'OK  ' : 'FAIL';
+  }
+  if (s.status === 'timeout') return 'TIME';
+  if (s.status === 'missing') return 'MISS';
+  return 'CRSH';
+}
+
+function printConsoleReport(results, overall, threshold, regressions) {
+  console.log('');
+  console.log('+======================================================+');
+  console.log('|  Mutation Testing -- All Modules                     |');
+  console.log('+======================================================+');
+  console.log('');
+
+  for (const r of results) {
+    const label = statusLabel(r);
+    const trend = regressions[r.id] ? trendSymbol(regressions[r.id].trend) : ' ';
+    if (r.status === 'ok') {
+      console.log(`  [${label}] ${trend} ${r.name.padEnd(26)} ${bar(r.score)} ${(r.score * 100).toFixed(1).padStart(5)}%  (${r.killed}/${r.total}) ${r.elapsedMs}ms`);
+    } else {
+      console.log(`  [${label}] ${trend} ${r.name.padEnd(26)} -- ${r.reason}`);
+    }
+  }
+
+  console.log('');
+  console.log('+======================================================+');
+  console.log(`  OVERALL:  ${(overall * 100).toFixed(1)}%`);
+  console.log(`  THRESHOLD: ${(threshold * 100).toFixed(1)}%`);
+  console.log('+======================================================+');
+  console.log('');
+
+  const downs = Object.entries(regressions).filter(([, v]) => v.trend === 'down');
+  if (downs.length > 0) {
+    console.log('  Регрессии относительно прошлого запуска:');
+    for (const [id, v] of downs) {
+      console.log(`    - ${id}: ${(v.prevScore * 100).toFixed(1)}% -> ${((v.prevScore + v.delta) * 100).toFixed(1)}%`);
+    }
+    console.log('');
+  }
+}
+
+function buildMarkdownReport(results, overall, threshold, regressions, timestamp) {
+  const lines = [];
+  lines.push('# Mutation Testing Report');
+  lines.push('');
+  lines.push(`Дата: ${timestamp}`);
+  lines.push(`Overall: **${(overall * 100).toFixed(1)}%** (порог ${(threshold * 100).toFixed(1)}%)`);
+  lines.push('');
+  lines.push('## По наборам');
+  lines.push('');
+  lines.push('| Набор | Статус | Score | Killed | Total | Время | Trend |');
+  lines.push('|-------|--------|-------|--------|-------|-------|-------|');
+  for (const r of results) {
+    const trend = regressions[r.id] ? regressions[r.id].trend : '-';
+    if (r.status === 'ok') {
+      lines.push(`| ${r.name} | ${r.score >= threshold ? 'OK' : 'FAIL'} | ${(r.score * 100).toFixed(1)}% | ${r.killed} | ${r.total} | ${r.elapsedMs}ms | ${trend} |`);
+    } else {
+      lines.push(`| ${r.name} | ${r.status} | - | - | - | ${r.elapsedMs}ms | - |`);
+    }
+  }
+  lines.push('');
+  lines.push('## Выжившие мутации');
+  lines.push('');
+  for (const r of results) {
+    if (r.status !== 'ok' || !Array.isArray(r.details)) continue;
+    const survived = r.details.filter(d => d && d.killed === false);
+    if (survived.length === 0) continue;
+    lines.push(`### ${r.name}`);
+    lines.push('');
+    for (const s of survived) {
+      lines.push(`- ${s.name || 'unknown'}${s.error ? ' (error: ' + s.error + ')' : ''}`);
+    }
+    lines.push('');
+  }
+  return lines.join('\n');
+}
+
+// ─── ГЛАВНАЯ ФУНКЦИЯ ──────────────────────────────
+
+async function runAll() {
+  const previousReport = loadPreviousReport();
+
+  const suites = cliOpts.suiteFilter
+    ? SUITES.filter(s => s.id === cliOpts.suiteFilter || s.name.toLowerCase().includes(cliOpts.suiteFilter.toLowerCase()))
+    : SUITES;
+
+  if (suites.length === 0) {
+    console.error(`Нет наборов, соответствующих фильтру: ${cliOpts.suiteFilter}`);
+    console.error(`Доступные: ${SUITES.map(s => s.id).join(', ')}`);
+    process.exit(1);
+  }
+
+  const results = await Promise.all(suites.map(runSuite));
+
+  let killedSum = 0;
+  let totalSum = 0;
+  let hasCrash = false;
+
+  for (const r of results) {
+    if (r.status !== 'ok') {
+      hasCrash = true;
+      continue;
+    }
+    killedSum += r.killed * r.weight;
+    totalSum += r.total * r.weight;
+  }
+
+  const overall = totalSum > 0 ? killedSum / totalSum : 0;
+
+  const regressions = compareWithPrevious(results, previousReport);
+
+  printConsoleReport(results, overall, THRESHOLD, regressions);
+
+  if (!existsSync(RUNS_DIR)) mkdirSync(RUNS_DIR, { recursive: true });
+
+  const timestamp = new Date().toISOString();
+  const report = {
+    timestamp,
+    overall,
+    threshold: THRESHOLD,
+    hasCrash,
+    suites: results.map(r => ({
+      id: r.id,
+      name: r.name,
+      status: r.status,
+      weight: r.weight,
+      killed: r.killed,
+      survived: r.survived,
+      errors: r.errors,
+      total: r.total,
+      score: r.score,
+      elapsedMs: r.elapsedMs,
+      reason: r.reason,
+      details: r.details,
+    })),
+  };
+
+  writeFileSync(join(RUNS_DIR, 'report.json'), JSON.stringify(report, null, 2) + '\n');
+  writeFileSync(join(RUNS_DIR, 'report.md'), buildMarkdownReport(results, overall, THRESHOLD, regressions, timestamp) + '\n');
+
+  console.log(`  Отчёт: runs/mutation/report.json`);
+  console.log(`  Отчёт: runs/mutation/report.md`);
+  console.log('');
+
+  const passed = overall >= THRESHOLD && !hasCrash;
+  if (passed) {
+    console.log('  PASSED');
+    process.exit(0);
+  } else {
+    if (hasCrash) {
+      console.error('  FAILED: один или несколько наборов упали или не найдены');
+    } else {
+      console.error(`  FAILED: overall ниже порога (${(overall * 100).toFixed(1)}% < ${(THRESHOLD * 100).toFixed(1)}%)`);
+    }
+    process.exit(1);
+  }
+}
+
+// ─── CLI RUNNER ───────────────────────────────────
+
+const isDirectRun = (() => {
+  if (typeof process === 'undefined' || !process.argv) return false;
+  const argv1 = process.argv[1] || '';
+  return argv1.endsWith('run_all.mjs');
+})();
+
+if (isDirectRun) {
+  runAll().catch((e) => {
+    console.error('Orchestrator crash:', e);
+    process.exit(1);
+  });
+}
+
+export { runAll, SUITES, THRESHOLD };
+
+
+
+========================================================================
+
+FILE: tests/mutation/attention.mutate.mjs
+SIZE: 12498 bytes
+SHA1: b998fe7fbef3e0a0
+========================================================================
+
+// tests/mutation/attention.mutate.mjs
+//
+// Mutation testing для Attention Dynamics.
+//
+// Критические мутации:
+//   1. Отключение затухания (decay = 1)
+//   2. Инверсия знака momentum
+//   3. Ошибка в нормализации allocation (sum != 1)
+//   4. detectShifts игнорирует направление (любое изменение)
+//   5. predictExplosive не учитывает velocity
+//
+// ЗАПУСК:
+//   node tests/mutation/attention.mutate.mjs
+//   или через run_all.mjs
+//
+// РЕЖИМЫ:
+//   Обычный: печатает отчёт в stdout, process.exit(0|1) по порогу.
+//   JSON-режим (CRUCIX_MUTATION_JSON=1): печатает только JSON, не выходит
+//   с кодом 1. Используется оркестратором run_all.mjs.
+
+import { AttentionDynamics } from '../../apis/predict/attention_dynamics.mjs';
+
+const MUTATIONS = [
+  {
+    name: 'Отключение затухания (decay всегда 1)',
+    apply: (ADClass) => {
+      const originalUpdate = ADClass.prototype.update;
+      ADClass.prototype.update = function(topicId, newMentions, hoursPassed = 0.25) {
+        if (!this.topics.has(topicId)) {
+          this.topics.set(topicId, {
+            id: topicId, attention: 0, momentum: 0, velocity: 0,
+            history: [], lastUpdate: Date.now(),
+          });
+        }
+        const topic = this.topics.get(topicId);
+        const oldAttention = topic.attention;
+        // МУТАЦИЯ: decay = 1 (без затухания)
+        topic.attention = topic.attention + newMentions;
+        topic.momentum = topic.attention - oldAttention;
+        topic.velocity = topic.momentum / Math.max(hoursPassed, 0.01);
+        topic.history.push({ timestamp: Date.now(), attention: topic.attention, momentum: topic.momentum, velocity: topic.velocity });
+        if (topic.history.length > 50) topic.history.shift();
+        return topic;
+      };
+    },
+    detect: (ADClass) => {
+      const ad = new ADClass({ halfLifeHours: 1 });
+      ad.update('topic', 10, 0.01);
+      const after = ad.topics.get('topic').attention;
+      // Проходит 24 часа без упоминаний
+      ad.update('topic', 0, 24);
+      const after24h = ad.topics.get('topic').attention;
+      // Оригинал: затухание -> after24h << after (примерно 0)
+      // Мутация: after24h == after
+      return after24h > after * 0.5;
+    },
+  },
+
+  {
+    name: 'Momentum имеет обратный знак',
+    apply: (ADClass) => {
+      const originalUpdate = ADClass.prototype.update;
+      ADClass.prototype.update = function(topicId, newMentions, hoursPassed = 0.25) {
+        if (!this.topics.has(topicId)) {
+          this.topics.set(topicId, {
+            id: topicId, attention: 0, momentum: 0, velocity: 0,
+            history: [], lastUpdate: Date.now(),
+          });
+        }
+        const topic = this.topics.get(topicId);
+        const decay = Math.exp(-hoursPassed / this.halfLifeHours * Math.log(2));
+        const oldAttention = topic.attention;
+        topic.attention = topic.attention * decay + newMentions;
+        // МУТАЦИЯ: momentum = oldAttention - topic.attention (инверсия знака)
+        topic.momentum = oldAttention - topic.attention;
+        topic.velocity = topic.momentum / Math.max(hoursPassed, 0.01);
+        topic.history.push({ timestamp: Date.now(), attention: topic.attention, momentum: topic.momentum, velocity: topic.velocity });
+        if (topic.history.length > 50) topic.history.shift();
+        return topic;
+      };
+    },
+    detect: (ADClass) => {
+      const ad = new ADClass({ halfLifeHours: 1000 });
+      ad.update('topic', 10, 0.01);
+      ad.update('topic', 10, 0.01);
+      // Оригинал: momentum > 0 (растёт)
+      // Мутация: momentum < 0
+      return ad.topics.get('topic').momentum < 0;
+    },
+  },
+
+  {
+    name: 'detectShifts игнорирует направление',
+    apply: (ADClass) => {
+      ADClass.prototype.detectShifts = function(windowSize = 5) {
+        const topicsArray = [...this.topics.values()];
+        const shifts = [];
+        // МУТАЦИЯ: любое изменение = shift (без проверки направления)
+        for (let i = 0; i < topicsArray.length; i++) {
+          for (let j = i + 1; j < topicsArray.length; j++) {
+            const a = topicsArray[i], b = topicsArray[j];
+            if (a.history.length < windowSize || b.history.length < windowSize) continue;
+            const aTrend = a.history[a.history.length - 1].attention - a.history[0].attention;
+            const bTrend = b.history[b.history.length - 1].attention - b.history[0].attention;
+            // МУТАЦИЯ: без проверки знаков
+            shifts.push({
+              from: b.id, to: a.id,
+              magnitude: Math.abs(aTrend - bTrend),
+            });
+          }
+        }
+        return { shifts, totalShifts: shifts.length };
+      };
+    },
+    detect: (ADClass) => {
+      const ad = new ADClass({ halfLifeHours: 1000 });
+      // Обе темы растут одинаково -- не должно быть shifts
+      for (let i = 0; i < 10; i++) {
+        ad.update('a', 10, 0.01);
+        ad.update('b', 10, 0.01);
+      }
+      const shifts = ad.detectShifts(5);
+      // Оригинал: 0 shifts (оба растут, ни один не падает)
+      // Мутация: > 0 shifts
+      return shifts.totalShifts > 0;
+    },
+  },
+
+  {
+    name: 'Allocation не нормализуется (sum != 1)',
+    apply: (ADClass) => {
+      ADClass.prototype.getAttentionAllocation = function() {
+        const allocation = {};
+        for (const [id, topic] of this.topics) {
+          // МУТАЦИЯ: share = attention, не normalizes
+          allocation[id] = {
+            share: topic.attention,
+            attention: topic.attention,
+            momentum: topic.momentum,
+            velocity: topic.velocity,
+          };
+        }
+        return allocation;
+      };
+    },
+    detect: (ADClass) => {
+      const ad = new ADClass({ halfLifeHours: 1000 });
+      ad.update('a', 10, 0.01);
+      ad.update('b', 20, 0.01);
+      ad.update('c', 30, 0.01);
+      const alloc = ad.getAttentionAllocation();
+      const sum = Object.values(alloc).reduce((s, a) => s + a.share, 0);
+      // Оригинал: sum = 1
+      // Мутация: sum = 60
+      return Math.abs(sum - 1) > 0.01;
+    },
+  },
+
+  {
+    name: 'predictExplosive игнорирует velocity',
+    apply: (ADClass) => {
+      ADClass.prototype.predictExplosive = function(topN = 5, horizonHours = 24) {
+        const predictions = [];
+        for (const [id, topic] of this.topics) {
+          if (topic.history.length < 3) continue;
+          // МУТАЦИЯ: explosiveness = 0 всегда
+          predictions.push({
+            topic: id, currentAttention: topic.attention,
+            predictedAttention: topic.attention,
+            explosiveness: 0,
+            velocity: topic.velocity, momentum: topic.momentum,
+            willExplode: false,
+          });
+        }
+        return predictions.sort((a, b) => b.explosiveness - a.explosiveness).slice(0, topN);
+      };
+    },
+    detect: (ADClass) => {
+      const ad = new ADClass({ halfLifeHours: 1000 });
+      // Быстро растущая тема
+      for (let i = 0; i < 10; i++) ad.update('rising', 20, 0.01);
+      const preds = ad.predictExplosive(5, 24);
+      // Оригинал: explosiveness > 0 для rising
+      // Мутация: explosiveness = 0
+      return preds.length > 0 && preds[0].explosiveness === 0;
+    },
+  },
+
+  {
+    name: 'Half-life игнорируется (используется 24 по умолчанию)',
+    apply: (ADClass) => {
+      // Мутация: патчим update, используем half-life 24 всегда
+      const originalUpdate = ADClass.prototype.update;
+      ADClass.prototype.update = function(topicId, newMentions, hoursPassed = 0.25) {
+        if (!this.topics.has(topicId)) {
+          this.topics.set(topicId, {
+            id: topicId, attention: 0, momentum: 0, velocity: 0,
+            history: [], lastUpdate: Date.now(),
+          });
+        }
+        const topic = this.topics.get(topicId);
+        // МУТАЦИЯ: half-life всегда 24, независимо от this.halfLifeHours
+        const decay = Math.exp(-hoursPassed / 24 * Math.log(2));
+        const oldAttention = topic.attention;
+        topic.attention = topic.attention * decay + newMentions;
+        topic.momentum = topic.attention - oldAttention;
+        topic.velocity = topic.momentum / Math.max(hoursPassed, 0.01);
+        topic.history.push({ timestamp: Date.now(), attention: topic.attention, momentum: topic.momentum, velocity: topic.velocity });
+        if (topic.history.length > 50) topic.history.shift();
+        return topic;
+      };
+    },
+    detect: (ADClass) => {
+      // Конфигурируем с halfLifeHours = 1 (быстрое затухание)
+      const ad = new ADClass({ halfLifeHours: 1 });
+      ad.update('topic', 10, 0.01);
+      const before = ad.topics.get('topic').attention;
+      // 1 час без упоминаний
+      ad.update('topic', 0, 1);
+      const after1h = ad.topics.get('topic').attention;
+      // Оригинал с halfLife=1: after1h = before * 0.5
+      // Мутация с halfLife=24: after1h ~ before * 0.97
+      const ratio = after1h / before;
+      return ratio > 0.7;
+    },
+  },
+];
+
+const MUTATION_TARGET_SCORE = 0.7;
+
+const JSON_MODE = typeof process !== 'undefined'
+  && process.env
+  && process.env.CRUCIX_MUTATION_JSON === '1';
+
+async function runMutationTests() {
+  const originalLog = console.log;
+  if (JSON_MODE) console.log = () => {};
+
+  try {
+    console.log('=======================================================');
+    console.log('  Mutation Testing - Attention Dynamics');
+    console.log('=======================================================');
+    console.log('');
+
+    let killed = 0, survived = 0;
+    const details = [];
+
+    for (const mutation of MUTATIONS) {
+      const moduleUrl = new URL('../../apis/predict/attention_dynamics.mjs?v=' + Date.now() + Math.random(), import.meta.url);
+      const { AttentionDynamics: AD } = await import(moduleUrl.href);
+
+      mutation.apply(AD);
+
+      let caught = false, error = null;
+      try {
+        caught = mutation.detect(AD);
+      } catch (e) {
+        caught = true;
+        error = e.message;
+      }
+
+      if (caught) {
+        killed++;
+        console.log(`  [KILLED]    ${mutation.name}`);
+      } else {
+        survived++;
+        console.log(`  [SURVIVED]  ${mutation.name}`);
+      }
+      details.push({ name: mutation.name, killed: caught, error });
+    }
+
+    const total = killed + survived;
+    const score = total > 0 ? killed / total : 0;
+    console.log('');
+    console.log(`  Mutation score: ${(score * 100).toFixed(1)}% (${killed}/${total})`);
+    console.log(`  Target: ${(MUTATION_TARGET_SCORE * 100).toFixed(1)}%`);
+    console.log('');
+
+    return {
+      killed,
+      survived,
+      errors: 0,
+      total,
+      score,
+      details,
+      mutations: details,
+    };
+  } finally {
+    if (JSON_MODE) console.log = originalLog;
+  }
+}
+
+const isDirectRun = (() => {
+  if (typeof process === 'undefined' || !process.argv) return false;
+  const argv1 = process.argv[1] || '';
+  return argv1.endsWith('attention.mutate.mjs');
+})();
+
+if (isDirectRun) {
+  if (JSON_MODE) {
+    runMutationTests()
+      .then((result) => {
+        process.stdout.write(JSON.stringify(result) + '\n');
+        process.exit(0);
+      })
+      .catch((e) => {
+        process.stdout.write(JSON.stringify({
+          killed: 0, survived: 0, errors: 1, total: 0, score: 0,
+          crash: true, reason: e.message,
+        }) + '\n');
+        process.exit(0);
+      });
+  } else {
+    runMutationTests()
+      .then((result) => {
+        const passed = result.score >= MUTATION_TARGET_SCORE;
+        if (passed) {
+          console.log('  PASSED');
+          process.exit(0);
+        } else {
+          console.error(`  FAILED: mutation score below ${(MUTATION_TARGET_SCORE * 100).toFixed(1)}%`);
+          process.exit(1);
+        }
+      })
+      .catch((e) => {
+        console.error('Mutation test crash:', e);
+        process.exit(1);
+      });
+  }
+}
+
+export { runMutationTests };
+
+
+
+========================================================================

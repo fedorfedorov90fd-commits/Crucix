@@ -1,0 +1,95 @@
+[
+  {
+    "id": "collector",
+    "name": "Сборщик данных",
+    "icon": "📡",
+    "description": "Автоматический сбор данных из внешних источников",
+    "capabilities": [
+      "rss",
+      "newsapi",
+      "twitter",
+      "telegram"
+    ],
+    "priority": 1,
+    "status": "idle",
+    "tasks_completed": 2,
+    "success_rate": 100,
+    "last_active": "2026-08-17T19:16:42.782Z"
+  },
+  {
+    "id": "analyzer",
+    "name": "Аналитик данных",
+    "icon": "📊",
+    "description": "Анализ собранных данных и выявление паттернов",
+    "capabilities": [
+      "sentiment",
+      "trends",
+      "correlation"
+    ],
+    "priority": 2,
+    "status": "idle",
+    "tasks_completed": 2,
+    "success_rate": 100,
+    "last_active": "2026-08-17T19:16:42.782Z"
+  },
+  {
+    "id": "predictor",
+    "name": "Прогнозировщик",
+    "icon": "🔮",
+    "description": "Прогнозирование событий на основе исторических данных",
+    "capabilities": [
+      "ml_predict",
+      "scenario_analysis"
+    ],
+    "priority": 3,
+    "status": "idle",
+    "tasks_completed": 2,
+    "success_rate": 100,
+    "last_active": "2026-08-17T19:16:42.785Z"
+  },
+  {
+    "id": "reporter",
+    "name": "Генератор отчётов",
+    "icon": "📝",
+    "description": "Автоматическая генерация отчётов и дашбордов",
+    "capabilities": [
+      "report_gen",
+      "visualization"
+    ],
+    "priority": 4,
+    "status": "idle",
+    "tasks_completed": 2,
+    "success_rate": 100,
+    "last_active": "2026-08-17T19:16:42.786Z"
+  },
+  {
+    "id": "monitor",
+    "name": "Монитор системы",
+    "icon": "👁️",
+    "description": "Мониторинг состояния системы и оповещение об аномалиях",
+    "capabilities": [
+      "system_health",
+      "alerting"
+    ],
+    "priority": 5,
+    "status": "idle",
+    "tasks_completed": 3,
+    "success_rate": 100,
+    "last_active": "2026-08-17T19:16:44.402Z"
+  },
+  {
+    "id": "optimizer",
+    "name": "Оптимизатор",
+    "icon": "⚡",
+    "description": "Оптимизация производительности и ресурсов",
+    "capabilities": [
+      "performance",
+      "resource_management"
+    ],
+    "priority": 6,
+    "status": "idle",
+    "tasks_completed": 2,
+    "success_rate": 100,
+    "last_active": "2026-08-17T19:16:42.792Z"
+  }
+]

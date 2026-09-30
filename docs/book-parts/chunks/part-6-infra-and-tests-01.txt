@@ -1,0 +1,1601 @@
+===== ЧАСТЬ part-6-infra-and-tests · КУСОК 01/23 · 40.0 KB =====
+
+========================================================================
+CRUCIX · PREDICT-EXTENSIONS · BOOK
+ТОМ: part-6-infra-and-tests
+НАЗВАНИЕ: Том 6. Инфраструктура: docker, k8s, CI, тесты, benchmarks, scripts, книга, runs (образцы)
+СОЗДАН: 2026-09-17T06:28:00.267Z
+ВСЕГО ФАЙЛОВ В МАНИФЕСТЕ: 109
+========================================================================
+
+
+========================================================================
+
+FILE: docker/Dockerfile.engine
+SIZE: 3741 bytes
+SHA1: 76258a820a1afa5a
+========================================================================
+
+# ═══════════════════════════════════════════════════════════════
+# Crucix Titan · FINAL Docker Image
+# Включает: WASM SIMD + Web Workers + все 45+ модулей
+# Zero external dependencies (кроме ws — WebSocket)
+# ═══════════════════════════════════════════════════════════════
+
+# ─── Stage 1: WASM Builder ───
+FROM node:20-alpine AS wasm-builder
+
+RUN apk add --no-cache wabt bash
+
+WORKDIR /build/wasm
+COPY apis/predict/wasm/linear_algebra.wat ./
+COPY apis/predict/wasm/linear_algebra_simd.wat ./
+
+RUN wat2wasm linear_algebra.wat -o linear_algebra.wasm && \
+    (wat2wasm --enable-simd linear_algebra_simd.wat -o linear_algebra_simd.wasm || \
+     echo "SIMD compilation skipped — older wat2wasm" ) && \
+    ls -la
+
+# ─── Stage 2: App Builder ───
+FROM node:20-alpine AS app-builder
+
+WORKDIR /build
+
+COPY package*.json ./
+RUN npm ci --omit=dev --ignore-scripts 2>/dev/null || \
+    npm install --production 2>/dev/null || \
+    echo "No package.json — pure JS only"
+
+COPY apis/ ./apis/
+COPY dashboard/ ./dashboard/
+COPY benchmark/ ./benchmark/
+COPY tests/ ./tests/
+COPY scripts/ ./scripts/
+COPY observability/ ./observability/
+
+RUN find apis -name "*.mjs" -exec node --check {} \; && \
+    echo "✓ All modules pass syntax check"
+
+COPY --from=wasm-builder /build/wasm/*.wasm ./apis/predict/wasm/
+
+# ─── Stage 3: Runtime ───
+FROM node:20-alpine AS runtime
+
+LABEL org.opencontainers.image.title="Crucix Titan"
+LABEL org.opencontainers.image.description="Multidisciplinary predictive intelligence platform with WASM SIMD, Web Workers, and 45+ forecasting modules"
+LABEL org.opencontainers.image.version="3.0.0"
+LABEL org.opencontainers.image.authors="Crucix Team"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.source="https://github.com/crucix/crucix-titan"
+
+RUN apk add --no-cache \
+    curl \
+    tini \
+    ca-certificates \
+    && rm -rf /var/cache/apk/*
+
+RUN addgroup -g 1001 -S crucix && \
+    adduser -u 1001 -S crucix -G crucix -h /app -s /sbin/nologin
+
+WORKDIR /app
+
+COPY --from=app-builder --chown=crucix:crucix /build/apis ./apis
+COPY --from=app-builder --chown=crucix:crucix /build/dashboard ./dashboard
+COPY --from=app-builder --chown=crucix:crucix /build/benchmark ./benchmark
+COPY --from=app-builder --chown=crucix:crucix /build/tests ./tests
+COPY --from=app-builder --chown=crucix:crucix /build/scripts ./scripts
+COPY --from=app-builder --chown=crucix:crucix /build/observability ./observability
+COPY --from=app-builder --chown=crucix:crucix /build/node_modules ./node_modules 2>/dev/null || \
+    (mkdir -p ./node_modules && chown crucix:crucix ./node_modules)
+
+COPY --chown=crucix:crucix docker/entrypoint.sh /app/entrypoint.sh
+COPY --chown=crucix:crucix docker/healthcheck.sh /app/healthcheck.sh
+RUN chmod +x /app/entrypoint.sh /app/healthcheck.sh
+
+RUN mkdir -p /app/runs/memory /app/runs/predictions /app/runs/federated /app/runs/benchmark \
+             /app/logs /app/tmp && \
+    chown -R crucix:crucix /app/runs /app/logs /app/tmp
+
+ENV NODE_ENV=production \
+    CRUCIX_MODE=titan \
+    WS_PORT=3118 \
+    API_PORT=3117 \
+    FL_PORT=3120 \
+    LOG_LEVEL=info \
+    NODE_OPTIONS="--max-old-space-size=2048 --experimental-specifier-resolution=node"
+
+USER crucix
+
+EXPOSE 3117 3118 3120
+
+VOLUME ["/app/runs", "/app/logs"]
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD /app/healthcheck.sh
+
+ENTRYPOINT ["/sbin/tini", "--", "/app/entrypoint.sh"]
+
+
+
+========================================================================
+
+FILE: docker/docker-compose.engine.yml
+SIZE: 4650 bytes
+SHA1: 91f2a8ccd162ea17
+========================================================================
+
+# Crucix Core · Final docker-compose
+# Полный production-стек
+
+version: '3.9'
+
+x-common-env: &common-env
+  NODE_ENV: production
+  LOG_LEVEL: info
+  TZ: UTC
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+
+  crucix-core:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.engine
+    image: crucix-core:3.0.0
+    container_name: crucix-core
+    hostname: crucix-core
+    restart: unless-stopped
+    ports:
+      - "3117:3117"
+      - "3118:3118"
+    environment:
+      <<: *common-env
+      CRUCIX_MODE: full
+      WS_PORT: "3118"
+      API_PORT: "3117"
+      FL_PORT: "3120"
+      FL_ENABLED: "true"
+      PREDICTION_LOOP_ENABLED: "true"
+      PREDICTION_INTERVAL_MINUTES: "15"
+      PYTHON_SERVICE_URL: "http://crucix-python:8090"
+      OTEL_ENABLED: "${OTEL_ENABLED:-false}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://crucix-jaeger:4318"
+    volumes:
+      - crucix-runs:/app/runs
+      - crucix-logs:/app/logs
+    networks:
+      - crucix-net
+    logging: *logging
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    healthcheck:
+      test: ["CMD", "/app/healthcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+    depends_on:
+      crucix-jaeger:
+        condition: service_started
+      crucix-python:
+        condition: service_started
+        required: false
+
+  crucix-fl-coordinator:
+    image: crucix-core:3.0.0
+    container_name: crucix-fl-coordinator
+    hostname: fl-coordinator
+    restart: unless-stopped
+    ports:
+      - "3120:3120"
+    environment:
+      <<: *common-env
+      CRUCIX_MODE: fl
+    volumes:
+      - crucix-runs:/app/runs
+      - crucix-logs:/app/logs
+    networks:
+      - crucix-net
+    logging: *logging
+    depends_on:
+      - crucix-core
+
+  crucix-python:
+    build:
+      context: ../python_service
+      dockerfile: Dockerfile
+    image: crucix-python:1.0.0
+    container_name: crucix-python
+    hostname: crucix-python
+    restart: unless-stopped
+    ports:
+      - "8090:8090"
+    environment:
+      PYTHONUNBUFFERED: "1"
+      LOG_LEVEL: info
+    volumes:
+      - crucix-runs:/app/runs:ro
+      - crucix-python-models:/app/models
+    networks:
+      - crucix-net
+    logging: *logging
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8090/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 40s
+      retries: 3
+
+  crucix-proxy:
+    image: nginx:alpine
+    container_name: crucix-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ../dashboard:/usr/share/nginx/html:ro
+      - ./certs:/etc/nginx/certs:ro
+    networks:
+      - crucix-net
+    logging: *logging
+    depends_on:
+      - crucix-core
+
+  crucix-jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: crucix-jaeger
+    restart: unless-stopped
+    ports:
+      - "16686:16686"
+      - "4318:4318"
+      - "4317:4317"
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    networks:
+      - crucix-net
+    logging: *logging
+
+  crucix-prometheus:
+    image: prom/prometheus:latest
+    container_name: crucix-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - crucix-prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+    networks:
+      - crucix-net
+    logging: *logging
+
+  crucix-grafana:
+    image: grafana/grafana:latest
+    container_name: crucix-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-crucix-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_INSTALL_PLUGINS: grafana-clock-panel
+    volumes:
+      - crucix-grafana-data:/var/lib/grafana
+      - ../observability/dashboards/grafana:/etc/grafana/provisioning/dashboards:ro
+      - ../observability/datasources:/etc/grafana/provisioning/datasources:ro
+    networks:
+      - crucix-net
+    logging: *logging
+    depends_on:
+      - crucix-prometheus
+
+networks:
+  crucix-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  crucix-runs:
+    driver: local
+  crucix-logs:
+    driver: local
+  crucix-python-models:
+    driver: local
+  crucix-prometheus-data:
+    driver: local
+  crucix-grafana-data:
+    driver: local
+
+
+
+========================================================================
+
+FILE: docker/entrypoint.sh
+SIZE: 6183 bytes
+SHA1: 1b8413839afca171
+========================================================================
+
+#!/bin/sh
+# Crucix Core · Entrypoint
+# Управляет запуском сервисов: WebSocket, API, FL, Python-bridge
+
+set -e
+
+WS_PORT="${WS_PORT:-3118}"
+API_PORT="${API_PORT:-3117}"
+FL_PORT="${FL_PORT:-3120}"
+LOG_LEVEL="${LOG_LEVEL:-info}"
+CRUCIX_MODE="${CRUCIX_MODE:-crucix}"
+
+if [ -t 1 ]; then
+    RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
+    BLUE='\033[0;34m'; BOLD='\033[1m'; NC='\033[0m'
+else
+    RED=''; GREEN=''; YELLOW=''; BLUE=''; BOLD=''; NC=''
+fi
+
+log() { echo "${BLUE}[crucix]${NC} $1"; }
+ok() { echo "${GREEN}[crucix]${NC} $1"; }
+warn() { echo "${YELLOW}[crucix]${NC} $1"; }
+err() { echo "${RED}[crucix]${NC} $1" >&2; }
+
+echo ""
+echo "${BOLD}════════════════════════════════════════════════${NC}"
+echo "${BOLD}  Crucix Core · v3.0.0${NC}"
+echo "${BOLD}  Multidisciplinary Predictive Intelligence${NC}"
+echo "${BOLD}════════════════════════════════════════════════${NC}"
+echo ""
+
+log "Проверка окружения..."
+log "  Mode:      $CRUCIX_MODE"
+log "  Node.js:   $(node --version)"
+log "  WS Port:   $WS_PORT"
+log "  API Port:  $API_PORT"
+log "  FL Port:   $FL_PORT"
+log "  Log level: $LOG_LEVEL"
+echo ""
+
+if [ -f "/app/apis/predict/wasm/linear_algebra_simd.wasm" ]; then
+    ok "WASM SIMD доступен: $(stat -c%s /app/apis/predict/wasm/linear_algebra_simd.wasm 2>/dev/null || echo '?') bytes"
+elif [ -f "/app/apis/predict/wasm/linear_algebra.wasm" ]; then
+    warn "WASM SIMD недоступен, используем скалярный WASM"
+else
+    warn "WASM недоступен — работаем на чистом JS"
+fi
+
+if [ ! -w "/app/runs" ]; then
+    err "Нет прав на /app/runs"
+    exit 1
+fi
+
+PIDS=""
+SHUTTING_DOWN=0
+
+cleanup() {
+    if [ "$SHUTTING_DOWN" = "1" ]; then return; fi
+    SHUTTING_DOWN=1
+
+    echo ""
+    log "Получен сигнал — graceful shutdown..."
+    log "Останавливаю процессы: $PIDS"
+
+    for pid in $PIDS; do
+        if kill -0 "$pid" 2>/dev/null; then
+            kill -TERM "$pid" 2>/dev/null || true
+        fi
+    done
+
+    for i in $(seq 1 15); do
+        ALL_DEAD=1
+        for pid in $PIDS; do
+            if kill -0 "$pid" 2>/dev/null; then
+                ALL_DEAD=0
+                break
+            fi
+        done
+        if [ "$ALL_DEAD" = "1" ]; then
+            ok "Все процессы завершены корректно"
+            exit 0
+        fi
+        sleep 1
+    done
+
+    warn "Force kill оставшихся процессов..."
+    for pid in $PIDS; do
+        kill -KILL "$pid" 2>/dev/null || true
+    done
+    exit 0
+}
+
+trap cleanup TERM INT
+
+start_service() {
+    local name="$1"
+    shift
+    log "Запуск $name..."
+
+    "$@" >> "/app/logs/${name}.log" 2>&1 &
+    local pid=$!
+    PIDS="$PIDS $pid"
+
+    sleep 2
+    if ! kill -0 "$pid" 2>/dev/null; then
+        err "$name не запустился — смотрите /app/logs/${name}.log"
+        tail -20 "/app/logs/${name}.log" >&2 || true
+        exit 1
+    fi
+
+    ok "$name запущен (PID: $pid)"
+}
+
+case "$CRUCIX_MODE" in
+    ws)
+        start_service "ws" node /app/apis/predict/ws.mjs "$WS_PORT"
+        ;;
+    api)
+        start_service "ws" node /app/apis/predict/ws.mjs "$WS_PORT"
+        ;;
+    fl)
+        start_service "fl" node /app/apis/predict/federated/fl_node.mjs coordinator "$FL_PORT"
+        ;;
+    worker)
+        start_service "fl-worker" node /app/apis/predict/federated/fl_node.mjs worker "$FL_PORT"
+        ;;
+    full|crucix|*)
+        start_service "ws" node /app/apis/predict/ws.mjs "$WS_PORT"
+
+        if [ "${FL_ENABLED:-true}" = "true" ]; then
+            start_service "fl" node /app/apis/predict/federated/fl_node.mjs coordinator "$FL_PORT"
+        fi
+
+        if [ "${PREDICTION_LOOP_ENABLED:-true}" = "true" ]; then
+            log "Запуск prediction loop (интервал: ${PREDICTION_INTERVAL_MINUTES:-15} мин)..."
+            (
+                while [ "$SHUTTING_DOWN" = "0" ]; do
+                    node -e "
+                        import('/app/apis/predict/crucix_engine_v3.mjs').then(async m => {
+                            try {
+                                const result = await m.runFullCrucixV3Cycle();
+                                if (result && result.compositeRisk) {
+                                    console.log('[loop] cycle:', JSON.stringify({
+                                        composite: result.compositeRisk.composite,
+                                        level: result.compositeRisk.level,
+                                        signals: result.compositeRisk.signals?.length || 0,
+                                    }));
+                                }
+                            } catch (e) {
+                                console.error('[loop] error:', e.message);
+                            }
+                        });
+                    " >> /app/logs/predictions.log 2>&1
+                    sleep $(( ${PREDICTION_INTERVAL_MINUTES:-15} * 60 ))
+                done
+            ) &
+            PIDS="$PIDS $!"
+        fi
+        ;;
+esac
+
+sleep 2
+
+log "Проверка готовности сервисов..."
+
+for i in $(seq 1 20); do
+    if curl -sf "http://localhost:${WS_PORT}/health" > /dev/null 2>&1; then
+        ok "WebSocket доступен: http://localhost:${WS_PORT}/health"
+        break
+    fi
+    sleep 1
+done
+
+echo ""
+echo "${GREEN}════════════════════════════════════════════════${NC}"
+echo "${GREEN}  Crucix Core готов${NC}"
+echo "${GREEN}════════════════════════════════════════════════${NC}"
+echo ""
+echo "  WebSocket:  ws://0.0.0.0:${WS_PORT}"
+echo "  Health:     http://0.0.0.0:${WS_PORT}/health"
+echo "  Stats:      http://0.0.0.0:${WS_PORT}/stats"
+echo ""
+echo "  Логи: /app/logs/{ws,fl,predictions}.log"
+echo ""
+
+wait
+
+
+
+========================================================================
+
+FILE: docker/healthcheck.sh
+SIZE: 880 bytes
+SHA1: d0b3ac1a21e6d174
+========================================================================
+
+#!/bin/sh
+# Crucix Core · Healthcheck
+
+set -e
+
+WS_PORT="${WS_PORT:-3118}"
+MAX_LATENCY_MS=2000
+
+START=$(date +%s%3N 2>/dev/null || date +%s)
+RESPONSE=$(curl -sf --max-time 3 "http://localhost:${WS_PORT}/health" 2>/dev/null || echo "")
+END=$(date +%s%3N 2>/dev/null || date +%s)
+LATENCY=$((END - START))
+
+if [ -z "$RESPONSE" ]; then
+    echo "FAIL: no response from /health (port $WS_PORT)"
+    exit 1
+fi
+
+if ! echo "$RESPONSE" | grep -q '"status":"ok"'; then
+    echo "FAIL: unexpected response: $RESPONSE"
+    exit 1
+fi
+
+if [ "$LATENCY" -gt "$MAX_LATENCY_MS" ]; then
+    echo "WARN: high latency ${LATENCY}ms (threshold: ${MAX_LATENCY_MS}ms)"
+fi
+
+if [ -r "/proc/self/status" ]; then
+    MEM_KB=$(grep VmRSS /proc/self/status | awk '{print $2}')
+    if [ "$MEM_KB" -gt 1800000 ]; then
+        echo "WARN: high memory ${MEM_KB}KB"
+    fi
+fi
+
+echo "OK: latency ${LATENCY}ms"
+exit 0
+
+
+
+========================================================================
+
+FILE: k8s/namespace.yaml
+SIZE: 863 bytes
+SHA1: e5526d3082cb9342
+========================================================================
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: crucix
+  labels:
+    app.kubernetes.io/name: crucix
+    app.kubernetes.io/part-of: crucix-core
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: crucix-quota
+  namespace: crucix
+spec:
+  hard:
+    requests.cpu: "20"
+    requests.memory: "40Gi"
+    limits.cpu: "40"
+    limits.memory: "80Gi"
+    persistentvolumeclaims: "10"
+    services.loadbalancers: "2"
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: crucix-limits
+  namespace: crucix
+spec:
+  limits:
+    - max:
+        cpu: "8"
+        memory: "16Gi"
+      min:
+        cpu: "100m"
+        memory: "128Mi"
+      default:
+        cpu: "1"
+        memory: "1Gi"
+      defaultRequest:
+        cpu: "500m"
+        memory: "512Mi"
+      type: Container
+
+
+
+========================================================================
+
+FILE: k8s/configmap.yaml
+SIZE: 1073 bytes
+SHA1: 385fa37151933148
+========================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: crucix-config
+  namespace: crucix
+data:
+  NODE_ENV: "production"
+  CRUCIX_MODE: "crucix"
+  LOG_LEVEL: "info"
+  PYTHON_SERVICE_URL: "http://crucix-python:8090"
+  FL_COORDINATOR_URL: "http://crucix-fl-coordinator:3120"
+  PREDICTIONS_ENABLED: "true"
+  RETRAIN_INTERVAL: "50"
+  MAX_SHIFT: "0.15"
+  DECAY_RATE: "0.02"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: crucix-prometheus-config
+  namespace: crucix
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 30s
+      evaluation_interval: 30s
+    scrape_configs:
+      - job_name: 'crucix-core'
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names: [crucix]
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            target_label: __address__
+            regex: (.+)
+            replacement: ${1}
+
+
+
+========================================================================
+
+FILE: k8s/secrets.yaml
+SIZE: 532 bytes
+SHA1: a6dc24ea96eb303e
+========================================================================
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: crucix-secrets
+  namespace: crucix
+type: Opaque
+stringData:
+  # Замените перед деплоем!
+  DISCORD_WEBHOOK: ""
+  TELEGRAM_BOT_TOKEN: ""
+  TELEGRAM_CHAT_ID: ""
+  WEBHOOK_SECRET: "change-me-in-production"
+  POSTGRES_PASSWORD: "change-me"
+  REDIS_PASSWORD: "change-me"
+---
+# TLS для ingress (создать через cert-manager)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: crucix-tls
+  namespace: crucix
+type: kubernetes.io/tls
+data:
+  tls.crt: ""
+  tls.key: ""
+
+
+
+========================================================================
+
+FILE: k8s/deployment-crucix.yaml
+SIZE: 4987 bytes
+SHA1: a13898cc84c53948
+========================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crucix-core
+  namespace: crucix
+  labels:
+    app: crucix-core
+    version: v3.0.0
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: crucix-core
+  template:
+    metadata:
+      labels:
+        app: crucix-core
+        version: v3.0.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3118"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: crucix-core
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: wait-for-runs
+          image: busybox:latest
+          command:
+            - sh
+            - -c
+            - |
+              until [ -d /app/runs ]; do
+                echo "Waiting for /app/runs..."
+                sleep 2
+              done
+          volumeMounts:
+            - name: runs
+              mountPath: /app/runs
+      containers:
+        - name: crucix-core
+          image: crucix-core:3.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: api
+              containerPort: 3117
+              protocol: TCP
+            - name: websocket
+              containerPort: 3118
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: crucix-config
+          env:
+            - name: DISCORD_WEBHOOK
+              valueFrom:
+                secretKeyRef:
+                  name: crucix-secrets
+                  key: DISCORD_WEBHOOK
+                  optional: true
+            - name: TELEGRAM_BOT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: crucix-secrets
+                  key: TELEGRAM_BOT_TOKEN
+                  optional: true
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "2"
+              memory: "2Gi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3118
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3118
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 2
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 3118
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 30
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: runs
+              mountPath: /app/runs
+            - name: logs
+              mountPath: /app/logs
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: runs
+          persistentVolumeClaim:
+            claimName: crucix-runs-pvc
+        - name: logs
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: crucix-core
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: crucix-core
+                topologyKey: kubernetes.io/hostname
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: crucix-core
+  namespace: crucix
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: crucix-core
+  namespace: crucix
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps", "pods"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: crucix-core
+  namespace: crucix
+subjects:
+  - kind: ServiceAccount
+    name: crucix-core
+    namespace: crucix
+roleRef:
+  kind: Role
+  name: crucix-core
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: crucix-runs-pvc
+  namespace: crucix
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: standard
+
+
+
+========================================================================
+
+FILE: k8s/service.yaml
+SIZE: 1133 bytes
+SHA1: c360670f9b02b0c8
+========================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: crucix-core
+  namespace: crucix
+  labels:
+    app: crucix-core
+spec:
+  type: ClusterIP
+  selector:
+    app: crucix-core
+  ports:
+    - name: api
+      port: 3117
+      targetPort: 3117
+      protocol: TCP
+    - name: websocket
+      port: 3118
+      targetPort: 3118
+      protocol: TCP
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 3600
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: crucix-core-headless
+  namespace: crucix
+  labels:
+    app: crucix-core
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: crucix-core
+  ports:
+    - name: websocket
+      port: 3118
+      targetPort: 3118
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: crucix-python
+  namespace: crucix
+spec:
+  type: ClusterIP
+  selector:
+    app: crucix-python
+  ports:
+    - name: http
+      port: 8090
+      targetPort: 8090
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: crucix-fl-coordinator
+  namespace: crucix
+spec:
+  type: ClusterIP
+  selector:
+    app: crucix-fl-coordinator
+  ports:
+    - name: http
+      port: 3120
+      targetPort: 3120
+
+
+
+========================================================================
+
+FILE: k8s/ingress.yaml
+SIZE: 1347 bytes
+SHA1: 98806cbe8db147a7
+========================================================================
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: crucix-ingress
+  namespace: crucix
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/websocket-services: "crucix-core"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/limit-rps: "50"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - crucix.example.com
+      secretName: crucix-tls
+  rules:
+    - host: crucix.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: crucix-core
+                port:
+                  number: 3117
+          - path: /ws
+            pathType: Prefix
+            backend:
+              service:
+                name: crucix-core
+                port:
+                  number: 3118
+          - path: /python
+            pathType: Prefix
+            backend:
+              service:
+                name: crucix-python
+                port:
+                  number: 8090
+
+
+
+========================================================================
+
+FILE: k8s/hpa.yaml
+SIZE: 1239 bytes
+SHA1: 3c0f4a14ca622131
+========================================================================
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: crucix-core-hpa
+  namespace: crucix
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: crucix-core
+  minReplicas: 2
+  maxReplicas: 20
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+    - type: Pods
+      pods:
+        metric:
+          name: crucix_ws_connections
+        target:
+          type: AverageValue
+          averageValue: "100"
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+        - type: Pods
+          value: 4
+          periodSeconds: 15
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: crucix-core-pdb
+  namespace: crucix
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: crucix-core
+
+
+
+========================================================================
+
+FILE: k8s/cronjob.yaml
+SIZE: 2791 bytes
+SHA1: 1664a6b682e49ece
+========================================================================
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: crucix-daily-benchmark
+  namespace: crucix
+spec:
+  schedule: "0 3 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: benchmark
+              image: crucix-core:3.0.0
+              command:
+                - node
+                - benchmark/suite.mjs
+                - vix
+              envFrom:
+                - configMapRef:
+                    name: crucix-config
+              volumeMounts:
+                - name: runs
+                  mountPath: /app/runs
+              resources:
+                requests:
+                  cpu: "1"
+                  memory: "1Gi"
+                limits:
+                  cpu: "2"
+                  memory: "2Gi"
+          volumes:
+            - name: runs
+              persistentVolumeClaim:
+                claimName: crucix-runs-pvc
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: crucix-auto-resolve
+  namespace: crucix
+spec:
+  schedule: "*/30 * * * *"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: resolve
+              image: crucix-core:3.0.0
+              command:
+                - node
+                - -e
+                - |
+                  import('./apis/predict/engine.mjs').then(m => {
+                    const engine = new m.PredictionEngine();
+                    return engine.autoResolve();
+                  }).then(r => console.log('Resolved:', r));
+              envFrom:
+                - configMapRef:
+                    name: crucix-config
+              volumeMounts:
+                - name: runs
+                  mountPath: /app/runs
+          volumes:
+            - name: runs
+              persistentVolumeClaim:
+                claimName: crucix-runs-pvc
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: crucix-federated-round
+  namespace: crucix
+spec:
+  schedule: "*/15 * * * *"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: federated
+              image: crucix-core:3.0.0
+              command:
+                - node
+                - apis/predict/federated/fl_node.mjs
+                - worker
+                - "3120"
+              envFrom:
+                - configMapRef:
+                    name: crucix-config
+              volumeMounts:
+                - name: runs
+                  mountPath: /app/runs
+          volumes:
+            - name: runs
+              persistentVolumeClaim:
+                claimName: crucix-runs-pvc
+
+
+
+========================================================================
+
+FILE: k8s/statefulset-python.yaml
+SIZE: 1723 bytes
+SHA1: 7aea77fadb4b7c54
+========================================================================
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: crucix-python
+  namespace: crucix
+  labels:
+    app: crucix-python
+spec:
+  serviceName: crucix-python
+  replicas: 2
+  selector:
+    matchLabels:
+      app: crucix-python
+  template:
+    metadata:
+      labels:
+        app: crucix-python
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+        - name: python
+          image: crucix-python:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8090
+              name: http
+          env:
+            - name: PYTHONUNBUFFERED
+              value: "1"
+            - name: LOG_LEVEL
+              value: "info"
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "4"
+              memory: "8Gi"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8090
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8090
+            initialDelaySeconds: 40
+            periodSeconds: 30
+          volumeMounts:
+            - name: models
+              mountPath: /app/models
+            - name: runs
+              mountPath: /app/runs
+              readOnly: true
+      volumes:
+        - name: runs
+          persistentVolumeClaim:
+            claimName: crucix-runs-pvc
+  volumeClaimTemplates:
+    - metadata:
+        name: models
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 5Gi
+        storageClassName: standard
+
+
+
+========================================================================
+
+FILE: k8s/servicemonitor.yaml
+SIZE: 1567 bytes
+SHA1: 82560f9fec4f50d4
+========================================================================
+
+# Требует Prometheus Operator (kube-prometheus-stack)
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: crucix-core
+  namespace: crucix
+  labels:
+    app: crucix-core
+spec:
+  selector:
+    matchLabels:
+      app: crucix-core
+  endpoints:
+    - port: websocket
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+  namespaceSelector:
+    matchNames:
+      - crucix
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: crucix-alerts
+  namespace: crucix
+spec:
+  groups:
+    - name: crucix.rules
+      interval: 30s
+      rules:
+        - alert: CrucixHighCompositeRisk
+          expr: crucix_composite_risk > 0.7
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Crucix composite risk critical"
+            description: "Composite risk is {{ $value }} for 5 minutes"
+
+        - alert: CrucixPodDown
+          expr: up{job="crucix-core"} == 0
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Crucix pod down"
+
+        - alert: CrucixHighLatency
+          expr: crucix_cycle_duration_seconds > 30
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Crucix cycle duration > 30s"
+
+        - alert: CrucixWebSocketConnectionsHigh
+          expr: crucix_ws_connections > 500
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Too many WebSocket connections"
+
+
+
+========================================================================
+
+FILE: k8s/kustomization.yaml
+SIZE: 619 bytes
+SHA1: 5b0dd5ef83248639
+========================================================================
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: crucix
+
+resources:
+  - namespace.yaml
+  - configmap.yaml
+  - secrets.yaml
+  - deployment-crucix.yaml
+  - service.yaml
+  - ingress.yaml
+  - hpa.yaml
+  - cronjob.yaml
+  - statefulset-python.yaml
+  # - servicemonitor.yaml  # раскомментировать, если установлен Prometheus Operator
+
+commonLabels:
+  app.kubernetes.io/part-of: crucix-core
+  app.kubernetes.io/managed-by: kustomize
+
+images:
+  - name: crucix-core
+    newTag: 3.0.0
+  - name: crucix-python
+    newTag: 1.0.0
+
+replicas:
+  - name: crucix-core
+    count: 3
+
+
+
+========================================================================
+
+FILE: .github/CODEOWNERS
+SIZE: 714 bytes
+SHA1: f3b6bafaa5a8b2dc
+========================================================================
+
+# Crucix Core · CODEOWNERS
+
+# Default
+*                       @crucix/maintainers
+
+# Core math
+/apis/predict/core/     @crucix/math-team
+
+# Models
+/apis/predict/models/   @crucix/ml-team
+
+# Sciences
+/apis/predict/exotic/   @crucix/research-team
+
+# WASM
+/apis/predict/wasm/     @crucix/systems-team
+
+# Infrastructure
+/docker/                @crucix/infra-team
+/k8s/                   @crucix/infra-team
+/.github/               @crucix/infra-team
+
+# Docs
+/docs/                  @crucix/docs-team
+/README.md              @crucix/docs-team
+
+# Benchmark
+/benchmark/             @crucix/research-team
+
+# Security-critical
+/apis/predict/federated/  @crucix/security-team
+/observability/           @crucix/security-team
+
+
+
+========================================================================
+
+FILE: .github/dependabot.yml
+SIZE: 914 bytes
+SHA1: 655a27b5e407ba93
+========================================================================
+
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "crucix/maintainers"
+    labels:
+      - "dependencies"
+      - "npm"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "pip"
+    directory: "/python_service"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "python"
+
+  - package-ecosystem: "docker"
+    directory: "/docker"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "docker"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "ci"
+
+
+
+========================================================================
+
+FILE: .github/PULL_REQUEST_TEMPLATE.md
+SIZE: 1525 bytes
+SHA1: 4f0528c29e5ea917
+========================================================================
+
+# Pull Request
+
+## Что изменилось
+
+<!-- Кратко опишите изменения -->
+
+## Тип изменения
+
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Refactoring (без функциональных изменений)
+- [ ] Documentation
+- [ ] Performance
+- [ ] Test
+- [ ] Build/CI
+
+## Модуль
+
+- [ ] apis/predict/core
+- [ ] apis/predict/models
+- [ ] apis/predict/exotic
+- [ ] apis/predict/federated
+- [ ] apis/predict/wasm
+- [ ] apis/predict/workers
+- [ ] apis/predict/webgl
+- [ ] dashboard
+- [ ] benchmark
+- [ ] tests
+- [ ] docs
+- [ ] docker
+- [ ] k8s
+- [ ] observability
+
+## Checklist
+
+- [ ] Код проходит node --check (все .mjs файлы)
+- [ ] Добавлены комментарии к новым функциям
+- [ ] Обновлена документация (если нужно)
+- [ ] Не добавлены внешние зависимости без необходимости
+- [ ] Проверена работа в браузере (если frontend)
+- [ ] Проверена производительность (если критичный код)
+
+## Zero-dependency policy
+
+- [ ] Изменения НЕ добавляют обязательных зависимостей
+- [ ] Если зависимость добавлена — она опциональная (WASM, Python, WebGL)
+
+## Тесты
+
+<!-- Как проверить изменения? -->
+
+## Screenshots / Benchmarks
+
+<!-- Если применимо -->
+
+## Related Issues
+
+Closes #
+
+
+
+========================================================================

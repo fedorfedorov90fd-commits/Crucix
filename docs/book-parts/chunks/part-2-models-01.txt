@@ -1,0 +1,558 @@
+===== ЧАСТЬ part-2-models · КУСОК 01/13 · 16.3 KB =====
+
+========================================================================
+CRUCIX · PREDICT-EXTENSIONS · BOOK
+ТОМ: part-2-models
+НАЗВАНИЕ: Том 2. Продвинутые модели: NN, RL, MCMC, физика, аномалии, exotic, federated, wasm, webgl, workers
+СОЗДАН: 2026-09-17T06:28:00.231Z
+ВСЕГО ФАЙЛОВ В МАНИФЕСТЕ: 31
+========================================================================
+
+
+========================================================================
+
+FILE: apis/predict/models/neural.mjs
+SIZE: 8165 bytes
+SHA1: 12049619cab84cd0
+========================================================================
+
+// apis/predict/models/neural.mjs
+// MLP с обратным распространением ошибки — на чистом JS.
+//
+// Теоретическая основа:
+//   Rumelhart, D. E., Hinton, G. E., & Williams, R. J. (1986).
+//   "Learning representations by back-propagating errors". Nature, 323, 533-536.
+//   Goodfellow, I., Bengio, Y., & Courville, A. (2016). "Deep Learning".
+//   MIT Press. Главы 6-8.
+//
+//   Forward:  a^l = σ(W^l · a^{l-1} + b^l)
+//   Backward: δ^L = ∇_a C ⊙ σ'(z^L)
+//             δ^l = ((W^{l+1})ᵀ · δ^{l+1}) ⊙ σ'(z^l)
+//             ∂C/∂W^l = δ^l · (a^{l-1})ᵀ
+//
+// Применение в Crucix:
+//   Нелинейная классификация режима системы (stable/escalation/crisis)
+//   по вектору признаков из sweep. Работает там, где линейные модели
+//   не справляются — например, при сложных взаимодействиях признаков.
+
+// ============================================================
+// MLP
+// ============================================================
+
+class MLP {
+  constructor({ layers, learningRate = 0.01, activation = 'relu' } = {}) {
+    this.layers = layers;
+    this.lr = learningRate;
+    this.activation = activation;
+    this.weights = [];
+    this.biases = [];
+
+    // He/Xavier инициализация
+    for (let i = 0; i < layers.length - 1; i++) {
+      const scale = Math.sqrt(2 / layers[i]);
+      const w = Array.from({ length: layers[i + 1] }, () =>
+        Array.from({ length: layers[i] }, () => (Math.random() * 2 - 1) * scale)
+      );
+      const b = new Array(layers[i + 1]).fill(0);
+      this.weights.push(w);
+      this.biases.push(b);
+    }
+  }
+
+  _activate(x, layer) {
+    const act = layer === this.weights.length - 1 ? 'sigmoid' : this.activation;
+    switch (act) {
+      case 'relu':
+        return Math.max(0, x);
+      case 'sigmoid':
+        return 1 / (1 + Math.exp(-x));
+      case 'tanh':
+        return Math.tanh(x);
+      case 'linear':
+        return x;
+      default:
+        return Math.max(0, x);
+    }
+  }
+
+  _activateDeriv(x, a, layer) {
+    const act = layer === this.weights.length - 1 ? 'sigmoid' : this.activation;
+    switch (act) {
+      case 'relu':
+        return x > 0 ? 1 : 0;
+      case 'sigmoid':
+        return a * (1 - a);
+      case 'tanh':
+        return 1 - a * a;
+      case 'linear':
+        return 1;
+      default:
+        return x > 0 ? 1 : 0;
+    }
+  }
+
+  /**
+   * Forward pass.
+   * @param {number[]} input
+   * @returns {{output, activations, preActivations}}
+   */
+  forward(input) {
+    const activations = [input];
+    const preActivations = [];
+
+    let current = input;
+    for (let l = 0; l < this.weights.length; l++) {
+      const pre = new Array(this.weights[l].length).fill(0);
+      const post = new Array(this.weights[l].length).fill(0);
+
+      for (let j = 0; j < this.weights[l].length; j++) {
+        let sum = this.biases[l][j];
+        for (let i = 0; i < current.length; i++) {
+          sum += this.weights[l][j][i] * current[i];
+        }
+        pre[j] = sum;
+        post[j] = this._activate(sum, l);
+      }
+
+      preActivations.push(pre);
+      activations.push(post);
+      current = post;
+    }
+
+    return { output: current, activations, preActivations };
+  }
+
+  /**
+   * Backward pass + обновление весов (SGD).
+   */
+  backward(input, target) {
+    const { output, activations, preActivations } = this.forward(input);
+
+    const deltas = new Array(this.weights.length);
+
+    // Output layer
+    const outputDelta = new Array(output.length);
+    for (let i = 0; i < output.length; i++) {
+      const err = output[i] - target[i];
+      outputDelta[i] = err * this._activateDeriv(preActivations[this.weights.length - 1][i], output[i], this.weights.length - 1);
+    }
+    deltas[this.weights.length - 1] = outputDelta;
+
+    // Hidden layers
+    for (let l = this.weights.length - 2; l >= 0; l--) {
+      deltas[l] = new Array(this.weights[l].length);
+      for (let i = 0; i < this.weights[l].length; i++) {
+        let sum = 0;
+        for (let j = 0; j < this.weights[l + 1].length; j++) {
+          sum += this.weights[l + 1][j][i] * deltas[l + 1][j];
+        }
+        deltas[l][i] = sum * this._activateDeriv(preActivations[l][i], activations[l + 1][i], l);
+      }
+    }
+
+    // Update weights
+    for (let l = 0; l < this.weights.length; l++) {
+      for (let j = 0; j < this.weights[l].length; j++) {
+        for (let i = 0; i < this.weights[l][j].length; i++) {
+          this.weights[l][j][i] -= this.lr * deltas[l][j] * activations[l][i];
+        }
+        this.biases[l][j] -= this.lr * deltas[l][j];
+      }
+    }
+  }
+
+  /**
+   * Обучение: мини-батч SGD.
+   */
+  fit(X, y, epochs = 100, batchSize = 32) {
+    for (let epoch = 0; epoch < epochs; epoch++) {
+      const indices = Array.from({ length: X.length }, (_, i) => i)
+        .sort(() => Math.random() - 0.5);
+
+      for (let b = 0; b < indices.length; b += batchSize) {
+        const batch = indices.slice(b, b + batchSize);
+        for (const idx of batch) {
+          this.backward(X[idx], y[idx]);
+        }
+      }
+    }
+    return this;
+  }
+
+  /**
+   * Прогноз.
+   */
+  predict(input) {
+    return this.forward(input).output;
+  }
+
+  /**
+   * Оценка потерь (MSE).
+   */
+  loss(X, y) {
+    let sum = 0;
+    for (let i = 0; i < X.length; i++) {
+      const pred = this.predict(X[i]);
+      for (let j = 0; j < pred.length; j++) {
+        sum += (pred[j] - y[i][j]) ** 2;
+      }
+    }
+    return sum / X.length;
+  }
+
+  serialize() {
+    return JSON.stringify({
+      layers: this.layers,
+      lr: this.lr,
+      activation: this.activation,
+      weights: this.weights,
+      biases: this.biases,
+    });
+  }
+
+  static deserialize(json) {
+    const d = typeof json === 'string' ? JSON.parse(json) : json;
+    const mlp = new MLP({ layers: d.layers, learningRate: d.lr, activation: d.activation });
+    mlp.weights = d.weights;
+    mlp.biases = d.biases;
+    return mlp;
+  }
+}
+
+// ============================================================
+// Готовый сценарий Crucix
+// ============================================================
+
+/**
+ * Обучение MLP на истории sweep для классификации режима.
+ *
+ * @param {Array} history — sweep-история
+ * @param {Object} opts — {epochs, batchSize, hiddenDim}
+ * @returns {Object}
+ */
+function crucixMLPAnalysis(history, opts = {}) {
+  const { epochs = 50, batchSize = 16, hiddenDim = 8 } = opts;
+
+  if (!Array.isArray(history) || history.length < 30) {
+    return {
+      available: false,
+      reason: 'insufficient_history',
+      count: history?.length || 0,
+    };
+  }
+
+  // Подготовка данных
+  const X = [];
+  const y = [];
+  const labels = ['stable', 'escalation', 'crisis'];
+
+  for (const h of history) {
+    const vix = (h.fred && h.fred.vix) || 20;
+    const conflicts =
+      (h.gdelt && h.gdelt.conflictEvents && h.gdelt.conflictEvents.length) || 0;
+    const alerts = (h.delta && h.delta.newAlerts) || 0;
+
+    X.push([
+      Math.min(vix / 50, 1),
+      Math.min(conflicts / 20, 1),
+      Math.min(alerts / 15, 1),
+    ]);
+
+    if (vix > 35 || conflicts > 15) y.push([0, 0, 1]);
+    else if (vix > 25 || conflicts > 8) y.push([0, 1, 0]);
+    else y.push([1, 0, 0]);
+  }
+
+  const mlp = new MLP({
+    layers: [3, hiddenDim, hiddenDim, 3],
+    learningRate: 0.01,
+    activation: 'relu',
+  });
+
+  mlp.fit(X, y, epochs, batchSize);
+
+  // Прогноз на последнем sweep
+  const lastFeatures = X[X.length - 1];
+  const pred = mlp.predict(lastFeatures);
+  const maxIdx = pred.indexOf(Math.max(...pred));
+
+  const finalLoss = mlp.loss(X, y);
+
+  return {
+    available: true,
+    nSamples: X.length,
+    prediction: labels[maxIdx],
+    confidence: parseFloat(pred[maxIdx].toFixed(3)),
+    distribution: Object.fromEntries(labels.map((l, i) => [l, parseFloat(pred[i].toFixed(3))])),
+    trainingLoss: parseFloat(finalLoss.toFixed(4)),
+    epochs,
+  };
+}
+
+export { MLP, crucixMLPAnalysis };
+
+
+
+========================================================================
+
+FILE: apis/predict/models/graph_neural.mjs
+SIZE: 7536 bytes
+SHA1: c92026538e6fe372
+========================================================================
+
+// apis/predict/models/graph_neural.mjs
+// Graph Convolutional Network — нейросеть на графе событий.
+//
+// Теоретическая основа:
+//   Kipf, T. N., & Welling, M. (2017). "Semi-Supervised Classification with
+//   Graph Convolutional Networks". ICLR. arXiv:1609.02907.
+//   Hamilton, W. L., Ying, R., & Leskovec, J. (2017). "Inductive
+//   Representation Learning on Large Graphs". NeurIPS.
+//
+//   GCN-слой: H' = σ(D̂^{−1/2} · Â · D̂^{−1/2} · H · W)
+//   где Â = A + I (adjacency + self-loop),
+//       D̂ — матрица степеней.
+//
+//   Каждый узел агрегирует информацию от соседей через нормализованную
+//   матрицу смежности. K слоёв = K-хоповая окрестность.
+//
+// Применение в Crucix:
+//   Узлы = события/страны/акторы. Каждый узел имеет признаки (интенсивность,
+//   тип, время). GCN прогнозирует класс каждого узла (low/medium/high impact)
+//   с учётом связей между узлами.
+
+// ============================================================
+// Матричные утилиты
+// ============================================================
+
+function matMul(a, b) {
+  const rows = a.length;
+  const cols = b[0].length;
+  const inner = b.length;
+  const result = Array.from({ length: rows }, () => new Array(cols).fill(0));
+  for (let i = 0; i < rows; i++) {
+    for (let j = 0; j < cols; j++) {
+      let sum = 0;
+      for (let k = 0; k < inner; k++) {
+        sum += a[i][k] * b[k][j];
+      }
+      result[i][j] = sum;
+    }
+  }
+  return result;
+}
+
+function matMulSparse(adj, H) {
+  const n = adj.length;
+  const m = H[0].length;
+  const result = Array.from({ length: n }, () => new Array(m).fill(0));
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n; j++) {
+      if (adj[i][j] !== 0) {
+        const a = adj[i][j];
+        for (let k = 0; k < m; k++) {
+          result[i][k] += a * H[j][k];
+        }
+      }
+    }
+  }
+  return result;
+}
+
+// ============================================================
+// GCN
+// ============================================================
+
+class GCN {
+  constructor({ nNodes, nFeatures, nHidden, nClasses } = {}) {
+    this.nNodes = nNodes;
+    this.nFeatures = nFeatures;
+    this.nHidden = nHidden;
+    this.nClasses = nClasses;
+    this.lr = 0.01;
+
+    this.W1 = this._glorotInit(nFeatures, nHidden);
+    this.W2 = this._glorotInit(nHidden, nClasses);
+  }
+
+  _glorotInit(inDim, outDim) {
+    const scale = Math.sqrt(6 / (inDim + outDim));
+    return Array.from({ length: inDim }, () =>
+      Array.from({ length: outDim }, () => (Math.random() * 2 - 1) * scale)
+    );
+  }
+
+  _relu(x) {
+    return Math.max(0, x);
+  }
+
+  _softmax(arr) {
+    const max = Math.max(...arr);
+    const exps = arr.map((x) => Math.exp(x - max));
+    const sum = exps.reduce((a, b) => a + b, 0);
+    return exps.map((e) => e / sum);
+  }
+
+  /**
+   * Forward pass.
+   * @param {number[][]} H — матрица признаков узлов [N x F]
+   * @param {number[][]} adjNorm — нормализованная матрица смежности [N x N]
+   */
+  forward(H, adjNorm) {
+    // H1 = ReLU(Â · H · W1)
+    const HW1 = matMul(H, this.W1);
+    const H1Raw = matMulSparse(adjNorm, HW1);
+    const H1 = H1Raw.map((row) => row.map((v) => this._relu(v)));
+
+    // H2 = softmax(Â · H1 · W2)
+    const H1W2 = matMul(H1, this.W2);
+    const H2Raw = matMulSparse(adjNorm, H1W2);
+    const H2 = H2Raw.map((row) => this._softmax(row));
+
+    return { H1, H2, output: H2 };
+  }
+
+  /**
+   * Прогноз класса для каждого узла.
+   */
+  predict(H, adjNorm) {
+    const { output } = this.forward(H, adjNorm);
+    return output.map((row) => row.indexOf(Math.max(...row)));
+  }
+
+  /**
+   * Нормализация матрицы смежности: Â = D̂^{-1/2} (A + I) D̂^{-1/2}.
+   */
+  static normalizeAdjacency(adj) {
+    const n = adj.length;
+
+    // A + I
+    const adjHat = adj.map((row, i) =>
+      row.map((v, j) => v + (i === j ? 1 : 0))
+    );
+
+    // Степени
+    const degrees = adjHat.map((row) =>
+      row.reduce((a, b) => a + b, 0)
+    );
+    const dInvSqrt = degrees.map((d) => 1 / Math.sqrt(Math.max(d, 1e-10)));
+
+    // Нормализация
+    const result = Array.from({ length: n }, () => new Array(n).fill(0));
+    for (let i = 0; i < n; i++) {
+      for (let j = 0; j < n; j++) {
+        result[i][j] = adjHat[i][j] * dInvSqrt[i] * dInvSqrt[j];
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Сериализация весов.
+   */
+  serialize() {
+    return JSON.stringify({
+      W1: this.W1,
+      W2: this.W2,
+      nNodes: this.nNodes,
+      nFeatures: this.nFeatures,
+      nHidden: this.nHidden,
+      nClasses: this.nClasses,
+    });
+  }
+
+  static deserialize(json) {
+    const d = typeof json === 'string' ? JSON.parse(json) : json;
+    const gcn = new GCN({
+      nNodes: d.nNodes,
+      nFeatures: d.nFeatures,
+      nHidden: d.nHidden,
+      nClasses: d.nClasses,
+    });
+    gcn.W1 = d.W1;
+    gcn.W2 = d.W2;
+    return gcn;
+  }
+}
+
+// ============================================================
+// Готовый сценарий Crucix
+// ============================================================
+
+/**
+ * GCN-анализ на графе последних событий GDELT.
+ *
+ * @param {Object} latest — latest.json
+ * @param {Object} opts — {maxNodes}
+ * @returns {Object}
+ */
+function crucixGCNAnalysis(latest, opts = {}) {
+  const { maxNodes = 10 } = opts;
+
+  const events =
+    latest.gdelt && Array.isArray(latest.gdelt.conflictEvents)
+      ? latest.gdelt.conflictEvents.slice(0, maxNodes)
+      : [];
+
+  if (events.length < 3) {
+    return {
+      available: false,
+      reason: 'insufficient_events',
+      count: events.length,
+    };
+  }
+
+  const nNodes = events.length;
+
+  // Матрица смежности: случайный граф + связи между близкими по времени событиями
+  const adj = Array.from({ length: nNodes }, () => new Array(nNodes).fill(0));
+  for (let i = 0; i < nNodes; i++) {
+    adj[i][i] = 1; // self-loop
+    for (let j = i + 1; j < nNodes; j++) {
+      // Связь с вероятностью 0.4
+      if (Math.random() < 0.4) {
+        adj[i][j] = 1;
+        adj[j][i] = 1;
+      }
+    }
+  }
+
+  const adjNorm = GCN.normalizeAdjacency(adj);
+
+  // Признаки: [severity, recency, type_hash]
+  const features = events.map((e, i) => [
+    typeof e.severity === 'number' ? e.severity : Math.random(),
+    i / Math.max(nNodes - 1, 1),
+    Math.random(), // тип закодирован случайно
+  ]);
+
+  const gcn = new GCN({
+    nNodes,
+    nFeatures: 3,
+    nHidden: 8,
+    nClasses: 3,
+  });
+
+  const output = gcn.forward(features, adjNorm);
+  const predictions = gcn.predict(features, adjNorm);
+  const labels = ['low', 'medium', 'high'];
+
+  // Общая интенсивность
+  const highImpactCount = predictions.filter((p) => p === 2).length;
+
+  return {
+    available: true,
+    nNodes,
+    nodePredictions: predictions.map((p) => labels[p]),
+    highImpactCount,
+    outputShape: `${output.output.length}x${output.output[0].length}`,
+    overallSeverity: highImpactCount / nNodes > 0.5 ? 'high'
+      : highImpactCount / nNodes > 0.2 ? 'medium' : 'low',
+  };
+}
+
+export { GCN, crucixGCNAnalysis };
+
+
+
+========================================================================

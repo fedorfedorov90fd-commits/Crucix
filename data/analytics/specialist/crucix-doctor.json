@@ -1,0 +1,42 @@
+{
+  "_meta": {
+    "id": "crucix-doctor",
+    "category": "specialist",
+    "version": "1.0.0",
+    "schema_version": "1.0.0",
+    "sources": [
+      "apis/sources"
+    ],
+    "calculator": "CrucixDoctor",
+    "updated_at": "2026-09-12T15:17:25.405Z",
+    "duration_ms": 31,
+    "checksum": "bd932a5ab9eae133",
+    "stats": {
+      "total_issues": 1,
+      "bySeverity": {
+        "critical": 0,
+        "high": 1,
+        "medium": 0,
+        "low": 0
+      }
+    }
+  },
+  "data": {
+    "issues": [
+      {
+        "type": "missing_import",
+        "file": "router.mjs",
+        "target": "drivers/max-driver.mjs",
+        "severity": "high"
+      }
+    ],
+    "total": 1,
+    "bySeverity": {
+      "critical": 0,
+      "high": 1,
+      "medium": 0,
+      "low": 0
+    },
+    "generated_at": "2026-09-12T15:17:25.405Z"
+  }
+}

@@ -1,0 +1,1164 @@
+// apis/predict/models/physics_inspired.mjs
+// Physics-Inspired Models для прогностического слоя Crucix
+// Четыре раздела: SOC, Percolation, Catastrophe Theory, Chaos
+//
+// Теоретическая основа:
+//   SOC:
+//     - Bak, P., Tang, C., & Wiesenfeld, K. (1987). "Self-organized
+//       criticality: An explanation of 1/f noise". Physical Review Letters.
+//     - Bak, P. (1996). "How Nature Works: The Science of Self-Organized
+//       Criticality". Copernicus.
+//
+//   Percolation:
+//     - Broadbent, S. R., & Hammersley, J. M. (1957). "Percolation processes:
+//       I. Crystals and mazes". Mathematical Proceedings of the Cambridge
+//       Philosophical Society.
+//     - Stauffer, D., & Aharony, A. (1994). "Introduction to Percolation
+//       Theory" (2nd ed.). Taylor & Francis.
+//     - Hoshen, J., & Kopelman, R. (1976). "Percolation and cluster
+//       distribution. I. Cluster multiple labeling technique". Physical Review B.
+//
+//   Catastrophe Theory:
+//     - Thom, R. (1972). "Stabilité structurelle et morphogénèse".
+//       Benjamin.
+//     - Zeeman, E. C. (1977). "Catastrophe Theory: Selected Papers
+//       1972-1977". Addison-Wesley.
+//     - Poston, T., & Stewart, I. (1978). "Catastrophe Theory and its
+//       Applications". Pitman.
+//
+//   Chaos:
+//     - Lyapunov, A. M. (1892). "The general problem of the stability
+//       of motion".
+//     - Takens, F. (1981). "Detecting strange attractors in turbulence".
+//       Dynamical Systems and Turbulence.
+//     - Grassberger, P., & Procaccia, I. (1983). "Characterization of
+//       strange attractors". Physical Review Letters.
+//     - Rosenstein, M. T., Collins, J. J., & De Luca, C. J. (1993).
+//       "A practical method for calculating largest Lyapunov exponents
+//       from small data sets". Physica D.
+//
+// Версия: 6.0.0
+
+import { writeFileSync, mkdirSync, existsSync, readFileSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// ═══════════════════════════════════════════════════════════════════
+// УТИЛИТЫ
+// ═══════════════════════════════════════════════════════════════════
+
+function ensureDir(dir) {
+  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+}
+
+function saveJSON(fp, data) {
+  ensureDir(dirname(fp));
+  writeFileSync(fp, JSON.stringify(data, null, 2));
+}
+
+function mean(arr) {
+  if (arr.length === 0) return 0;
+  return arr.reduce((a, b) => a + b, 0) / arr.length;
+}
+
+function std(arr, ddof = 1) {
+  const n = arr.length;
+  if (n <= ddof) return 0;
+  const m = mean(arr);
+  return Math.sqrt(arr.reduce((s, v) => s + (v - m) ** 2, 0) / (n - ddof));
+}
+
+function linreg(x, y) {
+  const n = Math.min(x.length, y.length);
+  if (n < 2) return { slope: 0, intercept: 0, r2: 0 };
+  const mx = mean(x.slice(0, n));
+  const my = mean(y.slice(0, n));
+  let num = 0, den = 0;
+  for (let i = 0; i < n; i++) {
+    num += (x[i] - mx) * (y[i] - my);
+    den += (x[i] - mx) ** 2;
+  }
+  const slope = den > 0 ? num / den : 0;
+  const intercept = my - slope * mx;
+  // R²
+  let ssRes = 0, ssTot = 0;
+  for (let i = 0; i < n; i++) {
+    const pred = slope * x[i] + intercept;
+    ssRes += (y[i] - pred) ** 2;
+    ssTot += (y[i] - my) ** 2;
+  }
+  const r2 = ssTot > 0 ? 1 - ssRes / ssTot : 0;
+  return { slope, intercept, r2 };
+}
+
+function euclidean(a, b) {
+  let s = 0;
+  for (let i = 0; i < a.length; i++) s += (a[i] - b[i]) ** 2;
+  return Math.sqrt(s);
+}
+
+function gaussianRandom(mean = 0, sd = 1) {
+  const u1 = Math.random();
+  const u2 = Math.random();
+  const z = Math.sqrt(-2 * Math.log(u1 + 1e-10)) * Math.cos(2 * Math.PI * u2);
+  return mean + z * sd;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 1. SELF-ORGANIZED CRITICALITY (SOC)
+// Bak-Tang-Wiesenfeld sandpile model
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Классический abelian sandpile.
+ * Правило: если ячейка ≥ 4 — рассыпается по 4 соседям.
+ * Система самоорганизуется к критическому состоянию,
+ * где лавины подчиняются степенному закону P(s) ~ s^(-τ).
+ */
+class Sandpile {
+  constructor(config = {}) {
+    this.N = config.N || 30;
+    this.criticalValue = config.criticalValue || 4;
+    this.grid = Array.from({ length: this.N }, () =>
+      Array.from({ length: this.N }, () => 0)
+    );
+    this.avalanches = []; // размеры лавин
+    this.totalTopplings = 0;
+    this.largestAvalanche = 0;
+  }
+
+  /**
+   * Добавление песчинки в случайную (или центральную) позицию
+   * и обрушение системы.
+   */
+  dropGrain(i = null, j = null) {
+    if (i === null) i = Math.floor(Math.random() * this.N);
+    if (j === null) j = Math.floor(Math.random() * this.N);
+
+    this.grid[i][j] += 1;
+
+    // Обрушение через BFS
+    let avalancheSize = 0;
+    const queue = [[i, j]];
+
+    while (queue.length > 0) {
+      const [x, y] = queue.shift();
+      if (this.grid[x][y] < this.criticalValue) continue;
+
+      const topplings = Math.floor(this.grid[x][y] / this.criticalValue);
+      this.grid[x][y] -= topplings * this.criticalValue;
+      avalancheSize += topplings;
+      this.totalTopplings += topplings;
+
+      // Границы открытые — песчинки уходят за пределы
+      const neighbors = [
+        [x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1],
+      ];
+
+      for (const [nx, ny] of neighbors) {
+        if (nx < 0 || nx >= this.N || ny < 0 || ny >= this.N) continue;
+        this.grid[nx][ny] += topplings;
+        if (this.grid[nx][ny] >= this.criticalValue) {
+          queue.push([nx, ny]);
+        }
+      }
+    }
+
+    if (avalancheSize > 0) {
+      this.avalanches.push(avalancheSize);
+      if (avalancheSize > this.largestAvalanche) {
+        this.largestAvalanche = avalancheSize;
+      }
+    }
+
+    return avalancheSize;
+  }
+
+  /**
+   * Прогон N добавлений песчинок.
+   */
+  simulate(nGrains = 5000, burnIn = 1000) {
+    // Burn-in для достижения критического состояния
+    for (let i = 0; i < burnIn; i++) {
+      this.dropGrain();
+    }
+
+    const sizesAtBurnIn = this.avalanches.length;
+
+    for (let i = 0; i < nGrains; i++) {
+      this.dropGrain();
+    }
+
+    return this.avalanches.slice(sizesAtBurnIn);
+  }
+
+  /**
+   * Оценка показателя τ через log-log регрессию.
+   * Строим гистограмму по логарифмическим бинам, получаем
+   * log(P(s)) ≈ -τ · log(s) + const.
+   */
+  estimateTau(minSize = 2) {
+    if (this.avalanches.length < 100) {
+      return { tau: null, error: 'insufficient_avalanches', n: this.avalanches.length };
+    }
+
+    const valid = this.avalanches.filter(s => s >= minSize);
+    if (valid.length < 50) {
+      return { tau: null, error: 'not_enough_large_avalanches' };
+    }
+
+    // Log-bin histogram
+    const logSizes = valid.map(s => Math.log10(s));
+    const minLog = Math.min(...logSizes);
+    const maxLog = Math.max(...logSizes);
+    const nBins = 15;
+    const binWidth = (maxLog - minLog) / nBins || 1;
+
+    const counts = new Array(nBins).fill(0);
+    const binCenters = new Array(nBins).fill(0);
+
+    for (let i = 0; i < nBins; i++) {
+      binCenters[i] = minLog + (i + 0.5) * binWidth;
+    }
+    for (const ls of logSizes) {
+      const idx = Math.min(nBins - 1, Math.floor((ls - minLog) / binWidth));
+      counts[idx]++;
+    }
+
+    // log(P(s)) = log(count / total / binWidth)
+    const xs = [];
+    const ys = [];
+    const total = valid.length;
+    for (let i = 0; i < nBins; i++) {
+      if (counts[i] < 3) continue;
+      xs.push(binCenters[i]);
+      ys.push(Math.log10(counts[i] / total / binWidth));
+    }
+
+    if (xs.length < 3) {
+      return { tau: null, error: 'not_enough_bins' };
+    }
+
+    const reg = linreg(xs, ys);
+    return {
+      tau: -reg.slope,
+      tauStd: std(ys.map((y, i) => y - (reg.slope * xs[i] + reg.intercept))) / Math.sqrt(xs.length),
+      r2: reg.r2,
+      nAvalanches: valid.length,
+      nBins: xs.length,
+      interpretation: -reg.slope > 1.5 ? 'steep (weak SOC)'
+        : -reg.slope > 1.0 ? 'moderate SOC'
+        : 'shallow (strong SOC)',
+    };
+  }
+
+  /**
+   * Индикатор критичности: соотношение больших и малых лавин.
+   */
+  criticality() {
+    if (this.avalanches.length < 20) {
+      return { index: 0, regime: 'insufficient_data' };
+    }
+
+    const sizes = [...this.avalanches].sort((a, b) => a - b);
+    const median = sizes[Math.floor(sizes.length / 2)];
+    const p95 = sizes[Math.floor(sizes.length * 0.95)];
+    const ratio = p95 / Math.max(median, 1);
+
+    // В критическом состоянии ratio большое (тяжёлый хвост)
+    const index = Math.min(1, ratio / 100);
+
+    let regime;
+    if (index > 0.5) regime = 'critical';
+    else if (index > 0.2) regime = 'near_critical';
+    else regime = 'subcritical';
+
+    return {
+      index,
+      regime,
+      median,
+      p95,
+      ratio,
+      nAvalanches: this.avalanches.length,
+    };
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 2. PERCOLATION THEORY
+// Broadbent & Hammersley site percolation
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Site percolation на 2D решётке N×N.
+ * Каждый узел активен с вероятностью p.
+ * BFS находит кластеры. Отслеживаем spanning (глобальный) кластер.
+ *
+ * Критический порог pc ≈ 0.5927 (для квадратной решётки).
+ */
+class Percolation {
+  constructor(config = {}) {
+    this.N = config.N || 50;
+    this.p = config.p ?? 0.5;
+    this.grid = null;
+    this.clusters = [];
+    this.maxClusterSize = 0;
+    this.spanning = false;
+  }
+
+  /**
+   * Инициализация решётки с вероятностью p.
+   */
+  init(p = this.p) {
+    this.p = p;
+    this.grid = Array.from({ length: this.N }, () =>
+      Array.from({ length: this.N }, () => Math.random() < p ? 1 : 0)
+    );
+    this.clusters = [];
+    this.maxClusterSize = 0;
+    this.spanning = false;
+    return this;
+  }
+
+  /**
+   * BFS-кластеризация (аналог Hoshen-Kopelman).
+   */
+  findClusters() {
+    if (!this.grid) return [];
+    const visited = Array.from({ length: this.N }, () =>
+      new Array(this.N).fill(false)
+    );
+    const clusters = [];
+
+    for (let i = 0; i < this.N; i++) {
+      for (let j = 0; j < this.N; j++) {
+        if (this.grid[i][j] === 1 && !visited[i][j]) {
+          const cluster = this._bfs(i, j, visited);
+          clusters.push(cluster);
+        }
+      }
+    }
+
+    clusters.sort((a, b) => b.size - a.size);
+    this.clusters = clusters;
+    this.maxClusterSize = clusters[0]?.size ?? 0;
+
+    // Spanning = кластер, который касается противоположных сторон
+    this.spanning = clusters.some(c =>
+      c.touchesTop && c.touchesBottom || c.touchesLeft && c.touchesRight
+    );
+
+    return clusters;
+  }
+
+  _bfs(si, sj, visited) {
+    const queue = [[si, sj]];
+    visited[si][sj] = true;
+    const cells = [];
+    let touchesTop = false, touchesBottom = false;
+    let touchesLeft = false, touchesRight = false;
+
+    while (queue.length > 0) {
+      const [i, j] = queue.shift();
+      cells.push([i, j]);
+
+      if (i === 0) touchesTop = true;
+      if (i === this.N - 1) touchesBottom = true;
+      if (j === 0) touchesLeft = true;
+      if (j === this.N - 1) touchesRight = true;
+
+      const neighbors = [
+        [i - 1, j], [i + 1, j], [i, j - 1], [i, j + 1],
+      ];
+
+      for (const [ni, nj] of neighbors) {
+        if (ni < 0 || ni >= this.N || nj < 0 || nj >= this.N) continue;
+        if (visited[ni][nj]) continue;
+        if (this.grid[ni][nj] === 0) continue;
+        visited[ni][nj] = true;
+        queue.push([ni, nj]);
+      }
+    }
+
+    return {
+      size: cells.length,
+      cells,
+      touchesTop, touchesBottom, touchesLeft, touchesRight,
+    };
+  }
+
+  /**
+   * Доля в максимальном кластере от общего числа активных.
+   */
+  largestClusterFraction() {
+    const total = this.grid.flat().reduce((s, v) => s + v, 0);
+    return total > 0 ? this.maxClusterSize / total : 0;
+  }
+
+  /**
+   * Оценка порога pc бинарным поиском по p.
+   * При p < pc — spanning не возникает.
+   * При p > pc — возникает.
+   */
+  static estimatePc(N = 30, trials = 20) {
+    const pValues = [];
+    for (let p = 0.3; p <= 0.8; p += 0.02) pValues.push(p);
+
+    const results = [];
+    for (const p of pValues) {
+      let spanningCount = 0;
+      for (let t = 0; t < trials; t++) {
+        const perc = new Percolation({ N, p });
+        perc.init();
+        perc.findClusters();
+        if (perc.spanning) spanningCount++;
+      }
+      results.push({
+        p,
+        spanningProb: spanningCount / trials,
+      });
+    }
+
+    // pc — минимальное p, при котором spanningProb > 0.5
+    const pc = results.find(r => r.spanningProb > 0.5)?.p ?? null;
+    return { pc, results };
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 3. CATASTROPHE THEORY (Thom)
+// Fold, Cusp, Swallowtail, Butterfly
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Fold catastrophe: V(x) = x² + a·x
+ * Один управляющий параметр. Минимум существует всегда,
+ * но скачкообразно смещается.
+ */
+class FoldCatastrophe {
+  constructor(a = 0) {
+    this.a = a;
+  }
+
+  equilibrium() {
+    // dV/dx = 2x + a = 0  →  x = -a/2
+    return -this.a / 2;
+  }
+
+  energy(x) {
+    return x * x + this.a * x;
+  }
+
+  isBistable() {
+    return false; // fold всегда monostable
+  }
+
+  gradientDescent(x0 = 0, steps = 100, dt = 0.1) {
+    let x = x0;
+    const path = [x];
+    for (let i = 0; i < steps; i++) {
+      const grad = 2 * x + this.a;
+      x -= dt * grad;
+      path.push(x);
+    }
+    return { final: x, path };
+  }
+}
+
+/**
+ * Cusp catastrophe: V(x) = x⁴/4 + a·x²/2 + b·x
+ * Два управляющих параметра. Внутри складки (4a³ + 27b² < 0) —
+ * три равновесия (бистабильность). Вне — одно.
+ *
+ * Это самая важная модель для Crucix: "система между двух режимов".
+ */
+class CuspCatastrophe {
+  constructor(a = 0, b = 0) {
+    this.a = a;
+    this.b = b;
+  }
+
+  /**
+   * Дискриминант: 4a³ + 27b².
+   * < 0: три вещественных корня (бистабильность).
+   * > 0: один корень (моностабильность).
+   * = 0: граница катастрофы.
+   */
+  discriminant() {
+    return 4 * Math.pow(this.a, 3) + 27 * Math.pow(this.b, 2);
+  }
+
+  isInsideFold() {
+    return this.discriminant() < 0;
+  }
+
+  /**
+   * Равновесные состояния: корни кубического уравнения
+   * x³ + a·x + b = 0
+   * где x — это dV/dx, и мы решаем dV/dx = 0.
+   */
+  equilibria() {
+    const a = this.a;
+    const b = this.b;
+    const p = a;
+    const q = b;
+    const D = q * q / 4 + p * p * p / 27;
+
+    if (D > 1e-10) {
+      // Один вещественный корень
+      const sD = Math.sqrt(D);
+      const u = Math.cbrt(-q / 2 + sD);
+      const v = Math.cbrt(-q / 2 - sD);
+      return [u + v];
+    } else if (D > -1e-10) {
+      // Кратный корень
+      if (Math.abs(q) < 1e-10) return [0];
+      const u = Math.cbrt(-q / 2);
+      return [2 * u, -u];
+    } else {
+      // Три вещественных корня (тригонометрия)
+      const r = Math.sqrt(-p * p * p / 27);
+      const phi = Math.acos(Math.max(-1, Math.min(1, -q / (2 * r))));
+      const m = 2 * Math.sqrt(-p / 3);
+      return [
+        m * Math.cos(phi / 3),
+        m * Math.cos((phi + 2 * Math.PI) / 3),
+        m * Math.cos((phi + 4 * Math.PI) / 3),
+      ].sort((x, y) => x - y);
+    }
+  }
+
+  /**
+   * Потенциальная энергия.
+   */
+  energy(x) {
+    return Math.pow(x, 4) / 4 + this.a * Math.pow(x, 2) / 2 + this.b * x;
+  }
+
+  /**
+   * Градиентный спуск.
+   */
+  gradientDescent(x0 = 0, steps = 500, dt = 0.05) {
+    let x = x0;
+    const path = [x];
+    for (let i = 0; i < steps; i++) {
+      const grad = Math.pow(x, 3) + this.a * x + this.b;
+      x -= dt * grad;
+      path.push(x);
+    }
+    return { final: x, path };
+  }
+
+  /**
+   * Расстояние до складки (нормализованное).
+   * Малое = близко к точке катастрофы.
+   */
+  distanceToFold() {
+    const disc = this.discriminant();
+    const scale = Math.pow(Math.abs(this.a), 1.5) + 1e-6;
+    return Math.abs(disc) / scale;
+  }
+
+  /**
+   * Классификация режима.
+   */
+  regime() {
+    if (this.isInsideFold()) return 'bistable';
+    if (Math.abs(this.discriminant()) < 0.1) return 'at_catastrophe';
+    return 'monostable';
+  }
+}
+
+/**
+ * Swallowtail catastrophe: V(x) = x⁵/5 + a·x³/3 + b·x²/2 + c·x
+ * Три управляющих параметра. Два типа переходов.
+ */
+class SwallowtailCatastrophe {
+  constructor(a = 0, b = 0, c = 0) {
+    this.a = a;
+    this.b = b;
+    this.c = c;
+  }
+
+  energy(x) {
+    return Math.pow(x, 5) / 5 + this.a * Math.pow(x, 3) / 3
+      + this.b * Math.pow(x, 2) / 2 + this.c * x;
+  }
+
+  gradient(x) {
+    return Math.pow(x, 4) + this.a * Math.pow(x, 2) + this.b * x + this.c;
+  }
+
+  gradientDescent(x0 = 0, steps = 500, dt = 0.05) {
+    let x = x0;
+    for (let i = 0; i < steps; i++) {
+      x -= dt * this.gradient(x);
+    }
+    return x;
+  }
+
+  /**
+   * Грубая оценка: количество вещественных корней dV/dx = 0.
+   * Перебор по сетке.
+   */
+  countEquilibria(range = 3, resolution = 200) {
+    let prev = this.gradient(-range);
+    let signChanges = 0;
+    const roots = [];
+    for (let i = 1; i <= resolution; i++) {
+      const x = -range + (2 * range * i) / resolution;
+      const g = this.gradient(x);
+      if (prev * g < 0) {
+        // Есть корень между
+        const xRoot = (x + (-range + (2 * range * (i - 1)) / resolution)) / 2;
+        roots.push(xRoot);
+        signChanges++;
+      }
+      prev = g;
+    }
+    return { count: signChanges, roots };
+  }
+
+  regime() {
+    const { count } = this.countEquilibria();
+    if (count >= 3) return 'tristable';
+    if (count === 2) return 'bistable';
+    return 'monostable';
+  }
+}
+
+/**
+ * Butterfly catastrophe: V(x) = x⁶/6 + a·x⁴/4 + b·x³/3 + c·x²/2 + d·x
+ * Четыре управляющих параметра. Самая сложная элементарная катастрофа.
+ */
+class ButterflyCatastrophe {
+  constructor(a = 0, b = 0, c = 0, d = 0) {
+    this.a = a;
+    this.b = b;
+    this.c = c;
+    this.d = d;
+  }
+
+  energy(x) {
+    return Math.pow(x, 6) / 6 + this.a * Math.pow(x, 4) / 4
+      + this.b * Math.pow(x, 3) / 3 + this.c * Math.pow(x, 2) / 2 + this.d * x;
+  }
+
+  gradient(x) {
+    return Math.pow(x, 5) + this.a * Math.pow(x, 3)
+      + this.b * Math.pow(x, 2) + this.c * x + this.d;
+  }
+
+  gradientDescent(x0 = 0, steps = 1000, dt = 0.03) {
+    let x = x0;
+    for (let i = 0; i < steps; i++) {
+      x -= dt * this.gradient(x);
+      // Стабилизация
+      x = Math.max(-10, Math.min(10, x));
+    }
+    return x;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 4. CHAOS THEORY
+// Lyapunov, Takens, Grassberger-Procaccia
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Takens delay embedding.
+ * Из скалярного ряда x(t) строим вектор x(t) = [x(t), x(t+τ), ..., x(t+(m-1)τ)].
+ */
+function takensEmbedding(series, m, tau = 1) {
+  const n = series.length;
+  const embedded = [];
+  for (let i = 0; i < n - (m - 1) * tau; i++) {
+    const point = [];
+    for (let j = 0; j < m; j++) {
+      point.push(series[i + j * tau]);
+    }
+    embedded.push(point);
+  }
+  return embedded;
+}
+
+/**
+ * Largest Lyapunov exponent (Rosenstein method).
+ * λ > 0 — хаос. λ ≈ 0 — нейтрально. λ < 0 — устойчиво.
+ */
+function largestLyapunov(series, { m = 3, tau = 1, maxIter = 50 } = {}) {
+  const embedded = takensEmbedding(series, m, tau);
+  const n = embedded.length;
+  if (n < 20) return { error: 'insufficient_data', n };
+
+  const divergence = Array.from({ length: maxIter }, () => []);
+
+  for (let i = 0; i < n; i++) {
+    // Находим ближайшего соседа (исключая близких во времени)
+    let bestDist = Infinity, bestJ = -1;
+    for (let j = 0; j < n; j++) {
+      if (Math.abs(i - j) < m * 2) continue;
+      const d = euclidean(embedded[i], embedded[j]);
+      if (d > 0 && d < bestDist) {
+        bestDist = d;
+        bestJ = j;
+      }
+    }
+    if (bestJ === -1) continue;
+
+    // Отслеживаем расхождение
+    for (let k = 0; k < maxIter; k++) {
+      if (i + k >= n || bestJ + k >= n) break;
+      const d = euclidean(embedded[i + k], embedded[bestJ + k]);
+      if (d > 0) divergence[k].push(Math.log(d));
+    }
+  }
+
+  // Средняя log-дивергенция по шагам
+  const avgLog = divergence.map(arr => arr.length > 0 ? mean(arr) : 0);
+
+  // Линейная регрессия на первых 30% шагов
+  const fitLen = Math.max(3, Math.floor(avgLog.length * 0.3));
+  const xs = Array.from({ length: fitLen }, (_, i) => i);
+  const ys = avgLog.slice(0, fitLen);
+  const reg = linreg(xs, ys);
+
+  const lambda = reg.slope;
+
+  let regime;
+  if (lambda > 0.1) regime = 'strongly_chaotic';
+  else if (lambda > 0.01) regime = 'weakly_chaotic';
+  else if (lambda > -0.01) regime = 'neutral';
+  else regime = 'stable';
+
+  return {
+    lambda,
+    r2: reg.r2,
+    regime,
+    horizonSteps: lambda > 1e-6 ? 1 / lambda : Infinity,
+    horizonHours: lambda > 1e-6 ? (1 / lambda) * 0.25 : Infinity,
+    divergence: avgLog.slice(0, 20),
+    interpretation: lambda > 0.01
+      ? `Хаос: λ=${lambda.toFixed(4)}, прогноз на ${((1 / lambda) * 0.25).toFixed(1)}ч`
+      : 'Система устойчива, долгосрочный прогноз возможен',
+  };
+}
+
+/**
+ * Correlation dimension (Grassberger-Procaccia).
+ * Оценка «размерности» аттрактора.
+ */
+function correlationDimension(series, { m = 3, tau = 1, nRadii = 20 } = {}) {
+  const embedded = takensEmbedding(series, m, tau);
+  const n = embedded.length;
+  if (n < 20) return { error: 'insufficient_data' };
+
+  // Все парные расстояния (сэмплируем если много точек)
+  const maxPairs = 5000;
+  const distances = [];
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      distances.push(euclidean(embedded[i], embedded[j]));
+      if (distances.length >= maxPairs) break;
+    }
+    if (distances.length >= maxPairs) break;
+  }
+
+  const minD = Math.min(...distances.filter(d => d > 0));
+  const maxD = Math.max(...distances);
+
+  const radii = [];
+  const correlations = [];
+  for (let i = 0; i < nRadii; i++) {
+    const r = minD * Math.pow(maxD / minD, i / (nRadii - 1));
+    const count = distances.filter(d => d < r).length;
+    radii.push(r);
+    correlations.push(count / distances.length);
+  }
+
+  // Log-log регрессия на среднем участке
+  const valid = [];
+  for (let i = 0; i < radii.length; i++) {
+    if (correlations[i] > 0.01 && correlations[i] < 0.99) {
+      valid.push({ x: Math.log10(radii[i]), y: Math.log10(correlations[i]) });
+    }
+  }
+
+  if (valid.length < 3) return { error: 'not_enough_valid_bins' };
+
+  const xs = valid.map(v => v.x);
+  const ys = valid.map(v => v.y);
+  const reg = linreg(xs, ys);
+  const dimension = reg.slope;
+
+  let regime;
+  if (dimension < 1.5) regime = 'low_dimensional';
+  else if (dimension < 2.5) regime = 'moderate_dimension';
+  else if (dimension < 4) regime = 'high_dimensional';
+  else regime = 'noise_dominated';
+
+  return {
+    dimension,
+    r2: reg.r2,
+    regime,
+    nPairs: distances.length,
+    interpretation: dimension < 2
+      ? 'Низкоразмерная динамика — есть скрытая структура'
+      : dimension < 4
+      ? 'Умеренная размерность'
+      : 'Высокая размерность — близко к шуму',
+  };
+}
+
+/**
+ * Recurrence plot.
+ * Визуализация повторяющихся состояний.
+ */
+function recurrencePlot(series, { m = 3, tau = 1, epsilon = null } = {}) {
+  const embedded = takensEmbedding(series, m, tau);
+  const n = embedded.length;
+  if (n < 10) return { error: 'insufficient_data' };
+
+  // Автоматический выбор epsilon как 10% от макс расстояния
+  if (epsilon === null) {
+    let maxD = 0;
+    const sampleSize = Math.min(n, 50);
+    for (let i = 0; i < sampleSize; i++) {
+      for (let j = i + 1; j < sampleSize; j++) {
+        maxD = Math.max(maxD, euclidean(embedded[i], embedded[j]));
+      }
+    }
+    epsilon = maxD * 0.1;
+  }
+
+  // Recurrence matrix
+  const R = Array.from({ length: n }, () => new Array(n).fill(0));
+  let recurrenceRate = 0;
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n; j++) {
+      if (euclidean(embedded[i], embedded[j]) < epsilon) {
+        R[i][j] = 1;
+        recurrenceRate++;
+      }
+    }
+  }
+  recurrenceRate /= (n * n);
+
+  // Determinism: доля точек на диагоналях длиной > 2
+  let diagonalPoints = 0;
+  for (let i = 0; i < n - 2; i++) {
+    for (let j = 0; j < n - 2; j++) {
+      if (R[i][j] && R[i + 1][j + 1] && R[i + 2][j + 2]) {
+        diagonalPoints++;
+      }
+    }
+  }
+  const determinism = diagonalPoints / Math.max(recurrenceRate * n * n, 1);
+
+  let regime;
+  if (determinism > 0.5) regime = 'deterministic';
+  else if (determinism > 0.2) regime = 'moderate';
+  else regime = 'stochastic';
+
+  return {
+    recurrenceRate,
+    determinism,
+    epsilon,
+    regime,
+    n,
+    interpretation: determinism > 0.5
+      ? 'Высокий детерминизм — система предсказуема'
+      : determinism > 0.2
+      ? 'Умеренный детерминизм'
+      : 'Слабая структура — стохастика',
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 5. ИНТЕГРАЦИЯ С CRUCIX
+// ═══════════════════════════════════════════════════════════════════
+
+function extractVix(history) {
+  return history
+    .map(h => h.fred?.vix)
+    .filter(v => v !== undefined && v !== null && !isNaN(v));
+}
+
+function extractConflicts(history) {
+  return history.map(h => h.gdelt?.conflictEvents?.length || 0);
+}
+
+function extractHySpread(history) {
+  return history
+    .map(h => h.fred?.hySpread)
+    .filter(v => v !== undefined && v !== null && !isNaN(v));
+}
+
+/**
+ * SOC-анализ для Crucix: строим "песочницу" из метрик,
+ * где каждая метрика нормирована и добавляет "песчинку" в узлы.
+ */
+function crucixSOC(history, options = {}) {
+  const N = options.N || 30;
+  const nGrains = options.nGrains || 5000;
+
+  const sandpile = new Sandpile({ N });
+  sandpile.simulate(nGrains, 1000);
+  const tau = sandpile.estimateTau();
+  const crit = sandpile.criticality();
+
+  return {
+    nAvalanches: sandpile.avalanches.length,
+    largestAvalanche: sandpile.largestAvalanche,
+    totalTopplings: sandpile.totalTopplings,
+    tau,
+    criticality: crit,
+    interpretation: crit.regime === 'critical'
+      ? 'Система в критическом состоянии — тяжёлый хвост лавин'
+      : crit.regime === 'near_critical'
+      ? 'Система приближается к критическому состоянию'
+      : 'Система субкритична',
+  };
+}
+
+/**
+ * Percolation-анализ: строим решётку активных "узлов напряжения"
+ * по метрикам. Оцениваем близость к pc.
+ */
+function crucixPercolation(history, options = {}) {
+  const N = options.N || 50;
+  const vix = extractVix(history);
+  const conflicts = extractConflicts(history);
+
+  if (vix.length < 10) {
+    return { error: 'insufficient_vix' };
+  }
+
+  // Текущая "стресс-доля": доля метрик выше порога
+  const vixThreshold = 25;
+  const conflictThreshold = 8;
+
+  const latestVix = vix[vix.length - 1];
+  const latestConflict = conflicts[conflicts.length - 1];
+
+  // p = доля активных узлов (нормированная)
+  const p = Math.min(0.95, Math.max(0.05, (
+    (latestVix > vixThreshold ? 0.4 : 0.1) +
+    (latestConflict > conflictThreshold ? 0.4 : 0.1)
+  )));
+
+  const perc = new Percolation({ N, p });
+  perc.init();
+  perc.findClusters();
+
+  // Теоретический порог для 2D квадратной решётки
+  const pc = 0.5927;
+  const proximity = p / pc;
+
+  let regime;
+  if (proximity > 1.2) regime = 'supercritical';
+  else if (proximity > 0.9) regime = 'near_critical';
+  else if (proximity > 0.6) regime = 'subcritical';
+  else regime = 'local_only';
+
+  return {
+    p: Math.round(p * 1000) / 1000,
+    pc,
+    proximity: Math.round(proximity * 1000) / 1000,
+    maxClusterSize: perc.maxClusterSize,
+    spanning: perc.spanning,
+    largestFraction: Math.round(perc.largestClusterFraction() * 1000) / 1000,
+    nClusters: perc.clusters.length,
+    regime,
+    interpretation: regime === 'supercritical'
+      ? 'Система за порогом перколяции — глобальный каскад возможен'
+      : regime === 'near_critical'
+      ? 'Система на грани — небольшой триггер → глобальный каскад'
+      : 'Локальный стресс, глобального каскада нет',
+  };
+}
+
+/**
+ * Catastrophe-анализ: строим cusp-модель из VIX и конфликтов.
+ * a = -нормированный стресс. b = -скорость изменения стресса.
+ */
+function crucixCatastrophe(history) {
+  const vix = extractVix(history);
+  const conflicts = extractConflicts(history);
+
+  if (vix.length < 20) {
+    return { error: 'insufficient_data' };
+  }
+
+  // Стресс-фактор = комбинация VIX и конфликтов
+  const n = Math.min(vix.length, conflicts.length);
+  const stress = Array.from({ length: n }, (_, i) =>
+    (vix[i] - 20) / 20 + (conflicts[i] - 5) / 10
+  );
+
+  const m = mean(stress);
+  const s = std(stress) || 1;
+
+  const currentStress = stress[stress.length - 1];
+  const recent = stress.slice(-5);
+  const recentMean = mean(recent);
+  const rate = (currentStress - recentMean) / s;
+
+  // Cusp: a = -(stress - mean) / std; b = -rate
+  const a = -(currentStress - m) / s;
+  const b = -rate;
+
+  const cusp = new CuspCatastrophe(a, b);
+  const equilibria = cusp.equilibria();
+  const disc = cusp.discriminant();
+  const inside = cusp.isInsideFold();
+
+  // Градиентный спуск из двух точек для проверки бистабильности
+  const descent1 = cusp.gradientDescent(-2, 500, 0.05);
+  const descent2 = cusp.gradientDescent(2, 500, 0.05);
+
+  return {
+    a: Math.round(a * 1000) / 1000,
+    b: Math.round(b * 1000) / 1000,
+    discriminant: Math.round(disc * 1000) / 1000,
+    insideFold: inside,
+    nEquilibria: equilibria.length,
+    equilibria: equilibria.map(e => Math.round(e * 1000) / 1000),
+    regime: cusp.regime(),
+    bistable: inside,
+    descentFromNeg: Math.round(descent1.final * 1000) / 1000,
+    descentFromPos: Math.round(descent2.final * 1000) / 1000,
+    distanceToFold: Math.round(cusp.distanceToFold() * 1000) / 1000,
+    interpretation: inside
+      ? `Система в области бистабильности (${equilibria.length} равновесий) — возможен скачок`
+      : 'Система в моностабильном режиме — скачок маловероятен',
+  };
+}
+
+/**
+ * Chaos-анализ: Lyapunov, correlation dimension, recurrence.
+ */
+function crucixChaos(history) {
+  const vix = extractVix(history);
+
+  if (vix.length < 30) {
+    return { error: 'insufficient_data', n: vix.length };
+  }
+
+  const lyap = largestLyapunov(vix, { m: 3, tau: 1 });
+  const corr = correlationDimension(vix, { m: 3, tau: 1 });
+  const recur = recurrencePlot(vix, { m: 3, tau: 1 });
+
+  let predictability;
+  if (lyap.lambda < 0.005 && recur.determinism > 0.3) predictability = 'high';
+  else if (lyap.lambda < 0.05) predictability = 'moderate';
+  else predictability = 'low';
+
+  return {
+    lyapunov: lyap,
+    correlationDimension: corr,
+    recurrence: recur,
+    predictability,
+    interpretation: predictability === 'high'
+      ? `Система предсказуема. λ=${lyap.lambda.toFixed(4)}, D=${corr.dimension?.toFixed(2)}`
+      : predictability === 'moderate'
+      ? `Средняя предсказуемость. λ=${lyap.lambda.toFixed(4)}`
+      : `Хаотичная система. λ=${lyap.lambda.toFixed(4)}, горизонт ${lyap.horizonHours?.toFixed(1)}ч`,
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 6. ЭКСПОРТ
+// ═══════════════════════════════════════════════════════════════════
+
+export {
+  Sandpile,
+  Percolation,
+  FoldCatastrophe,
+  CuspCatastrophe,
+  SwallowtailCatastrophe,
+  ButterflyCatastrophe,
+  takensEmbedding,
+  largestLyapunov,
+  correlationDimension,
+  recurrencePlot,
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// 7. ГЛАВНАЯ ФУНКЦИЯ ИНТЕГРАЦИИ С CRUCIX
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Полный physics-inspired анализ для Crucix.
+ *
+ * Запускает:
+ *   1. SOC — песочная горка, оценка τ, критичность
+ *   2. Percolation — близость к порогу pc
+ *   3. Catastrophe Theory — cusp-модель бистабильности
+ *   4. Chaos — Lyapunov, correlation dimension, recurrence
+ *
+ * @param {Array} history — массив sweep-объектов
+ * @param {Object} options — параметры
+ * @returns {Object} — агрегированный результат
+ */
+export function crucixPhysicsInspired(history, options = {}) {
+  if (!history || history.length < 20) {
+    return {
+      module: 'physics_inspired',
+      available: false,
+      reason: 'insufficient_history',
+      minimumRequired: 20,
+      actual: history.length,
+    };
+  }
+
+  const t0 = Date.now();
+  console.log(`[physics_inspired] Запуск на ${history.length} sweep'ах`);
+
+  const result = {
+    module: 'physics_inspired',
+    available: true,
+    timestamp: new Date().toISOString(),
+    nSweeps: history.length,
+  };
+
+  // 1. SOC
+  try {
+    result.soc = crucixSOC(history, options.soc || {});
+  } catch (e) {
+    result.soc = { error: e.message };
+  }
+
+  // 2. Percolation
+  try {
+    result.percolation = crucixPercolation(history, options.percolation || {});
+  } catch (e) {
+    result.percolation = { error: e.message };
+  }
+
+  // 3. Catastrophe Theory
+  try {
+    result.catastrophe = crucixCatastrophe(history);
+  } catch (e) {
+    result.catastrophe = { error: e.message };
+  }
+
+  // 4. Chaos
+  try {
+    result.chaos = crucixChaos(history);
+  } catch (e) {
+    result.chaos = { error: e.message };
+  }
+
+  result.elapsedMs = Date.now() - t0;
+
+  // Сохранение
+  const dir = join(__dirname, '..', '..', '..', 'runs', 'predictions');
+  ensureDir(dir);
+  saveJSON(join(dir, 'physics_inspired.json'), result);
+
+  console.log(`[physics_inspired] Цикл завершён за ${result.elapsedMs}ms`);
+  return result;
+}

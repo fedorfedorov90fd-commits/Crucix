@@ -1,0 +1,82 @@
+============================================================
+MCP-СЕРВЕР (Model Context Protocol)
+============================================================
+Версия: 1.0.0
+Порт: 3150
+Статус: ✅ РАБОТАЕТ
+
+ОПИСАНИЕ
+---------
+MCP-совместимый сервер для подключения AI-агентов (Claude, Cursor)
+к данным Crucix. Позволяет агентам напрямую запрашивать данные
+через единый протокол.
+
+ФУНКЦИИ
+--------
+- 7 встроенных инструментов для AI-агентов
+- Получение рисков стран
+- Глобальный AI-брифинг
+- Рыночные данные
+- События конфликтов
+- Статус морских узких мест
+- Авиационные данные
+- Морская активность
+
+API ЭНДПОИНТЫ
+-------------
+GET    /mcp/tools                - Список доступных инструментов
+POST   /mcp/call                 - Вызов инструмента
+
+ДОСТУПНЫЕ ИНСТРУМЕНТЫ
+---------------------
+get_country_risk      - Индекс риска и устойчивости страны
+get_world_brief       - Глобальный AI-брифинг
+get_market_data       - Рыночные данные (акции, сырьё, крипто)
+get_conflict_events   - События конфликтов по стране
+get_chokepoint_status - Статус морских узких мест
+get_aviation_status   - Данные по авиации
+get_maritime_activity - Морская активность (AIS)
+
+ПРИМЕРЫ ЗАПРОСОВ
+----------------
+# Список инструментов
+curl http://localhost:3150/mcp/tools
+
+# Риск страны
+curl -X POST http://localhost:3150/mcp/call \
+  -H "Content-Type: application/json" \
+  -d '{"tool": "get_country_risk", "arguments": {"country": "IR"}}'
+
+# Глобальный брифинг
+curl -X POST http://localhost:3150/mcp/call \
+  -H "Content-Type: application/json" \
+  -d '{"tool": "get_world_brief", "arguments": {}}'
+
+# Рыночные данные
+curl -X POST http://localhost:3150/mcp/call \
+  -H "Content-Type: application/json" \
+  -d '{"tool": "get_market_data", "arguments": {"asset_class": "all"}}'
+
+ПОДКЛЮЧЕНИЕ К CLAUDE DESKTOP
+----------------------------
+Добавьте в claude_desktop_config.json:
+
+{
+  "mcpServers": {
+    "crucix": {
+      "url": "http://localhost:3150/mcp"
+    }
+  }
+}
+
+ЗАВИСИМОСТИ
+-----------
+- Node.js v22+
+- RAG-модуль (порт 3120) для брифинга
+
+УСТАНОВКА
+---------
+cd /home/ta8_/Рабочий стол/Crucix/crucix-extensions/mcp-server
+npm install
+node index.mjs
+============================================================

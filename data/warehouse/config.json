@@ -1,0 +1,46 @@
+{
+  "$schema_version": "crucix.warehouse.config.v1",
+  "description": "Настройки склада Crucix. Управляют лимитами хранения сырья в data/raw/, политикой утилизации и порогами качества. Правятся вручную пользователем. Менеджер склада managerbasket.mjs читает этот файл при каждом запуске.",
+  "raw": {
+    "max_bytes": 1073741824,
+    "max_bytes_human": "1 ГБ",
+    "eviction_policy": "tiered",
+    "tier_thresholds_days": {
+      "fresh": 7,
+      "working": 30
+    },
+    "eviction_check_interval": "on_normalize",
+    "eviction_target_ratio": 0.9,
+    "keep_min_files": 100,
+    "keep_min_days": 1,
+    "log_file": "data/warehouse/eviction.log"
+  },
+  "incoming": {
+    "directory": "data/warehouse/incoming",
+    "archive_directory": "data/warehouse/incoming/archive",
+    "archive_after_days": 30,
+    "archive_format": "json.gz"
+  },
+  "manifest": {
+    "file": "data/warehouse/manifest.json",
+    "quality_thresholds": {
+      "stale_days": 7,
+      "broken_days": 30
+    }
+  },
+  "manager": {
+    "batch_size": 50,
+    "concurrency": 1,
+    "retry_on_adapter_error": 0,
+    "quarantine_after_failures": 3
+  },
+  "adapters": {
+    "directory": "scripts/warehouse/adapters",
+    "default_format_hint": "unknown"
+  },
+  "monitoring": {
+    "enable_center_page": true,
+    "raw_usage_warning_percent": 80,
+    "raw_usage_critical_percent": 95
+  }
+}

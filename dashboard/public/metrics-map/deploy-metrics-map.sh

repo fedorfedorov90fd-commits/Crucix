@@ -1,0 +1,65 @@
+#!/bin/bash
+# ============================================================
+# DEPLOY METRICS MAP — копирование данных из geo-map
+# ============================================================
+set -e
+
+PUBLIC_DIR="/home/ta8_/Рабочий стол/Crucix/dashboard/public"
+METRICS_DIR="$PUBLIC_DIR/metrics-map"
+GEO_MAP="$PUBLIC_DIR/geo-map"
+
+echo "🚀 Deploy Metrics Map"
+echo ""
+
+# 1. Создать структуру
+mkdir -p "$METRICS_DIR/data" "$METRICS_DIR/js" "$METRICS_DIR/css" "$METRICS_DIR/presets"
+echo "✅ Структура создана"
+
+# 2. Скопировать world.geojson
+if [ -f "$PUBLIC_DIR/world.geojson" ]; then
+    cp "$PUBLIC_DIR/world.geojson" "$METRICS_DIR/data/world.geojson"
+    echo "✅ world.geojson ← $PUBLIC_DIR"
+elif [ -f "$GEO_MAP/world.geojson" ]; then
+    cp "$GEO_MAP/world.geojson" "$METRICS_DIR/data/world.geojson"
+    echo "✅ world.geojson ← $GEO_MAP"
+elif [ -f "$GEO_MAP/data/world.geojson" ]; then
+    cp "$GEO_MAP/data/world.geojson" "$METRICS_DIR/data/world.geojson"
+    echo "✅ world.geojson ← $GEO_MAP/data"
+else
+    echo "❌ world.geojson не найден!"
+    exit 1
+fi
+
+# 3. Скопировать countries.js
+if [ -f "$GEO_MAP/js/countries.js" ]; then
+    cp "$GEO_MAP/js/countries.js" "$METRICS_DIR/js/countries.js"
+    echo "✅ countries.js ← $GEO_MAP/js"
+elif [ -f "$GEO_MAP/js/COUNTRIES.JS" ]; then
+    cp "$GEO_MAP/js/COUNTRIES.JS" "$METRICS_DIR/js/countries.js"
+    echo "✅ countries.js ← $GEO_MAP/js/COUNTRIES.JS"
+else
+    echo "⚠️ countries.js не найден в geo-map. Используем существующий."
+fi
+
+# 4. Проверки
+echo ""
+echo "=== Проверки ==="
+if [ -f "$METRICS_DIR/data/world.geojson" ]; then
+    SIZE=$(wc -c < "$METRICS_DIR/data/world.geojson")
+    echo "✅ data/world.geojson: $SIZE байт"
+fi
+if [ -f "$METRICS_DIR/js/countries.js" ]; then
+    SIZE=$(wc -c < "$METRICS_DIR/js/countries.js")
+    echo "✅ js/countries.js: $SIZE байт"
+fi
+if [ -f "$METRICS_DIR/js/layers.js" ]; then
+    COUNT=$(grep -c 'id:' "$METRICS_DIR/js/layers.js" || echo "0")
+    echo "✅ js/layers.js: $COUNT слоёв"
+fi
+
+echo ""
+echo "════════════════════════════════════════════"
+echo "✅ Metrics Map готов к запуску"
+echo "════════════════════════════════════════════"
+echo ""
+echo "Откройте: http://localhost:PORT/metrics-map/"

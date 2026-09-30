@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crucix — Semantic Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+    <link rel="stylesheet" href="css/semantic-map.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <script>window.CrucixMap = { mapType: 'meanings', name: 'Crucix Semantic Map' };</script>
+</head>
+<body>
+    <header class="topbar">
+        <div class="topbar-left">
+            <span class="topbar-brand" id="brand-text">CRUCIX SEMANTIC</span>
+        </div>
+        <div class="topbar-right">
+            <div class="map-switcher">
+                <a class="map-switch-btn" data-map="events" href="/dashboard/event-map/">Events</a>
+                <a class="map-switch-btn" data-map="metrics" href="/dashboard/metrics-map/">Metrics</a>
+                <a class="map-switch-btn active" data-map="semantic" href="/dashboard/semantic-map/">Semantic</a>
+                <a class="map-switch-btn" data-map="forecast" href="/dashboard/forecast-map/">Forecast</a>
+                <a class="map-switch-btn" data-map="network" href="/dashboard/network-map/">Network</a>
+            </div>
+            <button class="topbar-btn" onclick="window.location.href='/jarvis'">НА ГЛАВНУЮ</button>
+            <button class="topbar-btn" id="copy-btn" onclick="copyAllData()">КОПИРОВАТЬ</button>
+            <button class="topbar-btn" onclick="window.location.href='/registry'">СПИСОК</button>
+            <button class="topbar-btn" onclick="openHelp()">HELP</button>
+            <button class="topbar-btn" id="btn-heat" onclick="toggleHeat()">ТЕПЛОВАЯ</button>
+            <button class="topbar-btn" id="btn-timeline" onclick="toggleTimeline()">ХРОНОЛОГИЯ</button>
+            <div class="lang-switch">
+                <button class="lang-btn active" data-lang="ru" onclick="setLanguage('ru')">RU</button>
+                <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">EN</button>
+            </div>
+        </div>
+    </header>
+
+    <button class="panel-toggle-btn" id="panel-toggle-btn" onclick="toggleLayerPanel()">LIST</button>
+
+    <div class="layer-panel" id="layer-panel">
+        <div class="layer-panel-header">
+            <span class="layer-panel-title">СЛОИ <span class="count" id="layer-count">0</span></span>
+            <button class="layer-panel-toggle" onclick="toggleLayerPanel()">X</button>
+        </div>
+        <input class="layer-search" id="layer-search" type="text" placeholder="Поиск слоев..." oninput="filterLayers()">
+        <div id="layer-list"></div>
+    </div>
+
+    <div class="map-container" id="map-container">
+        <div id="crucix-map"></div>
+        <div class="loading-overlay" id="loading-overlay">
+            <div class="spinner"></div>
+            <div class="text">ЗАГРУЗКА SEMANTIC MAP...</div>
+        </div>
+        <div id="choropleth-legend"></div>
+        <div class="stats" id="stats">
+            <div class="count" id="marker-count">0</div>
+            <div class="label">объектов</div>
+            <div class="countries-count" id="countries-count">0 стран</div>
+        </div>
+        <div class="ssi-panel" id="ssi-panel">
+            <div class="ssi-title">SSI</div>
+            <div class="ssi-bar"><div class="ssi-fill" id="ssi-fill"></div></div>
+            <div class="ssi-value" id="ssi-label">0%</div>
+        </div>
+        <div class="timeline-panel" id="timeline-panel">
+            <div class="timeline-title">
+                <span>Хронология</span>
+                <button onclick="toggleTimeline()" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.06);color:#8899aa;border-radius:4px;padding:2px 12px;cursor:pointer;">X</button>
+            </div>
+            <div class="timeline-track" id="timeline-track"></div>
+        </div>
+    </div>
+
+    <script src="js/logger.js"></script>
+    <script src="js/core.js"></script>
+    <script src="js/countries.js"></script>
+    <script src="js/layers.js"></script>
+    <script src="js/maps-config.js"></script>
+    <script src="js/sentiment-adapter.js"></script>
+    <script src="js/map-controls.js"></script>
+    <script src="js/markers.js"></script>
+    <script src="js/semantic-map.js"></script>
+    <script src="js/copy-data.js"></script>
+    <script src="js/show-notification.js"></script>
+    <script src="js/ssi.js"></script>
+    <script src="js/cii.js"></script>
+    <script src="js/heat-timeline.js"></script>
+    <script src="js/refresh.js"></script>
+    <script src="blocks/topbar.js"></script>
+    <script src="blocks/dashboards-nav.js"></script>
+    <script src="blocks/layer-panel.js"></script>
+    <script src="js/init.js"></script>
+</body>
+</html>

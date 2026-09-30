@@ -1,0 +1,36 @@
+{
+  "_meta": {
+    "id": "alert-dispatcher",
+    "category": "specialist",
+    "version": "1.0.0",
+    "schema_version": "1.0.0",
+    "sources": [
+      "self"
+    ],
+    "calculator": "AlertDispatcher",
+    "updated_at": "2026-09-12T15:20:22.154Z",
+    "duration_ms": 5,
+    "checksum": "7d20ac3943813735",
+    "stats": {
+      "channels": 2,
+      "rules": 1,
+      "totalDispatched": 1
+    }
+  },
+  "data": {
+    "items": [],
+    "extra": {
+      "testDispatched": [
+        {
+          "channel": "log",
+          "status": "ok"
+        },
+        {
+          "channel": "telegram",
+          "status": "ok"
+        }
+      ]
+    },
+    "generated_at": "2026-09-12T15:20:22.154Z"
+  }
+}

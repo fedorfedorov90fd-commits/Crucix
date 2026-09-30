@@ -1,0 +1,25 @@
+=== GPS JAMMING DETECTOR ===
+URL: /gps-jamming
+Module: GPS Jamming Detector
+Category: Military Monitoring
+Icon: 📡
+
+DESCRIPTION:
+Monitoring of GPS signal loss over regions.
+Early indicator of military operations and EW use.
+
+FUNCTIONALITY:
+- Display jamming zones on map
+- Color coding by intensity:
+  🔴 CRITICAL (full jamming)
+  🟡 HIGH (partial jamming)
+  🟢 NORMAL (no jamming)
+- Timeline by region
+- Escalation forecast
+
+DATA SOURCES:
+- OpenSky Network (aviation data)
+- Anomaly analysis in signals
+
+HELP FILE: /data/help/en/gps-jamming.txt
+LAST UPDATED: 2026-08-21

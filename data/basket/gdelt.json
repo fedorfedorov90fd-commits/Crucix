@@ -1,0 +1,45 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "gdelt",
+    "source": "GDELT Doc API",
+    "source_url": "https://api.gdeltproject.org/api/v2/doc/doc?mode=artlist",
+    "fetched_at": "2026-09-23T13:41:27.506Z",
+    "normalized_at": "2026-09-23T17:51:50.816Z",
+    "collector": "collect-gdelt.mjs",
+    "license": "cc-by",
+    "count": 0,
+    "granularity": "snapshot",
+    "value_unit": "count",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null
+  },
+  "series": [],
+  "points": [],
+  "regions": [],
+  "documents": [],
+  "graph": null,
+  "extra": {
+    "adapter": "events",
+    "adapter_version": "2.2.0",
+    "total_events": 0,
+    "unique_dates": 0,
+    "skipped_no_date": 0,
+    "skipped_no_text": 0,
+    "points_from_centroids": 0,
+    "documents_count": 0,
+    "unmapped_regions": [],
+    "unmapped_count": 0,
+    "source": "GDELT",
+    "lastUpdated": "2026-09-23T13:41:27.500Z",
+    "queries": [
+      "ukraine",
+      "russia",
+      "israel gaza",
+      "china taiwan"
+    ],
+    "count": 0,
+    "inner_array_key": "articles"
+  }
+}

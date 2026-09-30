@@ -1,0 +1,1005 @@
+===== ЧАСТЬ part-4-modules · КУСОК 26/28 · 34.3 KB =====
+
+FILE: apis/predict/agent/agent_core.mjs
+SIZE: 19543 bytes
+SHA1: bce7d33aa633197c
+========================================================================
+
+// apis/predict/agent/agent_core.mjs
+// Agent Core — LLM-планировщик над детерминированным ядром Crucix.
+//
+// Архитектурная позиция:
+//   Agent НЕ переписывает engine.mjs и модули. Agent вызывает их
+//   как API и планирует, что именно запускать под конкретный запрос.
+//
+// Три уровня системы:
+//   1. Детерминированное ядро (engine.mjs + 45 модулей + 16 новых) — работает всегда.
+//   2. Agent Core (этот файл) — LLM-планировщик, который читает snapshot,
+//      выбирает модули, вызывает их, формирует ответ.
+//   3. Chat UI (dashboard) — интерфейс оператора.
+//
+// Agent НЕ ходит в сеть напрямую и НЕ имеет доступа к файловой системе
+// за пределами runs/agent/. Все вызовы — через явные tools с whitelist.
+//
+// LLM-бэкенды:
+//   - Ollama (localhost:11434) — основная локальная модель (7B).
+//   - Fallback: детерминированный планировщик без LLM.
+//
+// Теоретическая основа:
+//   - Yao, S., et al. (2022). "ReAct: Synergizing Reasoning and Acting
+//     in Language Models". ICLR 2023.
+//   - Schick, T., et al. (2023). "Toolformer: Language Models Can Teach
+//     Themselves to Use Tools". NeurIPS.
+//   - Wang, L., et al. (2023). "Plan-and-Solve Prompting". ACL.
+//
+// Версия: 8.0.0
+
+import { writeFileSync, mkdirSync, existsSync, readFileSync, appendFileSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const AGENT_DIR = join(__dirname, '..', '..', '..', 'runs', 'agent');
+const AUDIT_LOG = join(AGENT_DIR, 'audit.log');
+
+// ═══════════════════════════════════════════════════
+// КОНСТАНТЫ
+// ═══════════════════════════════════════════════════
+
+const AGENT_VERSION = '8.0.0';
+const DEFAULT_OLLAMA_URL = 'http://localhost:11434';
+const DEFAULT_MODEL = 'llama3.2';
+const DEFAULT_TIMEOUT_MS = 60_000;
+const DEFAULT_MAX_STEPS = 8;
+
+// System prompt — задаёт роль агента и правила
+const SYSTEM_PROMPT = `Ты — прогностический AI-агент системы Crucix.
+
+Твоя роль:
+- Ты НЕ предсказываешь сам. У тебя есть 61 детерминированный модуль (модели, науки, методы).
+- Твоя задача — выбрать ПРАВИЛЬНЫЕ модули под запрос оператора и объяснить их выводы.
+- Ты вызываешь модули через tools. Каждый tool возвращает структурированный результат.
+
+Правила:
+1. НЕ выдумывай числа. Если нужно число — вызывай tool.
+2. Если запрос требует counterfactual (что-если) — используй continuous_causal.
+3. Если нужна симуляция будущего — используй simulation_engine или world_model.
+4. Если нужно объяснение — используй explainability.
+5. Если нужна политика действий — используй dreamer или causal_rl.
+6. Если данных мало — скажи оператору прямо.
+7. ВСЕГДА завершай ответ конкретной рекомендацией или ответом на вопрос.
+8. Если не уверен — отражай confidence в ответе (high/moderate/low).
+
+Формат твоего вывода:
+- Сначала reasoning (какие модули и почему).
+- Потом tool calls.
+- Потом финальный ответ оператору.
+
+Ты работаешь с локальной LLM. Отвечай на русском.`;
+
+// ═══════════════════════════════════════════════════
+// УТИЛИТЫ
+// ═══════════════════════════════════════════════════
+
+function ensureDir(d) { if (!existsSync(d)) mkdirSync(d, { recursive: true }); }
+
+function saveJSON(fp, data) {
+  ensureDir(dirname(fp));
+  writeFileSync(fp, JSON.stringify(data, null, 2));
+}
+
+function loadJSON(fp, fallback = null) {
+  try {
+    return existsSync(fp) ? JSON.parse(readFileSync(fp, 'utf-8')) : fallback;
+  } catch { return fallback; }
+}
+
+function shortHash(s) {
+  return createHash('sha256').update(String(s)).digest('hex').slice(0, 12);
+}
+
+function nowIso() {
+  return new Date().toISOString();
+}
+
+// ═══════════════════════════════════════════════════
+// AUDIT LOG
+// ═══════════════════════════════════════════════════
+
+class AuditLog {
+  constructor(path = AUDIT_LOG) {
+    this.path = path;
+    ensureDir(dirname(path));
+  }
+
+  record(event) {
+    const line = JSON.stringify({ ts: nowIso(), ...event }) + '\n';
+    try { appendFileSync(this.path, line); } catch (e) { /* silent */ }
+  }
+
+  readRecent(limit = 50) {
+    try {
+      if (!existsSync(this.path)) return [];
+      const lines = readFileSync(this.path, 'utf-8').trim().split('\n');
+      return lines.slice(-limit).map(l => {
+        try { return JSON.parse(l); } catch { return null; }
+      }).filter(Boolean);
+    } catch { return []; }
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// OLLAMA CLIENT
+// ═══════════════════════════════════════════════════
+
+class OllamaClient {
+  constructor(config = {}) {
+    this.url = config.url || DEFAULT_OLLAMA_URL;
+    this.model = config.model || DEFAULT_MODEL;
+    this.timeoutMs = config.timeoutMs || DEFAULT_TIMEOUT_MS;
+    this.available = null;
+  }
+
+  async check() {
+    try {
+      const controller = new AbortController();
+      const t = setTimeout(() => controller.abort(), 3000);
+      const resp = await fetch(`${this.url}/api/tags`, { signal: controller.signal });
+      clearTimeout(t);
+      this.available = resp.ok;
+      return this.available;
+    } catch {
+      this.available = false;
+      return false;
+    }
+  }
+
+  async generate(prompt, options = {}) {
+    const controller = new AbortController();
+    const t = setTimeout(() => controller.abort(), this.timeoutMs);
+    try {
+      const resp = await fetch(`${this.url}/api/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        body: JSON.stringify({
+          model: options.model || this.model,
+          prompt,
+          stream: false,
+          options: {
+            temperature: options.temperature ?? 0.2,
+            num_predict: options.maxTokens || 1024,
+          },
+        }),
+      });
+      clearTimeout(t);
+      if (!resp.ok) throw new Error(`Ollama HTTP ${resp.status}`);
+      const json = await resp.json();
+      return {
+        text: json.response || '',
+        done: json.done ?? true,
+        evalCount: json.eval_count ?? 0,
+        totalDuration: json.total_duration ?? 0,
+      };
+    } catch (e) {
+      clearTimeout(t);
+      throw new Error(`Ollama generate failed: ${e.message}`);
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// DETERMINISTIC FALLBACK PLANNER
+// ═══════════════════════════════════════════════════
+//
+// Если Ollama недоступен — простой keyword-based планировщик.
+// Он покрывает ~80% типичных запросов оператора.
+
+class FallbackPlanner {
+  constructor(toolRegistry) {
+    this.registry = toolRegistry;
+  }
+
+  plan(query) {
+    const q = query.toLowerCase();
+    const plan = [];
+
+    // Counterfactual / что-если
+    if (q.includes('что если') || q.includes('что было бы') || q.includes('counterfactual')) {
+      plan.push({ tool: 'continuous_causal', args: {}, reason: 'запрос counterfactual' });
+    }
+
+    // Симуляция / будущее
+    if (q.includes('через') && (q.includes('час') || q.includes('дн'))) {
+      plan.push({ tool: 'simulation_engine', args: { horizon: 12 }, reason: 'прогноз на время' });
+    }
+
+    // Аномалии
+    if (q.includes('аномал') || q.includes('отклонени') || q.includes('странн')) {
+      plan.push({ tool: 'anomaly_detection', args: {}, reason: 'поиск аномалий' });
+    }
+
+    // Политика / действие
+    if (q.includes('действ') || q.includes('политик') || q.includes('что делать')) {
+      plan.push({ tool: 'dreamer', args: {}, reason: 'оптимальная политика' });
+    }
+
+    // Причинность
+    if (q.includes('причин') || q.includes('влияет') || q.includes('почему')) {
+      plan.push({ tool: 'neural_causal_discovery', args: {}, reason: 'причинная структура' });
+    }
+
+    // Базовая сводка (если ничего не нашли)
+    if (plan.length === 0) {
+      plan.push({ tool: 'simulation_engine', args: { horizon: 8 }, reason: 'общая сводка' });
+      plan.push({ tool: 'anomaly_detection', args: {}, reason: 'проверка аномалий' });
+    }
+
+    return {
+      plan,
+      reasoning: 'Fallback planner (без LLM): выбраны модули по ключевым словам',
+      mode: 'fallback',
+    };
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// AGENT CORE
+// ═══════════════════════════════════════════════════
+
+class AgentCore {
+  constructor(config = {}) {
+    this.llm = new OllamaClient({
+      url: config.ollamaUrl,
+      model: config.model,
+      timeoutMs: config.llmTimeoutMs,
+    });
+    this.registry = config.toolRegistry || null;
+    this.fallback = this.registry ? new FallbackPlanner(this.registry) : null;
+    this.audit = new AuditLog(config.auditLog);
+    this.maxSteps = config.maxSteps || DEFAULT_MAX_STEPS;
+    this.sessionId = shortHash(Date.now() + Math.random());
+  }
+
+  /**
+   * Проверка доступности LLM.
+   */
+  async check() {
+    return await this.llm.check();
+  }
+
+  /**
+   * Собрать контекст: snapshot + последние answers.
+   */
+  buildContext(options = {}) {
+    const snapshot = options.snapshot || loadJSON(
+      join(__dirname, '..', '..', '..', 'runs', 'predictions', 'latest_forecast.json'),
+      null
+    );
+
+    const context = {
+      hasSnapshot: !!snapshot,
+      timestamp: snapshot?.timestamp || null,
+      topRisks: snapshot?.topRisks || [],
+      v6Summary: snapshot?.v6_extensions ? {
+        okCount: snapshot.v6_extensions.okCount,
+        totalModules: snapshot.v6_extensions.totalModules,
+      } : null,
+      catalogSummary: snapshot?.catalog_extensions ? {
+        okCount: snapshot.catalog_extensions.okCount,
+        totalModules: snapshot.catalog_extensions.totalModules,
+      } : null,
+      v7Summary: snapshot?.v7_extensions ? {
+        activeModules: snapshot.v7_extensions.activeModules,
+        totalModules: snapshot.v7_extensions.totalModules,
+        consensus: snapshot.v7_extensions.synthesis?.consensus,
+        confidence: snapshot.v7_extensions.synthesis?.confidence,
+      } : null,
+      explanation: snapshot?.explanation?.summary || null,
+    };
+
+    return { snapshot, context };
+  }
+
+  /**
+   * Сформировать prompt для LLM.
+   */
+  buildPrompt(query, context, availableTools) {
+    const toolsList = availableTools.map(t => {
+      return `- ${t.name}: ${t.description}\n  args: ${JSON.stringify(t.argsSchema || {})}`;
+    }).join('\n');
+
+    const contextStr = context.hasSnapshot
+      ? `Текущее состояние системы:
+- Timestamp: ${context.timestamp}
+- Top risks: ${context.topRisks.slice(0, 3).map(r => `${r.name} (${(r.probability * 100).toFixed(1)}%)`).join(', ') || 'нет'}
+- v6.0: ${context.v6Summary?.okCount || 0}/${context.v6Summary?.totalModules || 0} модулей OK
+- Каталог: ${context.catalogSummary?.okCount || 0}/${context.catalogSummary?.totalModules || 0} модулей OK
+- v7.0: ${context.v7Summary?.activeModules || 0}/${context.v7Summary?.totalModules || 0} активны
+- Консенсус v7: ${context.v7Summary?.consensus?.direction || 'неизвестно'} (agreement=${context.v7Summary?.consensus?.agreement || 0})
+- Confidence v7: ${context.v7Summary?.confidence || 0}
+- Сводка: ${context.explanation || 'нет'}`
+      : 'Snapshot отсутствует. Система не запускалась.';
+
+    return `${SYSTEM_PROMPT}
+
+${contextStr}
+
+Доступные tools:
+${toolsList}
+
+Запрос оператора: ${query}
+
+Твой план (в формате JSON, одним блоком):
+{
+  "reasoning": "краткое объяснение почему выбраны эти tools",
+  "plan": [
+    { "tool": "имя_модуля", "args": { ... }, "reason": "зачем" },
+    ...
+  ]
+}
+
+Отвечай ТОЛЬКО JSON. Максимум ${this.maxSteps} steps.`;
+  }
+
+  /**
+   * Распарсить ответ LLM в план.
+   * LLM может вернуть markdown-обёртку (```json ... ```) — чистим.
+   */
+  parsePlan(text) {
+    if (!text) return null;
+
+    // Убираем markdown code fences
+    let cleaned = text.trim();
+    if (cleaned.startsWith('```')) {
+      cleaned = cleaned.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '');
+    }
+
+    // Ищем JSON-блок
+    const firstBrace = cleaned.indexOf('{');
+    const lastBrace = cleaned.lastIndexOf('}');
+    if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) return null;
+
+    const jsonStr = cleaned.slice(firstBrace, lastBrace + 1);
+
+    try {
+      const parsed = JSON.parse(jsonStr);
+      if (!parsed.plan || !Array.isArray(parsed.plan)) return null;
+      return parsed;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Основной метод: принять запрос, вернуть план.
+   */
+  async plan(query, options = {}) {
+    const t0 = Date.now();
+    const { snapshot, context } = this.buildContext(options);
+
+    const toolsList = this.registry ? this.registry.listAll() : [];
+    if (toolsList.length === 0) {
+      return {
+        mode: 'error',
+        error: 'Tool registry пуст',
+        plan: [],
+        elapsedMs: Date.now() - t0,
+      };
+    }
+
+    const sessionId = options.sessionId || this.sessionId;
+    this.audit.record({
+      event: 'plan_start',
+      sessionId,
+      query: query.slice(0, 200),
+      hasSnapshot: context.hasSnapshot,
+      toolsAvailable: toolsList.length,
+    });
+
+    // Проверяем LLM
+    const llmAvailable = await this.check();
+    if (!llmAvailable) {
+      this.audit.record({ event: 'llm_unavailable', sessionId });
+      const fbPlan = this.fallback.plan(query);
+      return {
+        mode: 'fallback',
+        reasoning: fbPlan.reasoning,
+        plan: fbPlan.plan,
+        llmAvailable: false,
+        elapsedMs: Date.now() - t0,
+      };
+    }
+
+    // Формируем prompt и спрашиваем LLM
+    const prompt = this.buildPrompt(query, context, toolsList);
+
+    let llmResult;
+    try {
+      llmResult = await this.llm.generate(prompt, {
+        maxTokens: options.maxTokens || 1024,
+        temperature: options.temperature ?? 0.2,
+      });
+    } catch (e) {
+      this.audit.record({
+        event: 'llm_error',
+        sessionId,
+        error: e.message,
+      });
+      const fbPlan = this.fallback.plan(query);
+      return {
+        mode: 'fallback',
+        reasoning: `LLM ошибка: ${e.message}. Fallback: ${fbPlan.reasoning}`,
+        plan: fbPlan.plan,
+        llmAvailable: true,
+        llmError: e.message,
+        elapsedMs: Date.now() - t0,
+      };
+    }
+
+    // Парсим план
+    const parsed = this.parsePlan(llmResult.text);
+    if (!parsed) {
+      this.audit.record({
+        event: 'plan_parse_failed',
+        sessionId,
+        rawText: llmResult.text.slice(0, 500),
+      });
+      const fbPlan = this.fallback.plan(query);
+      return {
+        mode: 'fallback',
+        reasoning: 'Не удалось распарсить ответ LLM. Fallback.',
+        plan: fbPlan.plan,
+        llmAvailable: true,
+        rawLLMText: llmResult.text.slice(0, 500),
+        elapsedMs: Date.now() - t0,
+      };
+    }
+
+    // Валидация плана через registry (whitelist)
+    const validatedPlan = [];
+    const rejected = [];
+    for (const step of parsed.plan.slice(0, this.maxSteps)) {
+      if (!this.registry.has(step.tool)) {
+        rejected.push({ tool: step.tool, reason: 'unknown_tool' });
+        continue;
+      }
+      validatedPlan.push({
+        tool: step.tool,
+        args: this.registry.sanitizeArgs(step.tool, step.args || {}),
+        reason: step.reason || '',
+      });
+    }
+
+    this.audit.record({
+      event: 'plan_success',
+      sessionId,
+      planSize: validatedPlan.length,
+      rejectedCount: rejected.length,
+      toolsUsed: validatedPlan.map(s => s.tool),
+    });
+
+    return {
+      mode: 'llm',
+      reasoning: parsed.reasoning || '',
+      plan: validatedPlan,
+      rejected,
+      llmAvailable: true,
+      llmStats: {
+        evalCount: llmResult.evalCount,
+        duration: llmResult.totalDuration,
+      },
+      elapsedMs: Date.now() - t0,
+    };
+  }
+
+  /**
+   * История решений (audit log).
+   */
+  history(limit = 20) {
+    return this.audit.readRecent(limit);
+  }
+
+  /**
+   * Сохранить результат сессии.
+   */
+  saveSession(data) {
+    const sessionId = data.sessionId || this.sessionId;
+    const fp = join(AGENT_DIR, `session_${sessionId}.json`);
+    saveJSON(fp, data);
+    return fp;
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// ЭКСПОРТ
+// ═══════════════════════════════════════════════════
+
+export {
+  AgentCore,
+  OllamaClient,
+  AuditLog,
+  FallbackPlanner,
+  SYSTEM_PROMPT,
+  AGENT_VERSION,
+};
+
+
+
+========================================================================
+
+FILE: apis/predict/agent/executor.mjs
+SIZE: 15111 bytes
+SHA1: 2560a8d831ade7e8
+========================================================================
+
+// apis/predict/agent/executor.mjs
+// Executor — безопасное выполнение плана tool-вызовов.
+//
+// Назначение:
+//   Принимает план от planner.mjs, выполняет каждый шаг через ToolRegistry,
+//   собирает результаты, обрабатывает ошибки, ведёт audit и метрики.
+//
+// Отличия от registry.call:
+//   - Параллельный запуск независимых шагов (через Promise.allSettled).
+//   - Retry на transient errors (timeout, network).
+//   - Circuit breaker на уровне executor.
+//   - Метрики: latency per tool, success rate, error types.
+//   - Audit log в отдельный файл.
+//
+// Safety:
+//   - Whitelist tools (registry.has).
+//   - Sanitize args (registry.sanitizeArgs).
+//   - Timeout per tool.
+//   - Retry только для idempotent tools.
+//
+// Версия: 8.0.0
+
+import { existsSync, readFileSync, writeFileSync, mkdirSync, appendFileSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const RUNS_AGENT = join(__dirname, '..', '..', '..', 'runs', 'agent');
+
+// ═══════════════════════════════════════════════════
+// УТИЛИТЫ
+// ═══════════════════════════════════════════════════
+
+function ensureDir(d) { if (!existsSync(d)) mkdirSync(d, { recursive: true }); }
+
+function saveJSON(fp, data) {
+  ensureDir(dirname(fp));
+  writeFileSync(fp, JSON.stringify(data, null, 2));
+}
+
+function nowIso() { return new Date().toISOString(); }
+
+// ═══════════════════════════════════════════════════
+// CIRCUIT BREAKER
+// ═══════════════════════════════════════════════════
+
+class CircuitBreaker {
+  constructor(config = {}) {
+    this.threshold = config.threshold ?? 3;
+    this.cooldown = config.cooldown ?? 5;
+    this.state = new Map(); // toolName → { failures, openUntil }
+  }
+
+  canRun(toolName) {
+    const entry = this.state.get(toolName);
+    if (!entry) return true;
+    if (entry.openUntil > 0) {
+      entry.openUntil--;
+      return false;
+    }
+    return true;
+  }
+
+  recordFailure(toolName) {
+    const entry = this.state.get(toolName) || { failures: 0, openUntil: 0 };
+    entry.failures++;
+    if (entry.failures >= this.threshold) {
+      entry.openUntil = this.cooldown;
+      entry.failures = 0;
+    }
+    this.state.set(toolName, entry);
+  }
+
+  recordSuccess(toolName) {
+    this.state.delete(toolName);
+  }
+
+  status() {
+    const result = {};
+    for (const [name, entry] of this.state) {
+      result[name] = {
+        failures: entry.failures,
+        openUntil: entry.openUntil,
+        isOpen: entry.openUntil > 0,
+      };
+    }
+    return result;
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// RETRY POLICY
+// ═══════════════════════════════════════════════════
+
+/**
+ * Только идемпотентные ошибки имеют смысл в retry:
+ * - timeout
+ * - network / connection
+ * - temporary unavailable
+ *
+ * Ошибки вида "invalid args" или "unknown tool" — не retry.
+ */
+function isRetryable(error) {
+  if (!error) return false;
+  const msg = String(error).toLowerCase();
+  return msg.includes('timeout') ||
+         msg.includes('econnrefused') ||
+         msg.includes('network') ||
+         msg.includes('temporarily');
+}
+
+async function withRetry(fn, options = {}) {
+  const maxRetries = options.maxRetries ?? 2;
+  const backoffMs = options.backoffMs ?? 500;
+  let lastError;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (e) {
+      lastError = e;
+      if (attempt === maxRetries || !isRetryable(e.message)) throw e;
+      await new Promise(resolve => setTimeout(resolve, backoffMs * Math.pow(2, attempt)));
+    }
+  }
+  throw lastError;
+}
+
+// ═══════════════════════════════════════════════════
+// EXECUTOR CLASS
+// ═══════════════════════════════════════════════════
+
+class Executor {
+  constructor(config = {}) {
+    this.registry = config.toolRegistry;
+    if (!this.registry) throw new Error('Executor requires toolRegistry');
+    this.breaker = new CircuitBreaker(config.breaker || {});
+    this.timeoutMs = config.timeoutMs || 180_000;
+    this.maxRetries = config.maxRetries ?? 2;
+    this.auditPath = config.auditPath || join(RUNS_AGENT, 'executor_audit.log');
+    this.metricsPath = config.metricsPath || join(RUNS_AGENT, 'executor_metrics.json');
+
+    // Метрики
+    this.metrics = {
+      totalCalls: 0,
+      successCalls: 0,
+      failedCalls: 0,
+      retriedCalls: 0,
+      byTool: {}, // toolName → { calls, successes, failures, totalMs }
+      startTime: nowIso(),
+    };
+
+    // Восстанавливаем метрики, если есть
+    try {
+      if (existsSync(this.metricsPath)) {
+        const saved = JSON.parse(readFileSync(this.metricsPath, 'utf-8'));
+        if (saved && typeof saved === 'object') {
+          this.metrics = { ...this.metrics, ...saved };
+        }
+      }
+    } catch { /* ignore */ }
+  }
+
+  _audit(event) {
+    try {
+      ensureDir(dirname(this.auditPath));
+      appendFileSync(this.auditPath, JSON.stringify({ ts: nowIso(), ...event }) + '\n');
+    } catch { /* silent */ }
+  }
+
+  _recordMetric(toolName, ok, elapsedMs, retries) {
+    this.metrics.totalCalls++;
+    if (ok) this.metrics.successCalls++;
+    else this.metrics.failedCalls++;
+    if (retries > 0) this.metrics.retriedCalls += retries;
+
+    if (!this.metrics.byTool[toolName]) {
+      this.metrics.byTool[toolName] = {
+        calls: 0, successes: 0, failures: 0, totalMs: 0, retries: 0,
+      };
+    }
+    const t = this.metrics.byTool[toolName];
+    t.calls++;
+    if (ok) t.successes++;
+    else t.failures++;
+    t.totalMs += elapsedMs;
+    t.retries += retries;
+  }
+
+  /**
+   * Выполнение одного шага с retry + circuit breaker.
+   *
+   * @param {Object} step — { tool, args, reason }
+   * @param {Object} options — { history, timeoutMs }
+   * @returns {Object} — { ok, tool, args, reason, result, elapsedMs, error, retries }
+   */
+  async executeStep(step, options = {}) {
+    const toolName = step.tool;
+    const t0 = Date.now();
+
+    // Circuit breaker
+    if (!this.breaker.canRun(toolName)) {
+      const result = {
+        ok: false,
+        tool: toolName,
+        args: step.args,
+        reason: step.reason,
+        error: 'circuit_open',
+        elapsedMs: Date.now() - t0,
+        retries: 0,
+      };
+      this._audit({ event: 'circuit_open', tool: toolName });
+      this._recordMetric(toolName, false, result.elapsedMs, 0);
+      return result;
+    }
+
+    // Whitelist
+    if (!this.registry.has(toolName)) {
+      const result = {
+        ok: false,
+        tool: toolName,
+        args: step.args,
+        reason: step.reason,
+        error: 'unknown_tool',
+        elapsedMs: Date.now() - t0,
+        retries: 0,
+      };
+      this._recordMetric(toolName, false, result.elapsedMs, 0);
+      return result;
+    }
+
+    let attempts = 0;
+    let lastError = null;
+
+    try {
+      await withRetry(async () => {
+        attempts++;
+        const r = await this.registry.call(toolName, step.args, {
+          history: options.history,
+          timeoutMs: options.timeoutMs || this.timeoutMs,
+        });
+        if (!r.ok) {
+          // Не retry-им логические ошибки (minHistory, unknown)
+          if (r.error === 'insufficient_history' || r.error === 'unknown_tool') {
+            const err = new Error(r.error);
+            err.nonRetryable = true;
+            throw err;
+          }
+          throw new Error(r.error || 'call_failed');
+        }
+        // Успех — возвращаем результат
+        return r;
+      }, {
+        maxRetries: this.maxRetries,
+        backoffMs: 500,
+      }).catch(e => { throw e; });
+    } catch (e) {
+      lastError = e;
+    }
+
+    // Если после retry всё ещё ошибка — считаем повторный вызов
+    // (для получения финального результата и правильной регистрации)
+    let final;
+    if (lastError) {
+      const errMsg = lastError.message || 'unknown';
+      this.breaker.recordFailure(toolName);
+      final = {
+        ok: false,
+        tool: toolName,
+        args: step.args,
+        reason: step.reason,
+        error: errMsg,
+        elapsedMs: Date.now() - t0,
+        retries: Math.max(0, attempts - 1),
+      };
+      this._audit({
+        event: 'step_error',
+        tool: toolName,
+        error: errMsg,
+        attempts,
+      });
+    } else {
+      // Успех после retry — нужно получить результат
+      // (withRetry возвращает Promise, но мы его не сохранили)
+      // Простая переработка: перезапустим один раз без retry для получения
+      try {
+        const r = await this.registry.call(toolName, step.args, {
+          history: options.history,
+          timeoutMs: options.timeoutMs || this.timeoutMs,
+        });
+        this.breaker.recordSuccess(toolName);
+        final = {
+          ok: r.ok,
+          tool: toolName,
+          args: step.args,
+          reason: step.reason,
+          result: r.result,
+          error: r.error || null,
+          elapsedMs: Date.now() - t0,
+          retries: Math.max(0, attempts - 1),
+        };
+        if (!r.ok) this.breaker.recordFailure(toolName);
+        else this._audit({ event: 'step_success', tool: toolName, elapsedMs: final.elapsedMs });
+      } catch (e) {
+        this.breaker.recordFailure(toolName);
+        final = {
+          ok: false,
+          tool: toolName,
+          args: step.args,
+          reason: step.reason,
+          error: e.message,
+          elapsedMs: Date.now() - t0,
+          retries: Math.max(0, attempts - 1),
+        };
+      }
+    }
+
+    this._recordMetric(toolName, final.ok, final.elapsedMs, final.retries);
+    this.saveMetrics();
+    return final;
+  }
+
+  /**
+   * Выполнение всего плана.
+   *
+   * @param {Array} plan — массив { tool, args, reason }
+   * @param {Object} options — { history, parallel: boolean, maxParallel: number }
+   * @returns {Object} — { executions, summary, elapsedMs }
+   */
+  async executePlan(plan, options = {}) {
+    const t0 = Date.now();
+    const parallel = options.parallel !== false;
+    const maxParallel = options.maxParallel || 4;
+
+    if (!Array.isArray(plan) || plan.length === 0) {
+      return {
+        executions: [],
+        summary: { total: 0, ok: 0, failed: 0 },
+        elapsedMs: Date.now() - t0,
+      };
+    }
+
+    let executions;
+    if (parallel && plan.length > 1) {
+      // Ограничиваем параллелизм
+      executions = [];
+      for (let i = 0; i < plan.length; i += maxParallel) {
+        const batch = plan.slice(i, i + maxParallel);
+        const batchResults = await Promise.allSettled(
+          batch.map(step => this.executeStep(step, options))
+        );
+        for (let j = 0; j < batchResults.length; j++) {
+          const settled = batchResults[j];
+          if (settled.status === 'fulfilled') {
+            executions.push(settled.value);
+          } else {
+            executions.push({
+              ok: false,
+              tool: batch[j].tool,
+              args: batch[j].args,
+              reason: batch[j].reason,
+              error: settled.reason?.message || 'rejected',
+              elapsedMs: 0,
+              retries: 0,
+            });
+          }
+        }
+      }
+    } else {
+      executions = [];
+      for (const step of plan) {
+        const r = await this.executeStep(step, options);
+        executions.push(r);
+      }
+    }
+
+    const okCount = executions.filter(e => e.ok).length;
+    const failedCount = executions.filter(e => !e.ok).length;
+    const totalElapsed = Date.now() - t0;
+
+    this._audit({
+      event: 'plan_executed',
+      total: executions.length,
+      ok: okCount,
+      failed: failedCount,
+      elapsedMs: totalElapsed,
+      parallel,
+    });
+
+    return {
+      executions,
+      summary: {
+        total: executions.length,
+        ok: okCount,
+        failed: failedCount,
+      },
+      elapsedMs: totalElapsed,
+    };
+  }
+
+  /**
+   * Сохранить метрики.
+   */
+  saveMetrics() {
+    try {
+      const data = {
+        ...this.metrics,
+        lastUpdate: nowIso(),
+        breaker: this.breaker.status(),
+      };
+      saveJSON(this.metricsPath, data);
+    } catch { /* silent */ }
+  }
+
+  /**
+   * Текущее состояние.
+   */
+  getStatus() {
+    return {
+      metrics: { ...this.metrics },
+      breaker: this.breaker.status(),
+      successRate: this.metrics.totalCalls > 0
+        ? Math.round(this.metrics.successCalls / this.metrics.totalCalls * 1000) / 1000
+        : 0,
+    };
+  }
+
+  /**
+   * Reset метрик (для тестов).
+   */
+  resetMetrics() {
+    this.metrics = {
+      totalCalls: 0,
+      successCalls: 0,
+      failedCalls: 0,
+      retriedCalls: 0,
+      byTool: {},
+      startTime: nowIso(),
+    };
+    this.breaker = new CircuitBreaker();
+    this.saveMetrics();
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// УДОБНАЯ ФУНКЦИЯ (stateless)
+// ═══════════════════════════════════════════════════
+
+/**
+ * Быстрое выполнение плана с указанным registry.
+ */
+export async function executePlan(plan, registry, options = {}) {
+  const exec = new Executor({ toolRegistry: registry, ...options });
+  return await exec.executePlan(plan, options);
+}
+
+// ═══════════════════════════════════════════════════
+// ЭКСПОРТ
+// ═══════════════════════════════════════════════════
+
+export {
+  Executor,
+  CircuitBreaker,
+  withRetry,
+  isRetryable,
+};
+
+
+
+========================================================================

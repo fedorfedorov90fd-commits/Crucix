@@ -1,0 +1,1203 @@
+===== ЧАСТЬ part-6-infra-and-tests · КУСОК 02/23 · 46.6 KB =====
+
+FILE: .github/workflows/ci.yml
+SIZE: 47489 bytes
+SHA1: 9340c70de50b06ea
+========================================================================
+
+name: CI
+
+# ═══════════════════════════════════════════════════════════════════
+#  Crucix CI/CD — полный промышленный pipeline
+#  Включает: lint, security, contract, tests (unit/property/fuzz/
+#  mutation/integration), coverage, benchmark, dashboard, docs,
+#  docker, manifest, publish-dry-run, release-gate.
+# ═══════════════════════════════════════════════════════════════════
+
+on:
+  push:
+    branches: [main, develop, 'feature/**', 'release/**']
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      skip_security:
+        description: 'Skip security jobs'
+        type: boolean
+        default: false
+      skip_docker:
+        description: 'Skip docker build'
+        type: boolean
+        default: false
+      full_pipeline:
+        description: 'Run all jobs (including mutation)'
+        type: boolean
+        default: false
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20'
+  PYTHON_VERSION: '3.11'
+  CI: 'true'
+  NODE_OPTIONS: '--max-old-space-size=4096'
+  FORCE_COLOR: '1'
+
+permissions:
+  contents: read
+  security-events: write
+  pull-requests: write
+  checks: write
+  actions: read
+
+# ═══════════════════════════════════════════════════════════════════
+#  JOB 1. LINT — синтаксис, запрещённые конструкции, дубликаты
+# ═══════════════════════════════════════════════════════════════════
+jobs:
+
+  lint:
+    name: Lint & Forbidden Constructs
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Syntax check — all .mjs files
+        run: |
+          set -e
+          COUNT=0
+          FAIL=0
+          for f in $(find apis scripts tests benchmark plugins integrations observability -name "*.mjs" -type f 2>/dev/null | sort); do
+            COUNT=$((COUNT+1))
+            if ! node --check "$f" 2>/dev/null; then
+              echo "::error file=$f::Syntax error"
+              FAIL=$((FAIL+1))
+            fi
+          done
+          echo "Checked $COUNT files, $FAIL failures"
+          if [ $FAIL -gt 0 ]; then exit 1; fi
+
+      - name: Forbidden constructs scan
+        run: |
+          set -e
+          FAIL=0
+          for f in $(find apis scripts tests -name "*.mjs" -type f 2>/dev/null); do
+            if grep -vE '^\s*(//|/\*|\*)' "$f" | grep -qE "require\("; then
+              echo "::error file=$f::CommonJS require() found"
+              FAIL=$((FAIL+1))
+            fi
+            if grep -vE '^\s*(//|/\*|\*)' "$f" | grep -qE '\|>'; then
+              echo "::error file=$f::Pipe operator |> found (not supported)"
+              FAIL=$((FAIL+1))
+            fi
+            if grep -vE '^\s*(//|/\*|\*)' "$f" | grep -qE 'export\s+default'; then
+              echo "::error file=$f::export default forbidden"
+              FAIL=$((FAIL+1))
+            fi
+            if grep -vE '^\s*(//|/\*|\*)' "$f" | grep -qE '/home/ta8'; then
+              echo "::error file=$f::Absolute path /home/ta8 found"
+              FAIL=$((FAIL+1))
+            fi
+            if grep -inE '(онтолог|ontology)' "$f" | grep -vE '^\s*//'; then
+              echo "::error file=$f::Word 'онтология/ontology' forbidden"
+              FAIL=$((FAIL+1))
+            fi
+          done
+          echo "Forbidden constructs scan: $FAIL failures"
+          if [ $FAIL -gt 0 ]; then exit 1; fi
+
+      - name: Duplicate export detection
+        run: |
+          set -e
+          node --input-type=module -e '
+            import { readFileSync, readdirSync, statSync } from "node:fs";
+            import { join } from "node:path";
+            function* walk(dir) {
+              for (const f of readdirSync(dir)) {
+                const p = join(dir, f);
+                const s = statSync(p);
+                if (s.isDirectory()) yield* walk(p);
+                else if (p.endsWith(".mjs")) yield p;
+              }
+            }
+            let fail = 0;
+            for (const dir of ["apis", "scripts", "tests"]) {
+              try {
+                for (const file of walk(dir)) {
+                  const src = readFileSync(file, "utf-8");
+                  const named = new Set();
+                  const re = /export\s+(?:async\s+)?(?:function|class|const|let|var)\s+([A-Za-z_$][\w$]*)/g;
+                  let m;
+                  while ((m = re.exec(src))) {
+                    if (named.has(m[1])) {
+                      console.log("DUPLICATE EXPORT: " + file + " -> " + m[1]);
+                      fail++;
+                    }
+                    named.add(m[1]);
+                  }
+                }
+              } catch (e) { /* dir may not exist */ }
+            }
+            console.log("Duplicate export check: " + fail + " failures");
+            if (fail > 0) process.exit(1);
+          '
+
+      - name: package.json validation
+        run: |
+          if [ -f package.json ]; then
+            node --input-type=module -e 'import { readFileSync } from "node:fs"; JSON.parse(readFileSync("package.json", "utf-8")); console.log("OK: package.json valid");'
+          else
+            echo "WARN: package.json not found (skipping)"
+          fi
+
+      - name: Dashboard HTML validation
+        run: |
+          FAIL=0
+          for f in dashboard/*.html; do
+            [ -f "$f" ] || continue
+            if ! grep -q "<html" "$f"; then
+              echo "::error file=$f::Missing <html> tag"
+              FAIL=$((FAIL+1))
+            fi
+            if ! grep -q "</html>" "$f"; then
+              echo "::error file=$f::Missing </html> tag"
+              FAIL=$((FAIL+1))
+            fi
+            if ! grep -q "<title>" "$f"; then
+              echo "::warning file=$f::Missing <title> tag"
+            fi
+          done
+          if [ $FAIL -gt 0 ]; then exit 1; fi
+
+      - name: Check forbidden words in file names
+        run: |
+          FAIL=0
+          for f in $(find apis scripts tests dashboard docs -type f 2>/dev/null); do
+            base=$(basename "$f")
+            if echo "$base" | grep -qiE '(ontolog|онтолог)'; then
+              echo "::error file=$f::Filename contains forbidden word"
+              FAIL=$((FAIL+1))
+            fi
+          done
+          if [ $FAIL -gt 0 ]; then exit 1; fi
+
+      - name: Markdown link check
+        uses: gaurav-nelson/github-action-markdown-link-check@v1
+        continue-on-error: true
+        with:
+          use-quiet-mode: 'yes'
+          use-verbose-mode: 'no'
+          folder-path: 'docs'
+          file-extension: '.md'
+
+# ═══════════════════════════════════════════════════════════════════
+#  JOB 2. SECURITY — Secrets
+# ═══════════════════════════════════════════════════════════════════
+
+  security-secrets:
+    name: Security — Secrets Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: ${{ !inputs.skip_security }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: TruffleHog
+        uses: trufflesecurity/trufflehog@main
+        continue-on-error: true
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --only-verified
+
+      - name: Grep for obvious secrets
+        run: |
+          set -e
+          PATTERNS='(password|passwd|secret|token|api[_-]?key|private[_-]?key)\s*[:=]\s*["'"'"'][A-Za-z0-9+/=_-]{20,}["'"'"']'
+          if grep -rniE "$PATTERNS" --include="*.mjs" --include="*.js" --include="*.json" --include="*.yml" --include="*.yaml" . 2>/dev/null | grep -v "node_modules" | grep -v "\.git/"; then
+            echo "::warning::Possible hardcoded secrets found"
+          else
+            echo "OK: no obvious hardcoded secrets"
+          fi
+
+  security-deps:
+    name: Security — Dependencies & SBOM
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: ${{ !inputs.skip_security }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: npm audit
+        run: |
+          if [ -f package.json ]; then
+            npm audit --audit-level=high || echo "WARN: audit found issues"
+          else
+            echo "No package.json — skipping npm audit"
+          fi
+
+      - name: OSV Scanner
+        uses: google/osv-scanner-action/osv-scanner-action@v1
+        continue-on-error: true
+        with:
+          scan-args: |-
+            --recursive
+            ./
+
+      - name: Generate SBOM (syft)
+        uses: anchore/sbom-action@v0
+        continue-on-error: true
+        with:
+          path: ./
+          format: spdx-json
+          output-file: sbom.spdx.json
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sbom
+          path: sbom.spdx.json
+          retention-days: 30
+          if-no-files-found: ignore
+
+  security-sast:
+    name: Security — SAST (CodeQL)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: ${{ !inputs.skip_security }}
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        continue-on-error: true
+        with:
+          languages: javascript-typescript
+          queries: security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+        continue-on-error: true
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        continue-on-error: true
+        with:
+          category: "/language:javascript-typescript"
+
+# ═══════════════════════════════════════════════════════════════════
+#  JOB 3. BUILD WASM
+# ═══════════════════════════════════════════════════════════════════
+
+  build-wasm:
+    name: Build WASM
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install wabt
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wabt
+
+      - name: Compile scalar WASM
+        run: |
+          cd apis/predict/wasm
+          wat2wasm linear_algebra.wat -o linear_algebra.wasm
+          ls -la linear_algebra.wasm
+
+      - name: Compile SIMD WASM
+        run: |
+          cd apis/predict/wasm
+          wat2wasm --enable-simd linear_algebra_simd.wat -o linear_algebra_simd.wasm
+          ls -la linear_algebra_simd.wasm
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wasm-artifacts
+          path: apis/predict/wasm/*.wasm
+          retention-days: 7
+
+# ═══════════════════════════════════════════════════════════════════
+#  JOB 4. CONTRACT — проверка контракта 2 для API-модулей
+# ═══════════════════════════════════════════════════════════════════
+
+  contract-check:
+    name: Contract 2 Verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [lint]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Verify contract 2 for apis/sources/*.mjs
+        run: |
+          set -e
+          node --input-type=module -e '
+            import { readFileSync, readdirSync, existsSync } from "node:fs";
+            import { join } from "node:path";
+            const dir = "apis/sources";
+            if (!existsSync(dir)) { console.log("No apis/sources — skipping"); process.exit(0); }
+            const files = readdirSync(dir).filter(f => f.endsWith(".mjs"));
+            let fail = 0;
+            for (const f of files) {
+              const path = join(dir, f);
+              const src = readFileSync(path, "utf-8");
+              const hasRoute = /export\s+const\s+route\s*=/.test(src);
+              const hasMethods = /export\s+const\s+methods\s*=/.test(src);
+              const hasMeta = /export\s+const\s+meta\s*=/.test(src);
+              const hasHandler = /export\s+async\s+function\s+handler\s*\(/.test(src);
+              const hasDefault = /export\s+default/.test(src);
+              const hasHandleAlias = /export\s+const\s+handle\s*=/.test(src);
+              const problems = [];
+              if (!hasRoute) problems.push("missing route");
+              if (!hasMethods) problems.push("missing methods");
+              if (!hasMeta) problems.push("missing meta");
+              if (!hasHandler) problems.push("missing handler");
+              if (hasDefault) problems.push("has export default (forbidden)");
+              if (hasHandleAlias) problems.push("has export const handle (forbidden)");
+              if (problems.length > 0) {
+                console.log("FAIL " + path + ": " + problems.join(", "));
+                fail++;
+              }
+            }
+            console.log("Contract check: " + fail + " failures out of " + files.length + " files");
+            if (fail > 0) process.exit(1);
+          '
+
+      - name: Verify meta fields in apis/sources/*.mjs
+        run: |
+          set -e
+          node --input-type=module -e '
+            import { readFileSync, readdirSync, existsSync } from "node:fs";
+            import { join } from "node:path";
+            const dir = "apis/sources";
+            if (!existsSync(dir)) { console.log("No apis/sources — skipping"); process.exit(0); }
+            const files = readdirSync(dir).filter(f => f.endsWith(".mjs"));
+            const required = ["category", "icon", "color", "vizType", "source", "description"];
+            for (const f of files) {
+              const path = join(dir, f);
+              const src = readFileSync(path, "utf-8");
+              const metaMatch = src.match(/export\s+const\s+meta\s*=\s*\{([\s\S]*?)\};/);
+              if (!metaMatch) continue;
+              const metaBody = metaMatch[1];
+              for (const field of required) {
+                if (!new RegExp(field + "\\s*:").test(metaBody)) {
+                  console.log("WARN " + path + ": meta missing field: " + field);
+                }
+              }
+            }
+            console.log("Meta field check done");
+          '
+
+      - name: Verify predict modules load
+        run: |
+          set -e
+          node --input-type=module -e '
+            import { readdirSync, existsSync } from "node:fs";
+            const dir = "apis/predict";
+            if (!existsSync(dir)) { console.log("No apis/predict — skipping"); process.exit(0); }
+            const files = readdirSync(dir).filter(f => f.endsWith(".mjs") && !f.startsWith("ws"));
+            let loaded = 0, failed = 0;
+            for (const f of files) {
+              try {
+                await import("./" + dir + "/" + f);
+                loaded++;
+              } catch (e) {
+                console.log("FAIL load " + f + ": " + e.message);
+                failed++;
+              }
+            }
+            console.log("Predict modules: " + loaded + " loaded, " + failed + " failed");
+            if (failed > files.length * 0.3) process.exit(1);
+          '
+
+# ═══════════════════════════════════════════════════════════════════
+#  JOB 5. TEST UNIT — matrix по ОС и Node.js
+# ═══════════════════════════════════════════════════════════════════
+
+  test-unit:
+    name: Unit Tests (${{ matrix.os }}, Node ${{ matrix.node }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    needs: [build-wasm, lint]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        node: ['18', '20', '21']
+        include:
+          - os: macos-latest
+            node: '20'
+          - os: windows-latest
+            node: '20'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: wasm-artifacts
+          path: apis/predict/wasm/
+
+      - name: Smoke — all modules load
+        run: |
+          node --input-type=module -e '
+            const modules = [
+              "./apis/predict/core/linear_algebra.mjs",
+              "./apis/predict/core/stats.mjs",
+              "./apis/predict/core/optim.mjs",
+              "./apis/predict/models/neural.mjs",
+              "./apis/predict/models/transformer.mjs",
+              "./apis/predict/models/vae.mjs",
+              "./apis/predict/models/diffusion.mjs",
+              "./apis/predict/models/graph_neural.mjs",
+              "./apis/predict/models/reinforcement.mjs",
+              "./apis/predict/models/hawkes.mjs",
+              "./apis/predict/models/hmm.mjs",
+              "./apis/predict/models/kalman.mjs",
+              "./apis/predict/models/ising.mjs",
+              "./apis/predict/models/evt.mjs",
+              "./apis/predict/models/copula.mjs",
+              "./apis/predict/models/bocpd.mjs",
+              "./apis/predict/models/contagion.mjs",
+              "./apis/predict/models/transferentropy.mjs",
+              "./apis/predict/exotic/quantum_sa.mjs",
+              "./apis/predict/exotic/chaos.mjs",
+              "./apis/predict/exotic/networks.mjs",
+              "./apis/predict/wasm/simd_loader.mjs",
+            ];
+            let ok = 0, fail = 0;
+            for (const m of modules) {
+              try { await import(m); ok++; }
+              catch (e) { console.log("FAIL", m, e.message); fail++; }
+            }
+            console.log("Smoke: " + ok + " OK, " + fail + " failed");
+            if (fail > modules.length * 0.3) process.exit(1);
+          '
+
+      - name: Unit tests — predict
+        run: |
+          if ls tests/predict/*.test.mjs 1>/dev/null 2>&1; then
+            node --test tests/predict/*.test.mjs
+          else
+            echo "No tests/predict/*.test.mjs — skipping"
+          fi
+
+      - name: Unit tests — chaos
+        if: matrix.os == 'ubuntu-latest' && matrix.node == '20'
+        run: |
+          if ls tests/chaos/*.mjs 1>/dev/null 2>&1; then
+            node --test tests/chaos/ 2>/dev/null || echo "Chaos tests need manual run"
+          fi
+
+      - name: Unit tests — legacy inline
+        if: matrix.os == 'ubuntu-latest' && matrix.node == '20'
+        run: |
+          node --input-type=module -e '
+            import("./apis/predict/core/linear_algebra.mjs").then(m => {
+              const A = [[1,2],[3,4]];
+              const B = [[5,6],[7,8]];
+              const C = m.matmul(A, B);
+              if (C[0][0] !== 19 || C[0][1] !== 22) throw new Error("matmul failed");
+              console.log("OK: matmul");
+            });
+          '
+
+# ═══════════════════════════════════════════════════════════════════
+#  JOB 6. TEST PROPERTY
+# ═══════════════════════════════════════════════════════════════════
+
+  test-property:
+    name: Property-Based Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [build-wasm, lint]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: wasm-artifacts
+          path: apis/predict/wasm/
+
+      - name: Property tests
+        run: |
+          if ls tests/property/*.property.mjs 1>/dev/null 2>&1; then
+            for f in tests/property/*.property.mjs; do
+              echo "=== $f ==="
+              node --test "$f" || exit 1
+            done
+          else
+            echo "No property tests — skipping"
+          fi
+        env:
+          PROPERTY_CASES: '100'
+
+# ═══════════════════════════════════════════════════════════════════
+#  JOB 7. TEST FUZZ
+# ═══════════════════════════════════════════════════════════════════
+
+  test-fuzz:
+    name: Fuzz Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [build-wasm, lint]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: wasm-artifacts
+          path: apis/predict/wasm/
+
+      - name: Fuzz tests
+        run: |
+          if ls tests/fuzz/*.fuzz.mjs 1>/dev/null 2>&1; then
+            for f in tests/fuzz/*.fuzz.mjs; do
+              echo "=== $f ==="
+              node --test "$f" || exit 1
+            done
+          else
+            echo "No fuzz tests — skipping"
+          fi
+
+# ═══════════════════════════════════════════════════════════════════
+#  JOB 8. MUTATION
+# ═══════════════════════════════════════════════════════════════════
+
+  mutation:
+    name: Mutation Testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: [build-wasm, test-unit]
+    if: ${{ inputs.full_pipeline || github.event_name == 'schedule' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Run mutation tests
+        run: |
+          if [ -f tests/mutation/run_all.mjs ]; then
+            node tests/mutation/run_all.mjs
+          elif [ -f tests/mutation/meta_learner.mutate.mjs ]; then
+            node tests/mutation/meta_learner.mutate.mjs
+          else
+            echo "No mutation tests — skipping"
+          fi
+
+# ═══════════════════════════════════════════════════════════════════
+#  JOB 9. INTEGRATION
+# ═══════════════════════════════════════════════════════════════════
+
+  integration:
+    name: Integration — Full Pipeline
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [build-wasm, test-unit, test-property, test-fuzz]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: wasm-artifacts
+          path: apis/predict/wasm/
+
+      - name: Generate synthetic history
+        run: |
+          mkdir -p runs/memory runs/predictions
+          node -e "
+            const { writeFileSync } = require('fs');
+            const history = [];
+            for (let i = 0; i < 60; i++) {
+              history.push({
+                sweepId: 'sweep_' + i,
+                timestamp: new Date(Date.now() - (60 - i) * 15 * 60 * 1000).toISOString(),
+                fred: {
+                  vix: 20 + Math.random() * 15,
+                  hySpread: 3 + Math.random() * 2.5,
+                  treasury10y: 4 + Math.random() * 0.5,
+                },
+                gdelt: {
+                  conflictEvents: Array.from({ length: Math.floor(Math.random() * 15) }, (_, j) => ({
+                    summary: 'conflict strategic region escalation event_' + i + '_' + j,
+                    severity: Math.random(),
+                  })),
+                },
+                sanctions: { count: Math.floor(Math.random() * 6) },
+                delta: {
+                  newAlerts: Math.floor(Math.random() * 6),
+                  escalatedAlerts: Math.floor(Math.random() * 3),
+                },
+                energy: { oilPrice: 70 + Math.random() * 30 },
+              });
+            }
+            writeFileSync('runs/history.json', JSON.stringify(history));
+            console.log('✓ Generated 60 sweeps');
+          "
+
+      - name: Run full pipeline with phases J, K, L, M
+        run: |
+          node -e "
+            import('./apis/predict/engine.mjs').then(async m => {
+              const fs = require('fs');
+              const history = JSON.parse(fs.readFileSync('runs/history.json'));
+              const latest = history[history.length - 1];
+
+              const result = await m.runForecastPipeline(latest, {
+                skipSources: true,
+                skipAdvanced: false,
+                skipTemporalCausal: false,
+                skipWarfareExhaustion: false,
+                skipMetaScenarios: true,
+                skipAdvancedContagion: false,
+              });
+
+              console.log('✓ Pipeline completed');
+              console.log('  Version:', result.version);
+              console.log('  Elapsed:', result.elapsedMs + 'ms');
+              console.log('  Top risk:', result.topRisks?.[0]?.name);
+              console.log('  Events:', Object.keys(result.events || {}).length);
+
+              const phases = {
+                'J: temporalCausal': !!result.temporalCausal,
+                'J: multiLayerCausal': !!result.multiLayerCausal,
+                'J: combinedCausalSignal': result.combinedCausalSignal !== undefined,
+                'K: narrativeWarfare': !!result.narrativeWarfare,
+                'K: resourceExhaustion': !!result.resourceExhaustion,
+                'K: combinedStrategicAssessment': result.combinedStrategicAssessment !== undefined,
+                'L: metaEnsemble': !!result.metaEnsemble,
+                'L: scenarios': !!result.scenarios,
+                'M: hypergraphContagion': !!result.hypergraphContagion,
+                'M: attentionDynamics': !!result.attentionDynamics,
+                'M: adversarialCoEvolution': !!result.adversarialCoEvolution,
+              };
+
+              console.log('');
+              console.log('  Phase verification:');
+              let allOk = true;
+              for (const [name, ok] of Object.entries(phases)) {
+                console.log('    ' + (ok ? '✓' : '✗') + ' ' + name);
+                if (!ok) allOk = false;
+              }
+
+              if (!allOk) {
+                console.error('::error::Some phases missing');
+                process.exit(1);
+              }
+              console.log('');
+              console.log('  ✓ All phases J, K, L, M verified');
+            }).catch(e => {
+              console.error('Pipeline crashed:', e);
+              console.error(e.stack);
+              process.exit(1);
+            });
+          "
+
+      - name: Verify output artifacts
+        run: |
+          test -f runs/predictions/latest_forecast.json
+          echo "✓ latest_forecast.json exists"
+          node -e "
+            const f = JSON.parse(require('fs').readFileSync('runs/predictions/latest_forecast.json'));
+            console.log('  Version:', f.version);
+            console.log('  Events:', Object.keys(f.events || {}).length);
+            console.log('  Top risks:', f.topRisks?.length || 0);
+            console.log('  Temporal causal:', !!f.temporalCausal);
+            console.log('  Multi-layer causal:', !!f.multiLayerCausal);
+            console.log('  Narrative warfare:', !!f.narrativeWarfare);
+            console.log('  Resource exhaustion:', !!f.resourceExhaustion);
+            console.log('  Meta-ensemble:', !!f.metaEnsemble);
+            console.log('  Scenarios:', !!f.scenarios);
+            console.log('  Hypergraph:', !!f.hypergraphContagion);
+            console.log('  Attention:', !!f.attentionDynamics);
+            console.log('  Adversarial:', !!f.adversarialCoEvolution);
+          "
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-artifacts
+          path: |
+            runs/predictions/latest_forecast.json
+            runs/history.json
+          retention-days: 7
+
+# ═══════════════════════════════════════════════════════════════════
+#  JOB 10. COVERAGE
+# ═══════════════════════════════════════════════════════════════════
+
+  coverage:
+    name: Coverage Report
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [test-unit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: wasm-artifacts
+          path: apis/predict/wasm/
+
+      - name: Run coverage
+        run: |
+          if ls tests/predict/*.test.mjs 1>/dev/null 2>&1; then
+            node --test --experimental-test-coverage \
+              --test-reporter=lcov --test-reporter-destination=coverage.lcov \
+              tests/predict/*.test.mjs 2>&1 | tee coverage.log
+          else
+            echo "No tests — skipping coverage"
+            touch coverage.lcov
+          fi
+
+      - name: Parse coverage and enforce goal
+        run: |
+          if [ ! -s coverage.lcov ]; then
+            echo "WARN: empty coverage.lcov — skipping gate"
+            exit 0
+          fi
+          node -e "
+            const fs = require('fs');
+            const lcov = fs.readFileSync('coverage.lcov', 'utf-8');
+            let totalLines = 0, hitLines = 0;
+            const byFile = {};
+            let currentFile = null;
+            for (const line of lcov.split('\n')) {
+              if (line.startsWith('SF:')) {
+                currentFile = line.slice(3);
+                byFile[currentFile] = { total: 0, hit: 0 };
+              } else if (line.startsWith('DA:')) {
+                const parts = line.slice(3).split(',');
+                const count = Number(parts[1]);
+                totalLines++;
+                byFile[currentFile].total++;
+                if (count > 0) { hitLines++; byFile[currentFile].hit++; }
+              }
+            }
+            const overall = totalLines > 0 ? (hitLines / totalLines) * 100 : 0;
+            console.log('');
+            console.log('COVERAGE REPORT');
+            for (const f of Object.keys(byFile).sort()) {
+              const stats = byFile[f];
+              if (stats.total === 0) continue;
+              const pct = (stats.hit / stats.total) * 100;
+              console.log('  ' + pct.toFixed(1).padStart(5) + '% ' + f);
+            }
+            console.log('');
+            console.log('  OVERALL: ' + overall.toFixed(2) + '% (' + hitLines + '/' + totalLines + ' lines)');
+            console.log('');
+          "
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report-${{ github.run_id }}
+          path: |
+            coverage.lcov
+            coverage.log
+          retention-days: 30
+          if-no-files-found: ignore
+
+# ═══════════════════════════════════════════════════════════════════
+#  JOB 11. BENCHMARK
+# ═══════════════════════════════════════════════════════════════════
+
+  benchmark:
+    name: Quick Benchmark
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [build-wasm]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: wasm-artifacts
+          path: apis/predict/wasm/
+
+      - name: Prepare test data
+        run: |
+          mkdir -p runs/memory
+          node --input-type=module -e "
+            import { writeFileSync } from 'node:fs';
+            for (let i = 0; i < 200; i++) {
+              const data = {
+                sweepId: 'sweep_' + i,
+                timestamp: new Date(Date.now() - (200 - i) * 15 * 60 * 1000).toISOString(),
+                fred: { vix: 18 + Math.random() * 15, hySpread: 2.5 + Math.random() * 3 },
+                gdelt: { conflictEvents: Array.from({ length: Math.floor(Math.random() * 15) }, () => ({})) },
+                sanctions: { count: Math.floor(Math.random() * 5) },
+                delta: { newAlerts: Math.floor(Math.random() * 5) },
+              };
+              writeFileSync('runs/memory/' + String(i).padStart(4, '0') + '.json', JSON.stringify(data));
+            }
+            console.log('OK: Generated 200 sweeps');
+          "
+
+      - name: WASM benchmark
+        run: |
+          node --input-type=module -e "
+            import('./apis/predict/wasm/simd_loader.mjs').then(async m => {
+              await m.initSIMD();
+              console.log('Mode:', m.simdStatus().mode);
+              console.log('Benchmark 100x100:', JSON.stringify(m.benchmarkAll(100), null, 2));
+            });
+          "
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: benchmark-results
+          path: runs/memory/
+          retention-days: 3
+
+# ═══════════════════════════════════════════════════════════════════
+#  JOB 12. DASHBOARD VALIDATION
+# ═══════════════════════════════════════════════════════════════════
+
+  dashboard-validate:
+    name: Dashboard Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [lint]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: HTML structural validation
+        run: |
+          FAIL=0
+          for f in dashboard/*.html; do
+            [ -f "$f" ] || continue
+            echo "Checking $f..."
+            grep -q "<!DOCTYPE html>" "$f" || { echo "::error file=$f::Missing DOCTYPE"; FAIL=$((FAIL+1)); }
+            grep -q "<html" "$f" || { echo "::error file=$f::Missing <html>"; FAIL=$((FAIL+1)); }
+            grep -q "</html>" "$f" || { echo "::error file=$f::Missing </html>"; FAIL=$((FAIL+1)); }
+            grep -q "<style>" "$f" || echo "::warning file=$f::Missing <style>"
+            grep -q "<script>" "$f" || echo "::warning file=$f::Missing <script>"
+          done
+          if [ $FAIL -gt 0 ]; then exit 1; fi
+          echo "✓ All dashboards passed structural validation"
+
+      - name: Cross-dashboard navigation check
+        run: |
+          for f in dashboard/*.html; do
+            [ -f "$f" ] || continue
+            LINKS=$(grep -oE 'href="/[a-z-]+\.html"' "$f" | sort -u || true)
+            if [ -z "$LINKS" ]; then
+              echo "::warning file=$f::No cross-dashboard navigation links found"
+            fi
+          done
+          echo "✓ Navigation check done"
+
+      - name: Fetch URLs referenced in dashboards
+        run: |
+          for f in dashboard/*.html; do
+            [ -f "$f" ] || continue
+            URLS=$(grep -oE "fetch\('[^']+'" "$f" | sed "s/fetch('//" | sed "s/'//" || true)
+            for u in $URLS; do
+              echo "$f → $u"
+            done
+          done
+
+# ═══════════════════════════════════════════════════════════════════
+#  JOB 13. DOCS VALIDATION
+# ═══════════════════════════════════════════════════════════════════
+
+  docs-validate:
+    name: Docs Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check handbook build
+        run: |
+          if [ -f docs/handbook/build.sh ]; then
+            bash -n docs/handbook/build.sh && echo "✓ handbook/build.sh syntax OK"
+          else
+            echo "No docs/handbook/build.sh — skipping"
+          fi
+
+      - name: Check markdown structure
+        run: |
+          FAIL=0
+          for f in $(find docs -name "*.md" -type f 2>/dev/null); do
+            head -1 "$f" | grep -qE '^#' || { echo "::warning file=$f::No heading on first line"; }
+            if ! grep -q "^#" "$f"; then
+              echo "::error file=$f::No markdown headings found"
+              FAIL=$((FAIL+1))
+            fi
+          done
+          if [ $FAIL -gt 0 ]; then exit 1; fi
+          echo "✓ Markdown structure check passed"
+
+      - name: Check docs/help structure
+        run: |
+          for dir in docs/help/ru docs/help/en data/help/ru data/help/en; do
+            if [ -d "$dir" ]; then
+              echo "$dir: $(find "$dir" -type f | wc -l) files"
+            fi
+          done
+
+# ═══════════════════════════════════════════════════════════════════
+#  JOB 14. DOCKER BUILD
+# ═══════════════════════════════════════════════════════════════════
+
+  docker-build:
+    name: Docker Build & Smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [lint]
+    if: ${{ !inputs.skip_docker }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Check Dockerfile
+        run: |
+          if [ -f docker/Dockerfile.engine ]; then
+            echo "✓ Dockerfile.engine found"
+          elif [ -f docker/Dockerfile.crucix ]; then
+            echo "✓ Dockerfile.crucix found"
+          else
+            echo "No Dockerfile — skipping build"
+            exit 0
+          fi
+
+      - name: Build image
+        run: |
+          DF="docker/Dockerfile.engine"
+          [ -f "$DF" ] || DF="docker/Dockerfile.crucix"
+          docker build -f "$DF" -t crucix-cI:ci-${{ github.sha }} . || echo "WARN: build failed"
+
+      - name: Smoke run
+        run: |
+          if docker image inspect crucix-cI:ci-${{ github.sha }} >/dev/null 2>&1; then
+            docker run --rm crucix-cI:ci-${{ github.sha }} node --version
+          fi
+
+      - name: Compose validation
+        run: |
+          if [ -f docker/docker-compose.engine.yml ]; then
+            docker compose -f docker/docker-compose.engine.yml config > /dev/null && echo "✓ docker-compose valid"
+          fi
+
+# ═══════════════════════════════════════════════════════════════════
+#  JOB 15. MANIFEST
+# ═══════════════════════════════════════════════════════════════════
+
+  manifest:
+    name: Manifest & Registry
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [lint]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Count modules
+        run: |
+          echo "=== apis/sources ==="
+          ls apis/sources/*.mjs 2>/dev/null | wc -l || echo 0
+          echo "=== apis/predict ==="
+          ls apis/predict/*.mjs 2>/dev/null | wc -l || echo 0
+          echo "=== apis/predict/models ==="
+          ls apis/predict/models/*.mjs 2>/dev/null | wc -l || echo 0
+          echo "=== scripts/collectors ==="
+          ls scripts/collectors/*.mjs 2>/dev/null | wc -l || echo 0
+          echo "=== dashboard ==="
+          ls dashboard/*.html 2>/dev/null | wc -l || echo 0
+          echo "=== tests/predict ==="
+          ls tests/predict/*.test.mjs 2>/dev/null | wc -l || echo 0
+          echo "=== tests/property ==="
+          ls tests/property/*.property.mjs 2>/dev/null | wc -l || echo 0
+          echo "=== tests/fuzz ==="
+          ls tests/fuzz/*.fuzz.mjs 2>/dev/null | wc -l || echo 0
+
+      - name: Verify tree structure
+        run: |
+          for dir in apis/predict apis/sources dashboard tests; do
+            if [ ! -d "$dir" ]; then
+              echo "::warning::Directory $dir missing"
+            fi
+          done
+
+# ═══════════════════════════════════════════════════════════════════
+#  JOB 16. PUBLISH DRY-RUN
+# ═══════════════════════════════════════════════════════════════════
+
+  publish-dry-run:
+    name: NPM Publish Dry-Run
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [lint]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: npm pack dry-run
+        run: |
+          if [ -f package.json ]; then
+            npm pack --dry-run 2>&1 | tee pack-output.log
+          else
+            echo "No package.json — skipping"
+          fi
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pack-output
+          path: pack-output.log
+          retention-days: 7
+          if-no-files-found: ignore
+
+# ═══════════════════════════════════════════════════════════════════
+#  JOB 17. RELEASE GATE (только для тегов)
+# ═══════════════════════════════════════════════════════════════════
+
+  release-gate:
+    name: Release Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [lint, test-unit, test-property, test-fuzz, integration, contract-check]
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Verify tag matches package.json version
+        run: |
+          if [ -f package.json ]; then
+            TAG="${GITHUB_REF#refs/tags/v}"
+            PKG=$(node -e "console.log(JSON.parse(require('fs').readFileSync('package.json','utf-8')).version)")
+            if [ "$TAG" != "$PKG" ]; then
+              echo "::error::Tag v$TAG does not match package.json version $PKG"
+              exit 1
+            fi
+            echo "✓ Tag v$TAG matches package.json"
+          fi
+
+      - name: Generate release manifest
+        run: |
+          mkdir -p release-artifacts
+          node -e "
+            const fs = require('fs');
+            function count(dir, pattern) {
+              try { return fs.readdirSync(dir).filter(f => f.endsWith(pattern)).length; }
+              catch { return 0; }
+            }
+            const manifest = {
+              tag: process.env.GITHUB_REF_NAME,
+              sha: process.env.GITHUB_SHA,
+              run_id: process.env.GITHUB_RUN_ID,
+              timestamp: new Date().toISOString(),
+              modules: {
+                sources: count('apis/sources', '.mjs'),
+                predict: count('apis/predict', '.mjs'),
+                models: count('apis/predict/models', '.mjs'),
+                dashboard: count('dashboard', '.html'),
+              },
+            };
+            fs.writeFileSync('release-artifacts/RELEASE_MANIFEST.json', JSON.stringify(manifest, null, 2));
+            console.log(JSON.stringify(manifest, null, 2));
+          "
+        env:
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-manifest-${{ github.ref_name }}
+          path: release-artifacts/
+          retention-days: 90
+
+# ═══════════════════════════════════════════════════════════════════
+#  JOB 18. SUMMARY
+# ═══════════════════════════════════════════════════════════════════
+
+  summary:
+    name: Pipeline Summary
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs:
+      - lint
+      - contract-check
+      - test-unit
+      - test-property
+      - test-fuzz
+      - integration
+      - benchmark
+      - dashboard-validate
+      - docs-validate
+      - manifest
+    if: always()
+    steps:
+      - name: Summary
+        run: |
+          echo "CRUCIX CI PIPELINE SUMMARY"
+          echo "Commit: ${{ github.sha }}"
+          echo "Branch: ${{ github.ref }}"
+          echo "Actor:  ${{ github.actor }}"
+          echo "Event:  ${{ github.event_name }}"
+
+
+========================================================================

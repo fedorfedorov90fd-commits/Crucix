@@ -1,0 +1,900 @@
+===== ЧАСТЬ part-6-infra-and-tests · КУСОК 23/23 · 24.4 KB =====
+
+FILE: runs/predictions/simulation_engine.json
+SIZE: 20387 bytes
+SHA1: 3543404ed42f767a
+========================================================================
+
+{
+  "module": "simulation_engine",
+  "version": "7.0.0",
+  "available": true,
+  "elapsedMs": 2704,
+  "nSweeps": 35,
+  "horizon": 4,
+  "horizonHours": 1,
+  "moduleStatus": {
+    "worldModel": "ok",
+    "neuralODE": "ok",
+    "dreamer": "ok",
+    "continuousCausal": "ok"
+  },
+  "activeModules": 4,
+  "totalModules": 4,
+  "synthesis": {
+    "consensus": {
+      "direction": "escalation",
+      "agreement": 0.5,
+      "votes": {
+        "escalation": 2,
+        "deescalation": 2
+      },
+      "nVoters": 4
+    },
+    "directions": {
+      "worldModel": "escalation",
+      "neuralODE": "escalation",
+      "dreamer": "deescalation",
+      "continuousCausal": "deescalation"
+    },
+    "confidence": 0.65,
+    "confidenceLevel": "moderate",
+    "activeModules": 4,
+    "totalModules": 4,
+    "reasoningSteps": [
+      {
+        "module": "world_model",
+        "signal": "escalation",
+        "text": "World Model обучен на 35 sweep'ах (latent=4). Recon error: 0.5763 (poor). Imagination на 4 шагов (1ч): тренд escalation (tension -0.125 → 0.266, vix 2.67 → -5.64).",
+        "weight": 0.25
+      },
+      {
+        "module": "neural_ode",
+        "signal": "escalation",
+        "text": "Neural ODE обучен на 34 переходах (stateDim=5, 173 параметров). Loss: 0.00502 → 0.00502. Прогноз на 4 шагов (1ч): тренд escalation. Скорость эскалации: 0.0210 → 0.0613. Counterfactual: если tension=0.9, эффект 0.2658.",
+        "weight": 0.25
+      },
+      {
+        "module": "dreamer",
+        "signal": "deescalation",
+        "text": "Dreamer обучен на 3 imagination-эпизодах в latent space (dim=4). Return до/после: -0.970 → -1.031 (-0.062). Рекомендуемое действие: sanctions_high (P=0.225). Итоговый return политики: -1.144.",
+        "weight": 0.25
+      },
+      {
+        "module": "continuous_causal",
+        "signal": "deescalation",
+        "text": "Continuous Causal обучен на 34 переходах. DAG: 6 рёбер (5 узлов). Loss: 0.00557 → 0.00555 (reduction 0.2%). Прогноз на 4 шагов (1ч): deescalation. Counterfactual do(tension=0.8): |diff|=0.325. ATE(tension: 0.3→0.8) = 0.500.",
+        "weight": 0.25
+      }
+    ],
+    "summary": "Разногласие: escalation доминирует, но только 50% согласия"
+  },
+  "answers": [
+    {
+      "question": "Что будет через 1ч?",
+      "answer": "Тренд escalation. tension -0.125 → 0.266, vix 2.67 → -5.64.",
+      "confidence": "low",
+      "source": "world_model"
+    },
+    {
+      "question": "Как быстро меняется состояние?",
+      "answer": "Скорость эскалации в начале: 0.0210, в конце: 0.0613 (ускоряется).",
+      "confidence": "moderate",
+      "source": "neural_ode"
+    },
+    {
+      "question": "Что если tension=0.8?",
+      "answer": "Прямой эффект: 0.500. Косвенные эффекты: vix: 0, conflicts: 0.0014, sanctions: 0.0096, hySpread: 0.",
+      "confidence": "moderate",
+      "source": "continuous_causal"
+    },
+    {
+      "question": "Какое действие оптимально?",
+      "answer": "sanctions_high (P=0.225). Return политики: -1.144.",
+      "confidence": "low",
+      "source": "dreamer"
+    },
+    {
+      "question": "Какие переменные — настоящие причины?",
+      "answer": "Найдено 6 причинных связей: vix→conflicts, vix→sanctions, tension→conflicts, tension→sanctions, hySpread→vix.",
+      "confidence": "moderate",
+      "source": "continuous_causal"
+    }
+  ],
+  "results": {
+    "world_model": {
+      "module": "world_model",
+      "available": true,
+      "elapsedMs": 395,
+      "config": {
+        "inputDim": 11,
+        "latentDim": 4,
+        "hiddenDim": 8,
+        "horizon": 4
+      },
+      "training": {
+        "vae": {
+          "inputDim": 11,
+          "hiddenDim": 8,
+          "latentDim": 4,
+          "trainSteps": 35,
+          "finalLoss": 0.4887539375638713,
+          "avgLossLast100": 0.4763072145797452,
+          "firstLoss": 0.48360391534898856,
+          "convergence": false
+        },
+        "rnnTrained": true,
+        "sequences": 25,
+        "latentsEncoded": 35
+      },
+      "quality": {
+        "avgReconError": 0.5763,
+        "reconQuality": "poor"
+      },
+      "imagination": {
+        "horizonHours": 1,
+        "imaginedFeatures": [
+          {
+            "step": 0,
+            "vix": 2.67,
+            "tension": -0.125,
+            "conflicts": 6.15,
+            "sanctions": 0.69,
+            "dxy": -17.4
+          },
+          {
+            "step": 1,
+            "vix": 1.64,
+            "tension": -0.097,
+            "conflicts": -3.75,
+            "sanctions": -0.74,
+            "dxy": -1.16
+          },
+          {
+            "step": 2,
+            "vix": -5.98,
+            "tension": -0.321,
+            "conflicts": 4.54,
+            "sanctions": -2.67,
+            "dxy": 2.96
+          },
+          {
+            "step": 3,
+            "vix": -18.88,
+            "tension": 0.198,
+            "conflicts": 2.87,
+            "sanctions": 1.15,
+            "dxy": 40.22
+          },
+          {
+            "step": 4,
+            "vix": -5.64,
+            "tension": 0.266,
+            "conflicts": 8.34,
+            "sanctions": -1.96,
+            "dxy": 17.01
+          }
+        ],
+        "trend": {
+          "vix": {
+            "before": 2.67,
+            "after": -5.64,
+            "delta": -8.32
+          },
+          "tension": {
+            "before": -0.125,
+            "after": 0.266,
+            "delta": 0.391
+          },
+          "conflicts": {
+            "before": 6.15,
+            "after": 8.34,
+            "delta": 2.19
+          }
+        }
+      },
+      "interpretation": "World Model обучен на 35 sweep'ах (latent=4). Recon error: 0.5763 (poor). Imagination на 4 шагов (1ч): тренд escalation (tension -0.125 → 0.266, vix 2.67 → -5.64).",
+      "direction": "escalation"
+    },
+    "neural_ode": {
+      "module": "neural_ode",
+      "available": true,
+      "elapsedMs": 123,
+      "config": {
+        "stateVars": [
+          "vix",
+          "tension",
+          "conflicts",
+          "sanctions",
+          "hySpread"
+        ],
+        "stateDim": 5,
+        "hiddenDim": 8,
+        "timeAware": true,
+        "horizonSteps": 4
+      },
+      "training": {
+        "transitionsCount": 34,
+        "epochs": 1,
+        "lossBefore": 0.00502,
+        "lossAfter": 0.00502,
+        "lossReduction": 0.0001,
+        "trainedSteps": 34,
+        "paramCount": 173
+      },
+      "forecast": {
+        "horizonHours": 1,
+        "trajectory": [
+          {
+            "t": 0,
+            "vix": 0.5597,
+            "tension": 0.6395,
+            "conflicts": 0.5,
+            "sanctions": 0.3,
+            "hySpread": 0.4304
+          },
+          {
+            "t": 0.5,
+            "vix": 0.5536,
+            "tension": 0.647,
+            "conflicts": 0.5,
+            "sanctions": 0.2976,
+            "hySpread": 0.4263
+          },
+          {
+            "t": 1,
+            "vix": 0.5511,
+            "tension": 0.6568,
+            "conflicts": 0.4981,
+            "sanctions": 0.2953,
+            "hySpread": 0.4189
+          },
+          {
+            "t": 1.5,
+            "vix": 0.5521,
+            "tension": 0.6684,
+            "conflicts": 0.4943,
+            "sanctions": 0.2933,
+            "hySpread": 0.4087
+          },
+          {
+            "t": 2,
+            "vix": 0.5565,
+            "tension": 0.6814,
+            "conflicts": 0.4888,
+            "sanctions": 0.2916,
+            "hySpread": 0.396
+          },
+          {
+            "t": 2.5,
+            "vix": 0.564,
+            "tension": 0.6953,
+            "conflicts": 0.4818,
+            "sanctions": 0.2904,
+            "hySpread": 0.3813
+          },
+          {
+            "t": 3,
+            "vix": 0.5742,
+            "tension": 0.7098,
+            "conflicts": 0.4736,
+            "sanctions": 0.2896,
+            "hySpread": 0.3649
+          },
+          {
+            "t": 3.5,
+            "vix": 0.5866,
+            "tension": 0.7247,
+            "conflicts": 0.4643,
+            "sanctions": 0.2891,
+            "hySpread": 0.3471
+          },
+          {
+            "t": 4,
+            "vix": 0.601,
+            "tension": 0.7399,
+            "conflicts": 0.4543,
+            "sanctions": 0.2888,
+            "hySpread": 0.3283
+          }
+        ],
+        "trend": {
+          "vix": {
+            "before": 0.5597,
+            "after": 0.601,
+            "delta": 0.0413
+          },
+          "tension": {
+            "before": 0.6395,
+            "after": 0.7399,
+            "delta": 0.1004
+          },
+          "conflicts": {
+            "before": 0.5,
+            "after": 0.4543,
+            "delta": -0.0457
+          },
+          "sanctions": {
+            "before": 0.3,
+            "after": 0.2888,
+            "delta": -0.0112
+          },
+          "hySpread": {
+            "before": 0.4304,
+            "after": 0.3283,
+            "delta": -0.1021
+          }
+        },
+        "direction": "escalation",
+        "initialRate": 0.021,
+        "finalRate": 0.0613,
+        "rateChange": 0.0403
+      },
+      "counterfactual": {
+        "intervention": {
+          "tension": 0.9
+        },
+        "diffMagnitude": 0.2658,
+        "perVar": {
+          "vix": {
+            "baseline": 0.601,
+            "counterfactual": 0.5894,
+            "diff": -0.0116
+          },
+          "tension": {
+            "baseline": 0.7399,
+            "counterfactual": 1.0054,
+            "diff": 0.2655
+          },
+          "conflicts": {
+            "baseline": 0.4543,
+            "counterfactual": 0.4566,
+            "diff": 0.0022
+          },
+          "sanctions": {
+            "baseline": 0.2888,
+            "counterfactual": 0.2873,
+            "diff": -0.0016
+          },
+          "hySpread": {
+            "baseline": 0.3283,
+            "counterfactual": 0.326,
+            "diff": -0.0023
+          }
+        }
+      },
+      "rewind": [
+        {
+          "t": 0,
+          "vix": 0.5597,
+          "tension": 0.6395,
+          "conflicts": 0.5,
+          "sanctions": 0.3,
+          "hySpread": 0.4304
+        },
+        {
+          "t": -0.62,
+          "vix": 0.5719,
+          "tension": 0.6343,
+          "conflicts": 0.4973,
+          "sanctions": 0.303,
+          "hySpread": 0.4306
+        },
+        {
+          "t": -1.25,
+          "vix": 0.5886,
+          "tension": 0.6342,
+          "conflicts": 0.492,
+          "sanctions": 0.3055,
+          "hySpread": 0.4253
+        },
+        {
+          "t": -1.87,
+          "vix": 0.609,
+          "tension": 0.6389,
+          "conflicts": 0.4847,
+          "sanctions": 0.3073,
+          "hySpread": 0.4149
+        },
+        {
+          "t": -2.5,
+          "vix": 0.6324,
+          "tension": 0.648,
+          "conflicts": 0.476,
+          "sanctions": 0.3083,
+          "hySpread": 0.4003
+        },
+        {
+          "t": -3.12,
+          "vix": 0.6582,
+          "tension": 0.6608,
+          "conflicts": 0.4665,
+          "sanctions": 0.3086,
+          "hySpread": 0.3823
+        },
+        {
+          "t": -3.75,
+          "vix": 0.6859,
+          "tension": 0.6764,
+          "conflicts": 0.4565,
+          "sanctions": 0.3081,
+          "hySpread": 0.3618
+        },
+        {
+          "t": -4.37,
+          "vix": 0.7152,
+          "tension": 0.6941,
+          "conflicts": 0.4464,
+          "sanctions": 0.3071,
+          "hySpread": 0.3394
+        },
+        {
+          "t": -5,
+          "vix": 0.7458,
+          "tension": 0.7133,
+          "conflicts": 0.4362,
+          "sanctions": 0.3056,
+          "hySpread": 0.3158
+        }
+      ],
+      "interpretation": "Neural ODE обучен на 34 переходах (stateDim=5, 173 параметров). Loss: 0.00502 → 0.00502. Прогноз на 4 шагов (1ч): тренд escalation. Скорость эскалации: 0.0210 → 0.0613. Counterfactual: если tension=0.9, эффект 0.2658."
+    },
+    "dreamer": {
+      "module": "dreamer",
+      "available": true,
+      "elapsedMs": 8,
+      "config": {
+        "latentDim": 4,
+        "hiddenDim": 8,
+        "nActions": 5,
+        "horizon": 3,
+        "trainSteps": 3,
+        "gamma": 0.99,
+        "lambda": 0.95
+      },
+      "evaluation": {
+        "before": {
+          "meanReturn": -0.9696,
+          "stdReturn": 0.4107
+        },
+        "after": {
+          "meanReturn": -1.0313,
+          "stdReturn": 0.3986
+        },
+        "improvement": -0.0618,
+        "improvementPct": -6.37
+      },
+      "bestAction": {
+        "index": 3,
+        "name": "sanctions_high",
+        "actionDistribution": [
+          {
+            "action": "observe",
+            "probability": 0.1975
+          },
+          {
+            "action": "monitor",
+            "probability": 0.1967
+          },
+          {
+            "action": "sanctions_low",
+            "probability": 0.1833
+          },
+          {
+            "action": "sanctions_high",
+            "probability": 0.225
+          },
+          {
+            "action": "intervention",
+            "probability": 0.1975
+          }
+        ]
+      },
+      "finalRollout": {
+        "totalReturn": -1.1438,
+        "trajectoryLength": 4,
+        "rewardTrajectory": [
+          {
+            "step": 1,
+            "reward": -0.5053,
+            "action": "intervention",
+            "tension": 0.0858,
+            "vix": -0.0219,
+            "conflicts": 0.0281
+          },
+          {
+            "step": 2,
+            "reward": -0.0915,
+            "action": "sanctions_low",
+            "tension": 0.1675,
+            "vix": -0.125,
+            "conflicts": -0.2045
+          },
+          {
+            "step": 3,
+            "reward": -0.547,
+            "action": "intervention",
+            "tension": 0.0916,
+            "vix": -0.0009,
+            "conflicts": -0.0748
+          }
+        ]
+      },
+      "training": {
+        "episodes": 3,
+        "avgReturn": -1.6497,
+        "avgCriticLoss": 1.53746,
+        "returnHistoryLast10": [
+          -0.4095,
+          -1.5526,
+          -2.9869
+        ]
+      },
+      "interpretation": "Dreamer обучен на 3 imagination-эпизодах в latent space (dim=4). Return до/после: -0.970 → -1.031 (-0.062). Рекомендуемое действие: sanctions_high (P=0.225). Итоговый return политики: -1.144."
+    },
+    "continuous_causal": {
+      "module": "continuous_causal",
+      "available": true,
+      "elapsedMs": 1806,
+      "config": {
+        "variables": [
+          "vix",
+          "tension",
+          "conflicts",
+          "sanctions",
+          "hySpread"
+        ],
+        "hiddenDim": 8,
+        "epochs": 1,
+        "horizon": 4,
+        "timeAware": true
+      },
+      "dag": {
+        "nNodes": 5,
+        "nEdges": 6,
+        "edges": [
+          {
+            "from": "vix",
+            "to": "conflicts",
+            "score": 0.0918
+          },
+          {
+            "from": "vix",
+            "to": "sanctions",
+            "score": 0.2068
+          },
+          {
+            "from": "tension",
+            "to": "conflicts",
+            "score": 0.0918
+          },
+          {
+            "from": "tension",
+            "to": "sanctions",
+            "score": 0.2068
+          },
+          {
+            "from": "hySpread",
+            "to": "vix",
+            "score": 0.9853
+          },
+          {
+            "from": "hySpread",
+            "to": "tension",
+            "score": 0.9853
+          }
+        ],
+        "topologicalOrder": [
+          "hySpread",
+          "vix",
+          "tension",
+          "conflicts",
+          "sanctions"
+        ]
+      },
+      "training": {
+        "transitionsCount": 34,
+        "lossBefore": 0.00557,
+        "lossAfter": 0.00555,
+        "lossReduction": 0.0025
+      },
+      "forecast": {
+        "horizonHours": 1,
+        "trajectory": [
+          {
+            "t": 0,
+            "vix": 0.5597,
+            "tension": 0.6395,
+            "conflicts": 0.5,
+            "sanctions": 0.3,
+            "hySpread": 0.4304
+          },
+          {
+            "t": 0.5,
+            "vix": 0.5616,
+            "tension": 0.6324,
+            "conflicts": 0.5097,
+            "sanctions": 0.2993,
+            "hySpread": 0.4323
+          },
+          {
+            "t": 1,
+            "vix": 0.5639,
+            "tension": 0.6199,
+            "conflicts": 0.5184,
+            "sanctions": 0.2982,
+            "hySpread": 0.4358
+          },
+          {
+            "t": 1.5,
+            "vix": 0.5665,
+            "tension": 0.6028,
+            "conflicts": 0.5258,
+            "sanctions": 0.2967,
+            "hySpread": 0.4406
+          },
+          {
+            "t": 2,
+            "vix": 0.5695,
+            "tension": 0.5818,
+            "conflicts": 0.5321,
+            "sanctions": 0.2948,
+            "hySpread": 0.4464
+          },
+          {
+            "t": 2.5,
+            "vix": 0.5726,
+            "tension": 0.5579,
+            "conflicts": 0.5372,
+            "sanctions": 0.2926,
+            "hySpread": 0.453
+          },
+          {
+            "t": 3,
+            "vix": 0.5759,
+            "tension": 0.5318,
+            "conflicts": 0.5415,
+            "sanctions": 0.2899,
+            "hySpread": 0.46
+          },
+          {
+            "t": 3.5,
+            "vix": 0.5794,
+            "tension": 0.5041,
+            "conflicts": 0.5451,
+            "sanctions": 0.2869,
+            "hySpread": 0.4675
+          },
+          {
+            "t": 4,
+            "vix": 0.5829,
+            "tension": 0.4752,
+            "conflicts": 0.5482,
+            "sanctions": 0.2836,
+            "hySpread": 0.4753
+          }
+        ],
+        "trend": {
+          "vix": {
+            "before": 0.5597,
+            "after": 0.5829,
+            "delta": 0.0232
+          },
+          "tension": {
+            "before": 0.6395,
+            "after": 0.4752,
+            "delta": -0.1644
+          },
+          "conflicts": {
+            "before": 0.5,
+            "after": 0.5482,
+            "delta": 0.0482
+          },
+          "sanctions": {
+            "before": 0.3,
+            "after": 0.2836,
+            "delta": -0.0164
+          },
+          "hySpread": {
+            "before": 0.4304,
+            "after": 0.4753,
+            "delta": 0.0448
+          }
+        },
+        "direction": "deescalation"
+      },
+      "counterfactual": {
+        "intervention": {
+          "tension": 0.8
+        },
+        "diff": [
+          0,
+          0.3248,
+          0.0003,
+          0.0034,
+          0
+        ],
+        "diffMagnitude": 0.3248
+      },
+      "ate": {
+        "intervention": {
+          "tension": 0.8
+        },
+        "baseline": {
+          "tension": 0.3
+        },
+        "horizon": 5,
+        "nSamples": 15,
+        "totalMagnitude": 0.5001,
+        "perVar": {
+          "vix": {
+            "ate": 0,
+            "std": 0,
+            "sign": "neutral"
+          },
+          "tension": {
+            "ate": 0.5,
+            "std": 0,
+            "sign": "positive"
+          },
+          "conflicts": {
+            "ate": 0.0014,
+            "std": 0.0006,
+            "sign": "neutral"
+          },
+          "sanctions": {
+            "ate": 0.0096,
+            "std": 0.0001,
+            "sign": "neutral"
+          },
+          "hySpread": {
+            "ate": 0,
+            "std": 0,
+            "sign": "neutral"
+          }
+        }
+      },
+      "interpretation": "Continuous Causal обучен на 34 переходах. DAG: 6 рёбер (5 узлов). Loss: 0.00557 → 0.00555 (reduction 0.2%). Прогноз на 4 шагов (1ч): deescalation. Counterfactual do(tension=0.8): |diff|=0.325. ATE(tension: 0.3→0.8) = 0.500."
+    }
+  },
+  "interpretation": "Simulation Engine v7.0: 4/4 модулей активно. Консенсус: escalation (agreement=50%). Confidence: 0.65 (moderate). Разногласие: escalation доминирует, но только 50% согласия"
+}
+
+
+========================================================================
+
+FILE: runs/predictions/test_results.json
+SIZE: 3086 bytes
+SHA1: eecd8664aacdc1b2
+========================================================================
+
+{
+  "tests": {
+    "1. Байесовское ядро": {
+      "status": "PASS",
+      "details": "prior=0.2 -> posterior=0.3500 (shift=0.1500)"
+    },
+    "2. Наивный байес": {
+      "status": "PASS",
+      "details": "predicted=stable (P=1.000)"
+    },
+    "3. Цепи Маркова": {
+      "status": "PASS",
+      "details": "stable -> stable (5-step crisis=0.0000)"
+    },
+    "4. Монте-Карло": {
+      "status": "PASS",
+      "details": "iterations=5000 crisis=0.0014 stable=0.2808"
+    },
+    "5. Временные ряды": {
+      "status": "PASS",
+      "details": "model=ses forecast=[17.58, 17.58, 17.58]"
+    },
+    "6. Brier Score / калибровка": {
+      "status": "PASS",
+      "details": "Brier=0.1573 reliability=0.1571 resolution=0.2500"
+    },
+    "7. Каскадные цепочки": {
+      "status": "PASS",
+      "details": "conflict=0.30 -> oil=0.2500 -> vix=0.3500 -> hy=0.2400"
+    },
+    "8. Ансамбль": {
+      "status": "PASS",
+      "details": "ensembleForecast probability=0.3291 method=logpool"
+    },
+    "9. LLM-агенты": {
+      "status": "PASS",
+      "details": "Hawk=0.55 Dove=0.2 Skeptic=0.3 -> Arbiter=0.3500"
+    },
+    "10. Процесс Хоукса": {
+      "status": "PASS",
+      "details": "branching=0.300 (stationary) P(24h)=1.0000"
+    },
+    "11. HMM (скрытые марковские)": {
+      "status": "PASS",
+      "details": "stable -> stable (shift=false)"
+    },
+    "12. Фильтр Калмана": {
+      "status": "PASS",
+      "details": "smoothed=17.29 trend=-0.1247 forecast5=[17.16, 17.04, 16.91, 16.79, 16.66]"
+    },
+    "13. Модель Изинга": {
+      "status": "PASS",
+      "details": "T=1.373 Tc=1.583 ratio=0.867 M=0.333 flip=0.429"
+    },
+    "14. Перенос энтропии": {
+      "status": "PASS",
+      "details": "top=vix→conflicts TE=0.0000"
+    },
+    "15. SIR/SEIR контагия": {
+      "status": "PASS",
+      "details": "R0=4.000 peak_I=23 (step 26) final=(10, 22, 21)"
+    },
+    "16. Теория экстремальных значений": {
+      "status": "PASS",
+      "details": "P(30d)=0.0000 method=frequency"
+    },
+    "17. Орнштейн-Уленбек": {
+      "status": "PASS",
+      "details": "mu=18.53 theta=0.2141 halfLife=3.2 fc3=[17.26, 17.51, 17.70]"
+    },
+    "18. Копулы": {
+      "status": "PASS",
+      "details": "pairs=1 strongest=vix_conflicts lowerTail=0.000 upperTail=0.000"
+    },
+    "19. BOCPD (детектор разладки)": {
+      "status": "PASS",
+      "details": "cpProb=0.0071 runLength=10 changepoints=0"
+    },
+    "20. Particle Filter": {
+      "status": "PASS",
+      "details": "estimate=17.40+-0.76 forecast=17.36+-0.99"
+    },
+    "21. MLP нейросеть": {
+      "status": "PASS",
+      "details": "prediction=stable confidence=0.519"
+    },
+    "22. GCN + DQN": {
+      "status": "PASS",
+      "details": "GCN nodes=1,0,1,1,0,1 DQN action=add_sources(state=3)"
+    }
+  },
+  "passed": 22,
+  "failed": 0,
+  "timestamp": "2026-09-16T16:35:39.724Z"
+}
+
+
+========================================================================
+
+FILE: runs/mutation/report.md
+SIZE: 536 bytes
+SHA1: 2526c9d23f8a6d9d
+========================================================================
+
+# Mutation Testing Report
+
+Дата: 2026-09-16T17:08:43.596Z
+Overall: **100.0%** (порог 70.0%)
+
+## По наборам
+
+| Набор | Статус | Score | Killed | Total | Время | Trend |
+|-------|--------|-------|--------|-------|-------|-------|
+| MetaLearner | OK | 100.0% | 6 | 6 | 127ms | up |
+| Hypergraph Contagion | OK | 100.0% | 6 | 6 | 78ms | same |
+| Attention Dynamics | OK | 100.0% | 6 | 6 | 100ms | same |
+| Adversarial Co-evolution | OK | 100.0% | 6 | 6 | 78ms | same |
+
+## Выжившие мутации
+
+
+
+
+========================================================================
+КОНЕЦ ТОМА part-6-infra-and-tests
+ФАЙЛОВ НАЙДЕНО: 108
+ФАЙЛОВ НЕ НАЙДЕНО: 1
+ФАЙЛОВ ОБРЕЗАНО: 0
+РАЗМЕР ТОМА: 749.0 KB
+========================================================================

@@ -1,0 +1,16 @@
+export const ecologicalLayers = {
+  fires: { name: 'Пожары FIRMS', category: 'ecological', icon: '🔥', color: '#ff4400', visualizationType: 'marker', defaultLat: 0, defaultLng: 0 },
+  earthquakes: { name: 'Землетрясения USGS', category: 'ecological', icon: '🌋', color: '#ff8800', visualizationType: 'marker', defaultLat: 0, defaultLng: 0 },
+  noaa: { name: 'NOAA Погода', category: 'ecological', icon: '⛅', color: '#00ccff', visualizationType: 'marker', defaultLat: 0, defaultLng: 0 },
+  viirs: { name: 'Ночные огни VIIRS', category: 'ecological', icon: '🌃', color: '#ffff44', visualizationType: 'marker', defaultLat: 0, defaultLng: 0 },
+  floods: { name: 'Наводнения', category: 'ecological', icon: '🌊', color: '#44aaff', visualizationType: 'marker', defaultLat: 0, defaultLng: 0 },
+  agriculture: { name: 'Сельское хозяйство', category: 'ecological', icon: '🌾', color: '#44cc44', visualizationType: 'choropleth' },
+  'air-quality': { name: 'Качество воздуха', category: 'ecological', icon: '🌫️', color: '#88aa44', visualizationType: 'choropleth' },
+  forests: { name: 'Леса', category: 'ecological', icon: '🌲', color: '#22aa44', visualizationType: 'choropleth' },
+  safecast: { name: 'Safecast Радиация', category: 'ecological', icon: '☢️', color: '#ff00ff', visualizationType: 'marker', defaultLat: 0, defaultLng: 0 },
+  usgs: { name: 'USGS Землетрясения', category: 'ecological', icon: '🌋', color: '#ff6600', visualizationType: 'marker', defaultLat: 0, defaultLng: 0 },
+  firms: { name: 'FIRMS Пожары', category: 'ecological', icon: '🔥', color: '#ff4400', visualizationType: 'marker', defaultLat: 0, defaultLng: 0 },
+  thermal: { name: 'Термальные данные', category: 'ecological', icon: '🌡️', color: '#ff6600', visualizationType: 'marker', defaultLat: 0, defaultLng: 0 },
+  climate: { name: 'Климатические данные', category: 'ecological', icon: '🌍', color: '#44ccff', visualizationType: 'choropleth' },
+  ocean: { name: 'Океанические данные', category: 'ecological', icon: '🌊', color: '#0044ff', visualizationType: 'marker', defaultLat: 0, defaultLng: 0 },
+};

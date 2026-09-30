@@ -1,0 +1,72 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "fx-rates",
+    "source": "Frankfurter API (ECB)",
+    "source_url": "https://api.frankfurter.app/latest?from=USD",
+    "fetched_at": "2026-09-27T16:35:46.941Z",
+    "normalized_at": "2026-09-27T16:38:26.463Z",
+    "collector": "collect-frankfurter.mjs",
+    "license": "public-domain",
+    "count": 1,
+    "granularity": "snapshot",
+    "value_unit": "rate",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null
+  },
+  "series": [],
+  "points": [],
+  "regions": [],
+  "documents": [],
+  "graph": null,
+  "extra": {
+    "adapter": "catalog",
+    "adapter_version": "1.1.0",
+    "type_counts": {
+      "unknown": 1
+    },
+    "regions_count": 0,
+    "entries": [
+      {
+        "source": "Frankfurter (ECB)",
+        "updated": "2026-09-27T16:35:46.933Z",
+        "base": "USD",
+        "date": "2026-09-25",
+        "rates": {
+          "AUD": 1.4224,
+          "BRL": 5.1821,
+          "CAD": 1.4143,
+          "CHF": 0.82829,
+          "CNY": 6.7132,
+          "CZK": 21.35,
+          "DKK": 6.5557,
+          "EUR": 0.87696,
+          "GBP": 0.75458,
+          "HKD": 7.844,
+          "HUF": 320.34,
+          "IDR": 17914,
+          "ILS": 3.0338,
+          "INR": 95.82,
+          "ISK": 119.79,
+          "JPY": 157.59,
+          "KRW": 1355.05,
+          "MXN": 17.6989,
+          "MYR": 4.074,
+          "NOK": 9.5063,
+          "NZD": 1.7634,
+          "PHP": 62.478,
+          "PLN": 3.8339,
+          "RON": 4.6273,
+          "SEK": 9.9009,
+          "SGD": 1.2771,
+          "THB": 33.345,
+          "TRY": 48.933,
+          "ZAR": 16.2938
+        }
+      }
+    ],
+    "entries_count": 1,
+    "wrapped_single_object": true
+  }
+}

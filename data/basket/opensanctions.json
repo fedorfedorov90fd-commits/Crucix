@@ -1,0 +1,254 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "opensanctions",
+    "source": "OpenSanctions (demo)",
+    "source_url": "https://www.opensanctions.org/",
+    "fetched_at": "2026-09-27T16:37:12.111Z",
+    "normalized_at": "2026-09-27T16:38:26.701Z",
+    "collector": "collect-opensanctions.mjs",
+    "license": "public-domain",
+    "count": 31,
+    "granularity": "snapshot",
+    "value_unit": "count",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null,
+    "period": "P30D"
+  },
+  "series": [],
+  "points": [],
+  "regions": [
+    {
+      "region": "IRN",
+      "value": 7,
+      "count": 7,
+      "aggregation": "count"
+    },
+    {
+      "region": "MMR",
+      "value": 6,
+      "count": 6,
+      "aggregation": "count"
+    },
+    {
+      "region": "RUS",
+      "value": 6,
+      "count": 6,
+      "aggregation": "count"
+    },
+    {
+      "region": "CHN",
+      "value": 6,
+      "count": 6,
+      "aggregation": "count"
+    },
+    {
+      "region": "BLR",
+      "value": 5,
+      "count": 5,
+      "aggregation": "count"
+    }
+  ],
+  "documents": [],
+  "graph": null,
+  "extra": {
+    "adapter": "catalog",
+    "adapter_version": "1.1.0",
+    "type_counts": {
+      "Компания": 12,
+      "Физическое лицо": 10,
+      "Организация": 9
+    },
+    "regions_count": 5,
+    "entries": [
+      {
+        "date": "2026-08-28",
+        "country": "Беларусь",
+        "type": "Компания",
+        "count": 13
+      },
+      {
+        "date": "2026-08-29",
+        "country": "Мьянма",
+        "type": "Физическое лицо",
+        "count": 7
+      },
+      {
+        "date": "2026-08-30",
+        "country": "Иран",
+        "type": "Физическое лицо",
+        "count": 5
+      },
+      {
+        "date": "2026-08-31",
+        "country": "Россия",
+        "type": "Компания",
+        "count": 9
+      },
+      {
+        "date": "2026-09-01",
+        "country": "Китай",
+        "type": "Компания",
+        "count": 10
+      },
+      {
+        "date": "2026-09-02",
+        "country": "Беларусь",
+        "type": "Организация",
+        "count": 1
+      },
+      {
+        "date": "2026-09-03",
+        "country": "Россия",
+        "type": "Организация",
+        "count": 6
+      },
+      {
+        "date": "2026-09-04",
+        "country": "Китай",
+        "type": "Организация",
+        "count": 8
+      },
+      {
+        "date": "2026-09-05",
+        "country": "Северная Корея",
+        "type": "Компания",
+        "count": 1
+      },
+      {
+        "date": "2026-09-06",
+        "country": "Иран",
+        "type": "Физическое лицо",
+        "count": 3
+      },
+      {
+        "date": "2026-09-07",
+        "country": "Китай",
+        "type": "Организация",
+        "count": 10
+      },
+      {
+        "date": "2026-09-08",
+        "country": "Иран",
+        "type": "Компания",
+        "count": 9
+      },
+      {
+        "date": "2026-09-09",
+        "country": "Мьянма",
+        "type": "Компания",
+        "count": 11
+      },
+      {
+        "date": "2026-09-10",
+        "country": "Китай",
+        "type": "Физическое лицо",
+        "count": 5
+      },
+      {
+        "date": "2026-09-11",
+        "country": "Мьянма",
+        "type": "Физическое лицо",
+        "count": 11
+      },
+      {
+        "date": "2026-09-12",
+        "country": "Китай",
+        "type": "Компания",
+        "count": 9
+      },
+      {
+        "date": "2026-09-13",
+        "country": "Россия",
+        "type": "Компания",
+        "count": 5
+      },
+      {
+        "date": "2026-09-14",
+        "country": "Иран",
+        "type": "Организация",
+        "count": 13
+      },
+      {
+        "date": "2026-09-15",
+        "country": "Иран",
+        "type": "Компания",
+        "count": 11
+      },
+      {
+        "date": "2026-09-16",
+        "country": "Мьянма",
+        "type": "Организация",
+        "count": 10
+      },
+      {
+        "date": "2026-09-17",
+        "country": "Иран",
+        "type": "Организация",
+        "count": 15
+      },
+      {
+        "date": "2026-09-18",
+        "country": "Беларусь",
+        "type": "Физическое лицо",
+        "count": 12
+      },
+      {
+        "date": "2026-09-19",
+        "country": "Китай",
+        "type": "Физическое лицо",
+        "count": 9
+      },
+      {
+        "date": "2026-09-20",
+        "country": "Беларусь",
+        "type": "Компания",
+        "count": 9
+      },
+      {
+        "date": "2026-09-21",
+        "country": "Россия",
+        "type": "Физическое лицо",
+        "count": 14
+      },
+      {
+        "date": "2026-09-22",
+        "country": "Беларусь",
+        "type": "Физическое лицо",
+        "count": 7
+      },
+      {
+        "date": "2026-09-23",
+        "country": "Россия",
+        "type": "Компания",
+        "count": 5
+      },
+      {
+        "date": "2026-09-24",
+        "country": "Мьянма",
+        "type": "Физическое лицо",
+        "count": 14
+      },
+      {
+        "date": "2026-09-25",
+        "country": "Мьянма",
+        "type": "Компания",
+        "count": 11
+      },
+      {
+        "date": "2026-09-26",
+        "country": "Россия",
+        "type": "Организация",
+        "count": 8
+      },
+      {
+        "date": "2026-09-27",
+        "country": "Иран",
+        "type": "Организация",
+        "count": 4
+      }
+    ],
+    "entries_count": 31
+  }
+}

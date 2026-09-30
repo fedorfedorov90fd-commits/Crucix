@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-09-12T00:00:00Z",
+  "description": "Схема всех аналитических файлов. Обязательные поля.",
+  "required_meta_fields": [
+    "id",
+    "category",
+    "version",
+    "schema_version",
+    "sources",
+    "calculator",
+    "updated_at",
+    "period",
+    "checksum"
+  ],
+  "optional_meta_fields": [
+    "tags",
+    "owner",
+    "staleness_warning_hours",
+    "next_scheduled"
+  ],
+  "body_field": "data"
+}

@@ -1,0 +1,20 @@
+{
+  "name": "crucix-rag-module",
+  "version": "1.0.0",
+  "description": "RAG-модуль для Crucix с поддержкой Ollama, локального DeepSeek и внешнего API",
+  "main": "rag-server.mjs",
+  "type": "module",
+  "scripts": {
+    "start": "node rag-server.mjs",
+    "index": "node rag-indexer.mjs",
+    "dev": "node --watch rag-server.mjs"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "chalk": "^5.3.0",
+    "axios": "^1.6.0",
+    "node-fetch": "^3.3.2"
+  }
+}

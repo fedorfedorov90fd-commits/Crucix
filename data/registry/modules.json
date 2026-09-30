@@ -1,0 +1,24 @@
+{
+  "modules": [
+    {
+      "id": "map-layer-vix",
+      "name": "VIX на карте",
+      "category": "map-layer",
+      "description": "Визуализация индекса VIX на интерактивной карте",
+      "version": "1.0.0",
+      "api": "/api/map-layer-vix/",
+      "page": "/map-layer-vix",
+      "collector": "collect-map-layer-vix",
+      "status": "active",
+      "created": "2026-09-04T15:58:56.490Z",
+      "requiresAuth": false,
+      "dataSource": "basket/vix.json",
+      "tags": [
+        "vix",
+        "market",
+        "map",
+        "layer"
+      ]
+    }
+  ]
+}

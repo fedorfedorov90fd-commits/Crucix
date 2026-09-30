@@ -1,0 +1,311 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://crucix.local/schemas/basket.v1.json",
+  "title": "Crucix Basket Schema v1",
+  "description": "Единый формат данных корзины Crucix. Один файл содержит пять представлений одного источника: series (временной ряд для моделей), points (пространственные точки для карты), regions (региональные агрегаты для choropleth), documents (текстовые документы для NLP), graph (граф связей между сущностями). Плюс блок meta (провенанс) и блок extra (специфика источника).",
+  "type": "object",
+  "required": ["schema", "meta", "series", "points", "regions"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "type": "string",
+      "const": "crucix.basket.v1",
+      "description": "Идентификатор версии схемы."
+    },
+    "meta": {
+      "type": "object",
+      "required": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "additionalProperties": false,
+      "description": "Провенанс. Кто, откуда, когда, по какой лицензии, в каком объёме, в каких единицах, какой тип значения.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$",
+          "description": "Идентификатор товара. Совпадает с именем файла в data/basket/ без .json."
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Название источника. Пример: 'USGS Earthquake API'."
+        },
+        "source_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Точный URL запроса."
+        },
+        "fetched_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601. Когда получено от источника."
+        },
+        "normalized_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601. Когда нормализовано кладовщиком."
+        },
+        "collector": {
+          "type": "string",
+          "pattern": "^collect-[a-z0-9-]+\\.mjs$",
+          "description": "Имя сборщика. Пример: 'collect-usgs.mjs'."
+        },
+        "license": {
+          "type": "string",
+          "enum": ["public-domain", "cc-by", "cc-by-sa", "cc-zero", "odc-by", "ogl", "proprietary", "unknown"],
+          "description": "Лицензия источника."
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Общее число записей в товаре."
+        },
+        "granularity": {
+          "type": "string",
+          "enum": ["event", "hourly", "daily", "weekly", "monthly", "quarterly", "yearly", "snapshot"],
+          "description": "Шаг временного ряда."
+        },
+        "value_unit": {
+          "type": "string",
+          "enum": ["magnitude", "severity_0_1", "severity_0_10", "percent", "USD", "EUR", "index", "count", "ratio", "MW", "meters", "events_per_day", "unknown"],
+          "description": "Единица измерения основной метрики value."
+        },
+        "value_scale": {
+          "type": "string",
+          "description": "Шкала измерения (опционально). Примеры: 'richter', '0-1', '0-10', '0-100'."
+        },
+        "value_type": {
+          "type": "string",
+          "enum": ["magnitude", "severity", "price", "ratio", "index", "count", "temperature", "probability", "unknown"],
+          "description": "Тип основной метрики. Отличается от value_unit: value_unit='USD' → value_type='price'; value_unit='magnitude' → value_type='magnitude'. Модели нормализации (sigmoid, min-max) используют value_type для выбора функции."
+        },
+        "value_range": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": { "type": "number" },
+          "description": "Границы шкалы [min, max]. Для нормализации. Пример [0, 10] для магнитуды, [0, 100] для процентов."
+        },
+        "period": {
+          "type": "string",
+          "pattern": "^P[0-9]+[YMWD]$",
+          "description": "Период в формате ISO 8601 duration. Пример: 'P730D'."
+        },
+        "extra_meta": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Дополнительные поля провенанса, специфичные для источника."
+        }
+      }
+    },
+    "series": {
+      "type": "array",
+      "description": "Временной ряд для моделей: MCMC, particle filter, Hawkes, BayesNet, GPD.",
+      "items": {
+        "type": "object",
+        "required": ["date", "value"],
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "ISO 8601 date."
+          },
+          "value": {
+            "type": "number",
+            "description": "Основное числовое значение."
+          },
+          "value_secondary": {
+            "type": "number",
+            "description": "Второе значение, если ряд двумерный."
+          },
+          "region": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2/alpha-3 код региона или 'GLOBAL'."
+          },
+          "extra": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Специфичные поля точки."
+          }
+        }
+      }
+    },
+    "points": {
+      "type": "array",
+      "description": "Пространственные точки для маркеров на карте.",
+      "items": {
+        "type": "object",
+        "required": ["lat", "lon"],
+        "additionalProperties": false,
+        "properties": {
+          "lat": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90,
+            "description": "Широта в градусах WGS84."
+          },
+          "lon": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180,
+            "description": "Долгота в градусах WGS84."
+          },
+          "value": {
+            "type": "number",
+            "description": "Числовая величина события."
+          },
+          "label": {
+            "type": "string",
+            "description": "Название для подсказки."
+          },
+          "region": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2/alpha-3 код региона."
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601. Когда событие произошло."
+          },
+          "extra": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Специфичные поля точки."
+          }
+        }
+      }
+    },
+    "regions": {
+      "type": "array",
+      "description": "Региональные агрегаты для заливки стран (choropleth).",
+      "items": {
+        "type": "object",
+        "required": ["region", "value"],
+        "additionalProperties": false,
+        "properties": {
+          "region": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2/alpha-3 код региона или 'GLOBAL'. Текст сохраняется как есть, если маппинг не найден."
+          },
+          "value": {
+            "type": "number",
+            "description": "Агрегированное значение для региона."
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Число событий, из которых собрано значение."
+          },
+          "aggregation": {
+            "type": "string",
+            "enum": ["max", "min", "mean", "median", "sum", "count", "first", "last"],
+            "description": "Как агрегировано значение из событий региона. Без этого поле regions неоднозначно: value=4.2 может быть max магнитуды, mean или sum. Модели используют aggregation для правильной интерпретации."
+          },
+          "extra": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Специфичные поля региона. Здесь же unmapped_region и unmapped_reason если регион не найден в справочнике."
+          }
+        }
+      }
+    },
+    "documents": {
+      "type": "array",
+      "description": "Текстовые документы для NLP, нарратив-анализа, entity extraction. Опционально, если у источника нет текста — пустой массив.",
+      "items": {
+        "type": "object",
+        "required": ["id", "text"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Уникальный идентификатор документа."
+          },
+          "text": {
+            "type": "string",
+            "description": "Полный текст документа или его аннотация."
+          },
+          "title": {
+            "type": "string",
+            "description": "Заголовок."
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Ссылка на исходный документ."
+          },
+          "lang": {
+            "type": "string",
+            "pattern": "^[a-z]{2}$",
+            "description": "ISO 639-1 код языка."
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601. Когда документ опубликован."
+          },
+          "region": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2/alpha-3 код региона."
+          },
+          "extra": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Специфичные поля документа."
+          }
+        }
+      }
+    },
+    "graph": {
+      "type": ["object", "null"],
+      "description": "Граф связей между сущностями (санкционные сети, supply chain cascade). Опционально, если у источника нет связей — null.",
+      "required": ["nodes", "edges"],
+      "additionalProperties": false,
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+              "id": { "type": "string" },
+              "type": { "type": "string" },
+              "label": { "type": "string" },
+              "extra": { "type": "object", "additionalProperties": true }
+            }
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["source", "target"],
+            "properties": {
+              "source": { "type": "string" },
+              "target": { "type": "string" },
+              "type": { "type": "string" },
+              "weight": { "type": "number" },
+              "extra": { "type": "object", "additionalProperties": true }
+            }
+          }
+        }
+      }
+    },
+    "extra": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Специфика источника верхнего уровня. Сохраняется, чтобы не потерять ни одного поля из сырья."
+    }
+  }
+}

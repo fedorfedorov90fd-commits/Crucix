@@ -1,0 +1,16 @@
+# Список URL для пакетной проверки (check-urls.mjs)
+# Один URL на строку, # — комментарий
+# Добавляй сюда URL по мере необходимости
+
+# === Thinktanks (проверено 23.09.2026) ===
+https://www.cfr.org/feed
+https://news.google.com/rss/search?q=site:csis.org+when:7d&hl=en-US&gl=US&ceid=US:en
+https://news.google.com/rss/search?q=site:iiss.org+when:7d&hl=en-US&gl=US&ceid=US:en
+
+# === Data sources (проверка) ===
+https://dataverse.harvard.edu/api/datasets/:persistentId/?persistentId=doi:10.7910/DVN/LEJUQZ
+https://digitallibrary.un.org
+
+# === Российские (контроль) ===
+https://tass.ru/rss/v2.xml
+https://ria.ru/export/rss2/index.xml

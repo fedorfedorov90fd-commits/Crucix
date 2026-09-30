@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crucix · Adversarial Co-evolution</title>
+<style>
+:root {
+  --bg: #06080f;
+  --surface: #0d1220;
+  --surface2: #161d2e;
+  --surface3: #1f2842;
+  --border: #1a2540;
+  --border2: #2b3a5c;
+  --text: #e8edf5;
+  --text-dim: #8fa1c2;
+  --text-faint: #5a6b8a;
+  --accent: #3b82f6;
+  --accent2: #8b5cf6;
+  --accent3: #ec4899;
+  --green: #22c55e;
+  --yellow: #eab308;
+  --orange: #f97316;
+  --red: #ef4444;
+  --cyan: #06b6d4;
+  --mono: 'SF Mono', monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding: 20px;
+  min-height: 100vh;
+  font-size: 13px;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: linear-gradient(90deg, var(--surface), rgba(239,68,68,0.08));
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.header h1 { font-size: 20px; font-weight: 800; }
+.header h1 span { color: var(--text-dim); font-weight: 400; font-size: 13px; }
+.header-nav { display: flex; gap: 6px; }
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--surface2);
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 600;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+.nav-link:hover { background: var(--surface3); color: var(--text); }
+.nav-link.active {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--red);
+  border-color: var(--red);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 14px;
+  max-width: 1900px;
+  margin: 0 auto;
+}
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+}
+.card-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  margin-bottom: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.tag {
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-weight: 600;
+  background: var(--surface2);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+}
+.col-12 { grid-column: span 12; }
+.col-8 { grid-column: span 8; }
+.col-6 { grid-column: span 6; }
+.col-4 { grid-column: span 4; }
+
+.key-insight {
+  padding: 20px;
+  background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(249,115,22,0.1));
+  border: 2px solid var(--red);
+  border-radius: 12px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+.key-insight.safe {
+  background: linear-gradient(135deg, rgba(34,197,94,0.1), rgba(6,182,212,0.1));
+  border-color: var(--green);
+}
+
+.opponent-card {
+  background: var(--surface2);
+  border-radius: 12px;
+  padding: 16px;
+  border-left: 4px solid var(--accent);
+  transition: transform 0.2s;
+}
+.opponent-card:hover { transform: translateY(-2px); }
+.opponent-card.adapting { border-left-color: var(--red); animation: pulse 2s infinite; }
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+}
+
+.opponent-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.opponent-name {
+  font-size: 16px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.opponent-adapt-badge {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.opponent-adapt-badge.yes {
+  background: rgba(239, 68, 68, 0.2);
+  color: var(--red);
+}
+.opponent-adapt-badge.no {
+  background: rgba(34, 197, 94, 0.2);
+  color: var(--green);
+}
+
+.strategy-distribution {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.strategy-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+}
+.strategy-name {
+  width: 90px;
+  color: var(--text-dim);
+  font-weight: 600;
+  text-transform: capitalize;
+}
+.strategy-track {
+  flex: 1;
+  height: 16px;
+  background: var(--surface3);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.strategy-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.8s ease;
+}
+.strategy-value {
+  font-family: var(--mono);
+  font-weight: 700;
+  min-width: 45px;
+  text-align: right;
+  font-size: 11px;
+}
+
+.predicted-next {
+  padding: 10px 12px;
+  background: var(--surface3);
+  border-radius: 8px;
+  margin-top: 10px;
+}
+.predicted-next-label {
+  font-size: 10px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+.predicted-next-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent3);
+  text-transform: capitalize;
+}
+
+.kl-info {
+  font-size: 10px;
+  color: var(--text-faint);
+  font-family: var(--mono);
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+.history-item {
+  padding: 8px 10px;
+  background: var(--surface2);
+  border-radius: 6px;
+  border-left: 3px solid var(--accent2);
+  font-size: 11px;
+}
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  font-family: var(--mono);
+}
+.history-observed { color: var(--yellow); font-weight: 700; }
+.history-predicted { color: var(--accent2); font-weight: 700; }
+.history-meta {
+  font-size: 10px;
+  color: var(--text-faint);
+}
+
+.empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-faint);
+  font-size: 12px;
+}
+
+.tooltip {
+  position: fixed;
+  background: var(--surface3);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 11px;
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.2s;
+  max-width: 320px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+  line-height: 1.5;
+}
+.tooltip.visible { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Crucix <span>· Adversarial Co-evolution</span></h1>
+  <nav class="header-nav">
+    <a href="/crucix.html" class="nav-link">🏠 Crucix</a>
+    <a href="/advanced.html" class="nav-link">🧠 Advanced</a>
+    <a href="/hypergraph.html" class="nav-link">🕸 Hypergraph</a>
+    <a href="/attention.html" class="nav-link">👁 Attention</a>
+    <a href="/coevolution.html" class="nav-link active">⚔ Co-evolution</a>
+  </nav>
+</div>
+
+<div class="grid">
+
+  <!-- Key insight banner -->
+  <div class="card col-12">
+    <div class="key-insight" id="key-insight">
+      Загрузка...
+    </div>
+  </div>
+
+  <!-- Opponents grid -->
+  <div class="card col-12">
+    <div class="card-title">
+      Модели противников
+      <span class="tag" id="opponents-count">—</span>
+    </div>
+    <div id="opponents-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px;">
+      <div class="empty">Ожидание данных...</div>
+    </div>
+  </div>
+
+  <!-- Simulation history -->
+  <div class="card col-12">
+    <div class="card-title">
+      История симуляции
+      <span class="tag">последние раунды</span>
+    </div>
+    <div class="history-list" id="history-list">
+      <div class="empty">Ожидание данных...</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const CONFIG = { dataUrl: '../runs/predictions/latest_forecast.json', refreshMs: 60000 };
+
+const STRATEGY_COLORS = {
+  escalate: '#ef4444',
+  hold: '#eab308',
+  deescalate: '#22c55e',
+  deceive: '#8b5cf6',
+  forecast_high: '#ef4444',
+  forecast_low: '#22c55e',
+  withhold: '#64748b',
+};
+
+const OPPONENT_COLORS = {
+  russia: '#ef4444',
+  china: '#f97316',
+  usa: '#3b82f6',
+  eu: '#22c55e',
+  iran: '#8b5cf6',
+  nato: '#06b6d4',
+};
+
+let DATA = null;
+
+async function load() {
+  try {
+    const res = await fetch(CONFIG.dataUrl);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    DATA = await res.json();
+    render();
+  } catch (e) {
+    console.error('Load error:', e);
+  }
+}
+
+function render() {
+  if (!DATA) return;
+  const ace = DATA.adversarialCoEvolution;
+  if (!ace) {
+    document.querySelectorAll('.empty').forEach(el => el.textContent = 'Нет данных о co-evolution');
+    return;
+  }
+
+  renderKeyInsight(ace);
+  renderOpponents(ace);
+  renderHistory(ace);
+}
+
+function renderKeyInsight(ace) {
+  const el = $('key-insight');
+  const adapting = (ace.adaptations || []).filter(a => a.adaptation?.adapted);
+
+  if (adapting.length > 0) {
+    el.className = 'key-insight';
+    el.innerHTML = `
+      ⚠ <strong>${adapting.length}</strong> противник(ов) адаптируется к нашим прогнозам<br>
+      <span style="font-size: 12px; font-weight: 400; margin-top: 8px; display: block;">
+        ${adapting.map(a => `${a.opponent.toUpperCase()} (KL=${a.adaptation.klDivergence.toFixed(2)})`).join(', ')}
+      </span>
+    `;
+  } else {
+    el.className = 'key-insight safe';
+    el.innerHTML = `
+      ✓ Противники не демонстрируют явной адаптации<br>
+      <span style="font-size: 12px; font-weight: 400; margin-top: 8px; display: block;">
+        Текущая стратегия прогнозирования оптимальна
+      </span>
+    `;
+  }
+}
+
+function renderOpponents(ace) {
+  const grid = $('opponents-grid');
+  const adaptations = ace.adaptations || [];
+
+  $('opponents-count').textContent = `${adaptations.length}`;
+
+  if (adaptations.length === 0) {
+    grid.innerHTML = '<div class="empty">Нет моделей противников</div>';
+    return;
+  }
+
+  grid.innerHTML = adaptations.map(a => {
+    const oppColor = OPPONENT_COLORS[a.opponent] || '#64748b';
+    const isAdapting = a.adaptation?.adapted;
+    const distribution = a.distribution || {};
+
+    const strategyRows = Object.entries(distribution)
+      .sort((x, y) => y[1] - x[1])
+      .map(([strategy, prob]) => {
+        const color = STRATEGY_COLORS[strategy] || '#64748b';
+        return `
+          <div class="strategy-row">
+            <span class="strategy-name">${strategy}</span>
+            <div class="strategy-track">
+              <div class="strategy-fill" style="width: ${prob * 100}%; background: ${color};"></div>
+            </div>
+            <span class="strategy-value" style="color: ${color};">${(prob * 100).toFixed(1)}%</span>
+          </div>
+        `;
+      }).join('');
+
+    return `
+      <div class="opponent-card ${isAdapting ? 'adapting' : ''}" style="border-left-color: ${oppColor};">
+        <div class="opponent-header">
+          <span class="opponent-name" style="color: ${oppColor};">${a.opponent}</span>
+          <span class="opponent-adapt-badge ${isAdapting ? 'yes' : 'no'}">
+            ${isAdapting ? '⚠ Адаптируется' : '✓ Стабилен'}
+          </span>
+        </div>
+        <div class="strategy-distribution">
+          ${strategyRows}
+        </div>
+        <div class="predicted-next">
+          <div class="predicted-next-label">Прогноз следующей стратегии</div>
+          <div class="predicted-next-value" style="color: ${STRATEGY_COLORS[a.predictedStrategy] || oppColor};">
+            ${a.predictedStrategy} (${(a.predictedProbability * 100).toFixed(1)}%)
+          </div>
+        </div>
+        ${a.adaptation?.klDivergence !== undefined ? `
+          <div class="kl-info">
+            KL divergence: ${a.adaptation.klDivergence.toFixed(3)}
+            ${isAdapting ? '(> 0.3 = адаптация)' : ''}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function renderHistory(ace) {
+  const list = $('history-list');
+  const history = ace.evolutionHistory || [];
+
+  if (history.length === 0) {
+    list.innerHTML = '<div class="empty">Нет истории симуляции</div>';
+    return;
+  }
+
+  list.innerHTML = history.reverse().slice(0, 20).map((h, idx) => {
+    const actionsHtml = (h.actions || []).map(a => `
+      <div style="padding: 6px 8px; background: var(--surface3); border-radius: 6px; margin-bottom: 4px;">
+        <div class="history-header">
+          <span style="color: ${OPPONENT_COLORS[a.opponent] || 'var(--text)'};">${a.opponent}</span>
+          <span>наблюдалось: <span class="history-observed">${a.observed}</span></span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-faint);">
+          <span>прогноз: <span class="history-predicted">${a.predicted}</span></span>
+          <span>${a.adaptation?.adapted ? '⚠ адаптация' : 'ok'}</span>
+        </div>
+      </div>
+    `).join('');
+
+    return `
+      <div class="history-item">
+        <div class="history-header">
+          <span style="color: var(--accent2); font-weight: 700;">Раунд #${h.round || idx + 1}</span>
+          <span class="history-meta">${actionsHtml ? '' : '(нет действий)'}</span>
+        </div>
+        ${actionsHtml}
+      </div>
+    `;
+  }).join('');
+}
+
+function showTooltip(e, html) {
+  const tt = $('tooltip');
+  tt.innerHTML = html;
+  tt.classList.add('visible');
+  moveTooltip(e);
+}
+function moveTooltip(e) {
+  const tt = $('tooltip');
+  tt.style.left = `${Math.min(e.clientX + 14, window.innerWidth - tt.offsetWidth - 10)}px`;
+  tt.style.top = `${Math.min(e.clientY + 14, window.innerHeight - tt.offsetHeight - 10)}px`;
+}
+function hideTooltip() { $('tooltip').classList.remove('visible'); }
+
+load();
+setInterval(load, CONFIG.refreshMs);
+
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(render, 300);
+});
+</script>
+
+</body>
+</html>

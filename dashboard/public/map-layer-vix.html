@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VIX на карте — Crucix</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        /* ============================================================
+           СТИЛИ (как в шаблоне)
+           ============================================================ */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a1a;
+            color: #e0e0e0;
+            font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+        }
+        .topbar {
+            position: fixed; top: 0; left: 0; right: 0;
+            height: 60px;
+            background: rgba(10,10,20,0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid rgba(91,192,248,0.25);
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        .topbar-left { display: flex; align-items: center; gap: 12px; }
+        .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; }
+        .topbar-right { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .topbar-btn {
+            height: 28px; padding: 0 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 4px;
+            background: rgba(255,255,255,0.03);
+            color: #888;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-family: inherit;
+        }
+        .topbar-btn:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+        .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
+        .btn-home:hover { background: rgba(91,192,248,0.15); }
+        .btn-copy { color: #5bc0f8; border-color: rgba(91,192,248,0.15); background: rgba(91,192,248,0.06); }
+        .btn-copy.copied { background: rgba(76,175,80,0.2); border-color: #4caf50; color: #4caf50; }
+        .btn-rss { color: #f26522; border-color: rgba(242,101,34,0.2); background: rgba(242,101,34,0.06); }
+        .btn-rss:hover { background: rgba(242,101,34,0.15); }
+        .btn-help { color: #a78bfa; border-color: rgba(167,139,250,0.2); background: rgba(167,139,250,0.06); }
+        .btn-help:hover { background: rgba(167,139,250,0.15); }
+        .lang-switch {
+            display: flex; gap: 2px; padding: 2px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .lang-btn {
+            padding: 2px 8px; border: none; background: transparent;
+            color: #666; font-size: 11px; font-weight: 500;
+            cursor: pointer; border-radius: 3px; transition: all 0.2s;
+            font-family: inherit;
+        }
+        .lang-btn:hover { color: #888; background: rgba(255,255,255,0.05); }
+        .lang-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.1); }
+        .copy-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .copy-dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 32px;
+            background: #0a0a1a;
+            min-width: 220px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+            z-index: 200;
+            padding: 6px 0;
+        }
+        .copy-dropdown-content.show { display: block; }
+        .copy-dropdown-content button {
+            display: block; width: 100%; padding: 8px 16px;
+            background: transparent; border: none;
+            color: #c8d0d8; font-size: 12px; text-align: left;
+            cursor: pointer; transition: all 0.15s;
+            font-family: inherit;
+        }
+        .copy-dropdown-content button:hover { background: rgba(91,192,248,0.08); color: #5bc0f8; }
+        .copy-dropdown-content .divider { height: 1px; background: rgba(255,255,255,0.05); margin: 4px 12px; }
+        .copy-dropdown-content .label { padding: 4px 16px; font-size: 10px; color: #4a5a6a; text-transform: uppercase; letter-spacing: 0.5px; }
+        .nav-dashboards {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            height: 38px;
+            background: rgba(6,10,18,0.92);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            z-index: 99;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 4px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .nav-dashboards::-webkit-scrollbar { display: none; }
+        .nav-btn {
+            padding: 4px 10px;
+            border: none;
+            border-radius: 4px;
+            background: transparent;
+            color: #666;
+            font-size: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            font-family: inherit;
+            border: 1px solid transparent;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .nav-btn:hover { color: #c8d0d8; background: rgba(255,255,255,0.04); }
+        .nav-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.08); border-color: rgba(91,192,248,0.15); }
+        .nav-btn .icon { margin-right: 3px; }
+
+        /* Управление слоями */
+        .layer-controls {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            display: flex;
+            gap: 8px;
+            background: rgba(10,10,26,0.85);
+            backdrop-filter: blur(12px);
+            padding: 8px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .layer-btn {
+            padding: 6px 14px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            background: transparent;
+            color: #888;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .layer-btn:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .layer-btn.active { background: rgba(91,192,248,0.15); color: #5bc0f8; border-color: rgba(91,192,248,0.3); }
+
+        #map {
+            width: 100%;
+            height: calc(100vh - 114px);
+            background: #0f0f1a;
+            border-radius: 8px;
+        }
+        .main-content {
+            padding-top: 114px;
+            max-width: 1440px;
+            margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
+            padding-bottom: 40px;
+            min-height: calc(100vh - 114px);
+        }
+        .page-title {
+            color: #e0e0e0;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .page-title .badge { font-size: 11px; background: rgba(91,192,248,0.15); color: #5bc0f8; padding: 2px 10px; border-radius: 12px; font-weight: 500; }
+        .page-stats {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .page-stats .stat { font-size: 13px; color: #888; display: flex; align-items: center; gap: 6px; }
+        .page-stats .stat .num { color: #fff; font-weight: 600; }
+        .legend {
+            background: rgba(20,20,30,0.8);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin: 12px 0;
+            display: inline-flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #aaa; }
+        .legend-item .dot { width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); }
+        .legend-item .dot.low { background: #22c55e; }
+        .legend-item .dot.med { background: #4d6bfe; }
+        .legend-item .dot.high { background: #f59e0b; }
+        .legend-item .dot.critical { background: #ef4444; }
+        .notification {
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            z-index: 100001;
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: notif-fade 2.5s forwards;
+        }
+        @keyframes notif-fade {
+            0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+            10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            80% { opacity: 1; }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        }
+        .loading {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(10,10,26,0.92);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 999;
+            transition: opacity 0.5s;
+        }
+        .loading.hidden { opacity: 0; pointer-events: none; }
+        .loading .spinner { width: 40px; height: 40px; border: 3px solid #2a2a3a; border-top-color: #5bc0f8; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 768px) {
+            .topbar { padding: 0 12px; height: 52px; }
+            .topbar-brand { font-size: 12px; }
+            .topbar-btn { font-size: 10px; padding: 0 8px; height: 24px; }
+            .nav-dashboards { top: 52px; height: 34px; padding: 0 10px; gap: 2px; }
+            .nav-btn { font-size: 9px; padding: 2px 6px; }
+            .main-content { padding-top: 102px; padding-left: 12px; padding-right: 12px; }
+            #map { height: calc(100vh - 102px); }
+            .layer-controls { bottom: 80px; padding: 6px 12px; gap: 4px; }
+            .layer-btn { font-size: 9px; padding: 4px 10px; }
+        }
+        @media (max-width: 480px) {
+            .topbar { padding: 0 8px; height: 46px; }
+            .topbar-brand { font-size: 10px; letter-spacing: 1px; }
+            .topbar-btn { font-size: 9px; padding: 0 6px; height: 20px; }
+            .lang-btn { font-size: 9px; padding: 1px 5px; }
+            .nav-dashboards { top: 46px; height: 30px; padding: 0 6px; gap: 2px; overflow-x: auto; }
+            .nav-btn { font-size: 8px; padding: 2px 5px; }
+            .main-content { padding-top: 92px; padding-left: 8px; padding-right: 8px; }
+            #map { height: calc(100vh - 92px); }
+            .layer-controls { bottom: 70px; padding: 4px 8px; gap: 2px; flex-wrap: wrap; justify-content: center; }
+            .layer-btn { font-size: 8px; padding: 3px 8px; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="topbar">
+    <div class="topbar-left"><span class="topbar-brand">🌍 VIX НА КАРТЕ</span></div>
+    <div class="topbar-right">
+        <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+        <div class="copy-dropdown">
+            <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ ▼</button>
+            <div class="copy-dropdown-content" id="copyDropdown">
+                <div class="label">ФОРМАТЫ</div>
+                <button data-format="text">📄 Полный снапшот</button>
+                <button data-format="json">📊 GeoJSON</button>
+                <button data-format="markdown">📝 Markdown</button>
+                <button data-format="csv">📋 CSV</button>
+                <div class="divider"></div>
+                <button data-format="dom">🌳 DOM</button>
+                <button data-format="storage">💾 localStorage</button>
+                <button data-format="all">📦 ВСЁ</button>
+            </div>
+        </div>
+        <button class="topbar-btn btn-rss" onclick="window.location.href='/registry'">📡 РЕЕСТР</button>
+        <button class="topbar-btn btn-help" onclick="openHelp()">❓ HELP</button>
+        <div class="lang-switch">
+            <button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
+            <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+        </div>
+    </div>
+</header>
+
+<nav class="nav-dashboards">
+    <button class="nav-btn" onclick="window.location.href='/dashboard-5in1'"><span class="icon">🎯</span>Центр</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-economic'"><span class="icon">📊</span>Экономика</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-financial'"><span class="icon">💰</span>Финансы</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-military'"><span class="icon">🛡️</span>Военный</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-geopolitical'"><span class="icon">🌍</span>Геополитика</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-ecological'"><span class="icon">🌿</span>Экология</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-cyber'"><span class="icon">🔒</span>Кибер</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-space'"><span class="icon">🚀</span>Космос</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-news'"><span class="icon">📰</span>Новости</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-ai'"><span class="icon">🧠</span>AI</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-scientific'"><span class="icon">🔬</span>Наука</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-esg'"><span class="icon">🌱</span>ESG</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-threats'"><span class="icon">⚡</span>Угрозы</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-health'"><span class="icon">🏥</span>Здоровье</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-energy'"><span class="icon">⛽</span>Энергетика</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-transport'"><span class="icon">🚛</span>Транспорт</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-regions'"><span class="icon">🌏</span>Регионы</button>
+</nav>
+
+<main class="main-content">
+    <div class="page-title">🌍 VIX на карте <span class="badge">Слой</span></div>
+    <div class="page-stats">
+        <span class="stat">📍 <span class="num" id="pointCount">—</span> точек</span>
+        <span class="stat">📊 <span class="num" id="avgValue">—</span> средний VIX</span>
+        <span class="stat">🔄 <span class="num" id="updateTime">—</span></span>
+    </div>
+    <div class="legend">
+        <span class="legend-item"><span class="dot low"></span> Низкий (&lt; 12)</span>
+        <span class="legend-item"><span class="dot med"></span> Средний (12–18)</span>
+        <span class="legend-item"><span class="dot high"></span> Высокий (18–25)</span>
+        <span class="legend-item"><span class="dot critical"></span> Критический (&gt; 25)</span>
+    </div>
+    <div id="map"></div>
+</main>
+
+<div id="loading" class="loading"><div class="spinner"></div></div>
+
+<!-- Управление слоями -->
+<div class="layer-controls">
+    <button class="layer-btn active" data-layer="markers" onclick="switchLayer('markers')">🔵 Маркеры</button>
+    <button class="layer-btn" data-layer="choropleth" onclick="switchLayer('choropleth')">🗺️ Заливка</button>
+    <button class="layer-btn" data-layer="heatmap" onclick="switchLayer('heatmap')">🔥 Тепловая</button>
+</div>
+
+<!-- Leaflet -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
+
+<!-- Единый контроллер -->
+<script src="/js/map/map-controller.mjs" type="module"></script>
+
+<script type="module">
+// ============================================================
+// 1. ИМПОРТ КОНТРОЛЛЕРА
+// ============================================================
+import mapController from '/js/map/map-controller.mjs';
+
+// Сохраняем в window для доступа из других скриптов
+window.mapController = mapController;
+
+// ============================================================
+// 2. ФУНКЦИИ ДЛЯ КНОПОК (язык, копирование, помощь)
+// ============================================================
+let currentLang = localStorage.getItem('crucix-lang') || 'ru';
+
+window.switchLang = function(lang) {
+    currentLang = lang;
+    localStorage.setItem('crucix-lang', lang);
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+    });
+    showNotification('🌐 Язык: ' + lang.toUpperCase());
+};
+
+document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === currentLang);
+});
+
+window.showNotification = function(msg) {
+    document.querySelectorAll('.notification').forEach(el => el.remove());
+    const el = document.createElement('div');
+    el.className = 'notification';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2500);
+};
+
+window.openHelp = function() {
+    const pageId = window.location.pathname.replace(/^\/+/, "").replace(/\.html$/, "") || "map-layer-vix";
+    const lang = currentLang || "ru";
+    const helpFile = `/data/help/${lang}/${pageId}.txt`;
+    fetch(helpFile).then(res => res.text()).then(text => {
+        alert(text || "Справка не найдена");
+    }).catch(() => alert("Справка не найдена"));
+};
+
+// ============================================================
+// 3. КНОПКА КОПИРОВАТЬ
+// ============================================================
+document.getElementById('copy-btn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    document.getElementById('copyDropdown').classList.toggle('show');
+});
+
+document.addEventListener('click', function() {
+    document.getElementById('copyDropdown').classList.remove('show');
+});
+
+window.copyPageData = function(format) {
+    const timestamp = new Date().toLocaleString();
+    const pageTitle = document.querySelector('.page-title')?.textContent || document.title || 'Без заголовка';
+    const url = window.location.href;
+    const windowSize = window.innerWidth + '×' + window.innerHeight;
+
+    let report = '=== CRUCIX — ПОЛНЫЙ СНАПШОТ СТРАНИЦЫ ===\n';
+    report += 'Дата: ' + timestamp + '\n';
+    report += 'URL: ' + url + '\n';
+    report += 'Размер окна: ' + windowSize + '\n';
+    report += 'Страница: ' + pageTitle + '\n';
+    report += 'Слой: ' + (window._currentLayerType || 'unknown') + '\n\n';
+
+    const features = window._mapData || [];
+    report += '--- ДАННЫЕ С КАРТЫ ---\n';
+    report += 'Всего точек: ' + features.length + '\n';
+    if (features.length > 0) {
+        const values = features.map(f => f.properties?.value || 0);
+        const avg = values.reduce((a, b) => a + b, 0) / values.length;
+        report += 'Средний VIX: ' + avg.toFixed(2) + '\n';
+        report += 'Минимум: ' + Math.min(...values).toFixed(2) + '\n';
+        report += 'Максимум: ' + Math.max(...values).toFixed(2) + '\n';
+    }
+    report += '\n' + JSON.stringify(features, null, 2);
+
+    navigator.clipboard.writeText(report).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = '✅ ' + format.toUpperCase();
+        btn.classList.add('copied');
+        setTimeout(() => {
+            btn.textContent = '📋 КОПИРОВАТЬ ▼';
+            btn.classList.remove('copied');
+        }, 3000);
+        showNotification('✅ Скопировано ' + report.length + ' символов');
+    }).catch(() => {
+        const textarea = document.createElement('textarea');
+        textarea.value = report;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        showNotification('✅ Скопировано');
+    });
+};
+
+document.querySelectorAll('#copyDropdown button[data-format]').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        document.getElementById('copyDropdown').classList.remove('show');
+        window.copyPageData(this.dataset.format);
+    });
+});
+
+// ============================================================
+// 4. ЗАГРУЗКА ДАННЫХ И ПЕРЕКЛЮЧЕНИЕ СЛОЁВ
+// ============================================================
+let currentData = null;
+let currentLayerType = 'markers';
+
+async function loadData() {
+    try {
+        const resp = await fetch('/api/map-layer-vix/');
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+        currentData = data;
+        window._mapData = data.features || [];
+        window._currentLayerType = currentLayerType;
+        renderLayer(currentLayerType);
+        updateStats(data);
+        document.getElementById('loading').classList.add('hidden');
+    } catch (err) {
+        console.error('Ошибка загрузки:', err);
+        document.getElementById('loading').classList.add('hidden');
+        showNotification('❌ Ошибка загрузки: ' + err.message);
+    }
+}
+
+function renderLayer(type) {
+    if (!currentData) return;
+    currentLayerType = type;
+    window._currentLayerType = type;
+
+    const options = {
+        colorMap: (v) => {
+            if (v > 25) return '#ef4444';
+            if (v > 18) return '#f59e0b';
+            if (v > 12) return '#4d6bfe';
+            return '#22c55e';
+        },
+        radius: 14,
+        intensity: 0.5
+    };
+
+    mapController.loadLayer(type, currentData, options);
+
+    // Обновляем активную кнопку
+    document.querySelectorAll('.layer-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.layer === type);
+    });
+}
+
+window.switchLayer = function(type) {
+    if (type === currentLayerType) return;
+    renderLayer(type);
+    showNotification('🔄 Слой: ' + type);
+};
+
+function updateStats(data) {
+    const features = data.features || [];
+    document.getElementById('pointCount').textContent = features.length;
+    if (features.length > 0) {
+        const values = features.map(f => f.properties.value || 0);
+        const avg = values.reduce((a, b) => a + b, 0) / values.length;
+        document.getElementById('avgValue').textContent = avg.toFixed(2);
+    }
+    if (data.metadata?.timestamp) {
+        document.getElementById('updateTime').textContent =
+            new Date(data.metadata.timestamp).toLocaleTimeString();
+    }
+}
+
+// ============================================================
+// 5. ЗАПУСК
+// ============================================================
+// Инициализируем контроллер
+mapController.init();
+
+// Загружаем данные
+loadData();
+</script>
+</body>
+</html>

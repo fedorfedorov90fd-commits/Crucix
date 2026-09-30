@@ -1,0 +1,50 @@
+{
+  "_meta": {
+    "id": "stablecoin-monitor",
+    "category": "market",
+    "version": "1.0.0",
+    "schema_version": "1.0.0",
+    "sources": [
+      "coingecko-latest"
+    ],
+    "calculator": "StablecoinMonitor",
+    "updated_at": "2026-09-20T09:51:55.474Z",
+    "duration_ms": 2,
+    "checksum": "effdb587a95b98d0",
+    "stats": {
+      "total": 3,
+      "depegged": 0
+    }
+  },
+  "data": {
+    "stablecoins": [
+      {
+        "symbol": "USDT",
+        "price": 0.999759,
+        "pegDeviationBps": 2,
+        "level": "stable",
+        "marketCap": null,
+        "volume24h": null
+      },
+      {
+        "symbol": "USDC",
+        "price": 0.999832,
+        "pegDeviationBps": 2,
+        "level": "stable",
+        "marketCap": null,
+        "volume24h": null
+      },
+      {
+        "symbol": "DAI",
+        "price": 0.999906,
+        "pegDeviationBps": 1,
+        "level": "stable",
+        "marketCap": null,
+        "volume24h": null
+      }
+    ],
+    "depegged": [],
+    "total": 3,
+    "generated_at": "2026-09-20T09:51:55.474Z"
+  }
+}

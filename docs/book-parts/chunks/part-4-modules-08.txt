@@ -1,0 +1,982 @@
+===== ЧАСТЬ part-4-modules · КУСОК 08/28 · 31.1 KB =====
+
+FILE: apis/predict/reflexive.mjs
+SIZE: 11721 bytes
+SHA1: 3f3a8917c79bc295
+========================================================================
+
+// apis/predict/reflexive.mjs
+// Рефлексивное прогнозирование: моделирование влияния публикации прогноза
+// на саму систему.
+//
+// Теоретическая основа:
+//   Soros, G. (1987). "The Alchemy of Finance". Simon & Schuster. — концепция
+//   рефлексивности: прогноз влияет на систему, которую он прогнозирует.
+//   Tetlock, P. E. (2005). "Expert Political Judgment". Princeton. —
+//   self-fulfilling и self-negating прогнозы.
+//   Merton, R. K. (1948). "The Self-Fulfilling Prophecy". Antioch Review, 8(2).
+//
+// Ключевые идеи:
+//   1. Прогноз, став публичным, изменяет поведение акторов.
+//   2. Два типа рефлексивности:
+//      - self-fulfilling: публикация делает событие более вероятным
+//      - self-negating: публикация делает событие менее вероятным
+//   3. Сила эффекта зависит от:
+//      - чувствительности акторов (mediaExposure, reactivity, rationality)
+//      - горизонта прогноза (ближайшие часы — сильнее)
+//      - исторического bias (если прошлые прогнозы сбывались — эффект выше)
+//
+// Применение в Crucix:
+//   Скорректированная вероятность = original + reflexive_effect.
+//   Система честно учитывает, что её собственное влияние — часть прогноза.
+
+import { writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// ============================================================
+// Классификация типа рефлексивности
+// ============================================================
+
+function classifyReflexivity(forecast, actorSensitivity) {
+  const prob = forecast.probability || 0.5;
+  const direction = forecast.direction || 'neutral';
+
+  if (direction === 'negative' && prob > 0.8 && actorSensitivity > 0.7) {
+    return 'self_fulfilling';
+  }
+  if (direction === 'negative' && prob > 0.6 && actorSensitivity > 0.5) {
+    return 'self_negating';
+  }
+  if (direction === 'positive' && prob > 0.6 && actorSensitivity > 0.4) {
+    return 'self_fulfilling';
+  }
+  return 'neutral';
+}
+
+// ============================================================
+// Модель влияния одного прогноза
+// ============================================================
+
+function modelReflexiveEffect(forecast, actors, history = []) {
+  const sensitivity = computeActorSensitivity(actors);
+  const reflexivityType = classifyReflexivity(forecast, sensitivity);
+  const baseEffect = sensitivity * 0.15 * (forecast.probability - 0.5) * 2;
+  const horizonFactor = Math.exp(-(forecast.horizonHours || 24) / 168);
+  const historicalBias = computeHistoricalReflexivityBias(history);
+
+  let adjustedProb = forecast.probability;
+
+  switch (reflexivityType) {
+    case 'self_fulfilling':
+      adjustedProb = forecast.probability + baseEffect * horizonFactor * (1 + historicalBias);
+      break;
+    case 'self_negating':
+      adjustedProb = forecast.probability - baseEffect * horizonFactor * (1 + historicalBias);
+      break;
+    case 'neutral':
+      adjustedProb = forecast.probability + historicalBias * 0.02;
+      break;
+  }
+
+  adjustedProb = Math.max(0.001, Math.min(0.999, adjustedProb));
+
+  return {
+    originalProb: forecast.probability,
+    adjustedProb,
+    reflexivityType,
+    effectMagnitude: Math.abs(adjustedProb - forecast.probability),
+    sensitivity,
+    historicalBias,
+    horizonFactor,
+    analysis: {
+      description: describeReflexivity(reflexivityType, adjustedProb - forecast.probability),
+      recommendedAction: recommendAction(reflexivityType, forecast),
+    },
+  };
+}
+
+// ============================================================
+// Чувствительность акторов
+// ============================================================
+
+function computeActorSensitivity(actors) {
+  if (!actors || typeof actors !== 'object') return 0.3;
+
+  const entries = Object.values(actors);
+  if (entries.length === 0) return 0.3;
+
+  let total = 0;
+  for (const props of entries) {
+    const mediaExposure = props.mediaExposure !== undefined ? props.mediaExposure : 0.5;
+    const reactivity = props.reactivity !== undefined ? props.reactivity : 0.5;
+    const rationality = props.rationality !== undefined ? props.rationality : 0.5;
+    total += mediaExposure * reactivity * (0.5 + rationality * 0.5);
+  }
+  return total / entries.length;
+}
+
+// ============================================================
+// Историческая коррекция
+// ============================================================
+
+function computeHistoricalReflexivityBias(history) {
+  if (!Array.isArray(history) || history.length < 5) return 0;
+
+  let bias = 0;
+  let count = 0;
+  for (const h of history) {
+    if (!h.published || h.outcome === null || h.outcome === undefined) continue;
+    const direction = h.outcome === 1 ? 1 : -1;
+    const confidence = (h.probability || 0.5) - 0.5;
+    bias += direction * confidence * 0.1;
+    count++;
+  }
+
+  if (count === 0) return 0;
+  return Math.max(-0.5, Math.min(0.5, bias / count));
+}
+
+// ============================================================
+// Описания и рекомендации
+// ============================================================
+
+function describeReflexivity(type, shift) {
+  const sign = shift > 0 ? 'increase' : 'decrease';
+  const mag = (Math.abs(shift) * 100).toFixed(1);
+  switch (type) {
+    case 'self_fulfilling':
+      return `Self-fulfilling forecast: publication will lead to ${sign} of probability by ${mag}%`;
+    case 'self_negating':
+      return `Self-negating forecast: publication will reduce probability by ${mag}% (actors take precautionary measures)`;
+    default:
+      return `Neutral forecast: publication will not significantly affect probability`;
+  }
+}
+
+function recommendAction(type, forecast) {
+  switch (type) {
+    case 'self_fulfilling':
+      if (forecast.direction === 'negative') {
+        return 'CAUTION: publication of self-fulfilling negative forecast may worsen situation. Consider limited publication.';
+      }
+      return 'Publication is safe: forecast may encourage positive outcome.';
+    case 'self_negating':
+      return 'Publication recommended: forecast may trigger preventive measures and reduce risk.';
+    default:
+      return 'Publication neutral. Standard protocol.';
+  }
+}
+
+// ============================================================
+// Рекурсивная коррекция
+// ============================================================
+
+function recursiveReflexiveCorrection(currentForecast, previousForecasts, actors) {
+  let workingProb = currentForecast.probability || 0.5;
+  const corrections = [];
+
+  for (let i = 0; i < (previousForecasts || []).length; i++) {
+    const prev = previousForecasts[i];
+    const ageDays = (Date.now() - new Date(prev.timestamp).getTime()) / (1000 * 60 * 60 * 24);
+    const decay = Math.exp(-ageDays / 30);
+
+    const effect = modelReflexiveEffect(
+      {
+        probability: prev.probability,
+        direction: prev.direction,
+        horizonHours: 24,
+      },
+      actors
+    );
+
+    const residualEffect = effect.effectMagnitude * decay * 0.3;
+    if (effect.reflexivityType === 'self_fulfilling') {
+      workingProb += residualEffect;
+    } else if (effect.reflexivityType === 'self_negating') {
+      workingProb -= residualEffect;
+    }
+
+    corrections.push({
+      fromPrevious: prev.timestamp,
+      type: effect.reflexivityType,
+      residualEffect: residualEffect * decay,
+      ageDays,
+    });
+  }
+
+  const currentEffect = modelReflexiveEffect(
+    { ...currentForecast, probability: workingProb },
+    actors,
+    previousForecasts || []
+  );
+
+  const finalProb = currentEffect.adjustedProb;
+
+  return {
+    originalProb: currentForecast.probability,
+    recursiveProb: workingProb,
+    finalProb: Math.max(0.001, Math.min(0.999, finalProb)),
+    totalShift: finalProb - currentForecast.probability,
+    corrections,
+    currentEffect,
+  };
+}
+
+// ============================================================
+// Оценка точности рефлексивности (ReflexBench-стиль)
+// ============================================================
+
+function evaluateReflexivity(history) {
+  const published = (history || []).filter((h) => h.published && h.outcome !== null && h.outcome !== undefined);
+  const unpublished = (history || []).filter((h) => !h.published && h.outcome !== null && h.outcome !== undefined);
+
+  if (published.length < 5 || unpublished.length < 5) {
+    return { available: false, message: 'Insufficient data for reflexivity evaluation' };
+  }
+
+  const brierPublished = brierScore(published);
+  const brierUnpublished = brierScore(unpublished);
+
+  const difference = brierUnpublished.score - brierPublished.score;
+
+  let assessment;
+  if (difference > 0.02) assessment = 'self_fulfilling_dominant';
+  else if (difference < -0.02) assessment = 'self_negating_dominant';
+  else assessment = 'neutral';
+
+  return {
+    available: true,
+    brierPublished: brierPublished.score,
+    brierUnpublished: brierUnpublished.score,
+    difference,
+    assessment,
+    publishedCount: published.length,
+    unpublishedCount: unpublished.length,
+  };
+}
+
+function brierScore(predictions) {
+  if (!predictions.length) return { score: 0 };
+  let sum = 0;
+  for (const p of predictions) {
+    const f = typeof p.probability === 'number' ? p.probability : 0.5;
+    const o = p.outcome ? 1 : 0;
+    sum += (f - o) ** 2;
+  }
+  return { score: sum / predictions.length };
+}
+
+// ============================================================
+// Готовый цикл для Crucix
+// ============================================================
+
+async function applyReflexiveCorrection(forecast, context = {}) {
+  const { previousForecasts = [], actors = defaultActors() } = context;
+
+  const result = recursiveReflexiveCorrection(forecast, previousForecasts, actors);
+
+  try {
+    const dir = join(__dirname, '..', '..', 'runs', 'predictions');
+    if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+    writeFileSync(join(dir, `reflexive_${Date.now()}.json`), JSON.stringify(result, null, 2));
+  } catch (e) {
+    // Модуль должен работать даже без диска
+  }
+
+  return {
+    module: 'reflexive',
+    originalProbability: forecast.probability,
+    reflexiveProbability: result.finalProb,
+    totalShift: result.totalShift,
+    reflexivityType: result.currentEffect.reflexivityType,
+    analysis: result.currentEffect.analysis,
+    corrections: result.corrections,
+    timestamp: new Date().toISOString(),
+  };
+}
+
+function defaultActors() {
+  return {
+    markets:    { mediaExposure: 0.9, reactivity: 0.8, rationality: 0.6 },
+    government: { mediaExposure: 0.7, reactivity: 0.6, rationality: 0.7 },
+    public:     { mediaExposure: 0.8, reactivity: 0.7, rationality: 0.3 },
+    military:   { mediaExposure: 0.4, reactivity: 0.5, rationality: 0.8 },
+  };
+}
+
+export {
+  classifyReflexivity,
+  modelReflexiveEffect,
+  recursiveReflexiveCorrection,
+  evaluateReflexivity,
+  computeActorSensitivity,
+  computeHistoricalReflexivityBias,
+  applyReflexiveCorrection,
+  defaultActors,
+};
+
+
+
+========================================================================
+
+FILE: apis/predict/regime_shift.mjs
+SIZE: 10661 bytes
+SHA1: c51fdb98178c8bde
+========================================================================
+
+// apis/predict/regime_shift.mjs
+// Детекция смены режима: CUSUM, Page-Hinkley, BOCPD, PELT.
+//
+// Теоретическая основа:
+//   Page, E. S. (1954). "Continuous Inspection Schemes". Biometrika, 41, 100-115.
+//   Basseville, M., & Nikiforov, I. V. (1993). "Detection of Abrupt Changes:
+//   Theory and Application". Prentice Hall.
+//   Adams, R. P., & MacKay, D. J. C. (2007). "Bayesian Online Changepoint
+//   Detection". arXiv:0710.3742.
+//   Killick, R., Fearnhead, P., & Eckley, I. A. (2012). "Optimal Detection of
+//   Changepoints with a Linear Computational Cost". JASA, 107(500), 1590-1598.
+//   Hinkley, D. V. (1971). "Inference about the change-point from cumulative
+//   sum tests". Biometrika, 58, 509-523.
+//
+// Применение в Crucix:
+//   Определение момента, когда система структурно изменилась —
+//   "ломается" привычный режим. Это критично для ансамбля прогнозов:
+//   когда режим сменяется, веса моделей нужно пересчитать.
+
+import { writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// ============================================================
+// CUSUM — Cumulative Sum
+// ============================================================
+
+function cusumDetect(series, threshold = 5, drift = 0.5) {
+  if (!Array.isArray(series) || series.length < 10) {
+    return { changePoints: [], statistics: [] };
+  }
+
+  const baselineLength = Math.min(20, series.length);
+  const baseline = series.slice(0, baselineLength);
+  const mean = baseline.reduce((a, b) => a + b, 0) / baselineLength;
+
+  let cusumPos = 0;
+  let cusumNeg = 0;
+  const statistics = [];
+  const changePoints = [];
+
+  for (let i = 0; i < series.length; i++) {
+    cusumPos = Math.max(0, cusumPos + (series[i] - mean - drift));
+    cusumNeg = Math.max(0, cusumNeg + (-series[i] + mean - drift));
+
+    statistics.push({ index: i, cusumPos, cusumNeg, value: series[i] });
+
+    if (cusumPos > threshold) {
+      changePoints.push({
+        index: i,
+        type: 'upward_shift',
+        magnitude: cusumPos,
+        cusum: cusumPos,
+      });
+      cusumPos = 0;
+    }
+    if (cusumNeg > threshold) {
+      changePoints.push({
+        index: i,
+        type: 'downward_shift',
+        magnitude: cusumNeg,
+        cusum: cusumNeg,
+      });
+      cusumNeg = 0;
+    }
+  }
+
+  return { changePoints, statistics, baselineMean: mean };
+}
+
+// ============================================================
+// Page-Hinkley
+// ============================================================
+
+function pageHinkleyDetect(series, alpha = 0.01, lambda = 50) {
+  if (!Array.isArray(series) || series.length < 10) {
+    return { changePoints: [], detectionIndex: -1 };
+  }
+
+  const mean = series.reduce((a, b) => a + b, 0) / series.length;
+  const variance = series.reduce((s, v) => s + (v - mean) ** 2, 0) / series.length;
+  const std = Math.sqrt(variance);
+  const delta = alpha * std;
+
+  let cumSum = 0;
+  let minCumSum = Infinity;
+  let detectionIndex = -1;
+  const statistics = [];
+  const changePoints = [];
+
+  for (let i = 0; i < series.length; i++) {
+    cumSum += series[i] - mean - delta;
+    if (cumSum < minCumSum) minCumSum = cumSum;
+    const testStatistic = cumSum - minCumSum;
+
+    statistics.push({ index: i, cumSum, testStatistic, minCumSum });
+
+    if (testStatistic > lambda && detectionIndex === -1) {
+      detectionIndex = i;
+      changePoints.push({
+        index: i,
+        type: 'regime_shift',
+        testStatistic,
+        threshold: lambda,
+      });
+    }
+  }
+
+  return { changePoints, detectionIndex, statistics, threshold: lambda };
+}
+
+// ============================================================
+// Bayesian Online Changepoint Detection
+// ============================================================
+
+function bocpdDetect(series, hazardRate = 1 / 100, distributionModel = null) {
+  if (!Array.isArray(series) || series.length < 10) {
+    return { changePoints: [], runLengthProbs: [] };
+  }
+
+  const model = distributionModel || {
+    priorMean: series[0],
+    priorVar: 1.0,
+    obsVar: 1.0,
+
+    update(prior, x) {
+      const precision = 1 / prior.var + 1 / this.obsVar;
+      const newMean = (prior.mean / prior.var + x / this.obsVar) / precision;
+      const newVar = 1 / precision;
+      return { mean: newMean, var: newVar };
+    },
+
+    likelihood(prior, x) {
+      const predictiveMean = prior.mean;
+      const predictiveVar = prior.var + this.obsVar;
+      const diff = x - predictiveMean;
+      return (
+        Math.exp(-(diff * diff) / (2 * predictiveVar)) /
+        Math.sqrt(2 * Math.PI * predictiveVar)
+      );
+    },
+  };
+
+  const runLengthProbs = [];
+  let R = [1.0];
+  let predictiveProbs = [{ mean: model.priorMean, var: model.priorVar }];
+  const changePoints = [];
+
+  for (let t = 0; t < series.length; t++) {
+    const x = series[t];
+    const likelihoods = predictiveProbs.map((p) => model.likelihood(p, x));
+
+    const growthProbs = R.map((r, i) => r * (1 - hazardRate) * likelihoods[i]);
+    const cpProb = R.reduce(
+      (sum, r, i) => sum + r * hazardRate * likelihoods[i],
+      0
+    );
+
+    const newR = [cpProb, ...growthProbs];
+    const total = newR.reduce((a, b) => a + b, 0) || 1;
+    for (let i = 0; i < newR.length; i++) newR[i] /= total;
+
+    const newPredictive = predictiveProbs.map((p) => model.update(p, x));
+    newPredictive.unshift({ mean: model.priorMean, var: model.priorVar });
+
+    R = newR;
+    predictiveProbs = newPredictive;
+    runLengthProbs.push({ index: t, runLengthProbs: [...R] });
+
+    if (R[0] > 0.5 && t > 5) {
+      changePoints.push({
+        index: t,
+        probability: R[0],
+        type: 'bayesian_changepoint',
+      });
+    }
+  }
+
+  return { changePoints, runLengthProbs, hazardRate };
+}
+
+// ============================================================
+// PELT — Pruned Exact Linear Time
+// ============================================================
+
+function peltDetect(series, beta = 10, costFn = null) {
+  if (!Array.isArray(series) || series.length < 10) {
+    return { changePoints: [] };
+  }
+
+  const cost =
+    costFn ||
+    ((data) => {
+      if (data.length === 0) return 0;
+      const m = data.reduce((a, b) => a + b, 0) / data.length;
+      return data.reduce((s, v) => s + (v - m) ** 2, 0);
+    });
+
+  const n = series.length;
+  const F = [0];
+  const cp = [[]];
+  const candidates = [0];
+
+  for (let t = 1; t <= n; t++) {
+    let minCost = Infinity;
+    let bestTau = -1;
+
+    for (const tau of candidates) {
+      const segmentCost = cost(series.slice(tau, t));
+      const totalCost = F[tau] + segmentCost + beta;
+      if (totalCost < minCost) {
+        minCost = totalCost;
+        bestTau = tau;
+      }
+    }
+
+    F[t] = minCost;
+    cp[t] = bestTau >= 0 ? [...cp[bestTau], bestTau] : [];
+
+    const newCandidates = [t];
+    for (const tau of candidates) {
+      const segCost = cost(series.slice(tau, t));
+      if (F[tau] + segCost <= F[t]) {
+        newCandidates.push(tau);
+      }
+    }
+    candidates.length = 0;
+    candidates.push(...newCandidates);
+  }
+
+  const changePoints = cp[n]
+    .filter((idx) => idx > 0 && idx < n)
+    .map((idx) => ({ index: idx - 1, type: 'pelt_changepoint' }));
+
+  return {
+    changePoints,
+    totalCost: F[n],
+    segments: changePoints.length + 1,
+  };
+}
+
+// ============================================================
+// Композитный анализ для Crucix
+// ============================================================
+
+function crucixRegimeShiftDetection(history) {
+  if (!Array.isArray(history) || history.length < 20) {
+    return { available: false, message: 'Insufficient history (need 20+)' };
+  }
+
+  const vixSeries = history
+    .map((h) => h.fred && h.fred.vix)
+    .filter((v) => typeof v === 'number' && !isNaN(v));
+  const conflictSeries = history.map((h) =>
+    h.gdelt && Array.isArray(h.gdelt.conflictEvents)
+      ? h.gdelt.conflictEvents.length
+      : 0
+  );
+  const tensionSeries = history.map((h) =>
+    typeof h.tension === 'number' ? h.tension : 0.5
+  );
+
+  const results = {};
+
+  if (vixSeries.length > 10) {
+    results.vixCUSUM = cusumDetect(vixSeries, 5, 0.5);
+  }
+  if (conflictSeries.length > 10) {
+    results.conflictPageHinkley = pageHinkleyDetect(conflictSeries, 0.01, 50);
+  }
+  if (tensionSeries.length > 15) {
+    results.tensionBOCPD = bocpdDetect(tensionSeries, 1 / 100);
+  }
+  if (vixSeries.length > 20) {
+    results.vixPELT = peltDetect(vixSeries, 10);
+  }
+
+  const allChangePoints = [
+    ...((results.vixCUSUM && results.vixCUSUM.changePoints) || []).map((cp) => ({
+      ...cp,
+      source: 'cusum_vix',
+    })),
+    ...((results.conflictPageHinkley && results.conflictPageHinkley.changePoints) || []).map((cp) => ({
+      ...cp,
+      source: 'pagehinkley_conflicts',
+    })),
+    ...((results.tensionBOCPD && results.tensionBOCPD.changePoints) || []).map((cp) => ({
+      ...cp,
+      source: 'bocpd_tension',
+    })),
+    ...((results.vixPELT && results.vixPELT.changePoints) || []).map((cp) => ({
+      ...cp,
+      source: 'pelt_vix',
+    })),
+  ];
+
+  const windowSize = 5;
+  const consensusShifts = [];
+  for (let i = 0; i < allChangePoints.length; i++) {
+    const cp = allChangePoints[i];
+    const nearby = allChangePoints.filter(
+      (other) =>
+        Math.abs(other.index - cp.index) <= windowSize && other.source !== cp.source
+    );
+    if (nearby.length >= 1) {
+      consensusShifts.push({
+        index: cp.index,
+        sources: [cp.source, ...nearby.map((n) => n.source)],
+        confidence: (1 + nearby.length) / 4,
+        type: 'consensus_regime_shift',
+      });
+    }
+  }
+
+  const result = {
+    module: 'regime_shift',
+    available: true,
+    results,
+    allChangePoints,
+    consensusShifts,
+    regimeShiftDetected: consensusShifts.length > 0,
+    severity:
+      consensusShifts.length > 2
+        ? 'high'
+        : consensusShifts.length > 0
+        ? 'medium'
+        : 'low',
+    timestamp: new Date().toISOString(),
+  };
+
+  try {
+    const dir = join(__dirname, '..', '..', 'runs', 'predictions');
+    if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+    writeFileSync(
+      join(dir, `regime_shift_${Date.now()}.json`),
+      JSON.stringify(result, null, 2)
+    );
+  } catch (e) {
+    // Работает даже без диска
+  }
+
+  return result;
+}
+
+export {
+  cusumDetect,
+  pageHinkleyDetect,
+  bocpdDetect,
+  peltDetect,
+  crucixRegimeShiftDetection,
+};
+
+
+
+========================================================================
+
+FILE: apis/predict/explainability.mjs
+SIZE: 8832 bytes
+SHA1: b8be6bc6334adbf5
+========================================================================
+
+// apis/predict/explainability.mjs
+// Объяснимость прогнозов: Permutation Importance, контрфактические
+// сценарии, декомпозиция неопределённости, цепочка рассуждений.
+//
+// Теоретическая основа:
+//   Breiman, L. (2001). "Random Forests". Machine Learning, 45, 5-32. —
+//   permutation importance.
+//   Lundberg, S. M., & Lee, S.-I. (2017). "A Unified Approach to Interpreting
+//   Model Predictions". NeurIPS. — SHAP.
+//   Wachter, S., Mittelstadt, B., & Russell, C. (2017). "Counterfactual
+//   Explanations Without Opening the Black Box". Harvard JOLT, 31, 841.
+//   Kendall, A., & Gal, Y. (2017). "What Uncertainties Do We Need in Bayesian
+//   Deep Learning for Computer Vision?". NeurIPS. — epistemic vs aleatoric.
+//
+// Применение в Crucix:
+//   Превращение Crucix из "чёрного ящика" в "прозрачный".
+//   Дашборд показывает: какой признак дал какой вклад, что если бы
+//   значение было другим, и как разложена неопределённость.
+
+import { writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// ============================================================
+// Permutation Importance
+// ============================================================
+
+function permutationImportance(predictFn, features, baseline, nShuffles = 10) {
+  const importances = {};
+  const featureNames = Object.keys(features || {});
+
+  for (const name of featureNames) {
+    let totalDrop = 0;
+    for (let i = 0; i < nShuffles; i++) {
+      const shuffled = { ...features };
+      const originalValue = features[name];
+      shuffled[name] =
+        originalValue +
+        (Math.random() - 0.5) * Math.abs(originalValue || 1) * 2;
+      const shuffledPred = predictFn(shuffled);
+      totalDrop += Math.abs(baseline - shuffledPred);
+    }
+    importances[name] = totalDrop / nShuffles;
+  }
+
+  const total = Object.values(importances).reduce((a, b) => a + b, 0);
+  const normalized = {};
+  for (const [k, v] of Object.entries(importances)) {
+    normalized[k] = total > 0 ? v / total : 0;
+  }
+
+  const ranked = Object.entries(normalized)
+    .sort((a, b) => b[1] - a[1])
+    .map(([feature, importance]) => ({ feature, importance }));
+
+  return { importances: normalized, ranked };
+}
+
+// ============================================================
+// Контрфактические объяснения
+// ============================================================
+
+function counterfactualExplanation(predictFn, features, changes) {
+  const basePrediction = predictFn(features);
+  const counterfactuals = [];
+
+  for (const change of changes) {
+    const modified = { ...features, ...change.values };
+    const newPred = predictFn(modified);
+    counterfactuals.push({
+      description: change.description,
+      changes: change.values,
+      basePrediction,
+      counterfactualPrediction: newPred,
+      delta: newPred - basePrediction,
+      direction: newPred > basePrediction ? 'risk_up' : 'risk_down',
+    });
+  }
+
+  return { basePrediction, counterfactuals };
+}
+
+// ============================================================
+// Декомпозиция неопределённости
+// ============================================================
+
+function decomposeUncertainty(predictions) {
+  if (!Array.isArray(predictions) || predictions.length === 0) {
+    return { total: 0, epistemic: 0, aleatoric: 0, mean: 0.5, disagreement: 0 };
+  }
+
+  const values = predictions
+    .map((p) => (p.forecast !== undefined ? p.forecast : p.probability || 0.5))
+    .filter((v) => typeof v === 'number' && !isNaN(v));
+
+  if (values.length === 0) {
+    return { total: 0, epistemic: 0, aleatoric: 0, mean: 0.5, disagreement: 0 };
+  }
+
+  const mean = values.reduce((a, b) => a + b, 0) / values.length;
+  const epistemic =
+    values.reduce((s, v) => s + (v - mean) ** 2, 0) / values.length;
+
+  const aleatoricValues = predictions
+    .filter(
+      (p) => typeof p.uncertainty === 'number' && !isNaN(p.uncertainty)
+    )
+    .map((p) => p.uncertainty ** 2);
+
+  const aleatoric =
+    aleatoricValues.length > 0
+      ? aleatoricValues.reduce((a, b) => a + b, 0) / aleatoricValues.length
+      : 0;
+
+  return {
+    total: epistemic + aleatoric,
+    epistemic,
+    aleatoric,
+    mean,
+    disagreement: Math.sqrt(epistemic),
+    interpretation:
+      epistemic > aleatoric
+        ? 'models_disagree_needs_more_data'
+        : 'inherent_noise_in_system',
+    modelCount: values.length,
+  };
+}
+
+// ============================================================
+// Цепочка рассуждений
+// ============================================================
+
+function buildReasoningChain(prediction, importances) {
+  const chain = [];
+
+  chain.push({
+    step: 1,
+    title: 'Current signals',
+    description: `Top contributing factors: ${
+      (importances.ranked || [])
+        .slice(0, 3)
+        .map((r) => r.feature)
+        .join(', ') || 'n/a'
+    }`,
+  });
+
+  if (prediction && prediction.regimeShift) {
+    chain.push({
+      step: 2,
+      title: 'Regime change detected',
+      description: `${prediction.regimeShift.from} -> ${prediction.regimeShift.to}`,
+    });
+  }
+
+  if (prediction && prediction.topRisks && prediction.topRisks.length > 0) {
+    const top = prediction.topRisks[0];
+    chain.push({
+      step: chain.length + 1,
+      title: 'Top risk forecast',
+      description: `${top.name}: ${(top.probability * 100).toFixed(0)}% probability within ${
+        top.horizon || '24h'
+      }`,
+    });
+  }
+
+  if (prediction) {
+    chain.push({
+      step: chain.length + 1,
+      title: 'Model confidence',
+      description: `Disagreement: ${((prediction.disagreement || 0) * 100).toFixed(
+        0
+      )}%, Models agreeing: ${prediction.modelCount || 0}/${
+        prediction.totalModels || 0
+      }`,
+    });
+  }
+
+  return chain;
+}
+
+// ============================================================
+// Готовый цикл для Crucix
+// ============================================================
+
+function defaultRiskScorer(features) {
+  if (!features) return 0.5;
+  const vix = features.vix || 20;
+  const conflicts = features.conflictCount || 0;
+  const alerts = features.newAlerts || 0;
+  const hy = features.hySpread || 3;
+
+  let score = 0.5;
+  if (vix > 25) score += (vix - 25) * 0.02;
+  if (conflicts > 5) score += (conflicts - 5) * 0.02;
+  if (alerts > 5) score += (alerts - 5) * 0.01;
+  if (hy > 4) score += (hy - 4) * 0.05;
+
+  return Math.max(0.001, Math.min(0.999, score));
+}
+
+function crucixExplainableForecast(forecast, context = {}) {
+  const {
+    dataQuality = 0.8,
+  } = context;
+
+  const shap = permutationImportance(
+    defaultRiskScorer,
+    forecast.features || {},
+    forecast.probability || 0.5,
+    50
+  );
+
+  const counterfactual = counterfactualExplanation(
+    defaultRiskScorer,
+    forecast.features || {},
+    [
+      {
+        description: 'VIX drops to 15',
+        values: { vix: 15 },
+      },
+      {
+        description: 'VIX spikes to 40',
+        values: { vix: 40 },
+      },
+      {
+        description: 'Conflicts drop to 0',
+        values: { conflictCount: 0 },
+      },
+      {
+        description: 'Conflicts double',
+        values: {
+          conflictCount:
+            ((forecast.features && forecast.features.conflictCount) || 5) * 2,
+        },
+      },
+    ]
+  );
+
+  const uncertainty = decomposeUncertainty(
+    (forecast.modelPredictions || [
+      { forecast: forecast.probability || 0.5 },
+    ]).map((p) => ({ forecast: p, uncertainty: 1 - dataQuality }))
+  );
+
+  const reasoning = buildReasoningChain(
+    { topRisks: forecast.topRisks || [], disagreement: uncertainty.disagreement },
+    shap
+  );
+
+  const result = {
+    module: 'explainability',
+    forecast: {
+      probability: forecast.probability,
+      horizonHours: forecast.horizonHours || 24,
+    },
+    shap: shap.ranked.slice(0, 5),
+    counterfactual: counterfactual.counterfactuals,
+    uncertainty,
+    reasoning,
+    timestamp: new Date().toISOString(),
+  };
+
+  try {
+    const dir = join(__dirname, '..', '..', 'runs', 'predictions');
+    if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+    writeFileSync(
+      join(dir, `explainability_${Date.now()}.json`),
+      JSON.stringify(result, null, 2)
+    );
+  } catch (e) {
+    // Работает даже без диска
+  }
+
+  return result;
+}
+
+export {
+  permutationImportance,
+  counterfactualExplanation,
+  decomposeUncertainty,
+  buildReasoningChain,
+  crucixExplainableForecast,
+  defaultRiskScorer,
+};
+
+
+
+========================================================================

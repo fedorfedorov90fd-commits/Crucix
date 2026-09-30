@@ -1,0 +1,60 @@
+{
+  "id": "eia-2026-08-30",
+  "type": "eia",
+  "date": "2026-08-30T22:31:03.727Z",
+  "data": {
+    "prices": [
+      {
+        "id": "eia-001",
+        "name": "WTI Crude",
+        "price": 112.06,
+        "unit": "$/bbl",
+        "change": "+3.2%",
+        "source": "EIA"
+      },
+      {
+        "id": "eia-002",
+        "name": "Brent Crude",
+        "price": 109.05,
+        "unit": "$/bbl",
+        "change": "+2.8%",
+        "source": "EIA"
+      },
+      {
+        "id": "eia-003",
+        "name": "Natural Gas",
+        "price": 2.81,
+        "unit": "$/MMBtu",
+        "change": "-1.2%",
+        "source": "EIA"
+      },
+      {
+        "id": "eia-004",
+        "name": "Gasoline",
+        "price": 3.45,
+        "unit": "$/gallon",
+        "change": "+1.5%",
+        "source": "EIA"
+      },
+      {
+        "id": "eia-005",
+        "name": "Heating Oil",
+        "price": 4.12,
+        "unit": "$/gallon",
+        "change": "+0.8%",
+        "source": "EIA"
+      }
+    ],
+    "summary": {
+      "total": 5,
+      "avgPrice": 46.3,
+      "maxPrice": 112.06,
+      "minPrice": 2.81,
+      "byType": {
+        "Crude": 2,
+        "Gas": 3
+      }
+    }
+  },
+  "source": "demo"
+}

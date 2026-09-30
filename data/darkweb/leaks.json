@@ -1,0 +1,32 @@
+[
+  {
+    "id": "leak-001",
+    "title": "Утечка данных пользователей",
+    "source": "База данных Z",
+    "type": "credentials",
+    "severity": "critical",
+    "records": 2500000,
+    "description": "Обнаружена утечка 2.5M записей пользователей",
+    "timestamp": "2026-08-16T19:18:46.890Z"
+  },
+  {
+    "id": "leak-002",
+    "title": "Продажа корпоративных документов",
+    "source": "Скрытый рынок Alpha",
+    "type": "documents",
+    "severity": "high",
+    "records": 15000,
+    "description": "Продажа внутренних документов компании",
+    "timestamp": "2026-08-17T11:59:08.547Z"
+  },
+  {
+    "id": "leak-003",
+    "title": "Утечка криптовалютных кошельков",
+    "source": "Форум X",
+    "type": "crypto",
+    "severity": "critical",
+    "records": 5000,
+    "description": "Обнаружена утечка 5K криптовалютных кошельков",
+    "timestamp": "2026-08-17T14:53:13.251Z"
+  }
+]

@@ -1,0 +1,167 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "business-optimism",
+    "source": "FRED / Conference Board (demo)",
+    "source_url": "https://fred.stlouisfed.org/series/BSCICP03USM665S",
+    "fetched_at": "2026-09-27T16:35:09.011Z",
+    "normalized_at": "2026-09-27T16:38:26.158Z",
+    "collector": "collect-business-optimism.mjs",
+    "license": "public-domain",
+    "count": 31,
+    "granularity": "daily",
+    "value_unit": "index",
+    "value_scale": null,
+    "value_type": "index",
+    "value_range": null,
+    "period": "P30D"
+  },
+  "series": [
+    {
+      "date": "2026-08-28",
+      "value": 54.61
+    },
+    {
+      "date": "2026-08-29",
+      "value": 55.34
+    },
+    {
+      "date": "2026-08-30",
+      "value": 70.17
+    },
+    {
+      "date": "2026-08-31",
+      "value": 50.46
+    },
+    {
+      "date": "2026-09-01",
+      "value": 63.96
+    },
+    {
+      "date": "2026-09-02",
+      "value": 55.82
+    },
+    {
+      "date": "2026-09-03",
+      "value": 60.6
+    },
+    {
+      "date": "2026-09-04",
+      "value": 79.52
+    },
+    {
+      "date": "2026-09-05",
+      "value": 65.32
+    },
+    {
+      "date": "2026-09-06",
+      "value": 51.11
+    },
+    {
+      "date": "2026-09-07",
+      "value": 50.46
+    },
+    {
+      "date": "2026-09-08",
+      "value": 69.04
+    },
+    {
+      "date": "2026-09-09",
+      "value": 63.38
+    },
+    {
+      "date": "2026-09-10",
+      "value": 52.49
+    },
+    {
+      "date": "2026-09-11",
+      "value": 53.16
+    },
+    {
+      "date": "2026-09-12",
+      "value": 52.31
+    },
+    {
+      "date": "2026-09-13",
+      "value": 69.53
+    },
+    {
+      "date": "2026-09-14",
+      "value": 59.67
+    },
+    {
+      "date": "2026-09-15",
+      "value": 71.08
+    },
+    {
+      "date": "2026-09-16",
+      "value": 79.29
+    },
+    {
+      "date": "2026-09-17",
+      "value": 60.8
+    },
+    {
+      "date": "2026-09-18",
+      "value": 50.79
+    },
+    {
+      "date": "2026-09-19",
+      "value": 73.31
+    },
+    {
+      "date": "2026-09-20",
+      "value": 51.56
+    },
+    {
+      "date": "2026-09-21",
+      "value": 61.53
+    },
+    {
+      "date": "2026-09-22",
+      "value": 66.52
+    },
+    {
+      "date": "2026-09-23",
+      "value": 53.26
+    },
+    {
+      "date": "2026-09-24",
+      "value": 63.38
+    },
+    {
+      "date": "2026-09-25",
+      "value": 55.29
+    },
+    {
+      "date": "2026-09-26",
+      "value": 65.77
+    },
+    {
+      "date": "2026-09-27",
+      "value": 71.9
+    }
+  ],
+  "points": [],
+  "regions": [
+    {
+      "region": "GLOBAL",
+      "value": 61.33645161290322,
+      "count": 31,
+      "aggregation": "mean",
+      "extra": {
+        "max": 79.52,
+        "sum": 1901.4299999999998
+      }
+    }
+  ],
+  "documents": [],
+  "graph": null,
+  "extra": {
+    "adapter": "timeseries",
+    "adapter_version": "2.2.1",
+    "unique_dates": 31,
+    "unmapped_regions": [],
+    "unmapped_count": 0
+  }
+}

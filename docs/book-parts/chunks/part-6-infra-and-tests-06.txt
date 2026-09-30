@@ -1,0 +1,1197 @@
+===== ЧАСТЬ part-6-infra-and-tests · КУСОК 06/23 · 38.8 KB =====
+
+FILE: tests/integration/full_pipeline.test.mjs
+SIZE: 22628 bytes
+SHA1: b020fd8009755d39
+========================================================================
+
+// tests/integration/full_pipeline.test.mjs
+//
+// Интеграционный тест полного прогностического конвейера Crucix v3.0
+//
+// Проверяет:
+//   1. Корректность загрузки синтетических исторических данных
+//   2. Работу всех фаз A-M без исключений
+//   3. Наличие всех обязательных полей в итоговом прогнозе
+//   4. Согласованность фаз J, K, L, M (кросс-проверки)
+//   5. Идемпотентность при повторном запуске
+//   6. Graceful degradation при падении отдельных модулей
+//
+// Академический контекст:
+//   Данный тест реализует методологию integration testing, описанную в
+//   Myers, Sandler, Badgett (2011) "The Art of Software Testing", гл. 7:
+//   проверка взаимодействия модулей через системный интерфейс, а не
+//   через внутренние детали реализации.
+
+import { describe, it, before, after } from 'node:test';
+import assert from 'node:assert';
+import { writeFileSync, mkdirSync, existsSync, rmSync, readFileSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const ROOT = join(__dirname, '..', '..');
+const RUNS_DIR = join(ROOT, 'runs');
+const MEMORY_DIR = join(RUNS_DIR, 'memory');
+const PRED_DIR = join(RUNS_DIR, 'predictions');
+
+// === SYNTHETIC DATA GENERATOR ===
+
+/**
+ * Генерирует N синтетических sweep-записей с реалистичной динамикой.
+ *
+ * Модель данных:
+ *   - VIX: Ornstein-Uhlenbeck вокруг базовой линии с шоковыми событиями
+ *   - Конфликты: Hawkes-подобный процесс (кластеризация)
+ *   - Санкции: редкие события, зависящие от конфликтов
+ *   - Радиация: baseline + редкие всплески
+ *
+ * @param {number} n -- количество sweep-записей
+ * @param {object} opts -- параметры генерации
+ */
+function generateSyntheticHistory(n = 60, opts = {}) {
+  const {
+    baseVix = 20,
+    vixMeanReversion = 0.05,
+    vixVolatility = 1.5,
+    conflictRate = 0.3,
+    startTime = Date.now() - n * 15 * 60 * 1000,
+  } = opts;
+
+  const history = [];
+  let vix = baseVix;
+  let recentConflictCluster = false;
+
+  for (let i = 0; i < n; i++) {
+    const timestamp = new Date(startTime + i * 15 * 60 * 1000).toISOString();
+
+    // VIX: OU-процесс
+    vix += vixMeanReversion * (baseVix - vix) + (Math.random() - 0.5) * vixVolatility;
+    // Шок: 3% вероятность резкого роста
+    if (Math.random() < 0.03) vix += 8 + Math.random() * 10;
+    vix = Math.max(10, Math.min(80, vix));
+
+    // Конфликты: Hawkes-like (clustering)
+    let conflictCount;
+    if (recentConflictCluster) {
+      conflictCount = Math.floor(Math.random() * 5) + 5;
+      recentConflictCluster = Math.random() < 0.6;
+    } else {
+      conflictCount = Math.random() < conflictRate ? Math.floor(Math.random() * 8) + 2 : Math.floor(Math.random() * 3);
+      recentConflictCluster = conflictCount > 8 && Math.random() < 0.4;
+    }
+
+    // Санкции: зависят от конфликтов
+    const sanctionsCount = conflictCount > 10 ? Math.floor(Math.random() * 3) + 1 : Math.floor(Math.random() * 2);
+
+    // Алерты: зависят от VIX и конфликтов
+    const newAlerts = Math.floor((vix - 15) / 5 + conflictCount * 0.3);
+    const escalatedAlerts = vix > 30 || conflictCount > 12 ? Math.floor(Math.random() * 3) : 0;
+
+    // Радиация: baseline + редкие всплески
+    const radiationMax = Math.random() < 0.02 ? 200 + Math.random() * 300 : 50 + Math.random() * 40;
+
+    history.push({
+      sweepId: `sweep_${i}_${Date.now()}`,
+      timestamp,
+      fred: {
+        vix: parseFloat(vix.toFixed(2)),
+        hySpread: parseFloat((3 + (vix - 20) * 0.1 + (Math.random() - 0.5) * 0.3).toFixed(2)),
+        treasury10y: parseFloat((4 + (Math.random() - 0.5) * 0.3).toFixed(2)),
+      },
+      gdelt: {
+        conflictEvents: Array.from({ length: conflictCount }, (_, j) => ({
+          summary: `conflict strategic region escalation event_${i}_${j}`,
+          severity: Math.random(),
+          countryCode: ['RU', 'UA', 'CN', 'US', 'IR', 'IL'][Math.floor(Math.random() * 6)],
+          timestamp,
+        })),
+        avgGoldsteinScore: -2 - Math.random() * 5,
+      },
+      sanctions: {
+        count: sanctionsCount,
+        recentCount: sanctionsCount,
+      },
+      radiation: {
+        max: radiationMax,
+        sites: { moscow: radiationMax * (0.8 + Math.random() * 0.4) },
+      },
+      delta: {
+        newAlerts,
+        escalatedAlerts,
+      },
+      energy: {
+        oilPrice: 70 + (vix - 20) * 0.5 + (Math.random() - 0.5) * 3,
+      },
+      gold: {
+        price: 1900 + (vix - 20) * 5 + (Math.random() - 0.5) * 20,
+      },
+      dxy: {
+        value: 100 + (vix - 20) * 0.2 + (Math.random() - 0.5) * 0.5,
+      },
+    });
+  }
+
+  return history;
+}
+
+// === SETUP / TEARDOWN ===
+
+function setupTestEnvironment(history) {
+  if (!existsSync(RUNS_DIR)) mkdirSync(RUNS_DIR, { recursive: true });
+  if (!existsSync(MEMORY_DIR)) mkdirSync(MEMORY_DIR, { recursive: true });
+  if (!existsSync(PRED_DIR)) mkdirSync(PRED_DIR, { recursive: true });
+
+  // Записываем историю
+  writeFileSync(join(RUNS_DIR, 'history.json'), JSON.stringify(history, null, 2));
+
+  // Создаём фиктивные memory-файлы
+  for (let i = 0; i < Math.min(history.length, 20); i++) {
+    writeFileSync(
+      join(MEMORY_DIR, `sweep_${String(i).padStart(4, '0')}.json`),
+      JSON.stringify(history[i])
+    );
+  }
+}
+
+function teardownTestEnvironment() {
+  // Очищаем созданные файлы прогнозов
+  if (existsSync(PRED_DIR)) {
+    try {
+      const files = ['latest_forecast.json', 'forecast_tracker.json',
+                     'active_learner.json', 'meta_ensemble.json',
+                     'attention_state.json', 'adversarial_coevolution.json',
+                     'temporal_causal.json'];
+      for (const f of files) {
+        const fp = join(PRED_DIR, f);
+        if (existsSync(fp)) rmSync(fp);
+      }
+    } catch (e) {
+      console.warn('[teardown] Error:', e.message);
+    }
+  }
+}
+
+// === TEST SUITE ===
+
+describe('Integration: Full Prediction Pipeline (Phases A-M)', () => {
+  let runForecastPipeline;
+  let history;
+
+  before(async () => {
+    // Импорт динамический -- чтобы тесты не падали при отсутствии WASM
+    const engineModule = await import('../../apis/predict/engine.mjs');
+    runForecastPipeline = engineModule.runForecastPipeline || engineModule.default;
+
+    history = generateSyntheticHistory(60);
+    setupTestEnvironment(history);
+  });
+
+  after(() => {
+    teardownTestEnvironment();
+  });
+
+  // === TEST 1: Полный пайплайн без ошибок ===
+
+  it('запускает полный пайплайн A-M без исключений', async () => {
+    const latest = history[history.length - 1];
+
+    const result = await runForecastPipeline(latest, {
+      skipSources: true,
+      skipAdvanced: false,
+      skipTemporalCausal: false,
+      skipWarfareExhaustion: false,
+      skipMetaScenarios: true,
+      skipAdvancedContagion: false,
+      skipExplainability: false,
+      skipKnowledgeGraph: false,
+    });
+
+    assert.ok(result, 'Pipeline returned null');
+    assert.ok(typeof result === 'object', 'Result is not object');
+    assert.ok(result.timestamp, 'Missing timestamp');
+    assert.ok(result.version, 'Missing version');
+    assert.ok(typeof result.elapsedMs === 'number', 'Missing elapsedMs');
+  });
+
+  // === TEST 2: Все обязательные поля присутствуют ===
+
+  it('содержит все обязательные поля верхнего уровня', async () => {
+    const latest = history[history.length - 1];
+    const result = await runForecastPipeline(latest, {
+      skipSources: true,
+      skipAdvanced: false,
+      skipTemporalCausal: false,
+      skipWarfareExhaustion: false,
+      skipMetaScenarios: true,
+      skipAdvancedContagion: false,
+    });
+
+    const requiredFields = [
+      'timestamp', 'version', 'elapsedMs', 'events',
+      'summary', 'systemState', 'models', 'advanced',
+      'sources', 'calibration', 'topRisks',
+    ];
+
+    for (const field of requiredFields) {
+      assert.ok(field in result, `Missing required field: ${field}`);
+    }
+  });
+
+  // === TEST 3: Фаза J -- Temporal Causal ===
+
+  it('фаза J: temporal causal produces valid output', async () => {
+    const latest = history[history.length - 1];
+    const result = await runForecastPipeline(latest, {
+      skipSources: true,
+      skipAdvanced: false,
+      skipTemporalCausal: false,
+      skipWarfareExhaustion: true,
+      skipMetaScenarios: true,
+      skipAdvancedContagion: true,
+    });
+
+    const tc = result.temporalCausal;
+    if (tc) {
+      assert.ok(Array.isArray(tc.shiftDetections), 'shiftDetections not array');
+      assert.ok(typeof tc.totalEvents === 'number', 'totalEvents not number');
+      if (tc.vulnerabilityWindow) {
+        assert.ok(tc.vulnerabilityWindow.vulnerability >= 0 &&
+                  tc.vulnerabilityWindow.vulnerability <= 1,
+          `vulnerability out of [0,1]: ${tc.vulnerabilityWindow.vulnerability}`);
+        assert.ok(['low', 'medium', 'high', 'critical'].includes(tc.vulnerabilityWindow.level),
+          `invalid vulnerability level: ${tc.vulnerabilityWindow.level}`);
+      }
+    }
+  });
+
+  // === TEST 4: Фаза J -- Multi-Layer Causal ===
+
+  it('фаза J: multi-layer causal produces valid graph', async () => {
+    const latest = history[history.length - 1];
+    const result = await runForecastPipeline(latest, {
+      skipSources: true,
+      skipAdvanced: false,
+      skipTemporalCausal: true,
+      skipWarfareExhaustion: true,
+      skipMetaScenarios: true,
+      skipAdvancedContagion: true,
+    });
+
+    const ml = result.multiLayerCausal;
+    if (ml) {
+      assert.ok(ml.graphStats, 'Missing graphStats');
+      assert.ok(ml.graphStats.nodeCount > 0, 'No nodes in graph');
+      assert.ok(ml.graphStats.layerCount === 4,
+        `Expected 4 layers, got ${ml.graphStats.layerCount}`);
+
+      if (ml.propagation) {
+        assert.ok(typeof ml.propagation.totalUpdates === 'number');
+        assert.ok(typeof ml.propagation.crossLayerUpdates === 'number');
+        assert.ok(ml.propagation.crossLayerUpdates <= ml.propagation.totalUpdates,
+          'crossLayerUpdates > totalUpdates');
+      }
+    }
+  });
+
+  // === TEST 5: Фаза K -- Narrative Warfare ===
+
+  it('фаза K: narrative warfare detects campaigns', async () => {
+    const latest = history[history.length - 1];
+    const result = await runForecastPipeline(latest, {
+      skipSources: true,
+      skipAdvanced: false,
+      skipTemporalCausal: true,
+      skipWarfareExhaustion: false,
+      skipMetaScenarios: true,
+      skipAdvancedContagion: true,
+    });
+
+    const nw = result.narrativeWarfare;
+    if (nw && nw.available) {
+      assert.ok(typeof nw.totalPosts === 'number');
+      assert.ok(typeof nw.threatLevel === 'number');
+      assert.ok(nw.threatLevel >= 0 && nw.threatLevel <= 1);
+      assert.ok(Array.isArray(nw.campaigns));
+      assert.ok(['КРИТИЧНО', 'ВЫСОКО', 'СРЕДНЕ', 'НИЗКО'].includes(nw.assessment),
+        `Invalid assessment: ${nw.assessment}`);
+    }
+  });
+
+  // === TEST 6: Фаза K -- Resource Exhaustion ===
+
+  it('фаза K: resource exhaustion produces valid forecasts', async () => {
+    const latest = history[history.length - 1];
+    const result = await runForecastPipeline(latest, {
+      skipSources: true,
+      skipAdvanced: false,
+      skipTemporalCausal: true,
+      skipWarfareExhaustion: false,
+      skipMetaScenarios: true,
+      skipAdvancedContagion: true,
+    });
+
+    const re = result.resourceExhaustion;
+    if (re) {
+      assert.ok(re.military, 'Missing military');
+      assert.ok(re.economic, 'Missing economic');
+      assert.ok(['stable', 'warning', 'urgent', 'critical'].includes(re.overallStatus),
+        `Invalid overallStatus: ${re.overallStatus}`);
+      assert.ok(re.overallPressure >= 0 && re.overallPressure <= 1,
+        `overallPressure out of [0,1]: ${re.overallPressure}`);
+    }
+  });
+
+  // === TEST 7: Фаза L -- Meta-Ensemble ===
+
+  it('фаза L: meta-ensemble produces valid weights', async () => {
+    const latest = history[history.length - 1];
+    const result = await runForecastPipeline(latest, {
+      skipSources: true,
+      skipAdvanced: false,
+      skipTemporalCausal: true,
+      skipWarfareExhaustion: true,
+      skipMetaScenarios: false,
+      skipAdvancedContagion: true,
+    });
+
+    const me = result.metaEnsemble;
+    if (me) {
+      assert.ok(me.currentRegime, 'Missing currentRegime');
+      assert.ok(['calm', 'normal', 'elevated', 'crisis'].includes(me.currentRegime),
+        `Invalid regime: ${me.currentRegime}`);
+
+      if (me.modelWeights) {
+        const weights = Object.values(me.modelWeights);
+        const sum = weights.reduce((a, b) => a + b, 0);
+        assert.ok(Math.abs(sum - 1) < 1e-3,
+          `Model weights don't sum to 1: ${sum}`);
+
+        for (const w of weights) {
+          assert.ok(w >= 0 && w <= 1, `Weight out of [0,1]: ${w}`);
+        }
+      }
+    }
+  });
+
+  // === TEST 8: Фаза M -- Hypergraph Contagion ===
+
+  it('фаза M: hypergraph contagion computes activations', async () => {
+    const latest = history[history.length - 1];
+    const result = await runForecastPipeline(latest, {
+      skipSources: true,
+      skipAdvanced: false,
+      skipTemporalCausal: true,
+      skipWarfareExhaustion: true,
+      skipMetaScenarios: true,
+      skipAdvancedContagion: false,
+    });
+
+    const hg = result.hypergraphContagion;
+    if (hg) {
+      assert.ok(hg.stats, 'Missing stats');
+      assert.ok(hg.stats.nodeCount > 0, 'No nodes');
+      assert.ok(hg.stats.hyperedgeCount > 0, 'No hyperedges');
+      assert.ok(Array.isArray(hg.hyperedges), 'hyperedges not array');
+      assert.ok(Array.isArray(hg.updates), 'updates not array');
+
+      // Проверка: все гиперрёбра имеют 3+ узла
+      for (const he of hg.hyperedges) {
+        assert.ok(he.nodes.length >= 3,
+          `Hyperedge ${he.id} has only ${he.nodes.length} nodes (min 3)`);
+      }
+    }
+  });
+
+  // === TEST 9: Фаза M -- Attention Dynamics ===
+
+  it('фаза M: attention dynamics tracks topics', async () => {
+    const latest = history[history.length - 1];
+    const result = await runForecastPipeline(latest, {
+      skipSources: true,
+      skipAdvanced: false,
+      skipTemporalCausal: true,
+      skipWarfareExhaustion: true,
+      skipMetaScenarios: true,
+      skipAdvancedContagion: false,
+    });
+
+    const ad = result.attentionDynamics;
+    if (ad) {
+      assert.ok(typeof ad.totalTopics === 'number', 'totalTopics not number');
+      assert.ok(typeof ad.totalAttention === 'number', 'totalAttention not number');
+      assert.ok(Array.isArray(ad.shifts), 'shifts not array');
+      assert.ok(Array.isArray(ad.topExplosive), 'topExplosive not array');
+
+      // Проверка: attention non-negative
+      if (ad.attentionAllocation) {
+        for (const [topic, data] of Object.entries(ad.attentionAllocation)) {
+          assert.ok(data.attention >= 0,
+            `Topic ${topic} has negative attention: ${data.attention}`);
+          assert.ok(data.share >= 0 && data.share <= 1,
+            `Topic ${topic} has invalid share: ${data.share}`);
+        }
+      }
+    }
+  });
+
+  // === TEST 10: Фаза M -- Adversarial Co-evolution ===
+
+  it('фаза M: adversarial co-evolution models opponents', async () => {
+    const latest = history[history.length - 1];
+    const result = await runForecastPipeline(latest, {
+      skipSources: true,
+      skipAdvanced: false,
+      skipTemporalCausal: true,
+      skipWarfareExhaustion: true,
+      skipMetaScenarios: true,
+      skipAdvancedContagion: false,
+    });
+
+    const ace = result.adversarialCoEvolution;
+    if (ace) {
+      assert.ok(typeof ace.opponentsCount === 'number', 'opponentsCount not number');
+      assert.ok(Array.isArray(ace.adaptations), 'adaptations not array');
+      assert.ok(typeof ace.keyInsight === 'string', 'keyInsight not string');
+      assert.ok(ace.keyInsight.length > 0, 'keyInsight empty');
+
+      for (const a of ace.adaptations) {
+        assert.ok(a.opponent, 'Missing opponent id');
+        assert.ok(a.adaptation, 'Missing adaptation');
+        assert.ok(typeof a.adaptation.adapted === 'boolean',
+          `adapted not boolean: ${a.adaptation.adapted}`);
+      }
+    }
+  });
+
+  // === TEST 11: Кросс-проверка J+K+L+M ===
+
+  it('все фазы J, K, L, M работают согласованно', async () => {
+    const latest = history[history.length - 1];
+    const result = await runForecastPipeline(latest, {
+      skipSources: true,
+      skipAdvanced: false,
+      skipTemporalCausal: false,
+      skipWarfareExhaustion: false,
+      skipMetaScenarios: true,
+      skipAdvancedContagion: false,
+    });
+
+    const phaseResults = {
+      temporalCausal: !!result.temporalCausal,
+      multiLayerCausal: !!result.multiLayerCausal,
+      narrativeWarfare: !!result.narrativeWarfare,
+      resourceExhaustion: !!result.resourceExhaustion,
+      metaEnsemble: !!result.metaEnsemble,
+      hypergraphContagion: !!result.hypergraphContagion,
+      attentionDynamics: !!result.attentionDynamics,
+      adversarialCoEvolution: !!result.adversarialCoEvolution,
+    };
+
+    const presentCount = Object.values(phaseResults).filter(Boolean).length;
+    assert.ok(presentCount >= 5,
+      `Too few phases present: ${presentCount}/8`);
+
+    if (result.topRisks && result.topRisks.length > 1) {
+      for (let i = 1; i < result.topRisks.length; i++) {
+        assert.ok(result.topRisks[i - 1].probability >= result.topRisks[i].probability,
+          `Top risks not sorted: ${result.topRisks[i - 1].probability} < ${result.topRisks[i].probability}`);
+      }
+    }
+
+    if (result.events) {
+      for (const [id, evt] of Object.entries(result.events)) {
+        const prob = evt.metaProbability ?? evt.calibratedProbability ?? evt.ensemble;
+        if (typeof prob === 'number') {
+          assert.ok(prob >= 0 && prob <= 1,
+            `Event ${id} has invalid probability: ${prob}`);
+          assert.ok(!isNaN(prob), `Event ${id} probability is NaN`);
+        }
+      }
+    }
+  });
+
+  // === TEST 12: Идемпотентность ===
+
+  it('идемпотентен при повторном запуске на тех же данных', async () => {
+    const latest = history[history.length - 1];
+
+    const result1 = await runForecastPipeline(latest, {
+      skipSources: true,
+      skipAdvanced: true,
+      skipTemporalCausal: true,
+      skipWarfareExhaustion: true,
+      skipMetaScenarios: true,
+      skipAdvancedContagion: true,
+    });
+
+    const result2 = await runForecastPipeline(latest, {
+      skipSources: true,
+      skipAdvanced: true,
+      skipTemporalCausal: true,
+      skipWarfareExhaustion: true,
+      skipMetaScenarios: true,
+      skipAdvancedContagion: true,
+    });
+
+    assert.deepStrictEqual(
+      Object.keys(result1).sort(),
+      Object.keys(result2).sort(),
+      'Schema differs between runs'
+    );
+
+    assert.deepStrictEqual(
+      Object.keys(result1.events || {}).sort(),
+      Object.keys(result2.events || {}).sort(),
+      'Event keys differ between runs'
+    );
+  });
+
+  // === TEST 13: Graceful degradation при падении модуля ===
+
+  it('graceful degradation: не падает при отсутствии history', async () => {
+    const historyPath = join(RUNS_DIR, 'history.json');
+    const backup = readFileSync(historyPath, 'utf-8');
+    writeFileSync(historyPath, '[]');
+
+    try {
+      const latest = history[history.length - 1];
+
+      const result = await runForecastPipeline(latest, {
+        skipSources: true,
+        skipAdvanced: false,
+        skipTemporalCausal: false,
+        skipWarfareExhaustion: false,
+        skipMetaScenarios: true,
+        skipAdvancedContagion: false,
+      });
+
+      assert.ok(result, 'Pipeline crashed with empty history');
+      assert.ok(result.timestamp, 'Missing timestamp');
+
+      const tc = result.temporalCausal;
+      if (tc) {
+        assert.ok(tc.available === false || tc.totalEvents >= 0,
+          'Temporal causal did not gracefully handle empty history');
+      }
+    } finally {
+      writeFileSync(historyPath, backup);
+    }
+  });
+
+  // === TEST 14: Производительность ===
+
+  it('выполняется за разумное время (< 30 сек)', async () => {
+    const latest = history[history.length - 1];
+
+    const start = Date.now();
+    await runForecastPipeline(latest, {
+      skipSources: true,
+      skipAdvanced: false,
+      skipTemporalCausal: false,
+      skipWarfareExhaustion: false,
+      skipMetaScenarios: true,
+      skipAdvancedContagion: false,
+    });
+    const elapsed = Date.now() - start;
+
+    assert.ok(elapsed < 30000,
+      `Pipeline took ${elapsed}ms (> 30s)`);
+
+    console.log(`[perf] Full pipeline (J+K+L+M) took ${elapsed}ms`);
+  });
+
+  // === TEST 15: Согласованность top risks с composite ===
+
+  it('top risks согласованы с composite risk', async () => {
+    const latest = history[history.length - 1];
+    const result = await runForecastPipeline(latest, {
+      skipSources: true,
+      skipAdvanced: false,
+      skipTemporalCausal: false,
+      skipWarfareExhaustion: false,
+      skipMetaScenarios: true,
+      skipAdvancedContagion: false,
+    });
+
+    if (result.topRisks?.length > 0 && result.compositeRisk) {
+      const topRisk = result.topRisks[0];
+      assert.ok(topRisk.probability >= 0 && topRisk.probability <= 1,
+        `Top risk probability out of [0,1]: ${topRisk.probability}`);
+
+      if (topRisk.probability > 0.5 && result.compositeRisk.composite !== undefined) {
+        assert.ok(result.compositeRisk.composite > 0.2,
+          `Top risk ${topRisk.probability} but composite ${result.compositeRisk.composite}`);
+      }
+    }
+  });
+});
+
+
+
+========================================================================
+
+FILE: tests/integration/full_pipeline_v6_v7.test.mjs
+SIZE: 8075 bytes
+SHA1: c76b4f9f266bb8c5
+========================================================================
+
+// tests/integration/full_pipeline_v6_v7.test.mjs
+
+import { strict as assert } from 'node:assert';
+import { test, describe } from 'node:test';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const PRED = join(__dirname, '..', '..', 'apis', 'predict');
+
+const v6Patch = await import(join(PRED, 'engine_v6_patch.mjs'));
+const v7Patch = await import(join(PRED, 'engine_v7_patch.mjs'));
+
+function makeHistory(n) {
+  return Array.from({ length: n }, (_, i) => ({
+    timestamp: new Date(Date.now() - (n - i) * 15 * 60 * 1000).toISOString(),
+    fred: {
+      vix: 20 + Math.sin(i / 4) * 10,
+      hySpread: 3 + Math.cos(i / 5) * 1.5,
+      treasury10y: 4 + Math.sin(i / 6) * 0.5,
+      dxy: 100 + Math.cos(i / 7) * 3,
+    },
+    gdelt: {
+      conflictEvents: Array(Math.floor(Math.abs(Math.sin(i / 3)) * 10) + 1).fill({}),
+      tone: -1 + Math.sin(i / 6),
+    },
+    sanctions: { count: Math.floor(Math.abs(Math.cos(i / 4)) * 5) },
+    tension: 0.4 + Math.sin(i / 4) * 0.3,
+    radiation: { max: 50 + Math.random() * 30 },
+    energy: { oilPrice: 70 + Math.sin(i / 3) * 10 },
+    gold: { price: 1900 + Math.cos(i / 4) * 100 },
+  }));
+}
+
+function isFiniteNum(x) { return typeof x === 'number' && Number.isFinite(x); }
+
+describe('integration: engine_v6_patch', () => {
+  test('healthcheck reports 11 modules', () => {
+    const h = v6Patch.healthcheck();
+    assert.ok(Array.isArray(h.v6Modules));
+    assert.ok(Array.isArray(h.catalogModules));
+    assert.equal(h.v6Modules.length, 5);
+    assert.equal(h.catalogModules.length, 6);
+    for (const m of h.v6Modules) {
+      assert.equal(m.exists, true, `${m.path} отсутствует`);
+    }
+    for (const m of h.catalogModules) {
+      assert.equal(m.exists, true, `${m.path} отсутствует`);
+    }
+  });
+
+  test('runV6Phase on 35 sweeps', async () => {
+    const h = makeHistory(35);
+    const r = await v6Patch.runV6Phase(h, {});
+    assert.equal(r.phase, 'S_v6_extensions');
+    assert.ok(r.totalModules >= 1);
+    assert.ok(typeof r.okCount === 'number');
+    assert.ok(r.okCount + r.skippedCount + r.errorCount === r.totalModules);
+    assert.ok(r.modules);
+  });
+
+  test('runCatalogPhase on 35 sweeps', async () => {
+    const h = makeHistory(35);
+    const r = await v6Patch.runCatalogPhase(h, {});
+    assert.equal(r.phase, 'T_catalog_extensions');
+    assert.ok(r.totalModules >= 1);
+    assert.ok(typeof r.okCount === 'number');
+  });
+
+  test('runNewPhases (S + T in parallel)', async () => {
+    const h = makeHistory(35);
+    const r = await v6Patch.runNewPhases(h, {});
+    assert.ok(r.v6);
+    assert.ok(r.catalog);
+    assert.ok(isFiniteNum(r.elapsedMs));
+  });
+
+  test('applyV6ToSnapshot adds extensions', () => {
+    const snap = {
+      explanation: { reasoning_steps: [], summary: 'base' },
+    };
+    const fakeV6 = {
+      phase: 'S_v6_extensions',
+      okCount: 3,
+      totalModules: 5,
+      elapsedMs: 100,
+      skippedCount: 1,
+      errorCount: 1,
+      modules: {
+        neural_causal_discovery: {
+          ok: true,
+          result: { nEdges: 5, isAcyclic: true },
+        },
+        continual_learning: {
+          ok: true,
+          result: { taskId: 1, forgettingDelta: 0.05 },
+        },
+        causal_rl: {
+          ok: true,
+          result: { evaluation: { improvementPct: 10 } },
+        },
+      },
+      failures: [],
+    };
+    const fakeCatalog = {
+      phase: 'T_catalog_extensions',
+      okCount: 2,
+      totalModules: 2,
+      elapsedMs: 200,
+      skippedCount: 0,
+      errorCount: 0,
+      modules: {
+        anomaly_detection: {
+          ok: true,
+          result: { lastSweep: { isAnomaly: false, votes: 0, score: 0.1 }, summary: { nAnomalies: 0 } },
+        },
+      },
+      failures: [],
+    };
+    v6Patch.applyV6ToSnapshot(snap, fakeV6, fakeCatalog);
+    assert.ok(snap.v6_extensions);
+    assert.ok(snap.catalog_extensions);
+    assert.ok(Array.isArray(snap.new_module_signals));
+    assert.ok(snap.new_module_signals.length > 0);
+    assert.ok(snap.explanation.reasoning_steps.length > 0);
+  });
+});
+
+describe('integration: engine_v7_patch', () => {
+  test('healthcheck reports 5 v7 files', () => {
+    const h = v7Patch.healthcheck();
+    assert.ok(Array.isArray(h.v7Files));
+    assert.equal(h.v7Files.length, 5);
+    for (const m of h.v7Files) {
+      assert.equal(m.exists, true, `${m.name} отсутствует`);
+    }
+  });
+
+  test('runV7Phase on 35 sweeps', async () => {
+    const h = makeHistory(35);
+    const r = await v7Patch.runV7Phase(h, {
+      horizon: 4,
+      modules: {
+        worldModel: { vaeEpochs: 1, rnnEpochs: 1, latentDim: 4, hiddenDim: 8 },
+        neuralODE: { epochs: 1, hiddenDim: 8 },
+        dreamer: { trainSteps: 3, horizon: 3 },
+        continuousCausal: { epochs: 1, hiddenDim: 8 },
+      },
+    });
+    assert.equal(r.name, 'simulation_engine_v7');
+    assert.equal(r.ok, true);
+    assert.ok(r.result);
+    assert.ok(r.result.synthesis);
+    assert.ok(isFiniteNum(r.result.synthesis.confidence));
+  });
+
+  test('applyV7ToSnapshot adds v7_extensions', () => {
+    const snap = {
+      explanation: { reasoning_steps: [], summary: 'base' },
+    };
+    const fakeV7 = {
+      ok: true,
+      elapsedMs: 1234,
+      result: {
+        version: '7.0.0',
+        available: true,
+        nSweeps: 40,
+        horizon: 8,
+        horizonHours: 2,
+        moduleStatus: {
+          worldModel: 'ok',
+          neuralODE: 'ok',
+          dreamer: 'ok',
+          continuousCausal: 'ok',
+        },
+        activeModules: 4,
+        totalModules: 4,
+        synthesis: {
+          consensus: { direction: 'stable', agreement: 0.75, votes: {}, nVoters: 4 },
+          confidence: 0.825,
+          confidenceLevel: 'high',
+          reasoningSteps: [
+            { module: 'world_model', signal: 'stable', text: 'test', weight: 0.25 },
+          ],
+        },
+        answers: [{ question: 'q', answer: 'a' }],
+        interpretation: 'test',
+      },
+    };
+    v7Patch.applyV7ToSnapshot(snap, fakeV7);
+    assert.ok(snap.v7_extensions);
+    assert.equal(snap.v7_extensions.ok, true);
+    assert.equal(snap.v7_extensions.activeModules, 4);
+    assert.equal(snap.v7_extensions.synthesis.confidence, 0.825);
+    assert.ok(snap.explanation.reasoning_steps.length > 0);
+    assert.ok(snap.explanation.summary.includes('Фаза U'));
+  });
+
+  test('applyV7ToSnapshot handles failed phase gracefully', () => {
+    const snap = { explanation: { reasoning_steps: [], summary: 'base' } };
+    const failedV7 = {
+      ok: false,
+      elapsedMs: 50,
+      error: 'test error',
+      reason: null,
+    };
+    v7Patch.applyV7ToSnapshot(snap, failedV7);
+    assert.ok(snap.v7_extensions);
+    assert.equal(snap.v7_extensions.ok, false);
+    assert.equal(snap.v7_extensions.error, 'test error');
+  });
+});
+
+describe('integration: full S+T+U pipeline', () => {
+  test('all three phases on 35 sweeps', async () => {
+    const h = makeHistory(35);
+
+    const t0 = Date.now();
+
+    const v6 = await v6Patch.runV6Phase(h, {});
+    const catalog = await v6Patch.runCatalogPhase(h, {});
+    const v7 = await v7Patch.runV7Phase(h, {
+      horizon: 4,
+      modules: {
+        worldModel: { vaeEpochs: 1, rnnEpochs: 1, latentDim: 4, hiddenDim: 8 },
+        neuralODE: { epochs: 1, hiddenDim: 8 },
+        dreamer: { trainSteps: 3, horizon: 3 },
+        continuousCausal: { epochs: 1, hiddenDim: 8 },
+      },
+    });
+
+    const elapsed = Date.now() - t0;
+    assert.ok(elapsed > 0);
+    assert.ok(v6.okCount + v6.skippedCount + v6.errorCount === v6.totalModules);
+    assert.ok(catalog.okCount + catalog.skippedCount + catalog.errorCount === catalog.totalModules);
+    assert.equal(v7.ok, true);
+
+    const snap = { explanation: { reasoning_steps: [], summary: 'base' } };
+    v6Patch.applyV6ToSnapshot(snap, v6, catalog);
+    v7Patch.applyV7ToSnapshot(snap, v7);
+
+    assert.ok(snap.v6_extensions);
+    assert.ok(snap.catalog_extensions);
+    assert.ok(snap.v7_extensions);
+    assert.ok(snap.v7_extensions.available === true);
+  });
+});
+
+
+
+========================================================================
+
+FILE: tests/chaos/chaos_runner.mjs
+SIZE: 8308 bytes
+SHA1: 245a84527b55f9d7
+========================================================================
+
+// tests/chaos/chaos_runner.mjs
+// Основной runner для chaos-экспериментов
+// Запускает сценарии, измеряет метрики, генерирует отчёт
+
+import { writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import {
+  ChaosMonkey,
+  ThrowErrorInjector,
+  LatencyInjector,
+  MemoryPressureInjector,
+  NetworkDelayInjector,
+  RandomKillInjector,
+  PartialFailureInjector,
+} from './fault_injection.mjs';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const CHAOS_DIR = join(__dirname, '..', '..', 'runs', 'chaos');
+
+class ChaosRunner {
+  constructor() {
+    this.experiments = [];
+    this.results = [];
+  }
+
+  addExperiment(name, setup, verify, teardown) {
+    this.experiments.push({ name, setup, verify, teardown });
+    return this;
+  }
+
+  async runExperiment(exp) {
+    console.log(`\n========================================`);
+    console.log(`  Эксперимент: ${exp.name}`);
+    console.log(`========================================`);
+
+    const t0 = Date.now();
+    let result = { name: exp.name, success: false, error: null };
+
+    try {
+      const context = await exp.setup();
+
+      const baseline = await exp.verify(context, 'baseline');
+      console.log(`  Baseline: ${JSON.stringify(baseline)}`);
+
+      if (context.monkey) {
+        context.monkey.activate();
+      }
+
+      const duringChaos = await exp.verify(context, 'chaos');
+      console.log(`  During chaos: ${JSON.stringify(duringChaos)}`);
+
+      if (context.monkey) {
+        context.monkey.deactivate();
+      }
+
+      await new Promise(r => setTimeout(r, 1000));
+      const after = await exp.verify(context, 'recovery');
+      console.log(`  After: ${JSON.stringify(after)}`);
+
+      if (exp.teardown) {
+        await exp.teardown(context);
+      }
+
+      result.success = true;
+      result.baseline = baseline;
+      result.duringChaos = duringChaos;
+      result.after = after;
+      result.chaosReport = context.monkey?.report() || null;
+    } catch (e) {
+      result.error = e.message;
+      console.error(`  FAIL: ${e.message}`);
+    }
+
+    result.durationMs = Date.now() - t0;
+    return result;
+  }
+
+  async runAll() {
+    console.log('\n========================================');
+    console.log(`  Chaos Engineering · ${this.experiments.length} экспериментов`);
+    console.log('========================================');
+
+    for (const exp of this.experiments) {
+      const result = await this.runExperiment(exp);
+      this.results.push(result);
+    }
+
+    return this.results;
+  }
+
+  saveReport() {
+    if (!existsSync(CHAOS_DIR)) mkdirSync(CHAOS_DIR, { recursive: true });
+
+    const report = {
+      timestamp: new Date().toISOString(),
+      totalExperiments: this.experiments.length,
+      successful: this.results.filter(r => r.success).length,
+      failed: this.results.filter(r => !r.success).length,
+      results: this.results,
+    };
+
+    const path = join(CHAOS_DIR, `chaos_runner_${Date.now()}.json`);
+    writeFileSync(path, JSON.stringify(report, null, 2));
+    return path;
+  }
+}
+
+async function experimentModuleFailure() {
+  const runner = new ChaosRunner();
+
+  runner.addExperiment(
+    'Single module failure',
+    async () => {
+      const fakeHawkes = () => ({ probability: 0.3, regime: 'ok' });
+      const fakeHMM = () => ({ currentState: 1 });
+      const fakeIsing = () => ({ proximityToCritical: 0.5 });
+
+      return {
+        modules: { hawkes: fakeHawkes, hmm: fakeHMM, ising: fakeIsing },
+        monkey: new ChaosMonkey().register('throw', new ThrowErrorInjector(0.5)),
+      };
+    },
+    async (context, phase) => {
+      const results = {};
+      for (const [name, fn] of Object.entries(context.modules)) {
+        try {
+          const wrapped = context.monkey.wrap(fn, name);
+          results[name] = await wrapped();
+        } catch (e) {
+          results[name] = null;
+        }
+      }
+      const okCount = Object.values(results).filter(r => r !== null).length;
+      return { okModules: okCount, total: 3, phase };
+    },
+    async () => {}
+  );
+
+  return runner;
+}
+
+async function experimentLatency() {
+  const runner = new ChaosRunner();
+
+  runner.addExperiment(
+    'Network latency',
+    async () => {
+      const fastFn = async () => {
+        let s = 0;
+        for (let i = 0; i < 1e5; i++) s += i;
+        return s;
+      };
+
+      return {
+        fn: fastFn,
+        monkey: new ChaosMonkey().register('latency', new LatencyInjector(50, 200, 0.5)),
+      };
+    },
+    async (context, phase) => {
+      const t0 = Date.now();
+      const iterations = 10;
+      for (let i = 0; i < iterations; i++) {
+        const wrapped = context.monkey.wrap(context.fn, 'fastFn');
+        await wrapped();
+      }
+      const totalTime = Date.now() - t0;
+      return { totalMs: totalTime, avgMs: totalTime / iterations, phase };
+    }
+  );
+
+  return runner;
+}
+
+async function experimentMemory() {
+  const runner = new ChaosRunner();
+
+  runner.addExperiment(
+    'Memory pressure',
+    async () => {
+      return {
+        monkey: new ChaosMonkey().register('memory', new MemoryPressureInjector(100)),
+        memStart: process.memoryUsage().heapUsed,
+      };
+    },
+    async (context, phase) => {
+      await new Promise(r => setTimeout(r, 1000));
+      const memNow = process.memoryUsage().heapUsed;
+      return {
+        heapMB: (memNow / 1024 / 1024).toFixed(1),
+        deltaMB: ((memNow - context.memStart) / 1024 / 1024).toFixed(1),
+        phase,
+      };
+    }
+  );
+
+  return runner;
+}
+
+async function experimentPartialFailures() {
+  const runner = new ChaosRunner();
+
+  runner.addExperiment(
+    'Partial failures (30%)',
+    async () => {
+      return {
+        monkey: new ChaosMonkey().register('partial', new PartialFailureInjector(0.3)),
+      };
+    },
+    async (context, phase) => {
+      let success = 0, fail = 0;
+      for (let i = 0; i < 100; i++) {
+        try {
+          const fn = async () => ({ ok: true });
+          const wrapped = context.monkey.wrap(fn, 'test');
+          await wrapped();
+          success++;
+        } catch {
+          fail++;
+        }
+      }
+      return { success, fail, successRate: success / 100, phase };
+    }
+  );
+
+  return runner;
+}
+
+async function experimentRandomKill() {
+  const runner = new ChaosRunner();
+
+  runner.addExperiment(
+    'Random kill (10%)',
+    async () => {
+      return {
+        monkey: new ChaosMonkey().register('kill', new RandomKillInjector(0.1)),
+        state: { counter: 0 },
+      };
+    },
+    async (context, phase) => {
+      let corrupted = 0;
+      for (let i = 0; i < 50; i++) {
+        const fn = () => ({ value: 42 });
+        const wrapped = context.monkey.wrap(fn, 'getValue');
+        const result = wrapped();
+        if (result === undefined) corrupted++;
+      }
+      return { corrupted, total: 50, corruptionRate: corrupted / 50, phase };
+    }
+  );
+
+  return runner;
+}
+
+async function runChaosSuite() {
+  const suites = [
+    await experimentModuleFailure(),
+    await experimentLatency(),
+    await experimentMemory(),
+    await experimentPartialFailures(),
+    await experimentRandomKill(),
+  ];
+
+  const allResults = [];
+  for (const suite of suites) {
+    const results = await suite.runAll();
+    allResults.push(...results);
+  }
+
+  const report = {
+    timestamp: new Date().toISOString(),
+    totalExperiments: allResults.length,
+    successful: allResults.filter(r => r.success).length,
+    failed: allResults.filter(r => !r.success).length,
+    results: allResults,
+  };
+
+  if (!existsSync(CHAOS_DIR)) mkdirSync(CHAOS_DIR, { recursive: true });
+  const path = join(CHAOS_DIR, `chaos_suite_${Date.now()}.json`);
+  writeFileSync(path, JSON.stringify(report, null, 2));
+
+  console.log('\n========================================');
+  console.log(`  Итог: ${report.successful}/${report.totalExperiments} успешных`);
+  console.log(`  Отчёт: ${path}`);
+  console.log('========================================');
+
+  return report;
+}
+
+if (process.argv[1] && process.argv[1].endsWith('chaos_runner.mjs')) {
+  runChaosSuite().catch(e => {
+    console.error('Ошибка chaos suite:', e);
+    process.exit(1);
+  });
+}
+
+export { ChaosRunner, runChaosSuite };
+
+
+
+========================================================================

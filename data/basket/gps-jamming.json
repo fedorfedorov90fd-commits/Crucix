@@ -1,0 +1,55 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "gps-jamming",
+    "source": "OpenSky Network",
+    "source_url": "https://opensky-network.org/api/states/all",
+    "fetched_at": "2026-09-27T16:36:10.395Z",
+    "normalized_at": "2026-09-27T16:38:26.494Z",
+    "collector": "collect-gps-jamming.mjs",
+    "license": "public-domain",
+    "count": 1,
+    "granularity": "snapshot",
+    "value_unit": "aircraft",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null
+  },
+  "series": [],
+  "points": [
+    {
+      "lat": 58.542744236657356,
+      "lon": 19.290634184426356,
+      "label": "ВЫСОКИЙ",
+      "region": "Балтийское море",
+      "extra": {
+        "id": "JAM-1790526970387-zv27",
+        "unmapped_region": true,
+        "unmapped_original": "Балтийское море"
+      }
+    }
+  ],
+  "regions": [
+    {
+      "region": "Балтийское море",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    }
+  ],
+  "documents": [],
+  "graph": null,
+  "extra": {
+    "adapter": "points",
+    "adapter_version": "2.2.1",
+    "skipped_invalid_coords": 0,
+    "unmapped_regions": [
+      "Балтийское море"
+    ],
+    "unmapped_count": 1
+  }
+}

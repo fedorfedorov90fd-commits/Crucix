@@ -1,0 +1,609 @@
+===== ЧАСТЬ part-6-infra-and-tests · КУСОК 21/23 · 14.7 KB =====
+
+FILE: runs/knowledge_graph.json
+SIZE: 14811 bytes
+SHA1: bc1054a73104529b
+========================================================================
+
+{
+  "entities": [
+    {
+      "id": "e_1789472150106_b5mcu2",
+      "type": "Event",
+      "subtype": "Conflict",
+      "properties": {
+        "severity": 0.7,
+        "source": "gdelt",
+        "goldsteinScore": -6.5
+      },
+      "name": "Conflict escalation in region A",
+      "source": "gdelt",
+      "confidence": 0.7,
+      "timestamp": "2026-09-15T11:35:50.106Z",
+      "observedCount": 1
+    },
+    {
+      "id": "e_1789472150106_ueruau",
+      "type": "Location",
+      "subtype": "Country",
+      "properties": {
+        "countryCode": "UA"
+      },
+      "name": "UA",
+      "source": "gdelt",
+      "confidence": 1,
+      "timestamp": "2026-09-15T11:35:50.106Z",
+      "observedCount": 1
+    },
+    {
+      "id": "e_1789472150106_6zva5m",
+      "type": "Event",
+      "subtype": "Conflict",
+      "properties": {
+        "severity": 0.8,
+        "source": "gdelt",
+        "goldsteinScore": -7.2
+      },
+      "name": "Military build-up near border",
+      "source": "gdelt",
+      "confidence": 0.7,
+      "timestamp": "2026-09-15T11:35:50.106Z",
+      "observedCount": 1
+    },
+    {
+      "id": "e_1789472150107_pron54",
+      "type": "Location",
+      "subtype": "Country",
+      "properties": {
+        "countryCode": "RU"
+      },
+      "name": "RU",
+      "source": "gdelt",
+      "confidence": 1,
+      "timestamp": "2026-09-15T11:35:50.107Z",
+      "observedCount": 1
+    },
+    {
+      "id": "e_1789472150107_2koxya",
+      "type": "Event",
+      "subtype": "Conflict",
+      "properties": {
+        "severity": 0.6,
+        "source": "gdelt",
+        "goldsteinScore": -4.1
+      },
+      "name": "Naval exercise in Black Sea",
+      "source": "gdelt",
+      "confidence": 0.7,
+      "timestamp": "2026-09-15T11:35:50.107Z",
+      "observedCount": 1
+    },
+    {
+      "id": "e_1789472150107_sapgih",
+      "type": "Location",
+      "subtype": "Country",
+      "properties": {
+        "countryCode": "RU"
+      },
+      "name": "RU",
+      "source": "gdelt",
+      "confidence": 1,
+      "timestamp": "2026-09-15T11:35:50.107Z",
+      "observedCount": 1
+    },
+    {
+      "id": "e_1789472150107_u2qnaf",
+      "type": "Event",
+      "subtype": "Conflict",
+      "properties": {
+        "severity": 0.5,
+        "source": "gdelt",
+        "goldsteinScore": -3.5
+      },
+      "name": "Diplomatic tensions rise",
+      "source": "gdelt",
+      "confidence": 0.7,
+      "timestamp": "2026-09-15T11:35:50.107Z",
+      "observedCount": 1
+    },
+    {
+      "id": "e_1789472150107_gep9z9",
+      "type": "Location",
+      "subtype": "Country",
+      "properties": {
+        "countryCode": "CN"
+      },
+      "name": "CN",
+      "source": "gdelt",
+      "confidence": 1,
+      "timestamp": "2026-09-15T11:35:50.107Z",
+      "observedCount": 1
+    },
+    {
+      "id": "e_1789472150107_5p2611",
+      "type": "Event",
+      "subtype": "Conflict",
+      "properties": {
+        "severity": 0.6,
+        "source": "gdelt",
+        "goldsteinScore": -4.8
+      },
+      "name": "Sanctions threat discussed",
+      "source": "gdelt",
+      "confidence": 0.7,
+      "timestamp": "2026-09-15T11:35:50.107Z",
+      "observedCount": 1
+    },
+    {
+      "id": "e_1789472150107_61xas9",
+      "type": "Location",
+      "subtype": "Country",
+      "properties": {
+        "countryCode": "US"
+      },
+      "name": "US",
+      "source": "gdelt",
+      "confidence": 1,
+      "timestamp": "2026-09-15T11:35:50.107Z",
+      "observedCount": 1
+    },
+    {
+      "id": "e_1789472150107_xiwpwp",
+      "type": "Event",
+      "subtype": "Conflict",
+      "properties": {
+        "severity": 0.7,
+        "source": "gdelt",
+        "goldsteinScore": -5.5
+      },
+      "name": "Border incident reported",
+      "source": "gdelt",
+      "confidence": 0.7,
+      "timestamp": "2026-09-15T11:35:50.107Z",
+      "observedCount": 1
+    },
+    {
+      "id": "e_1789472150107_tf4zn3",
+      "type": "Location",
+      "subtype": "Country",
+      "properties": {
+        "countryCode": "IL"
+      },
+      "name": "IL",
+      "source": "gdelt",
+      "confidence": 1,
+      "timestamp": "2026-09-15T11:35:50.107Z",
+      "observedCount": 1
+    },
+    {
+      "id": "e_1789472150107_3yfk99",
+      "type": "Event",
+      "subtype": "Conflict",
+      "properties": {
+        "severity": 0.6,
+        "source": "gdelt",
+        "goldsteinScore": -4.2
+      },
+      "name": "Cyber attack on infrastructure",
+      "source": "gdelt",
+      "confidence": 0.7,
+      "timestamp": "2026-09-15T11:35:50.107Z",
+      "observedCount": 1
+    },
+    {
+      "id": "e_1789472150107_czsdqa",
+      "type": "Location",
+      "subtype": "Country",
+      "properties": {
+        "countryCode": "IR"
+      },
+      "name": "IR",
+      "source": "gdelt",
+      "confidence": 1,
+      "timestamp": "2026-09-15T11:35:50.107Z",
+      "observedCount": 1
+    },
+    {
+      "id": "e_1789472150107_4x4h1z",
+      "type": "Event",
+      "subtype": "Conflict",
+      "properties": {
+        "severity": 0.9,
+        "source": "gdelt",
+        "goldsteinScore": -8.1
+      },
+      "name": "Military mobilization announced",
+      "source": "gdelt",
+      "confidence": 0.7,
+      "timestamp": "2026-09-15T11:35:50.107Z",
+      "observedCount": 1
+    },
+    {
+      "id": "e_1789472150107_uqyzje",
+      "type": "Location",
+      "subtype": "Country",
+      "properties": {
+        "countryCode": "RU"
+      },
+      "name": "RU",
+      "source": "gdelt",
+      "confidence": 1,
+      "timestamp": "2026-09-15T11:35:50.107Z",
+      "observedCount": 1
+    },
+    {
+      "id": "e_1789472150107_ii80ko",
+      "type": "Event",
+      "subtype": "Conflict",
+      "properties": {
+        "severity": 0.7,
+        "source": "gdelt",
+        "goldsteinScore": -5.9
+      },
+      "name": "Airspace violation reported",
+      "source": "gdelt",
+      "confidence": 0.7,
+      "timestamp": "2026-09-15T11:35:50.107Z",
+      "observedCount": 1
+    },
+    {
+      "id": "e_1789472150107_ukmp5v",
+      "type": "Location",
+      "subtype": "Country",
+      "properties": {
+        "countryCode": "TW"
+      },
+      "name": "TW",
+      "source": "gdelt",
+      "confidence": 1,
+      "timestamp": "2026-09-15T11:35:50.107Z",
+      "observedCount": 1
+    },
+    {
+      "id": "e_1789472150107_ju5jzm",
+      "type": "Event",
+      "subtype": "Conflict",
+      "properties": {
+        "severity": 0.5,
+        "source": "gdelt",
+        "goldsteinScore": -3.8
+      },
+      "name": "Trade restrictions imposed",
+      "source": "gdelt",
+      "confidence": 0.7,
+      "timestamp": "2026-09-15T11:35:50.107Z",
+      "observedCount": 1
+    },
+    {
+      "id": "e_1789472150107_pnm1w6",
+      "type": "Location",
+      "subtype": "Country",
+      "properties": {
+        "countryCode": "CN"
+      },
+      "name": "CN",
+      "source": "gdelt",
+      "confidence": 1,
+      "timestamp": "2026-09-15T11:35:50.107Z",
+      "observedCount": 1
+    },
+    {
+      "id": "e_1789472150107_5m6i2z",
+      "type": "Event",
+      "subtype": "Conflict",
+      "properties": {
+        "severity": 0.8,
+        "source": "gdelt",
+        "goldsteinScore": -7
+      },
+      "name": "Naval blockade threatened",
+      "source": "gdelt",
+      "confidence": 0.7,
+      "timestamp": "2026-09-15T11:35:50.107Z",
+      "observedCount": 1
+    },
+    {
+      "id": "e_1789472150107_2ybtug",
+      "type": "Location",
+      "subtype": "Country",
+      "properties": {
+        "countryCode": "CN"
+      },
+      "name": "CN",
+      "source": "gdelt",
+      "confidence": 1,
+      "timestamp": "2026-09-15T11:35:50.107Z",
+      "observedCount": 1
+    },
+    {
+      "id": "e_1789472150107_26mbkk",
+      "type": "Event",
+      "subtype": "Conflict",
+      "properties": {
+        "severity": 0.5,
+        "source": "gdelt",
+        "goldsteinScore": -3.2
+      },
+      "name": "Refugee flow reported",
+      "source": "gdelt",
+      "confidence": 0.7,
+      "timestamp": "2026-09-15T11:35:50.107Z",
+      "observedCount": 1
+    },
+    {
+      "id": "e_1789472150107_3xbe0s",
+      "type": "Location",
+      "subtype": "Country",
+      "properties": {
+        "countryCode": "UA"
+      },
+      "name": "UA",
+      "source": "gdelt",
+      "confidence": 1,
+      "timestamp": "2026-09-15T11:35:50.107Z",
+      "observedCount": 1
+    },
+    {
+      "id": "e_1789472150107_4rpmci",
+      "type": "Document",
+      "subtype": "Sanction",
+      "properties": {
+        "target": "Entity A",
+        "date": "2026-09-14",
+        "source": "ofac"
+      },
+      "name": "Sanction on entity A",
+      "source": "sanctions",
+      "confidence": 0.9,
+      "timestamp": "2026-09-15T11:35:50.107Z",
+      "observedCount": 1
+    },
+    {
+      "id": "e_1789472150107_arck45",
+      "type": "Actor",
+      "subtype": "State",
+      "properties": {},
+      "name": "RU",
+      "source": "sanctions",
+      "confidence": 1,
+      "timestamp": "2026-09-15T11:35:50.107Z",
+      "observedCount": 1
+    },
+    {
+      "id": "e_1789472150107_b4ljp7",
+      "type": "Document",
+      "subtype": "Sanction",
+      "properties": {
+        "target": "Entity B",
+        "date": "2026-09-14",
+        "source": "eu"
+      },
+      "name": "Sanction on entity B",
+      "source": "sanctions",
+      "confidence": 0.9,
+      "timestamp": "2026-09-15T11:35:50.107Z",
+      "observedCount": 1
+    },
+    {
+      "id": "e_1789472150107_169ydt",
+      "type": "Actor",
+      "subtype": "State",
+      "properties": {},
+      "name": "IR",
+      "source": "sanctions",
+      "confidence": 1,
+      "timestamp": "2026-09-15T11:35:50.107Z",
+      "observedCount": 1
+    },
+    {
+      "id": "e_1789472150107_rbsm32",
+      "type": "Document",
+      "subtype": "Sanction",
+      "properties": {
+        "target": "Tech sector",
+        "date": "2026-09-13",
+        "source": "us"
+      },
+      "name": "Export control on tech",
+      "source": "sanctions",
+      "confidence": 0.9,
+      "timestamp": "2026-09-15T11:35:50.107Z",
+      "observedCount": 1
+    },
+    {
+      "id": "e_1789472150107_a42fns",
+      "type": "Actor",
+      "subtype": "State",
+      "properties": {},
+      "name": "CN",
+      "source": "sanctions",
+      "confidence": 1,
+      "timestamp": "2026-09-15T11:35:50.107Z",
+      "observedCount": 1
+    }
+  ],
+  "relations": [
+    {
+      "id": "r_1789472150106_4g2i",
+      "from": "e_1789472150106_b5mcu2",
+      "to": "e_1789472150106_ueruau",
+      "type": "OCCURRED_AT",
+      "properties": {
+        "confidence": 0.8,
+        "source": "unknown"
+      },
+      "timestamp": "2026-09-15T11:35:50.106Z"
+    },
+    {
+      "id": "r_1789472150107_wpfu",
+      "from": "e_1789472150106_6zva5m",
+      "to": "e_1789472150107_pron54",
+      "type": "OCCURRED_AT",
+      "properties": {
+        "confidence": 0.8,
+        "source": "unknown"
+      },
+      "timestamp": "2026-09-15T11:35:50.107Z"
+    },
+    {
+      "id": "r_1789472150107_1g7i",
+      "from": "e_1789472150107_2koxya",
+      "to": "e_1789472150107_sapgih",
+      "type": "OCCURRED_AT",
+      "properties": {
+        "confidence": 0.8,
+        "source": "unknown"
+      },
+      "timestamp": "2026-09-15T11:35:50.107Z"
+    },
+    {
+      "id": "r_1789472150107_77ay",
+      "from": "e_1789472150107_u2qnaf",
+      "to": "e_1789472150107_gep9z9",
+      "type": "OCCURRED_AT",
+      "properties": {
+        "confidence": 0.8,
+        "source": "unknown"
+      },
+      "timestamp": "2026-09-15T11:35:50.107Z"
+    },
+    {
+      "id": "r_1789472150107_epa2",
+      "from": "e_1789472150107_5p2611",
+      "to": "e_1789472150107_61xas9",
+      "type": "OCCURRED_AT",
+      "properties": {
+        "confidence": 0.8,
+        "source": "unknown"
+      },
+      "timestamp": "2026-09-15T11:35:50.107Z"
+    },
+    {
+      "id": "r_1789472150107_i7bd",
+      "from": "e_1789472150107_xiwpwp",
+      "to": "e_1789472150107_tf4zn3",
+      "type": "OCCURRED_AT",
+      "properties": {
+        "confidence": 0.8,
+        "source": "unknown"
+      },
+      "timestamp": "2026-09-15T11:35:50.107Z"
+    },
+    {
+      "id": "r_1789472150107_rk7y",
+      "from": "e_1789472150107_3yfk99",
+      "to": "e_1789472150107_czsdqa",
+      "type": "OCCURRED_AT",
+      "properties": {
+        "confidence": 0.8,
+        "source": "unknown"
+      },
+      "timestamp": "2026-09-15T11:35:50.107Z"
+    },
+    {
+      "id": "r_1789472150107_wusn",
+      "from": "e_1789472150107_4x4h1z",
+      "to": "e_1789472150107_uqyzje",
+      "type": "OCCURRED_AT",
+      "properties": {
+        "confidence": 0.8,
+        "source": "unknown"
+      },
+      "timestamp": "2026-09-15T11:35:50.107Z"
+    },
+    {
+      "id": "r_1789472150107_5gjd",
+      "from": "e_1789472150107_ii80ko",
+      "to": "e_1789472150107_ukmp5v",
+      "type": "OCCURRED_AT",
+      "properties": {
+        "confidence": 0.8,
+        "source": "unknown"
+      },
+      "timestamp": "2026-09-15T11:35:50.107Z"
+    },
+    {
+      "id": "r_1789472150107_6hku",
+      "from": "e_1789472150107_ju5jzm",
+      "to": "e_1789472150107_pnm1w6",
+      "type": "OCCURRED_AT",
+      "properties": {
+        "confidence": 0.8,
+        "source": "unknown"
+      },
+      "timestamp": "2026-09-15T11:35:50.107Z"
+    },
+    {
+      "id": "r_1789472150107_se20",
+      "from": "e_1789472150107_5m6i2z",
+      "to": "e_1789472150107_2ybtug",
+      "type": "OCCURRED_AT",
+      "properties": {
+        "confidence": 0.8,
+        "source": "unknown"
+      },
+      "timestamp": "2026-09-15T11:35:50.107Z"
+    },
+    {
+      "id": "r_1789472150107_yvtg",
+      "from": "e_1789472150107_26mbkk",
+      "to": "e_1789472150107_3xbe0s",
+      "type": "OCCURRED_AT",
+      "properties": {
+        "confidence": 0.8,
+        "source": "unknown"
+      },
+      "timestamp": "2026-09-15T11:35:50.107Z"
+    },
+    {
+      "id": "r_1789472150107_nosm",
+      "from": "e_1789472150107_4rpmci",
+      "to": "e_1789472150107_arck45",
+      "type": "TARGETS",
+      "properties": {
+        "confidence": 0.8,
+        "source": "unknown"
+      },
+      "timestamp": "2026-09-15T11:35:50.107Z"
+    },
+    {
+      "id": "r_1789472150107_y4d4",
+      "from": "e_1789472150107_b4ljp7",
+      "to": "e_1789472150107_169ydt",
+      "type": "TARGETS",
+      "properties": {
+        "confidence": 0.8,
+        "source": "unknown"
+      },
+      "timestamp": "2026-09-15T11:35:50.107Z"
+    },
+    {
+      "id": "r_1789472150107_o8hv",
+      "from": "e_1789472150107_rbsm32",
+      "to": "e_1789472150107_a42fns",
+      "type": "TARGETS",
+      "properties": {
+        "confidence": 0.8,
+        "source": "unknown"
+      },
+      "timestamp": "2026-09-15T11:35:50.107Z"
+    }
+  ],
+  "stats": {
+    "entityCount": 30,
+    "relationCount": 15,
+    "typeCounts": {
+      "Event": 12,
+      "Location": 12,
+      "Document": 3,
+      "Actor": 3
+    },
+    "relationCounts": {
+      "OCCURRED_AT": 12,
+      "TARGETS": 3
+    }
+  }
+}
+
+
+========================================================================

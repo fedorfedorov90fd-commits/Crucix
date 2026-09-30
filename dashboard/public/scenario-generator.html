@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Генератор сценариев — Crucix</title>
+  <link rel="stylesheet" href="/css/scenario-generator.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-brand">⚡ CRUCIX MONITOR</span>
+      <span class="topbar-status">ГЕНЕРАТОР СЦЕНАРИЕВ</span>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-time" id="topbar-date">Загрузка...</span>
+      <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+      <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ</button>
+      <button class="topbar-btn btn-grid" id="grid-toggle">📐 СЕТКА</button>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <h1 class="page-title">🎯 Генератор сценариев</h1>
+    <p class="page-subtitle">AI-генерация сценариев "что-если" на основе текущих данных</p>
+
+    <div class="stats-row" id="stats-row">
+      <div class="stat-item">
+        <div class="stat-label">Всего сценариев</div>
+        <div class="stat-value blue" id="stat-total">0</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Вероятных</div>
+        <div class="stat-value orange" id="stat-likely">0</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Средняя вероятность</div>
+        <div class="stat-value green" id="stat-probability">0%</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Последнее обновление</div>
+        <div class="stat-value" id="stat-last">—</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-primary" id="btn-generate">🎲 Сгенерировать сценарии</button>
+      <button class="btn btn-secondary" id="btn-refresh">🔄 Обновить</button>
+      <span class="status-label" id="status-label">⏹ Готов</span>
+    </div>
+
+    <div class="summary-panel" id="summary-panel">
+      <h3>📋 Резюме</h3>
+      <div id="summary-content" class="summary-content">
+        <div class="loading">Ожидание генерации...</div>
+      </div>
+    </div>
+
+    <div class="scenarios-panel" id="scenarios-panel">
+      <h3>📊 Сгенерированные сценарии</h3>
+      <div id="scenarios-list" class="scenarios-list">
+        <div class="loading">Загрузка данных...</div>
+      </div>
+    </div>
+  </main>
+
+  <div id="coordinate-grid"></div>
+  <div id="grid-coords">X: 0  Y: 0</div>
+
+  <script src="/js/scenario-generator.js"></script>
+</body>
+</html>

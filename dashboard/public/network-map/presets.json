@@ -1,0 +1,87 @@
+{
+  "presets": [
+    {
+      "key": "crucix-network-default",
+      "name": "Network Map — по умолчанию",
+      "description": "Все слои Network Map",
+      "enabledLayers": [
+        "cyber-network",
+        "trade-routes",
+        "financial-flows",
+        "crypto-trace",
+        "banking-network",
+        "supply-chain",
+        "shell-companies",
+        "refugee-flows",
+        "migration-network",
+        "social-unrest",
+        "phone-network",
+        "social-media-network"
+      ],
+      "defaultLayer": "cyber-network",
+      "graphConfig": {
+        "force": 80,
+        "distance": 100
+      }
+    },
+    {
+      "key": "crucix-network-cyber",
+      "name": "Кибер-сети",
+      "description": "Кибератаки, C2, ботнеты",
+      "enabledLayers": [
+        "cyber-network"
+      ],
+      "defaultLayer": "cyber-network",
+      "graphConfig": {
+        "force": 100,
+        "distance": 120
+      }
+    },
+    {
+      "key": "crucix-network-financial",
+      "name": "Финансовые потоки",
+      "description": "Транзакции, крипто, банки, шелл-компании",
+      "enabledLayers": [
+        "financial-flows",
+        "crypto-trace",
+        "banking-network",
+        "shell-companies"
+      ],
+      "defaultLayer": "financial-flows",
+      "graphConfig": {
+        "force": 60,
+        "distance": 90
+      }
+    },
+    {
+      "key": "crucix-network-trade",
+      "name": "Торговля и поставки",
+      "description": "Торговые пути и цепочки поставок",
+      "enabledLayers": [
+        "trade-routes",
+        "supply-chain"
+      ],
+      "defaultLayer": "trade-routes",
+      "graphConfig": {
+        "force": 70,
+        "distance": 110
+      }
+    },
+    {
+      "key": "crucix-network-social",
+      "name": "Социальные потоки",
+      "description": "Беженцы, миграция, напряжённость",
+      "enabledLayers": [
+        "refugee-flows",
+        "migration-network",
+        "social-unrest",
+        "social-media-network"
+      ],
+      "defaultLayer": "refugee-flows",
+      "graphConfig": {
+        "force": 80,
+        "distance": 100
+      }
+    }
+  ]
+}

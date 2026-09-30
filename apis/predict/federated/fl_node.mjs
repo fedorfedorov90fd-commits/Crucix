@@ -1,0 +1,29 @@
+// apis/predict/federated/fl_node.mjs
+// Federated Learning Node: HTTP-сервер + клиент
+
+import { createServer } from 'node:http';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { MLP } from '../models/neural.mjs';
+import { FederatedClient, FederatedServer, federatedAveraging } from './fl_protocol.mjs';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const RUNS_DIR = join(__dirname, '..', '..', '..', 'runs');
+const MEMORY_DIR = join(RUNS_DIR, 'memory');
+const FL_DIR = join(RUNS_DIR, 'federated');
+const DEFAULT_PORT = 3120;
+
+function readBody(req) { return new Promise((resolve, reject) => { let body = ''; req.on('data', chunk => body += chunk); req.on('end', () => resolve(body)); req.on('error', reject); }); }
+
+class FLNode {
+  constructor({ mode = 'worker', port = DEFAULT_PORT, nodeId = `node_${Date.now()}` }) { this.mode = mode; this.port = port; this.nodeId = nodeId; this.localModel = null; this.localData = null; this.server = mode === 'coordinator' ? new FederatedServer({ minClients: 2 }) : null; this.client = null; this.peers = []; this.roundsParticipated = 0; if (!existsSync(FL_DIR)) mkdirSync(FL_DIR, { recursive: true }); }
+  loadData() { const history = []; try { const files = readdirSync(MEMORY_DIR).filter(f => f.endsWith('.json')).sort().reverse().slice(0, 500); for (const file of files) { try { history.push(JSON.parse(readFileSync(join(MEMORY_DIR, file), 'utf-8'))); } catch {} } } catch {} if (history.length < 30) return null; const X = [], y = []; for (let i = 5; i < history.length - 1; i++) { const h = history[i], next = history[i + 1]; X.push([h.fred?.vix || 20, h.fred?.hySpread || 3, h.fred?.treasury10y || 4, h.gdelt?.conflictEvents?.length || 0, h.sanctions?.count || 0, h.energy?.oilPrice || 70, h.gold?.price || 1900, h.dxy?.value || 100, h.radiation ? Math.max(...Object.values(h.radiation).map(s => s.cpm || 0)) : 0, h.delta?.newAlerts || 0]); y.push([next.fred?.vix || 20]); } return { X, y, nSamples: X.length }; }
+  initLocalModel() { const data = this.loadData(); if (!data) return false; this.localData = data; this.localModel = new MLP({ layers: [10, 32, 16, 1], activation: 'relu', outputActivation: 'linear' }); this.client = new FederatedClient({ clientId: this.nodeId, model: this.localModel, data }); console.log(`[${this.nodeId}] Модель инициализирована, локальных сэмплов: ${data.nSamples}`); return true; }
+  async trainAndSubmit(coordinatorUrl, { epochs = 5, lr = 0.001 } = {}) { if (!this.client) return null; console.log(`[${this.nodeId}] Локальное обучение (${epochs} эпох)...`); const result = await this.client.localTrain({ epochs, lr }); const weights = this.client.getWeights({ withDP: true, epsilon: 1.0 }); try { const response = await fetch(`${coordinatorUrl}/update`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(weights) }); if (!response.ok) return null; const json = await response.json(); this.roundsParticipated++; console.log(`[${this.nodeId}] Обновление отправлено. Локальный loss: ${result.loss.toFixed(6)}`); if (json.globalModel) { this.client.setWeights(json.globalModel); console.log(`[${this.nodeId}] Глобальная модель получена`); } return { localLoss: result.loss, serverResponse: json }; } catch (e) { console.error(`[${this.nodeId}] Ошибка соединения: ${e.message}`); return null; } }
+  start() { const server = createServer(async (req, res) => { res.setHeader('Content-Type', 'application/json'); res.setHeader('Access-Control-Allow-Origin', '*'); if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; } const url = new URL(req.url, `http://localhost:${this.port}`); try { if (url.pathname === '/health') { res.writeHead(200); res.end(JSON.stringify({ status: 'ok', nodeId: this.nodeId, mode: this.mode, roundsParticipated: this.roundsParticipated, hasModel: !!this.localModel })); return; } if (url.pathname === '/update' && req.method === 'POST') { if (this.mode !== 'coordinator') { res.writeHead(403); res.end(JSON.stringify({ error: 'not_coordinator' })); return; } const body = await readBody(req); const update = JSON.parse(body); this.server.receiveUpdate(update); const result = this.server.aggregate(); res.writeHead(200); res.end(JSON.stringify({ accepted: true, buffered: this.server.updates.length, aggregation: result, globalModel: result.success ? result.globalModel : null })); return; } if (url.pathname === '/global_model' && req.method === 'GET') { if (this.mode !== 'coordinator' || !this.server.globalModel) { res.writeHead(404); res.end(JSON.stringify({ error: 'no_global_model' })); return; } res.writeHead(200); res.end(JSON.stringify({ model: this.server.globalModel })); return; } if (url.pathname === '/status') { res.writeHead(200); res.end(JSON.stringify({ nodeId: this.nodeId, mode: this.mode, port: this.port, hasModel: !!this.localModel, nSamples: this.localData?.nSamples || 0, roundsParticipated: this.roundsParticipated })); return; } res.writeHead(404); res.end(JSON.stringify({ error: 'not_found' })); } catch (e) { res.writeHead(500); res.end(JSON.stringify({ error: e.message })); } }); server.listen(this.port, () => { console.log(`[${this.nodeId}] FL-узел запущен на порту ${this.port} (режим: ${this.mode})`); }); return server; }
+}
+
+if (process.argv[1] && process.argv[1].endsWith('fl_node.mjs')) { const mode = process.argv[2] || 'worker'; const port = parseInt(process.argv[3]) || DEFAULT_PORT; const node = new FLNode({ mode, port }); node.initLocalModel(); const server = node.start(); if (mode === 'worker') { const coordinatorUrl = process.env.FL_COORDINATOR || 'http://localhost:3120'; setInterval(async () => await node.trainAndSubmit(coordinatorUrl, { epochs: 3 }), 60000); setTimeout(() => node.trainAndSubmit(coordinatorUrl, { epochs: 3 }), 5000); } }
+
+export { FLNode, readBody };

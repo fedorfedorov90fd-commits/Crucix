@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DXY — Индекс доллара — Crucix</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet.heat.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet.heat.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a1a;
+            color: #e0e0e0;
+            font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            position: fixed; top: 0; left: 0; right: 0;
+            height: 60px;
+            background: rgba(10,10,20,0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid rgba(91,192,248,0.25);
+            box-shadow: 0 2px 20px rgba(91,192,248,0.08);
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        .topbar::after {
+            content: "";
+            position: absolute;
+            bottom: -2px; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #5bc0f8, transparent);
+            opacity: 0.6;
+        }
+        .topbar-left { display: flex; align-items: center; gap: 12px; }
+        .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; }
+        .topbar-right { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+        .topbar-btn {
+            height: 28px; padding: 0 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 4px;
+            background: rgba(255,255,255,0.03);
+            color: #888;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .topbar-btn:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+        .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
+        .btn-home:hover { background: rgba(91,192,248,0.15); }
+        .btn-copy { color: #5bc0f8; border-color: rgba(91,192,248,0.15); background: rgba(91,192,248,0.06); }
+        .btn-copy.copied { background: rgba(76,175,80,0.2); border-color: #4caf50; color: #4caf50; }
+        .btn-rss { color: #f26522; border-color: rgba(242,101,34,0.2); background: rgba(242,101,34,0.06); }
+        .btn-rss:hover { background: rgba(242,101,34,0.15); }
+        .btn-help { color: #a78bfa; border-color: rgba(167,139,250,0.2); background: rgba(167,139,250,0.06); }
+        .btn-help:hover { background: rgba(167,139,250,0.15); }
+
+        .lang-switch {
+            display: flex; gap: 2px; padding: 2px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .lang-btn {
+            padding: 2px 8px; border: none; background: transparent;
+            color: #666; font-size: 11px; font-weight: 500;
+            cursor: pointer; border-radius: 3px; transition: all 0.2s;
+        }
+        .lang-btn:hover { color: #888; background: rgba(255,255,255,0.05); }
+        .lang-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.1); }
+
+        .copy-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .copy-dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 32px;
+            background: #0a0a1a;
+            min-width: 280px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+            z-index: 200;
+            padding: 6px 0;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .copy-dropdown-content.show { display: block; }
+        .copy-dropdown-content button {
+            display: block; width: 100%; padding: 8px 16px;
+            background: transparent; border: none;
+            color: #c8d0d8; font-size: 12px; text-align: left;
+            cursor: pointer; transition: all 0.15s;
+            font-family: inherit;
+        }
+        .copy-dropdown-content button:hover { background: rgba(91,192,248,0.08); color: #5bc0f8; }
+        .copy-dropdown-content .divider { height: 1px; background: rgba(255,255,255,0.05); margin: 4px 12px; }
+        .copy-dropdown-content .label { padding: 4px 16px; font-size: 10px; color: #4a5a6a; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .nav-dashboards {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            height: 38px;
+            background: rgba(6,10,18,0.92);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            z-index: 99;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 4px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .nav-dashboards::-webkit-scrollbar { display: none; }
+
+        .nav-btn {
+            padding: 4px 10px;
+            border: none;
+            border-radius: 4px;
+            background: transparent;
+            color: #666;
+            font-size: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            font-family: inherit;
+            border: 1px solid transparent;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .nav-btn:hover { color: #c8d0d8; background: rgba(255,255,255,0.04); }
+        .nav-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.08); border-color: rgba(91,192,248,0.15); }
+        .nav-btn .icon { margin-right: 3px; }
+
+        .main-content {
+            padding-top: 114px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
+            padding-bottom: 40px;
+            min-height: calc(100vh - 114px);
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #e8f0f8;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .page-title .badge {
+            font-size: 12px; font-weight: 400;
+            background: rgba(251,191,36,0.15); color: #fbbf24;
+            padding: 2px 12px; border-radius: 20px;
+            border: 1px solid rgba(251,191,36,0.2);
+        }
+        .page-subtitle {
+            color: #8899aa;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+        .page-subtitle a {
+            color: #5bc0f8;
+            text-decoration: none;
+        }
+        .page-subtitle a:hover { text-decoration: underline; }
+
+        .indicator-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .indicator-card .value {
+            font-size: 48px;
+            font-weight: 700;
+            color: #5bc0f8;
+        }
+        .indicator-card .change {
+            font-size: 18px;
+            font-weight: 600;
+            margin-left: 12px;
+        }
+        .indicator-card .change.up { color: #4ade80; }
+        .indicator-card .change.down { color: #ef4444; }
+        .indicator-card .change.neutral { color: #f59e0b; }
+        .indicator-card .info {
+            color: #8899aa;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        .indicator-card .info span { margin-right: 20px; }
+
+        .chart-container {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            min-height: 300px;
+        }
+        .chart-container .title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #8899aa;
+            margin-bottom: 12px;
+        }
+        .chart-container .chart-placeholder {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            height: 200px;
+            gap: 3px;
+            padding: 4px 0;
+        }
+        .chart-container .chart-placeholder .bar {
+            flex: 1;
+            border-radius: 2px 2px 0 0;
+            min-width: 4px;
+            min-height: 4px;
+            transition: all 0.3s;
+        }
+        .chart-container .labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: #4a5a6a;
+            margin-top: 8px;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            color: #ffffff;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            z-index: 100001;
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: notif-fade 3s forwards;
+        }
+        @keyframes notif-fade {
+            0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+            10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            80% { opacity: 1; }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        }
+
+        @media (max-width: 768px) {
+            .topbar { padding: 0 12px; height: 52px; }
+            .topbar-brand { font-size: 12px; }
+            .topbar-btn { font-size: 10px; padding: 0 8px; height: 24px; }
+            .nav-dashboards { top: 52px; height: 34px; padding: 0 10px; gap: 2px; }
+            .nav-btn { font-size: 9px; padding: 2px 6px; }
+            .main-content { padding-top: 102px; padding-left: 12px; padding-right: 12px; }
+            .page-title { font-size: 20px; }
+            .indicator-card .value { font-size: 32px; }
+        }
+        @media (max-width: 480px) {
+            .topbar { padding: 0 8px; height: 46px; }
+            .topbar-brand { font-size: 10px; letter-spacing: 1px; }
+            .topbar-btn { font-size: 9px; padding: 0 6px; height: 20px; }
+            .lang-btn { font-size: 9px; padding: 1px 5px; }
+            .nav-dashboards { top: 46px; height: 30px; padding: 0 6px; gap: 2px; }
+            .nav-btn { font-size: 8px; padding: 2px 5px; }
+            .main-content { padding-top: 92px; padding-left: 8px; padding-right: 8px; }
+            .page-title { font-size: 16px; }
+            .indicator-card .value { font-size: 24px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== ТОПБАР ===== -->
+<header class="topbar">
+    <div class="topbar-left"><span class="topbar-brand">💵 DXY</span></div>
+    <div class="topbar-right">
+        <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+        <div class="copy-dropdown">
+            <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ ▼</button>
+            <div class="copy-dropdown-content" id="copyDropdown">
+                <div class="label">📄 ФОРМАТЫ КОПИРОВАНИЯ</div>
+                <button data-format="txt">📄 Полный дамп (TXT)</button>
+                <button data-format="markdown">📝 Markdown</button>
+                <button data-format="json">📊 JSON</button>
+                <div class="divider"></div>
+                <button data-format="all">📦 ВСЁ В ОДНОМ</button>
+            </div>
+        </div>
+        <button class="topbar-btn btn-rss" onclick="window.location.href='/registry'">📡 Реестр</button>
+        <button class="topbar-btn btn-help" onclick="openHelp()">❓ HELP</button>
+        <div class="lang-switch">
+            <button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
+            <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+        </div>
+    </div>
+</header>
+
+<!-- ===== НАВИГАЦИЯ ПО ДАШБОРДАМ ===== -->
+<nav class="nav-dashboards" id="navDashboards">
+    <button class="nav-btn" onclick="window.location.href='/dashboard-5in1'"><span class="icon">🎯</span>Центр аналитики</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-economic'"><span class="icon">📊</span>Экономика</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-financial'"><span class="icon">💰</span>Финансы</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-military'"><span class="icon">🛡️</span>Военный</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-geopolitical'"><span class="icon">🌍</span>Геополитика</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-ecological'"><span class="icon">🌿</span>Экология</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-cyber'"><span class="icon">🔒</span>Кибер</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-space'"><span class="icon">🚀</span>Космос</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-news'"><span class="icon">📰</span>Новости</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-ai'"><span class="icon">🧠</span>AI</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-scientific'"><span class="icon">🔬</span>Наука</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-esg'"><span class="icon">🌱</span>ESG</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-threats'"><span class="icon">⚡</span>Угрозы</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-health'"><span class="icon">🏥</span>Здоровье</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-energy'"><span class="icon">⛽</span>Энергетика</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-transport'"><span class="icon">🚛</span>Транспорт</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-regions'"><span class="icon">🌏</span>Регионы</button>
+</nav>
+
+<!-- ===== ОСНОВНОЙ КОНТЕНТ ===== -->
+<main class="main-content">
+    <div class="page-title">
+        <span>💵 DXY — Индекс доллара</span>
+        <span class="badge" id="statusBadge">🟢 ONLINE</span>
+    </div>
+    <div class="page-subtitle">
+        Индекс доллара США (DXY) — ключевой индикатор силы доллара
+        <span style="margin-left:12px;font-size:12px;color:#4a5a6a;">
+            <a href="/registry" target="_blank">📋 Полный реестр</a>
+        </span>
+    </div>
+
+    <div class="indicator-card" id="indicatorCard">
+        <div>
+            <span class="value" id="currentValue">—</span>
+            <span class="change" id="currentChange">—</span>
+        </div>
+        <div class="info">
+            <span>📅 Обновлено: <span id="updateTime">—</span></span>
+            <span>📊 Статус: <span id="statusLabel">—</span></span>
+            <span>📈 Записей: <span id="recordCount">—</span></span>
+        </div>
+    </div>
+
+    <div class="chart-container">
+        <div class="title">📈 Динамика DXY (30 дней)</div>
+        <div class="chart-placeholder" id="chartContainer"></div>
+        <div class="labels" id="chartLabels"></div>
+    </div>
+
+    <div style="text-align:center;color:#4a5a6a;font-size:13px;padding:20px;">
+        Данные обновляются автоматически каждый час
+    </div>
+</main>
+
+<script>
+// ============================================================
+// 1. ПЕРЕКЛЮЧАТЕЛЬ ЯЗЫКА
+// ============================================================
+let currentLang = localStorage.getItem('crucix-lang') || 'ru';
+
+function switchLang(lang) {
+    currentLang = lang;
+    localStorage.setItem('crucix-lang', lang);
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+    });
+    showNotification('🌐 Язык: ' + lang.toUpperCase());
+}
+
+document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === currentLang);
+});
+
+// ============================================================
+// 2. УВЕДОМЛЕНИЯ И HELP
+// ============================================================
+function showNotification(msg) {
+    document.querySelectorAll('.notification').forEach(el => el.remove());
+    const el = document.createElement('div');
+    el.className = 'notification';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 3000);
+}
+
+function openHelp() {
+    alert('💵 DXY — Индекс доллара\n\nПоказывает текущее значение индекса доллара США (DXY) и его динамику за 30 дней.\n\nИсточник: FRED / Yahoo Finance');
+}
+
+// ============================================================
+// 3. КНОПКА КОПИРОВАТЬ
+// ============================================================
+document.getElementById('copy-btn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    document.getElementById('copyDropdown').classList.toggle('show');
+});
+
+document.addEventListener('click', function() {
+    document.getElementById('copyDropdown').classList.remove('show');
+});
+
+function copyPageData(format) {
+    const timestamp = new Date().toLocaleString();
+    const pageTitle = document.querySelector('.page-title span')?.textContent || document.title || 'Без заголовка';
+    const url = window.location.href;
+    const value = document.getElementById('currentValue')?.textContent || '—';
+    const change = document.getElementById('currentChange')?.textContent || '—';
+    const time = document.getElementById('updateTime')?.textContent || '—';
+
+    let report = '=== CRUCIX — СНАПШОТ СТРАНИЦЫ ===\n';
+    report += 'Дата: ' + timestamp + '\n';
+    report += 'URL: ' + url + '\n';
+    report += 'Страница: ' + pageTitle + '\n\n';
+    report += '--- ТЕКУЩИЕ ДАННЫЕ ---\n';
+    report += 'DXY: ' + value + '\n';
+    report += 'Изменение: ' + change + '\n';
+    report += 'Обновлено: ' + time + '\n';
+
+    report += '\n--- CRUCIX OSINT TERMINAL ---\n';
+    report += '🌐 ' + window.location.origin;
+
+    navigator.clipboard.writeText(report).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = '✅ ' + format.toUpperCase();
+        btn.classList.add('copied');
+        setTimeout(() => {
+            btn.textContent = '📋 КОПИРОВАТЬ ▼';
+            btn.classList.remove('copied');
+        }, 3000);
+        showNotification('✅ Скопировано в формате ' + format.toUpperCase());
+    }).catch(() => {
+        const textarea = document.createElement('textarea');
+        textarea.value = report;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        showNotification('✅ Скопировано в формате ' + format.toUpperCase());
+    });
+}
+
+document.querySelectorAll('#copyDropdown button[data-format]').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        document.getElementById('copyDropdown').classList.remove('show');
+        copyPageData(this.dataset.format);
+    });
+});
+
+// ============================================================
+// 4. ОСНОВНАЯ ЛОГИКА
+// ============================================================
+async function loadData() {
+    try {
+        const res = await fetch('/api/dxy/');
+        const data = await res.json();
+        const items = data.data || [];
+
+        const valueEl = document.getElementById('currentValue');
+        const changeEl = document.getElementById('currentChange');
+        const timeEl = document.getElementById('updateTime');
+        const statusEl = document.getElementById('statusLabel');
+        const countEl = document.getElementById('recordCount');
+
+        if (items.length > 0) {
+            const last = items[items.length - 1];
+            valueEl.textContent = last.value !== undefined ? last.value.toFixed(2) : '—';
+
+            if (items.length > 1) {
+                const prev = items[items.length - 2];
+                if (prev && prev.value !== undefined && last.value !== undefined) {
+                    const diff = last.value - prev.value;
+                    changeEl.textContent = (diff > 0 ? '+' : '') + diff.toFixed(2);
+                    changeEl.className = 'change ' + (diff > 0 ? 'up' : diff < 0 ? 'down' : 'neutral');
+                } else {
+                    changeEl.textContent = '—';
+                    changeEl.className = 'change neutral';
+                }
+            } else {
+                changeEl.textContent = '—';
+                changeEl.className = 'change neutral';
+            }
+
+            statusEl.textContent = last.value > 108 ? '🔴 ВЫСОКИЙ' :
+                                    last.value > 103 ? '🟡 СРЕДНИЙ' :
+                                    '🟢 НОРМАЛЬНЫЙ';
+            statusEl.style.color = last.value > 108 ? '#ef4444' :
+                                   last.value > 103 ? '#f59e0b' :
+                                   '#4ade80';
+
+            timeEl.textContent = new Date(last.date).toLocaleString('ru-RU');
+            countEl.textContent = items.length;
+
+            // Рендерим график
+            renderChart(items);
+        } else {
+            valueEl.textContent = '—';
+            changeEl.textContent = '—';
+            changeEl.className = 'change neutral';
+            statusEl.textContent = '⏳ Нет данных';
+            timeEl.textContent = '—';
+            countEl.textContent = '0';
+        }
+    } catch (e) {
+        console.error('[DXY] Ошибка загрузки:', e);
+        document.getElementById('currentValue').textContent = '❌ Ошибка';
+    }
+}
+
+function renderChart(data) {
+    const container = document.getElementById('chartContainer');
+    const labelsContainer = document.getElementById('chartLabels');
+
+    if (!data || data.length < 2) {
+        container.innerHTML = '<span style="color:#4a5a6a;font-size:14px;">Недостаточно данных для графика</span>';
+        labelsContainer.innerHTML = '';
+        return;
+    }
+
+    const values = data.map(d => d.value);
+    const maxVal = Math.max(...values) * 1.1 || 1;
+    const minVal = Math.min(...values) * 0.9 || 0;
+    const range = maxVal - minVal || 1;
+
+    container.innerHTML = data.map(d => {
+        const height = ((d.value - minVal) / range) * 170 + 10;
+        const color = d.value > 108 ? '#ef4444' :
+                      d.value > 103 ? '#f59e0b' :
+                      '#4ade80';
+        return `<div class="bar" style="height:${height}px;background:${color};"></div>`;
+    }).join('');
+
+    const step = Math.max(1, Math.floor(data.length / 8));
+    labelsContainer.innerHTML = data.map((d, i) => {
+        if (i % step === 0 || i === data.length - 1) {
+            return `<span>${d.date.slice(5)}</span>`;
+        }
+        return `<span></span>`;
+    }).join('');
+}
+
+// ============================================================
+// 5. ЗАПУСК
+// ============================================================
+loadData();
+setInterval(loadData, 60000);
+</script>
+</body>
+</html>

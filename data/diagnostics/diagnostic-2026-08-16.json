@@ -1,0 +1,602 @@
+{
+  "timestamp": "2026-08-16T14:07:07.653Z",
+  "overallStatus": "DEGRADED",
+  "modules": [
+    {
+      "id": "rss-manager",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "responseTime": 30,
+      "data": {
+        "success": true,
+        "module": "rss-manager",
+        "status": "online",
+        "timestamp": "2026-08-16T14:07:07.677Z"
+      },
+      "error": null
+    },
+    {
+      "id": "basket",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "responseTime": 6,
+      "data": {
+        "success": true,
+        "stats": {
+          "totalItems": 0,
+          "totalAdded": 0,
+          "totalRemoved": 0,
+          "daily": {},
+          "lastUpdated": "2026-08-16T14:07:07.690Z",
+          "ai": {
+            "distribution": {
+              "local": 0,
+              "api": 0,
+              "basic": 0,
+              "error": 0,
+              "disabled": 0
+            },
+            "avgImportance": 0,
+            "avgSentiment": 0,
+            "itemsWithAI": 0,
+            "daily": {}
+          }
+        },
+        "timestamp": "2026-08-16T14:07:07.690Z"
+      },
+      "error": null
+    },
+    {
+      "id": "global-index",
+      "status": "ERROR",
+      "statusCode": 404,
+      "responseTime": 5,
+      "data": {
+        "success": false,
+        "error": "Неизвестный путь"
+      },
+      "error": null
+    },
+    {
+      "id": "historical-analysis",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "responseTime": 5,
+      "data": {
+        "success": true,
+        "history": {
+          "entries": [
+            {
+              "date": "2026-08-13",
+              "value": 1,
+              "components": {
+                "news": 0,
+                "thermal": 5,
+                "aviation": 0,
+                "geopolitical": 0,
+                "economy": 0
+              },
+              "level": "Нормальный"
+            },
+            {
+              "date": "2026-08-14",
+              "value": 5.1,
+              "components": {
+                "news": 10,
+                "thermal": 0,
+                "aviation": 4.2,
+                "geopolitical": 5.5,
+                "economy": 4.3
+              },
+              "level": "Средний"
+            },
+            {
+              "date": "2026-08-15",
+              "value": 2.6,
+              "components": {
+                "news": 0,
+                "thermal": 0,
+                "aviation": 4.2,
+                "geopolitical": 5.5,
+                "economy": 4.3
+              },
+              "level": "Нормальный"
+            },
+            {
+              "date": "2026-08-16",
+              "value": 5.1,
+              "components": {
+                "news": 10,
+                "thermal": 0,
+                "aviation": 4.2,
+                "geopolitical": 5.5,
+                "economy": 4.3
+              },
+              "level": "Средний"
+            }
+          ]
+        },
+        "firstDate": null,
+        "lastDate": null
+      },
+      "error": null
+    },
+    {
+      "id": "correlation",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "responseTime": 319,
+      "data": {
+        "success": true,
+        "status": {
+          "index": {
+            "name": "Глобальный индекс",
+            "icon": "📊",
+            "count": 0,
+            "firstDate": null,
+            "lastDate": null
+          },
+          "news": {
+            "name": "Новости (RSS)",
+            "icon": "📰",
+            "count": 167,
+            "firstDate": "2020-02-14",
+            "lastDate": "2026-08-15"
+          },
+          "basket": {
+            "name": "Новости (корзина)",
+            "icon": "📦",
+            "count": 1,
+            "firstDate": "2026-08-13",
+            "lastDate": "2026-08-13"
+          },
+          "events": {
+            "name": "События",
+            "icon": "📌",
+            "count": 12,
+            "firstDate": "2026-07-23",
+            "lastDate": "2026-08-12"
+          },
+          "thermal": {
+            "name": "Термальные (FIRMS)",
+            "icon": "🔥",
+            "count": 30,
+            "firstDate": "2026-07-15",
+            "lastDate": "2026-08-13"
+          },
+          "economy": {
+            "name": "Экономика (FRED)",
+            "icon": "💰",
+            "count": 30,
+            "firstDate": "2026-07-15",
+            "lastDate": "2026-08-13"
+          },
+          "aviation": {
+            "name": "Авиация (OpenSky)",
+            "icon": "✈️",
+            "count": 30,
+            "firstDate": "2026-07-15",
+            "lastDate": "2026-08-13"
+          },
+          "conflicts": {
+            "name": "Конфликты (ACLED)",
+            "icon": "⚔️",
+            "count": 30,
+            "firstDate": "2026-07-15",
+            "lastDate": "2026-08-13"
+          }
+        }
+      },
+      "error": null
+    },
+    {
+      "id": "infrastructure",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "responseTime": 4,
+      "data": {
+        "success": true,
+        "total": 7,
+        "byLayer": {
+          "energy": 4,
+          "transport": 2,
+          "water": 1
+        },
+        "byStatus": {
+          "normal": 1,
+          "warning": 3,
+          "critical": 3
+        },
+        "byType": {
+          "nuclear_power_plant": 3,
+          "seaport": 1,
+          "bridge": 1,
+          "dam": 1,
+          "power_grid": 1
+        },
+        "sanctions": 2,
+        "averageVulnerability": 8,
+        "criticalVulnerability": 6,
+        "highRiskObjects": [
+          {
+            "id": "dam-001",
+            "name": "Каховская ГЭС",
+            "vulnerability": 9.8,
+            "status": "critical"
+          },
+          {
+            "id": "npp-003",
+            "name": "Фукусима-1",
+            "vulnerability": 9.1,
+            "status": "warning"
+          },
+          {
+            "id": "bridge-001",
+            "name": "Крымский мост",
+            "vulnerability": 9.1,
+            "status": "critical"
+          },
+          {
+            "id": "npp-001",
+            "name": "Запорожская АЭС",
+            "vulnerability": 8.7,
+            "status": "critical"
+          },
+          {
+            "id": "grid-001",
+            "name": "Энергосеть Украины",
+            "vulnerability": 7.8,
+            "status": "warning"
+          },
+          {
+            "id": "npp-002",
+            "name": "АЭС Бушер",
+            "vulnerability": 7.2,
+            "status": "warning"
+          }
+        ],
+        "lastUpdated": "2026-08-13T00:00:00Z"
+      },
+      "error": null
+    },
+    {
+      "id": "satellite",
+      "status": "ERROR",
+      "statusCode": 404,
+      "responseTime": 4,
+      "data": {
+        "raw": "non-json response"
+      },
+      "error": null
+    },
+    {
+      "id": "usgs",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "responseTime": 4,
+      "data": {
+        "success": true,
+        "module": "USGS",
+        "status": "active",
+        "timestamp": "2026-08-16T14:07:08.034Z"
+      },
+      "error": null
+    },
+    {
+      "id": "local",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "responseTime": 5,
+      "data": {
+        "success": true,
+        "module": "Local",
+        "status": "active",
+        "timestamp": "2026-08-16T14:07:08.039Z"
+      },
+      "error": null
+    },
+    {
+      "id": "ofac",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "responseTime": 5,
+      "data": {
+        "success": true,
+        "module": "ofac",
+        "status": "online",
+        "total": 3,
+        "lastUpdated": "2026-08-16T14:07:08.045Z"
+      },
+      "error": null
+    },
+    {
+      "id": "eia",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "responseTime": 2,
+      "data": {
+        "success": true,
+        "module": "EIA",
+        "status": "active",
+        "timestamp": "2026-08-16T14:07:08.047Z"
+      },
+      "error": null
+    },
+    {
+      "id": "who",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "responseTime": 2,
+      "data": {
+        "success": true,
+        "module": "WHO",
+        "status": "active",
+        "timestamp": "2026-08-16T14:07:08.049Z"
+      },
+      "error": null
+    },
+    {
+      "id": "cisa-kev",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "responseTime": 4,
+      "data": {
+        "success": true,
+        "module": "cisa-kev",
+        "status": "online",
+        "totalVulnerabilities": 5,
+        "lastUpdated": "2026-08-16T14:07:08.053Z"
+      },
+      "error": null
+    },
+    {
+      "id": "noaa",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "responseTime": 2,
+      "data": {
+        "success": true,
+        "module": "NOAA",
+        "status": "active",
+        "timestamp": "2026-08-16T14:07:08.055Z"
+      },
+      "error": null
+    },
+    {
+      "id": "space",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "responseTime": 3,
+      "data": {
+        "success": true,
+        "module": "Space",
+        "status": "active",
+        "timestamp": "2026-08-16T14:07:08.059Z"
+      },
+      "error": null
+    },
+    {
+      "id": "comtrade",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "responseTime": 3,
+      "data": {
+        "success": true,
+        "module": "Comtrade",
+        "status": "active",
+        "timestamp": "2026-08-16T14:07:08.062Z"
+      },
+      "error": null
+    },
+    {
+      "id": "epa",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "responseTime": 3,
+      "data": {
+        "success": true,
+        "module": "EPA",
+        "status": "active",
+        "timestamp": "2026-08-16T14:07:08.066Z"
+      },
+      "error": null
+    },
+    {
+      "id": "gscpi",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "responseTime": 4,
+      "data": {
+        "success": true,
+        "module": "GSCPI",
+        "status": "active",
+        "timestamp": "2026-08-16T14:07:08.069Z"
+      },
+      "error": null
+    },
+    {
+      "id": "tass",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "responseTime": 3,
+      "data": {
+        "success": true,
+        "module": "TASS",
+        "status": "active",
+        "timestamp": "2026-08-16T14:07:08.072Z"
+      },
+      "error": null
+    },
+    {
+      "id": "opensanctions",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "responseTime": 2,
+      "data": {
+        "success": true,
+        "module": "OpenSanctions",
+        "status": "active",
+        "timestamp": "2026-08-16T14:07:08.074Z"
+      },
+      "error": null
+    },
+    {
+      "id": "scheduler",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "responseTime": 4,
+      "data": {
+        "success": true,
+        "running": false,
+        "tasks": 6,
+        "runningTasks": []
+      },
+      "error": null
+    },
+    {
+      "id": "trust",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "responseTime": 4,
+      "data": {
+        "success": true,
+        "initialized": true,
+        "totalSources": 24,
+        "avgTrust": 0,
+        "distribution": {},
+        "lastUpdate": null,
+        "timestamp": "2026-08-16T14:07:08.082Z"
+      },
+      "error": null
+    },
+    {
+      "id": "ai-processor",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "responseTime": 7,
+      "data": {
+        "success": true,
+        "mode": "basic",
+        "model": null,
+        "stats": {
+          "processed": 0,
+          "local": 0,
+          "api": 0,
+          "basic": 0,
+          "errors": 0,
+          "cacheSize": 0
+        },
+        "uptime": 962.078468329
+      },
+      "error": null
+    },
+    {
+      "id": "gateway",
+      "status": "ERROR",
+      "statusCode": 404,
+      "responseTime": 2,
+      "data": {
+        "raw": "non-json response"
+      },
+      "error": null
+    },
+    {
+      "id": "newsapi",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "responseTime": 2,
+      "data": {
+        "success": true,
+        "module": "newsapi",
+        "status": "online",
+        "timestamp": "2026-08-16T14:07:08.094Z"
+      },
+      "error": null
+    },
+    {
+      "id": "diagnostics",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "responseTime": 2,
+      "data": {
+        "success": true,
+        "module": "diagnostics",
+        "status": "online",
+        "version": "1.0",
+        "timestamp": "2026-08-16T14:07:08.095Z"
+      },
+      "error": null
+    }
+  ],
+  "external": [
+    {
+      "id": "ollama",
+      "status": "OFFLINE",
+      "statusCode": null,
+      "responseTime": null,
+      "error": "fetch failed"
+    },
+    {
+      "id": "newsapi",
+      "status": "OFFLINE",
+      "statusCode": null,
+      "responseTime": null,
+      "error": "The operation was aborted due to timeout"
+    },
+    {
+      "id": "usgs",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "responseTime": 338,
+      "error": null
+    }
+  ],
+  "system": {
+    "memory": {
+      "used": "29 MB",
+      "total": "62 MB",
+      "rss": "119 MB",
+      "systemUsedPercent": "31%"
+    },
+    "cpu": {
+      "cores": 4,
+      "model": "AMD Athlon(tm) X4 840 Quad Core Processor",
+      "loadAverage": [
+        "1.53",
+        "0.70",
+        "0.74"
+      ]
+    },
+    "uptime": {
+      "system": "6ч 30м",
+      "process": "0ч 16м"
+    },
+    "platform": "linux 6.12.95+deb13-amd64",
+    "hostname": "comp5vl"
+  },
+  "dataIntegrity": {
+    "basket": {
+      "status": "OK",
+      "files": 0,
+      "latest": null
+    },
+    "opml": {
+      "status": "OK",
+      "size": "1593 bytes"
+    },
+    "history": {
+      "status": "OK",
+      "entries": "unknown",
+      "latest": null
+    },
+    "logs": {
+      "status": "OK",
+      "files": 5,
+      "latest": "report.log"
+    }
+  },
+  "aiLogAnalysis": {
+    "status": "ERROR",
+    "message": "fetch failed"
+  }
+}

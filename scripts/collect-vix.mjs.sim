@@ -1,0 +1,74 @@
+#!/usr/bin/env node
+// ============================================================
+// COLLECT-VIX.MJS — Сборщик данных индекса VIX
+// ============================================================
+// Собирает данные индекса волатильности VIX
+// Источник: Yahoo Finance (симуляция)
+// Сохраняет в: data/basket/vix.json
+// ============================================================
+
+import { promises as fs } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const BASKET_DIR = join(__dirname, '..', 'data', 'basket');
+const BASKET_PATH = join(BASKET_DIR, 'vix.json');
+
+// ============================================================
+// 1. ГЕНЕРАЦИЯ ДАННЫХ (симуляция)
+// ============================================================
+
+function generateVIXData() {
+    const now = new Date();
+    const data = [];
+    const baseValue = 18 + Math.random() * 10;
+
+    // Генерируем 30 дней истории
+    for (let i = 29; i >= 0; i--) {
+        const date = new Date(now);
+        date.setDate(date.getDate() - i);
+        
+        // Случайное блуждание с дрейфом
+        const change = (Math.random() - 0.48) * 3;
+        const value = Math.max(10, baseValue + (Math.random() - 0.5) * 15 + change * i / 5);
+        
+        data.push({
+            date: date.toISOString().split('T')[0],
+            value: Math.round(value * 100) / 100,
+            change: Math.round(change * 100) / 100
+        });
+    }
+
+    return data;
+}
+
+// ============================================================
+// 2. СОХРАНЕНИЕ
+// ============================================================
+
+async function saveToBasket(data) {
+    try {
+        await fs.mkdir(BASKET_DIR, { recursive: true });
+        await fs.writeFile(BASKET_PATH, JSON.stringify(data, null, 2), 'utf8');
+        console.log(`[VIX] ✅ Сохранено ${data.length} записей`);
+        return true;
+    } catch (error) {
+        console.error(`[VIX] ❌ Ошибка:`, error.message);
+        return false;
+    }
+}
+
+async function collectVIX() {
+    console.log('[VIX] 📡 Начинаем сбор данных...');
+    const data = generateVIXData();
+    await saveToBasket(data);
+    console.log('[VIX] ✅ Сбор завершен');
+    return data;
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+    collectVIX().catch(console.error);
+}
+
+export { collectVIX, generateVIXData };

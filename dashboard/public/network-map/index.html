@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crucix — Network Map</title>
+
+    <!-- Local CSS -->
+    <link rel="stylesheet" href="css/core.css" />
+    <link rel="stylesheet" href="css/header.css" />
+    <link rel="stylesheet" href="css/layers-panel.css" />
+    <link rel="stylesheet" href="css/map.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
+    <link rel="stylesheet" href="css/cii.css" />
+    <style>
+        /* === Стили топбара (скопировано из event-map) === */
+        .map-switcher { display: flex; gap: 3px; padding: 2px; background: rgba(255,255,255,0.03); border-radius: 4px; border: 1px solid rgba(255,255,255,0.06); margin-right: 6px; }
+        .map-switch-btn { padding: 3px 8px; border: none; background: transparent; color: #666; font-size: 10px; font-weight: 500; cursor: pointer; border-radius: 3px; text-decoration: none; transition: all 0.2s; font-family: inherit; display: inline-flex; align-items: center; gap: 3px; }
+        .map-switch-btn:hover { color: #c8d0d8; background: rgba(255,255,255,0.05); }
+        .map-switch-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.12); border: 1px solid rgba(91,192,248,0.2); }
+
+        /* === Фикс легенды (не растягивать на всю ширину) === */
+        #legend {
+            position: absolute;
+            bottom: 16px;
+            right: 16px;
+            left: auto !important;
+            width: auto;
+            max-width: 200px;
+            min-width: 140px;
+        }
+
+        /* === Слои: две колонки внутри категории === */
+        .layer-grid-inner {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3px;
+            padding: 4px 0;
+        }
+        .layer-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 6px;
+            border: 1px solid transparent;
+            border-radius: 5px;
+            background: transparent;
+            color: #8899aa;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+        }
+        .layer-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #c8d0d8;
+        }
+        .layer-item.active {
+            background: rgba(91, 192, 248, 0.15);
+            color: #5bc0f8;
+            border-color: rgba(91, 192, 248, 0.2);
+        }
+        .layer-item .layer-icon { font-size: 13px; flex-shrink: 0; }
+        .layer-item .layer-name { flex: 1; overflow: hidden; text-overflow: ellipsis; font-size: 12px; }
+
+        /* === Скрываем Leaflet-остатки === */
+        .leaflet-container { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <header class="topbar">
+        <div class="topbar-left">
+            <span class="topbar-brand" id="brand-text">🔗 CRUCIX NETWORK</span>
+            <div class="refresh-inline" id="refresh-inline">
+                <span class="label">🔄</span>
+                <select id="refresh-interval">
+                    <option value="0" selected>Выкл</option>
+                    <option value="60000">1 мин</option>
+                    <option value="300000">5 мин</option>
+                    <option value="600000">10 мин</option>
+                    <option value="1800000">30 мин</option>
+                    <option value="3600000">1 час</option>
+                </select>
+                <span class="timer" id="refresh-timer">—</span>
+                <button class="btn-refresh" id="refresh-now-btn" title="Обновить сейчас">⟳</button>
+                <span class="last-update" id="last-update-time">
+                    <span class="status-dot active" id="status-dot"></span>
+                    <span id="update-text">—</span>
+                </span>
+            </div>
+        </div>
+        <div class="topbar-right">
+            <div class="map-switcher" id="map-switcher">
+                <a class="map-switch-btn" data-map="events" href="../event-map/">Events</a>
+                <a class="map-switch-btn" data-map="metrics" href="../metrics-map/">Metrics</a>
+                <a class="map-switch-btn" data-map="meanings" href="../semantic-map/">Semantic</a>
+                <a class="map-switch-btn active" data-map="relations" href="../network-map/">Network</a>
+                <a class="map-switch-btn" data-map="forecasts" href="../forecast-map/">Forecast</a>
+            </div>
+            <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+            <button class="topbar-btn btn-copy" id="copy-btn" onclick="window.copyAllData && window.copyAllData()">📋 КОПИРОВАТЬ</button>
+            <button class="topbar-btn btn-rss" onclick="window.location.href='/registry'">📡 Список страниц</button>
+            <button class="topbar-btn btn-help" onclick="window.openHelp && window.openHelp()">❓ HELP</button>
+            <button class="topbar-btn btn-heat" id="btn-heat" onclick="window.toggleHeat && window.toggleHeat()">🌡️ Тепловая</button>
+            <button class="topbar-btn btn-timeline" id="btn-timeline" onclick="window.toggleTimeline && window.toggleTimeline()">📅 Хронология</button>
+            <button class="topbar-btn btn-pdf" onclick="window.print()">📄 PDF</button>
+            <div class="lang-switch">
+                <button class="lang-btn active" data-lang="ru" onclick="window.setLanguage && window.setLanguage('ru')">RU</button>
+                <button class="lang-btn" data-lang="en" onclick="window.setLanguage && window.setLanguage('en')">EN</button>
+            </div>
+        </div>
+    </header>
+
+    <nav class="nav-dashboards">
+        <button class="nav-btn active" onclick="window.location.href='/dashboard-5in1'"><span class="icon">🎯</span>Центр аналитики</button>
+        <button class="nav-btn" onclick="window.location.href='/dashboard-economic'"><span class="icon">📊</span>Экономика</button>
+        <button class="nav-btn" onclick="window.location.href='/dashboard-financial'"><span class="icon">💰</span>Финансы</button>
+        <button class="nav-btn" onclick="window.location.href='/dashboard-military'"><span class="icon">🛡️</span>Военный</button>
+        <button class="nav-btn" onclick="window.location.href='/dashboard-geopolitical'"><span class="icon">🌍</span>Геополитика</button>
+        <button class="nav-btn" onclick="window.location.href='/dashboard-ecological'"><span class="icon">🌿</span>Экология</button>
+        <button class="nav-btn" onclick="window.location.href='/dashboard-cyber'"><span class="icon">🔒</span>Кибер</button>
+        <button class="nav-btn" onclick="window.location.href='/dashboard-space'"><span class="icon">🚀</span>Космос</button>
+        <button class="nav-btn" onclick="window.location.href='/dashboard-news'"><span class="icon">📰</span>Новости</button>
+        <button class="nav-btn" onclick="window.location.href='/dashboard-ai'"><span class="icon">🧠</span>AI</button>
+        <button class="nav-btn" onclick="window.location.href='/dashboard-scientific'"><span class="icon">🔬</span>Наука</button>
+        <button class="nav-btn" onclick="window.location.href='/dashboard-esg'"><span class="icon">🌱</span>ESG</button>
+        <button class="nav-btn" onclick="window.location.href='/dashboard-threats'"><span class="icon">⚡</span>Угрозы</button>
+        <button class="nav-btn" onclick="window.location.href='/dashboard-health'"><span class="icon">🏥</span>Здоровье</button>
+        <button class="nav-btn" onclick="window.location.href='/dashboard-energy'"><span class="icon">⛽</span>Энергетика</button>
+        <button class="nav-btn" onclick="window.location.href='/dashboard-transport'"><span class="icon">🚛</span>Транспорт</button>
+        <button class="nav-btn" onclick="window.location.href='/dashboard-regions'"><span class="icon">🌏</span>Регионы</button>
+    </nav>
+    <div style="height:2px; background: linear-gradient(90deg, transparent, rgba(91,192,248,0.3), transparent); margin:0;"></div>
+
+    <button class="panel-toggle-btn" id="panel-toggle-btn" onclick="window.toggleLayerPanel && window.toggleLayerPanel()">📋</button>
+
+    <div class="layer-panel" id="layer-panel">
+        <div class="layer-panel-header">
+            <div style="display:flex; gap:6px; margin-top:4px; width:100%; justify-content:space-between;">
+                <div>
+                    <button onclick="window.enableAllLayers && window.enableAllLayers()" style="background:rgba(91,192,248,0.12); border:1px solid rgba(91,192,248,0.2); color:#5bc0f8; border-radius:3px; padding:2px 8px; font-size:9px; cursor:pointer;">Включить все</button>
+                    <button onclick="window.disableAllLayers && window.disableAllLayers()" style="background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.2); color:#ef4444; border-radius:3px; padding:2px 8px; font-size:9px; cursor:pointer;">Выключить все</button>
+                </div>
+                <span id="active-layers-count" style="font-size:9px; color:#4a5a6a; align-self:center;">0 активных</span>
+            </div>
+            <span class="layer-panel-title" id="layers-title">🔗 СЛОИ <span class="count" id="layer-count">0</span></span>
+            <button class="layer-panel-toggle" onclick="window.toggleLayerPanel && window.toggleLayerPanel()">✕</button>
+        </div>
+        <input class="layer-search" id="layer-search" type="text" placeholder="🔍 Поиск слоев..." />
+        <div id="layer-grid" class="layer-grid"></div>
+    </div>
+
+    <div class="map-container" id="map-container">
+        <svg id="graph-svg" class="graph-svg"></svg>
+
+        <div class="loading-overlay" id="loading-overlay">
+            <div class="text">⏳ Загрузка Network Map...</div>
+        </div>
+
+        <div id="legend" class="legend"></div>
+        <div id="node-tooltip" class="node-tooltip" style="display:none;"></div>
+    </div>
+
+    <script>window.CrucixMap = { mapType: 'relations', name: 'Crucix Network Map' };</script>
+    <script src="js/core.js"></script>
+    <script src="js/countries.js"></script>
+    <script src="js/layers.js"></script>
+    <script src="js/maps-config.js"></script>
+    <script src="js/network-adapter.js"></script>
+    <script src="js/graph-view.js"></script>
+    <script src="js/graph-panel.js"></script>
+    <script src="js/relations.js"></script>
+    <script src="js/network-map.js"></script>
+    <script src="js/ssi.js"></script>
+    <script src="js/cii.js"></script>
+    <script src="js/refresh.js"></script>
+    <script src="js/copy-data.js"></script>
+    <script src="js/logger.js"></script>
+    <script src="js/topbar.js"></script>
+    <script src="js/init.js"></script>
+</body>
+</html>

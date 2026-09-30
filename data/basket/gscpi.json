@@ -1,0 +1,167 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "gscpi",
+    "source": "NY Fed GSCPI (demo)",
+    "source_url": "https://www.newyorkfed.org/research/policy/gscpi",
+    "fetched_at": "2026-09-27T16:36:10.474Z",
+    "normalized_at": "2026-09-27T16:38:26.499Z",
+    "collector": "collect-gscpi.mjs",
+    "license": "public-domain",
+    "count": 31,
+    "granularity": "daily",
+    "value_unit": "index",
+    "value_scale": null,
+    "value_type": "index",
+    "value_range": null,
+    "period": "P30D"
+  },
+  "series": [
+    {
+      "date": "2026-08-28",
+      "value": 0.53
+    },
+    {
+      "date": "2026-08-29",
+      "value": 0.23
+    },
+    {
+      "date": "2026-08-30",
+      "value": 0.68
+    },
+    {
+      "date": "2026-08-31",
+      "value": 0.28
+    },
+    {
+      "date": "2026-09-01",
+      "value": 0.5
+    },
+    {
+      "date": "2026-09-02",
+      "value": 0.51
+    },
+    {
+      "date": "2026-09-03",
+      "value": 0.65
+    },
+    {
+      "date": "2026-09-04",
+      "value": 0.4
+    },
+    {
+      "date": "2026-09-05",
+      "value": 0.65
+    },
+    {
+      "date": "2026-09-06",
+      "value": 0.61
+    },
+    {
+      "date": "2026-09-07",
+      "value": 0.27
+    },
+    {
+      "date": "2026-09-08",
+      "value": 0.32
+    },
+    {
+      "date": "2026-09-09",
+      "value": 0.4
+    },
+    {
+      "date": "2026-09-10",
+      "value": 0.33
+    },
+    {
+      "date": "2026-09-11",
+      "value": 0.65
+    },
+    {
+      "date": "2026-09-12",
+      "value": 0.65
+    },
+    {
+      "date": "2026-09-13",
+      "value": 0.44
+    },
+    {
+      "date": "2026-09-14",
+      "value": 0.37
+    },
+    {
+      "date": "2026-09-15",
+      "value": 0.42
+    },
+    {
+      "date": "2026-09-16",
+      "value": 0.29
+    },
+    {
+      "date": "2026-09-17",
+      "value": 0.63
+    },
+    {
+      "date": "2026-09-18",
+      "value": 0.52
+    },
+    {
+      "date": "2026-09-19",
+      "value": 0.53
+    },
+    {
+      "date": "2026-09-20",
+      "value": 0.67
+    },
+    {
+      "date": "2026-09-21",
+      "value": 0.55
+    },
+    {
+      "date": "2026-09-22",
+      "value": 0.43
+    },
+    {
+      "date": "2026-09-23",
+      "value": 0.29
+    },
+    {
+      "date": "2026-09-24",
+      "value": 0.51
+    },
+    {
+      "date": "2026-09-25",
+      "value": 0.63
+    },
+    {
+      "date": "2026-09-26",
+      "value": 0.27
+    },
+    {
+      "date": "2026-09-27",
+      "value": 0.27
+    }
+  ],
+  "points": [],
+  "regions": [
+    {
+      "region": "GLOBAL",
+      "value": 0.46709677419354834,
+      "count": 31,
+      "aggregation": "mean",
+      "extra": {
+        "max": 0.68,
+        "sum": 14.479999999999999
+      }
+    }
+  ],
+  "documents": [],
+  "graph": null,
+  "extra": {
+    "adapter": "timeseries",
+    "adapter_version": "2.2.1",
+    "unique_dates": 31,
+    "unmapped_regions": [],
+    "unmapped_count": 0
+  }
+}

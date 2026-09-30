@@ -1,0 +1,209 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "earthquakes",
+    "source": "USGS (sample)",
+    "source_url": "https://earthquake.usgs.gov/fdsnws/event/1/query",
+    "fetched_at": "2026-09-27T16:35:25.900Z",
+    "normalized_at": "2026-09-27T16:38:26.397Z",
+    "collector": "collect-earthquakes.mjs",
+    "license": "public-domain",
+    "count": 15,
+    "granularity": "event",
+    "value_unit": "richter",
+    "value_scale": null,
+    "value_type": "magnitude",
+    "value_range": null,
+    "period": "P30D"
+  },
+  "series": [
+    {
+      "date": "2026-09-17",
+      "value": 7.8
+    },
+    {
+      "date": "2026-08-29",
+      "value": 7.2
+    },
+    {
+      "date": "2026-09-26",
+      "value": 7.2
+    },
+    {
+      "date": "2026-09-07",
+      "value": 7.1
+    },
+    {
+      "date": "2026-09-10",
+      "value": 7
+    },
+    {
+      "date": "2026-09-23",
+      "value": 6.5
+    },
+    {
+      "date": "2026-08-31",
+      "value": 6.5
+    },
+    {
+      "date": "2026-09-05",
+      "value": 6.5
+    },
+    {
+      "date": "2026-09-16",
+      "value": 6.5
+    },
+    {
+      "date": "2026-08-30",
+      "value": 6.2
+    },
+    {
+      "date": "2026-08-29",
+      "value": 6.2
+    },
+    {
+      "date": "2026-09-20",
+      "value": 6.2
+    },
+    {
+      "date": "2026-09-11",
+      "value": 6
+    },
+    {
+      "date": "2026-09-19",
+      "value": 5.8
+    },
+    {
+      "date": "2026-09-06",
+      "value": 5.4
+    }
+  ],
+  "points": [
+    {
+      "lat": -42,
+      "lon": 173,
+      "value": 7.8,
+      "label": "Новая Зеландия (Крайстчерч)",
+      "timestamp": "2026-09-17T00:00:00.000Z"
+    },
+    {
+      "lat": 35,
+      "lon": -118,
+      "value": 7.2,
+      "label": "Калифорния, США",
+      "timestamp": "2026-08-29T00:00:00.000Z"
+    },
+    {
+      "lat": 34,
+      "lon": 48,
+      "value": 7.2,
+      "label": "Иран (Керманшах)",
+      "timestamp": "2026-09-26T00:00:00.000Z"
+    },
+    {
+      "lat": 18,
+      "lon": -100,
+      "value": 7.1,
+      "label": "Мексика (Поблета)",
+      "timestamp": "2026-09-07T00:00:00.000Z"
+    },
+    {
+      "lat": -8,
+      "lon": 115,
+      "value": 7,
+      "label": "Индонезия (Бали)",
+      "timestamp": "2026-09-10T00:00:00.000Z"
+    },
+    {
+      "lat": 19,
+      "lon": -99,
+      "value": 6.5,
+      "label": "Мексика (Мехико)",
+      "timestamp": "2026-09-23T00:00:00.000Z"
+    },
+    {
+      "lat": 37.5,
+      "lon": 38,
+      "value": 6.5,
+      "label": "Турция (Газиантеп)",
+      "timestamp": "2026-08-31T00:00:00.000Z"
+    },
+    {
+      "lat": 36,
+      "lon": 139,
+      "value": 6.5,
+      "label": "Япония (Канто)",
+      "timestamp": "2026-09-05T00:00:00.000Z"
+    },
+    {
+      "lat": -35,
+      "lon": -72,
+      "value": 6.5,
+      "label": "Чили (Консепсьон)",
+      "timestamp": "2026-09-16T00:00:00.000Z"
+    },
+    {
+      "lat": -5,
+      "lon": 105,
+      "value": 6.2,
+      "label": "Индонезия (Суматра)",
+      "timestamp": "2026-08-30T00:00:00.000Z"
+    },
+    {
+      "lat": 38,
+      "lon": 22,
+      "value": 6.2,
+      "label": "Греция (Коринф)",
+      "timestamp": "2026-08-29T00:00:00.000Z"
+    },
+    {
+      "lat": 27.5,
+      "lon": 86,
+      "value": 6.2,
+      "label": "Непал (Эверест)",
+      "timestamp": "2026-09-20T00:00:00.000Z"
+    },
+    {
+      "lat": -43,
+      "lon": 172,
+      "value": 6,
+      "label": "Новая Зеландия (Веллингтон)",
+      "timestamp": "2026-09-11T00:00:00.000Z"
+    },
+    {
+      "lat": 37.5,
+      "lon": 23,
+      "value": 5.8,
+      "label": "Греция (Афины)",
+      "timestamp": "2026-09-19T00:00:00.000Z"
+    },
+    {
+      "lat": 44.5,
+      "lon": -124.8,
+      "value": 5.4,
+      "label": "Орегон, США",
+      "timestamp": "2026-09-06T00:00:00.000Z"
+    }
+  ],
+  "regions": [
+    {
+      "region": "GLOBAL",
+      "value": 6.540000000000001,
+      "count": 15,
+      "aggregation": "max",
+      "extra": {
+        "max": 7.8,
+        "sum": 98.10000000000001
+      }
+    }
+  ],
+  "documents": [],
+  "graph": null,
+  "extra": {
+    "adapter": "points",
+    "adapter_version": "2.2.1",
+    "skipped_invalid_coords": 0,
+    "unmapped_regions": [],
+    "unmapped_count": 0
+  }
+}

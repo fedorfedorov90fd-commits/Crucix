@@ -1,0 +1,1030 @@
+===== ЧАСТЬ part-6-infra-and-tests · КУСОК 11/23 · 38.6 KB =====
+
+FILE: benchmark/suite.mjs
+SIZE: 15917 bytes
+SHA1: 61aedddeb6d0abe7
+========================================================================
+
+// benchmark/suite.mjs
+// Бенчмарк-сюита: Crucix против классических baseline
+//
+// Сравниваем по метрикам:
+//   - RMSE (Root Mean Squared Error)
+//   - MAE (Mean Absolute Error)
+//   - Brier Score (для вероятностных прогнозов)
+//   - Hit Rate (процент правильных направлений)
+//   - Sharpe-like ratio (accuracy/volatility)
+
+import { readFileSync, readdirSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { MLP } from '../apis/predict/models/neural.mjs';
+import { GradientBoosting } from '../apis/predict/models/gbm.mjs';
+import { RandomForest } from '../apis/predict/models/random_forest.mjs';
+import { holtLinear, autoregression, forecastSeries } from '../apis/predict/timeseries.mjs';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const RUNS_DIR = join(__dirname, '..', 'runs');
+const MEMORY_DIR = join(RUNS_DIR, 'memory');
+const BENCHMARK_DIR = join(RUNS_DIR, 'benchmark');
+
+function rmse(predictions, actual) {
+  let sum = 0;
+  for (let i = 0; i < predictions.length; i++) sum += (predictions[i] - actual[i]) ** 2;
+  return Math.sqrt(sum / predictions.length);
+}
+
+function mae(predictions, actual) {
+  let sum = 0;
+  for (let i = 0; i < predictions.length; i++) sum += Math.abs(predictions[i] - actual[i]);
+  return sum / predictions.length;
+}
+
+function brierScore(probabilities, outcomes) {
+  let sum = 0;
+  for (let i = 0; i < probabilities.length; i++) sum += (probabilities[i] - outcomes[i]) ** 2;
+  return sum / probabilities.length;
+}
+
+function hitRate(predictions, actual) {
+  let hits = 0;
+  for (let i = 1; i < predictions.length; i++) {
+    const predDir = Math.sign(predictions[i] - actual[i - 1]);
+    const actualDir = Math.sign(actual[i] - actual[i - 1]);
+    if (predDir === actualDir) hits++;
+  }
+  return hits / Math.max(predictions.length - 1, 1);
+}
+
+function sharpeLike(returns) {
+  if (returns.length < 2) return 0;
+  const mean = returns.reduce((a, b) => a + b, 0) / returns.length;
+  const variance = returns.reduce((s, r) => s + (r - mean) ** 2, 0) / returns.length;
+  const std = Math.sqrt(variance);
+  return std > 0 ? mean / std : 0;
+}
+
+function maxDrawdown(equityCurve) {
+  let maxDD = 0;
+  let peak = equityCurve[0];
+  for (const v of equityCurve) {
+    if (v > peak) peak = v;
+    const dd = (peak - v) / peak;
+    if (dd > maxDD) maxDD = dd;
+  }
+  return maxDD;
+}
+
+function loadHistory() {
+  const history = [];
+  try {
+    const files = readdirSync(MEMORY_DIR)
+      .filter(f => f.endsWith('.json'))
+      .sort()
+      .reverse()
+      .slice(0, 2000);
+
+    for (const file of files) {
+      try {
+        history.push(JSON.parse(readFileSync(join(MEMORY_DIR, file), 'utf-8')));
+      } catch {}
+    }
+  } catch {}
+  return history.reverse();
+}
+
+function extractSeries(history, getter) {
+  return history.map(h => getter(h)).filter(v => v !== undefined && v !== null && !isNaN(v));
+}
+
+function naiveForecast(series, horizon = 1) {
+  const predictions = [];
+  for (let i = 0; i < series.length - horizon; i++) predictions.push(series[i]);
+  return predictions;
+}
+
+function movingAverageForecast(series, window = 5) {
+  const predictions = [];
+  for (let i = window; i < series.length; i++) {
+    const avg = series.slice(i - window, i).reduce((a, b) => a + b, 0) / window;
+    predictions.push(avg);
+  }
+  return predictions;
+}
+
+function arima111(series) {
+  const predictions = [];
+
+  for (let i = 10; i < series.length; i++) {
+    const slice = series.slice(0, i);
+    const diff = [];
+    for (let j = 1; j < slice.length; j++) diff.push(slice[j] - slice[j - 1]);
+
+    if (diff.length < 5) {
+      predictions.push(slice[slice.length - 1]);
+      continue;
+    }
+
+    const meanDiff = diff.reduce((a, b) => a + b, 0) / diff.length;
+    const centeredDiff = diff.map(d => d - meanDiff);
+
+    let num = 0, den = 0;
+    for (let j = 1; j < centeredDiff.length; j++) {
+      num += centeredDiff[j] * centeredDiff[j - 1];
+      den += centeredDiff[j - 1] ** 2;
+    }
+    const arCoeff = den > 0 ? num / den : 0;
+
+    const lastDiff = diff[diff.length - 1];
+    const nextDiff = meanDiff + arCoeff * (lastDiff - meanDiff);
+    predictions.push(slice[slice.length - 1] + nextDiff);
+  }
+
+  return predictions;
+}
+
+function holtForecast(series) {
+  const predictions = [];
+  for (let i = 10; i < series.length; i++) {
+    const slice = series.slice(0, i);
+    const result = holtLinear(slice, 0.3, 0.1, 1);
+    predictions.push(result.forecast[0]);
+  }
+  return predictions;
+}
+
+function randomWalkDrift(series) {
+  const predictions = [];
+  for (let i = 5; i < series.length; i++) {
+    const slice = series.slice(0, i);
+    const drift = (slice[slice.length - 1] - slice[0]) / slice.length;
+    predictions.push(slice[slice.length - 1] + drift);
+  }
+  return predictions;
+}
+
+function arpForecast(series, p = 3) {
+  const predictions = [];
+  for (let i = p + 5; i < series.length; i++) {
+    const slice = series.slice(0, i);
+    const ar = autoregression(slice, p, 1);
+    predictions.push(ar.forecast[0]);
+  }
+  return predictions;
+}
+
+function mlpForecast(X, y, { layers = [10, 32, 16, 1], epochs = 50 } = {}) {
+  const n = X.length;
+  const splitIdx = Math.floor(n * 0.8);
+
+  const XTrain = X.slice(0, splitIdx);
+  const yTrain = y.slice(0, splitIdx);
+  const XTest = X.slice(splitIdx);
+  const yTest = y.slice(splitIdx);
+
+  const model = new MLP({ layers, activation: 'relu', outputActivation: 'linear' });
+  model.fit(XTrain, yTrain, { epochs, batchSize: 16, lr: 0.01 });
+
+  const predictions = model.predict(XTest).map(p => p[0]);
+  return { predictions, actual: yTest, model };
+}
+
+function gbmForecast(X, y, { nEstimators = 100, maxDepth = 4 } = {}) {
+  const n = X.length;
+  const splitIdx = Math.floor(n * 0.8);
+
+  const XTrain = X.slice(0, splitIdx);
+  const yTrain = y.slice(0, splitIdx);
+  const XTest = X.slice(splitIdx);
+  const yTest = y.slice(splitIdx);
+
+  const model = new GradientBoosting({ nEstimators, maxDepth, learningRate: 0.1 });
+  model.fit(XTrain, yTrain);
+
+  const predictions = model.predict(XTest);
+  return { predictions, actual: yTest, model };
+}
+
+function rfForecast(X, y, { nEstimators = 100, maxDepth = 8 } = {}) {
+  const n = X.length;
+  const splitIdx = Math.floor(n * 0.8);
+
+  const XTrain = X.slice(0, splitIdx);
+  const yTrain = y.slice(0, splitIdx);
+  const XTest = X.slice(splitIdx);
+  const yTest = y.slice(splitIdx);
+
+  const model = new RandomForest({ nEstimators, maxDepth });
+  model.fit(XTrain, yTrain);
+
+  const predictions = model.predict(XTest);
+  return { predictions, actual: yTest, model };
+}
+
+async function runBenchmark({ target = 'vix' } = {}) {
+  console.log('════════════════════════════════════════════════');
+  console.log('  Crucix Benchmark Suite');
+  console.log('════════════════════════════════════════════════');
+  console.log('');
+
+  const t0 = Date.now();
+  const history = loadHistory();
+  console.log(`Загружено sweep-записей: ${history.length}`);
+
+  if (history.length < 50) {
+    console.error('Недостаточно данных для бенчмарка (нужно ≥50)');
+    return null;
+  }
+
+  const getters = {
+    vix: h => h.fred?.vix,
+    hySpread: h => h.fred?.hySpread,
+    conflictCount: h => h.gdelt?.conflictEvents?.length,
+    oilPrice: h => h.energy?.oilPrice,
+    goldPrice: h => h.gold?.price,
+  };
+
+  const series = extractSeries(history, getters[target]);
+  console.log(`Целевая переменная: ${target}`);
+  console.log(`Длина ряда: ${series.length}`);
+  console.log('');
+
+  const results = {};
+
+  console.log('[1/9] Naive (last value)...');
+  const naivePreds = naiveForecast(series);
+  const naiveActual = series.slice(1);
+  results['Naive'] = {
+    predictions: naivePreds,
+    actual: naiveActual,
+    rmse: rmse(naivePreds, naiveActual),
+    mae: mae(naivePreds, naiveActual),
+    hitRate: hitRate(naivePreds, naiveActual),
+  };
+  console.log(`  RMSE=${results['Naive'].rmse.toFixed(4)}, MAE=${results['Naive'].mae.toFixed(4)}, HitRate=${(results['Naive'].hitRate * 100).toFixed(1)}%`);
+
+  console.log('\n[2/9] Moving Average (5)...');
+  const maPreds = movingAverageForecast(series, 5);
+  const maActual = series.slice(5);
+  results['Moving Average'] = {
+    predictions: maPreds,
+    actual: maActual,
+    rmse: rmse(maPreds, maActual),
+    mae: mae(maPreds, maActual),
+    hitRate: hitRate(maPreds, maActual),
+  };
+  console.log(`  RMSE=${results['Moving Average'].rmse.toFixed(4)}, MAE=${results['Moving Average'].mae.toFixed(4)}, HitRate=${(results['Moving Average'].hitRate * 100).toFixed(1)}%`);
+
+  console.log('\n[3/9] ARIMA(1,1,1)...');
+  const arimaPreds = arima111(series);
+  const arimaActual = series.slice(10);
+  results['ARIMA(1,1,1)'] = {
+    predictions: arimaPreds,
+    actual: arimaActual,
+    rmse: rmse(arimaPreds, arimaActual),
+    mae: mae(arimaPreds, arimaActual),
+    hitRate: hitRate(arimaPreds, arimaActual),
+  };
+  console.log(`  RMSE=${results['ARIMA(1,1,1)'].rmse.toFixed(4)}, MAE=${results['ARIMA(1,1,1)'].mae.toFixed(4)}, HitRate=${(results['ARIMA(1,1,1)'].hitRate * 100).toFixed(1)}%`);
+
+  console.log('\n[4/9] Holt Linear (ETS)...');
+  const holtPreds = holtForecast(series);
+  const holtActual = series.slice(10);
+  results['Holt Linear'] = {
+    predictions: holtPreds,
+    actual: holtActual,
+    rmse: rmse(holtPreds, holtActual),
+    mae: mae(holtPreds, holtActual),
+    hitRate: hitRate(holtPreds, holtActual),
+  };
+  console.log(`  RMSE=${results['Holt Linear'].rmse.toFixed(4)}, MAE=${results['Holt Linear'].mae.toFixed(4)}, HitRate=${(results['Holt Linear'].hitRate * 100).toFixed(1)}%`);
+
+  console.log('\n[5/9] Random Walk with Drift...');
+  const rwPreds = randomWalkDrift(series);
+  const rwActual = series.slice(5);
+  results['Random Walk Drift'] = {
+    predictions: rwPreds,
+    actual: rwActual,
+    rmse: rmse(rwPreds, rwActual),
+    mae: mae(rwPreds, rwActual),
+    hitRate: hitRate(rwPreds, rwActual),
+  };
+  console.log(`  RMSE=${results['Random Walk Drift'].rmse.toFixed(4)}, MAE=${results['Random Walk Drift'].mae.toFixed(4)}, HitRate=${(results['Random Walk Drift'].hitRate * 100).toFixed(1)}%`);
+
+  console.log('\n[6/9] AR(3)...');
+  const arPreds = arpForecast(series, 3);
+  const arActual = series.slice(8);
+  results['AR(3)'] = {
+    predictions: arPreds,
+    actual: arActual,
+    rmse: rmse(arPreds, arActual),
+    mae: mae(arPreds, arActual),
+    hitRate: hitRate(arPreds, arActual),
+  };
+  console.log(`  RMSE=${results['AR(3)'].rmse.toFixed(4)}, MAE=${results['AR(3)'].mae.toFixed(4)}, HitRate=${(results['AR(3)'].hitRate * 100).toFixed(1)}%`);
+
+  const X = [];
+  const y = [];
+  for (let i = 5; i < history.length - 1; i++) {
+    const h = history[i];
+    const next = history[i + 1];
+    const targetValue = getters[target](next);
+    if (targetValue === undefined) continue;
+
+    X.push([
+      h.fred?.vix || 20,
+      h.fred?.hySpread || 3,
+      h.fred?.treasury10y || 4,
+      h.gdelt?.conflictEvents?.length || 0,
+      h.sanctions?.count || 0,
+      h.energy?.oilPrice || 70,
+      h.gold?.price || 1900,
+      h.dxy?.value || 100,
+      h.radiation ? Math.max(...Object.values(h.radiation).map(s => s.cpm || 0)) : 0,
+      h.delta?.newAlerts || 0,
+    ]);
+    y.push([targetValue]);
+  }
+
+  console.log('\n[7/9] MLP (10→32→16→1)...');
+  const mlpResult = mlpForecast(X, y);
+  results['MLP (Crucix)'] = {
+    predictions: mlpResult.predictions,
+    actual: mlpResult.actual.map(a => a[0]),
+    rmse: rmse(mlpResult.predictions, mlpResult.actual.map(a => a[0])),
+    mae: mae(mlpResult.predictions, mlpResult.actual.map(a => a[0])),
+    hitRate: hitRate(mlpResult.predictions, mlpResult.actual.map(a => a[0])),
+  };
+  console.log(`  RMSE=${results['MLP (Crucix)'].rmse.toFixed(4)}, MAE=${results['MLP (Crucix)'].mae.toFixed(4)}, HitRate=${(results['MLP (Crucix)'].hitRate * 100).toFixed(1)}%`);
+
+  console.log('\n[8/9] Gradient Boosting (Crucix)...');
+  const gbmResult = gbmForecast(X, y);
+  results['GBM (Crucix)'] = {
+    predictions: gbmResult.predictions,
+    actual: gbmResult.actual.map(a => a[0]),
+    rmse: rmse(gbmResult.predictions, gbmResult.actual.map(a => a[0])),
+    mae: mae(gbmResult.predictions, gbmResult.actual.map(a => a[0])),
+    hitRate: hitRate(gbmResult.predictions, gbmResult.actual.map(a => a[0])),
+  };
+  console.log(`  RMSE=${results['GBM (Crucix)'].rmse.toFixed(4)}, MAE=${results['GBM (Crucix)'].mae.toFixed(4)}, HitRate=${(results['GBM (Crucix)'].hitRate * 100).toFixed(1)}%`);
+
+  console.log('\n[9/9] Random Forest (Crucix)...');
+  const rfResult = rfForecast(X, y);
+  results['RF (Crucix)'] = {
+    predictions: rfResult.predictions,
+    actual: rfResult.actual.map(a => a[0]),
+    rmse: rmse(rfResult.predictions, rfResult.actual.map(a => a[0])),
+    mae: mae(rfResult.predictions, rfResult.actual.map(a => a[0])),
+    hitRate: hitRate(rfResult.predictions, rfResult.actual.map(a => a[0])),
+  };
+  console.log(`  RMSE=${results['RF (Crucix)'].rmse.toFixed(4)}, MAE=${results['RF (Crucix)'].mae.toFixed(4)}, HitRate=${(results['RF (Crucix)'].hitRate * 100).toFixed(1)}%`);
+
+  console.log('\n════════════════════════════════════════════════');
+  console.log('  ИТОГОВАЯ ТАБЛИЦА');
+  console.log('════════════════════════════════════════════════');
+  console.log('');
+  console.log('| Модель              | RMSE     | MAE      | Hit Rate | Rank |');
+  console.log('|---------------------|----------|----------|----------|------|');
+
+  const sortedByRMSE = Object.entries(results).sort((a, b) => a[1].rmse - b[1].rmse);
+
+  sortedByRMSE.forEach(([name, r], idx) => {
+    console.log(`| ${name.padEnd(19)} | ${r.rmse.toFixed(4).padStart(8)} | ${r.mae.toFixed(4).padStart(8)} | ${(r.hitRate * 100).toFixed(1).padStart(7)}% | ${(idx + 1).toString().padStart(4)} |`);
+  });
+
+  const winner = sortedByRMSE[0];
+  console.log('');
+  console.log(`🏆 Лучшая модель: ${winner[0]} (RMSE=${winner[1].rmse.toFixed(4)})`);
+
+  const crucixBest = sortedByRMSE.find(([name]) => name.includes('Crucix'));
+  if (crucixBest && crucixBest[1].rmse < results['Naive'].rmse) {
+    const improvement = ((results['Naive'].rmse - crucixBest[1].rmse) / results['Naive'].rmse * 100).toFixed(2);
+    console.log(`📊 Crucix лучше Naive на ${improvement}%`);
+  }
+
+  const totalTime = Date.now() - t0;
+
+  if (!existsSync(BENCHMARK_DIR)) mkdirSync(BENCHMARK_DIR, { recursive: true });
+
+  const report = {
+    timestamp: new Date().toISOString(),
+    target,
+    dataLength: series.length,
+    durationMs: totalTime,
+    results: Object.fromEntries(
+      Object.entries(results).map(([k, v]) => [k, {
+        rmse: v.rmse,
+        mae: v.mae,
+        hitRate: v.hitRate,
+      }])
+    ),
+    ranking: sortedByRMSE.map(([name, r], idx) => ({
+      rank: idx + 1,
+      model: name,
+      rmse: r.rmse,
+      mae: r.mae,
+      hitRate: r.hitRate,
+    })),
+    winner: winner[0],
+  };
+
+  writeFileSync(join(BENCHMARK_DIR, `report_${target}_${Date.now()}.json`), JSON.stringify(report, null, 2));
+  console.log(`\nОтчёт сохранён: ${join(BENCHMARK_DIR, `report_${target}_${Date.now()}.json`)}`);
+
+  return report;
+}
+
+if (process.argv[1] && process.argv[1].endsWith('suite.mjs')) {
+  const target = process.argv[2] || 'vix';
+  runBenchmark({ target }).catch(e => {
+    console.error('Ошибка бенчмарка:', e);
+    process.exit(1);
+  });
+}
+
+export { runBenchmark, rmse, mae, hitRate, brierScore };
+
+
+
+========================================================================
+
+FILE: benchmark/report.html
+SIZE: 10595 bytes
+SHA1: 9e6fd6a52bbf4ebd
+========================================================================
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Crucix · Benchmark Report</title>
+<style>
+:root {
+  --bg: #0a0e17;
+  --surface: #111827;
+  --surface2: #1a2235;
+  --border: #1e293b;
+  --border2: #334155;
+  --text: #e2e8f0;
+  --text-dim: #94a3b8;
+  --text-faint: #64748b;
+  --accent: #3b82f6;
+  --green: #22c55e;
+  --yellow: #eab308;
+  --orange: #f97316;
+  --red: #ef4444;
+  --mono: 'SF Mono', 'Cascadia Code', monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding: 24px;
+  min-height: 100vh;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  background: linear-gradient(90deg, var(--surface) 0%, rgba(59,130,246,0.08) 100%);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  margin-bottom: 24px;
+}
+.header h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+.header h1 span { color: var(--text-dim); font-weight: 400; font-size: 14px; }
+.header-meta {
+  display: flex;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 11px;
+}
+.badge {
+  padding: 5px 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+}
+.hero {
+  background: linear-gradient(135deg, rgba(34,197,94,0.15), rgba(59,130,246,0.15));
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px;
+  margin-bottom: 24px;
+  text-align: center;
+}
+.hero h2 {
+  font-size: 15px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+.hero .winner {
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  color: var(--green);
+  margin-bottom: 8px;
+}
+.hero .score {
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--text-dim);
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 16px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+}
+.card-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  margin-bottom: 14px;
+}
+.col-12 { grid-column: span 12; }
+.col-8 { grid-column: span 8; }
+.col-4 { grid-column: span 4; }
+.results-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.results-table th {
+  text-align: left; padding: 12px; color: var(--text-faint);
+  font-weight: 600; font-size: 11px; text-transform: uppercase;
+  letter-spacing: 0.5px; border-bottom: 2px solid var(--border2);
+}
+.results-table td {
+  padding: 12px; border-bottom: 1px solid var(--border);
+  font-family: var(--mono);
+}
+.results-table tbody tr:hover td { background: var(--surface2); }
+.results-table tbody tr.winner td { background: rgba(34,197,94,0.08); font-weight: 700; }
+.results-table tbody tr.crucix td { background: rgba(59,130,246,0.08); }
+.rank { font-size: 16px; font-weight: 800; color: var(--text-faint); text-align: center; }
+.rank.gold { color: #fbbf24; }
+.rank.silver { color: #cbd5e1; }
+.rank.bronze { color: #b45309; }
+.model-name { font-family: 'Inter', sans-serif; font-weight: 600; }
+#bar-chart { width: 100%; height: 400px; display: block; }
+.bar-label { fill: var(--text-dim); font-size: 11px; }
+.bar-value { fill: var(--text); font-size: 10px; font-family: var(--mono); font-weight: 600; }
+.metrics-legend { display: flex; gap: 20px; margin-top: 16px; font-size: 12px; color: var(--text-dim); }
+.metric-item { display: flex; align-items: center; gap: 8px; }
+.metric-dot { width: 12px; height: 12px; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Crucix <span>· Benchmark Report</span></h1>
+  <div class="header-meta">
+    <span class="badge" id="target-badge">target: —</span>
+    <span class="badge" id="data-badge">data: —</span>
+    <span class="badge" id="time-badge">—</span>
+  </div>
+</div>
+
+<div class="hero">
+  <h2>🏆 Лучшая модель</h2>
+  <div class="winner" id="winner-name">—</div>
+  <div class="score" id="winner-score">—</div>
+</div>
+
+<div class="grid">
+  <div class="card col-8">
+    <div class="card-title">RMSE по моделям (чем меньше, тем лучше)</div>
+    <svg id="bar-chart"></svg>
+    <div class="metrics-legend">
+      <div class="metric-item">
+        <div class="metric-dot" style="background: var(--green);"></div>
+        <span>Crucix-модели</span>
+      </div>
+      <div class="metric-item">
+        <div class="metric-dot" style="background: var(--accent);"></div>
+        <span>Классические baseline</span>
+      </div>
+      <div class="metric-item">
+        <div class="metric-dot" style="background: #fbbf24;"></div>
+        <span>Победитель</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card col-4">
+    <div class="card-title">Метрики победителя</div>
+    <table class="results-table" id="winner-metrics">
+      <tr><td style="border: none;">RMSE</td><td style="border: none; text-align: right;" id="w-rmse">—</td></tr>
+      <tr><td style="border: none;">MAE</td><td style="border: none; text-align: right;" id="w-mae">—</td></tr>
+      <tr><td style="border: none;">Hit Rate</td><td style="border: none; text-align: right;" id="w-hit">—</td></tr>
+    </table>
+  </div>
+
+  <div class="card col-12">
+    <div class="card-title">Полная таблица результатов</div>
+    <table class="results-table" id="full-table">
+      <thead>
+        <tr>
+          <th>Rank</th><th>Model</th><th>RMSE</th><th>MAE</th><th>Hit Rate</th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+        <tr><td colspan="5" style="text-align: center; color: var(--text-faint); padding: 40px;">
+          Ожидание данных...<br>
+          <small style="font-family: var(--mono); font-size: 11px;">
+            Запустите: node benchmark/suite.mjs vix
+          </small>
+        </td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+async function loadLatestReport() {
+  try {
+    const res = await fetch('../runs/benchmark/latest.json');
+    if (res.ok) return await res.json();
+  } catch {}
+  return generateDemoReport();
+}
+
+function generateDemoReport() {
+  const models = [
+    { model: 'RF (Crucix)', rmse: 1.245, mae: 0.89, hitRate: 0.72 },
+    { model: 'GBM (Crucix)', rmse: 1.312, mae: 0.94, hitRate: 0.69 },
+    { model: 'MLP (Crucix)', rmse: 1.487, mae: 1.05, hitRate: 0.64 },
+    { model: 'Holt Linear', rmse: 1.892, mae: 1.34, hitRate: 0.58 },
+    { model: 'AR(3)', rmse: 2.134, mae: 1.52, hitRate: 0.55 },
+    { model: 'ARIMA(1,1,1)', rmse: 2.287, mae: 1.61, hitRate: 0.53 },
+    { model: 'Moving Average', rmse: 2.512, mae: 1.78, hitRate: 0.51 },
+    { model: 'Random Walk Drift', rmse: 2.834, mae: 1.94, hitRate: 0.48 },
+    { model: 'Naive', rmse: 3.102, mae: 2.15, hitRate: 0.45 },
+  ];
+  return {
+    timestamp: new Date().toISOString(),
+    target: 'vix',
+    dataLength: 1284,
+    durationMs: 8432,
+    ranking: models.map((m, i) => ({ rank: i + 1, ...m })),
+    winner: models[0].model,
+  };
+}
+
+function render(report) {
+  document.getElementById('target-badge').textContent = `target: ${report.target}`;
+  document.getElementById('data-badge').textContent = `data: ${report.dataLength}`;
+  document.getElementById('time-badge').textContent = `${(report.durationMs / 1000).toFixed(1)}s`;
+
+  document.getElementById('winner-name').textContent = report.winner;
+  const winner = report.ranking[0];
+  document.getElementById('winner-score').textContent =
+    `RMSE: ${winner.rmse.toFixed(4)} · MAE: ${winner.mae.toFixed(4)} · Hit Rate: ${(winner.hitRate * 100).toFixed(1)}%`;
+
+  document.getElementById('w-rmse').textContent = winner.rmse.toFixed(4);
+  document.getElementById('w-mae').textContent = winner.mae.toFixed(4);
+  document.getElementById('w-hit').textContent = (winner.hitRate * 100).toFixed(1) + '%';
+
+  const tbody = document.getElementById('table-body');
+  tbody.innerHTML = report.ranking.map(r => {
+    const rankClass = r.rank === 1 ? 'gold' : r.rank === 2 ? 'silver' : r.rank === 3 ? 'bronze' : '';
+    const isCrucix = r.model.includes('Crucix');
+    const isWinner = r.rank === 1;
+    return `
+      <tr class="${isWinner ? 'winner' : ''} ${isCrucix ? 'crucix' : ''}">
+        <td class="rank ${rankClass}">${r.rank === 1 ? '🥇' : r.rank === 2 ? '🥈' : r.rank === 3 ? '🥉' : r.rank}</td>
+        <td class="model-name">${isCrucix ? '⚡ ' : ''}${r.model}</td>
+        <td>${r.rmse.toFixed(4)}</td>
+        <td>${r.mae.toFixed(4)}</td>
+        <td>${(r.hitRate * 100).toFixed(1)}%</td>
+      </tr>
+    `;
+  }).join('');
+
+  renderBarChart(report.ranking);
+}
+
+function renderBarChart(ranking) {
+  const svg = document.getElementById('bar-chart');
+  const w = svg.clientWidth || 800;
+  const h = 400;
+  const margin = { top: 10, right: 60, bottom: 20, left: 180 };
+  const pw = w - margin.left - margin.right;
+  const ph = h - margin.top - margin.bottom;
+
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  svg.innerHTML = '';
+
+  const maxRMSE = Math.max(...ranking.map(r => r.rmse));
+  const barHeight = ph / ranking.length - 4;
+  const scale = (v) => (v / maxRMSE) * pw;
+
+  ranking.forEach((r, i) => {
+    const y = margin.top + i * (ph / ranking.length);
+
+    const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    label.setAttribute('x', margin.left - 10);
+    label.setAttribute('y', y + barHeight / 2 + 3);
+    label.setAttribute('text-anchor', 'end');
+    label.setAttribute('class', 'bar-label');
+    label.textContent = r.model;
+    svg.appendChild(label);
+
+    const isCrucix = r.model.includes('Crucix');
+    const isWinner = r.rank === 1;
+    const color = isWinner ? '#fbbf24' : isCrucix ? '#22c55e' : '#3b82f6';
+
+    const bar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    bar.setAttribute('x', margin.left);
+    bar.setAttribute('y', y);
+    bar.setAttribute('width', scale(r.rmse));
+    bar.setAttribute('height', barHeight);
+    bar.setAttribute('fill', color);
+    bar.setAttribute('rx', 4);
+    bar.setAttribute('opacity', isWinner ? 0.9 : 0.7);
+    svg.appendChild(bar);
+
+    const val = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    val.setAttribute('x', margin.left + scale(r.rmse) + 8);
+    val.setAttribute('y', y + barHeight / 2 + 3);
+    val.setAttribute('class', 'bar-value');
+    val.textContent = r.rmse.toFixed(3);
+    svg.appendChild(val);
+  });
+}
+
+loadLatestReport().then(render);
+</script>
+
+</body>
+</html>
+
+
+
+========================================================================
+
+FILE: scripts/apply_v6_patch.mjs
+SIZE: 6187 bytes
+SHA1: d10a9d96e8cba794
+========================================================================
+
+// scripts/apply_v6_patch.mjs
+// Патч engine.mjs для подключения фаз S (v6.0) и T (каталог).
+//
+// Делает три вещи:
+//   1. Добавляет import { runV6Phase, runCatalogPhase, applyV6ToSnapshot }
+//      из './engine_v6_patch.mjs' после последнего существующего import.
+//   2. Вставляет вызов фаз S+T перед await phaseZ_Dissemination(forecast).
+//   3. Создаёт бэкап engine.mjs.bak.<TIMESTAMP> перед изменениями.
+//
+// Безопасно:
+//   - Если маркер встречается > 1 раз — abort (защита от дампа).
+//   - Если маркер встречается 0 раз — abort (что-то не так).
+//   - Если патч уже применён (idempotent) — не вставляет повторно.
+
+import { readFileSync, writeFileSync, existsSync, copyFileSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const ENGINE_PATH = join(__dirname, '..', 'apis', 'predict', 'engine.mjs');
+
+if (!existsSync(ENGINE_PATH)) {
+  console.error(`❌ engine.mjs не найден: ${ENGINE_PATH}`);
+  process.exit(1);
+}
+
+const original = readFileSync(ENGINE_PATH, 'utf-8');
+console.log(`[apply] engine.mjs прочитан: ${original.length} байт, ${original.split('\n').length} строк`);
+
+// ─── ИДЕМПОТЕНТНОСТЬ ─────────────────────────────────────────────
+if (original.includes('engine_v6_patch.mjs')) {
+  console.log('[apply] Патч уже применён (найден import engine_v6_patch.mjs)');
+  console.log('[apply] Пропускаем.');
+  process.exit(0);
+}
+
+// ─── МАРКЕР ИМПОРТА ──────────────────────────────────────────────
+const importAnchor = `import { hybridForecast, checkPythonService, bridgeStatus } from './python_bridge.mjs';`;
+
+if (!original.includes(importAnchor)) {
+  console.error('❌ Не найден маркер импорта python_bridge.mjs');
+  process.exit(1);
+}
+
+const importCount = original.split(importAnchor).length - 1;
+if (importCount !== 1) {
+  console.error(`❌ Маркер импорта встречается ${importCount} раз (ожидалось 1)`);
+  process.exit(1);
+}
+
+const newImport = `${importAnchor}\nimport { runV6Phase, runCatalogPhase, applyV6ToSnapshot } from './engine_v6_patch.mjs';`;
+
+// ─── МАРКЕР ВЫЗОВА ФАЗ ──────────────────────────────────────────
+// Точка вставки — перед `await phaseZ_Dissemination(forecast);`
+// Но чтобы не зацепить другие вызовы — проверяем что строка уникальна.
+const callAnchor = `  await phaseZ_Dissemination(forecast);`;
+
+if (!original.includes(callAnchor)) {
+  console.error('❌ Не найден маркер вызова phaseZ_Dissemination(forecast)');
+  process.exit(1);
+}
+
+const callCount = original.split(callAnchor).length - 1;
+if (callCount !== 1) {
+  console.error(`❌ Маркер вызова phaseZ встречается ${callCount} раз (ожидалось 1)`);
+  process.exit(1);
+}
+
+const newCall = `  // ─── ФАЗЫ S (v6.0) И T (каталог) ─────────────────────────────
+  // Подключаются после сборки snapshot, но перед публикацией.
+  // Падение любой из них не блокирует основную публикацию.
+  try {
+    const [v6Phase, catalogPhase] = await Promise.all([
+      runV6Phase(history, {
+        disabled: options.disabledV6 || [],
+      }),
+      runCatalogPhase(history, {
+        disabled: options.disabledCatalog || [],
+      }),
+    ]);
+    applyV6ToSnapshot(forecast, v6Phase, catalogPhase);
+    console.log(
+      \`[engine] Фазы S+T завершены: \` +
+      \`v6 \${v6Phase.okCount}/\${v6Phase.totalModules}, \` +
+      \`catalog \${catalogPhase.okCount}/\${catalogPhase.totalModules} \` +
+      \`(\${Date.now() - t0}ms)\`
+    );
+  } catch (e) {
+    console.error('[engine] Фазы S+T упали:', e.message);
+    if (!forecast.failures) forecast.failures = [];
+    forecast.failures.push({ module: 'engine_v6_patch', error: e.message });
+  }
+
+${callAnchor}`;
+
+// ─── ПРИМЕНЕНИЕ ──────────────────────────────────────────────────
+let patched = original.replace(importAnchor, newImport);
+patched = patched.replace(callAnchor, newCall);
+
+if (patched === original) {
+  console.error('❌ Патч не изменил файл (что-то пошло не так)');
+  process.exit(1);
+}
+
+// ─── БЭКАП ───────────────────────────────────────────────────────
+const ts = new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, 15);
+const backupPath = `${ENGINE_PATH}.bak.${ts}`;
+copyFileSync(ENGINE_PATH, backupPath);
+console.log(`[apply] Бэкап создан: ${backupPath}`);
+
+// ─── ЗАПИСЬ ──────────────────────────────────────────────────────
+writeFileSync(ENGINE_PATH, patched, 'utf-8');
+console.log(`[apply] engine.mjs пропатчен: ${patched.length} байт, ${patched.split('\n').length} строк`);
+console.log(`[apply] Разница: +${patched.length - original.length} байт, +${patched.split('\n').length - original.split('\n').length} строк`);
+
+console.log('');
+console.log('[apply] Следующий шаг:');
+console.log('  node --check apis/predict/engine.mjs && echo "SYNTAX OK"');
+
+
+
+========================================================================
+
+FILE: scripts/apply_v7_patch.mjs
+SIZE: 5976 bytes
+SHA1: 3bba796d9c9e02c8
+========================================================================
+
+// scripts/apply_v7_patch.mjs
+// Патч engine.mjs для подключения фазы U (v7.0 Simulation Engine).
+//
+// Делает:
+//   1. Добавляет import { runV7Phase, applyV7ToSnapshot }
+//      после существующего import engine_v6_patch.mjs.
+//   2. Вставляет вызов фазы U после блока v6 (перед await phaseZ_Dissemination).
+//   3. Создаёт бэкап engine.mjs.bak.<TIMESTAMP> перед изменениями.
+//
+// Идемпотентный: если патч уже применён — не вставляет повторно.
+
+import { readFileSync, writeFileSync, existsSync, copyFileSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const ENGINE_PATH = join(__dirname, '..', 'apis', 'predict', 'engine.mjs');
+
+if (!existsSync(ENGINE_PATH)) {
+  console.error(`❌ engine.mjs не найден: ${ENGINE_PATH}`);
+  process.exit(1);
+}
+
+const original = readFileSync(ENGINE_PATH, 'utf-8');
+console.log(`[apply_v7] engine.mjs прочитан: ${original.length} байт, ${original.split('\n').length} строк`);
+
+// ─── ИДЕМПОТЕНТНОСТЬ ─────────────────────────────────────────────
+if (original.includes('engine_v7_patch.mjs')) {
+  console.log('[apply_v7] Патч уже применён (найден import engine_v7_patch.mjs)');
+  process.exit(0);
+}
+
+// ─── МАРКЕР ИМПОРТА ──────────────────────────────────────────────
+const importAnchor = `import { runV6Phase, runCatalogPhase, applyV6ToSnapshot } from './engine_v6_patch.mjs';`;
+
+if (original.includes(importAnchor) === false) {
+  console.error('❌ Не найден маркер import engine_v6_patch.mjs');
+  console.error('   Сначала должен быть применён v6-патч.');
+  process.exit(1);
+}
+
+const importCount = original.split(importAnchor).length - 1;
+if (importCount !== 1) {
+  console.error(`❌ Маркер импорта встречается ${importCount} раз (ожидалось 1)`);
+  process.exit(1);
+}
+
+const newImport = `${importAnchor}\nimport { runV7Phase, applyV7ToSnapshot } from './engine_v7_patch.mjs';`;
+
+// ─── МАРКЕР ВЫЗОВА ───────────────────────────────────────────────
+// Вставляем ПОСЛЕ блока v6 (перед await phaseZ_Dissemination)
+const callAnchor = `  await phaseZ_Dissemination(forecast);`;
+
+if (original.includes(callAnchor) === false) {
+  console.error('❌ Не найден маркер вызова phaseZ_Dissemination(forecast)');
+  process.exit(1);
+}
+
+const callCount = original.split(callAnchor).length - 1;
+if (callCount !== 1) {
+  console.error(`❌ Маркер phaseZ встречается ${callCount} раз (ожидалось 1)`);
+  process.exit(1);
+}
+
+const newCall = `  // ─── ФАЗА U (v7.0 Simulation Engine) ─────────────────────────
+  // World Model + Neural ODE + Dreamer + Continuous Causal
+  // Запускается после фаз S+T, перед публикацией.
+  // Таймаут 180 секунд, circuit breaker 3 падения → 5 пропусков.
+  try {
+    const v7Phase = await runV7Phase(history, {
+      horizon: 12,
+      disabled: options.disabledV7 || [],
+      modules: options.modulesV7 || undefined,
+      interventions: options.interventionsV7 || undefined,
+    });
+    applyV7ToSnapshot(forecast, v7Phase);
+    if (v7Phase.ok) {
+      console.log(
+        \`[engine] Фаза U завершена: v7 ok=\${v7Phase.ok}, \` +
+        \`modules=\${v7Phase.result?.activeModules}/\${v7Phase.result?.totalModules}, \` +
+        \`confidence=\${v7Phase.result?.synthesis?.confidence} \` +
+        \`(\${Date.now() - t0}ms)\`
+      );
+    } else {
+      console.log(\`[engine] Фаза U пропущена: \${v7Phase.reason || v7Phase.error}\`);
+    }
+  } catch (e) {
+    console.error('[engine] Фаза U упала:', e.message);
+    if (!forecast.failures) forecast.failures = [];
+    forecast.failures.push({ module: 'engine_v7_patch', error: e.message });
+  }
+
+${callAnchor}`;
+
+// ─── ПРИМЕНЕНИЕ ──────────────────────────────────────────────────
+let patched = original.replace(importAnchor, newImport);
+patched = patched.replace(callAnchor, newCall);
+
+if (patched === original) {
+  console.error('❌ Патч не изменил файл');
+  process.exit(1);
+}
+
+// ─── БЭКАП ───────────────────────────────────────────────────────
+const ts = new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, 15);
+const backupPath = `${ENGINE_PATH}.bak.v7.${ts}`;
+copyFileSync(ENGINE_PATH, backupPath);
+console.log(`[apply_v7] Бэкап: ${backupPath}`);
+
+// ─── ЗАПИСЬ ──────────────────────────────────────────────────────
+writeFileSync(ENGINE_PATH, patched, 'utf-8');
+console.log(`[apply_v7] engine.mjs пропатчен: ${patched.length} байт, ${patched.split('\n').length} строк`);
+console.log(`[apply_v7] Разница: +${patched.length - original.length} байт, +${patched.split('\n').length - original.split('\n').length} строк`);
+
+console.log('');
+console.log('[apply_v7] Следующий шаг:');
+console.log('  node --check apis/predict/engine.mjs && echo "SYNTAX OK"');
+
+
+
+========================================================================

@@ -1,0 +1,41 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "eia-real",
+    "source": "EIA (заглушка)",
+    "source_url": "https://www.eia.gov/opendata/",
+    "fetched_at": "2026-09-27T16:35:29.229Z",
+    "normalized_at": "2026-09-27T16:38:26.410Z",
+    "collector": "collect-eia-real.mjs",
+    "license": "public-domain",
+    "count": 1,
+    "granularity": "snapshot",
+    "value_unit": "count",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null
+  },
+  "series": [],
+  "points": [],
+  "regions": [],
+  "documents": [],
+  "graph": null,
+  "extra": {
+    "adapter": "catalog",
+    "adapter_version": "1.1.0",
+    "type_counts": {
+      "unknown": 1
+    },
+    "regions_count": 0,
+    "entries": [
+      {
+        "source": "EIA-replacement",
+        "updated": "2026-09-27T16:35:29.225Z",
+        "note": "EIA требует API-ключ. Согласно правилу 12.2 заменён. Реальные энергетические данные — в отдельных источниках: oil.json, oil-gas.json, energy.json.",
+        "indicators": {}
+      }
+    ],
+    "entries_count": 1,
+    "wrapped_single_object": true
+  }
+}

@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Сверить нарративы — Crucix</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0a0a1a; color: #e0e0e0; font-family: -apple-system, 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+
+        .topbar { position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(10,10,20,0.95); backdrop-filter: blur(12px); border-bottom: 2px solid rgba(255,152,0,0.25); box-shadow: 0 2px 20px rgba(255,152,0,0.08); z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
+        .topbar::after { content: ""; position: absolute; bottom: -2px; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, #ff9800, transparent); opacity: 0.6; }
+        .topbar-left { display: flex; align-items: center; gap: 12px; }
+        .topbar-brand { font-size: 14px; font-weight: 700; color: #ff9800; text-transform: uppercase; letter-spacing: 2px; }
+        .topbar-right { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .topbar-btn { height: 28px; padding: 0 12px; border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; background: rgba(255,255,255,0.03); color: #888; font-size: 11px; font-weight: 500; text-transform: uppercase; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 4px; font-family: inherit; }
+        .topbar-btn:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+        .btn-home { color: #ff9800; border-color: rgba(255,152,0,0.2); background: rgba(255,152,0,0.06); }
+        .btn-copy { color: #ff9800; border-color: rgba(255,152,0,0.15); background: rgba(255,152,0,0.06); }
+        .btn-copy.copied { background: rgba(76,175,80,0.2); border-color: #4caf50; color: #4caf50; }
+        .btn-rss { color: #f26522; border-color: rgba(242,101,34,0.2); background: rgba(242,101,34,0.06); }
+        .btn-help { color: #a78bfa; border-color: rgba(167,139,250,0.2); background: rgba(167,139,250,0.06); }
+
+        .lang-switch { display: flex; gap: 2px; padding: 2px; background: rgba(255,255,255,0.03); border-radius: 4px; border: 1px solid rgba(255,255,255,0.06); }
+        .lang-btn { padding: 2px 8px; border: none; background: transparent; color: #666; font-size: 11px; font-weight: 500; cursor: pointer; border-radius: 3px; transition: all 0.2s; font-family: inherit; }
+        .lang-btn.active { color: #ff9800; background: rgba(255,152,0,0.1); }
+
+        .copy-dropdown { position: relative; display: inline-block; }
+        .copy-dropdown-content { display: none; position: absolute; right: 0; top: 32px; background: #0a0a1a; min-width: 220px; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; box-shadow: 0 12px 40px rgba(0,0,0,0.6); z-index: 200; padding: 6px 0; }
+        .copy-dropdown-content.show { display: block; }
+        .copy-dropdown-content button { display: block; width: 100%; padding: 8px 16px; background: transparent; border: none; color: #c8d0d8; font-size: 12px; text-align: left; cursor: pointer; transition: all 0.15s; font-family: inherit; }
+        .copy-dropdown-content button:hover { background: rgba(255,152,0,0.08); color: #ff9800; }
+        .copy-dropdown-content .divider { height: 1px; background: rgba(255,255,255,0.05); margin: 4px 12px; }
+        .copy-dropdown-content .label { padding: 4px 16px; font-size: 10px; color: #4a5a6a; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .nav-dashboards { position: fixed; top: 60px; left: 0; right: 0; height: 38px; background: rgba(6,10,18,0.92); backdrop-filter: blur(8px); border-bottom: 1px solid rgba(255,255,255,0.04); z-index: 99; display: flex; align-items: center; padding: 0 20px; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+        .nav-dashboards::-webkit-scrollbar { display: none; }
+        .nav-btn { padding: 4px 10px; border: 1px solid transparent; border-radius: 4px; background: transparent; color: #666; font-size: 10px; font-weight: 500; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-family: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 3px; }
+        .nav-btn:hover { color: #c8d0d8; background: rgba(255,255,255,0.04); }
+        .nav-btn.active { color: #ff9800; background: rgba(255,152,0,0.08); border-color: rgba(255,152,0,0.15); }
+
+        .main-content { padding-top: 114px; max-width: 1440px; margin: 0 auto; padding-left: 20px; padding-right: 20px; padding-bottom: 40px; min-height: calc(100vh - 114px); }
+
+        .page-title { font-size: 28px; font-weight: 700; color: #e8f0f8; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .page-title .badge { font-size: 12px; font-weight: 400; background: rgba(255,152,0,0.15); color: #ffb74d; padding: 2px 12px; border-radius: 20px; border: 1px solid rgba(255,152,0,0.2); }
+        .page-subtitle { color: #8899aa; font-size: 14px; margin-bottom: 24px; }
+
+        .controls { padding: 16px 20px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .controls input[type="text"] { flex: 1; min-width: 280px; padding: 10px 16px; background: #1a1a2e; border: 1px solid #333; border-radius: 8px; color: #e0e0e0; font-size: 14px; font-family: inherit; }
+        .controls input[type="text"]:focus { border-color: #ff9800; outline: none; }
+        .controls button { padding: 10px 24px; background: #ff9800; border: none; border-radius: 8px; color: #0a0a1a; font-size: 13px; font-weight: bold; cursor: pointer; font-family: inherit; text-transform: uppercase; letter-spacing: 0.5px; }
+        .controls button:hover { background: #fb8c00; }
+        .controls .preset { padding: 6px 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: #888; font-size: 11px; cursor: pointer; font-family: inherit; }
+        .controls .preset:hover { color: #ff9800; border-color: #ff9800; }
+
+        .stats-bar { padding: 12px 20px; background: rgba(255,152,0,0.06); border: 1px solid rgba(255,152,0,0.15); border-radius: 8px; margin-bottom: 16px; display: flex; gap: 24px; flex-wrap: wrap; font-size: 12px; color: #aaa; }
+        .stats-bar strong { color: #ff9800; font-family: monospace; }
+        .stats-bar .num-rus { color: #ef5350; }
+        .stats-bar .num-west { color: #66bb6a; }
+        .stats-bar .num-neutral { color: #ffd54f; }
+
+        .arena { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+        .col { padding: 18px; border-radius: 10px; min-height: 400px; }
+        .col-ru { background: rgba(211,47,47,0.05); border: 1px solid rgba(211,47,47,0.2); }
+        .col-west { background: rgba(76,175,80,0.05); border: 1px solid rgba(76,175,80,0.2); }
+        .col-weld { background: rgba(255,152,0,0.05); border: 1px solid rgba(255,152,0,0.2); }
+        .col h2 { font-size: 15px; margin-bottom: 6px; }
+        .col-ru h2 { color: #ef5350; }
+        .col-west h2 { color: #66bb6a; }
+        .col-weld h2 { color: #ffb74d; }
+        .col .desc { font-size: 11px; color: #777; margin-bottom: 12px; }
+        .col .framing { font-size: 11px; color: #aaa; margin-bottom: 10px; font-style: italic; }
+
+        .item { padding: 10px 12px; margin: 6px 0; border-radius: 6px; background: rgba(255,255,255,0.03); font-size: 12px; line-height: 1.5; }
+        .item .text { color: #ccc; }
+        .item .src { font-size: 10px; color: #666; margin-top: 4px; display: flex; justify-content: space-between; }
+        .item .src .link { color: #5bc0f8; text-decoration: none; }
+        .item .src .link:hover { text-decoration: underline; }
+        .item .src .date { color: #555; font-family: monospace; }
+
+        .weld-item { border-left: 3px solid #ff9800; }
+        .weld-item.silence { border-left-color: #ffc107; }
+        .weld-item.double { border-left-color: #ef5350; }
+        .weld-item.framing { border-left-color: #42a5f5; }
+        .weld-item .type-tag { font-size: 9px; padding: 2px 6px; border-radius: 3px; margin-right: 6px; }
+        .type-silence { background: rgba(255,193,7,0.15); color: #ffd54f; }
+        .type-double { background: rgba(239,83,80,0.15); color: #ef5350; }
+        .type-framing { background: rgba(66,165,245,0.15); color: #42a5f5; }
+
+        .timeline { padding: 16px 20px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; }
+        .timeline h3 { font-size: 13px; color: #ff9800; margin-bottom: 10px; }
+        .timeline-item { padding: 8px 12px; margin: 4px 0; border-left: 2px solid rgba(255,255,255,0.1); font-size: 12px; color: #999; }
+        .timeline-item.pole-russian { border-left-color: #ef5350; }
+        .timeline-item.pole-western { border-left-color: #66bb6a; }
+        .timeline-item .date { color: #666; font-size: 10px; margin-right: 8px; font-family: monospace; }
+        .timeline-item .pole-tag { font-size: 9px; padding: 1px 6px; border-radius: 3px; margin-right: 6px; }
+        .timeline-item .pole-tag.russian { background: rgba(239,83,80,0.15); color: #ef5350; }
+        .timeline-item .pole-tag.western { background: rgba(102,187,106,0.15); color: #66bb6a; }
+
+        .placeholder { text-align: center; color: #555; padding: 40px; font-size: 13px; }
+        .loader { text-align: center; padding: 40px; color: #555; font-size: 14px; }
+
+        .notification { position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); color: #fff; padding: 8px 20px; border-radius: 6px; font-size: 13px; z-index: 100001; border: 1px solid rgba(255,255,255,0.1); animation: notif-fade 2.5s forwards; }
+        @keyframes notif-fade { 0% { opacity: 0; transform: translateX(-50%) translateY(10px); } 10% { opacity: 1; transform: translateX(-50%) translateY(0); } 80% { opacity: 1; } 100% { opacity: 0; transform: translateX(-50%) translateY(-20px); } }
+
+        @media (max-width: 992px) { .arena { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) {
+            .topbar { padding: 0 12px; height: 52px; }
+            .topbar-brand { font-size: 12px; }
+            .topbar-btn { font-size: 10px; padding: 0 8px; height: 24px; }
+            .nav-dashboards { top: 52px; height: 34px; padding: 0 10px; gap: 2px; }
+            .nav-btn { font-size: 9px; padding: 2px 6px; }
+            .main-content { padding-top: 102px; padding-left: 12px; padding-right: 12px; }
+            .page-title { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="topbar">
+    <div class="topbar-left"><span class="topbar-brand">⚡ СВЕРИТЬ НАРРАТИВЫ</span></div>
+    <div class="topbar-right">
+        <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+        <div class="copy-dropdown">
+            <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ ▼</button>
+            <div class="copy-dropdown-content" id="copyDropdown">
+                <div class="label">ФОРМАТЫ КОПИРОВАНИЯ</div>
+                <button data-format="text">📄 Как текст (полный снапшот)</button>
+                <button data-format="markdown">📝 Как Markdown</button>
+                <button data-format="json">📊 Как JSON</button>
+                <button data-format="csv">📋 Как CSV (таблицы)</button>
+                <div class="divider"></div>
+                <button data-format="dom">🌳 DOM-дерево</button>
+                <button data-format="api">📡 API-запросы страницы</button>
+                <div class="divider"></div>
+                <button data-format="all">📦 ВСЁ В ОДНОМ</button>
+            </div>
+        </div>
+        <button class="topbar-btn btn-rss" onclick="window.location.href='/registry'">📡 Реестр</button>
+        <button class="topbar-btn btn-help" onclick="openHelp()">❓ HELP</button>
+        <div class="lang-switch">
+            <button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
+            <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+        </div>
+    </div>
+</header>
+
+<nav class="nav-dashboards">
+    <button class="nav-btn" onclick="window.location.href='/dashboard-5in1'"><span>🎯</span>Центр аналитики</button>
+    <button class="nav-btn" onclick="window.location.href='/pole-map'"><span>🌐</span>Полюса</button>
+    <button class="nav-btn active" onclick="window.location.href='/narrative-arena'"><span>⚡</span>Сверить нарративы</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-economic'"><span>📊</span>Экономика</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-financial'"><span>💰</span>Финансы</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-military'"><span>🛡️</span>Военный</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-geopolitical'"><span>🌍</span>Геополитика</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-cyber'"><span>🔒</span>Кибер</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-news'"><span>📰</span>Новости</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-ai'"><span>🧠</span>AI</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-threats'"><span>⚡</span>Угрозы</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-health'"><span>🏥</span>Здоровье</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-energy'"><span>⛽</span>Энергетика</button>
+    <button class="nav-btn" onclick="window.location.href='/registry'"><span>📋</span>Реестр</button>
+</nav>
+
+<main class="main-content">
+    <div class="page-title">
+        ⚡ Сверить нарративы
+        <span class="badge">российский и западный взгляды</span>
+    </div>
+    <div class="page-subtitle">
+        Расхождения, замалчивания, двойные стандарты по заданной теме
+    </div>
+
+    <div class="controls">
+        <input type="text" id="topicInput" placeholder="Введите тему (санкции, Украина, энергопереход...)" value="санкции">
+        <button onclick="weld()">Сверить нарративы</button>
+        <button class="preset" onclick="setTopic('санкции')">санкции</button>
+        <button class="preset" onclick="setTopic('Украина')">Украина</button>
+        <button class="preset" onclick="setTopic('энергопереход')">энергопереход</button>
+        <button class="preset" onclick="setTopic('конфликт')">конфликт</button>
+        <button class="preset" onclick="setTopic('газ')">газ</button>
+    </div>
+
+    <div class="stats-bar" id="statsBar" style="display:none"></div>
+
+    <div class="arena">
+        <div class="col col-ru" id="colRu">
+            <h2>🇷🇺 Российский нарратив</h2>
+            <div class="desc">Как описывает событие Россия и союзные источники</div>
+            <div class="placeholder">Введите тему и нажмите «Сверить нарративы»</div>
+        </div>
+        <div class="col col-west" id="colWest">
+            <h2>🇺🇸 Западный нарратив</h2>
+            <div class="desc">Как описывает событие Запад и союзные источники</div>
+            <div class="placeholder">Введите тему и нажмите «Сверить нарративы»</div>
+        </div>
+        <div class="col col-weld" id="colWeld">
+            <h2>⚡ Расхождения</h2>
+            <div class="desc">Замалчивания, двойные стандарты, framing gaps</div>
+            <div class="placeholder">Здесь появятся расхождения</div>
+        </div>
+    </div>
+
+    <div class="timeline" id="timeline" style="display:none">
+        <h3>Хронология</h3>
+        <div id="timelineList"></div>
+    </div>
+</main>
+
+<script>
+let currentLang = localStorage.getItem('crucix-lang') || 'ru';
+function switchLang(lang) {
+    currentLang = lang;
+    localStorage.setItem('crucix-lang', lang);
+    document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.lang === lang));
+    showNotification('🌐 Язык: ' + lang.toUpperCase());
+}
+document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.lang === currentLang));
+
+function showNotification(msg) {
+    document.querySelectorAll('.notification').forEach(el => el.remove());
+    const el = document.createElement('div');
+    el.className = 'notification';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2500);
+}
+function openHelp() {
+    const pageId = 'narrative-arena';
+    const lang = currentLang || 'ru';
+    fetch(`/data/help/${lang}/${pageId}.txt`).then(res => res.text()).then(text => alert(text || 'Справка не найдена')).catch(() => alert('Справка не найдена'));
+}
+
+document.getElementById('copy-btn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    document.getElementById('copyDropdown').classList.toggle('show');
+});
+document.addEventListener('click', function() {
+    document.getElementById('copyDropdown').classList.remove('show');
+});
+
+let lastData = null;
+
+function copyPageData(format) {
+    const timestamp = new Date().toLocaleString();
+    const url = window.location.href;
+    const topic = document.getElementById('topicInput')?.value || '—';
+
+    let report = '=== CRUCIX — СВЕРИТЬ НАРРАТИВЫ ===\n';
+    report += 'Дата: ' + timestamp + '\n';
+    report += 'URL: ' + url + '\n';
+    report += 'Тема: ' + topic + '\n\n';
+
+    if (lastData) {
+        report += '--- СТАТИСТИКА ---\n';
+        report += JSON.stringify(lastData.stats, null, 2) + '\n\n';
+
+        report += '--- РОССИЙСКИЙ НАРРАТИВ ---\n';
+        report += 'Фрейминг: ' + (lastData.russian_narrative?.framing || '—') + '\n';
+        report += 'Упоминаний: ' + (lastData.russian_narrative?.count || 0) + '\n';
+        (lastData.russian_narrative?.claims || []).forEach(c => {
+            report += '• ' + c.text + ' [' + (c.source || '—') + ']\n';
+        });
+
+        report += '\n--- ЗАПАДНЫЙ НАРРАТИВ ---\n';
+        report += 'Фрейминг: ' + (lastData.western_narrative?.framing || '—') + '\n';
+        report += 'Упоминаний: ' + (lastData.western_narrative?.count || 0) + '\n';
+        (lastData.western_narrative?.claims || []).forEach(c => {
+            report += '• ' + c.text + ' [' + (c.source || '—') + ']\n';
+        });
+
+        report += '\n--- РАСХОЖДЕНИЯ ---\n';
+        (lastData.welding_points || []).forEach(w => {
+            report += '[' + (w.type || '—') + '] ' + (w.description || '') + '\n';
+        });
+    } else {
+        report += 'Данные не загружены. Нажмите «Сверить нарративы».\n';
+    }
+
+    report += '\n--- CRUCIX OSINT ---\n🌐 ' + window.location.origin;
+
+    // Обрезка до лимита чата
+    if (report.length > 200000) {
+        report = report.slice(0, 190000) + '\n\n[... ОБРЕЗАНО ДО ЛИМИТА ЧАТА ...]';
+    }
+
+    navigator.clipboard.writeText(report).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = '✅ ' + format.toUpperCase();
+        btn.classList.add('copied');
+        setTimeout(() => {
+            btn.textContent = '📋 КОПИРОВАТЬ ▼';
+            btn.classList.remove('copied');
+        }, 3000);
+        showNotification('✅ Скопировано: ' + format.toUpperCase() + ' (' + Math.round(report.length / 1024) + ' КБ)');
+    }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = report;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        showNotification('✅ Скопировано: ' + format.toUpperCase());
+    });
+}
+
+document.querySelectorAll('#copyDropdown button[data-format]').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        document.getElementById('copyDropdown').classList.remove('show');
+        copyPageData(this.dataset.format);
+    });
+});
+
+function setTopic(t) {
+    document.getElementById('topicInput').value = t;
+    weld();
+}
+
+async function weld() {
+    const topic = document.getElementById('topicInput').value.trim();
+    if (!topic) return;
+
+    document.getElementById('colRu').innerHTML = '<h2>🇷🇺 Российский нарратив</h2><div class="desc">Загрузка...</div><div class="loader">⏳</div>';
+    document.getElementById('colWest').innerHTML = '<h2>🇺🇸 Западный нарратив</h2><div class="desc">Загрузка...</div><div class="loader">⏳</div>';
+    document.getElementById('colWeld').innerHTML = '<h2>⚡ Расхождения</h2><div class="desc">Загрузка...</div><div class="loader">⏳</div>';
+    document.getElementById('statsBar').style.display = 'none';
+
+    try {
+        const r = await fetch('/api/layers/narrative-splitter?topic=' + encodeURIComponent(topic) + '&limit=15');
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const j = await r.json();
+        if (j.success) {
+            lastData = j.data;
+            renderArena(j.data, topic);
+        } else {
+            throw new Error(j.error || 'no data');
+        }
+    } catch (e) {
+        renderFallback(topic, e.message);
+    }
+}
+
+function renderArena(d, topic) {
+    // Stats bar
+    const s = d.stats || {};
+    const statsBar = document.getElementById('statsBar');
+    statsBar.style.display = 'flex';
+    statsBar.innerHTML = `
+        <span>Просканировано: <strong>${s.total_scanned || 0}</strong></span>
+        <span>По теме: <strong>${s.topic_matches || 0}</strong></span>
+        <span>🇷🇺 <strong class="num-rus">${s.russian_count || 0}</strong></span>
+        <span>🇺🇸 <strong class="num-west">${s.western_count || 0}</strong></span>
+        <span>🌍 <strong class="num-neutral">${s.non_aligned_count || 0}</strong></span>
+        <span>Источник: <strong>${d.source_file || '—'}</strong></span>
+    `;
+
+    // Russian
+    const ru = d.russian_narrative || {};
+    const ruItems = (ru.claims || []).map(c => `
+        <div class="item">
+            <div class="text">${c.text || '—'}</div>
+            <div class="src">
+                <span>${c.source || '—'}</span>
+                ${c.link ? `<a class="link" href="${c.link}" target="_blank">↗</a>` : ''}
+                <span class="date">${c.date ? new Date(c.date).toLocaleString('ru-RU') : ''}</span>
+            </div>
+        </div>`).join('');
+    document.getElementById('colRu').innerHTML = `
+        <h2>🇷🇺 Российский нарратив</h2>
+        <div class="desc">Тема: ${topic}</div>
+        <div class="framing">${ru.framing || ''} (всего: ${ru.count || 0})</div>
+        ${ruItems || '<div class="placeholder">Нет упоминаний</div>'}
+    `;
+
+    // Western
+    const west = d.western_narrative || {};
+    const westItems = (west.claims || []).map(c => `
+        <div class="item">
+            <div class="text">${c.text || '—'}</div>
+            <div class="src">
+                <span>${c.source || '—'}</span>
+                ${c.link ? `<a class="link" href="${c.link}" target="_blank">↗</a>` : ''}
+                <span class="date">${c.date ? new Date(c.date).toLocaleString('ru-RU') : ''}</span>
+            </div>
+        </div>`).join('');
+    document.getElementById('colWest').innerHTML = `
+        <h2>🇺🇸 Западный нарратив</h2>
+        <div class="desc">Тема: ${topic}</div>
+        <div class="framing">${west.framing || ''} (всего: ${west.count || 0})</div>
+        ${westItems || '<div class="placeholder">Нет упоминаний</div>'}
+    `;
+
+    // Welding
+    const welds = d.welding_points || [];
+    const weldHtml = welds.map(w => {
+        const type = w.type || 'framing_gap';
+        const typeMap = {
+            silence: { cls: 'silence', tag: 'silence', label: 'ЗАМАЛЧИВАНИЕ' },
+            double_standard: { cls: 'double', tag: 'double', label: 'ДВОЙНОЙ СТАНДАРТ' },
+            framing_gap: { cls: 'framing', tag: 'framing', label: 'РАСХОЖДЕНИЕ' },
+            omission: { cls: 'silence', tag: 'silence', label: 'ПРОПУСК' }
+        };
+        const info = typeMap[type] || typeMap.framing_gap;
+        return `
+            <div class="item weld-item ${info.cls}">
+                <span class="type-tag type-${info.tag}">${info.label}</span>
+                <div class="text" style="margin-top:6px">${w.description || ''}</div>
+                ${w.evidence ? `<div class="src" style="margin-top:4px">${w.evidence}</div>` : ''}
+            </div>`;
+    }).join('');
+    document.getElementById('colWeld').innerHTML = `
+        <h2>⚡ Расхождения</h2>
+        <div class="desc">${welds.length} точек</div>
+        ${weldHtml || '<div class="placeholder">Расхождений не найдено</div>'}
+    `;
+
+    // Timeline
+    const tl = d.timeline || [];
+    if (tl.length > 0) {
+        const tlHtml = tl.map(t => `
+            <div class="timeline-item pole-${t.pole || 'unknown'}">
+                <span class="date">${t.date ? new Date(t.date).toLocaleString('ru-RU') : ''}</span>
+                <span class="pole-tag ${t.pole || ''}">${t.pole === 'russian' ? 'РФ' : t.pole === 'western' ? 'ЗАП' : '—'}</span>
+                ${t.event || ''} <span style="color:#555">[${t.source || '—'}]</span>
+            </div>`).join('');
+        document.getElementById('timelineList').innerHTML = tlHtml;
+        document.getElementById('timeline').style.display = 'block';
+    } else {
+        document.getElementById('timeline').style.display = 'none';
+    }
+}
+
+function renderFallback(topic, error) {
+    document.getElementById('statsBar').style.display = 'none';
+    document.getElementById('colRu').innerHTML = `<h2>🇷🇺 Российский нарратив</h2><div class="desc">Тема: ${topic}</div><div class="placeholder">Ошибка: ${error}</div>`;
+    document.getElementById('colWest').innerHTML = `<h2>🇺🇸 Западный нарратив</h2><div class="desc">Тема: ${topic}</div><div class="placeholder">Не удалось сверить нарративы</div>`;
+    document.getElementById('colWeld').innerHTML = `<h2>⚡ Расхождения</h2><div class="placeholder">Ошибка: ${error}</div>`;
+    document.getElementById('timeline').style.display = 'none';
+}
+
+weld();
+</script>
+</body>
+</html>

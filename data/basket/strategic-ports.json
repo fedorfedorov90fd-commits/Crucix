@@ -1,0 +1,336 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "strategic-ports",
+    "source": "Strategic ports (ports-index)",
+    "source_url": "https://api.worldbank.org/v2/country/all/indicator/IS.SHP.GOOD.TU",
+    "fetched_at": "2026-09-27T16:37:41.260Z",
+    "normalized_at": "2026-09-27T16:38:26.827Z",
+    "collector": "collect-strategic-ports.mjs",
+    "license": "public-domain",
+    "count": 20,
+    "granularity": "snapshot",
+    "value_unit": "ports",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null
+  },
+  "series": [],
+  "points": [
+    {
+      "lat": 31.23,
+      "lon": 121.47,
+      "label": "Port of Shanghai",
+      "region": "AIA",
+      "extra": {
+        "id": "shanghai",
+        "type": "container",
+        "status": "active"
+      }
+    },
+    {
+      "lat": 1.29,
+      "lon": 103.85,
+      "label": "Port of Singapore",
+      "region": "AIA",
+      "extra": {
+        "id": "singapore",
+        "type": "container",
+        "status": "active"
+      }
+    },
+    {
+      "lat": 29.87,
+      "lon": 121.55,
+      "label": "Port of Ningbo-Zhoushan",
+      "region": "AIA",
+      "extra": {
+        "id": "ningbo",
+        "type": "bulk",
+        "status": "active"
+      }
+    },
+    {
+      "lat": 22.5,
+      "lon": 114.05,
+      "label": "Port of Shenzhen",
+      "region": "AIA",
+      "extra": {
+        "id": "shenzhen",
+        "type": "container",
+        "status": "active"
+      }
+    },
+    {
+      "lat": 22.75,
+      "lon": 113.6,
+      "label": "Port of Guangzhou",
+      "region": "AIA",
+      "extra": {
+        "id": "guangzhou",
+        "type": "container",
+        "status": "active"
+      }
+    },
+    {
+      "lat": 35.1,
+      "lon": 129.04,
+      "label": "Port of Busan",
+      "region": "AIA",
+      "extra": {
+        "id": "busan",
+        "type": "container",
+        "status": "active"
+      }
+    },
+    {
+      "lat": 51.95,
+      "lon": 4.14,
+      "label": "Port of Rotterdam",
+      "region": "evropa",
+      "extra": {
+        "id": "rotterdam",
+        "type": "mixed",
+        "status": "active",
+        "unmapped_region": true,
+        "unmapped_original": "evropa"
+      }
+    },
+    {
+      "lat": 25,
+      "lon": 55.06,
+      "label": "Jebel Ali",
+      "region": "blizhny-vostok",
+      "extra": {
+        "id": "jebel-ali",
+        "type": "container",
+        "status": "active",
+        "unmapped_region": true,
+        "unmapped_original": "blizhny-vostok"
+      }
+    },
+    {
+      "lat": 36.07,
+      "lon": 120.32,
+      "label": "Port of Qingdao",
+      "region": "AIA",
+      "extra": {
+        "id": "qingdao",
+        "type": "container",
+        "status": "active"
+      }
+    },
+    {
+      "lat": 22.32,
+      "lon": 114.17,
+      "label": "Port of Hong Kong",
+      "region": "AIA",
+      "extra": {
+        "id": "hongkong",
+        "type": "container",
+        "status": "active"
+      }
+    },
+    {
+      "lat": 51.26,
+      "lon": 4.4,
+      "label": "Port of Antwerp-Bruges",
+      "region": "evropa",
+      "extra": {
+        "id": "antwerp",
+        "type": "mixed",
+        "status": "active",
+        "unmapped_region": true,
+        "unmapped_original": "evropa"
+      }
+    },
+    {
+      "lat": 53.54,
+      "lon": 9.94,
+      "label": "Port of Hamburg",
+      "region": "evropa",
+      "extra": {
+        "id": "hamburg",
+        "type": "mixed",
+        "status": "active",
+        "unmapped_region": true,
+        "unmapped_original": "evropa"
+      }
+    },
+    {
+      "lat": 33.74,
+      "lon": -118.27,
+      "label": "Port of Los Angeles",
+      "region": "amerika",
+      "extra": {
+        "id": "losangeles",
+        "type": "container",
+        "status": "active",
+        "unmapped_region": true,
+        "unmapped_original": "amerika"
+      }
+    },
+    {
+      "lat": 33.75,
+      "lon": -118.19,
+      "label": "Port of Long Beach",
+      "region": "amerika",
+      "extra": {
+        "id": "longbeach",
+        "type": "container",
+        "status": "active",
+        "unmapped_region": true,
+        "unmapped_original": "amerika"
+      }
+    },
+    {
+      "lat": 1.36,
+      "lon": 103.55,
+      "label": "Tanjung Pelepas",
+      "region": "AIA",
+      "extra": {
+        "id": "tanjung",
+        "type": "container",
+        "status": "active"
+      }
+    },
+    {
+      "lat": 22.62,
+      "lon": 120.28,
+      "label": "Port of Kaohsiung",
+      "region": "AIA",
+      "extra": {
+        "id": "kaohsiung",
+        "type": "container",
+        "status": "active"
+      }
+    },
+    {
+      "lat": 44.72,
+      "lon": 37.78,
+      "label": "Новороссийск",
+      "region": "vostochnaya-evropa",
+      "extra": {
+        "id": "novorossiysk",
+        "type": "oil",
+        "status": "active",
+        "unmapped_region": true,
+        "unmapped_original": "vostochnaya-evropa"
+      }
+    },
+    {
+      "lat": 43.12,
+      "lon": 131.89,
+      "label": "Владивосток",
+      "region": "AIA",
+      "extra": {
+        "id": "vladivostok",
+        "type": "mixed",
+        "status": "active"
+      }
+    },
+    {
+      "lat": 44.62,
+      "lon": 33.53,
+      "label": "Севастополь",
+      "region": "vostochnaya-evropa",
+      "extra": {
+        "id": "sevastopol",
+        "type": "naval",
+        "status": "active",
+        "unmapped_region": true,
+        "unmapped_original": "vostochnaya-evropa"
+      }
+    },
+    {
+      "lat": 31.26,
+      "lon": 32.3,
+      "label": "Port Said",
+      "region": "afrika",
+      "extra": {
+        "id": "portsaid",
+        "type": "mixed",
+        "status": "active",
+        "unmapped_region": true,
+        "unmapped_original": "afrika"
+      }
+    }
+  ],
+  "regions": [
+    {
+      "region": "AIA",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "evropa",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "blizhny-vostok",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "amerika",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "vostochnaya-evropa",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "afrika",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    }
+  ],
+  "documents": [],
+  "graph": null,
+  "extra": {
+    "adapter": "points",
+    "adapter_version": "2.2.1",
+    "skipped_invalid_coords": 0,
+    "unmapped_regions": [
+      "evropa",
+      "blizhny-vostok",
+      "amerika",
+      "vostochnaya-evropa",
+      "afrika"
+    ],
+    "unmapped_count": 5
+  }
+}

@@ -1,0 +1,64 @@
+============================================================
+RAG MODULE (Retrieval-Augmented Generation)
+============================================================
+Version: 1.0.0
+Port: 3120
+Status: ✅ RUNNING
+
+DESCRIPTION
+-----------
+AI analytics module based on RAG. Reads data from Crucix basket
+(/data/basket/), indexes it, and answers questions using local
+AI models (Ollama).
+
+FEATURES
+--------
+- Indexing JSON files from basket
+- Vector search through data
+- Response generation via Ollama (llama3.2, deepseek-r1)
+- Query and search API
+
+API ENDPOINTS
+-------------
+GET    /api/rag/status          - Server status
+GET    /api/rag/stats           - Basket statistics
+POST   /api/rag/search          - Data search
+POST   /api/rag/query           - AI query with RAG
+
+EXAMPLES
+--------
+# Status
+curl http://localhost:3120/api/rag/status
+
+# Search
+curl -X POST http://localhost:3120/api/rag/search \
+  -H "Content-Type: application/json" \
+  -d '{"query": "economy", "limit": 10}'
+
+# AI query
+curl -X POST http://localhost:3120/api/rag/query \
+  -H "Content-Type: application/json" \
+  -d '{"query": "What is the economic situation in the world?"}'
+
+DEPENDENCIES
+------------
+- Node.js v22+
+- Ollama (local AI)
+- Models: llama3.2 or deepseek-r1
+
+INSTALLATION
+------------
+cd /home/ta8_/Рабочий стол/Crucix/rag-module/rag-module
+npm install
+cp .env.example .env
+# Edit .env (specify model)
+node rag-server.mjs
+
+FILES
+-----
+rag-server.mjs     - Main server
+rag-indexer.mjs    - Data indexer
+rag-ai-router.mjs  - AI request routing
+rag-chat.html      - Chat interface
+.env               - Configuration
+============================================================

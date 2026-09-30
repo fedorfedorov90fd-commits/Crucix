@@ -1,0 +1,45 @@
+#!/usr/bin/env node
+
+// ============================================================
+// COLLECT-EIA-REAL.MJS — Сбор данных из EIA API
+// ============================================================
+
+import { promises as fs } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: join(__dirname, '..', '..', '.env') });
+
+const BASKET_DIR = join(__dirname, '..', '..', 'data', 'basket');
+const EIA_API_KEY = process.env.EIA_API_KEY;
+
+if (!EIA_API_KEY) {
+  console.error('❌ EIA_API_KEY не найден в .env');
+  process.exit(1);
+}
+
+const BASE_URL = 'https://api.eia.gov/v2';
+
+async function fetchEIA(seriesId) {
+  const url = `${BASE_URL}/${seriesId}?api_key=${EIA_API_KEY}&format=json`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+async function main() {
+  try {
+    // Пример: нефтяные данные
+    const data = await fetchEIA('petroleum/crd/crp_pct/1');
+    const filePath = join(BASKET_DIR, 'eia-real.json');
+    await fs.mkdir(BASKET_DIR, { recursive: true });
+    await fs.writeFile(filePath, JSON.stringify(data, null, 2));
+    console.log('✅ EIA данные сохранены');
+  } catch (error) {
+    console.error('❌ Ошибка EIA:', error.message);
+  }
+}
+
+main();

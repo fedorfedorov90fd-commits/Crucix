@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: crucix
+  labels:
+    app.kubernetes.io/name: crucix
+    app.kubernetes.io/part-of: crucix-core
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: crucix-quota
+  namespace: crucix
+spec:
+  hard:
+    requests.cpu: "20"
+    requests.memory: "40Gi"
+    limits.cpu: "40"
+    limits.memory: "80Gi"
+    persistentvolumeclaims: "10"
+    services.loadbalancers: "2"
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: crucix-limits
+  namespace: crucix
+spec:
+  limits:
+    - max:
+        cpu: "8"
+        memory: "16Gi"
+      min:
+        cpu: "100m"
+        memory: "128Mi"
+      default:
+        cpu: "1"
+        memory: "1Gi"
+      defaultRequest:
+        cpu: "500m"
+        memory: "512Mi"
+      type: Container

@@ -1,48 +1,190 @@
-# Dependencies
+# Node.js
 node_modules/
+npm-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
 
-# Environment (contains API keys)
-.env
-apis/.env
-
-# Runtime data
-runs/
-output/
-
-# IDE / Editor
-.vscode/
-.idea/
+# Временные файлы
+*.tmp
 *.swp
 *.swo
 *~
+.DS_Store
 
-# OS files
+# Бэкапы (лично хозяина)
+backups/
+
+
+# Логи (не коммитим)
+logs/**/*.log
+
+# Персональные копии (правило 42)
+**/[А-Яа-яЁё]*.mjs
+**/*(копия)*
+**/*(copy)*
+**/*=*
+**/*.bak
+**/*.old
+.env
+.env.local
+.env.*.local
+*.tar.gz
+*.zip
+*.7z
+*.bak
+*.backup
+*.old
+*.log
+*.tmp
+*.swp
+*.swo
+*~
+*(копия)*
+
+# Реальные секреты (не коммитить!)
+data/secrets/acled.json
+data/secrets/*.json
+!data/secrets/*.template
+
+
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.pytest_cache/
+
+
+# ─── Приватные папки (НЕ публиковать!) ───
+backups/
+reports/
+snapshots/
+snapshots_full/
+runs/
+node_modules/
+.cache/
+dist/
+build/
+AI_MEMORY/
+test/
+PROJECT/
+logs/
+Тексты/
+Чат/
+Корзина/
+Резервные копии/
+депсеку дать посмотреть/
+1opml/
+RSS_lenta/
+
+
+# ─── Дополнительно: бэкапы с датами и суффиксами ───
+*.bak-*
+*.bak_*
+*.backup_*
+*.save
+*.save.*
+*.old-*
+
+# Дополнительно: русские имена с скобками (правило 42)
+**/*дубль*
+**/*копия*
+**/*(копия)*
+**/*(1копия)*
+**/*(70копия)*
+**/*(автомат)*
+**/*с_деморежимом*
+**/новый файл
+**/*ЛОГИ_И_РОТАЦИЯ*
+**/* (1-я копия)*
+
+# Промежуточные снапшоты (не публикуем — их слишком много)
+data/raw/**
+data/warehouse/incoming/**
+data/analytics/rss-history/**
+
+# Бэкапы OPML
+data/feeds/*.bak-*
+data/feeds/*.bak_*
+
+
+# Дубликаты README
+README.en.md
+README_ru.md
+README_en.md
+CRUCIX_FULL_REGISTRY.txt
+
+# ─── Дополнительно (очистка 24.09.2026) ───
+*.bak2
+*.bak_*
+*.bak-*
+*.bak.*
+*.backup_*
+*.backup-*
+*.backup.*
+*.orig
+*.rej
+*.swn
+*.temp
+*.log.*
+*.dump
+*.sql.gz
+*.pid
+*.lock
+core.*
+*.core
 .DS_Store
 Thumbs.db
-desktop.ini
+.vscode/
+.idea/
+.cache/
+.parcel-cache/
+.next/
+dist/
+build/
+coverage/
+.nyc_output/
+.turbo/
+data/raw/**
+data/warehouse/incoming/**
+data/analytics/rss-history/**
+data/feeds/*.bak-*
+data/feeds/*.bak_*
 
-# Claude Code
-.claude/
-CLAUDE.md
-AGENTS.md
+# ─── Личные файлы (не публиковать!) ───
+dashboard/public/geo-map/пресеты/чат депсека с алисой.txt
+dashboard/public/geo-map/пресеты/Универсальный роут для сервера
+111
+jarvis_(панель_в_2_ряда.md
+collector-monitor-api-с_логами.md
+dashboard/public/geo-map/пресеты/
 
+# ─── Дубликаты / мусор ───
+dashboard/public/geo-map/js/111layers.js
 
-# Playwright
-.playwright-cli/
+# ─── Дубликаты README ───
+README.en.md
+README_en.md
 
-# Logs
-*.log
-npm-debug.log*
-
-
-# Package lock (optional — remove this line if you want deterministic installs)
-# package-lock.json
-
-# Backup files
+# === Удалённые дубликаты и мусор ===
+apis/sources/collector-monitor-api[0-9].mjs
+apis/sources/collector-monitor-api_.mjs
+apis/sources/collector-monitor-api-*.mjs
+apis/sources/knowledge-graph.mjs_
+dashboard/public/geo-map_FULL_DUMP.txt
 *.bak
-
-# Local maintainer notes
-MAINTAINER_DECISIONS.local.md
-
-# Local deploy config
-dashboard/public/vercel.json
+*.bak[0-9]
+*.bak[0-9][0-9]
+*.backup
+*.old
+*.orig
+*.tmp
+*.swp
+*.swo
+*~
+*_FULL_DUMP*
+*.mjs_
+{name}.mjs
+*с_логами*
+*копия*
+*(копия)*

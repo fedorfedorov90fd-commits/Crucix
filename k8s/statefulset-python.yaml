@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: crucix-python
+  namespace: crucix
+  labels:
+    app: crucix-python
+spec:
+  serviceName: crucix-python
+  replicas: 2
+  selector:
+    matchLabels:
+      app: crucix-python
+  template:
+    metadata:
+      labels:
+        app: crucix-python
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+        - name: python
+          image: crucix-python:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8090
+              name: http
+          env:
+            - name: PYTHONUNBUFFERED
+              value: "1"
+            - name: LOG_LEVEL
+              value: "info"
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "4"
+              memory: "8Gi"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8090
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8090
+            initialDelaySeconds: 40
+            periodSeconds: 30
+          volumeMounts:
+            - name: models
+              mountPath: /app/models
+            - name: runs
+              mountPath: /app/runs
+              readOnly: true
+      volumes:
+        - name: runs
+          persistentVolumeClaim:
+            claimName: crucix-runs-pvc
+  volumeClaimTemplates:
+    - metadata:
+        name: models
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 5Gi
+        storageClassName: standard

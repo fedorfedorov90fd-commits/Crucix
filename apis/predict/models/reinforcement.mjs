@@ -1,0 +1,725 @@
+// apis/predict/models/reinforcement.mjs
+// Reinforcement Learning для прогностического слоя Crucix.
+//
+// Теоретическая основа:
+//   Sutton & Barto (2018). "Reinforcement Learning: An Introduction" (2nd ed.).
+//   Mnih et al. (2015). "Human-level control through deep RL". Nature, 518.
+//   Williams (1992). "Simple statistical gradient-following algorithms".
+//   Schulman et al. (2017). "Proximal Policy Optimization". arXiv:1707.06347.
+//
+// Применение в Crucix:
+//   Оптимизация политики алертов. Агент учится, когда отправлять алерт,
+//   когда молчать. Состояние — метрики sweep. Действия — 0=silent,
+//   1=normal_alert, 2=critical_alert. Награда — за корректные срабатывания.
+
+// ============================================================
+// Replay Buffer
+// ============================================================
+
+class ReplayBuffer {
+  constructor(capacity = 10000) {
+    this.capacity = capacity;
+    this.buffer = [];
+    this.position = 0;
+  }
+
+  push(transition) {
+    if (this.buffer.length < this.capacity) {
+      this.buffer.push(transition);
+    } else {
+      this.buffer[this.position] = transition;
+    }
+    this.position = (this.position + 1) % this.capacity;
+  }
+
+  sample(batchSize) {
+    const batch = [];
+    const n = this.buffer.length;
+    if (n === 0) return batch;
+    for (let i = 0; i < batchSize; i++) {
+      batch.push(this.buffer[Math.floor(Math.random() * n)]);
+    }
+    return batch;
+  }
+
+  size() {
+    return this.buffer.length;
+  }
+}
+
+// ============================================================
+// Q-Learning (табличный)
+// ============================================================
+
+class QLearning {
+  constructor({
+    nStates,
+    nActions,
+    learningRate = 0.1,
+    discount = 0.95,
+    epsilon = 1.0,
+    epsilonDecay = 0.995,
+    epsilonMin = 0.05,
+  } = {}) {
+    this.nStates = nStates;
+    this.nActions = nActions;
+    this.lr = learningRate;
+    this.gamma = discount;
+    this.epsilon = epsilon;
+    this.epsilonDecay = epsilonDecay;
+    this.epsilonMin = epsilonMin;
+    this.Q = Array.from({ length: nStates }, () => new Array(nActions).fill(0));
+  }
+
+  act(state) {
+    if (Math.random() < this.epsilon) {
+      return Math.floor(Math.random() * this.nActions);
+    }
+    let best = 0, bestVal = -Infinity;
+    for (let a = 0; a < this.nActions; a++) {
+      if (this.Q[state][a] > bestVal) {
+        bestVal = this.Q[state][a];
+        best = a;
+      }
+    }
+    return best;
+  }
+
+  learn(state, action, reward, nextState, done) {
+    const maxNextQ = done ? 0 : Math.max(...this.Q[nextState]);
+    const tdTarget = reward + this.gamma * maxNextQ;
+    const tdError = tdTarget - this.Q[state][action];
+    this.Q[state][action] += this.lr * tdError;
+    this.epsilon = Math.max(this.epsilonMin, this.epsilon * this.epsilonDecay);
+    return { tdError, tdTarget };
+  }
+
+  serialize() {
+    return JSON.stringify({
+      Q: this.Q, epsilon: this.epsilon,
+      nStates: this.nStates, nActions: this.nActions,
+    });
+  }
+
+  static deserialize(json) {
+    const d = typeof json === 'string' ? JSON.parse(json) : json;
+    const q = new QLearning({ nStates: d.nStates, nActions: d.nActions });
+    q.Q = d.Q;
+    q.epsilon = d.epsilon;
+    return q;
+  }
+}
+
+// ============================================================
+// DQN — Deep Q-Network
+// ============================================================
+
+class DQN {
+  constructor({
+    stateDim = 10,
+    nActions = 3,
+    hiddenDim = 64,
+    learningRate = 0.001,
+    discount = 0.95,
+    epsilon = 1.0,
+    epsilonDecay = 0.995,
+    epsilonMin = 0.05,
+    batchSize = 32,
+    targetUpdateFreq = 100,
+    bufferSize = 10000,
+  } = {}) {
+    this.stateDim = stateDim;
+    this.nActions = nActions;
+    this.hiddenDim = hiddenDim;
+    this.gamma = discount;
+    this.epsilon = epsilon;
+    this.epsilonDecay = epsilonDecay;
+    this.epsilonMin = epsilonMin;
+    this.batchSize = batchSize;
+    this.targetUpdateFreq = targetUpdateFreq;
+    this.lr = learningRate;
+
+    this.online = this._initNetwork();
+    this.target = this._initNetwork();
+    this._copyWeights(this.online, this.target);
+
+    this.buffer = new ReplayBuffer(bufferSize);
+    this.stepCount = 0;
+  }
+
+  _initNetwork() {
+    return {
+      W1: this._glorot(this.stateDim, this.hiddenDim),
+      b1: new Array(this.hiddenDim).fill(0),
+      W2: this._glorot(this.hiddenDim, this.hiddenDim),
+      b2: new Array(this.hiddenDim).fill(0),
+      W3: this._glorot(this.hiddenDim, this.nActions),
+      b3: new Array(this.nActions).fill(0),
+    };
+  }
+
+  _glorot(inDim, outDim) {
+    const scale = Math.sqrt(6 / (inDim + outDim));
+    return Array.from({ length: outDim }, () =>
+      Array.from({ length: inDim }, () => (Math.random() * 2 - 1) * scale)
+    );
+  }
+
+  _copyWeights(src, dst) {
+    for (const k of ['W1', 'W2', 'W3']) {
+      dst[k] = src[k].map((row) => [...row]);
+    }
+    for (const k of ['b1', 'b2', 'b3']) {
+      dst[k] = [...src[k]];
+    }
+  }
+
+  _forward(state, network) {
+    const { W1, b1, W2, b2, W3, b3 } = network;
+    const h1 = this._linear(state, W1, b1);
+    const a1 = h1.map((v) => Math.max(0, v));
+    const h2 = this._linear(a1, W2, b2);
+    const a2 = h2.map((v) => Math.max(0, v));
+    const out = this._linear(a2, W3, b3);
+    return { a1, a2, out };
+  }
+
+  _linear(input, W, b) {
+    const out = new Array(W.length).fill(0);
+    for (let i = 0; i < W.length; i++) {
+      let sum = b[i];
+      for (let j = 0; j < input.length; j++) sum += W[i][j] * input[j];
+      out[i] = sum;
+    }
+    return out;
+  }
+
+  act(state) {
+    if (Math.random() < this.epsilon) {
+      return Math.floor(Math.random() * this.nActions);
+    }
+    const { out } = this._forward(state, this.online);
+    let best = 0, bestVal = -Infinity;
+    for (let a = 0; a < this.nActions; a++) {
+      if (out[a] > bestVal) {
+        bestVal = out[a];
+        best = a;
+      }
+    }
+    return best;
+  }
+
+  store(state, action, reward, nextState, done) {
+    this.buffer.push({ state, action, reward, nextState, done });
+  }
+
+  train() {
+    if (this.buffer.size() < this.batchSize) return null;
+
+    const batch = this.buffer.sample(this.batchSize);
+    let totalLoss = 0;
+
+    for (const { state, action, reward, nextState, done } of batch) {
+      const { out: qValues } = this._forward(state, this.online);
+      const { out: nextQValues } = this._forward(nextState, this.target);
+      const maxNextQ = done ? 0 : Math.max(...nextQValues);
+      const targetQ = reward + this.gamma * maxNextQ;
+      const tdError = targetQ - qValues[action];
+      totalLoss += tdError * tdError;
+      this._gradientStep(state, action, tdError);
+    }
+
+    this.stepCount++;
+    if (this.stepCount % this.targetUpdateFreq === 0) {
+      this._copyWeights(this.online, this.target);
+    }
+
+    this.epsilon = Math.max(this.epsilonMin, this.epsilon * this.epsilonDecay);
+    return { avgLoss: totalLoss / this.batchSize, epsilon: this.epsilon };
+  }
+
+  _gradientStep(state, action, tdError) {
+    const { a1, a2 } = this._forward(state, this.online);
+    const lr = this.lr;
+
+    for (let i = 0; i < this.hiddenDim; i++) {
+      this.online.W3[action][i] += lr * tdError * a2[i];
+    }
+    this.online.b3[action] += lr * tdError;
+
+    for (let h = 0; h < this.hiddenDim; h++) {
+      if (a2[h] <= 0) continue;
+      let dHidden = 0;
+      for (let a = 0; a < this.nActions; a++) {
+        dHidden += tdError * this.online.W3[a][h];
+      }
+      for (let i = 0; i < this.hiddenDim; i++) {
+        this.online.W2[h][i] += lr * 0.1 * dHidden * a1[i];
+      }
+      this.online.b2[h] += lr * 0.1 * dHidden;
+    }
+  }
+
+  serialize() {
+    return JSON.stringify({
+      online: this.online, target: this.target,
+      epsilon: this.epsilon, stepCount: this.stepCount,
+      config: {
+        stateDim: this.stateDim, nActions: this.nActions,
+        hiddenDim: this.hiddenDim, gamma: this.gamma,
+      },
+    });
+  }
+
+  static deserialize(json) {
+    const d = typeof json === 'string' ? JSON.parse(json) : json;
+    const dqn = new DQN({
+      stateDim: d.config.stateDim,
+      nActions: d.config.nActions,
+      hiddenDim: d.config.hiddenDim,
+      discount: d.config.gamma,
+    });
+    dqn.online = d.online;
+    dqn.target = d.target;
+    dqn.epsilon = d.epsilon;
+    dqn.stepCount = d.stepCount || 0;
+    return dqn;
+  }
+}
+
+// ============================================================
+// REINFORCE — Policy Gradient
+// ============================================================
+
+class REINFORCE {
+  constructor({
+    stateDim = 10,
+    nActions = 3,
+    hiddenDim = 64,
+    learningRate = 0.01,
+    discount = 0.99,
+  } = {}) {
+    this.stateDim = stateDim;
+    this.nActions = nActions;
+    this.hiddenDim = hiddenDim;
+    this.gamma = discount;
+    this.lr = learningRate;
+
+    this.W1 = this._initMatrix(hiddenDim, stateDim);
+    this.b1 = new Array(hiddenDim).fill(0);
+    this.W2 = this._initMatrix(nActions, hiddenDim);
+    this.b2 = new Array(nActions).fill(0);
+    this.episode = [];
+  }
+
+  _initMatrix(rows, cols) {
+    const scale = Math.sqrt(2 / cols);
+    return Array.from({ length: rows }, () =>
+      Array.from({ length: cols }, () => (Math.random() * 2 - 1) * scale)
+    );
+  }
+
+  _forward(state) {
+    const h = new Array(this.hiddenDim).fill(0);
+    for (let i = 0; i < this.hiddenDim; i++) {
+      let sum = this.b1[i];
+      for (let j = 0; j < this.stateDim; j++) sum += this.W1[i][j] * state[j];
+      h[i] = Math.max(0, sum);
+    }
+    const logits = new Array(this.nActions).fill(0);
+    for (let i = 0; i < this.nActions; i++) {
+      let sum = this.b2[i];
+      for (let j = 0; j < this.hiddenDim; j++) sum += this.W2[i][j] * h[j];
+      logits[i] = sum;
+    }
+    const maxLogit = Math.max(...logits);
+    const exps = logits.map((l) => Math.exp(l - maxLogit));
+    const sumExp = exps.reduce((a, b) => a + b, 0);
+    return { probs: exps.map((e) => e / sumExp), hidden: h, logits };
+  }
+
+  act(state) {
+    const { probs } = this._forward(state);
+    const r = Math.random();
+    let cum = 0;
+    for (let a = 0; a < this.nActions; a++) {
+      cum += probs[a];
+      if (r < cum) return a;
+    }
+    return this.nActions - 1;
+  }
+
+  store(state, action, reward) {
+    this.episode.push({ state, action, reward });
+  }
+
+  finishEpisode() {
+    if (this.episode.length === 0) return null;
+
+    const returns = [];
+    let G = 0;
+    for (let i = this.episode.length - 1; i >= 0; i--) {
+      G = this.episode[i].reward + this.gamma * G;
+      returns[i] = G;
+    }
+
+    const meanR = returns.reduce((a, b) => a + b, 0) / returns.length;
+    const stdR = Math.sqrt(returns.reduce((s, r) => s + (r - meanR) ** 2, 0) / returns.length) || 1;
+    const normReturns = returns.map((r) => (r - meanR) / stdR);
+
+    for (let i = 0; i < this.episode.length; i++) {
+      const { state, action } = this.episode[i];
+      const { probs, hidden } = this._forward(state);
+      const adv = normReturns[i];
+
+      for (let h = 0; h < this.hiddenDim; h++) {
+        this.W2[action][h] += this.lr * adv * (1 - probs[action]) * hidden[h];
+      }
+      this.b2[action] += this.lr * adv * (1 - probs[action]);
+    }
+
+    const avgReward = this.episode.reduce((s, e) => s + e.reward, 0) / this.episode.length;
+    const totalReward = this.episode.reduce((s, e) => s + e.reward, 0);
+    this.episode = [];
+    return { avgReward, totalReward };
+  }
+
+  serialize() {
+    return JSON.stringify({
+      W1: this.W1, b1: this.b1, W2: this.W2, b2: this.b2,
+      config: { stateDim: this.stateDim, nActions: this.nActions, hiddenDim: this.hiddenDim },
+    });
+  }
+
+  static deserialize(json) {
+    const d = typeof json === 'string' ? JSON.parse(json) : json;
+    const r = new REINFORCE(d.config);
+    r.W1 = d.W1; r.b1 = d.b1; r.W2 = d.W2; r.b2 = d.b2;
+    return r;
+  }
+}
+
+// ============================================================
+// Actor-Critic (упрощённый A2C)
+// ============================================================
+
+class ActorCritic {
+  constructor({
+    stateDim = 10,
+    nActions = 3,
+    hiddenDim = 64,
+    actorLR = 0.001,
+    criticLR = 0.01,
+    gamma = 0.99,
+  } = {}) {
+    this.stateDim = stateDim;
+    this.nActions = nActions;
+    this.hiddenDim = hiddenDim;
+    this.gamma = gamma;
+
+    this.actor = new REINFORCE({ stateDim, nActions, hiddenDim, learningRate: actorLR, discount: gamma });
+    this.criticW1 = this._initMatrix(hiddenDim, stateDim);
+    this.criticB1 = new Array(hiddenDim).fill(0);
+    this.criticW2 = this._initMatrix(1, hiddenDim);
+    this.criticB2 = new Array(1).fill(0);
+    this.criticLR = criticLR;
+    this.pending = [];
+  }
+
+  _initMatrix(rows, cols) {
+    const scale = Math.sqrt(2 / cols);
+    return Array.from({ length: rows }, () =>
+      Array.from({ length: cols }, () => (Math.random() * 2 - 1) * scale)
+    );
+  }
+
+  _criticValue(state) {
+    const h = new Array(this.hiddenDim).fill(0);
+    for (let i = 0; i < this.hiddenDim; i++) {
+      let sum = this.criticB1[i];
+      for (let j = 0; j < this.stateDim; j++) sum += this.criticW1[i][j] * state[j];
+      h[i] = Math.max(0, sum);
+    }
+    let out = this.criticB2[0];
+    for (let j = 0; j < this.hiddenDim; j++) out += this.criticW2[0][j] * h[j];
+    return { value: out, hidden: h };
+  }
+
+  act(state) {
+    return this.actor.act(state);
+  }
+
+  store(state, action, reward, nextState, done) {
+    this.pending.push({ state, action, reward, nextState, done });
+  }
+
+  train() {
+    if (this.pending.length < 8) return null;
+
+    let totalActorLoss = 0;
+    let totalCriticLoss = 0;
+
+    for (const { state, action, reward, nextState, done } of this.pending) {
+      const { value: v } = this._criticValue(state);
+      const { value: vNext } = this._criticValue(nextState);
+      const targetV = done ? reward : reward + this.gamma * vNext;
+      const advantage = targetV - v;
+      const tdError = v - targetV;
+      totalCriticLoss += tdError * tdError;
+
+      const { hidden } = this._criticValue(state);
+      this.criticB2[0] -= this.criticLR * tdError;
+      for (let h = 0; h < this.hiddenDim; h++) {
+        this.criticW2[0][h] -= this.criticLR * tdError * hidden[h];
+        if (hidden[h] > 0) {
+          for (let j = 0; j < this.stateDim; j++) {
+            this.criticW1[h][j] -= this.criticLR * 0.1 * tdError * state[j];
+          }
+        }
+      }
+
+      const { probs, hidden: actorH } = this.actor._forward(state);
+      for (let h = 0; h < this.hiddenDim; h++) {
+        this.actor.W2[action][h] +=
+          this.actor.lr * advantage * (1 - probs[action]) * actorH[h];
+      }
+      this.actor.b2[action] += this.actor.lr * advantage * (1 - probs[action]);
+      totalActorLoss += Math.abs(advantage);
+    }
+
+    const n = this.pending.length;
+    this.pending = [];
+    return { avgActorLoss: totalActorLoss / n, avgCriticLoss: totalCriticLoss / n };
+  }
+
+  serialize() {
+    return JSON.stringify({
+      actor: this.actor.serialize(),
+      criticW1: this.criticW1, criticB1: this.criticB1,
+      criticW2: this.criticW2, criticB2: this.criticB2,
+      config: {
+        stateDim: this.stateDim, nActions: this.nActions,
+        hiddenDim: this.hiddenDim, gamma: this.gamma,
+      },
+    });
+  }
+
+  static deserialize(json) {
+    const d = typeof json === 'string' ? JSON.parse(json) : json;
+    const ac = new ActorCritic(d.config);
+    ac.actor = REINFORCE.deserialize(d.actor);
+    ac.criticW1 = d.criticW1; ac.criticB1 = d.criticB1;
+    ac.criticW2 = d.criticW2; ac.criticB2 = d.criticB2;
+    return ac;
+  }
+}
+
+// ============================================================
+// AlertPolicyEnv — среда обучения политики алертов
+// ============================================================
+
+class AlertPolicyEnv {
+  constructor(history) {
+    this.history = history;
+    this.currentStep = 0;
+    this.maxSteps = Math.max(0, history.length - 3);
+  }
+
+  reset() {
+    this.currentStep = 0;
+    return this._getState();
+  }
+
+  step(action) {
+    const next = this.history[this.currentStep + 1];
+    const future = this.history[this.currentStep + 2];
+
+    const nextVix = (next && next.fred && next.fred.vix) || 20;
+    const futureVix = (future && future.fred && future.fred.vix) || 20;
+    const nextConflicts =
+      next && next.gdelt && Array.isArray(next.gdelt.conflictEvents)
+        ? next.gdelt.conflictEvents.length
+        : 0;
+
+    const isSerious = nextVix > 28 || nextConflicts > 12 || futureVix > 30;
+
+    let reward;
+    if (action === 0) {
+      reward = isSerious ? -0.8 : 0.2;
+    } else if (action === 1) {
+      reward = isSerious ? 1.0 : -0.4;
+    } else {
+      reward = isSerious && nextVix > 30 ? 1.5 : -0.6;
+    }
+
+    this.currentStep++;
+    const done = this.currentStep >= this.maxSteps;
+
+    return {
+      nextState: this._getState(),
+      reward,
+      done,
+      info: { isSerious, nextVix, nextConflicts },
+    };
+  }
+
+  _getState() {
+    const h = this.history[this.currentStep];
+    if (!h) return new Array(10).fill(0);
+
+    const vix = (h.fred && h.fred.vix) || 20;
+    const hy = (h.fred && h.fred.hySpread) || 3;
+    const conflicts =
+      h.gdelt && Array.isArray(h.gdelt.conflictEvents)
+        ? h.gdelt.conflictEvents.length
+        : 0;
+    const sanctions = (h.sanctions && h.sanctions.count) || 0;
+    const alerts = (h.delta && h.delta.newAlerts) || 0;
+
+    return [
+      Math.min(1, vix / 50),
+      Math.min(1, hy / 10),
+      Math.min(1, conflicts / 20),
+      Math.min(1, sanctions / 5),
+      Math.min(1, alerts / 10),
+      Math.min(1, vix / 25),
+      Math.min(1, ((h.fred && h.fred.treasury10y) || 4) / 6),
+      Math.min(1, ((h.energy && h.energy.oilPrice) || 70) / 120),
+      Math.min(1, ((h.gold && h.gold.price) || 1900) / 2200),
+      Math.min(1, ((h.dxy && h.dxy.value) || 100) / 110),
+    ];
+  }
+}
+
+// ============================================================
+// Обучение политики алертов
+// ============================================================
+
+function trainAlertPolicy(history, { algorithm = 'dqn', episodes = 50, verbose = false } = {}) {
+  if (!history || history.length < 30) {
+    return { error: 'insufficient_history', count: history ? history.length : 0 };
+  }
+
+  const env = new AlertPolicyEnv(history);
+
+  if (algorithm === 'dqn') {
+    const agent = new DQN({
+      stateDim: 10, nActions: 3, hiddenDim: 32,
+      learningRate: 0.001, discount: 0.95,
+      epsilon: 1.0, epsilonDecay: 0.99, epsilonMin: 0.05,
+      batchSize: 16,
+    });
+
+    const log = [];
+    for (let ep = 0; ep < episodes; ep++) {
+      let state = env.reset();
+      let totalReward = 0;
+      let steps = 0;
+
+      while (true) {
+        const action = agent.act(state);
+        const { nextState, reward, done } = env.step(action);
+        agent.store(state, action, reward, nextState, done);
+        agent.train();
+        state = nextState;
+        totalReward += reward;
+        steps++;
+        if (done || steps > 500) break;
+      }
+
+      log.push({ episode: ep, totalReward, epsilon: agent.epsilon });
+      if (verbose && ep % 10 === 0) {
+        console.log(`[RL-DQN] Episode ${ep}, reward: ${totalReward.toFixed(2)}, eps: ${agent.epsilon.toFixed(3)}`);
+      }
+    }
+
+    return {
+      algorithm: 'dqn', agent, history: log,
+      avgReward: log.reduce((s, h) => s + h.totalReward, 0) / log.length,
+      finalEpsilon: agent.epsilon,
+    };
+  }
+
+  if (algorithm === 'reinforce') {
+    const agent = new REINFORCE({
+      stateDim: 10, nActions: 3, hiddenDim: 32, learningRate: 0.01,
+    });
+    const log = [];
+
+    for (let ep = 0; ep < episodes; ep++) {
+      let state = env.reset();
+      let totalReward = 0;
+      while (true) {
+        const action = agent.act(state);
+        const { nextState, reward, done } = env.step(action);
+        agent.store(state, action, reward);
+        state = nextState;
+        totalReward += reward;
+        if (done) break;
+      }
+      const result = agent.finishEpisode();
+      log.push({ episode: ep, totalReward, ...result });
+    }
+
+    return {
+      algorithm: 'reinforce', agent, history: log,
+      avgReward: log.reduce((s, h) => s + h.totalReward, 0) / log.length,
+    };
+  }
+
+  return { error: 'unknown_algorithm', supported: ['dqn', 'reinforce'] };
+}
+
+function crucixAlertPolicy(history, opts = {}) {
+  const result = trainAlertPolicy(history, {
+    algorithm: opts.algorithm || 'dqn',
+    episodes: opts.episodes || 30,
+    verbose: false,
+  });
+
+  if (result.error) return result;
+
+  const env = new AlertPolicyEnv(history.slice(-20));
+  let state = env.reset();
+  const decisions = [];
+
+  while (true) {
+    const action = result.agent.act(state);
+    const { reward, done, info, nextState } = env.step(action);
+    decisions.push({ action, reward, ...info });
+    state = nextState;
+    if (done) break;
+  }
+
+  const actionNames = ['silent', 'normal_alert', 'critical_alert'];
+  const correctDecisions = decisions.filter((d) =>
+    (d.action === 0 && !d.isSerious) || (d.action > 0 && d.isSerious)
+  ).length / Math.max(decisions.length, 1);
+
+  return {
+    ...result,
+    policy: {
+      avgReward: result.avgReward,
+      correctDecisions,
+      actions: decisions.map((d) => ({
+        action: actionNames[d.action],
+        reward: d.reward,
+        wasSerious: d.isSerious,
+      })),
+    },
+    recommendation: `Policy trained for ${opts.episodes || 30} episodes. ` +
+      `Average reward: ${result.avgReward.toFixed(3)}. ` +
+      `Correct decisions: ${(correctDecisions * 100).toFixed(1)}%`,
+  };
+}
+
+export {
+  ReplayBuffer,
+  QLearning,
+  DQN,
+  REINFORCE,
+  ActorCritic,
+  AlertPolicyEnv,
+  trainAlertPolicy,
+  crucixAlertPolicy,
+};

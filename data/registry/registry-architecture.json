@@ -1,0 +1,177 @@
+{
+  "meta": {
+    "schema_version": "crucix.registry.architecture.v1",
+    "generated_by": "manual (AI-ассистент, шаг 2 плана 20.09.2026)",
+    "generated_at": "2026-09-20T00:00:00.000Z",
+    "description": "Архитектурная карта Crucix: поток данных от источников до интерфейса, связи между слоями, список модулей с динамическим чтением корзины, карта справок.",
+    "help_ru_link": "docs/help/ru/architecture/README.md",
+    "help_en_link": "docs/help/en/architecture/README.md",
+    "main_rule_ref": "RULES.txt правила №16 (корзина — единственный источник данных), №17 (логи сборщиков), №18 (единое место сборщиков), №29 (порядок создания модуля), №40 (подготовительная папка)"
+  },
+  "data_flow": {
+    "description": "Единый поток данных Crucix. Каждый шаг — отдельный слой, связь между слоями — через файлы на диске, не через память процесса.",
+    "stages": [
+      {
+        "order": 1,
+        "layer": "collectors",
+        "dir": "scripts/collectors/",
+        "file_pattern": "collect-*.mjs",
+        "writes_to": "data/raw/",
+        "also_writes_to": "data/warehouse/incoming/<YYYY-MM-DD>.json",
+        "description": "Сборщики ходят во внешние API, сохраняют сырьё в data/raw/<id>-<timestamp>.json и накладную в data/warehouse/incoming/. В basket НЕ пишут (правило №16.1).",
+        "log_file": "logs/collectors/collect-<id>.log"
+      },
+      {
+        "order": 2,
+        "layer": "raw",
+        "dir": "data/raw/",
+        "file_pattern": "<id>-<ISO-timestamp>.json",
+        "description": "Сырые данные от внешних источников. Не изменяются, читаются кладовщиком.",
+        "eviction_policy": "tiered: fresh (7 дней) / working (30 дней) / archive (старше). Утилизация при превышении raw.max_bytes из data/warehouse/config.json."
+      },
+      {
+        "order": 3,
+        "layer": "incoming",
+        "dir": "data/warehouse/incoming/",
+        "file_pattern": "<YYYY-MM-DD>.json",
+        "description": "Накладные склада. Каждая запись items описывает один акт сбора. Схема: data/schemas/incoming.v1.json.",
+        "status_enum": ["pending", "processed", "failed", "archived"],
+        "passport_required_fields": ["id", "collector", "source", "raw_file", "status"]
+      },
+      {
+        "order": 4,
+        "layer": "manager",
+        "file": "scripts/warehouse/managerbasket.mjs",
+        "version": "1.2.0",
+        "description": "Кладовщик. Забирает pending-записи из накладных, нормализует через адаптеры (scripts/warehouse/adapters/*.mjs), укладывает в data/basket/, обновляет накладную (status=processed/failed), lineage, quality, manifest.",
+        "adapters": ["timeseries", "points", "regions", "events", "hierarchical", "catalog"]
+      },
+      {
+        "order": 5,
+        "layer": "basket",
+        "dir": "data/basket/",
+        "file_pattern": "<id>.json",
+        "description": "Корзина — единственный источник данных проекта (правило №16). Каждый файл обязан содержать schema='crucix.basket.v1' и блок meta по схеме data/schemas/basket.v1.json.",
+        "required_meta_fields": ["id", "source", "source_url", "fetched_at", "normalized_at", "collector", "license", "count", "granularity", "value_unit", "value_type"],
+        "registry": "data/registry/registry-basket.json",
+        "current_stats_20_09_2026": {
+          "total": 270,
+          "with_full_meta": 114,
+          "without_full_meta": 156,
+          "by_status": {"active": 114, "legacy": 0, "unknown": 156}
+        }
+      },
+      {
+        "order": 6,
+        "layer": "api",
+        "dir": "apis/sources/",
+        "file_pattern": "*api.mjs, *.mjs",
+        "description": "API-модули. Читают basket, отдают данные на фронт. Прямые fetch() к внешним API запрещены (правило №16.4).",
+        "route_prefix_layer": "/api/layers/",
+        "route_prefix_service": "/api/services/",
+        "contract": "export const route; export const method | methods; export const meta; export async function handler(req, res). export default запрещён, export const handle запрещён.",
+        "registry": "data/registry/registry-api.json (устаревший от 08.09.2026) + server/registry.generated.json (живой)"
+      },
+      {
+        "order": 7,
+        "layer": "pages",
+        "dir": "dashboard/public/",
+        "file_pattern": "*.html",
+        "description": "Страницы интерфейса. Читают данные через /api/... Не должны содержать прямых запросов к внешним API.",
+        "registry": "data/registry/registry-pages.json (устаревший от 08.09.2026)"
+      },
+      {
+        "order": 8,
+        "layer": "help",
+        "dir_ru": "docs/help/ru/",
+        "dir_en": "docs/help/en/",
+        "description": "Официальная документация проекта на двух языках. Создаётся параллельно с каждым новым модулем, сборщиком, страницей, слоем.",
+        "sections": ["api", "pages", "collectors", "layers", "basket", "architecture"],
+        "rule_ref": "Запись памяти 20.09.2026: docs/help — официальная документация, не личные файлы, дополнять и модернизировать."
+      }
+    ]
+  },
+  "dynamic_basket_readers": {
+    "description": "API-модули, которые читают basket динамически через join(BASKET_DIR, <переменная>). Их readers не видны статическим grep по строке 'basket/<id>.json'. Найдены в разведке 20.09.2026.",
+    "pattern": "join(BASKET_DIR, file) или join(BASKET_DIR, jsonName) или join(BASKET_DIR, f) или readFileSync(join(BASKET_DIR, file))",
+    "modules": [
+      {"file": "apis/sources/basket-api.mjs", "lines": [102, 164], "note": "join(BASKET_DIR, jsonName), fs.stat(join(BASKET_DIR, f))"},
+      {"file": "apis/sources/temporal-analysis.mjs", "lines": [91], "note": "readFileSync(join(BASKET_DIR, file))"},
+      {"file": "apis/sources/military.mjs", "lines": [7], "note": "readFile(join(BASKET_DIR, file))"},
+      {"file": "apis/sources/esg.mjs", "lines": [7], "note": "readFile(join(BASKET_DIR, file))"},
+      {"file": "apis/sources/rag-chat.mjs", "lines": [36], "note": "readFileSync(join(BASKET_DIR, file))"},
+      {"file": "apis/sources/layer-manager.mjs", "lines": [40], "note": "readFileSync(join(BASKET_DIR, file))"},
+      {"file": "apis/sources/collector-monitor-api-с_логами.mjs", "lines": [283], "note": "join(BASKET_DIR, file) — личный файл с русским именем, правило №42"},
+      {"file": "apis/sources/diagnostics-api.mjs", "lines": [321], "note": "fs.stat(join(BASKET_DIR, f))"},
+      {"file": "apis/sources/basket-reader-api.mjs", "lines": [74], "note": "resolve(join(BASKET_DIR, jsonName))"},
+      {"file": "apis/sources/collector-monitor-api0.mjs", "lines": [90], "note": "join(BASKET_DIR, file)"},
+      {"file": "apis/sources/vulnerabilities-api.mjs", "lines": [49], "note": "readFile(join(BASKET_DIR, f))"},
+      {"file": "apis/sources/correlation.mjs", "lines": [7], "note": "readFile(join(BASKET_DIR, file))"},
+      {"file": "apis/sources/conflict-zone-api.mjs", "lines": [45], "note": "readFile(join(BASKET_DIR, f))"},
+      {"file": "apis/sources/social.mjs", "lines": [7], "note": "readFile(join(BASKET_DIR, file))"},
+      {"file": "apis/sources/heatmap-generator.mjs", "lines": [17], "note": "readFileSync(join(BASKET_DIR, file))"},
+      {"file": "apis/sources/energy.mjs", "lines": [7], "note": "readFile(join(BASKET_DIR, file))"},
+      {"file": "apis/sources/supply-chain.mjs", "lines": [7], "note": "readFile(join(BASKET_DIR, file))"},
+      {"file": "apis/sources/ssi.mjs", "lines": [7], "note": "readFile(join(BASKET_DIR, file))"}
+    ],
+    "total": 18
+  },
+  "static_basket_readers": {
+    "description": "API-модули со статической ссылкой meta.source='basket/<id>.json'. Собраны в build-registry v3.3.0. См. полный список в server/registry.generated.json (routes.*.meta.source).",
+    "warnings_from_v3_3_0": "8 предупреждений basket_file_missing зафиксированы в data/registry/registry-broken.json"
+  },
+  "registry_files": {
+    "description": "Все файлы реестров проекта и их назначение.",
+    "files": [
+      {"path": "data/registry/registry-api.json", "status": "stale_08_09_2026", "note": "Старый реестр API-модулей. Заменён на server/registry.generated.json (routes)."},
+      {"path": "data/registry/registry-collectors.json", "status": "stale_08_09_2026", "note": "Старый реестр сборщиков. Требует пересборки."},
+      {"path": "data/registry/registry-pages.json", "status": "stale_08_09_2026", "note": "Старый реестр страниц. Требует пересборки."},
+      {"path": "data/registry/registry-layers.json", "status": "stale_08_09_2026", "note": "Старый реестр слоёв (15 записей). Требует пересборки."},
+      {"path": "data/registry/registry-descriptions.json", "status": "active_20_09_2026", "note": "Описания компонентов, 917 записей. Обновляется build-registry."},
+      {"path": "data/registry/registry-basket.json", "status": "active_20_09_2026", "note": "Реестр корзины, 270 файлов. Генерируется server/build-registry.mjs v3.3.0."},
+      {"path": "data/registry/registry-broken.json", "status": "active_20_09_2026", "note": "Реестр битых связей, 9 записей. Создан вручную шагом 1."},
+      {"path": "data/registry/registry-architecture.json", "status": "active_20_09_2026", "note": "Этот файл. Архитектурная карта проекта."},
+      {"path": "data/registry/modules.json", "status": "skeleton_1_entry", "note": "Скелет, 1 запись. Требует решения: либо заполнить, либо объединить с registry-api."},
+      {"path": "server/registry.generated.json", "status": "active_20_09_2026", "note": "Живой реестр, генерируется при старте server.mjs. Читается server/router.mjs."}
+    ]
+  },
+  "html_registry_duplicates": {
+    "description": "Шесть версий HTML-страницы реестра. Требуется решение: какая рабочая.",
+    "files": [
+      {"path": "dashboard/public/registry.html", "size": 39646, "date": "2026-09-08", "reads": "/api/registry/", "note": "Вероятно рабочая"},
+      {"path": "dashboard/public/registry(1копия).html", "size": 39646, "date": "2026-09-08", "reads": "/api/registry/", "note": "Копия"},
+      {"path": "dashboard/public/registry-v2.html", "size": 49616, "date": "2026-09-08", "reads": "не проверено", "note": "Версия 2"},
+      {"path": "dashboard/public/registry_(автомат).html", "size": 46255, "date": "2026-09-08", "reads": "/api/registry/, fetch(helpFile)", "note": "Автоматическая версия"},
+      {"path": "dashboard/public/registry_(копия113).html", "size": 73715, "date": "2026-09-08", "reads": "fetch(helpFile) × 7", "note": "Самая большая"},
+      {"path": "dashboard/public/registry-data.json", "size": 14428, "date": "2026-09-08", "note": "Статические данные"}
+    ],
+    "rule_ref": "RULES.txt правило №42 — файлы со скобками (копия) считать личными, не индексировать. Правило №25 — базовые кнопки шаблона не трогать."
+  },
+  "help_map": {
+    "description": "Карта справок. Для каждого модуля/страницы/сборщика — ссылка на русскую и английскую справку.",
+    "base_ru": "docs/help/ru/",
+    "base_en": "docs/help/en/",
+    "sections": {
+      "api": "docs/help/ru/api/<module-id>.md + docs/help/en/api/<module-id>.md",
+      "pages": "docs/help/ru/pages/<page-id>.md + docs/help/en/pages/<page-id>.md",
+      "collectors": "docs/help/ru/collectors/<collector-id>.md + docs/help/en/collectors/<collector-id>.md",
+      "layers": "docs/help/ru/layers/<layer-id>.md + docs/help/en/layers/<layer-id>.md",
+      "basket": "docs/help/ru/basket/<basket-id>.md + docs/help/en/basket/<basket-id>.md",
+      "architecture": "docs/help/ru/architecture/<topic>.md + docs/help/en/architecture/<topic>.md"
+    }
+  },
+  "session_workflow": {
+    "description": "Порядок работы сессии — чтобы не начинать с нуля.",
+    "start_of_session": [
+      "node scripts/show-registry-summary.mjs — сводка в терминал (план шаг 4)",
+      "прочитать data/registry/registry-architecture.json — эта карта",
+      "прочитать data/registry/registry-broken.json — битые связи",
+      "прочитать server/registry.generated.json (meta) — актуальная сводка"
+    ],
+    "end_of_session": [
+      "node scripts/rebuild-all-registries.mjs — пересборка всех реестров (план шаг 4)",
+      "проверка: node server/build-registry.mjs --check"
+    ],
+    "rule_ref": "RULES.txt: 'Порядок работы: сначала синхронизация памяти → потом задачи.'"
+  }
+}

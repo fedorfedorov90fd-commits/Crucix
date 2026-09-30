@@ -1,0 +1,909 @@
+===== ЧАСТЬ part-5-sources-and-ui · КУСОК 09/15 · 31.5 KB =====
+
+FILE: dashboard/pwa/offline.html
+SIZE: 5098 bytes
+SHA1: 584c2c9f0a7fb3d3
+========================================================================
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crucix · Offline</title>
+<style>
+:root {
+  --bg: #06080f;
+  --surface: #0d1220;
+  --border: #1a2540;
+  --text: #e8edf5;
+  --text-dim: #8fa1c2;
+  --accent: #3b82f6;
+  --accent2: #8b5cf6;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.container {
+  max-width: 500px;
+  text-align: center;
+}
+.icon {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 32px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 56px;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+}
+h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  letter-spacing: -0.5px;
+}
+p {
+  color: var(--text-dim);
+  font-size: 15px;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+.features {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  text-align: left;
+}
+.features h2 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  margin-bottom: 16px;
+}
+.feature {
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+.feature:last-child { border-bottom: none; }
+.feature-icon { font-size: 20px; }
+.feature-text { flex: 1; }
+.feature-text strong { display: block; margin-bottom: 2px; }
+.feature-text span { color: var(--text-dim); font-size: 12px; }
+button {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+button:hover { opacity: 0.9; }
+button:disabled { opacity: 0.5; cursor: wait; }
+.status {
+  margin-top: 20px;
+  font-size: 12px;
+  color: var(--text-dim);
+  font-family: 'SF Mono', monospace;
+}
+.dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ef4444;
+  margin-right: 6px;
+  animation: blink 1.5s infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="icon">📡</div>
+  <h1>Нет соединения</h1>
+  <p>Crucix ожидает восстановления связи. Прогнозы и алерты появятся автоматически, как только сеть вернётся.</p>
+
+  <div class="features">
+    <h2>Доступно offline:</h2>
+    <div class="feature">
+      <div class="feature-icon">📊</div>
+      <div class="feature-text">
+        <strong>Последний прогноз</strong>
+        <span>Кэшированная версия сохранена локально</span>
+      </div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">📈</div>
+      <div class="feature-text">
+        <strong>История сигналов</strong>
+        <span>Доступна без интернета</span>
+      </div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">🔔</div>
+      <div class="feature-text">
+        <strong>Push-уведомления</strong>
+        <span>Придут при следующем соединении</span>
+      </div>
+    </div>
+  </div>
+
+  <button id="retry-btn" onclick="retryConnection()">Попробовать снова</button>
+
+  <div class="status">
+    <span class="dot"></span>
+    <span id="status-text">offline · проверка через 10s</span>
+  </div>
+</div>
+
+<script>
+let attempts = 0;
+const maxAttempts = 30;
+
+function retryConnection() {
+  const btn = document.getElementById('retry-btn');
+  btn.disabled = true;
+  btn.textContent = 'Проверка...';
+  attempts++;
+
+  fetch('/health', { cache: 'no-store' })
+    .then(r => {
+      if (r.ok) {
+        window.location.reload();
+      } else {
+        throw new Error('Server not ready');
+      }
+    })
+    .catch(() => {
+      btn.disabled = false;
+      btn.textContent = `Попробовать снова (${attempts})`;
+      document.getElementById('status-text').textContent =
+        `offline · попытка ${attempts} · следующий retry через 10s`;
+    });
+}
+
+setInterval(() => {
+  if (attempts >= maxAttempts) return;
+  fetch('/health', { cache: 'no-store' })
+    .then(r => {
+      if (r.ok) window.location.reload();
+    })
+    .catch(() => {});
+}, 10000);
+
+window.addEventListener('online', () => {
+  document.getElementById('status-text').textContent = 'online · обновление...';
+  setTimeout(() => window.location.reload(), 500);
+});
+
+console.log('[offline] Page loaded, retry every 10s');
+</script>
+</body>
+</html>
+
+
+
+========================================================================
+
+FILE: dashboard/pwa/README.md
+SIZE: 5284 bytes
+SHA1: a5467fe97c3474f4
+========================================================================
+
+# Crucix PWA
+
+Progressive Web App — установка Crucix на устройство с offline-режимом и push-уведомлениями.
+
+## Возможности
+
+- Install: добавление на домашний экран (mobile) или в док (desktop)
+- Offline: caching predictions + dashboard работает без интернета
+- Push notifications: критичные алерты приходят прямо на устройство
+- Background sync: обновление прогнозов в фоне
+- Shortcuts: быстрый доступ к Live Dashboard, Composite Risk, Plugins
+
+## Установка
+
+1. Откройте Crucix в браузере
+2. Нажмите "Install" (появится баннер)
+3. Подтвердите установку
+
+Или через меню браузера:
+- Chrome/Edge: "Установить приложение"
+- Safari (iOS): "Добавить на главный экран"
+- Firefox (Android): "Установить"
+
+## Push-уведомления
+
+Для получения push-уведомлений:
+
+1. Установите PWA
+2. Нажмите "Enable notifications" в настройках
+3. Разрешите уведомления в браузере
+
+Уведомления приходят при:
+- composite risk > 0.5 (high/critical)
+- Signal > 0.7
+- Regime change detected
+
+## Настройки
+
+Откройте в PWA:
+- Notifications: включить/выключить
+- Types: какие типы получать (alerts, signals, regime changes)
+- Quiet hours: не беспокоить в определённое время
+
+## Offline режим
+
+При отсутствии интернета:
+
+- Показывается последний кэшированный прогноз
+- История сигналов доступна
+- Push придут при восстановлении связи
+- Автоматический retry каждые 10 секунд
+
+## Файлы
+
+dashboard/pwa/
+  manifest.json — PWA манифест
+  service-worker.js — SW (caching + push + sync)
+  install.js — install prompt + push subscription
+  push.js — server-side Web Push sender
+  offline.html — offline fallback page
+  icons/ — иконки (72-512px)
+    icon-72.png
+    icon-96.png
+    icon-128.png
+    icon-144.png
+    icon-152.png
+    icon-192.png
+    icon-384.png
+    icon-512.png
+  README.md
+
+## Интеграция в dashboard
+
+Добавьте в crucix.html перед </head>:
+
+<link rel="manifest" href="/pwa/manifest.json">
+<meta name="theme-color" content="#3b82f6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="/pwa/icons/icon-192.png">
+
+Перед </body>:
+
+<script type="module" src="/pwa/install.js"></script>
+<script>
+  setTimeout(() => {
+    console.log('PWA Status:', window.crucixPWA?.getStatus());
+  }, 1000);
+</script>
+
+## Server integration
+
+В engine.mjs:
+
+import { loadOrCreateVAPIDKeys, SubscriptionStore, notifyPush, createPushHandlers } from './dashboard/pwa/push.js';
+
+const vapidKeys = loadOrCreateVAPIDKeys();
+const store = new SubscriptionStore();
+const handlers = createPushHandlers(vapidKeys, store);
+
+if (url.pathname === '/api/push/vapid-key') return handlers.getVapidKey(req, res);
+if (url.pathname === '/api/push/subscribe') return handlers.subscribe(req, res);
+if (url.pathname === '/api/push/unsubscribe') return handlers.unsubscribe(req, res);
+if (url.pathname === '/api/push/test') return handlers.test(req, res);
+
+await notifyPush(result, store, vapidKeys);
+
+## VAPID keys
+
+При первом запуске генерируется VAPID key pair и сохраняется в runs/pwa/vapid.json:
+
+{
+  "publicKey": "BEl62iUYgUivxIkv69yViEuiBIa...",
+  "privateKey": "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49..."
+}
+
+Не теряйте — при потере все subscriptions перестанут работать.
+
+## Поддерживаемые браузеры
+
+| Browser | PWA Install | Push | Background Sync |
+|---------|-------------|------|-----------------|
+| Chrome 90+ | Да | Да | Да |
+| Edge 90+ | Да | Да | Да |
+| Firefox 90+ | Да | Да | Нет |
+| Safari 16+ | Да | Да (iOS 16.4+) | Нет |
+| Samsung Internet | Да | Да | Да |
+
+## Zero-dependency
+
+Web Push реализован на чистом Node.js через node:crypto:
+
+- ECDH (prime256v1)
+- HKDF (RFC 5869)
+- AES-128-GCM
+- VAPID JWT (ES256)
+
+Без web-push npm-пакета, без jsonwebtoken.
+
+## Troubleshooting
+
+Push не приходят:
+- Проверьте разрешения браузера
+- Проверьте VAPID keys
+- Проверьте endpoint в subscription (может быть устаревший)
+
+PWA не устанавливается:
+- Убедитесь, что открыто по HTTPS (или localhost)
+- Проверьте manifest.json (валидность)
+- Проверьте наличие всех icons
+
+Offline не работает:
+- Проверьте SW регистрацию (DevTools -> Application -> Service Workers)
+- Проверьте Cache Storage
+- Очистите кэш и переустановите
+
+
+
+========================================================================
+
+FILE: features/human-feedback/human_feedback.mjs
+SIZE: 21239 bytes
+SHA1: bfbf5bf5720e015f
+========================================================================
+
+// features/human-feedback/human_feedback.mjs
+//
+// Human Feedback Learning для Crucix
+//
+// ===================================================================
+// СТАТУС: заготовка, готова к интеграции, но не вызывается из engine.mjs
+// ===================================================================
+//
+// ЗАМЫСЕЛ
+// -------
+// Модуль замыкает обучающий цикл прогностической системы через оператора.
+// В мире LLM это RLHF (Reinforcement Learning from Human Feedback).
+// Применённое не к языковой модели, а к прогностическому ансамблю.
+//
+// Короткая формулировка: оператор подтверждает или опровергает прогноз,
+// система сразу корректирует веса признаков, не дожидаясь, пока событие
+// произойдёт или не произойдёт.
+//
+// ПОЧЕМУ ЭТО ВАЖНО
+// ----------------
+// 1. Быстрое обучение на малых данных (пока нет 3-6 месяцев истории).
+// 2. Обработка редких событий (Brier Score по ним почти не двигается).
+// 3. Доверие оператора к системе (когда он видит, что его оценка меняет модель).
+// 4. Соединение экспертного знания и модельного (контекст + вероятности).
+// 5. Механизм "что если" (ручное изменение входных данных оператором).
+//
+// КОНКУРЕНТНОЕ ПРЕИМУЩЕСТВО
+// -------------------------
+// Ни Palantir, ни Recorded Future, ни Seldon Vault публично не делают
+// этого. У них операторская валидация уходит в отчёт, а не в модель.
+//
+// АРХИТЕКТУРА (гибридный вариант -- рекомендуется)
+// ------------------------------------------------
+// Оператор ставит метку good / bad / uncertain, плюс может дать текстовый
+// комментарий. Система обновляет веса признаков через градиентный шаг.
+// Комментарии сохраняются в лог (отправка в LLM -- отдельная задача).
+//
+// ЧТО ЖДЁТ РЕАЛИЗАЦИИ СНАРУЖИ
+// ---------------------------
+// 1. Интерфейс оператора (dashboard/human_feedback.html).
+// 2. Интеграция в engine.mjs (после фазы F калибровки).
+// 3. Хранилище истории (runs/predictions/human_feedback.json).
+// 4. Потребитель обновлённых весов (пока отсутствует).
+//
+// РЕШЕНИЯ AI ПО УМОЛЧАНИЮ
+// -----------------------
+// - Обновление весов ПОСЛЕ фазы F калибровки (учитывать калибровку).
+// - Начинать только с весов признаков (не источников/моделей ансамбля).
+// - Комментарии сохранять в лог, не отправлять в LLM на первом этапе.
+// - Хранилище: runs/predictions/human_feedback.json.
+//
+// ИСТОРИЯ
+// -------
+// Замысел появился в 4часть.txt (строка 1266) как одна фраза. Кода не было.
+// Этот файл -- попытка развернуть замысел до состояния, в котором его
+// можно реализовать в любое время без потери контекста.
+
+import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// ---------- КОНСТАНТЫ ----------
+
+const FEEDBACK_DIR = join(__dirname, '..', '..', 'runs', 'predictions');
+const FEEDBACK_FILE = join(FEEDBACK_DIR, 'human_feedback.json');
+const DEFAULT_LEARNING_RATE = 0.05;
+const DEFAULT_MOMENTUM = 0.9;
+const MAX_HISTORY_ENTRIES = 500;
+
+// ---------- КЛАСС HumanFeedbackLearner ----------
+
+/**
+ * HumanFeedbackLearner -- обучение на обратной связи от оператора.
+ *
+ * Основные методы:
+ *   - recordFeedback(feedback) -- запись оценки оператора
+ *   - updateWeights()          -- градиентный шаг
+ *   - getCurrentWeights()      -- текущие веса признаков
+ *   - getMetrics()             -- метрики (сколько сигналов, какие признаки двигаются)
+ *   - toJSON() / fromJSON()    -- сериализация
+ */
+export class HumanFeedbackLearner {
+  constructor(config = {}) {
+    this.learningRate = config.learningRate ?? DEFAULT_LEARNING_RATE;
+    this.momentum = config.momentum ?? DEFAULT_MOMENTUM;
+    this.maxHistoryEntries = config.maxHistoryEntries ?? MAX_HISTORY_ENTRIES;
+
+    // Веса признаков. Ключ -- имя признака (vix, conflictCount, ...)
+    this.featureWeights = new Map();
+
+    // Импульс для градиентного шага (стандартный SGD с momentum)
+    this.featureVelocities = new Map();
+
+    // История обратной связи
+    this.feedbackHistory = [];
+
+    // Счётчики
+    this.totalFeedback = 0;
+    this.goodCount = 0;
+    this.badCount = 0;
+    this.uncertainCount = 0;
+
+    // Последнее обновление
+    this.lastUpdate = null;
+  }
+
+  /**
+   * Инициализация весов признаков из внешнего источника
+   * (например, из permutationImportance в explainability.mjs)
+   *
+   * @param {Object} initialWeights -- { featureName: weight }
+   */
+  initializeWeights(initialWeights) {
+    for (const [name, weight] of Object.entries(initialWeights)) {
+      if (!this.featureWeights.has(name)) {
+        this.featureWeights.set(name, weight);
+        this.featureVelocities.set(name, 0);
+      }
+    }
+  }
+
+  /**
+   * Запись оценки оператора.
+   *
+   * @param {Object} feedback -- {
+   *   predictionId: string,     -- ID прогноза, к которому относится оценка
+   *   signature: string,        -- 'good' | 'bad' | 'uncertain'
+   *   comment: string,          -- опциональный текстовый комментарий
+   *   context: Object,          -- { features, predictedProb, actualOutcome, ... }
+   *   operatorId: string,       -- ID оператора (если несколько)
+   * }
+   * @returns {Object} -- { accepted, reason, weightsBefore, weightsAfter }
+   */
+  recordFeedback(feedback) {
+    // Валидация
+    if (!feedback || typeof feedback !== 'object') {
+      return { accepted: false, reason: 'invalid_feedback' };
+    }
+    if (!['good', 'bad', 'uncertain'].includes(feedback.signature)) {
+      return { accepted: false, reason: 'invalid_signature' };
+    }
+    if (!feedback.context || !feedback.context.features) {
+      return { accepted: false, reason: 'missing_features' };
+    }
+
+    // Снимок весов до обновления
+    const weightsBefore = Object.fromEntries(this.featureWeights);
+
+    // Запись в историю
+    const entry = {
+      timestamp: Date.now(),
+      predictionId: feedback.predictionId || null,
+      signature: feedback.signature,
+      comment: feedback.comment || null,
+      context: {
+        features: feedback.context.features,
+        predictedProb: feedback.context.predictedProb ?? null,
+        actualOutcome: feedback.context.actualOutcome ?? null,
+      },
+      operatorId: feedback.operatorId || 'default',
+    };
+
+    this.feedbackHistory.push(entry);
+    if (this.feedbackHistory.length > this.maxHistoryEntries) {
+      this.feedbackHistory.shift();
+    }
+
+    // Счётчики
+    this.totalFeedback++;
+    if (feedback.signature === 'good') this.goodCount++;
+    else if (feedback.signature === 'bad') this.badCount++;
+    else if (feedback.signature === 'uncertain') this.uncertainCount++;
+
+    // Обновление весов
+    const update = this.updateWeights(entry);
+
+    // Снимок весов после
+    const weightsAfter = Object.fromEntries(this.featureWeights);
+
+    this.lastUpdate = new Date().toISOString();
+
+    return {
+      accepted: true,
+      reason: 'ok',
+      update,
+      weightsBefore,
+      weightsAfter,
+    };
+  }
+
+  /**
+   * Градиентный шаг обновления весов признаков.
+   *
+   * Логика:
+   *   - good:     признаки, повлиявшие на прогноз, получают положительный градиент
+   *   - bad:      те же признаки получают отрицательный градиент
+   *   - uncertain: обновление минимальное (небольшой положительный градиент)
+   *
+   * Формула (упрощённый SGD с momentum):
+   *   v_i = momentum * v_i + lr * grad_i
+   *   w_i = w_i + v_i
+   *
+   * @param {Object} entry -- запись из feedbackHistory
+   * @returns {Object} -- { updatedFeatures, totalDelta }
+   */
+  updateWeights(entry) {
+    const { signature, context } = entry;
+    const features = context.features || {};
+    const featuresCount = Object.keys(features).length;
+
+    if (featuresCount === 0) {
+      return { updatedFeatures: 0, totalDelta: 0 };
+    }
+
+    // Коэффициент масштабирования
+    let gradientScale;
+    if (signature === 'good') gradientScale = 1.0;
+    else if (signature === 'bad') gradientScale = -1.0;
+    else gradientScale = 0.2; // uncertain -- мягкое обновление
+
+    const updatedFeatures = [];
+    let totalDelta = 0;
+
+    for (const [name, value] of Object.entries(features)) {
+      // Если признака ещё нет в весах, добавляем с нейтральным весом
+      if (!this.featureWeights.has(name)) {
+        this.featureWeights.set(name, 1.0);
+        this.featureVelocities.set(name, 0);
+      }
+
+      const currentWeight = this.featureWeights.get(name);
+      const currentVelocity = this.featureVelocities.get(name);
+
+      // Градиент: чем сильнее признак отклоняется от нейтрального,
+      // тем больше он влияет на прогноз, тем больше градиент.
+      // Нормализованное значение признака -- если это уже в диапазоне [0,1]
+      // или около того.
+      const normalizedValue = Math.max(0, Math.min(1, value));
+      const deviation = normalizedValue - 0.5;
+      const grad = gradientScale * deviation * this.learningRate;
+
+      // Обновление с momentum
+      const newVelocity = this.momentum * currentVelocity + grad;
+      const newWeight = currentWeight + newVelocity;
+
+      // Ограничение веса, чтобы не улетел
+      const clampedWeight = Math.max(0.05, Math.min(10.0, newWeight));
+
+      this.featureWeights.set(name, clampedWeight);
+      this.featureVelocities.set(name, newVelocity);
+
+      const delta = clampedWeight - currentWeight;
+      totalDelta += Math.abs(delta);
+
+      updatedFeatures.push({
+        name,
+        value,
+        oldWeight: currentWeight,
+        newWeight: clampedWeight,
+        delta,
+      });
+    }
+
+    return {
+      updatedFeatures: updatedFeatures.length,
+      totalDelta,
+      details: updatedFeatures,
+    };
+  }
+
+  /**
+   * Текущие веса признаков.
+   */
+  getCurrentWeights() {
+    return Object.fromEntries(this.featureWeights);
+  }
+
+  /**
+   * Метрики состояния обучения.
+   */
+  getMetrics() {
+    const weights = [...this.featureWeights.values()];
+    const meanWeight = weights.length > 0
+      ? weights.reduce((s, w) => s + w, 0) / weights.length
+      : 0;
+
+    // Топ-признаки по весу
+    const topFeatures = [...this.featureWeights.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([name, weight]) => ({ name, weight }));
+
+    // Топ-признаки, которые сильнее всего изменились за последние 20 обновлений
+    const recentMovers = [];
+    if (this.feedbackHistory.length >= 2) {
+      const recentEntries = this.feedbackHistory.slice(-20);
+      const allFeatureNames = new Set();
+      for (const entry of recentEntries) {
+        for (const name of Object.keys(entry.context?.features || {})) {
+          allFeatureNames.add(name);
+        }
+      }
+      for (const name of allFeatureNames) {
+        const current = this.featureWeights.get(name) || 1.0;
+        // Для простоты -- берём нейтральный вес 1.0 как точку отсчёта
+        const delta = Math.abs(current - 1.0);
+        recentMovers.push({ name, weight: current, deltaFromNeutral: delta });
+      }
+      recentMovers.sort((a, b) => b.deltaFromNeutral - a.deltaFromNeutral);
+    }
+
+    // Согласованность сигналов
+    const agreementRate = this.totalFeedback > 0
+      ? (this.goodCount + this.badCount) / this.totalFeedback
+      : 0;
+
+    return {
+      totalFeedback: this.totalFeedback,
+      goodCount: this.goodCount,
+      badCount: this.badCount,
+      uncertainCount: this.uncertainCount,
+      featureCount: this.featureWeights.size,
+      meanWeight,
+      topFeatures,
+      recentMovers: recentMovers.slice(0, 5),
+      agreementRate,
+      lastUpdate: this.lastUpdate,
+      interpretation: this._interpretMetrics(),
+    };
+  }
+
+  _interpretMetrics() {
+    if (this.totalFeedback === 0) {
+      return 'Обратной связи ещё не было. Модуль ожидает сигнала оператора.';
+    }
+    if (this.totalFeedback < 5) {
+      return 'Мало данных для значимых выводов. Продолжайте размечать прогнозы.';
+    }
+    if (this.agreementRate > 0.8) {
+      return 'Высокая согласованность операторских оценок. Модель стабильна.';
+    }
+    if (this.agreementRate < 0.5) {
+      return 'Противоречивые оценки оператора. Возможна неоднозначность прогнозов.';
+    }
+    return 'Умеренная согласованность. Продолжайте разметку.';
+  }
+
+  /**
+   * Механизм "что если" -- пересчёт прогноза при изменении входных данных.
+   * Это упрощённая версия, для полной нужен доступ к ансамблю.
+   *
+   * @param {Object} basePrediction -- { features, predictedProb }
+   * @param {Object} overrides -- { featureName: newValue }
+   * @returns {Object} -- { newFeatures, weightDelta, expectedShift }
+   */
+  whatIf(basePrediction, overrides) {
+    if (!basePrediction || !basePrediction.features) {
+      return { error: 'invalid_base_prediction' };
+    }
+
+    const baseFeatures = basePrediction.features;
+    const baseProb = basePrediction.predictedProb ?? 0.5;
+
+    const newFeatures = { ...baseFeatures };
+    for (const [name, value] of Object.entries(overrides || {})) {
+      newFeatures[name] = value;
+    }
+
+    // Пересчёт с учётом весов
+    let weightedBase = 0;
+    let weightedNew = 0;
+    let totalWeight = 0;
+
+    for (const [name, value] of Object.entries(baseFeatures)) {
+      const weight = this.featureWeights.get(name) ?? 1.0;
+      weightedBase += value * weight;
+      totalWeight += weight;
+    }
+    for (const [name, value] of Object.entries(newFeatures)) {
+      const weight = this.featureWeights.get(name) ?? 1.0;
+      weightedNew += value * weight;
+    }
+
+    const baseComposite = totalWeight > 0 ? weightedBase / totalWeight : 0.5;
+    const newComposite = totalWeight > 0 ? weightedNew / totalWeight : 0.5;
+
+    const relativeShift = baseComposite > 0 ? (newComposite - baseComposite) / baseComposite : 0;
+    const expectedProbShift = baseProb * relativeShift;
+
+    return {
+      baseFeatures,
+      newFeatures,
+      overrides,
+      baseComposite,
+      newComposite,
+      relativeShift,
+      expectedProbShift,
+      newPredictedProb: Math.max(0, Math.min(1, baseProb + expectedProbShift)),
+      interpretation: `При изменении входных данных прогноз сдвинется на ${(expectedProbShift * 100).toFixed(1)} п.п.`,
+    };
+  }
+
+  /**
+   * Сериализация состояния.
+   */
+  toJSON() {
+    return JSON.stringify({
+      learningRate: this.learningRate,
+      momentum: this.momentum,
+      maxHistoryEntries: this.maxHistoryEntries,
+      featureWeights: Object.fromEntries(this.featureWeights),
+      featureVelocities: Object.fromEntries(this.featureVelocities),
+      feedbackHistory: this.feedbackHistory,
+      totalFeedback: this.totalFeedback,
+      goodCount: this.goodCount,
+      badCount: this.badCount,
+      uncertainCount: this.uncertainCount,
+      lastUpdate: this.lastUpdate,
+    }, null, 2);
+  }
+
+  /**
+   * Восстановление состояния.
+   */
+  static fromJSON(json) {
+    const data = JSON.parse(json);
+    const learner = new HumanFeedbackLearner({
+      learningRate: data.learningRate,
+      momentum: data.momentum,
+      maxHistoryEntries: data.maxHistoryEntries,
+    });
+
+    learner.featureWeights = new Map(Object.entries(data.featureWeights || {}));
+    learner.featureVelocities = new Map(Object.entries(data.featureVelocities || {}));
+    learner.feedbackHistory = data.feedbackHistory || [];
+    learner.totalFeedback = data.totalFeedback || 0;
+    learner.goodCount = data.goodCount || 0;
+    learner.badCount = data.badCount || 0;
+    learner.uncertainCount = data.uncertainCount || 0;
+    learner.lastUpdate = data.lastUpdate || null;
+
+    return learner;
+  }
+
+  /**
+   * Сохранение в файл.
+   */
+  save(filepath = null) {
+    const target = filepath || FEEDBACK_FILE;
+    const dir = dirname(target);
+    if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+    writeFileSync(target, this.toJSON());
+    return target;
+  }
+
+  /**
+   * Загрузка из файла.
+   */
+  static load(filepath = null) {
+    const target = filepath || FEEDBACK_FILE;
+    if (!existsSync(target)) return new HumanFeedbackLearner();
+    try {
+      const json = readFileSync(target, 'utf-8');
+      return HumanFeedbackLearner.fromJSON(json);
+    } catch (e) {
+      console.warn('[human_feedback] Load error:', e.message);
+      return new HumanFeedbackLearner();
+    }
+  }
+}
+
+// ---------- ИНТЕГРАЦИОННАЯ ФУНКЦИЯ ----------
+
+/**
+ * Интеграция в конвейер Crucix. Вызывается из engine.mjs ПОСЛЕ фазы F
+ * (калибровка), чтобы учесть уже откалиброванные вероятности.
+ *
+ * ВАЖНО: сейчас эта функция НЕ вызывается из engine.mjs. Она подготовлена
+ * для того момента, когда будет решено, где именно в конвейере её запускать.
+ *
+ * @param {Object} latest -- данные последнего sweep
+ * @param {Object} predictions -- прогнозы (после калибровки)
+ * @param {Object} options -- { save: boolean, applyNewWeights: boolean }
+ * @returns {Object} -- { loaded, feedbackApplied, weightsUpdate, metrics }
+ */
+export function crucixHumanFeedback(latest, predictions, options = {}) {
+  const { save = true, applyNewWeights = false } = options;
+
+  // Загрузка состояния
+  const learner = HumanFeedbackLearner.load();
+
+  // Проверка: есть ли свежая обратная связь от оператора
+  // (оператор мог оставить метку через dashboard между sweep-циклами)
+  // Пока этот механизм не подключён, функция просто возвращает текущее
+  // состояние и метрики.
+
+  const metrics = learner.getMetrics();
+  const weights = learner.getCurrentWeights();
+
+  // Сохранение
+  if (save) {
+    learner.save();
+  }
+
+  return {
+    module: 'human_feedback',
+    loaded: true,
+    feedbackApplied: false, // пока обратная связь не подключена к engine
+    currentWeights: weights,
+    metrics,
+    interpretation: metrics.interpretation,
+    note: 'Модуль готов к интеграции. См. engine_integration.md в этой же папке.',
+    timestamp: new Date().toISOString(),
+  };
+}
+
+export default HumanFeedbackLearner;
+
+
+
+========================================================================

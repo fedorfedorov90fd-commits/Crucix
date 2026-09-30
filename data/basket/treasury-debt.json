@@ -1,0 +1,31 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "treasury-debt",
+    "source": "US Treasury Fiscal Data",
+    "source_url": "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v2/accounting/od/debt_to_penny?sort=-record_date&page[size]=10",
+    "fetched_at": "2026-09-27T16:37:57.080Z",
+    "normalized_at": "2026-09-27T16:38:26.837Z",
+    "collector": "collect-treasury.mjs",
+    "license": "public-domain",
+    "count": 0,
+    "granularity": "daily",
+    "value_unit": "usd",
+    "value_scale": null,
+    "value_type": "price",
+    "value_range": null,
+    "period": "P10D"
+  },
+  "series": [],
+  "points": [],
+  "regions": [],
+  "documents": [],
+  "graph": null,
+  "extra": {
+    "adapter": "timeseries",
+    "adapter_version": "2.2.1",
+    "unique_dates": 0,
+    "unmapped_regions": [],
+    "unmapped_count": 0
+  }
+}

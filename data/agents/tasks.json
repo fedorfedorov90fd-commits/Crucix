@@ -1,0 +1,295 @@
+[
+  {
+    "id": "task-1786994198476-5fdb",
+    "title": "Автоматическая задача для Сборщик данных",
+    "description": "Выполнение рутинных задач Сборщик данных",
+    "agent_id": "collector",
+    "priority": "medium",
+    "status": "completed",
+    "created_at": "2026-08-17T19:16:38.476Z",
+    "started_at": "2026-08-17T19:16:38.477Z",
+    "completed_at": "2026-08-17T19:16:41.144Z",
+    "result": {
+      "data_points": 32,
+      "sources": [
+        "rss",
+        "newsapi"
+      ],
+      "collected": "2026-08-17T19:16:41.144Z"
+    },
+    "error": null,
+    "retries": 0,
+    "max_retries": 3
+  },
+  {
+    "id": "task-1786994198477-07m8",
+    "title": "Автоматическая задача для Аналитик данных",
+    "description": "Выполнение рутинных задач Аналитик данных",
+    "agent_id": "analyzer",
+    "priority": "medium",
+    "status": "completed",
+    "created_at": "2026-08-17T19:16:38.477Z",
+    "started_at": "2026-08-17T19:16:38.480Z",
+    "completed_at": "2026-08-17T19:16:40.344Z",
+    "result": {
+      "patterns": 4,
+      "confidence": 65,
+      "insights": [
+        "Обнаружен паттерн роста",
+        "Выявлена аномалия в данных"
+      ]
+    },
+    "error": null,
+    "retries": 0,
+    "max_retries": 3
+  },
+  {
+    "id": "task-1786994198481-tc29",
+    "title": "Автоматическая задача для Прогнозировщик",
+    "description": "Выполнение рутинных задач Прогнозировщик",
+    "agent_id": "predictor",
+    "priority": "medium",
+    "status": "completed",
+    "created_at": "2026-08-17T19:16:38.481Z",
+    "started_at": "2026-08-17T19:16:38.484Z",
+    "completed_at": "2026-08-17T19:16:39.690Z",
+    "result": {
+      "predictions": {
+        "confidence": 75,
+        "probability": 42,
+        "timeframe": "7-14 дней"
+      },
+      "scenarios": [
+        "Оптимистичный",
+        "Базовый",
+        "Пессимистичный"
+      ]
+    },
+    "error": null,
+    "retries": 0,
+    "max_retries": 3
+  },
+  {
+    "id": "task-1786994198484-z2yb",
+    "title": "Автоматическая задача для Генератор отчётов",
+    "description": "Выполнение рутинных задач Генератор отчётов",
+    "agent_id": "reporter",
+    "priority": "medium",
+    "status": "completed",
+    "created_at": "2026-08-17T19:16:38.484Z",
+    "started_at": "2026-08-17T19:16:38.485Z",
+    "completed_at": "2026-08-17T19:16:40.621Z",
+    "result": {
+      "report_id": "rpt-1786994200621",
+      "sections": 3,
+      "format": "markdown",
+      "generated": "2026-08-17T19:16:40.621Z"
+    },
+    "error": null,
+    "retries": 0,
+    "max_retries": 3
+  },
+  {
+    "id": "task-1786994198486-xws2",
+    "title": "Автоматическая задача для Монитор системы",
+    "description": "Выполнение рутинных задач Монитор системы",
+    "agent_id": "monitor",
+    "priority": "medium",
+    "status": "completed",
+    "created_at": "2026-08-17T19:16:38.486Z",
+    "started_at": "2026-08-17T19:16:38.487Z",
+    "completed_at": "2026-08-17T19:16:39.940Z",
+    "result": {
+      "health_score": 84,
+      "alerts": 0,
+      "metrics": {
+        "cpu": 36,
+        "memory": 70,
+        "uptime": 100
+      }
+    },
+    "error": null,
+    "retries": 0,
+    "max_retries": 3
+  },
+  {
+    "id": "task-1786994198487-7zl5",
+    "title": "Автоматическая задача для Оптимизатор",
+    "description": "Выполнение рутинных задач Оптимизатор",
+    "agent_id": "optimizer",
+    "priority": "medium",
+    "status": "completed",
+    "created_at": "2026-08-17T19:16:38.487Z",
+    "started_at": "2026-08-17T19:16:38.489Z",
+    "completed_at": "2026-08-17T19:16:40.392Z",
+    "result": {
+      "improvements": 4,
+      "efficiency_gain": 8,
+      "recommendations": [
+        "Оптимизировать кэширование",
+        "Увеличить параллелизм"
+      ]
+    },
+    "error": null,
+    "retries": 0,
+    "max_retries": 3
+  },
+  {
+    "id": "task-1786994202779-oh7v",
+    "title": "Сбор новых данных",
+    "description": "Системная задача: Сбор новых данных",
+    "agent_id": "collector",
+    "priority": "high",
+    "status": "completed",
+    "created_at": "2026-08-17T19:16:42.779Z",
+    "started_at": "2026-08-17T19:16:42.780Z",
+    "completed_at": "2026-08-17T19:16:44.508Z",
+    "result": {
+      "data_points": 71,
+      "sources": [
+        "rss",
+        "newsapi"
+      ],
+      "collected": "2026-08-17T19:16:44.508Z"
+    },
+    "error": null,
+    "retries": 0,
+    "max_retries": 3
+  },
+  {
+    "id": "task-1786994202780-thzm",
+    "title": "Анализ собранных данных",
+    "description": "Системная задача: Анализ собранных данных",
+    "agent_id": "analyzer",
+    "priority": "high",
+    "status": "completed",
+    "created_at": "2026-08-17T19:16:42.780Z",
+    "started_at": "2026-08-17T19:16:42.781Z",
+    "completed_at": "2026-08-17T19:16:45.515Z",
+    "result": {
+      "patterns": 5,
+      "confidence": 91,
+      "insights": [
+        "Обнаружен паттерн роста",
+        "Выявлена аномалия в данных"
+      ]
+    },
+    "error": null,
+    "retries": 0,
+    "max_retries": 3
+  },
+  {
+    "id": "task-1786994202781-2g9w",
+    "title": "Прогнозирование событий",
+    "description": "Системная задача: Прогнозирование событий",
+    "agent_id": "predictor",
+    "priority": "high",
+    "status": "completed",
+    "created_at": "2026-08-17T19:16:42.781Z",
+    "started_at": "2026-08-17T19:16:42.782Z",
+    "completed_at": "2026-08-17T19:16:44.830Z",
+    "result": {
+      "predictions": {
+        "confidence": 74,
+        "probability": 45,
+        "timeframe": "7-14 дней"
+      },
+      "scenarios": [
+        "Оптимистичный",
+        "Базовый",
+        "Пессимистичный"
+      ]
+    },
+    "error": null,
+    "retries": 0,
+    "max_retries": 3
+  },
+  {
+    "id": "task-1786994202783-dkfb",
+    "title": "Генерация отчёта",
+    "description": "Системная задача: Генерация отчёта",
+    "agent_id": "reporter",
+    "priority": "high",
+    "status": "completed",
+    "created_at": "2026-08-17T19:16:42.783Z",
+    "started_at": "2026-08-17T19:16:42.784Z",
+    "completed_at": "2026-08-17T19:16:45.275Z",
+    "result": {
+      "report_id": "rpt-1786994205275",
+      "sections": 5,
+      "format": "markdown",
+      "generated": "2026-08-17T19:16:45.275Z"
+    },
+    "error": null,
+    "retries": 0,
+    "max_retries": 3
+  },
+  {
+    "id": "task-1786994202784-e32l",
+    "title": "Мониторинг системы",
+    "description": "Системная задача: Мониторинг системы",
+    "agent_id": "monitor",
+    "priority": "high",
+    "status": "completed",
+    "created_at": "2026-08-17T19:16:42.784Z",
+    "started_at": "2026-08-17T19:16:42.786Z",
+    "completed_at": "2026-08-17T19:16:43.805Z",
+    "result": {
+      "health_score": 89,
+      "alerts": 1,
+      "metrics": {
+        "cpu": 36,
+        "memory": 50,
+        "uptime": 99
+      }
+    },
+    "error": null,
+    "retries": 0,
+    "max_retries": 3
+  },
+  {
+    "id": "task-1786994202786-pgq3",
+    "title": "Оптимизация ресурсов",
+    "description": "Системная задача: Оптимизация ресурсов",
+    "agent_id": "optimizer",
+    "priority": "high",
+    "status": "completed",
+    "created_at": "2026-08-17T19:16:42.786Z",
+    "started_at": "2026-08-17T19:16:42.787Z",
+    "completed_at": "2026-08-17T19:16:44.637Z",
+    "result": {
+      "improvements": 1,
+      "efficiency_gain": 6,
+      "recommendations": [
+        "Оптимизировать кэширование",
+        "Увеличить параллелизм"
+      ]
+    },
+    "error": null,
+    "retries": 0,
+    "max_retries": 3
+  },
+  {
+    "id": "task-1786994204393-ncva",
+    "title": "Автоматическая задача для Монитор системы",
+    "description": "Выполнение рутинных задач Монитор системы",
+    "agent_id": "monitor",
+    "priority": "medium",
+    "status": "completed",
+    "created_at": "2026-08-17T19:16:44.393Z",
+    "started_at": "2026-08-17T19:16:44.395Z",
+    "completed_at": "2026-08-17T19:16:46.135Z",
+    "result": {
+      "health_score": 78,
+      "alerts": 0,
+      "metrics": {
+        "cpu": 48,
+        "memory": 39,
+        "uptime": 99
+      }
+    },
+    "error": null,
+    "retries": 0,
+    "max_retries": 3
+  }
+]

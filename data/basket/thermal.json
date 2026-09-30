@@ -1,0 +1,167 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "thermal",
+    "source": "NASA FIRMS (demo)",
+    "source_url": "https://firms.modaps.eosdis.nasa.gov/api/",
+    "fetched_at": "2026-09-27T16:37:41.442Z",
+    "normalized_at": "2026-09-27T16:38:26.829Z",
+    "collector": "collect-thermal.mjs",
+    "license": "public-domain",
+    "count": 31,
+    "granularity": "daily",
+    "value_unit": "detections",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null,
+    "period": "P30D"
+  },
+  "series": [
+    {
+      "date": "2026-08-28",
+      "value": 231.36
+    },
+    {
+      "date": "2026-08-29",
+      "value": 203.49
+    },
+    {
+      "date": "2026-08-30",
+      "value": 129.39
+    },
+    {
+      "date": "2026-08-31",
+      "value": 149.53
+    },
+    {
+      "date": "2026-09-01",
+      "value": 123.01
+    },
+    {
+      "date": "2026-09-02",
+      "value": 121.98
+    },
+    {
+      "date": "2026-09-03",
+      "value": 132.14
+    },
+    {
+      "date": "2026-09-04",
+      "value": 134.8
+    },
+    {
+      "date": "2026-09-05",
+      "value": 138.97
+    },
+    {
+      "date": "2026-09-06",
+      "value": 123.81
+    },
+    {
+      "date": "2026-09-07",
+      "value": 125.61
+    },
+    {
+      "date": "2026-09-08",
+      "value": 151.53
+    },
+    {
+      "date": "2026-09-09",
+      "value": 144.22
+    },
+    {
+      "date": "2026-09-10",
+      "value": 201.32
+    },
+    {
+      "date": "2026-09-11",
+      "value": 194.61
+    },
+    {
+      "date": "2026-09-12",
+      "value": 252.08
+    },
+    {
+      "date": "2026-09-13",
+      "value": 248.64
+    },
+    {
+      "date": "2026-09-14",
+      "value": 239.94
+    },
+    {
+      "date": "2026-09-15",
+      "value": 291.04
+    },
+    {
+      "date": "2026-09-16",
+      "value": 264.17
+    },
+    {
+      "date": "2026-09-17",
+      "value": 285.02
+    },
+    {
+      "date": "2026-09-18",
+      "value": 302.71
+    },
+    {
+      "date": "2026-09-19",
+      "value": 306.04
+    },
+    {
+      "date": "2026-09-20",
+      "value": 311.02
+    },
+    {
+      "date": "2026-09-21",
+      "value": 293.41
+    },
+    {
+      "date": "2026-09-22",
+      "value": 247.75
+    },
+    {
+      "date": "2026-09-23",
+      "value": 264.37
+    },
+    {
+      "date": "2026-09-24",
+      "value": 238.3
+    },
+    {
+      "date": "2026-09-25",
+      "value": 257.56
+    },
+    {
+      "date": "2026-09-26",
+      "value": 197.39
+    },
+    {
+      "date": "2026-09-27",
+      "value": 206.56
+    }
+  ],
+  "points": [],
+  "regions": [
+    {
+      "region": "GLOBAL",
+      "value": 210.05709677419358,
+      "count": 31,
+      "aggregation": "sum",
+      "extra": {
+        "max": 311.02,
+        "sum": 6511.770000000001
+      }
+    }
+  ],
+  "documents": [],
+  "graph": null,
+  "extra": {
+    "adapter": "timeseries",
+    "adapter_version": "2.2.1",
+    "unique_dates": 31,
+    "unmapped_regions": [],
+    "unmapped_count": 0
+  }
+}

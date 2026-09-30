@@ -1,0 +1,45 @@
+{
+  "_meta": {
+    "id": "rate-limiter",
+    "category": "specialist",
+    "version": "1.0.0",
+    "schema_version": "1.0.0",
+    "sources": [
+      "self"
+    ],
+    "calculator": "RateLimiter",
+    "updated_at": "2026-09-12T15:20:22.662Z",
+    "duration_ms": 1,
+    "checksum": "cf97d82fdc37bf4b",
+    "stats": {
+      "total": 3
+    }
+  },
+  "data": {
+    "items": [
+      {
+        "key": "worldbank",
+        "used": 20,
+        "max": 20,
+        "remaining": 0
+      },
+      {
+        "key": "acled",
+        "used": 0,
+        "max": 10,
+        "remaining": 10
+      },
+      {
+        "key": "noaa",
+        "used": 0,
+        "max": 30,
+        "remaining": 30
+      }
+    ],
+    "extra": {
+      "allowed": 20,
+      "blocked": 5
+    },
+    "generated_at": "2026-09-12T15:20:22.662Z"
+  }
+}

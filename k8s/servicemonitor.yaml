@@ -1,0 +1,63 @@
+# Требует Prometheus Operator (kube-prometheus-stack)
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: crucix-core
+  namespace: crucix
+  labels:
+    app: crucix-core
+spec:
+  selector:
+    matchLabels:
+      app: crucix-core
+  endpoints:
+    - port: websocket
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+  namespaceSelector:
+    matchNames:
+      - crucix
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: crucix-alerts
+  namespace: crucix
+spec:
+  groups:
+    - name: crucix.rules
+      interval: 30s
+      rules:
+        - alert: CrucixHighCompositeRisk
+          expr: crucix_composite_risk > 0.7
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Crucix composite risk critical"
+            description: "Composite risk is {{ $value }} for 5 minutes"
+
+        - alert: CrucixPodDown
+          expr: up{job="crucix-core"} == 0
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Crucix pod down"
+
+        - alert: CrucixHighLatency
+          expr: crucix_cycle_duration_seconds > 30
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Crucix cycle duration > 30s"
+
+        - alert: CrucixWebSocketConnectionsHigh
+          expr: crucix_ws_connections > 500
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Too many WebSocket connections"

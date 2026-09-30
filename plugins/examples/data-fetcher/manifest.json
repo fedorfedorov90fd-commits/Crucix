@@ -1,0 +1,26 @@
+{
+  "name": "data-fetcher",
+  "version": "1.0.0",
+  "description": "Example plugin that fetches data from external API",
+  "author": "Crucix Team",
+  "license": "MIT",
+  "entryPoint": "index.mjs",
+  "crucixVersion": ">=3.0.0",
+  "type": "fetcher",
+  "hooks": ["onTimer"],
+  "permissions": ["network:outbound", "write:memory"],
+  "config": {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "apiUrl": { "type": "string", "pattern": "^https?://" },
+        "intervalMinutes": { "type": "number", "minimum": 1 }
+      },
+      "required": ["apiUrl"]
+    },
+    "defaults": {
+      "apiUrl": "https://api.example.com/data",
+      "intervalMinutes": 15
+    }
+  }
+}

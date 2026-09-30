@@ -1,0 +1,102 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "open-meteo",
+    "source": "Open-Meteo API",
+    "source_url": "https://api.open-meteo.com/v1/forecast",
+    "fetched_at": "2026-09-23T07:42:11.498Z",
+    "normalized_at": "2026-09-23T17:51:50.813Z",
+    "collector": "collect-open-meteo.mjs",
+    "license": "public-domain",
+    "count": 15,
+    "granularity": "snapshot",
+    "value_unit": "celsius",
+    "value_scale": null,
+    "value_type": "index",
+    "value_range": null
+  },
+  "series": [],
+  "points": [
+    {
+      "lat": 50.45,
+      "lon": 30.52
+    },
+    {
+      "lat": 55.75,
+      "lon": 37.62
+    },
+    {
+      "lat": 39.9,
+      "lon": 116.4
+    },
+    {
+      "lat": 38.9,
+      "lon": -77.03
+    },
+    {
+      "lat": 51.5,
+      "lon": -0.12
+    },
+    {
+      "lat": 35.68,
+      "lon": 139.69
+    },
+    {
+      "lat": 35.69,
+      "lon": 51.39
+    },
+    {
+      "lat": 31.77,
+      "lon": 35.21
+    },
+    {
+      "lat": 25.03,
+      "lon": 121.57
+    },
+    {
+      "lat": 28.61,
+      "lon": 77.21
+    },
+    {
+      "lat": 59.93,
+      "lon": 30.31
+    },
+    {
+      "lat": 48.86,
+      "lon": 2.35
+    },
+    {
+      "lat": 52.52,
+      "lon": 13.4
+    },
+    {
+      "lat": 40.71,
+      "lon": -74.01
+    },
+    {
+      "lat": 53.9,
+      "lon": 27.56
+    }
+  ],
+  "regions": [
+    {
+      "region": "GLOBAL",
+      "value": 0,
+      "count": 0,
+      "aggregation": "mean",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    }
+  ],
+  "documents": [],
+  "graph": null,
+  "extra": {
+    "adapter": "points",
+    "adapter_version": "2.2.1",
+    "skipped_invalid_coords": 0,
+    "unmapped_regions": [],
+    "unmapped_count": 0
+  }
+}

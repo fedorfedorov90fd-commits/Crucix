@@ -1,0 +1,2553 @@
+{
+  "meta": {
+    "generated_at": "2026-09-13T16:20:11.702Z",
+    "project_root": "/home/ta8_/Рабочий стол/Crucix",
+    "source_dir": "/home/ta8_/Рабочий стол/Crucix/apis/sources",
+    "basket_dir": "/home/ta8_/Рабочий стол/Crucix/data/basket"
+  },
+  "summary": {
+    "total": 170,
+    "forms": {
+      "unknown": 4,
+      "default:object": 63,
+      "default:reference": 64,
+      "named:handleXxxAPI": 31,
+      "default:function": 8
+    },
+    "hasRoute": 67,
+    "hasHandler": 72,
+    "basketMissing": 83,
+    "types": {
+      "object": 103,
+      "unknown": 58,
+      "FeatureCollection": 9
+    }
+  },
+  "modules": [
+    {
+      "file": "=collector-logs-api.mjs",
+      "form": "unknown",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "acled-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleACLEDApi"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "adaptive-news-clustering-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/adaptive-news-clustering",
+      "method": "GET",
+      "basketRefs": [
+        "adaptive-news-clustering.json"
+      ],
+      "missingRefs": [
+        "adaptive-news-clustering.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "ai-chat-api.mjs",
+      "form": "named:handleXxxAPI",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "knowledge.json"
+      ],
+      "missingRefs": [
+        "knowledge.json"
+      ],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "ai-forecasts-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/ai-forecasts",
+      "method": "GET",
+      "basketRefs": [
+        "ai-forecasts.json"
+      ],
+      "missingRefs": [
+        "ai-forecasts.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "ai-news-synthesis-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/ai-news-synthesis",
+      "method": "GET",
+      "basketRefs": [
+        "ai-news-synthesis.json"
+      ],
+      "missingRefs": [
+        "ai-news-synthesis.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "alert-dispatcher-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/alert-dispatcher",
+      "method": "GET",
+      "basketRefs": [
+        "alert-dispatcher.json"
+      ],
+      "missingRefs": [
+        "alert-dispatcher.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "analysis-events-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleAnalysisEventsAPI",
+        "generateMockEvents",
+        "detectEventType"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "arms-transfer-tracker-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/arms-transfer-tracker",
+      "method": "GET",
+      "basketRefs": [
+        "arms-transfer-tracker.json"
+      ],
+      "missingRefs": [
+        "arms-transfer-tracker.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "aviation-api.mjs",
+      "form": "named:handleXxxAPI",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "aviation.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "baseline-alerting-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/baseline-alerting",
+      "method": "GET",
+      "basketRefs": [
+        "baseline-alerting.json"
+      ],
+      "missingRefs": [
+        "baseline-alerting.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "basket-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/basket",
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": true
+    },
+    {
+      "file": "basket-reader-api.mjs",
+      "form": "named:handleXxxAPI",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "bdi-api.mjs",
+      "form": "named:handleXxxAPI",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "bdi.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "big-mac-alt-api.mjs",
+      "form": "named:handleXxxAPI",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "big-mac-alt.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "big-mac-api.mjs",
+      "form": "named:handleXxxAPI",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "big-mac.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "big-mac-main-api.mjs",
+      "form": "named:handleXxxAPI",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "big-mac-main.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "botnets-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/botnets",
+      "method": "GET",
+      "basketRefs": [
+        "botnets.json"
+      ],
+      "missingRefs": [],
+      "dataType": "FeatureCollection",
+      "hasHandler": true
+    },
+    {
+      "file": "business-optimism-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handle",
+        "getLatest",
+        "getHistory"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "business-optimism.json"
+      ],
+      "missingRefs": [
+        "business-optimism.json"
+      ],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "cache-manager-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/cache-manager",
+      "method": "GET",
+      "basketRefs": [
+        "cache-manager.json"
+      ],
+      "missingRefs": [
+        "cache-manager.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "central-bank-predictor-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/central-bank-predictor",
+      "method": "GET",
+      "basketRefs": [
+        "central-bank-predictor.json"
+      ],
+      "missingRefs": [
+        "central-bank-predictor.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "cii-api.mjs",
+      "form": "default:function",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "country-characteristics.json",
+        "country-aliases.json"
+      ],
+      "missingRefs": [
+        "country-characteristics.json",
+        "country-aliases.json"
+      ],
+      "dataType": "object",
+      "hasHandler": true
+    },
+    {
+      "file": "cli-analytics-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/cli-analytics",
+      "method": "GET",
+      "basketRefs": [
+        "cli-analytics.json"
+      ],
+      "missingRefs": [
+        "cli-analytics.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "collector-config-api.mjs",
+      "form": "unknown",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "collectors-config.json"
+      ],
+      "missingRefs": [
+        "collectors-config.json"
+      ],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "collector-monitor-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleCollectorMonitor",
+        "handleCollectorMonitorStatus",
+        "handleCollectorMonitorSummary",
+        "handleCollectorMonitorScan",
+        "handleCollectorMonitorErrors",
+        "handleCollectorLogs",
+        "handleCleanupLogs",
+        "handleClearHistory",
+        "handleAutoCleanup",
+        "handleGetSettings",
+        "handleSetSettings",
+        "handleRestartCollector",
+        "handleRestartBatch",
+        "handleRestartByStatus",
+        "handleRestartAll",
+        "getCollectorStatus",
+        "cleanupLogs",
+        "clearAllLogs",
+        "clearHistory",
+        "getLogsSize",
+        "restartCollector",
+        "restartCollectorsByStatus",
+        "restartAllCollectors"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "monitor-settings.json",
+        "monitor-history.json",
+        "daily-briefing-cache.json"
+      ],
+      "missingRefs": [
+        "monitor-settings.json",
+        "monitor-history.json"
+      ],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "config-validator-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/config-validator",
+      "method": "GET",
+      "basketRefs": [
+        "config-validator.json"
+      ],
+      "missingRefs": [
+        "config-validator.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "conflict-escalation-tracker-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/conflict-escalation-tracker",
+      "method": "GET",
+      "basketRefs": [
+        "conflict-escalation-tracker.json"
+      ],
+      "missingRefs": [
+        "conflict-escalation-tracker.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "consumer-confidence-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleConsumerConfidenceAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "consumer-confidence.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "consumer-expectations-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handle",
+        "getLatest",
+        "getHistory"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "consumer-expectations.json"
+      ],
+      "missingRefs": [
+        "consumer-expectations.json"
+      ],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "copper-gold-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleCopperGoldAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "copper-gold.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "copper-gold-ratio-api.mjs",
+      "form": "named:handleXxxAPI",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "copper-gold.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "correlation-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "analyzeCorrelation",
+        "getCorrelationMatrix",
+        "findAnomalousCorrelations",
+        "handleCorrelationAPI",
+        "loadSourceData",
+        "SOURCES"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "index-history.json",
+        "events-cache.json",
+        "history.json"
+      ],
+      "missingRefs": [
+        "index-history.json",
+        "events-cache.json",
+        "history.json"
+      ],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "country-instability-api.mjs",
+      "form": "default:function",
+      "defaultKeys": [],
+      "route": "/api/layers/country-instability",
+      "method": "GET",
+      "basketRefs": [
+        "acled.json",
+        "gdelt.json",
+        "ofac-sdn.json",
+        "usgs.json"
+      ],
+      "missingRefs": [
+        "ofac-sdn.json"
+      ],
+      "dataType": "FeatureCollection",
+      "hasHandler": true
+    },
+    {
+      "file": "cross-stream-correlation-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/cross-stream-correlation",
+      "method": "GET",
+      "basketRefs": [
+        "cross-stream-correlation.json"
+      ],
+      "missingRefs": [
+        "cross-stream-correlation.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "crucix-doctor-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/crucix-doctor",
+      "method": "GET",
+      "basketRefs": [
+        "crucix-doctor.json"
+      ],
+      "missingRefs": [
+        "crucix-doctor.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "crypto-fear-api.mjs",
+      "form": "named:handleXxxAPI",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "crypto-fear.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "currents-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleCurrentsAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "cyber-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleCyberAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "cyber-apt-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleCyberAptAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "cyber-attack-monitor-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/cyber-attack-monitor",
+      "method": "GET",
+      "basketRefs": [
+        "cyber-attack-monitor.json"
+      ],
+      "missingRefs": [
+        "cyber-attack-monitor.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "cyber-threat-index-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handle",
+        "getLatest",
+        "getHistory"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "cyber-threat-index.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "dark-fleet-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handle",
+        "getLatest",
+        "getHistory"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "dark-fleet.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "dashboard-indicators-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/dashboard-indicators",
+      "method": "GET",
+      "basketRefs": [
+        "dashboard-indicators.json"
+      ],
+      "missingRefs": [
+        "dashboard-indicators.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "debt-gdp-api.mjs",
+      "form": "named:handleXxxAPI",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "debt-gdp.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "derived-market-analytics-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/derived-market-analytics",
+      "method": "GET",
+      "basketRefs": [
+        "derived-market-analytics.json"
+      ],
+      "missingRefs": [
+        "derived-market-analytics.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "diagnostic-tool-api.mjs",
+      "form": "unknown",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "unknown",
+      "hasHandler": false
+    },
+    {
+      "file": "diagnostics-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleDiagnosticsAPI",
+        "DiagnosticsManager"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "index-history.json",
+        "latest.json"
+      ],
+      "missingRefs": [
+        "index-history.json",
+        "latest.json"
+      ],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "diplomatic-tracker-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/diplomatic-tracker",
+      "method": "GET",
+      "basketRefs": [
+        "diplomatic-tracker.json"
+      ],
+      "missingRefs": [
+        "diplomatic-tracker.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "dxy-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleDXYAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "dxy.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "economy-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleEconomyAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "education-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/education",
+      "method": "GET",
+      "basketRefs": [
+        "education.json"
+      ],
+      "missingRefs": [],
+      "dataType": "FeatureCollection",
+      "hasHandler": true
+    },
+    {
+      "file": "energy-market-intelligence-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/energy-market-intelligence",
+      "method": "GET",
+      "basketRefs": [
+        "energy-market-intelligence.json"
+      ],
+      "missingRefs": [
+        "energy-market-intelligence.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "entity-extraction-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/entity-extraction",
+      "method": "GET",
+      "basketRefs": [
+        "entity-extraction.json"
+      ],
+      "missingRefs": [
+        "entity-extraction.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "entity-graph-api.mjs",
+      "form": "default:function",
+      "defaultKeys": [],
+      "route": "/api/layers/entity-graph",
+      "method": "GET",
+      "basketRefs": [
+        "entity-graph.json"
+      ],
+      "missingRefs": [
+        "entity-graph.json"
+      ],
+      "dataType": "FeatureCollection",
+      "hasHandler": true
+    },
+    {
+      "file": "epa-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleEPAAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "epa.json"
+      ],
+      "missingRefs": [
+        "epa.json"
+      ],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "etf-flow-analysis-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/etf-flow-analysis",
+      "method": "GET",
+      "basketRefs": [
+        "etf-flow-analysis.json"
+      ],
+      "missingRefs": [
+        "etf-flow-analysis.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "event-deduplicator-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/event-deduplicator",
+      "method": "GET",
+      "basketRefs": [
+        "event-deduplicator.json"
+      ],
+      "missingRefs": [
+        "event-deduplicator.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "events-api.mjs",
+      "form": "named:handleXxxAPI",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "events.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "export-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleExportAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "firms-api.mjs",
+      "form": "named:handleXxxAPI",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "firms.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "focal-point-detection-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/focal-point-detection",
+      "method": "GET",
+      "basketRefs": [
+        "focal-point-detection.json"
+      ],
+      "missingRefs": [
+        "focal-point-detection.json"
+      ],
+      "dataType": "FeatureCollection",
+      "hasHandler": true
+    },
+    {
+      "file": "food-security-monitor-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/food-security-monitor",
+      "method": "GET",
+      "basketRefs": [
+        "food-security-monitor.json"
+      ],
+      "missingRefs": [
+        "food-security-monitor.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "fx-reserves-monitor-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/fx-reserves-monitor",
+      "method": "GET",
+      "basketRefs": [
+        "fx-reserves-monitor.json"
+      ],
+      "missingRefs": [
+        "fx-reserves-monitor.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "gateway-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleGatewayAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "gdelt-api.mjs",
+      "form": "named:handleXxxAPI",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "gdelt.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "gdelt-news-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/gdelt",
+      "method": "GET",
+      "basketRefs": [
+        "gdelt.json"
+      ],
+      "missingRefs": [],
+      "dataType": "FeatureCollection",
+      "hasHandler": true
+    },
+    {
+      "file": "geo-convergence-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/geo-convergence",
+      "method": "GET",
+      "basketRefs": [
+        "geo-convergence.json"
+      ],
+      "missingRefs": [
+        "geo-convergence.json"
+      ],
+      "dataType": "FeatureCollection",
+      "hasHandler": true
+    },
+    {
+      "file": "geo-markers-api.mjs",
+      "form": "named:handleXxxAPI",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "status.json",
+        "country-status.json",
+        "markers.json",
+        "index-history.json"
+      ],
+      "missingRefs": [
+        "status.json",
+        "country-status.json",
+        "markers.json",
+        "index-history.json"
+      ],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "global-index-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleGlobalIndexAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "index-history.json"
+      ],
+      "missingRefs": [
+        "index-history.json"
+      ],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "gold-oil-ratio-api.mjs",
+      "form": "named:handleXxxAPI",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "gold-oil.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "gold-silver-api.mjs",
+      "form": "named:handleXxxAPI",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "gold-silver.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "google-trends-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleGoogleTrendsAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "google-trends.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "gps-jamming-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleGPSJammingAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "gps-jamming.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "happiness-alt-api.mjs",
+      "form": "named:handleXxxAPI",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "happiness-alt.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "happiness-api.mjs",
+      "form": "named:handleXxxAPI",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "happiness.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "help-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleHelpAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "historical-analysis-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleHistoricalAnalysisAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "hy-spread-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleHYSpreadAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "hy-spread.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "indirect-indicators-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handle",
+        "getLatest",
+        "getAll"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "indirect-indicators.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "inflation-api.mjs",
+      "form": "named:handleXxxAPI",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "inflation.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "infrastructure-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/infrastructure-api",
+      "method": "GET",
+      "basketRefs": [
+        "cargo.json",
+        "acled.json",
+        "earthquakes.json",
+        "firms.json",
+        "ofac.json",
+        "inflation.json",
+        "objects.json"
+      ],
+      "missingRefs": [
+        "cargo.json",
+        "objects.json"
+      ],
+      "dataType": "FeatureCollection",
+      "hasHandler": true
+    },
+    {
+      "file": "infrastructure-cascade-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/infrastructure-cascade",
+      "method": "GET",
+      "basketRefs": [
+        "scenario-simulation-engine.json"
+      ],
+      "missingRefs": [
+        "scenario-simulation-engine.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "instability-index-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleInstabilityIndexAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "internet-outages-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleInternetOutagesAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "langgraph-orchestrator-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/langgraph-orchestrator",
+      "method": "GET",
+      "basketRefs": [
+        "langgraph-orchestrator.json"
+      ],
+      "missingRefs": [
+        "langgraph-orchestrator.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "lenses-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleLensesAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "live-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleLiveAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "favorites.json"
+      ],
+      "missingRefs": [
+        "favorites.json"
+      ],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "market-composite-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/market-composite",
+      "method": "GET",
+      "basketRefs": [
+        "market-composite.json"
+      ],
+      "missingRefs": [
+        "market-composite.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "mcp-server-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/mcp-server",
+      "method": "GET",
+      "basketRefs": [
+        "mcp-server.json"
+      ],
+      "missingRefs": [
+        "mcp-server.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "migration-flow-tracker-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/migration-flow-tracker",
+      "method": "GET",
+      "basketRefs": [
+        "migration-flow-tracker.json"
+      ],
+      "missingRefs": [
+        "migration-flow-tracker.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "military-bases-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleMilitaryBasesAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "military-exercises-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handle",
+        "getLatest",
+        "getHistory"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "military-exercises.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "module-registration-controller-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/module-registration-controller",
+      "method": "GET",
+      "basketRefs": [
+        "module-registration-controller.json"
+      ],
+      "missingRefs": [
+        "module-registration-controller.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "monitor-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleMonitorAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "multi-source-corroboration-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/multi-source-corroboration",
+      "method": "GET",
+      "basketRefs": [
+        "multi-source-corroboration.json"
+      ],
+      "missingRefs": [
+        "multi-source-corroboration.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "news-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleNewsAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "news.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "nlp-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleNLPAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "noaa-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleNOAAAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "noaa.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "notam-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleNOTAMAPI",
+        "loadNOTAM"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "notam.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "nuclear-monitor-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleNuclearMonitorAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "nuclear-monitor.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "ofac-sdn-api.mjs",
+      "form": "default:function",
+      "defaultKeys": [],
+      "route": "/api/layers/ofac-sdn",
+      "method": "GET",
+      "basketRefs": [
+        "ofac-sdn.json"
+      ],
+      "missingRefs": [
+        "ofac-sdn.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "oil-gas-api.mjs",
+      "form": "named:handleXxxAPI",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "oil-gas.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "opensky-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleOpenSkyAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "opensky-data.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "ovx-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleOVXAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "ovx.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "pipelines-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handlePipelinesAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "pizza-index-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/pizza-index",
+      "method": "GET",
+      "basketRefs": [
+        "pizza-index.json"
+      ],
+      "missingRefs": [
+        "pizza-index.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "pmi-api.mjs",
+      "form": "named:handleXxxAPI",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "pmi.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "political-stability-monitor-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/political-stability-monitor",
+      "method": "GET",
+      "basketRefs": [
+        "political-stability-monitor.json"
+      ],
+      "missingRefs": [
+        "political-stability-monitor.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "prediction-markets-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/prediction-markets",
+      "method": "GET",
+      "basketRefs": [
+        "prediction-markets.json"
+      ],
+      "missingRefs": [
+        "prediction-markets.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "preset-api.mjs",
+      "form": "default:function",
+      "defaultKeys": [],
+      "route": "/api/layers/preset",
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "progressive-disclosure-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/progressive-disclosure",
+      "method": "GET",
+      "basketRefs": [
+        "progressive-disclosure.json"
+      ],
+      "missingRefs": [
+        "progressive-disclosure.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "rag-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleRAGAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "documents.json"
+      ],
+      "missingRefs": [
+        "documents.json"
+      ],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "rate-limiter-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/rate-limiter",
+      "method": "GET",
+      "basketRefs": [
+        "rate-limiter.json"
+      ],
+      "missingRefs": [
+        "rate-limiter.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "recession-api.mjs",
+      "form": "named:handleXxxAPI",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "recession.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "reference-data-provider-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/reference-data-provider",
+      "method": "GET",
+      "basketRefs": [
+        "reference-data-provider.json"
+      ],
+      "missingRefs": [
+        "reference-data-provider.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "registry-api.mjs",
+      "form": "default:function",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": true
+    },
+    {
+      "file": "reports-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleReportsAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "resilience-index-api.mjs",
+      "form": "default:function",
+      "defaultKeys": [],
+      "route": "/api/layers/resilience-index",
+      "method": "GET",
+      "basketRefs": [
+        "acled.json",
+        "ofac-sdn.json",
+        "worldbank-latest.json",
+        "country-instability.json"
+      ],
+      "missingRefs": [
+        "ofac-sdn.json",
+        "country-instability.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "risk-heatmap-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleRiskHeatmapAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "risk-signal-aggregator-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/risk-signal-aggregator",
+      "method": "GET",
+      "basketRefs": [
+        "risk-signal-aggregator.json"
+      ],
+      "missingRefs": [
+        "risk-signal-aggregator.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "route-explorer-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/route-explorer",
+      "method": "GET",
+      "basketRefs": [
+        "route-explorer.json"
+      ],
+      "missingRefs": [
+        "route-explorer.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "rss-feeds-api.mjs",
+      "form": "default:function",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "rss-latest.json",
+        "rss.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": true
+    },
+    {
+      "file": "rss-manager-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "feeds-status.json"
+      ],
+      "missingRefs": [
+        "feeds-status.json"
+      ],
+      "dataType": "object",
+      "hasHandler": true
+    },
+    {
+      "file": "rublev-dubai-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handle",
+        "getLatest",
+        "getHistory"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "rublev-dubai.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "safecast-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleSafecastAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "safecast.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "sanctions-pressure-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/sanctions-pressure",
+      "method": "GET",
+      "basketRefs": [
+        "sanctions-pressure.json"
+      ],
+      "missingRefs": [
+        "sanctions-pressure.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "satellite-analyzer-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/satellite-analyzer",
+      "method": "GET",
+      "basketRefs": [
+        "satellite-analyzer.json"
+      ],
+      "missingRefs": [
+        "satellite-analyzer.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "satellite-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleSatelliteAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "satellite-stac-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleSatelliteStacAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "scan-pages-api.mjs",
+      "form": "unknown",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "scenario-simulation-engine-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/scenario-simulation-engine",
+      "method": "GET",
+      "basketRefs": [
+        "scenario-simulation-engine.json"
+      ],
+      "missingRefs": [
+        "scenario-simulation-engine.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "scenarios-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleScenariosAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "scheduler-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "tasks.json"
+      ],
+      "missingRefs": [
+        "tasks.json"
+      ],
+      "dataType": "object",
+      "hasHandler": true
+    },
+    {
+      "file": "shipping-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleShippingAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "ships-api.mjs",
+      "form": "named:handleXxxAPI",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "ships.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "signal-aggregator-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/signal-aggregator",
+      "method": "GET",
+      "basketRefs": [
+        "signal-aggregator.json"
+      ],
+      "missingRefs": [
+        "signal-aggregator.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "silence-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleSilenceAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "snapshot-system-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/snapshot-system",
+      "method": "GET",
+      "basketRefs": [
+        "snapshot-system.json"
+      ],
+      "missingRefs": [
+        "snapshot-system.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "social-briefing-engine-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/social-briefing",
+      "method": "GET",
+      "basketRefs": [
+        "social-briefing.json"
+      ],
+      "missingRefs": [
+        "social-briefing.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "social-sentiment-analyzer-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/social-sentiment-analyzer",
+      "method": "GET",
+      "basketRefs": [
+        "social-sentiment-analyzer.json"
+      ],
+      "missingRefs": [
+        "social-sentiment-analyzer.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "social-unrest-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleSocialUnrestAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "social-unrest.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "source-credibility-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/source-credibility",
+      "method": "GET",
+      "basketRefs": [
+        "source-credibility.json"
+      ],
+      "missingRefs": [
+        "source-credibility.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "sp500-vix-api.mjs",
+      "form": "named:handleXxxAPI",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "sp500-vix.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "stablecoin-monitor-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/stablecoin-monitor",
+      "method": "GET",
+      "basketRefs": [
+        "stablecoin-monitor.json"
+      ],
+      "missingRefs": [
+        "stablecoin-monitor.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "storage-api.mjs",
+      "form": "named:handleXxxAPI",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "storage-config.json"
+      ],
+      "missingRefs": [
+        "storage-config.json"
+      ],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "strategic-ports-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleStrategicPortsAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "strategic-risk-composite-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/strategic-risk-composite",
+      "method": "GET",
+      "basketRefs": [
+        "strategic-risk-composite.json",
+        "country-coords.json"
+      ],
+      "missingRefs": [
+        "strategic-risk-composite.json",
+        "country-coords.json"
+      ],
+      "dataType": "FeatureCollection",
+      "hasHandler": true
+    },
+    {
+      "file": "supply-chain-cascade-engine-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/supply-chain-cascade-engine",
+      "method": "GET",
+      "basketRefs": [
+        "supply-chain-cascade-engine.json"
+      ],
+      "missingRefs": [
+        "supply-chain-cascade-engine.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "supply-chain-resilience-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/supply-chain-resilience",
+      "method": "GET",
+      "basketRefs": [
+        "supply-chain-resilience.json"
+      ],
+      "missingRefs": [
+        "supply-chain-resilience.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "surge-detection-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/surge-detection",
+      "method": "GET",
+      "basketRefs": [
+        "surge-detection.json"
+      ],
+      "missingRefs": [
+        "surge-detection.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "tanker-fleet-monitor-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/tanker-fleet-monitor",
+      "method": "GET",
+      "basketRefs": [
+        "tanker-fleet-monitor.json"
+      ],
+      "missingRefs": [
+        "tanker-fleet-monitor.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "thinktanks-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleThinkTanksAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "threat-classification-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/threat-classification",
+      "method": "GET",
+      "basketRefs": [
+        "threat-classification.json"
+      ],
+      "missingRefs": [
+        "threat-classification.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "tick-data-analyzer-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/tick-data-analyzer",
+      "method": "GET",
+      "basketRefs": [
+        "tick-data-analyzer.json"
+      ],
+      "missingRefs": [
+        "tick-data-analyzer.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "tips-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleTIPSAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "tips.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "trust-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "TrustManager",
+        "getTrustManager",
+        "handleTrustAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "sources.json",
+        "history.json",
+        "stats.json"
+      ],
+      "missingRefs": [
+        "sources.json",
+        "history.json",
+        "stats.json"
+      ],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "undersea-cables-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleUnderseaCablesAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "unemployment-api.mjs",
+      "form": "named:handleXxxAPI",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "unemployment.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "unemployment-claims-api.mjs",
+      "form": "named:handleXxxAPI",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "unemployment-claims.json"
+      ],
+      "missingRefs": [
+        "unemployment-claims.json"
+      ],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "unique-indicators-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleUniqueIndicators"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "pentagon-pizza.json",
+        "langley-taxis.json"
+      ],
+      "missingRefs": [
+        "pentagon-pizza.json",
+        "langley-taxis.json"
+      ],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "uranium-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleUraniumAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "uranium.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "user-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleUserAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "profile.json",
+        "activity.json"
+      ],
+      "missingRefs": [
+        "profile.json",
+        "activity.json"
+      ],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "usgs-api.mjs",
+      "form": "named:handleXxxAPI",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "usgs.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "viirs-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleVIIRSAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "viirs.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "vix-api.mjs",
+      "form": "named:handleXxxAPI",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "vix.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "vxx-api.mjs",
+      "form": "named:handleXxxAPI",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "vxx.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "war-preparation-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handleWarPreparationAPI"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "war-preparation.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "watchdog-api.mjs",
+      "form": "default:reference",
+      "defaultKeys": [],
+      "route": "/api/layers/watchdog",
+      "method": "GET",
+      "basketRefs": [
+        "watchdog.json"
+      ],
+      "missingRefs": [
+        "watchdog.json"
+      ],
+      "dataType": "unknown",
+      "hasHandler": true
+    },
+    {
+      "file": "wti-brent-spread-api.mjs",
+      "form": "default:object",
+      "defaultKeys": [
+        "handle",
+        "getLatest",
+        "getHistory"
+      ],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "wti-brent-spread.json"
+      ],
+      "missingRefs": [
+        "wti-brent-spread.json"
+      ],
+      "dataType": "object",
+      "hasHandler": false
+    },
+    {
+      "file": "yield-curve-api.mjs",
+      "form": "named:handleXxxAPI",
+      "defaultKeys": [],
+      "route": null,
+      "method": "GET",
+      "basketRefs": [
+        "yield-curve.json"
+      ],
+      "missingRefs": [],
+      "dataType": "object",
+      "hasHandler": false
+    }
+  ]
+}

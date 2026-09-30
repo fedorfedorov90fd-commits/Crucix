@@ -1,0 +1,1576 @@
+================================================================================
+CRUCIX — NETWORK MAP — HELP
+================================================================================
+Map version:  1.0
+Help date:    2026-09-30
+Section:      Network Map (relations)
+Map type:     relationship graph
+================================================================================
+
+Network Map is an interactive map of relationships between entities
+(countries, organizations, events, financial structures). It displays the
+graph in a force-directed layout on pure SVG, without using Leaflet.
+
+The map is one of 5 autonomous maps in the Crucix ecosystem:
+
+  1. Event Map     — point events on a geographic map.
+  2. Metrics Map   — numeric indicators by country (choropleth).
+  3. Semantic Map  — semantic analysis of texts.
+  4. Network Map   — relationship graph (this map).
+  5. Forecast Map  — forecast scenarios and risks.
+
+================================================================================
+1. INTRODUCTION
+================================================================================
+
+1.1. What Network Map does
+
+Network Map visualizes relationships between entities as a graph:
+
+  Node (node)     — an entity: country, organization, event, financial
+                    structure.
+  Edge (edge)     — a relationship between two nodes. Directed:
+                    source → target.
+  Layer (layer)   — a separate graph. There are 12 layers in total.
+
+Main features:
+
+  - Force-directed layout (nodes repel, edges attract).
+  - 3 centrality metrics: degree, betweenness, closeness.
+  - Community detection: Louvain (Blondel et al. 2008).
+  - Ranking: PageRank, eigenvector centrality.
+  - Structure: clustering coefficient, network diameter, assortativity.
+  - Node highlighting by metric, community, or heatmap.
+  - Export: SVG, PNG, DOT, D3 JSON, CSV.
+  - Snapshot: button "COPY" gives a full dump (~92 KB).
+  - Offline operation: full functionality without a server.
+
+1.2. Difference from other maps
+
+  Map              What it shows                          Type
+  ---------------  -------------------------------------  --------------
+  Event Map        Points on a geographic map             Leaflet
+  Metrics Map      Country coloring by indicator          Choropleth
+  Semantic Map     Text clustering, topics                Text analysis
+  Network Map      Relationship graph                     SVG graph
+  Forecast Map     Scenarios, risks, forecasts            Mixed
+
+Network Map is the only map that uses SVG graph visualization instead of a
+geographic map. This lets it show abstract relationships: cyber attacks,
+trade flows, financial transactions, migration corridors.
+
+1.3. Autonomy principle (R1–R6)
+
+Network Map works completely autonomously:
+
+  R1. Zero cross-map dependencies.
+      No script of Network Map accesses files of neighboring maps.
+
+  R2. Local world.geojson.
+      The file data/world.geojson lies in the map folder.
+
+  R3. Own 12 layers.
+      Exactly 12 layers, unique IDs. Not a single foreign one.
+
+  R4. Own maps-config.js and presets.json.
+      Configuration and presets are local.
+
+  R5. manifest.json → local_cross_map: 0, failure_domain: 1.
+      The map passport confirms autonomy.
+
+  R6. A failure in Network Map does not affect the other 4 maps.
+      Failure domain = 1.
+
+================================================================================
+2. INTERFACE
+================================================================================
+
+2.1. General layout
+
+The map screen is divided into 4 zones:
+
+  +--------------------------------------------------------------+
+  |  TOPBAR (top panel)                                          |
+  |  [5 map buttons] [layer list] [COPY] [HELP]                  |
+  +--------------------------------------------------------------+
+  |                                                              |
+  |                    SVG GRAPH                                 |
+  |                    (center)                                  |
+  |                                                              |
+  |  +----------------+                     +------------------+ |
+  |  | LAYER LIST     |                     | POPUP (on click) | |
+  |  | (left)         |                     | (right)          | |
+  |  +----------------+                     +------------------+ |
+  |                                                              |
+  +--------------------------------------------------------------+
+  |  BOTTOM BAR: legend, scale, status                           |
+  +--------------------------------------------------------------+
+
+2.2. Topbar (top panel)
+
+Elements from left to right:
+
+  [1] Map switch buttons (5 pcs):
+      Events / Metrics / Semantic / Network / Forecast
+      Active map is highlighted with class "active".
+
+  [2] Layer list button (📋):
+      Opens/closes the layer panel on the left.
+
+  [3] COPY button (📋 КОПИРОВАТЬ):
+      Collects a full snapshot of the map state and copies it to the
+      clipboard. Size ~92 KB. Includes:
+        - graph (nodes + edges + weights)
+        - all metrics (degree, betweenness, closeness)
+        - Louvain communities
+        - PageRank + Eigenvector
+        - clustering coefficient
+        - network diameter
+        - adjacency matrix N×N
+        - topological lists (nodes by type, edges by type)
+        - adjacency lists (in/out for each node)
+        - export formats (DOT, D3 JSON, CSV)
+        - SVG styles (computed)
+        - DOM snapshot (up to 500 elements)
+        - country metadata (208)
+        - topbar state
+
+  [4] HELP button (?):
+      Opens this help file.
+
+  [5] Reset button (🔄):
+      Resets node positions to the initial random ones.
+
+  [6] Center button (🎯):
+      Centers the graph in the viewport.
+
+  [7] Fit button (⛶):
+      Fits the graph to the full viewport.
+
+  [8] Pause button (⏸):
+      Pauses/resumes the force simulation.
+
+  [9] Reheat button (🔥):
+      Restarts the force simulation with current positions.
+
+  [10] Save positions button (💾):
+      Saves node positions to localStorage.
+
+  [11] Load positions button (📂):
+      Loads saved node positions from localStorage.
+
+  [12] Export SVG button (📷):
+      Exports the graph as SVG.
+
+  [13] Export PNG button (🖼):
+      Exports the graph as PNG.
+
+  [14] Metric toggle (📊):
+      Switches metric: null → degree → betweenness → closeness → null.
+
+  [15] Communities toggle (🎨):
+      Switches Louvain communities on/off.
+
+  [16] Heatmap toggle (🔥):
+      Switches heatmap on/off.
+
+2.3. Layer panel (left)
+
+Shows the 12 layers, divided into 2 categories.
+
+  Category "flow" (7 layers):
+    [01] 🕸️ cyber-network         — Cyber network
+    [02] 📦 trade-routes          — Trade routes
+    [03] 💰 financial-flows       — Financial flows
+    [04] ₿ crypto-trace           — Crypto trace
+    [05] 🏦 banking-network       — Banking network
+    [06] ⛓️ supply-chain          — Supply chain
+    [07] 🏢 shell-companies       — Shell companies
+
+  Category "social" (5 layers):
+    [08] 🏃 refugee-flows         — Refugee flows
+    [09] 🚶 migration-network     — Migration network
+    [10] 🔥 social-unrest         — Social unrest
+    [11] 📞 phone-network         — Phone network
+    [12] 📱 social-media-network  — Social media network
+
+Each layer has:
+  - an icon,
+  - a name,
+  - a color (for the graph),
+  - a category (flow/social),
+  - a vizType (graph/flow/marker).
+
+Click on a layer → the graph is rebuilt. The active layer is highlighted.
+
+2.4. Graph (center)
+
+Pure SVG without Leaflet. Elements:
+
+  Node (node):
+    - country      → ● circle
+    - organization → ■ square
+    - event        → ▲ triangle
+    - financial    → ◆ diamond
+
+  Edge (edge):
+    - flow         → solid, 1.5 px, color #30363d
+    - transaction  → solid, 2.0 px, color #3fb950
+    - control      → dashed, 1.5 px, color #f0883e
+    - influence    → dashed, 1.5 px, color #a371f7
+
+  Label (text):
+    - Node label — under the node.
+    - Edge weight — on hover.
+
+  Force simulation:
+    - charge (repulsion) — nodes repel each other.
+    - link distance — edges attract.
+    - collision — nodes do not overlap.
+
+2.5. Popup (right, on node click)
+
+Appears when clicking a node. Shows:
+
+  [1] Node ID and label.
+  [2] Type (country/organization/event/financial).
+  [3] Weight.
+  [4] Coordinates (x, y).
+  [5] Degree centrality.
+  [6] Betweenness centrality.
+  [7] Closeness centrality.
+  [8] PageRank.
+  [9] Eigenvector centrality.
+  [10] Clustering coefficient (local).
+  [11] Community number (Louvain).
+  [12] List of neighbors (incoming + outgoing).
+  [13] Buttons: "Find path", "Center", "Hide".
+
+2.6. Bottom bar
+
+Elements from left to right:
+
+  [1] Legend:
+      Node shapes (circle/square/triangle/diamond).
+      Edge styles (solid/dashed).
+
+  [2] Scale:
+      Current zoom (e.g. 1.00×).
+
+  [3] Status:
+      Number of nodes, number of edges, current layer.
+      Example: "20 nodes · 22 edges · cyber-network".
+
+  [4] Coordinates:
+      Mouse coordinates on the SVG.
+
+2.7. Help panel (on pressing ? or clicking HELP)
+
+Opens this file in a modal window or new tab.
+
+  - Tab "RU" — Russian version.
+  - Tab "EN" — English version.
+  - ESC — close.
+  - Search across sections.
+
+
+================================================================================
+3. CONTROLS
+================================================================================
+
+3.1. 🔄 Reset (graph-controls)
+
+Purpose: reset node positions to the initial random ones.
+
+Action:
+  1. All nodes get new random coordinates in the center of the map.
+  2. The force simulation is restarted.
+  3. Positions in localStorage are cleared.
+
+When to use:
+  - if nodes "stick together" after a long simulation;
+  - if you need to lay out the graph again;
+  - when switching to another layer.
+
+3.2. 🎯 Center
+
+Purpose: center the graph in the viewport.
+
+Action:
+  1. The average coordinates of all nodes are computed.
+  2. The SVG viewport is shifted so the center of the graph is in the
+     center of the screen.
+  3. The scale does not change.
+
+When to use:
+  - if the graph "ran away" off-screen after dragging;
+  - after loading saved positions;
+  - when switching layers.
+
+3.3. ⛶ Fit
+
+Purpose: fit the graph to the full viewport.
+
+Action:
+  1. The bounding box of all nodes is computed.
+  2. The scale is chosen so the graph fits with 10% padding.
+  3. The viewport is centered on the bounding box.
+
+When to use:
+  - if the graph is too large and does not fit on screen;
+  - if the graph is too small (zoomed out);
+  - after building a new layer.
+
+Difference from Center: Center preserves scale, Fit changes it.
+
+3.4. ⏸ Pause / Play
+
+Purpose: pause / resume the force simulation.
+
+Action:
+  - On pause: alpha = 0, nodes stop moving.
+  - On play: alpha restarts from the current value, nodes start moving.
+  - Node positions are preserved.
+
+When to use:
+  - to freeze the graph for analysis;
+  - to drag a node without the simulation "running away";
+  - to take a screenshot of a stable state.
+
+3.5. 🔥 Reheat
+
+Purpose: restart the force simulation with current positions.
+
+Action:
+  1. alpha = 1.0 (maximum "temperature").
+  2. The simulation starts again from current positions.
+  3. Nodes begin to repel, edges attract.
+
+Difference from Reset: Reset changes positions to random ones, Reheat
+preserves positions.
+
+Difference from Pause/Play: Play continues the simulation with the same
+alpha, Reheat restarts it with alpha = 1.0.
+
+When to use:
+  - if the graph "froze" in a suboptimal shape;
+  - after adding/removing nodes;
+  - after moving a node manually.
+
+3.6. 💾 Save positions
+
+Purpose: save current node positions to localStorage.
+
+Action:
+  1. The object {id: {x, y}} is built for all nodes.
+  2. It is written to localStorage under the key
+     "crucix-network-positions-<layerId>".
+  3. A notification "Positions saved" is shown.
+
+When to use:
+  - to preserve a successful layout;
+  - to return to it after experiments;
+  - to transfer the layout to another browser.
+
+3.7. 📂 Load positions
+
+Purpose: load saved node positions from localStorage.
+
+Action:
+  1. The key "crucix-network-positions-<layerId>" is read.
+  2. Node positions are applied.
+  3. The simulation restarts from the saved positions.
+
+When to use:
+  - after Reset (to return the layout);
+  - after switching layers (for layers with saved positions);
+  - after refreshing the page.
+
+3.8. 📷 Export SVG
+
+Purpose: export the graph as SVG.
+
+Action:
+  1. The current SVG is serialized to XML.
+  2. The XML is saved as a .svg file.
+  3. Name: network-map-<layerId>-<timestamp>.svg.
+
+What is included:
+  - nodes (shapes, colors, sizes);
+  - edges (lines, colors, styles);
+  - labels (text);
+  - CSS styles (inline).
+
+What is not included:
+  - popup;
+  - topbar;
+  - bottom bar;
+  - layer panel.
+
+When to use:
+  - for import into Illustrator, Inkscape, Figma;
+  - for publication as a vector illustration.
+
+3.9. 🖼 Export PNG
+
+Purpose: export the graph as PNG.
+
+Action:
+  1. The SVG is rendered to canvas.
+  2. The canvas is converted to PNG.
+  3. The PNG is saved as a file.
+
+Parameters:
+  - size: current viewport;
+  - scale: 2× (for retina);
+  - background: current theme (dark).
+
+When to use:
+  - for insertion into a presentation;
+  - for publication on a website;
+  - for sending by email.
+
+3.10. 📊 Metric toggle
+
+Purpose: switch the node coloring metric.
+
+Cycle: null → degree → betweenness → closeness → null.
+
+What changes:
+  - null: all nodes are colored by type (country/organization/...).
+  - degree: nodes are colored by degree (red scale).
+  - betweenness: nodes are colored by betweenness (green scale).
+  - closeness: nodes are colored by closeness (blue scale).
+
+Legend: at the bottom of the screen a scale with minimum and maximum is
+shown.
+
+When to use:
+  - to quickly see the most connected nodes (degree);
+  - to find "bridges" between communities (betweenness);
+  - to find "central" nodes (closeness).
+
+3.11. 🎨 Communities toggle (Louvain)
+
+Purpose: enable/disable coloring of nodes by Louvain communities.
+
+What changes:
+  - off: nodes are colored by type or metric.
+  - on: nodes are colored by community (fixed palette of 12 colors).
+
+The community palette:
+  0 — #f85149 (red)
+  1 — #58a6ff (blue)
+  2 — #3fb950 (green)
+  3 — #f0883e (orange)
+  4 — #a371f7 (purple)
+  5 — #e3b341 (yellow)
+  6 — #56d4dd (cyan)
+  7 — #ff7b72 (pink)
+  8 — #7ee787 (light green)
+  9 — #d2a8ff (light purple)
+  10 — #ffa657 (light orange)
+  11 — #79c0ff (light blue)
+
+When to use:
+  - to see the structure of the graph (which nodes form a bloc);
+  - to compare Louvain with type coloring;
+  - for publication (communities look clearer).
+
+3.12. 🔥 Heatmap toggle
+
+Purpose: enable/disable the adjacency heatmap.
+
+What changes:
+  - off: edges are colored by type (flow/transaction/...).
+  - on: edges are colored by weight (from blue to red).
+
+Heatmap palette:
+  weight 1 — #58a6ff (blue)
+  weight 2 — #79c0ff (light blue)
+  weight 3 — #e3b341 (yellow)
+  weight 4 — #f0883e (orange)
+  weight 5 — #f85149 (red)
+
+When to use:
+  - to see the "strongest" connections;
+  - to find anomalies (unexpectedly strong/weak edges);
+  - for analysis of transaction networks.
+
+3.13. 📋 COPY
+
+Purpose: collect a full snapshot of the map state and copy it to the
+clipboard.
+
+Snapshot size: ~92 KB (for 20 nodes).
+
+Snapshot structure (27 sections):
+
+  1.  SUMMARY
+  2.  ANALYTICS
+  3.  GRAPH CONFIG
+  4.  LAYERS
+  5.  NODES
+  6.  EDGES
+  7.  RAW GRAPH DATA (JSON)
+  8.  SVG STATISTICS
+  9.  UI STATE
+  10. COUNTRIES (metadata, 208)
+  11. DOM SNAPSHOT (up to 500 elements)
+  12. TOPBAR
+  13. NODES BY TYPE
+  14. EDGES BY TYPE
+  15. ADJACENCY MATRIX (N×N)
+  16. TOP-10 BY DEGREE
+  17. TOP-10 BY BETWEENNESS
+  18. TOP-10 BY CLOSENESS
+  19. FULL METRICS TABLE
+  20. ADJACENT NODES (for each)
+  21. DOT FORMAT (Graphviz)
+  22. D3 JSON
+  23. CSV: NODES
+  24. CSV: EDGES
+  25. CSS SVG STYLES
+  26. LOUVAIN COMMUNITIES
+  27. CRUCIX OSINT TERMINAL (footer)
+
+When to use:
+  - for diagnostics (send to support);
+  - for import into Gephi/Cytoscape/D3;
+  - for backup of a successful state;
+  - for comparison of two states.
+
+How to use:
+  1. Click COPY.
+  2. A notification "Copied: XXX KB" appears.
+  3. Paste into a file, email, or messenger.
+
+================================================================================
+4. METRICS
+================================================================================
+
+4.1. Degree centrality
+
+Definition: the number of edges incident to a node.
+
+Formula (undirected graph):
+
+  degree(v) = |{e : e.source = v or e.target = v}|
+
+Interpretation:
+  - high degree = "hub" node connected to many others;
+  - low degree = "peripheral" node.
+
+In cyber-network:
+  - RU has degree 5 (attacks 5 targets);
+  - C2-1 has degree 4 (connects to 4 botnets);
+  - Victim-EU has degree 1 (only one incoming edge).
+
+4.2. Betweenness centrality
+
+Definition: the fraction of shortest paths between all pairs of nodes that
+pass through a given node.
+
+Formula (Brandes 2001):
+
+  betweenness(v) = Σ_{s≠v≠t} σ_st(v) / σ_st
+
+where σ_st is the number of shortest paths from s to t, and σ_st(v) is the
+number of those paths passing through v.
+
+Interpretation:
+  - high betweenness = "bridge" between communities;
+  - low betweenness = node lies inside one community.
+
+In cyber-network:
+  - C2-2 has high betweenness (bridges APT-28 and Victim-US);
+  - RU has medium betweenness (attacks many, but through APTs);
+  - Victim-EU has 0 (leaf node).
+
+4.3. Closeness centrality
+
+Definition: the inverse of the sum of shortest distances from a node to all
+others.
+
+Formula:
+
+  closeness(v) = (n − 1) / Σ_{u≠v} d(v, u)
+
+where d(v, u) is the shortest distance from v to u.
+
+Interpretation:
+  - high closeness = node is "close" to all others;
+  - low closeness = node is "far away".
+
+In cyber-network:
+  - C2-1 has high closeness (in the center of the star);
+  - Victim-EU has low closeness (periphery).
+
+4.4. PageRank
+
+Definition: node "importance" taking into account the importance of
+neighbors (Page & Brin 1998).
+
+Formula:
+
+  PR(v) = (1 − d) / N + d · Σ_{u ∈ In(v)} PR(u) / Out(u)
+
+where d = 0.85 (damping factor), N = number of nodes.
+
+Iterations: until convergence (ε = 1e−6), usually 20–30 iterations.
+
+Interpretation:
+  - high PageRank = node is important due to important neighbors;
+  - low PageRank = node is peripheral.
+
+Difference from degree: degree counts only immediate neighbors, PageRank
+counts the whole chain.
+
+In cyber-network:
+  - RU has high PageRank (APT-28, APT-29, Lazarus, C2-1 depend on it);
+  - Victim-EU has low PageRank.
+
+4.5. Eigenvector centrality
+
+Definition: node "importance" proportional to the importance of neighbors
+(recursive definition).
+
+Formula:
+
+  x(v) = (1/λ) · Σ_{u ∈ N(v)} x(u)
+
+where λ is the largest eigenvalue of the adjacency matrix.
+
+Iterations: until convergence (ε = 1e−6), usually 100–150 iterations.
+
+Difference from PageRank: Eigenvector does not have a damping factor,
+uses a symmetric matrix.
+
+Interpretation:
+  - same as PageRank, but "purer";
+  - more sensitive to the graph structure.
+
+4.6. Clustering coefficient (local)
+
+Definition: the fraction of connections between a node's neighbors to the
+maximum possible.
+
+Formula:
+
+  C(v) = 2 · E(v) / (k(v) · (k(v) − 1))
+
+where E(v) is the number of edges between neighbors of v, k(v) is the
+degree of v.
+
+Interpretation:
+  - C(v) = 1: all neighbors of v are connected to each other (clique);
+  - C(v) = 0: neighbors of v are not connected at all.
+
+In cyber-network:
+  - C(RU) ≈ 0.1 (neighbors of RU are almost not connected);
+  - C(C2-1) ≈ 0.3 (botnets connect through C2-1).
+
+4.7. Clustering coefficient (global)
+
+Definition: the average of local clustering coefficients over all nodes.
+
+Formula:
+
+  C_global = (1/N) · Σ_v C(v)
+
+Interpretation:
+  - high C_global = graph is "clumpy", many triangles;
+  - low C_global = graph is "sparse", few triangles.
+
+In cyber-network: C_global ≈ 0.10 (low, since this is a star graph).
+
+4.8. Transitivity
+
+Definition: the ratio of the number of triangles to the number of "triples"
+(paths of length 2).
+
+Formula:
+
+  T = 3 · (number of triangles) / (number of triples)
+
+Difference from C_global: transitivity gives more weight to nodes with high
+degree.
+
+Interpretation:
+  - T ≈ C_global: the graph is homogeneous;
+  - T ≠ C_global: the graph has hubs.
+
+In cyber-network: T ≈ 0.077.
+
+4.9. Network diameter
+
+Definition: the maximum shortest distance between any two nodes.
+
+Formula:
+
+  diameter = max_{u, v} d(u, v)
+
+Interpretation:
+  - diameter = 1: complete graph;
+  - diameter = 2–3: "small world";
+  - diameter > 10: "long" graph.
+
+In cyber-network: diameter = 9 (from RU to Victim-*).
+
+Method: BFS from each node (unweighted graph).
+
+4.10. Average path length
+
+Definition: the average shortest distance between all pairs of nodes.
+
+Formula:
+
+  avg_path = (1 / (N · (N − 1))) · Σ_{u≠v} d(u, v)
+
+Interpretation:
+  - avg_path ≈ 2: "small world";
+  - avg_path > 4: "sparse" graph.
+
+In cyber-network: avg_path ≈ 3.84.
+
+4.11. Assortativity
+
+Definition: the tendency of nodes to connect with similar (by degree) nodes.
+
+Formula (Newman 2002):
+
+  r = (Σ_i j_i k_i / M − ((Σ_i (j_i + k_i) / (2M))²)) /
+      (Σ_i (j_i² + k_i²) / (2M) − ((Σ_i (j_i + k_i) / (2M))²))
+
+where j_i, k_i are the degrees of the endpoints of edge i, M is the number
+of edges.
+
+Interpretation:
+  - r > 0: "rich connect with rich" (hubs with hubs);
+  - r < 0: "rich connect with poor" (star structure);
+  - r ≈ 0: no correlation.
+
+In cyber-network: r ≈ −0.34 (negative, star structure).
+
+4.12. Modularity Q (Louvain)
+
+Definition: the quality of the partition into communities.
+
+Formula:
+
+  Q = Σ_c [ (Σ_in_c / m) − γ · (Σ_tot_c / (2m))² ]
+
+where Σ_in_c is the sum of weights of internal edges of community c,
+Σ_tot_c is the sum of degrees in c, m is the total weight, γ is the
+resolution parameter.
+
+Interpretation:
+  - Q < 0.3: weak partition;
+  - Q ∈ [0.3, 0.5]: good partition;
+  - Q > 0.5: excellent partition.
+
+In cyber-network: Q ≈ 0.54 (6 communities).
+
+4.13. Adjacency matrix (N × N)
+
+Definition: a table where element [i][j] = weight of edge i → j.
+
+Properties:
+  - symmetric for undirected graph: matrix[i][j] = matrix[j][i];
+  - diagonal = 0 (no self-loops);
+  - dimension = N × N (in cyber-network: 20 × 20 = 400 cells).
+
+Usage:
+  - import into R/Python for analysis;
+  - visualization as heatmap;
+  - computing spectra (eigenvalues).
+
+4.14. Density
+
+Definition: the ratio of the number of edges to the maximum possible.
+
+Formula:
+
+  density = m / (n · (n − 1))
+
+where m is the number of directed pairs, n is the number of nodes.
+
+Interpretation:
+  - density = 0: empty graph;
+  - density = 1: complete graph;
+  - density ≈ 0.1: sparse graph.
+
+In cyber-network: density ≈ 11.58 %.
+
+4.15. Metrics summary table
+
+  Metric                Formula                     In cyber-network
+  --------------------  --------------------------  ---------------------
+  Degree                |N(v)|                      RU: 5, C2-1: 4
+  Betweenness           Σ σ_st(v)/σ_st              C2-2: high
+  Closeness             (n−1) / Σ d(v,u)            C2-1: high
+  PageRank              iterative                    RU: high
+  Eigenvector           iterative                    RU: high
+  Clustering (local)    2E(v) / (k(v)(k(v)−1))      RU: 0.1, C2-1: 0.3
+  Clustering (global)   mean of local               0.1033
+  Transitivity          3·triangles / triples        0.0769
+  Diameter              max d(u,v)                  9
+  Average path          mean d(u,v)                 3.8421
+  Assortativity         Newman 2002                 −0.3390
+  Modularity Q          Louvain                     0.5404
+  Density               m / (n·(n−1))               11.58 %
+
+
+================================================================================
+5. LAYERS AND DATA
+================================================================================
+
+5.1. The 12 layers — full list
+
+Each layer is a separate graph. There are 12 layers in total, divided into
+2 categories.
+
+================================================================================
+CATEGORY "flow" (7 layers)
+================================================================================
+
+[01] 🕸️ cyber-network — Cyber network
+  Category: flow
+  vizType:  graph
+  Color:    #f85149 (red)
+  Description: Graph of cyber nodes: attacks, C2 servers, botnets,
+    infrastructure.
+  Example: country → APT → C2 → botnet → target.
+  Demo graph: 20 nodes, 22 edges.
+
+[02] 📦 trade-routes — Trade routes
+  Category: flow
+  vizType:  graph
+  Color:    #58a6ff (blue)
+  Description: Flows of goods between countries: export, import, volumes.
+  Example: exporter → port → canal → port → importer.
+  Demo graph: 21 nodes, 25 edges.
+
+[03] 💰 financial-flows — Financial flows
+  Category: flow
+  vizType:  graph
+  Color:    #3fb950 (green)
+  Description: Transactions, transfers, investment flows between
+    jurisdictions.
+  Example: jurisdiction → bank → offshore → bank → jurisdiction.
+  Demo graph: 19 nodes, 23 edges.
+
+[04] ₿ crypto-trace — Crypto trace
+  Category: flow
+  vizType:  graph
+  Color:    #f0883e (orange)
+  Description: Tracing of cryptocurrency transactions, mixers, exchanges.
+  Example: wallet → mixer → exchange → wallet.
+  Demo graph: 16 nodes, 18 edges.
+
+[05] 🏦 banking-network — Banking network
+  Category: flow
+  vizType:  graph
+  Color:    #3fb950 (green)
+  Description: Correspondent links, SWIFT, banking infrastructure.
+  Example: central bank → commercial bank → SWIFT → bank.
+  Demo graph: 17 nodes, 19 edges.
+
+[06] ⛓️ supply-chain — Supply chains
+  Category: flow
+  vizType:  flow
+  Color:    #a371f7 (purple)
+  Description: Logistics chains, bottlenecks, dependencies.
+  Example: factory → port → canal → port → warehouse.
+  Demo graph: 17 nodes, 21 edges.
+
+[07] 🏢 shell-companies — Shell companies
+  Category: flow
+  vizType:  graph
+  Color:    #f0883e (orange)
+  Description: Network of front companies, beneficiaries, offshore links.
+  Example: beneficiary → BVI → Cyprus → bank.
+  Demo graph: 15 nodes, 20 edges.
+
+================================================================================
+CATEGORY "social" (5 layers)
+================================================================================
+
+[08] 🏃 refugee-flows — Refugee flows
+  Category: social
+  vizType:  flow
+  Color:    #f85149 (red)
+  Description: Migration flows, directions, volumes of movement.
+  Example: source country → transit → destination country.
+  Demo graph: 20 nodes, 24 edges.
+
+[09] 🚶 migration-network — Migration network
+  Category: social
+  vizType:  flow
+  Color:    #58a6ff (blue)
+  Description: Network of migration corridors, transit countries.
+  Example: 5 corridors between regions.
+  Demo graph: 18 nodes, 22 edges.
+
+[10] 🔥 social-unrest — Social unrest
+  Category: social
+  vizType:  flow
+  Color:    #f85149 (red)
+  Description: Links between protest hotspots, spread.
+  Example: protest A → protest B → protest C.
+  Demo graph: 15 nodes, 18 edges.
+
+[11] 📞 phone-network — Phone network
+  Category: social
+  vizType:  flow
+  Color:    #e3b341 (yellow)
+  Description: Analysis of phone links, call geography.
+  Example: city → operator → city.
+  Demo graph: 15 nodes, 20 edges.
+
+[12] 📱 social-media-network — Social media
+  Category: social
+  vizType:  marker
+  Color:    #58a6ff (blue)
+  Description: Information spread in social media, influence.
+  Example: account → bot farm → audience.
+  Demo graph: 19 nodes, 23 edges.
+
+5.2. Node structure
+
+Each node is an object:
+
+  {
+    id:      "RU",          // unique ID
+    label:   "Russia",      // human-readable name
+    type:    "country",     // country | organization | event | financial
+    weight:  1,             // initial weight (1 by default)
+    x:       500.0,         // X coordinate on SVG
+    y:       250.0,         // Y coordinate on SVG
+    vx:      0.0,           // X velocity (for simulation)
+    vy:      0.0,           // Y velocity (for simulation)
+    layer:   "cyber-network" // layer ID (for filtering)
+  }
+
+Types and shapes:
+  country      → ● circle
+  organization → ■ square
+  event        → ▲ triangle
+  financial    → ◆ diamond
+
+5.3. Edge structure
+
+Each edge is an object:
+
+  {
+    source: "RU",             // source node ID
+    target: "C2-1",           // target node ID
+    type:   "control",        // flow | transaction | control | influence
+    weight: 3                 // weight (1–5)
+  }
+
+Types and styles:
+  flow         → solid, 1.5 px, color #30363d
+  transaction  → solid, 2.0 px, color #3fb950 (green)
+  control      → dashed, 1.5 px, color #f0883e (orange)
+  influence    → dashed, 1.5 px, color #a371f7 (purple)
+
+5.4. How the demo graph is built
+
+Demo graphs are stored in the file js/network-adapter.js inside the
+function generateDemo(layerId). Each layer has its own set of nodes and
+edges.
+
+If the API endpoint /api/layers/<layerId> does not respond (404 or
+timeout), the map uses the demo graph. This is the only operating mode
+offline.
+
+Important: in demo graphs, "country" nodes are real (RU, US, CN, KP, IR,
+UA, BY), but organizations and events are synthetic (C2-1, APT-28, BOT-1,
+Victim-EU). This is educational data for demonstrating algorithms.
+
+5.5. Export formats
+
+Besides SVG and PNG, the snapshot contains 3 data formats:
+
+5.5.1. DOT (Graphviz)
+
+Format: text, DOT dialect.
+
+Example:
+  digraph NetworkMap {
+      rankdir=LR;
+      node [shape=box, style=rounded];
+
+      "RU" [label="Russia", shape=circle];
+      "C2-1" [label="C2 Server #1", shape=box];
+      "Victim-EU" [label="Target: EU", shape=triangle];
+
+      "RU" -> "C2-1" [label="control", weight=3];
+      "C2-1" -> "BOT-1" [label="control", weight=5];
+  }
+
+Usage: import into Graphviz, Gephi, yEd.
+
+Node shapes in DOT:
+  country      → circle
+  organization → box
+  event        → triangle
+  financial    → diamond
+
+5.5.2. D3 JSON
+
+Format: JSON with fields nodes and links.
+
+Example:
+  {
+    "nodes": [
+      { "id": "RU", "label": "Russia", "type": "country",
+        "weight": 1, "x": 510.72, "y": 261.99 },
+      ...
+    ],
+    "links": [
+      { "source": "RU", "target": "C2-1", "type": "control",
+        "value": 3 },
+      ...
+    ]
+  }
+
+Usage: import into D3.js, Cytoscape.js, Sigma.js, Vis.js.
+
+5.5.3. CSV (for Excel)
+
+Two files: nodes and edges.
+
+CSV nodes:
+  id,label,type,weight,x,y
+  "RU","Russia","country",1,510.72,261.99
+  "US","USA","country",1,513.77,240.58
+  ...
+
+CSV edges:
+  source,target,type,weight
+  "RU","C2-1","control",3
+  "CN","C2-1","flow",2
+  ...
+
+Usage: Excel, Google Sheets, R, Python (pandas).
+
+5.6. Adjacency matrix
+
+For N nodes — an N × N matrix. Element [i][j] = weight of edge i → j.
+
+Example (first 5 rows for 20 nodes):
+             RU  US  CN  KP  IR  UA  BY  C2-1 ...
+  RU          0   0   0   0   0   0   0    3 ...
+  US          0   0   0   0   0   0   0    0 ...
+  CN          0   0   0   0   0   0   0    2 ...
+  KP          0   0   0   0   0   0   0    4 ...
+  IR          0   0   0   0   0   0   0    1 ...
+
+The matrix is symmetric (undirected graph):
+  matrix[i][j] = matrix[j][i].
+
+Density: 44 directed pairs out of 380 possible = 11.58 %.
+
+================================================================================
+6. DIAGNOSTICS, API, AUTONOMY
+================================================================================
+
+6.1. Diagnostics via browser console
+
+Open DevTools (F12) → Console. Paste:
+
+  // Check number of layers
+  window.allLayers.length                          // → 12
+
+  // Check nodes
+  window.GraphView.getNodes().length               // → 20
+
+  // Check edges
+  window.GraphView.getEdges().length               // → 22
+
+  // Check markers
+  window.markerData.length                         // → 106
+
+  // Check Leaflet map
+  !!window.leafletMap                              // → true
+
+  // Current metric
+  window.GraphView.getCurrentMetric()              // → null | 'degree' | ...
+
+  // Communities enabled?
+  window.GraphView.isShowingCommunities()          // → true | false
+
+  // Heatmap enabled?
+  window.GraphView.isShowingHeatmap()              // → true | false
+
+  // List of saved positions
+  Object.keys(localStorage).filter(k => k.indexOf('crucix-network') === 0)
+
+6.2. Full diagnostics in one command
+
+Paste into console:
+
+  (() => {
+    console.log('=== NETWORK MAP DIAGNOSTICS ===');
+    console.log('Layers:', window.allLayers.length);
+    console.log('Nodes:', window.GraphView.getNodes().length);
+    console.log('Edges:', window.GraphView.getEdges().length);
+    console.log('Markers:', window.markerData.length);
+    console.log('Map:', !!window.leafletMap);
+    console.log('Metric:', window.GraphView.getCurrentMetric());
+    console.log('Communities:', window.GraphView.isShowingCommunities());
+    console.log('Heatmap:', window.GraphView.isShowingHeatmap());
+    console.log('===============================');
+  })();
+
+6.3. Testing algorithms
+
+All algorithms are available in the console:
+
+  var g = window.NetworkMap.graphData;
+
+  // Degree centrality
+  window.Relations.degreeCentrality(g)
+
+  // Betweenness centrality
+  window.Relations.betweennessCentrality(g)
+
+  // Closeness centrality
+  window.Relations.closenessCentrality(g)
+
+  // Louvain community detection
+  window.Relations.louvain(g)
+  // → { communities: {...}, modularity: 0.5404, numCommunities: 6 }
+
+  // PageRank
+  window.Relations.pagerank(g)
+  // → { ... , _iterations: 23, _converged: true }
+
+  // Eigenvector centrality
+  window.Relations.eigenvectorCentrality(g)
+  // → { ... , _iterations: 134, _converged: true }
+
+  // Clustering coefficient
+  window.Relations.clusteringCoefficient(g)
+  // → { local: {...}, global: 0.1033, transitivity: 0.0769 }
+
+  // Network diameter
+  window.Relations.networkDiameter(g)
+  // → { diameter: 9, avgPathLength: 3.8421 }
+
+  // Assortativity
+  window.Relations.assortativity(g)
+  // → { assortativity: -0.3390 }
+
+  // All metrics for all nodes
+  window.Relations.allMetrics(g)
+  // → array of 20 objects with 5 fields
+
+6.4. Testing path search
+
+  var g = window.NetworkMap.graphData;
+  window.Relations.findPath(g, 'RU', 'Victim-US');
+  // → ['RU', 'APT-28', 'C2-2', 'BOT-2', 'Victim-US']
+
+If the path is not found — null is returned.
+
+6.5. Testing node search
+
+  window.GraphView.searchNode('C2');
+  // → 3 (number of matches)
+  // Nodes C2-1, C2-2, C2-3 are highlighted.
+
+  window.GraphView.clearHighlight();
+  // → clear highlight.
+
+6.6. API endpoints
+
+12 route layers in total. Each expects an endpoint:
+
+  GET /api/layers/cyber-network
+  GET /api/layers/trade-routes
+  GET /api/layers/financial-flows
+  GET /api/layers/crypto-trace
+  GET /api/layers/banking-network
+  GET /api/layers/supply-chain
+  GET /api/layers/shell-companies
+  GET /api/layers/refugee-flows
+  GET /api/layers/migration-network
+  GET /api/layers/social-unrest
+  GET /api/layers/phone-network
+  GET /api/layers/social-media-network
+
+Expected response:
+
+  {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "properties": { "label": "Event", "value": 5 },
+        "geometry": { "type": "Point", "coordinates": [lng, lat] }
+      }
+    ]
+  }
+
+If the endpoint does not respond (404), the map uses the demo graph from
+js/network-adapter.js.
+
+6.7. Autonomy (R1–R6)
+
+Network Map is an autonomous map. Principles:
+
+  R1. Zero cross-map dependencies.
+      No script of Network Map accesses files of neighboring maps.
+      grep -rn '\.\./' js/ blocks/ → empty (except navigation links).
+
+  R2. Local world.geojson.
+      The file data/world.geojson (~250 KB) lies in the map folder.
+      Fetch goes through fetch('data/world.geojson') — relative to the map.
+
+  R3. Own 12 layers.
+      Exactly 12 layers, unique IDs. Not a single foreign one.
+      grep -c 'id:' js/layers.js → 12.
+
+  R4. Own maps-config.js and presets.json.
+      Configuration and presets are local.
+
+  R5. manifest.json → local_cross_map: 0, failure_domain: 1.
+      The map passport confirms autonomy.
+
+  R6. A failure in Network Map does not affect the other 4 maps.
+      Failure domain = 1. Verified via throw new Error('test')
+      in the Network Map console — neighboring maps keep working.
+
+6.8. What the map does without a server
+
+Network Map works fully offline:
+
+  1. HTML, JS, CSS are loaded from disk.
+  2. world.geojson is loaded from data/.
+  3. API endpoints /api/layers/* return 404.
+  4. Fallback: the demo graph from js/network-adapter.js is used.
+  5. All algorithms work (Louvain, PageRank, Eigenvector).
+  6. SVG/PNG export works.
+  7. The COPY button works.
+  8. HELP works (file docs/help/en/network-map.txt).
+  9. Saving node positions in localStorage.
+
+Reason: all map logic is in JS files. The API is only a data source.
+If there is no data, demo graphs give a full picture for demonstration.
+
+6.9. Checking autonomy of all maps
+
+From the project root:
+
+  cd dashboard/public
+
+  for map in event-map metrics-map semantic-map network-map forecast-map; do
+      echo "=== $map ==="
+      grep -rn '\.\./' "$map/js/"*.js "$map/blocks/"*.js 2>/dev/null | \
+          grep -v 'AUTONOMY\|manifest' | wc -l
+      grep -c 'id:' "$map/js/layers.js" 2>/dev/null
+      ls "$map/data/world.geojson" 2>/dev/null && echo "geojson: yes" || echo "geojson: no"
+  done
+
+Expectation:
+  Cross-map = 0 for all 5 maps.
+  Layers: 84 / 75 / 35 / 16 / 12.
+  world.geojson: present in 4 maps, not in Network Map (SVG graph without map).
+
+6.10. Contract between maps
+
+The only contract is navigation links in the header.
+
+  <a class="map-switch-btn" data-map="events"
+     href="/dashboard/event-map/">Events</a>
+  <a class="map-switch-btn" data-map="metrics"
+     href="/dashboard/metrics-map/">Metrics</a>
+  <a class="map-switch-btn" data-map="semantic"
+     href="/dashboard/semantic-map/">Semantic</a>
+  <a class="map-switch-btn active" data-map="network"
+     href="/dashboard/network-map/">Network</a>
+  <a class="map-switch-btn" data-map="forecast"
+     href="/dashboard/forecast-map/">Forecast</a>
+
+These are ordinary HTML links. Cross-map data is not loaded.
+Navigating to a neighboring map is ordinary browser navigation.
+
+================================================================================
+7. HOTKEYS, GLOSSARY, VERSION
+================================================================================
+
+7.1. Hotkeys
+
+All keys work when focus is not in an input field (input, textarea).
+
+  Key       Action
+  --------  ----------------------------------------------------------------
+  ?         Open/close help (this file)
+  Esc       Close help / close node popup / clear selection
+  Space     Pause / resume force simulation
+  R         Reheat — shake the graph (restart simulation)
+  C         Center the graph (fit to viewport)
+  S         Save node positions to localStorage
+  L         Load saved positions from localStorage
+  X         Reset positions (return to initial layout)
+  M         Switch metric: null → degree → betweenness →
+            closeness → null
+  K         Toggle communities (Louvain) on/off
+  H         Toggle heatmap on/off
+  E         Export SVG
+  P         Export PNG
+  F         Open node search
+  N         Go to next node (by search results)
+  1–9       Select layer by number (1 = cyber-network, 2 = trade-routes, ...)
+  0         Select 12th layer (social-media-network)
+  +         Zoom in
+  -         Zoom out
+
+Note: keys 1–9 and 0 work only for the first 10 layers. For layers 11–12,
+use the click on the list on the left.
+
+7.2. Mouse and trackpad
+
+  Action                         Result
+  -----------------------------  ------------------------------------------
+  Click on a node                Open popup with node metrics
+  Double click on a node         Center on the node + zoom in
+  Click on an edge               Show weight and type of edge
+  Drag a node                    Move the node (simulation restarts)
+  Drag the background            Pan the graph
+  Mouse wheel                    Zoom (zoom in/out)
+  Shift + wheel                  Horizontal scroll
+  Ctrl + wheel                   Vertical scroll
+  Right click on a node          Context menu (copy ID, hide)
+  Hover over a node              Tooltip with label and type
+
+7.3. Glossary
+
+Term                Definition
+------------------  ---------------------------------------------------------
+Node (node)         Vertex of the graph. In Network Map — country,
+                    organization, event, or financial entity. Has id,
+                    label, type, weight, x/y coordinates.
+
+Edge (edge)         Link between two nodes. Has source, target, type,
+                    weight. Direction: source → target.
+
+Graph (graph)       Set of nodes and edges. In Network Map — one of the
+                    12 layers.
+
+Layer (layer)       A separate graph. There are 12 layers in total,
+                    divided into categories flow (7) and social (5).
+
+Degree              Number of edges incident to a node. In an undirected
+                    graph — the sum of incoming and outgoing.
+
+Centrality          Measure of node importance in the graph. In Network
+                    Map — 3 types: degree, betweenness, closeness.
+
+Betweenness         Betweenness centrality. Shows how often a node lies
+centrality          on the shortest paths between other nodes. High
+                    betweenness = "bridge" between communities.
+
+Closeness           Closeness centrality. Inverse of the sum of shortest
+centrality          distances from a node to all others. High closeness =
+                    node is "close" to all.
+
+Louvain             Community detection algorithm (Blondel et al. 2008).
+                    Splits the graph into communities, maximizing
+                    modularity Q. Complexity O(n log n).
+
+Community           Group of nodes that are densely connected among
+(community)         themselves and weakly — with the rest of the graph.
+                    Result of Louvain.
+
+Modularity (Q)      Quality metric of the partition into communities.
+                    Q ∈ [−0.5, 1]. Q > 0.3 — good partition. Q > 0.5 —
+                    excellent.
+
+PageRank            Node ranking algorithm by "influence" (Page & Brin,
+                    1998). Used by Google. Iterative: node weight is
+                    distributed among neighbors.
+
+Eigenvector         Eigenvector centrality. A node is important if its
+centrality          neighbors are important. Recursive definition.
+
+Clustering          Clustering coefficient. Shows how connected the
+coefficient         neighbors of a node are among themselves. C ∈ [0, 1].
+                    Local — for a node, global — for the graph.
+
+Transitivity        Global clustering coefficient. Ratio of the number of
+(transitivity)      triangles to the number of "triples" (paths of length
+                    2).
+
+Network diameter    Maximum shortest distance between any two nodes.
+(diameter)          Shows the "size" of the graph.
+
+Average path        Average shortest distance between all pairs of nodes.
+(avg path length)   Characterizes the "compactness" of the graph.
+
+Assortativity       Tendency of nodes to connect with similar (by degree)
+(assortativity)     nodes. Positive — "rich with rich". Negative — "rich
+                    with poor". In cyber-network negative is expected.
+
+Adjacency matrix    N × N table where element [i][j] = weight of edge
+(adjacency matrix)  i → j. Symmetric for an undirected graph.
+
+Density             Ratio of the number of edges to the maximum possible.
+(density)           density = m / (n·(n−1)). In cyber-network ~11.58 %.
+
+DOT                 Graphviz format for describing graphs. Used for
+                    import into Gephi, yEd, Graphviz.
+
+D3 JSON             JSON format with fields nodes and links. Used for
+                    import into D3.js, Cytoscape.js, Sigma.js.
+
+CSV                 Comma-Separated Values. Tabular format for Excel,
+                    Google Sheets, R, Python (pandas).
+
+Force simulation    Algorithm for laying out nodes on a plane. Nodes
+(force-directed)    repel (charge), edges attract (link distance).
+
+Reheat              Restart of the force simulation with current
+                    positions. Used if the graph "froze" in a suboptimal
+                    shape.
+
+DOM snapshot        Snapshot of the DOM tree with coordinates, sizes, and
+(DOM snapshot)      colors of elements. Includes up to 500 elements.
+
+Snapshot            Full dump of the map state: graph, metrics,
+(snapshot)          configuration, DOM, styles, export. COPY button.
+
+Marker (marker)     Point on the Leaflet map. In Network Map — 106
+                    markers for 12 layers.
+
+vizType             Visualization type of the layer: graph (SVG graph),
+                    flow (flows), marker (points on the map).
+
+Layer category      flow (7 layers: cyber, trade, finance, crypto, banks,
+(category)          supply, shell) or social (5 layers: refugees,
+                    migration, protests, telephony, social media).
+
+Autonomy            Principle: the map works without a server and without
+(autonomy)          other maps. R1–R6 — autonomy rules.
+
+Failure domain      Failure area. For Network Map = 1 (only this map).
+
+Cross-map           Dependency on other maps. For Network Map = 0.
+
+7.4. FAQ
+
+Q: Why is the graph small — only 20 nodes?
+A: This is a demo graph. When the API /api/layers/cyber-network is
+   connected, the graph will expand to real data. The demo graph is
+   designed to demonstrate algorithms and offline operation.
+
+Q: Why do the nodes "jitter"?
+A: This is the force simulation. Nodes repel, edges attract. Press Space
+   to pause or R to restart.
+
+Q: How to save node positions?
+A: Key S — save to localStorage. Key L — load. Key X — reset.
+
+Q: How to export the graph to Gephi?
+A: Click COPY, find the DOT FORMAT section, save to a .dot file, open in
+   Gephi via File → Open.
+
+Q: How to export the graph to Excel?
+A: Click COPY, find the CSV: NODES and CSV: EDGES sections, save to .csv
+   files, open in Excel.
+
+Q: What is Louvain and why is it needed?
+A: Louvain is a community detection algorithm. It splits the graph into
+   groups of densely connected nodes. This helps to see the structure:
+   which countries form a bloc, which C2 servers serve one botnet, etc.
+
+Q: What is modularity Q?
+A: Quality metric of the partition into communities. Q > 0.3 — good
+   partition. Q > 0.5 — excellent. In cyber-network Q ≈ 0.54 (6
+   communities).
+
+Q: Why is assortativity negative?
+A: In cyber-network, nodes with high degree (C2 servers, botnets) are
+   connected to nodes with low degree (victims, countries). This is a
+   classic "star" — negative assortativity.
+
+Q: How to check that the map is autonomous?
+A: Open the console (F12), paste:
+   grep -rn '\.\./' js/ blocks/ → should be empty.
+   Or see section 6.9.
+
+Q: Why does the COPY button give 92 KB, not 250 KB?
+A: 92 KB is enough for full diagnostics. Further growth is due to
+   algorithms (Louvain, PageRank, Eigenvector, Clustering, Diameter), not
+   to artificial bloating of the DOM.
+
+Q: How to add a new layer?
+A: Open js/layers.js, add an object to the allLayers array. Then add a
+   demo graph to js/network-adapter.js → generateDemo(layerId).
+
+Q: How to add a new algorithm?
+A: Open js/relations.js, add a method to the window.Relations object.
+   Then add a section to js/topbar.js → copyAllData.
+
+7.5. Version and history
+
+Version:       3.0.0
+Date:          2026-09-30
+Author:        Crucix OSINT Terminal
+License:       Proprietary
+
+Change history:
+
+  3.0.0 (2026-09-30)
+    + Louvain community detection (Blondel et al. 2008)
+    + PageRank (Page & Brin 1998)
+    + Eigenvector centrality
+    + Clustering coefficient (local + global + transitivity)
+    + Network diameter + average path length
+    + Assortativity
+    + 8 new snapshot sections (nodes by type, edges by type,
+      adjacency matrix, top by metrics, adjacent nodes, DOT, D3 JSON,
+      CSV, CSS SVG styles)
+    + DOM snapshot expanded from 300 to 500 elements
+    + Snapshot: 73 KB → 92 KB
+    + 12 layers (7 flow + 5 social)
+    + 106 markers
+    + Autonomy R1–R6
+    + Full help (this file)
+
+  2.0.0 (2026-09-29)
+    + Degree, betweenness, closeness centrality
+    + allMetrics()
+    + Path search (findPath)
+    + Neighbor search (getNeighbors)
+    + COPY button (73 KB)
+    + 12 layers
+    + SVG + PNG export
+    + localStorage for node positions
+
+  1.0.0 (2026-09-28)
+    + Base map
+    + 12 layers
+    + Force simulation
+    + Leaflet map
+    + Demo graphs
+
+7.6. Contacts and support
+
+Documentation:  docs/help/en/network-map.txt (this file)
+                docs/help/ru/network-map.txt (Russian version)
+Sources:        js/ (topbar.js, relations.js, graph-view.js,
+                network-adapter.js, layers.js)
+Backups:        backups/
+Manifest:       manifest.json
+
+For diagnostics: click COPY and send the snapshot.
+For autonomy check: see section 6.9.
+For algorithm testing: see section 6.3.
+
+================================================================================
+END OF HELP
+================================================================================

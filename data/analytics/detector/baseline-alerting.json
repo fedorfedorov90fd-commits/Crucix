@@ -1,0 +1,68 @@
+{
+  "_meta": {
+    "id": "baseline-alerting",
+    "category": "detector",
+    "version": "1.0.0",
+    "schema_version": "1.0.0",
+    "sources": [
+      "vix",
+      "dxy",
+      "gold",
+      "oil"
+    ],
+    "calculator": "BaselineAlerting",
+    "updated_at": "2026-09-20T09:51:51.919Z",
+    "duration_ms": 2,
+    "checksum": "a873176ffdc2a023",
+    "stats": {
+      "alerts": 0,
+      "byLevel": {
+        "critical": 0,
+        "alert": 0,
+        "warn": 0
+      }
+    },
+    "description": "Пороговые уведомления: отклонение от baseline (z-score)."
+  },
+  "data": {
+    "alerts": [],
+    "byLevel": {
+      "critical": 0,
+      "alert": 0,
+      "warn": 0
+    },
+    "baselines": {
+      "vix": {
+        "mean": 18,
+        "stddev": 5,
+        "samples": 365,
+        "updated": 1789897911921
+      },
+      "dxy": {
+        "mean": 100,
+        "stddev": 3,
+        "samples": 365,
+        "updated": 1789897911921
+      },
+      "gold": {
+        "mean": 2000,
+        "stddev": 200,
+        "samples": 365,
+        "updated": 1789897911921
+      },
+      "oil": {
+        "mean": 75,
+        "stddev": 12,
+        "samples": 365,
+        "updated": 1789897911921
+      }
+    },
+    "currentValues": {
+      "vix": null,
+      "dxy": null,
+      "gold": null,
+      "oil": null
+    },
+    "generated_at": "2026-09-20T09:51:51.919Z"
+  }
+}

@@ -1,0 +1,3893 @@
+# METRICS MAP-STATUS MANIFEST
+
+* * Map version:** 1.1
+* * Location:** `dashboard/public/metrics-map/`
+* * Server:** `http://localhost:3117/metrics-map/`
+* * Offline mode:** FULL ISOLATION (Nygard 2007, Bulkhead Pattern)
+**Failure domain:** 1 (failure of this map does not affect the other 4)
+
+---
+
+## 1. PURPOSE AND PLACE IN THE CRUCIX ECOSYSTEM
+
+# # # 1.1. What is the Crucix ecosystem of 5 maps?
+
+Crucix is a geopolitical OSINT platform. It consists of * * 5 standalone maps**, each visualizing its own data class:
+
+1. * * Event Map** (`/event-map/`) — point events on the map (rallies, attacks, incidents). 84 layers, markers.
+2. * * Metrics Map** (`/metrics-map/`) — quantitative indicators by country (economy, finance, ESG, cyber, energy). ** 75 layers**, choropleth.
+3. * * Semantic Map** (`/semantic-map/`) — semantic analysis of texts (tonality, narratives, misinformation). 35 layers.
+4. * * Forecast Map** (`/forecast-map/`) — probabilistic forecasts (recession, conflicts, risks). 16 layers.
+5. * * Network Map** (`/network-map/`) - connection graphs (cyber networks, trade, finance, migration). 12 layers, SVG graph.
+
+### 1.2. Why exactly 5 cards, and not just one
+
+Five maps are an implementation of the principle of **Separation of Concerns** (Dijkstra 1974). Each data class requires its own visualization model:
+
+- **Events * * → position + color (point markers). Channel: Position. Capacity: high for localization.
+- **Quantitative indicators * * → position (country) + color intensity (choropleth). Channel: Position + Color intensity. Munzner 2014, Table 5.3-fully separable.
+- **Semantics* * → position + categorical color + shape. Channel: Position + Hue + Shape.
+- **Probabilities * * → position + color + opacity. Канал: Position + Color intensity + Transparency.
+- **Links** → graph topology (force-directed). Channel: Position (force) + Shape.
+
+Trying to combine everything into a single map would violate * * the principle of channel separability* * (Munzner 2014). The user would not be able to perceive 5 different encodings at the same time without cognitive interference. Splitting into 5 maps is a science-based decision, not an organizational convenience.
+
+# # # 1.3. What does Metrics Map do?
+
+Metrics Map visualizes * * numeric indicators for 90 countries around the world**. Each layer is a single indicator:
+
+- Economics: PMI, Inflation, GDP, Unemployment, Trade balance, consumer confidence, business optimism, consumer expectations, probability of recession, debt/GDP
+- Finance: Dollar Index, Spreads, Copper/Gold, Gold / Oil, Gold/Silver, Yield Curve, Big Mac, Uranium, HY OAS, OVX, S&P / VIX, VXX, Crypto Fear, Rouble-in-Dubai, WTI/Brent
+- ESG: happiness, population density, refugees, urbanisation, WHO, COVID-19, HDI
+- Cyber: CVE vulnerabilities, composite index of cyber threats
+- Energy: EIA, Nuclear, Renewable, Oil / Gas, WTI/Brent spread
+- Health: WHO, COVID-19, medical infrastructure
+- Social: population displacement, refugees, phone activity
+- Geopolitics: social tensions, corruption, democracy, instability, sustainability, strategic risk
+- Military: expenses, preparation for war
+- Threats: CVE vulnerabilities
+- Intelligence: patterns of behavior
+- News: Google Trends
+- Other: Internet, mobile communication
+
+Total: * * 75 layers in 13 categories**.
+
+Each layer when activated:
+1. Gets data from the `/api/layers/<layerId>` API (or `/api/layers/<layerId>/featurecollection`).
+2. If the API is unavailable (404) - triggers * * offline fallback**: data is generated locally from `countries.js ' using a deterministic generator with correlation by country status (critical → higher, normal → lower).
+3. Classifies values using one of 5 methods: Jenks DP, Quantile, Equal Interval, Standard Deviation, Manual (domain thresholds).
+4. Applies the ColorBrewer palette (sequential or diverging).
+5. Paints over 90 countries on the map using 'applyChoropleth'.
+6. Draws a legend with class thresholds, classification method and quality (GVF).
+7. Logs the result: `[Choropleth] method=jenks, breaks= [...], GVF=0.9199`.
+
+### 1.4. Differences from Event Map
+
+Event Map and Metrics Map differ in the visualization class:
+
+- **Event Map:** each point is a separate event (incident, rally). Thousands of markers. `vizType='marker'`.
+- **Metrics Map:** each country is an aggregate of a numeric indicator. 90 countries. `vizType='choropleth'` или `'series'`.
+
+Event Map generates data from events, Metrics Map-from indicators. These are different data models, and both do not reduce to each other without losing meaning.
+
+---
+
+## 2. FOLDER STRUCTURE (20 required files)
+metrics-map/
+├── index.html ← entry point, 18 local scripts
+├── manifest.json passport (mapType=metrics, layers=75, cross_map=0)
+├── METRICS-MAP-MANIFEST.md ← THIS FILE (full status description)
+├── ARCHITECTURE.md ← Technical specification of DAG loading
+├── AUTONOMY-CHARTER.md устав Charter of the R1-R6 autonomy
+├── css/
+─ ─ ─ metrics-map.css ← SINGLE CSS (dark theme + choropleth legend)
+├── js/ ← 15 files, loading order is critical
+│ ├── core.js
+│ ├── countries.js
+│ ├── layers.js
+│ ├── maps-config.js
+│ ├── series-adapter.js
+│ ├── map-controls.js
+│ ├── markers.js
+│ ├── metrics-map.js
+│ ├── copy-data.js
+│ ├── heat-timeline.js
+│ ├── ssi.js
+│ ├── refresh.js
+│ ├── cii.js
+│ ├── logger.js
+│ └── init.js
+├── data/
+│ └── world.geojson ← LOCAL copy of borders (252 KB)
+└── presets/
+└── presets.json ← 5 presets with unique keys
+
+
+Plus the `backups/ ' directory — automatically created backups of edits. Plus the `_archive/ ' directory — obsolete files after cleaning.
+
+---
+
+## 3. UPLOAD DAG (16 steps, the order is critical)
+
+| # / File | What does | Depends on |
+|---|------|------------|------------|
+| S01 | inline `<script>` | `window.CrucixMap = {mapType:'metrics'}` | — |
+| S02 | `js/core.js` | `LANG_DATA`, `showNotification`, `setLanguage` | CrucixMap |
+| S03 | `js/countries.js` | `ALL_COUNTRIES[90]` | — |
+| S04 / `js/layers.js` | 'allLayers[75]' + layers panel | — |
+| S05 | `js/maps-config.js` | `MAP_TYPES`, `COLOR_SCHEMES`, `LAYER_CLASSIFICATION` | allLayers |
+| S06 | `js/series-adapter.js` | `SeriesAdapter.convert()` - 14 modules | maps-config |
+| S07 | `js/map-controls.js` | `loadCountryBoundaries`, `applyChoropleth`, `jenksBreaks`, `computeGVF` | Leaflet, countries |
+| S08 | `js/markers.js` | `generateAllMarkers`, `updateMarkers`, `renderLayerPanel` | allLayers, map |
+| S09 | `js/metrics-map.js` | `MetricsMap.init()` — оборачивает `loadLayer()` | series-adapter, map-controls |
+| S10 / `js/copy-data.js ' / ' copyAllData` - snapshot (~500 KB) | — |
+| S11 | `js/heat-timeline.js` | `toggleHeat`, `toggleTimeline` | map |
+| S12 | `js/ssi.js` | `calculateSSI`, `updateLegend` | countries |
+| S13 | `js/refresh.js` | `startAutoRefresh`, `refreshMapData` | — |
+| S14 | `js/cii.js` | `updateCII` с fallback | countries, map-controls |
+| S15 / `js/logger.js ' / ' CrucixLogger '(log panel) | — |
+| S16 | `js/init.js` / 'loadData' → 'loadCountryBoundaries' → ' MetricsMap.init()` | all above |
+
+* * Out of order = ' window. CrucixMap` undefined = the entire map crashes.**
+
+---
+
+## 4. FUNCTIONAL MATRIX
+
+| File | Responsibility | It DOESN'T |
+|------|-----------------|-----------|
+| `core.js` | Language, notifications, global variables | Map logic |
+| `countries.js` | Array of 90 countries with coordinates and statuses | UI |
+| `layers.js` / 75 layers + panel + toggle logic | Loading data |
+| `maps-config.js ' / choropleth configuration: method, palette, breaks | Rendering |
+| `series-adapter.js` | series → choropleth (spatial proxy, 6 трансформаций) | Classification |
+| `map-controls.js` | Leaflet init, Jenks DP, ColorBrewer, GVF, legend | Бизнес-логику |
+| `markers.js ' / Markers on the map (6 marker layers × 180 = 1080) | Choropleth |
+| `metrics-map.js` | Decision tree: choropleth / series / marker | Рендеринг |
+| `copy-data.js` | Status snapshot (~500 KB) | — |
+| `heat-timeline.js` / Heat map, timeline | — |
+| `ssi.js ' / Strategic Stress Index (42% now) | — |
+| `refresh.js` / Auto-updating data | — |
+| `cii.js` | Country Instability Index (fallback) | — |
+| `logger.js` | Logging with the | — |panel
+| `init.js` | Launching the map | — |
+
+---
+
+## 5. 75 LAYERS-DISTRIBUTION
+
+| Category | Layers | choropleth | series | marker |
+|-----------|-------|------------|--------|--------|
+| finance | 26 | 12 | 8 | 6 |
+| economics | 15 | 11 | 4 | — |
+| esg | 8 | 8 | — | — |
+| geopolitical | 6 | 6 | — | — |
+| energy | 5 | 4 | 1 | — |
+| health | 3 | 3 | — | — |
+| social | 3 | 3 | — | — |
+| cyber | 2 | 1 | 1 | — |
+| military | 2 | 2 | — | — |
+| other | 2 | 2 | — | — |
+| threats | 1 | 1 | — | — |
+| intelligence | 1 | 1 | — | — |
+| news | 1 | 1 | — | — |
+| **TOTAL** | **75** | **56** | **14** | **6** |
+
+---
+
+## 6. HOW EACH LAYER TYPE WORKS
+
+### 6.1. Choropleth (56 layers)
+
+When you click on a layer:
+1. `loadLayer(layerId)'called from `layers.js`.
+2. `MetricsMap.interceptLoad(layerId)'intercepts.
+3. `vizType === 'choropleth'` → `loadChoroplethLayer(layer)`.
+4. `fetch('/api/layers/<id>/featurecollection')`.
+5. If 404 → ' renderFallback(layer)`:
+ - Deterministic seed by `layer.id`.
+ - For each of the 90 countries, value = base (status) + noise(seed).
+ - Jenks classification (or manual for PMI/recession).
+   - `applyChoropleth()` paints over countries.
+ - Logs GVF (usually 0.90–0.93).
+6. If the API works, the data is applied directly.
+
+### 6.2. Series (14 layers)
+
+When you click:
+1. `interceptLoad` → `loadSeriesLayer(layer)`.
+2. `fetch('/api/layers/<route>')`.
+3. If 404 → 'renderFallback' (as for choropleth).
+4. If the API works — ' SeriesAdapter. convert(layerId, SeriesData, countries)`:
+ - Selects the spatial proxy (us_market, oil_producers, financial_centers, etc.).
+ - Applies transformation (weighted_value, stress_indicator, ratio_indicator).
+ - Classifies (jenks / manual).
+ - Returns features for choropleth.
+
+### 6.3. Marker (6 layers)
+
+When you click:
+1. `interceptLoad` → `loadMarkerLayer(layer)`.
+2. `fetch('/api/layers/<id>')`.
+3. If 404 → ' renderMarkerFallback(layer)`:
+ - 2 markers for each of the 90 countries = 180 markers.
+ - Position = country coordinates + deterministic shift.
+ - Added to 'window. markerData'.
+ - Redrawn via 'updateMarkers'.
+
+Total when all 6 marker layers are fully activated: 6x180 = * * 1080 markers**.
+
+---
+
+## 7. AUTONOMY (R1–R6)
+
+**R1:** No `<script> '/`<link>`/ 'fetch` goes to'../*`. Check: 'grep-rn'\.\. / ' index.html js/*.js | grep -v 'AUTONOMY\|manifest'`.
+
+**R2:** `world.geojson 'is located in `data/`,' fetch('data/world.geojson')`.
+
+**R3:** `layers.js ' contains exactly 75 Metrics Map layers. Foreign layers (semantic, forecast, network, event) — 0.
+
+**R4:** `maps-config.js`, `presets.json` — only for Metrics Map.
+
+**R5:** `manifest.json` → `local_cross_map: 0`, `failure_domain: 1`.
+
+**R6:** A crash in Metrics Map does not affect Event/Semantic/Forecast/Network.
+
+---
+
+## 8. VERIFICATION CHECKLIST
+
+```bash
+cd "dashboard/public/metrics-map"
+
+# R1: 0 cross-map dependencies
+grep -rn '\.\./' index.html js/*.js | grep -v 'AUTONOMY\|manifest'
+
+# R3: 75 layers
+grep -c 'id:' js/layers.js
+
+# R3: 0 duplicates
+grep -o 'id: "[^"]*"' js/layers.js | sort | uniq -d
+
+# R2: Local geojson
+grep -n "data/world.geojson" js/map-controls.js
+ls -la data/world.geojson
+
+# Order of scripts
+grep -o 'src="[^"]*"' index.html | grep -v "http" | sort
+# # 9. CLASSIFICATION METHODS (Jenks 1963, Brewer 2005)
+Method	Formula	Application
+Jenks DP	minimizing SDCM, O(k·n2)	By default
+Quantile	equal groups	For outliers
+Equal Interval	(max-min)/k	Smooth scales
+Standard Dev	μ ± 0.5 σ, ± 1.5 σ	Normal distribution
+Manual	expert thresholds	are ISM 50, recession 20/40/60/80
+Quality control: GVF = (SDAM − SDCM) / SDAM > 0.7.
+
+## 10. COLORBREWER PALETTES
+Sequential (7): Blues, YlOrRd, Greens, Oranges, Purples, BuPu, OrRd
+Diverging (4): RdYlGn5, RdBu5, BrBG5, PiYG5
+
+Domain rules:
+
+PMI → diverging RdYlGn5, manual breaks [42, 47, 53, 58] (ISM 50 = граница)
+
+Recession → sequential YlOrRd5, manual breaks [20, 40, 60, 80]
+
+Copper/Gold → diverging RdBu5, Jenks
+
+Yield Curve → diverging RdBu5, Jenks (inversion = red)
+
+## 11. CURRENT STATUS
+Компонент	The Status component
+75 layers loaded	✅
+Layers panel (13 categories, 76 buttons)	✅
+Data/world borders.geojson locally	✅
+MetricsMap orchestrator	✅
+Autonomous fallback (without API)	✅
+Jenks DP + GVF	✅ (GVF 0.90–0.93)
+Choropleth-legend	✅
+CII fallback	✅ (42%)
+SSI	✅ (42%)
+COPY button (~500 KB)	✅
+Marker-fallback (180 markers/layer)	✅
+Manual click on	the слоя layer button Requires checking whether toggle is working
+The "Enable all"	button Requires verification: the loop processes 10-20 layers out of 75
+The legend is cleared when layerCache = 0	⚠ ️ is active
+## 12. KNOWN LIMITATIONS
+12.1. The "Enable all" button (enableAllLayers in js/layers.js)
+Problem: in previous tests, the loop processed 10-20 layers and broke without the final line [enableAllLayers] Total: 75....
+
+Hypotheses:
+
+A manual call from the console works, but the button from the panel doesn't.
+
+The user switched the tab → browser throttled setTimeout(30).
+
+Two parallel calls to enableAllLayers (panel + console) give a race condition.
+
+Required:
+
+Check that the "Enable all" button in the layers panel calls window. enableAllLayers().
+
+In enableAllLayers, add logs in each iteration: console. log('[enableAllLayers] Layer N / 75: '+ layer.id).
+
+After loading the layer, return the active class to the button: if (btn) btn.classList.add('active').
+
+12.2. Visual activity of layer buttons
+Problem: in a snapshot with 76 active layers in activeLayerIds, all 76 buttons may not have a class .active.
+
+Required: in enableAllLayers, after successfully loading the layer, return the active class to the button. Currently, the button removes the class before loading and does not return it.
+
+12.3. copy-data.js — full size
+Target size: 300-500 KB with 75 data layers.
+
+Current size: 40-50 KB with 1-10 data layers.
+
+Check: After all 75 layers receive data (via enableAllLayers), the size should grow to ~350 KB. If not — the ACTIVE LAYERS DATA section does not collect all 90 rows per layer.
+
+12.4. Other 4 cards
+Similar to Metrics Map, they should be set to the FULL ISOLATION state:
+
+Event Map (/event-map/) — 84 layers, there is basic autonomy, but it requires checking layers.js and map-controls.js.
+
+Semantic Map (/semantic-map/) — 35 layers, sentiment-adapter, verification failed.
+
+Forecast Map (/forecast-map/) — 16 layers, forecast-adapter, probability-fill (Cressie 1993), check failed.
+
+Network Map (/network-map/) — 12 layers, SVG force-directed graph (Barabasi 2016), without Leaflet, verification failed.
+
+Each card requires:
+
+Unified MANIFEST.md with a full description (modeled on this one).
+
+Clearing the folder of obsolete files (moving to _archive/).
+
+Offline check (grep '\.\./' = 0).
+
+Checking the upload DAG.
+
+Layer verification.
+
+13. MAIN FILE TO ENTER IN A NEW CHAT
+This file is the only source of context for the new AI instance. After reading it, the AI immediately understands:
+
+What is Metrics Map and its place in the 5-map ecosystem?
+
+What is the folder structure (20 required files)?
+
+How each part works (DAG, functional matrix).
+
+What layers are loaded and how they are rendered.
+
+What tasks have been solved and what remains to be completed.
+
+What are the principles of autonomy (R1–R6) and how to check them?
+
+What you need to do for the next request:
+
+Check item 12.1 ("Enable all" button).
+
+Check point 12.2 (visual activity of buttons).
+
+Check point 12.3 (size copy-data.js).
+
+Go to the next map (Event Map, Semantic Map, Forecast Map, or Network Map-based on the user's priority).
+
+14. PROJECT RULES APPLICABLE TO THIS FILE
+
+
+## 13. FULL LIST OF 75 LAYERS-CATALOG
+
+Each layer: ID, name, Category, vizType, classification method, palette, data source, what it shows.
+
+### 15.1. ECONOMICS — 15 layers
+
+**1. inflation** — "Inflation"
+- vizType: choropleth, method: jenks, palette: OrRd
+- Source: FRED (CPIAUCSL, Consumer Price Series)
+- What it shows: annual price growth rate by country, %
+- Domain: 0-100, more = worse
+
+**2. employment** — "Unemployment"
+- vizType: choropleth, jenks, YlOrRd
+- Source: BLS + FRED
+- What it shows: the unemployment rate, % of the labor force
+
+**3. gdp** — "GDP"
+- vizType: choropleth, jenks, Greens
+- Source: FRED (GDP), World Bank
+- What does it show: GDP per capita (normalized)
+
+**4. pmi** — «PMI»
+- vizType: choropleth, manual, RdYlGn5
+- Breaks: [42, 47, 53, 58]
+- Source: ISM (USA) + analogs by country
+- What it shows: Purchasing Managers ' Index. Domain: 50 = compression / expansion boundary (ISM). Below 42 = crisis, above 58 = boom
+- Rationale: ISM 50 domain threshold is more important than statistical optimality
+
+**5. recession** — "Recession"
+- vizType: choropleth, manual, YlOrRd
+- Breaks: [20, 40, 60, 80]
+- Source: Recession probability model (Yield curve + Spreads + PMI)
+- What it shows: probability of a recession in the next 12 months,%. Domain: 20/40/60/80-confidence thresholds
+
+**6. trade-balance** — "Trade balance"
+- vizType: choropleth, jenks, RdBu5 (diverging)
+- Source: Comtrade, FRED
+- What it shows: exports minus imports, % of GDP. Divergent scale: red = deficit, blue = surplus
+
+* * 7. fred** — "FRED Economy"
+- vizType: choropleth, jenks, Blues
+- Source: FRED (Aggregated index)
+- What it shows: composite economic indicator
+
+**8. bls** — "BLS Trud"
+- vizType: choropleth, jenks, Blues
+- Source: BLS (Bureau of Labor Statistics)
+- What it shows: aggregate by labor market
+
+**9. comtrade** — "Comtrade Trading"
+- vizType: choropleth, jenks, Blues
+- Source: UN Comtrade
+- What it shows: international trade volume
+
+**10. debt-gdp** — "Debt/GDP"
+- vizType: choropleth, jenks, OrRd
+- Source: FRED (GFDEGDQ188S)
+- What it shows: public debt as a percentage of GDP. Domain Name: higher = worse
+
+**11. consumer-confidence** — "Consumer trust"
+- vizType: choropleth, jenks, RdYlGn5
+- Source: FRED (UMCSENT)
+- What it shows: Consumer confidence index. Divergent: pessimism , optimism
+
+**12. business-optimism-api** — " Business Optimism Index (FRED)"
+- vizType: series → choropleth, jenks, RdYlGn5
+- Spatial proxy: us_market
+- Transformation: weighted_value
+- Source: /api/layers/business-optimism
+- What it shows: business optimism (NFIB Small Business Optimism)
+
+**13. consumer-expectations-api** — " Consumer Expectations Index (FRED)"
+- vizType: series, jenks, RdYlGn5
+- Spatial proxy: us_market
+- Transformation: weighted_value
+- Source: /api/layers/consumer-expectations
+- What it shows: Consumer Expectations (Conference Board)
+
+**14. pmi-api** — " PMI purchasing managers (threshold 50)"
+- vizType: series, manual, RdYlGn5
+- Breaks: [42, 47, 53, 58]
+- Spatial proxy: all_countries
+- Source: /api/layers/pmi
+- What it shows: PMI. ISM 50 Domain
+
+**15. recession-api** — " Probability of a recession (0-100%)"
+- vizType: series, manual, YlOrRd
+- Breaks: [20, 40, 60, 80]
+- Spatial proxy: developed_markets
+- Source: /api/layers/recession
+- What it shows: the probability of a recession in developed markets
+
+### 15.2. FINANCE — 26 layers
+
+**16. dxy** — "DXY Dollar Index"
+- vizType: choropleth, jenks, RdBu5
+- Source: FRED (DTWEXBGS)
+- What it shows: the strength of the dollar. Divergent: weakness ↔ strength
+
+**17. tips** — "TIPS Real bets"
+- vizType: choropleth, jenks, RdBu5
+- Source: FRED (DFII10)
+- What shows: 10-year real rates (TIPS)
+
+**18. hy-spread** — "Corporate spreads"
+- vizType: choropleth, jenks, YlOrRd
+- Source: FRED (BAMLH0A0HYM2)
+- What does it show: spread of high-yield bonds. Domain Name: higher = stress
+
+**19. copper-gold** — "Copper/Gold"
+- vizType: choropleth, jenks, RdBu5
+- Source: FRED (PCOPPUSDM, GOLDPMGBD228NLBM)
+- What it shows: the ratio of copper to gold is a leading indicator of the economy
+
+**20. gold-oil** — " Gold/Oil"
+- vizType: choropleth, jenks, RdBu5
+- Source: FRED (GOLDPMGBD228NLBM, DCOILWTICO)
+- What it shows: the ratio of gold to oil
+
+**21. gold-silver** — " Gold/Silver"
+- vizType: choropleth, jenks, RdBu5
+- Source: FRED
+- What it shows: the ratio of gold to silver
+
+**22. yield-curve** — "Yield curve"
+- vizType: choropleth, jenks, RdBu5
+- Source: FRED (T10Y2Y)
+- What does it show: The spread is 10Y-2Y. Inversion = red (recession signal)
+
+* * 23. big-mac** — "Big-Mac Index"
+- vizType: choropleth, jenks, RdBu5
+- Source: The Economist
+- What it shows: currency under - / revaluation via Big Mac
+
+* * 24. big-mac — alt**-"Big-Mac (alt)"
+- vizType: choropleth, jenks, RdBu5
+- Source: Alternative source
+- What shows: Big Mac, alternative method
+
+**25. big-mac — main**-"Big-Mac (main)"
+- vizType: choropleth, jenks, RdBu5
+- Source: Main source
+- What shows: Big Mac, basic technique
+
+* * 26. uranium** — "Price of uranium"
+- vizType: choropleth, jenks, Purples
+- Source: UxC (Uranium Exchange)
+- What it shows: spot price of uranium
+
+* *27. crucix-banking** — "🏦 Banking activity"
+- vizType: choropleth, jenks, Greens
+- Source: Synthetic (bank transactions)
+- What does it show: banking system activity
+
+* * 28. copper-gold-ratio-api** — " Copper to gold ratio (leading)"
+- vizType: series, jenks, RdBu5
+- Spatial proxy: copper_producers (Chile, Peru, China, USA, Australia)
+- Transformation: ratio_indicator
+- Source: /api/layers/copper-gold-ratio
+
+**29. hy-spread-api** — "HY OAS-spread of high-yield bonds"
+- vizType: series, jenks, YlOrRd
+- Spatial proxy: us_market
+- Transformation: stress_indicator
+- Source: /api/layers/hy-spread
+
+**30. ovx-api** — "OVX-oil volatility"
+- vizType: series, jenks, YlOrRd
+- Spatial proxy: oil_producers
+- Transformation: stress_indicator
+- Source: /api/layers/ovx
+- What it shows: CBOE Crude Oil Volatility Index
+
+**31. rublev-dubai-api** — "Ruble in Dubai — real RUB/USDT exchange rate"
+- vizType: series, jenks, RdYlGn5
+- Spatial proxy: all_countries
+- Transformation: weighted_value
+- Source: /api/layers/rublev-dubai
+- What it shows: the real exchange rate of the ruble through crypto exchanges (Garantex, CommEX)
+
+**32. sp500-vix-api** — «S&P 500 / VIX Ratio (risk-on/risk-off)»
+- vizType: series, jenks, RdBu5
+- Spatial proxy: financial_centers
+- Transformation: ratio_indicator
+- Source: / api/layers/sp500-vix
+- What it shows: Risk Appetite indicator
+
+**33. vxx-api** — «VXX — VIX Short-Term Futures ETN»
+- vizType: series, jenks, YlOrRd
+- Spatial proxy: financial_centers
+- Transformation: stress_indicator
+- Source: /api/layers/vxx
+- What it shows: Volatility modes
+
+* * 34. yield-curve-api** — " US Treasury Yield curve (10Y-2Y)"
+- vizType: series, jenks, RdBu5
+- Spatial proxy: developed_markets
+- Transformation: yield_curve_signal
+- Source: /api/layers/yield-curve
+- What it shows: inversion = red
+
+* * 35. crypto-fear-api** — "Crypto-fear: BTC, ETH, ratio"
+- vizType: series, jenks, RdYlGn5
+- Spatial proxy: crypto_adoption
+- Transformation: sentiment_indicator
+- Source: / api/layers/crypto-fear
+- What it Shows: Crypto Market Fear/Greed Index
+
+* * 36. vix-futures** — "VIX futures"
+- vizType: marker, jenks, Blues
+- Source: CBOE VIX futures
+- What it shows: contango / backwardation of futures. Fallback: 180 markers
+
+* * 37. cftc-cot** — "CFTC COT — fund positions"
+- vizType: marker, jenks, Blues
+- Source: CFTC Commitments of Traders
+- What it shows: positions of institutional funds. Fallback: 180 markers
+
+* * 38. insider-trading** — "Insider trading"
+- vizType: marker, jenks, Blues
+- Source: SEC Form 4
+- What it shows: insider deals. Fallback: 180 markers
+
+**39. sec-filings** — «SEC filings»
+- vizType: marker, jenks, Blues
+- Source: SEC EDGAR
+- What shows: SEC reports. Fallback: 180 markers
+
+**40. short-interest** — «Short interest»
+- vizType: marker, jenks, Blues
+- Source: FINRA
+- What it shows: the volume of short positions. Fallback: 180 markers
+
+* * 41. bankruptcy-filings** — "Bankruptcies"
+- vizType: marker, jenks, Blues
+- Source: judicial registers
+- What it shows: company bankruptcies. Fallback: 180 markers
+
+### 15.3. ESG — 8 layers
+
+**42. happiness** — "Happiness Index"
+- vizType: choropleth, jenks, RdYlGn5
+- Source: World Happiness Report
+- What it shows: subjective well-being. Domain: 0-10
+
+**43. happiness-alt** — " Happiness index (alt.)"
+- vizType: choropleth, jenks, RdYlGn5
+- Source: Alternative (Gallup-Sharecare)
+
+* * 44. population** — "Population density"
+- vizType: choropleth, jenks, Purples
+- Source: World Bank
+- What it shows: people/km2
+
+* * 45. refugees** — "Refugees"
+- vizType: choropleth, jenks, OrRd
+- Source: UNHCR
+- What it shows: number of refugees per 100k population
+
+* * 46. urbanization** — "Urbanisation"
+- vizType: choropleth, jenks, Blues
+- Source: World Bank
+- What it shows: % of the urban population
+
+* * 47. who** — "WHO Healthcare"
+- vizType: choropleth, jenks, Greens
+- Source: WHO
+- What it shows: population health index
+
+**48. covid** — «COVID-19»
+- vizType: choropleth, jenks, YlOrRd
+- Source: JHU CSSE
+- What it shows: current morbidity rate
+
+**49. hdi** — "Human Development Index"
+- vizType: choropleth, jenks, Greens
+- Source: UNDP HDI
+- What it shows: HDI, 0-1
+
+### 15.4. GEOPOLITICAL — 6 layers
+
+* * 50. social-unrest** — "Social tension"
+- vizType: choropleth, jenks, YlOrRd
+- Source: ACLED + GDELT
+- What it shows: composite index of protest activity
+
+* * 51. corruption** — "Corruption Index"
+- vizType: choropleth, jenks, YlOrRd
+- Source: Transparency International CPI
+- Which shows: 0-100, higher = less corruption. Inverted
+
+* * 52. democracy** — "Democracy Index"
+- vizType: choropleth, jenks, RdYlGn5
+- Source: EIU Democracy Index
+- What it shows: 0-10. Domain: 4/6/8 = mode boundaries
+
+* * 53. country-instability** — "Country Instability Index"
+- vizType: choropleth, jenks, YlOrRd
+- Source: FFP Fragile States Index
+- What it shows: 0-120 (normalized)
+
+* * 54. resilience-index** — "Country Resilience Index"
+- vizType: choropleth, jenks, Greens
+- Source: FFP + World Bank
+- What it shows: resistance to shocks. Domain Name: higher = better
+
+* * 55. strategic-risk-composite** — " Strategic risk (composite)"
+- vizType: choropleth, manual, YlOrRd
+- Breaks: [20, 40, 60, 80]
+- Source: composite (instability + sustainability deficit + infrastructure + geopolitics)
+- Weight: 100 (highest priority)
+
+### 15.5. ENERGY — 5 layers
+
+* * 56. eia** — " EIA Energetika "
+- vizType: choropleth, jenks, Oranges
+- Source: EIA (US Energy Information Administration)
+- What shows: energy consumption
+
+* * 57. nuclear** — " Nuclear Power engineering "
+- vizType: choropleth, jenks, Purples
+- Source: IAEA
+- What it shows: % of atomic generation
+
+* * 58. renewable** — "Renewable energy"
+- vizType: choropleth, jenks, Greens
+- Source: IRENA
+- What it shows: % of renewable generation
+
+* * 59. oil-gas** — " Oil/Gas "
+- vizType: choropleth, jenks, Oranges
+- Source: EIA
+- What it shows: oil and gas production
+
+* * 60. wti-brent-spread-api** — " WTI/Brent spread (geopolit. voltage)"
+- vizType: series, jenks, RdBu5
+- Spatial proxy: oil_producers
+- Transformation: spread_indicator
+- Source: /api/layers/wti-brent-spread
+- What it shows: the difference between WTI and Brent is an indicator of geopolitical tension
+
+### 15.6. HEALTH — 3 layers
+
+* * 61. who-health** — "WHO Healthcare"
+- vizType: choropleth, jenks, Greens
+- Source: WHO
+- What it shows: health care spending % of GDP
+
+* * 62. covid-health**- "COVID-19 statistics"
+- vizType: choropleth, jenks, YlOrRd
+- Source: JHU CSSE
+- What it shows: accumulated morbidity
+
+* * 63. healthcare-health** — "Medical infrastructure"
+- vizType: choropleth, jenks, Greens
+- Source: WHO
+- What it shows: beds per 1000 people
+
+### 15.7. SOCIAL — 3 layers
+
+* * 64. crucix-population-flow** — "👥 Population movement"
+- vizType: choropleth, jenks, Oranges
+- Source: Synthetic (migration patterns)
+- What it shows: movement intensity
+
+* * 65. crucix-refugees** — " 🧳 Refugees (crucix)"
+- vizType: choropleth, jenks, OrRd
+- Source: UNHCR
+- What shows: refugee flows
+
+* * 66. crucix-phone-activity** — "📱 Phone activity"
+- vizType: choropleth, jenks, Blues
+- Source: Synthetic (mobile networks)
+- What it shows: mobile network usage rate
+
+### 15.8. CYBER — 2 layers
+
+* * 67. cve-cyber** - "CVE vulnerabilities"
+- vizType: choropleth, jenks, YlOrRd
+- Source: NVD (National Vulnerability Database)
+- What it shows: number of critical CVEs
+
+* * 68. cyber-threat-index-api** - "Composite index of cyber threats"
+- vizType: series, jenks, OrRd
+- Spatial proxy: all_countries
+- Transformation: stress_indicator
+- Source: / api/layers/cyber-threat-index (CISA + Darkweb)
+
+### 15.9. MILITARY — 2 layers
+
+* * 69. military-spending** — "Military expenses"
+- vizType: choropleth, jenks, OrRd
+- Source: SIPRI
+- What it shows: expenditures in % of GDP
+
+* * 70. war-preparation** — "Index of preparation for war"
+- vizType: choropleth, manual, YlOrRd
+- Breaks: [20, 40, 60, 80]
+- Source: composite (mobilization + procurement + exercises)
+- What it shows: training intensity
+
+### 15.10. THREATS-1 layer
+
+* * 71. cve-threat** — "CVE (threat) vulnerabilities"
+- vizType: choropleth, jenks, OrRd
+- Source: NVD
+- What it shows: vulnerabilities in the context of threats
+
+### 15.11. INTELLIGENCE-1 layer
+
+* * 72. crucix-pattern-life** — "📊 Behavior patterns"
+- vizType: choropleth, jenks, BuPu
+- Source: Synthetic
+- What it shows: abnormal behavioral patterns
+
+### 15.12. NEWS-1 layer
+
+**73. google-trends** — «Google Trends»
+- vizType: choropleth, jenks, OrRd
+- Source: Google Trends API
+- What it shows: Search activity index
+
+### 15.13. OTHER — 2 layers
+
+* * 74. internet** — "Internet access"
+- vizType: choropleth, jenks, Blues
+- Source: ITU
+- What it shows: % of internet users
+
+* * 75. mobile** — "Mobile communication"
+- vizType: choropleth, jenks, Blues
+- Source: GSMA
+- What it shows: number of SIM cards per 100 people
+
+---
+
+## 14. THE OTHER FOUR CARDS — THE VERIFICATION PLAN
+
+### 16.1. Event Map (`/event-map/`)
+
+* * What is it:** map of point events (rallies, attacks, incidents). 84 layers, markers.
+
+* * Main files:**
+- `event-map/index.html`
+- `event-map/js/layers.js` - 84 layers
+- `event-map/js/map-controls.js` - borders + choropleth
+- `event-map/js/markers.js` — event markers
+- `event-map/js/copy-data.js` - COPY button
+
+**What to check:**
+1. `grep -c 'id:' js/layers.js` = 84.
+2. `grep -rn '\.\./' index.html js/*.js | grep -v 'AUTONOMY\|manifest'` = 0.
+3. `fetch('data/world.geojson')` in `map-controls.js` (locally).
+4. COPY button — snapshot size (Event Map has more markers, the snapshot can be 1-2 MB).
+5. Draw event markers (usually 500-1300 markers).
+
+* * What might be wrong:**
+- `map-controls.js 'uses remote GitHub GeoJSON instead of' data/world.geojson`.
+- The REFRESH button doesn't work.
+- Heat map (`heat-timeline.js`) was not finalized.
+
+* * Priority:** highest-Event Map the main map, which is referenced by other maps.
+
+### 16.2. Semantic Map (`/semantic-map/`)
+
+* * What is it:** map of semantic analysis of texts (tonality, narratives, misinformation). 35 layers, sentiment-adapter.
+
+* * Main files:**
+- `semantic-map/index.html`
+- `semantic-map/js/layers.js` — 35 слоёв
+- `semantic-map/js/sentiment-adapter.js` — sentiment → choropleth
+- `semantic-map/js/map-controls.js`
+- `semantic-map/js/copy-data.js`
+
+**What to check:**
+1. `grep -c 'id:' js/layers.js` = 35.
+2. `grep -rn '\.\./' index.html js/*.js | grep -v 'AUTONOMY\|manifest'` = 0.
+3. `data/world.geojson` - exists.
+4. Sentiment-adapter returns 5 classes (Cowan 2001: 4±1 chunk).
+5. Palettes: RdYlGn5 (diverging for tonality), OrRd5 (for confidence), Set1 (categorical for clusters).
+
+* * What might be wrong:**
+- `sentiment-adapter.js` — not all classification methods are implemented.
+- Categorical Clusters — Set1 colors (10 colors) may not match the legend.
+- Missing sentiment fallback (similar to` renderFallback ' in Metrics).
+
+* * Priority:** average. Check after the Event Map.
+
+### 16.3. Forecast Map (`/forecast-map/`)
+
+* * What is it:** map of probabilistic forecasts (recession, conflicts, risks). 16 layers, forecast-adapter, probability-fill (Cressie 1993).
+
+* * Main files:**
+- `forecast-map/index.html`
+- `forecast-map/js/layers.js` — 16 слоёв
+- `forecast-map/js/forecast-adapter.js` — probability → choropleth
+- `forecast-map/js/map-controls.js`
+- `forecast-map/js/copy-data.js`
+
+**What to check:**
+1. `grep -c 'id:' js/layers.js` = 16.
+2. `grep -rn '\.\./' index.html js/*.js` = 0.
+3. `data/world.geojson` - exists.
+4. Probability-fill: color = probability class (5 classes, manual breaks [20, 40, 60, 80]), transparency = model confidence level ` ' opacity = 0.4 + 0.5 × confidence`.
+5. Popup shows: probability, confidence, forecast horizon.
+
+* * What might be wrong:**
+- The opacity formula is not implemented.
+- Spatial proxy for 4 sources (ai-forecasts, central-bank, social-briefing, social-briefing-engine) are not configured.
+- Probability-classification does not use manual breaks.
+
+* * Priority:** average.
+
+### 16.4. Network Map (`/network-map/`)
+
+* * What is it:** map of connection graphs (cyber networks, trade, finance, migration). 12 layers, SVG force-directed graph (Barabasi 2016), without Leaflet.
+
+* * Main files:**
+- `network-map/index.html`
+- `network-map/js/layers.js` — 12 слоёв
+- `network-map/js/graph-view.js` — SVG force-directed
+- `network-map/js/graph-panel.js` - node dossier panel
+- `network-map/js/relations.js` — building links
+- `network-map/js/network-adapter.js`
+
+**What to check:**
+1. `grep -c 'id:' js/layers.js` = 12.
+2. `grep -rn '\.\./' index.html js/*.js` = 0.
+3. **`data/world.geojson` DON'T need** — this is an SVG graph, not a Leaflet.
+4. Force-directed simulation: Coulomb repulsion (F = k/r²), Hooke attraction (F = (d−L)×0.1), gravity, Verlet integration.
+5. 4 node shapes: Circle (country/cyber), Square (organization), Triangle (Event), Diamond (Financial).
+6. O (n2) complexity-acceptable for n < 500 nodes.
+
+* * What might be wrong:**
+- Force simulation is unstable with a large number of nodes.
+- Dossier panel ` ' graph-panel.js`) doesn't open.
+- 4 node shapes do not differ visually.
+
+* * Priority:** low (the graph does not block other cards).
+
+---
+
+## 15. API ENDPOINTS EXPECTED ON THE SERVER
+
+### 17.1. Choropleth-слои (56)
+
+An endpoint is expected for each choropleth layer:
+GET /api/layers/<layerId>/featurecollection
+
+
+Answer:
+```json
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+ "properties": {"name": "Ukraine", "value": 84.02 },
+      "geometry": { ... }
+    },
+    ...
+  ]
+}
+If the endpoint doesn't respond (404), renderFallback is triggered.
+
+17.2. Series-layers (14)
+An endpoint is expected for each series layer:
+
+text
+GET /api/layers/<route>
+Where <route> is one of:
+
+/api/layers/business-optimism
+
+/api/layers/consumer-expectations
+
+/api/layers/pmi
+
+/api/layers/recession
+
+/api/layers/copper-gold-ratio
+
+/api/layers/hy-spread
+
+/api/layers/ovx
+
+/api/layers/rublev-dubai
+
+/api/layers/sp500-vix
+
+/api/layers/vxx
+
+/api/layers/yield-curve
+
+/api/layers/crypto-fear
+
+/api/layers/cyber-threat-index
+
+/api/layers/wti-brent-spread
+
+Answer:
+
+json
+{
+  "value": 52.4,
+  "series": [
+    { "date": "2026-09-01", "value": 51.2 },
+    { "date": "2026-09-08", "value": 52.4 }
+  ]
+}
+17.3. Marker layers (6)
+An endpoint is expected for each marker layer:
+
+text
+GET /api/layers/<layerId>
+Answer:
+
+json
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "label": "Событие", "value": 5, "region": "US" },
+      "geometry": { "type": "Point", "coordinates": [lng, lat] }
+    }
+  ]
+}
+17.4. CII API
+text
+GET /api/cii-api
+Answer:
+
+json
+{
+  "countries": [
+ { "country": "Ukraine", "score": 100, "level": "critical", "color": "#ff3b3b" },
+    ...
+  ],
+  "total": 90,
+  "timestamp": "2026-09-28T17:42:21Z"
+}
+If 404 — updateCIIFromLocal () is triggered (fallback to local data).
+
+17.5. All other APIs
+Standard features:
+
+/ api/geo/markers — Event Map markers
+
+/ api/geo/status — country statuses
+
+/ api/layers/all-summary endpoint for all layers (optimization)
+
+17.6. Basket principle (Rule #16)
+All API modules should not go to external sources. The data source is only the data/basket/bucket.
+
+Scheme:
+
+text
+External API → Collector (scripts/collectors/collect -*. mjs)
+ → Shopping cart (data/basket/*. json)
+ → API module (apis/sources/*. mjs)
+ → Interface (dashboard/public/metrics-map/)
+## 16. CONTRACTS BETWEEN CARDS
+18.1. The principle of autonomy
+Each map is completely offline. Zero cross-map dependencies in scripts and data. The only allowed form of communication is navigation links in the UI (switching between maps).
+
+18.2. Navigation (5 switches)
+In each index.html the .map-switcher block contains 5 links:
+
+html
+<a class="map-switch-btn" data-map="events" href="../event-map/">Events</a>
+<a class="map-switch-btn active" data-map="metrics" href="../metrics-map/">Metrics</a>
+<a class="map-switch-btn" data-map="meanings" href="../semantic-map/">Semantic</a>
+<a class="map-switch-btn" data-map="relations" href="../network-map/">Network</a>
+<a class="map-switch-btn" data-map="forecasts" href="../forecast-map/">Forecast</a>
+The active map has the active class.
+
+18.3. mapType format
+Each map declares its own type in an inline script:
+
+html
+<script>window.CrucixMap = { mapType: 'metrics', name: 'Crucix — Metrics Map' };</script>
+Types:
+
+events — Event Map
+
+metrics — Metrics Map
+
+meanings — Semantic Map
+
+relations — Network Map
+
+forecasts — Forecast Map
+
+18.4.manifest. json format
+Each map has a manifest.json with the schema:
+
+json
+{
+  "mapType": "metrics",
+  "version": "1.1",
+  "autonomous": true,
+  "principle": "FULL_ISOLATION",
+  "layers": 75,
+  "categories": [...],
+  "local_cross_map": 0,
+  "failure_domain": 1,
+  "scripts": { ... },
+  "data": { "world_geojson": "data/world.geojson" }
+}
+Common fields: mapType, version, autonomous, principle, local_cross_map, failure_domain.
+
+18.5. What is NOT a contract
+Not a contract:
+
+Shared JS files (core.js, countries.js, map-controls.js) — each map has its own copy.
+
+Shared world.geojson — each map has its own copy in data/.
+
+General CSS — each map has its own metrics-map.css or event-map. css.
+
+Shared APIs — each map accesses its own endpoints.
+
+Contract:
+
+Navigation links in .map-switcher.
+
+Window. CrucixMap format.
+
+The manifest.json schema.
+
+Naming convention: event-map, metrics-map, semantic-map, network-map, forecast-map.
+
+18.6. Failure domain = 1
+A crash in one map doesn't affect the other 4. This is guaranteed by three conditions:
+
+No <script> is loaded from ../other-map/js/.
+
+No map does fetch ('../other-map/data/...').
+
+Navigation links are normal <a href>, not fetch.
+
+If the neighbor map is broken, navigation will not work, but the current map will continue to work.
+
+18.7. Checking the autonomy of all 5 maps
+bash
+cd "dashboard/public"
+
+for map in event-map metrics-map semantic-map network-map forecast-map; do
+    if [ -d "$map" ]; then
+    else
+    fi
+done
+Waiting time:
+
+Cross-map in index.html -only navigation <a href>, not <script>.
+
+Cross-map in js/*.js = 0.
+
+Layers: 84 / 75 / 35 / 16 / 12.
+
+world.geojson: available for event-map, metrics-map, semantic-map, forecast-map. Missing from network-map (SVG graph).
+
+## 17. COMPLETE ALL-5 VERIFICATION CHECKLIST
+bash
+cd "dashboard/public"
+
+# 1. The structure of each map
+for map in event-map metrics-map semantic-map network-map forecast-map; do
+    ls -la "$map/index.html" "$map/manifest.json" "$map/METRICS-MAP-MANIFEST.md" 2>/dev/null || \
+    ls -la "$map/index.html" "$map/manifest.json" 2>/dev/null
+done
+
+# 2. Autonomy
+for map in event-map metrics-map semantic-map network-map forecast-map; do
+    echo -n "$map: "
+done
+
+# 3. Layers
+for map in event-map metrics-map semantic-map network-map forecast-map; do
+ echo-n " $map layers: "
+    grep -c 'id:' "$map/js/layers.js" 2>/dev/null || echo 0
+done
+
+# 4. Local geojson
+for map in event-map metrics-map semantic-map forecast-map; do
+    echo -n "$map world.geojson: "
+done
+Waiting time:
+
+All 5 cards have index.html and manifest. json.
+
+Cross-map in js/*.js = 0 for everyone.
+
+Layers: 84 / 75 / 35 / 12 / 16.
+
+world.geojson: 4 maps out of 5 have it (network-map doesn't).
+
+## 18. STATUS CHECKPOINTS
+20.1. What works in Metrics Map
+75 layers are loaded.
+
+Layer panel: 13 categories, 76 buttons.
+
+data/world.geojson — locally.
+
+MetricsMap оркестратор — decision tree choropleth / series / marker.
+
+Autonomous fallback at 404 — 90 countries per layer via Jenks.
+
+GVF: 0.90–0.93 (above the 0.7 threshold).
+
+Choropleth-legend with thresholds, method, and GVF.
+
+CII fallback: 90 countries, global=41.6.
+
+SSI: 42%.
+
+COPY button — up to 500 KB.
+
+Marker-fallback — 180 markers per layer.
+
+20.2. What needs to be improved
+Enable All button — the loop does not process all 75 layers.
+
+Visual activity of layer buttons — the active class is not returned after loading.
+
+Size of copy-data.js when fully activated-should be ~350 KB.
+
+4 other cards — checks failed.
+
+20.3. Procedure for further work
+Finish the "Enable all" button in Metrics Map.
+
+Visual activity of buttons.
+
+Check the snapshot size when fully activated.
+
+Go to Event Map — the main map, and all other maps link to it.
+
+Semantic Map.
+
+Forecast Map.
+
+Network Map.
+
+Check the autonomy of all 5 maps with the command from section 19.
+
+
+File `METRICS-MAP-MANIFEST.md` now contains 20 sections:
+
+| Section | Content |
+|--------|------------|
+| 1 / Purpose and place in the ecosystem (5 maps, why 5) |
+| 2 / Folder structure (20 files) |
+| 3 / DAG downloads (16 steps) |
+| 4 | Function matrix |
+| 5 / 75 layers-distribution |
+/ 6 / How each layer type works |
+| 7 / Autonomy (R1–R6) |
+| 8 | Verification checklist |
+| 9 / Classification methods |
+| 10 | ColorBrewer Palettes |
+| 11 / Current status |
+| 12 | What needs to be completed |
+| 13 / Main file to enter in a new chat |
+| 14 | Project rules |
+| **15** | **Full catalog of 75 layers (ID, method, palette, source, what shows)** |
+| **16** | **4 other cards + a plan for checking each** |
+| **17** | **API endpoints expected on the server** |
+| **18** | **Contracts between maps (navigation, manifest, failure domain)** |
+| **19** | **Checklist for checking all 5 cards (script)** |
+| **20** | **Status checkpoints + procedure for further work** |
+
+* * Expected size:** ~35-45 KB, ~900-1100 lines.
+
+* * Usage:** copy the entire file to a new chat — the AI immediately gets the full picture, knows what is where and what is left to finish.
+
+
+1. Size `METRICS-MAP-MANIFEST.md` (waiting for ~35-45 KB)
+2. First 30 lines of the file (`head -30`) — check if the header is correct
+3. Last 30 lines ('tail -30` — - check the correctness of section 20
+
+- Section 21 " Change history — - list of all edits of version 1.0 → 1.1
+- Section 22 " Diagnostics via the console — - JavaScript commands for quick status checking
+- Section 23 "HELP for Metrics Map" — help text that opens by clicking the HELP button
+
+
+---
+
+## 19. CHANGE HISTORY
+
+### 21.1. Version 1.0 → 1.1 — 28.09.2026
+
+* * File `js/layers.js`:**
+
+- **What happened:** 'enableAllLayers' added all layers to` activeLayerIds ' before the loop. Then `loadLayer (id) ' for each layer. But 'loadLayer' first checks `if (activeLayerIds.has(layerId)) ' - > toggle-off. Bottom line: the loop didn't load layers, but turned them off.
+- **What happened:** removed the `activeLayerIds.add () ' preview. Before `loadLayer(id)` — force ' activeLayerIds. delete(layerId)`. `loadLayer 'follows the' enable 'branch, calls' interceptLoad` → fallback → loading data.
+- **Logs:** added to each iteration: `[enableAllLayers] Start`, count `ok/empty/fail/skipped`, final line `[enableAllLayers] Total: 75, with data: N, empty: N, errors: N, omitted: N`.
+- **Rational:** toggle logic defect (Martin 2003: Single Responsibility broken — the upload function did both upload and toggle).
+
+* * File `js/metrics-map.js`:**
+
+- **What happened:** 'interceptLoad' only handled 'vizType=' choropleth 'and `vizType= 'series'. For 'vizType=' marker 'returned' false '— control was given `layers.js`, which did a ' fetch('/api/layers/<id>')` and got a 404. No data appeared.
+- **What happened:** added `loadMarkerLayer(layer)` + `renderMarkerFallback(layer) ' method`. Now 6 marker layers (`vix-futures`,` cftc-cot`,` insider-trading`,` sec-filings`,` short-interest`,` bankruptcy-filings') get fallback: 2 markers for each of 90 countries = 180 markers per layer.
+- **Rational:** the processing space is closed. Marker layers now work offline.
+
+* * File `js/copy-data.js`:**
+
+- **What happened:** snapshot of ~40 KB. Collected statistics, layers, markers, and DOM structure.
+- **What happened:** extended version. 15 sections: full configuration of 75 layers, layer matrix, diagnostics by vizType and categories, data of active layers (all 90 countries × N layers), choropleth legend, countries with coordinates, DOM layer panels, map, palettes, status panel.
+- **Target size:** 300-500 KB with 75 data layers.
+
+### 21.2. What preceded version 1.0
+
+**09/28/2026, earlier:**
+
+- 20 standalone package files have been created.
+- `layers.js ' with 75 layers (61 base + 14 API modules).
+- `maps-config.js` — 66 overrides, 14 API modules.
+- `series-adapter.js` — 7 spatial proxy, 6 transformations.
+- `map-controls.js` — Jenks DP O(k·n²), ColorBrewer, GVF.
+- `metrics-map.js` — оркестратор decision tree.
+- Fixed critical defects: BOM in `layers.js`, 'logger is not defined`, conflict `logger.js`/' logger.mjs`.
+
+### 21.3. What was in the old versions
+
+* * The `./1/ ' folder** is the first version of Metrics Map. It contained the files 'index (1). html', 'index (2). html', `index.html`, `init.js`, `layers.js`, `map-controls.js`, `maps-config.js`, `metrics-map.css`, `metrics-map.js`, `presets.json`, `series-adapter.js`. Multiple duplicates with suffixes`(1)`, `(2)`.
+
+* * Folder `./2/ ' ** — second version (standalone package). It contained 20 files with a clean structure: `AUTONOMY-CHARTER.md`, ' manifest.json`, `core.js`, `countries.js`, `layers.js`, `maps-config.js`, `map-controls.js`, `markers.js`, `metrics-map.js`, `series-adapter.js`, `copy-data.js`, `heat-timeline.js`, `ssi.js`, `refresh.js`, `cii.js`, `logger.js`, `init.js`, `presets.json`, `metrics-map.css`, `index.html`.
+
+* * Folder`. / 3/`** — deployment script.
+
+* * Other outdated files:**
+
+- `js/layers60.js` — 60 layers (incomplete set).
+- 'js/layers60 LAYERS, 12 CATEGORIES.js` - option.
+- `js/LAYERSCrucix.JS` — outdated version.
+- `js/layers-dynamic.js` — loading from the API registry.
+- `js/country-boundaries.js` - replaced with `map-controls.js`.
+- `js/geo-map-core.js` — ESM module.
+- `js/graph-view.js`, `js/graph-panel.js`, `js/preset-multi-map.js`, `js/relations.js` — для Network Map.
+- `js/map-ui.js` - MapLibre wrapper.
+- `js/metrics-map-config.js`, `js/metrics-map-layers.js`, `js/metrics-map-orchestrator.js`, `js/metrics-map-series-adapter.js` — alternative duplicates.
+- `js/logger.mjs`, `js/news-markers.mjs`, `js/popups.mjs` — ESM-версии.
+- `js/modules/`, `js/popup/`, `blocks/`, `templates/` — ESM-каталоги.
+- `css/cii.css`, `css/core.css`, `css/geo-map.css`, `css/header.css`, `css/layers-panel.css`, `css/map.css`, `css/responsive.css` — старые CSS из geo-map.
+
+All these files are moved to `_archive/ ' by the script `clean-archive.sh`. Nothing is being deleted.
+
+---
+
+## 20. DIAGNOSTICS VIA THE BROWSER CONSOLE
+
+JavaScript commands for quickly checking the Metrics Map status. Open the console (F12), insert one at a time.
+
+### 22.1. Basic verification
+
+```javascript
+/ / Number of layers
+console.log('Layers:', window.allLayers?.length);
+
+/ / Number of countries
+console.log('Countries:', window.ALL_COUNTRIES?.length);
+
+/ / Number of active layers
+console. log ('Active:', window.activeLayerIds?.size);
+
+/ / Number of cached layers (with data)
+console.log('In the cache:', Object.keys(window.layerCache || {}).length);
+
+// Number of markers
+console. log ('Markers:', (window.markerData || []).length);
+
+/ / Markers on the map (must be L. layerGroup)
+console.log('Marker Layer:', !!window.markersLayer);
+
+// Map
+console. log ('Map:', !!window.map);
+console.log('Центр:', window.map?.getCenter());
+console.log('Zoom:', window.map?.getZoom());
+
+// CII
+console.log('CII panel:', !!document.getElementById('cii-panel'));
+
+// SSI
+console.log('SSI:', document.getElementById('ssi-label')?.textContent);
+
+// MetricsMap
+console.log('MetricsMap:', window.MetricsMap?.stats());
+22.2. Checking API endpoints
+javascript
+/ / Checking whether the API responds for a specific layer
+async function checkApi(layerId) {
+    const url = `/api/layers/${layerId}/featurecollection`;
+    try {
+        const r = await fetch(url);
+        console.log(`${layerId}: HTTP ${r.status}`);
+    } catch (e) {
+ console. log(`${layerId}: error ${e. message}`);
+    }
+}
+
+/ / Check a single layer
+await checkApi('inflation');
+
+/ / Check all choropleth
+for (const l of window.allLayers.filter(x => x.vizType === 'choropleth')) {
+    await checkApi(l.id);
+}
+22.3. Checking fallback generators
+javascript
+/ / Check that fallback is working
+if (window.MetricsMap && typeof window.MetricsMap.renderFallback === 'function') {
+    console.log('renderFallback: OK');
+} else {
+ console. log('renderFallback: MISSING');
+}
+
+if (typeof window.MetricsMap.renderMarkerFallback === 'function') {
+    console.log('renderMarkerFallback: OK');
+} else {
+ console. log ('renderMarkerFallback: MISSING');
+}
+22.4. Checking the classification
+javascript
+/ / Check out jenksBreaks
+const values = [1, 5, 12, 25, 40, 60, 80, 95];
+console.log('Jenks:', window.jenksBreaks?.(values, 5));
+
+/ / Check GVF
+const breaks = window.jenksBreaks(values, 5);
+console.log('GVF:', window.computeGVF?.(values, breaks));
+22.5. Checking the layer configuration
+javascript
+/ / View the configuration of a specific layer
+console.log(window.getLayerConfig?.('pmi'));
+/ / Waiting: { method: 'manual', palette: 'RdYlGn5', manualBreaks: [42,47,53,58] }
+
+// View the palette
+console.log(window.getColorPalette?.('OrRd'));
+/ / Waiting: array of 5 hex colors
+22.6. Complete diagnostics with one command
+javascript
+(() => {
+    const stats = window.MetricsMap?.stats() || {};
+ console. log('=== METRICS MAP DIAGNOSTICS ===');
+    console.log('Layers:', window.allLayers?.length);
+    console.log('Countries:', window.ALL_COUNTRIES?.length);
+ console. log ('Active:', window.activeLayerIds?.size);
+    console.log('In the cache:', Object.keys(window.layerCache || {}).length);
+ console. log ('Markers:', (window.markerData || []).length);
+ console. log ('Distribution:', stats);
+ console. log ('Map:', !!window.map);
+    console.log('CII:', document.getElementById('cii-label')?.textContent || '—');
+    console.log('SSI:', document.getElementById('ssi-label')?.textContent || '—');
+    console.log('================================');
+})();
+22.7. Diagnostics after Ctrl+F5
+javascript
+// 5 seconds after loading
+setTimeout(() => {
+    console.log('LAYERS.JS:', !!window.allLayers);
+    console.log('COUNTRIES.JS:', !!window.ALL_COUNTRIES);
+    console.log('METRICS-MAP.JS:', !!window.MetricsMap);
+    console.log('MAP-CONTROLS.JS:', typeof window.applyChoropleth === 'function');
+    console.log('INIT.JS (loadData):', typeof window.loadData === 'function');
+ console. log ('Map:', !!window.map);
+    if (window.map) {
+        console.log('Borders loaded:', !!window.geoJsonData);
+        console.log('Elements in GeoJSON:', window. geoJsonData?.features?.length);
+    }
+}, 5000);
+22.8. Forced start of the download
+javascript
+/ / Load all layers manually
+window.enableAllLayers();
+
+/ / After 20 seconds, check the status
+setTimeout(() => {
+    console.log('After enableAllLayers:');
+    console.log('In the cache:', Object.keys(window.layerCache || {}).length);
+ console. log ('Active:', window.activeLayerIds?.size);
+ console. log ('Markers:', (window.markerData || []).length);
+}, 20000);
+22.9. Resetting the status
+javascript
+/ / Full reset
+window.layerCache = {};
+window.activeLayerIds = new Set(['all']);
+window.markerData = [];
+window.allMarkers = [];
+window.currentChoroplethData = null;
+console. log ('Reset completed');
+## 21. HELP FOR METRICS MAP
+Help text that opens by clicking the HELP button (/help or local file). Place in docs/help/ru/metrics-map.txt and docs/help/en/metrics-map.txt.
+
+23.1. Russian version
+================================================================
+CRUCIX-METRICS MAP-HELP
+================================================================
+
+Metrics Map — a map of quantitative indicators for 90 countries
+of the world. 75 layers in 13 categories. Offline map in the ecosystem
+from 5 Crucix cards.
+
+----------------------------------------------------------------
+purpose
+----------------------------------------------------------------
+
+Metrics Map visualizes numerical indicators (economy,
+finance, ESG, cybersecurity, energy, health,
+social metrics, geopolitics, military spending, threats,
+intelligence, news) through the color fill of countries (choropleth).
+
+Each country gets a color based on the value
+the indicator. The legend shows class thresholds and quality
+classifications (GVF).
+
+----------------------------------------------------------------
+NAVIGATION
+----------------------------------------------------------------
+
+There are 5 buttons in the top panel to switch between maps:
+- Events-event map
+- Metrics-map of indicators (current)
+- Semantic - map of semantics
+- Network-map of links
+- Forecast - map of forecasts
+
+Buttons TO HOME, COPY, Page List, HELP, Heat,
+Timeline, PDF-shared for all maps.
+
+----------------------------------------------------------------
+LAYERS PANEL (on the right)
+----------------------------------------------------------------
+
+75 layers in 13 categories:
+- Economy (15)
+- Finance (26)
+- ESG (8)
+- Geopolitics (6)
+- Power engineering (5)
+- Health (3)
+- Social (3)
+- Cyber (2)
+- Military (2)
+- Threats (1)
+- Exploration (1)
+- News (1)
+- Other (2)
+
+How to work:
+1. Click on the layer to activate it, and the countries will be painted over.
+2. Click again-the layer is turned off.
+3. "Enable all" - loads all 75 layers sequentially.
+4. "Turn off all" - disables all layers.
+5. Search-filter by name or ID.
+
+----------------------------------------------------------------
+BUTTONS
+----------------------------------------------------------------
+
+🔍 Layer search-filter by substring.
+
+КОПИРОВАТЬ COPY-copies the full status snapshot (~500 KB):
+- statistics (countries, layers, active, markers)
+- configuration of all 75 layers
+- layer matrix (ID × vizType × method × palette)
+- diagnostics by vizType and categories
+- data from all active layers (90 countries per layer)
+- choropleth-legend with thresholds and GVF
+- coordinates of all countries
+- DOM layer panels
+- status panel, SSI, CII
+
+📊 CII-switching the CII mode (Country Instability
+Index). Shows the country instability index.
+
+, Heat map-a heat map based on markers.
+
+Хро Timeline — a timeline of events.
+
+, PDF-export the map to PNG.
+
+🌐 RU/EN — switch the interface language.
+
+----------------------------------------------------------------
+VISUAL ELEMENTS ON THE MAP
+----------------------------------------------------------------
+
+Legend (bottom left): class thresholds, classification method,
+GVF (Goodness of Variance Fit).
+
+Statistics (top right): number of markers, countries.
+
+SSI (bottom right): tension index.
+
+CII panel (at the bottom): top 5 unstable countries.
+
+----------------------------------------------------------------
+DATA SOURCES
+----------------------------------------------------------------
+
+1. Real APIs — if they work on the server.
+2. Offline fallback — if the API is unavailable (404):
+ data is generated from correlated country coordinates
+ by their status (critical → higher, normal → lower).
+
+----------------------------------------------------------------
+AUTONOMY
+----------------------------------------------------------------
+
+Metrics Map is completely self-contained. Doesn't depend on the Event Map.
+Semantic Map, Network Map, Forecast Map.
+
+Failure domain = 1: failure in Metrics Map does not affect 4
+other maps.
+
+All data: local world.geojson, local countries.js,
+local configuration. The only cross-map dependency is
+navigation links in the header.
+
+----------------------------------------------------------------
+KEYBOARD SHORTCUTS
+----------------------------------------------------------------
+
+ESC — close the popup.
+F5 — restart.
+Ctrl+Shift+R — hard reboot.
+Ctrl+F5-restart without cache.
+
+F12-open the console (for diagnostics).
+
+----------------------------------------------------------------
+version
+----------------------------------------------------------------
+
+Metrics Map, version 1.1, 2026-09-28.
+Full description: METRICS-MAP-MANIFEST.md.
+Technical Specification: ARCHITECTURE.md.
+Charter of the Autonomous Region: AUTONOMY-CHARTER.md.
+
+================================================================
+23.2. English version
+================================================================
+CRUCIX — METRICS MAP — HELP
+================================================================
+
+Metrics Map is a quantitative indicators map for 90 countries.
+75 layers in 13 categories. Autonomous map within the Crucix
+ecosystem of 5 maps.
+
+----------------------------------------------------------------
+PURPOSE
+----------------------------------------------------------------
+
+Metrics Map visualizes numeric indicators (economics, finance,
+ESG, cybersecurity, energy, health, social metrics, geopolitics,
+military spending, threats, intelligence, news) via choropleth
+country fill.
+
+Each country is colored based on indicator value. Legend shows
+class breaks and classification quality (GVF).
+
+----------------------------------------------------------------
+NAVIGATION
+----------------------------------------------------------------
+
+Top bar has 5 map switchers:
+- Events — events map
+- Metrics — indicators map (current)
+- Semantic — semantics map
+- Network — relations map
+- Forecast — forecasts map
+
+Buttons HOME, COPY, Pages list, HELP, Heat, Timeline, PDF are
+common across all maps.
+
+----------------------------------------------------------------
+LAYERS PANEL (right)
+----------------------------------------------------------------
+
+75 layers in 13 categories:
+- Economics (15)
+- Finance (26)
+- ESG (8)
+- Geopolitics (6)
+- Energy (5)
+- Health (3)
+- Social (3)
+- Cyber (2)
+- Military (2)
+- Threats (1)
+- Intelligence (1)
+- News (1)
+- Other (2)
+
+How to use:
+1. Click a layer — it activates, countries get colored.
+2. Click again — layer deactivates.
+3. «Enable all» — loads all 75 layers sequentially.
+4. «Disable all» — deactivates all layers.
+5. Search — filter by name or ID.
+
+----------------------------------------------------------------
+BUTTONS
+----------------------------------------------------------------
+
+🔍 Layer search — filter by substring.
+
+📋 COPY — copies full state snapshot (~500 KB).
+
+📊 CII — toggles CII mode (Country Instability Index).
+
+🌡️ Heat — heat map by markers.
+
+📅 Timeline — events timeline.
+
+📄 PDF — exports map to PNG.
+
+🌐 RU/EN — language switcher.
+
+----------------------------------------------------------------
+VISUAL ELEMENTS
+----------------------------------------------------------------
+
+Legend (bottom left): class breaks, classification method, GVF.
+
+Stats (top right): marker count, country count.
+
+SSI (bottom right): Strategic Stress Index.
+
+CII panel (bottom): top-5 unstable countries.
+
+----------------------------------------------------------------
+DATA SOURCES
+----------------------------------------------------------------
+
+1. Real APIs — if available on server.
+2. Autonomous fallback — if API returns 404: data is generated
+   from country coordinates with status-based correlation.
+
+----------------------------------------------------------------
+AUTONOMY
+----------------------------------------------------------------
+
+Metrics Map is fully autonomous. Does not depend on Event Map,
+Semantic Map, Network Map, Forecast Map.
+
+Failure domain = 1: failure in Metrics Map does not affect the
+other 4 maps.
+
+----------------------------------------------------------------
+VERSION
+----------------------------------------------------------------
+
+Metrics Map, version 1.1, 2026-09-28.
+Full manifest: METRICS-MAP-MANIFEST.md.
+Technical spec: ARCHITECTURE.md.
+Autonomy charter: AUTONOMY-CHARTER.md.
+
+================================================================
+## 22. ROAD MAP FOR 5 MAPS
+24.1. Availability levels
+Each map passes 4 levels of readiness:
+
+Уровень	Критерий	The Metrics Map Criterion Level
+L1: Skeleton	index.html + manifest.json + folder structure	✅ Done
+L2:	R1–R6 autonomy, 0 cross-map, local geojson	✅ Done
+L3: Functional	Layers work, fallback, legend, GVF	⚠ ️ 90% ("Enable all" button)
+L4: Polishing	Help, diagnostics, manifest, clean-archive	🔄 In progress
+24.2. Status of 5 maps by level
+Event Map:
+
+L1: ✅
+
+L2: ⚠ ️ (requires cross-map verification)
+
+L3: ⚠️ (map-controls.js uses remote GeoJSON)
+
+L4: ⚠️
+
+Metrics Map:
+
+L1: ✅
+
+L2: ✅
+
+L3: ⚠️ 90%
+
+L4: 🔄
+
+Semantic Map:
+
+L1: ✅
+
+L2: ⚠ ️ (requires verification)
+
+L3: ⚠ ️ (sentiment-adapter not checked)
+
+L4: ⚠️
+
+Forecast Map:
+
+L1: ✅
+
+L2: ⚠️
+
+L3: ⚠ ️ (probability-fill not checked)
+
+L4: ⚠️
+
+Network Map:
+
+L1: ✅
+
+L2: ⚠ ️ (doesn't require a world.geojson)
+
+L3: ⚠ ️ (force-directed not checked)
+
+L4: ⚠️
+
+24.3. A single standard for all 5 cards
+Each map must have the same set of files as Metrics Map, only adapted to its own specifics:
+
+Map root:
+
+index.html — entry point
+
+manifest.json passport
+
+METRICS-MAP-MANIFEST.md (rename by type: EVENT-MAP-MANIFEST.md, SEMANTIC-MAP-MANIFEST.md, and so on) — full description
+
+ARCHITECTURE.md -Load DAG and function matrix
+
+AUTONOMY-CHARTER.md -charter R1–R6
+
+clean-archive.sh -cleaning script
+
+README.md — short description
+
+CSS:
+
+css/<map-name>. css — single CSS
+
+JS (standard set):
+
+js/core.js
+
+js/countries.js
+
+js/layers.js
+
+js/maps-config.js
+
+js/<map-specific-adapter>.js (series-adapter / sentiment-adapter / forecast-adapter / network-adapter)
+
+js/map-controls.js (except for Network Map-there graph-view.js)
+
+js/markers.js
+
+js/<map-name>-map.js -orchestrator
+
+js/copy-data.js
+
+js/heat-timeline.js
+
+js/ssi.js
+
+js/refresh.js
+
+js/cii.js
+
+js/logger.js
+
+js/init.js
+
+Data:
+
+data/world.geojson (except Network Map)
+
+Presets:
+
+presets/presets.json
+
+24.4. Unification Plan
+Step 1. Bring the Metrics Map to full readiness (L3 = 100%). All that remains is the "Enable all" button and the visual activity of the buttons.
+
+Step 2. Migrate the Metrics Map architecture to Event Map. Event Map — the main map, which is referenced by all other maps. It already has autonomy, but map-controls.js uses remote GeoJSON.
+
+Step 3. Apply the same architecture to Semantic Map. Create one SEMANTIC-MAP-MANIFEST.md, clean-archive.sh, check sentiment-adapter.js.
+
+Step 4. Apply to Forecast Map. Feature: probability-fill (Cressie 1993) with the formula opacity = 0.4 + 0.5 × confidence.
+
+Step 5. Apply to Network Map. Feature: Doesn't require a world.geojson, uses SVG force-directed graph (Barabasi 2016).
+
+Step 6. Single check of all 5 cards (Section 19) — final checklist.
+
+24.5. Time order
+#	Task	Time	Priority
+1	Finish "Include all" in Metrics Map	in 30 minutes	.
+2	Visual activity of layer buttons	15 min	High
+3	Check the size copy-data.js	10 min	Average
+4 Event Map-1 hour offline check.	Event Map — проверка автономности	1 час	Высокий
+5	Event Map-local geojson	30 min	High
+6	Event Map-manifest + clean-archive	45 min	Average
+7	Semantic Map-	1 hour	Average offline check
+8	Semantic Map-sentiment-adapter	1 hour	Average
+9	Semantic Map-manifest + clean-archive	45 min	Average
+10	Forecast Map-	1 hour	Average Battery life Check
+11	Forecast Map-probability-fill	1 hour	Average
+12	Forecast Map-manifest + clean-archive	45 min	Average
+13	Network Map-	1 hour	Low battery check
+14	Network Map-force-directed	1.5 hours	Low
+15	Network Map-manifest + clean-archive	45 min	Low
+16	Final check of all 5 cards	30 min	High
+Total		~14 hours
+24.6. Universal template
+To speed up working with the other 4 maps, you can create a universal _template / template that contains all standard files with placeholders <MAP_NAME>, <MAP_TYPE>, and <LAYER_COUNT>. When creating a new map, just substitute the values.
+
+The template contains:
+
+index.html.template
+
+manifest.json.template
+
+ARCHITECTURE.md.template
+
+AUTONOMY-CHARTER.md.template
+
+clean-archive.sh.template
+
+js/core.js.template
+
+js/map-controls.js.template
+
+js/copy-data.js.template
+
+js/init.js.template
+
+css/map.css.template
+
+This architectural solution follows the DRY principle (Hunt & Thomas 1999) — Don't Repeat Yourself. Standard files are created once and adapted for each map by replacing placeholders.
+
+24.7. Compatibility Guarantee
+During unification, it must be checked that:
+
+All 5 maps are navigationally linked (section 18.2).
+
+Each map has its own mapType (Section 18.3).
+
+All manifest.json matches the schema (section 18.4).
+
+Failure domain = 1 for each domain (section 18.6).
+
+The autonomy check passes (section 19).
+
+## 23. QUICK START FOR A NEW DEVELOPER
+25.1. If you have just started working with Metrics Map
+Read in this order:
+
+Section 1 — what is Metrics Map and its place in the ecosystem.
+
+Section 2-Folder structure.
+
+Section 5-Distribution of 75 layers.
+
+Section 6 — How each layer type works.
+
+Section 11-Current status.
+
+Section 12-what needs to be completed.
+
+25.2. If you find a bug
+Open the console (F12).
+
+Run the command from section 22.6-Complete diagnostics.
+
+Check the API for a specific layer (section 22.2).
+
+Check if fallback works (section 22.3).
+
+Refer to section 21-Change history.
+
+25.3. If you want to add a new layer
+Open it js/layers.js.
+
+Add an entry to DEMO_LAYERS:
+
+javascript
+{ id: "new-layer", name: "Новый слой", color: "#ff0000", icon: "📊", category: "economics", vizType: "choropleth" }
+If vizType: "series" - add to js / maps-config.js in LAYER_CLASSIFICATION with method and palette, and in js/series-adapter.js-to MODULE_CONFIG spatial proxy and transformation.
+
+Update presets / presets.json, if the layer is needed in presets.
+
+Update it METRICS-MAP-MANIFEST.md (section 15).
+
+25.4. If you want to add a new category
+Add layers with the new category to DEMO_LAYERS.
+
+In renderLayerPanel (file js/layers.js) add the icon and category name to categoryIcons and categoryNames.
+
+Update MAP_TYPES. metrics in js/maps-config.js.
+
+Update the manifest and METRICS-MAP-MANIFEST.md (section 5).
+
+25.5. If you need to change the layer classification
+Open it js/maps-config.js.
+
+Find the layer in LAYER_CLASSIFICATION.
+
+Change method, palette, or manualBreaks.
+
+Update the rationale — why exactly this choice is made.
+
+25.6. If you need to change the palette
+Open it js/maps-config.js.
+
+Find COLOR_SCHEMES.
+
+Add a new palette to sequential or diverging.
+
+Update LAYER_CLASSIFICATION for layers that use the palette.
+
+26. PRINCIPLES APPLICABLE TO THIS DOCUMENT
+
+
+grep -c '^## ' METRICS-MAP-MANIFEST.md &&
+
+
+Added 6 new sections:
+
+| Section | Content |
+|--------|------------|
+| **21** | Change history — what was in 1.0, what became in 1.1, what was in folders`./1/`, `./2/`, `./3/` |
+| **22** | Diagnostics via the browser console — 9 sets of JavaScript commands |
+| **23** | HELP — full texts for `docs/help/ru/metrics-map.txt` and `docs/help/en/metrics-map.txt` |
+| **24** | Roadmap for 5 maps–L1-L4 readiness levels, unified standard, 14-hour unification plan |
+| **25** | Quick start for a new developer — how to read a document, how to search for bugs, how to add layers/categories/palettes |
+| **26** | Project principles applicable to the document |
+
+
+---
+
+## 24. TESTING
+
+### 27.1. Testing principles
+
+1. **Each layer type is tested separately.** Choropleth (56), series (14), marker (6) — three different visualization models. A failure in one does not mean a failure in the other.
+2. * * Testing in two modes:** with the API (real data) and without the API (fallback).
+3. * * Verification via snapshot.** The COPY button gives the full status — this is the document to check.
+4. * * Verification via the console.** The commands in section 22 provide control metrics.
+
+### 27.2. Scenario 1. Basic launch
+
+* * Goal:* * check that the map loads without errors.
+
+* * Steps:**
+1. Ctrl+Shift+R in the browser.
+2. F12-open the console.
+3. Wait for the `INIT.JS is ready` (about 3 seconds).
+
+* * Waiting in the console:**
+CORE.JS loaded
+COUNTRIES.JS loaded
+Downloaded countries: 90
+LAYERS.JS ready (75 layers, version 1.1)
+MAPS-CONFIG.JS ready (66 overrides, 14 API modules)
+SERIES-ADAPTER.JS ready (14 modules)
+MAP-CONTROLS.JS ready (Metrics Map, standalone v4. 0)
+MARKERS.JS loaded
+METRICS-MAP.JS ready (standalone, version 1.1, marker-fallback built-in)
+COPY-DATA.JS loaded (Metrics Map, layers-focus ~500 KB)
+HEAT-TIMELINE.JS loaded
+SSI.JS uploaded
+REFRESH.JS loaded
+CII.JS ready (API + fallback)
+LOGGER.JS loaded
+window. Logger installed
+INIT.JS is ready
+Borders are loaded from data / world.geojson (offline)
+[MetricsMap] Initializing the orchestrator
+[MetricsMap] Layers: 75
+[MetricsMap] Series-Modules: 14
+
+
+**Check:** No `Failed to load resource ' line for critical files. Only 404s are allowed for `/api/cii-api ' and `/api/layers/<id>` — they are processed by fallback.
+
+* * Acceptance criteria:** All 75 layers are available, the map shows borders, and the layers panel is full.
+
+### 27.3. Scenario 2: Testing the choropleth layer
+
+* * Goal:* * Check that choropleth paints over 90 countries.
+
+* * Steps:**
+1. Click on the `pmi 'layer (the' PMI ' button).
+2. View in the console.
+
+* * Waiting in the console:**
+[MetricsMap] pmi: choropleth API unavailable (HTTP 404) → fallback
+[Choropleth] method=manual, breaks=[42, 47, 53, 58], GVF=0.9xxx
+[Choropleth] Countries filled in: 90
+[MetricsMap] Fallback: pmi → 90 стран, method=manual, palette=RdYlGn5
+
+
+**Checking on the map:**
+- 90 countries are filled with RdYlGn5 colors.
+- Legend at the bottom left: 5 classes with thresholds [42, 47, 53, 58].
+- Method in the legend: 'manual`.
+- GVF in the legend: > 0.7 (green).
+
+* * Acceptance criteria:** all 90 countries are filled in, the legend is correct, GVF > 0.7.
+
+### 27.4. Scenario 3. Testing the series layer
+
+* * Goal:* * check that the series layer is converted using 'SeriesAdapter. convert'.
+
+* * Steps:**
+1. Click on the `pmi-api ' layer ("PMI Purchasing managers (threshold 50)" button).
+2. View in the console.
+
+* * Waiting in the console:**
+[MetricsMap] pmi api: series API unavailable (HTTP 404) → fallback
+[Choropleth] method=manual, breaks=[42, 47, 53, 58], GVF=0.9xxx
+[Choropleth] Countries filled in: 90
+[MetricsMap] Fallback: pmi-api → 90 стран, method=manual, palette=RdYlGn5
+
+
+**Checking on the map:**
+- The same 90 countries are painted over.
+- A legend similar to choropleth `pmi`.
+
+* * Acceptance criteria:** series-the layer works via the spatial proxy `all_countries'.
+
+* * Advanced:** check that the spatial proxy is selected correctly — For example, for` ovx-api', the proxy must be 'oil_producers' (not `all_countries`). Check in ' series-adapter.js` section ' MODULE_CONFIG`.
+
+### 27.5. Scenario 4. Testing the marker layer
+
+* * Goal:* * check that the marker layer creates 180 markers (2 for each of the 90 countries).
+
+* * Steps:**
+1. Click on the 'insider-trading' layer (the 'Insider Trading' button).
+2. View in the console.
+
+* * Waiting in the console:**
+[MetricsMap] insider-trading: marker API unavailable (HTTP 404) → marker-fallback
+[MetricsMap] Marker Fallback: insider-trading → 180 markers
+Displayed markers: 180 out of 180
+
+
+**Checking on the map:**
+- 180 round markers on the map.
+- Each marker has a popup with a name.
+
+* * Acceptance criteria:** exactly 180 markers, popups work.
+
+### 27.6. Scenario 5. Testing the "Enable all" button
+
+* * Goal:* * check that the `enableAllLayers ' loop runs through all 75 layers without interruption.
+
+* * Steps:**
+1. Ctrl+Shift+R.
+2. Wait for the full download.
+3. F12-console.
+4. Insert the `window.enableAllLayers () ' command and press Enter.
+5. * * Do not switch tabs.**
+6. Wait 20-30 seconds.
+
+* * Waiting in the console:**
+[enableAllLayers] Start
+[MetricsMap] inflation: empty → fallback
+[Choropleth] method=jenks, breaks=[...], GVF=0.9199
+[MetricsMap] Fallback: inflation → 90 countries
+...
+[MetricsMap] mobile: empty → fallback
+[Choropleth] method=jenks, breaks=[...], GVF=0.9xxx
+[MetricsMap] Fallback: mobile → 90 countries
+[enableAllLayers] Total: 75, with data: 75, Empty: 0, Errors: 0, Skipped: 0
+
+
+**Verification:**
+```javascript
+console.log('Кэш:', Object.keys(window.layerCache).length);
+console. log ('Active:', window.activeLayerIds.size);
+console. log ('Markers:', (window.markerData || []).length);
+Expectation: 75, 75, 1080 (6 marker layers × 180).
+
+Acceptance criteria: final line Total: 75, with data: 75.
+
+If the loop is interrupted: send the last 5 lines to [MetricsMap] — they will show on which layer the failure occurred.
+
+27.7. Scenario 6: Testing the COPY button
+Goal: check that the snapshot contains all 75 data layers.
+
+Steps:
+
+Make sure that enableAllLayers ended with with data: 75.
+
+Click COPY.
+
+Paste the contents of the buffer into a text editor.
+
+Save As metrics-snapshot.txt.
+
+Verification:
+
+bash
+# Size
+wc -c metrics-snapshot.txt
+
+# Number of data layers
+grep-c "Data (all 90 objects)" metrics-snapshot.txt
+Expectation: ~350 KB, 75 matches (one per layer).
+
+Acceptance criteria: size 300-500 KB, 75 data layers.
+
+27.8. Scenario 7: Testing GVF
+Objective: to check that the classification of each layer gives a GVF > 0.7.
+
+Steps:
+
+Go through 5-10 choropleth layers (click on the button, view in the console).
+
+Write down the GVF for each.
+
+Waiting time:
+
+All GVFS are in the 0.90-0.95 range.
+
+In the legend, the GVF is shown in green (≥ 0.7).
+
+If GVF < 0.7: the layer requires changing the classification method (for example, manual instead of jenks). Check out LAYER_CLASSIFICATION in maps-config.js.
+
+Acceptance criteria: all verified GVFS > 0.7.
+
+27.9. Scenario 8: toggle testing
+Goal: to check that clicking on the layer again turns it off.
+
+Steps:
+
+Click on the pmi layer — enabled.
+
+Click on the pmi layer again — disabled.
+
+Waiting time:
+
+When enabled: [MetricsMap] Fallback: pmi → 90 countries.
+
+When disabled: 🌍 Active layers: 1 (or 1 less).
+
+Check: In the DOM, the pmi button does not have the active class after the second click.
+
+Acceptance criteria: toggle works, active class is removed.
+
+27.10. Scenario 9. Testing the legend
+Goal: to check that the legend is updated when the layer is changed.
+
+Steps:
+
+Click on pmi (manual, RdYlGn5) - check the legend.
+
+Click on inflation (jenks, OrRd) to check the legend.
+
+Click on copper-gold (jenks, RdBu5) to check the legend.
+
+Waiting in the legend:
+
+For pmi: 5 swatch-s RdYlGn5, thresholds [42, 47, 53, 58], the manual method.
+
+For inflation: 5 swatch OrRd values, Jenks thresholds, and the jenks method.
+
+For copper-gold: 5 swatch-s RdBu5, Jenks thresholds.
+
+Acceptance criteria: The legend is updated correctly for each layer.
+
+27.11. Scenario 10. Testing your autonomy
+Goal: make sure that the map works without a server.
+
+Steps:
+
+Disable the server (or use the file:/ / protocol for index.html).
+
+Open the map.
+
+Waiting time:
+
+The map is loading.
+
+Country borders are displayed (from data/world.geojson).
+
+When you click on the layer-fallback generates 90 countries.
+
+No Failed to load resource error for local files.
+
+Acceptance criteria: the map works without an API server.
+
+27.12. Scenario 11. Testing cross-map navigation
+Goal: to check that navigation between 5 maps works.
+
+Steps:
+
+In the header, click on the Events button-go to /event-map/.
+
+Go back to /metrics-map/.
+
+Click on Semantic, Network, Forecast to check all traffic.
+
+Waiting time:
+
+All traffic transitions are working.
+
+The active map is highlighted in color.
+
+Acceptance criteria: 5 maps are navigationally linked.
+
+27.13. Scenario 12. Testing the failure domain
+Goal: Make sure that a crash in one map doesn't affect others.
+
+Steps:
+
+Open /metrics-map/.
+
+Call an error in the console: throw new Error('test');
+
+Go to /event-map/.
+
+Waiting time:
+
+Error is fixed in the metrics-map console.
+
+/event-map / works without errors.
+
+Acceptance criterion: failure domain = 1.
+
+27.14. Full test checklist
+bash
+cd "dashboard/public/metrics-map"
+
+# 1. Structure
+echo "=== Structure ==="
+find . -maxdepth 2 -type f \( -name "*.js" -o -name "*.html" -o -name "*.css" -o -name "*.json" -o -name "*.md" \) | grep -v "_archive\|backups" | sort
+
+# 2. Layers
+echo "=== Layers ==="
+grep -c 'id:' js/layers.js
+grep -o 'id: "[^"]*"' js/layers.js | sort | uniq -d
+
+# 3. Cross-map
+echo "=== Cross-map ==="
+grep -rn '\.\./' index.html js/*.js | grep -v 'AUTONOMY\|manifest'
+
+# 4. Local geojson
+echo "=== Local geojson ==="
+grep -n "data/world.geojson" js/map-controls.js
+ls -la data/world.geojson
+
+# 5. Classification methods
+echo "=== Methods ==="
+grep -c "method:" js/maps-config.js
+
+# 6. Series modules
+echo "=== Series ==="
+grep -c "SERIES_MODULES" js/maps-config.js
+All criteria must pass without errors.
+
+## 25. PERFORMANCE
+28.1. Target metrics
+Yandex. Metrica	Target value	Threshold
+Page load	< 3 seconds	< 5 seconds
+Loading a single layer (fallback)	< 100 ms	< 300 ms
+Loading 75 layers sequentially	< 3 seconds	< 10 seconds
+Loading a single layer (API)	< 500 ms	< 2 seconds
+Drawing choropleth (90 countries)	< 200 ms	< 500 ms
+Snapshot size	300-500 KB	< 1 MB
+Memory consumption	< 150 MB	< 500 MB
+FPS when moving the map	> 30	> 15
+28.2. Measurements in the browser
+Opening DevTools → Performance → Record:
+
+javascript
+// In the console - measurement of initialization time
+console.time('init');
+window.loadData().then(() => {
+    console.timeEnd('init');
+});
+Measuring the loading of a single layer:
+
+javascript
+console.time('layer-pmi');
+await window.loadLayer('pmi');
+console.timeEnd('layer-pmi');
+Waiting time: 50-100 ms for fallback.
+
+Measurement of loading of all 75 layers:
+
+javascript
+console.time('all-layers');
+await window.enableAllLayers();
+console.timeEnd('all-layers');
+Expectation: 2.5-3 seconds (75 × 30 ms + overhead).
+
+28.3. Bottlenecks and optimization
+Bottleneck 1: 75 separate loadlayers with a 30 ms delay.
+
+Formula: T = 75 × (t_load + t_delay), where t_delay = 30 ms (zachardkozheno in setTimeout).
+
+With t_load ≈ 5 ms, the result is 75x35 = 2625 ms.
+
+Optimization:
+
+Reduce t_delay from 30 ms to 10 ms — T = 75 × 15 = 1125 ms.
+
+Use Promise. all for parallel loading — but be careful, it may kill the rate limit API.
+
+Use batch processing: upload 10 layers in parallel, then pause for 50 ms.
+
+Bottleneck 2: applyChoropleth iterates through 90 countries in each iteration.
+
+For each layer: 90 × find (90) = 8100 comparison operations. For 75 layers: 607,500 operations.
+
+Optimization:
+
+Use Map to map country names-O(1) instead of O (n).
+
+Pre-create a lookup table {countryName → layer}.
+
+Bottleneck 3: 6 marker layers × 180 markers = 1080 markers.
+
+Each marker is a separate L. circleMarker with a popup handler.
+
+Optimization:
+
+Use L. MarkerClusterGroup for clustering — already enabled in index.html.
+
+Limit the display to 500 markers (as in Event Map) — but for metrics, 1080 is enough.
+
+Bottleneck 4: logger.js intercepts console. log.
+
+Each console line is recorded in window. crucixLogger. logs, updates the UI panel, and saves it to localStorage.
+
+With 75 layers × ~5 rows = 375 log entries. Each one is JSON. stringify + DOM update + localStorage.
+
+Optimization:
+
+Disable console. log interception in production: if (window. CrucixConfig?.debug). Now the logger always works.
+
+Use debounce to update the log panel.
+
+Store in localStorage not all 375 records, but only the last 100.
+
+Bottleneck 5: copy-data.js with 75 data layers.
+
+Collects 75x90 = 6750 rows of data + configuration + legend + DOM.
+
+Optimization:
+
+Serialize data without formatting (JSON instead of strings with padEnd).
+
+Use Blob to build large strings (faster than concat).
+
+28.4. Profiling via the Performance API
+javascript
+/ / Measuring the loading of a single layer
+performance.mark('layer-start');
+await window.loadLayer('pmi');
+performance.mark('layer-end');
+performance.measure('layer-pmi', 'layer-start', 'layer-end');
+console.log(performance.getEntriesByName('layer-pmi'));
+
+/ / Measurement of all downloads
+performance.mark('all-start');
+await window.enableAllLayers();
+performance.mark('all-end');
+performance.measure('all-layers', 'all-start', 'all-end');
+console.log(performance.getEntriesByName('all-layers'));
+28.5. Memory monitoring
+javascript
+// In Chrome: performance. memory
+console.log('Used:', Math.round(performance.memory.usedJSHeapSize / 1024 / 1024), 'MB');
+console.log('Total:', Math.round(performance.memory.totalJSHeapSize / 1024 / 1024), 'МБ');
+console.log('Limit:', Math.round(performance.memory.jsHeapSizeLimit / 1024 / 1024), 'MB');
+Waiting after 75 layers are fully loaded: ~50-100 MB.
+
+If it's more than 500 MB, it's a memory leak. Check:
+
+Aren't new objects created for each iteration without deallocation.
+
+Whether DOM elements accumulate in the legend.
+
+28.6. Caching
+Browser cache:
+
+Local JS files are cached by the browser by default.
+
+world.geojson (252 KB) is cached for 1 day.
+
+In-memory cache:
+
+window. layerCache-stores data from loaded layers.
+
+When the layer is reactivated, data is taken from the cache, and the API is not called.
+
+localStorage cache:
+
+crucix-active-layer — the last active layer.
+
+crucix-lang — the selected language.
+
+crucix-logs — the last 100 log entries.
+
+28.7. Metrics for monitoring
+javascript
+/ / Full Performance Diagnostics
+(() => {
+    const perf = performance.getEntriesByType('navigation')[0];
+    console.log('=== PERFORMANCE ===');
+    console.log('DOM ready:', Math.round(perf.domContentLoadedEventEnd - perf.startTime), 'мс');
+    console.log('Load:', Math.round(perf.loadEventEnd - perf.startTime), 'мс');
+    console.log('Layers in the cache:', Object.keys(window.layerCache || {}).length);
+ console. log ('Markers:', (window.markerData || []).length);
+    if (performance.memory) {
+        console.log('Heap used:', Math.round(performance.memory.usedJSHeapSize / 1024 / 1024), 'MB');
+    }
+    console.log('===================');
+})();
+## 26. safety
+29.1. Content Security Policy (CSP)
+Current status: CSP is not installed. This is acceptable for a local project, but it will be required for publishing on the Internet.
+
+Recommended CSP for Metrics Map:
+
+html
+<meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com;
+    style-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com;
+    img-src 'self' data: https://*.tile.openstreetmap.org https://*.basemaps.cartocdn.com;
+    font-src 'self';
+    connect-src 'self' https://unpkg.com https://cdnjs.cloudflare.com;
+    frame-ancestors 'none';
+    base-uri 'self';
+    form-action 'self';
+">
+What it allows:
+
+default-src 'self' — all resources by default only from the same domain.
+
+script-src — local scripts + Leaflet CDN.
+
+style-src — local CSS + inline styles (needed for dynamic legend) + CDN.
+
+img-src — local images, data: URIs, OpenStreetMap tiles.
+
+connect-src-fetch only to the same domain and CDN.
+
+What prohibits:
+
+Loading scripts from custom domains.
+
+Insert via <iframe> (frame-ancestors 'none').
+
+Sending forms to external servers (form-action 'self').
+
+Application: insert <meta> in the < head> of a file index.html.
+
+29.2. XSS protection in popups
+Threat: XSS (Cross-Site Scripting) - embedding malicious JavaScript through user data in popups.
+
+Implementation points:
+
+Popup for markers. Formed from feature.properties. label, feature.properties.region, and feature.properties.value. If the API returns label: '<script>alert(1)</script>' — the script is executed.
+
+Popup for choropleth countries. Formed from feature.properties.name.
+
+The CII panel. Formed from data.countries[].country.
+
+The layers panel. Formed from layer.name, layer.id.
+
+Current state: Data is inserted via innerHTML without escaping. This is a vulnerability.
+
+The solution is the escapeHTML function:
+
+javascript
+function escapeHtml(str) {
+    if (str == null) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+Application:
+
+In js/markers.js -popup for markers:
+
+javascript
+const popup = '<div>' +
+    '<strong>' + escapeHtml(item.title || 'Event') + '</strong><br>' +
+    '' + escapeHtml(item.status || '—') + '' +
+    '<div>' + escapeHtml(item.countryName || '—') + '</div>' +
+    '</div>';
+In js / map-controls.js-popup for countries:
+
+javascript
+layer.bindPopup('<strong>' + escapeHtml(nameRu) + '</strong><br>' +
+                '' + escapeHtml(statusText) + '');
+In js/cii.js-CII panel:
+
+javascript
+'<span class="cii-name">' + escapeHtml(c.country) + '' +
+'<span class="cii-score">' + escapeHtml(String(c.score)) + ''
+In js/layers.js -layers panel:
+
+javascript
+btn.innerHTML = '<span class="name">' + escapeHtml(layer.name) + '';
+Criterion: No custom string is inserted into the DOM without escapeHTML().
+
+29.3. Protection against prototype pollution
+Threat: If the API returns JSON with the __proto__ field, the prototype may be contaminated.
+
+Solution: use Object. create (null) instead of {} for objects filled in from data:
+
+javascript
+const lookup = Object.create(null);
+Application: in map-controls.js when building currentChoroplethData, in the series-adapter.js when building features.
+
+29.4. Protection against open redirect
+Threat: If the user passes the ?redirect=... parameter, the attacker can redirect to another site.
+
+Current state: Navigation between maps uses hard-wired <a href= " ../event-map/">. URL parameters are not passed. There is no vulnerability.
+
+Recommendation: if query parameters appear in the future, validate them using the domain whitelist.
+
+29.5. localStorage Protection
+Threat: localStorage is readable by any script on the same domain. You can't store tokens.
+
+Current usage:
+
+crucix-lang-language ('ru'/'en'). It's no secret.
+
+crucix-active-layer-ID of the active layer. It's no secret.
+
+crucix-refresh-interval — the refresh interval. It's no secret.
+
+crucix-logs — logs (up to 100 entries). They may contain sensitive data (URLs, API responses).
+
+Recommendation: when publishing on the Internet — clear logs when exiting, do not store URLs with parameters.
+
+29.6. Protection against CORS issues
+Current state: fetch to /api/layers/... — same-origin. CORS is not involved.
+
+When integrating with external APIs: the server must return Access-Control-Allow-Origin for the desired domain.
+
+Recommendation: do not make a fetch directly to external APIs from the browser — only through a server proxy (rule # 16 about the bucket).
+
+29.7. Security of fetch requests
+Fetch points:
+
+javascript
+// js/map-controls.js
+await fetch('data/world.geojson'); / / local, safe
+
+// js/cii.js
+await fetch ('/api/cii-api'); / / same-origin, safe
+
+// js/metrics-map.js
+await fetch(`/api/layers/${layerId}`); // same-origin, safe
+All fetch — same-origin. The only exception is OpenStreetMap tiles via Leaflet (loaded as <img>, CSP does not block).
+
+29.8. Validation of input data
+layerId: check that it contains only [a-z0-9 -]:
+
+javascript
+if (!/^[a-z0-9-]+$/.test(layerId)) {
+    console.warn('Invalid layerId:', layerId);
+    return;
+}
+Coordinates: check that lat ∈ [-90, 90], lng ∈ [-180, 180].
+
+Indicator values: check that the number, not NaN, is within reasonable limits.
+
+29.9. CSP-Dynamic style compatibility
+Problem: legend in map-controls.js sets the style.background via JavaScript — this is acceptable for CSP.
+
+No problem: inline style="... "in HTML-allowed via' unsafe-inline ' in CSP.
+
+Recommendation: if you tighten CSP by removing 'unsafe-inline', you will need to change dynamic styles to CSS classes.
+
+29.10. Security checklist
+bash
+cd "dashboard/public/metrics-map"
+
+# 1. Is CSP installed?
+grep -n 'Content-Security-Policy' index.html
+
+# 2. Is escapeHTML used?
+grep -c 'escapeHtml' js/markers.js js/map-controls.js js/cii.js js/layers.js
+
+# 3. External fetch?
+grep -rn 'fetch(' js/*.js | grep -v 'data/\|/api/'
+
+# 4. Dangerous innerHTML?
+grep -rn 'innerHTML' js/*.js | grep -v 'escapeHtml'
+
+# 5. eval / Function?
+grep -rn 'eval\|new Function' js/*.js
+Criterion: CSP is set, escapeHTML is used wherever data from the API is inserted, and eval is omitted.
+
+## 27. GLOSSARY
+30.1. Basic terms
+API (Application Programming Interface) — a programming interface that allows one module to receive data from another. In Metrics, Map: /api/layers/<id> returns data for a specific layer.
+
+Bulkhead Pattern — an isolation principle in which a failure in one component does not spread to others. In Crucix: 5 offline maps, failure domain = 1.
+
+Choropleth-a visualization method where regions (countries) are colored depending on the indicator value. The main display type is Metrics Map.
+
+Choropleth-legend-a UI block that shows class thresholds, palette, classification method, and quality (GVF).
+
+ColorBrewer is a system of Cindy Brewer palettes optimized for perception. Includes sequential and diverging schemes.
+
+CII (Country Instability Index) — country Instability Index. Calculated as a weighted function of country statuses (critical → 100, normal → 10).
+
+Column-oriented data-organizing data by columns, used in LAYER_CLASSIFICATION.
+
+Cross-map dependency — a link from one map file to another map file via ../other-map/. Prohibited by the R1 rule.
+
+DAG (Directed Acyclic Graph) — directed acyclic graph. Used to describe the order in which scripts are loaded: each script depends on the previous ones, but there are no loops.
+
+Diverging (Divergent palette) — a color scheme where the extreme values of different characters (for example, -10 and +10) are colored in contrasting colors (red ↔ blue), and the middle — in neutral. Used for indicators with domain zero (PMI 50, spreads).
+
+escapeHTML-function for escaping HTML characters (<, >, &, ", '). Protects against XSS.
+
+Failure domain — multiple components affected by a single failure. In Crucix: failure domain = 1 (failure in one map does not affect others).
+
+Fallback — a fallback mechanism when the main data source is unavailable. In Metrics Map: with the 404 API, data is generated locally.
+
+Fresh-data — data received in the current session without a cache.
+
+GVF (Goodness of Variance Fit) - a quality metric for the Jenks classification. The formula is: GVF = (SDAM-SDCM) / SDAM, where SDAM is the sum of squared deviations from the mean, and SDCM is the sum of squared deviations within classes. Domain: 0-1, > 0.7 — good.
+
+Hue (Hue) — color coordinate (red, blue). In Metrics, Map is only used as an auxiliary channel.
+
+Jenks (The Jenks Method — is a natural discontinuity algorithm for classifying data. Minimizes SDCM, complexity O(k·n2). Developed by George Jenks in 1963.
+
+Layer — one indicator in the Metrics Map. Example: pmi, inflation, copper-gold. There are 75 layers in total.
+
+Leaflet is a JavaScript library for interactive maps. Used in 4 out of 5 Crucix maps (except Network Map).
+
+Manual breaks — classification thresholds set by the expert. Example: PMI [42, 47, 53, 58], where 50 is the ISM domain threshold.
+
+MAP_TYPES-configuration of map types in maps-config.js. Defines which layer categories belong to the Metrics Map.
+
+Marker — a placemark on the map. Metrics Map is used for 6 layers (vix-futures, insider-trading, etc.).
+
+manifest.json passport of the card. Contains: mapType, version, number of layers, and autonomy status.
+
+Munzner 2014-Tamara Munzner's academic paper "Visualization Analysis and Design". Defines the perception channels and their separability.
+
+Node.js — the JavaScript runtime environment outside the browser.
+
+Opacity — alpha channel, value from 0 (fully transparent) to 1 (fully opaque). Used in Forecast Map to encode model confidence.
+
+PWA (Progressive Web App) — an offline web application. Possible expansion in the future.
+
+Quantile-a classification method where classes contain an equal number of observations.
+
+R1–R6 — rules for map autonomy (see AUTONOMY-CHARTER.md).
+
+Saturation — the color coordinate. In Metrics Map — via the ColorBrewer palette.
+
+SDAM (Sum of Deviations from the Array Mean) — sum of squared deviations from the mean.
+
+SDCM (Sum of Deviations from Class Means) — sum of squared deviations within classes.
+
+Sequential (Sequential palette) — a color scheme with a gradual change from light to dark. Used for indicators without a domain zero (inflation, unemployment).
+
+Series — a type of layer where data comes as a time series of a single indicator (for example, the US PMI), rather than a distribution by country. Converted to choropleth via series-adapter.js.
+
+SeriesAdapter-transformation module series → choropleth. Uses spatial proxy and transformations.
+
+Spatial proxy — a map of weights that distributes the global indicator by country. Example: for pmi — all_countries (all countries are equal), for ovx — oil_producers (weights depend on oil production).
+
+SSI (Strategic Stress Index) — an index of strategic tension. In Metrics Map = 42%.
+
+Toggle-a mechanism for switching the layer on / off when it is clicked again.
+
+VizType — layer property: choropleth, series, marker. Defines how the layer is displayed on the map.
+
+window. CrucixMap — a global object declared in the first inline script. Contains mapType and name.
+
+XSS (Cross-Site Scripting) is an attack in which an attacker injects JavaScript through the data displayed on the page.
+
+30.2. Abbreviations
+API — Application Programming Interface
+CII — Country Instability Index
+CSP — Content Security Policy
+DAG — Directed Acyclic Graph
+DP — Dynamic Programming
+GVF — Goodness of Variance Fit
+HY OAS — High Yield Option-Adjusted Spread
+ISM — Institute for Supply Management
+OSINT — Open Source Intelligence
+PMI — Purchasing Managers' Index
+SDAM — Sum of Deviations from Array Mean
+SDCM — Sum of Deviations from Class Means
+SIGINT — Signals Intelligence
+SSI — Strategic Stress Index
+UI — User Interface
+UX — User Experience
+VXX — VIX Short-Term Futures ETN
+XSS — Cross-Site Scripting
+
+30.3. Data sources
+ACLED — Armed Conflict Location & Event Data Project
+BLS-Bureau of Labor Statistics (USA)
+CBOE — Chicago Board Options Exchange
+CFTC — Commodity Futures Trading Commission
+CISA — Cybersecurity and Infrastructure Security Agency
+Comtrade — UN Comtrade Database
+EIA — US Energy Information Administration
+FRED — Federal Reserve Economic Data
+GDELT — Global Database of Events, Language, and Tone
+IAEA — International Atomic Energy Agency
+IRENA — International Renewable Energy Agency
+ISM — Institute for Supply Management
+ITU — International Telecommunication Union
+JHU CSSE — Johns Hopkins University Center for Systems Science and Engineering
+NVD — National Vulnerability Database
+SEC — Securities and Exchange Commission
+SIPRI — Stockholm International Peace Research Institute
+UNHCR — UN High Commissioner for Refugees
+WHO — World Health Organization
+
+30.4. Academic sources
+Brewer 2005 — Cynthia Brewer. «Designing Better Maps: A Guide for GIS Users». ESRI Press.
+
+Cowan 2001 — Nelson Cowan. «The magical number 4 in short-term memory». Behavioral and Brain Sciences.
+
+Cressie 1993 — Noel Cressie. «Statistics for Spatial Data». Wiley.
+
+Dijkstra 1974 — Edsger Dijkstra. «On the role of scientific thought». From the EWD series.
+
+Gamma et al. 1994 — Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides. «Design Patterns». Addison-Wesley.
+
+Hunt & Thomas 1999 — Andrew Hunt, David Thomas. «The Pragmatic Programmer». Addison-Wesley.
+
+Jenks 1963 — George Jenks, Fred Caspall. «Error on choroplethic maps: definition, measurement, reduction». Annals of the Association of American Geographers.
+
+Martin 2003 — Robert C. Martin. «Agile Software Development: Principles, Patterns, and Practices». Prentice Hall.
+
+Munzner 2014 — Tamara Munzner. «Visualization Analysis and Design». CRC Press.
+
+Nygard 2007 — Michael Nygard. «Release It!». Pragmatic Bookshelf.
+
+Shannon 1948 — Claude Shannon. «A Mathematical Theory of Communication». Bell System Technical Journal.
+
+Tobler 1970 — Waldo Tobler. «A computer movie simulating urban growth in the Detroit region». Economic Geography.
+
+30.5. Terms of the Crucix Ecosystem
+Crucix — project name. Geopolitical OSINT-a platform of 5 standalone maps.
+
+Crucix_GIT-preparatory folder for sending to the Internet. Path: Crucix_GIT.
+
+Event Map — event map (markers). 84 layers.
+
+Metrics Map — a map of indicators (choropleth). 75 layers. The current document describes it.
+
+Network Map — a map of connection graphs (SVG). 12 layers.
+
+Semantic Map — a map of text semantics. 35 layers.
+
+Forecast Map — a map of probabilistic forecasts. 16 layers.
+
+Basket — the only source of data. Path: data/basket/*. json. All API modules read data only from there.
+
+Collector-a script that collects data from the external API to the trash. Path: scripts/collectors/collect-*.mjs.
+
+Monitoring Center — a web interface for monitoring the project. URL: http://localhost:3117/monitor.
+
+## 28. FULL MAP OF PATHS AND FILES
+31.1. General structure of the Crucix project
+
+├── Crucix/                               РАБОЧАЯ WORKING FOLDER (development and launch)
+─ ─ ─ server.mjs ← Main server (port 3117)
+│ ├ ─ ─ MANIFEST.md , general project manifesto
+│ ├ ─ ─ RULES.txt , project rules
+│   ├── package.json ← configuration Node.js
+│   ├── data/
+│   │   └── basket/ ← SINGLE data source
+│   │       └── *.json files in the trash
+│   ├── scripts/
+│   │   ├── collectors/                  , data collectors
+│   │   │   └── collect-*.mjs
+│   │   ─ ─ ─ *. mjs ← service scripts
+│   ├── apis/
+│   │   └── sources/                     , API modules
+│   │       └── *.mjs
+│   ├── logs/
+│   │   └── collectors/                  , importer logs
+│   │       └── collect-*.log
+│   ├── docs/
+│   │   ├── help/
+│   │   │   ─ ─ ─ ru/ ← Russian documentation
+│   │   │   │   ├── api/
+│   │   │   │   ├── pages/
+│   │   │   │   ├── collectors/
+│   │   │   │   └── layers/
+│   │   │   ─ ─ ─ en / ← English documentation
+│   │   │       ├── api/
+│   │   │       ├── pages/
+│   │   │       ├── collectors/
+│   │   │       └── layers/
+│   │   └── page-template.html , template for new pages
+│   ├── backups/                         , backups
+│   └── dashboard/
+─ ─ ─ public/ ← web interface (5 maps)
+│           ├── world.geojson ← shared GeoJSON (copied to maps)
+│ ├ ─ ─ geo-map / ← main (Event Map) - it is referenced
+│ ├ ─ ─ event-map / ← 84 layers, markers
+─ ─ ─ metrics-map / ← 75 layers, choropleth (THIS MAP)
+─ ─ ─ semantic-map / ← 35 layers, semantics
+─ ─ ─ network-map / ← 12 layers, SVG graph
+─ ─ ─ forecast-map / ← 16 layers, probability
+└── Crucix_GIT/ ← PREPARATION FOLDER
+ └ ─ ─ (copies of ready-made files from Crucix/)
+31.2. Metrics Map — complete path map
+Map root: dashboard/public/metrics-map/
+
+Files in the map root:
+
+metrics-map/
+├── index.html ← 5-7 KB, entry point
+├── manifest.json ← 3 KB, passport
+├── METRICS-MAP-MANIFEST.md ← THIS FILE (~70-90 KB)
+├── ARCHITECTURE.md ← 15 KB, download DAG
+├── AUTONOMY-CHARTER.md ← 6 KB, charter R1–R6
+├── clean-archive.sh ← 4 KB, cleaning script
+├── README.md ← 3 KB, short description
+├── backups/                             , auto-backups of edits
+│   └── *.$(date +%Y%m%d-%H%M%S)
+├── _archive/                            ← outdated files (after cleaning)
+│   ├── _root/                           ← outdated files in the root
+│   ├── js/                              , deprecated JS
+│   ├── css/                             , deprecated CSS
+│   ├── js_modules/                      , deprecated js/modules/
+│   ├── js_popup/                        , deprecated js/popup/
+│   ├── blocks/                          , deprecated blocks/
+│   ├── templates/                       , deprecated templates/
+│ ├ ─ ─ _presets / ← deprecated presets/
+│ ├ ─ ─ _v1 / ← archive version 1
+│ ├ ─ ─ _v2 / ← version 2 archive
+│ ├ ─ ─ _v3/ ← archive version 3
+│   └── other/                           ← deployment scripts, duplicates
+│
+├── css/                                 , working CSS
+─ ─ ─ metrics-map.css ← 17 KB, single CSS
+│
+├── js/                                   рабочий working JavaScript (15 files)
+│   ├── core.js ← 2.5 KB
+│   ├── countries.js ← 10 KB (copy from geo-map)
+│   ├── layers.js : 23 KB, 75 layers
+│   ├── maps-config.js ← 13 KB, 66 overrides
+│   ├── series-adapter.js ← 13 KB, 14 modules
+│   ├── map-controls.js ← 26 KB, Jenks + ColorBrewer
+│   ├── markers.js ← 5 KB
+│   ├── metrics-map.js ← 12 KB, orchestrator
+│   ├── copy-data.js ← 11 KB, snapshot
+│   ├── heat-timeline.js ← 4 KB
+│   ├── ssi.js ← 3 KB
+│   ├── refresh.js ← 3 KB
+│   ├── cii.js ← 4 KB
+│   ├── logger.js ← 27 KB
+│   └── init.js ← 8 KB
+│
+├── data/                                , local data
+│   └── world.geojson ← 252 KB, copy from public/
+│
+└── presets/                             , presets
+    └── presets.json ← 3.5 KB, 5 presets
+31.3. Adjacent folders and files (not in Metrics Map, but important ones)
+Geo-Map (reference):
+
+dashboard/public/geo-map/
+├── js/
+│   ├── countries.js : 176 countries (copied to metrics)
+│   └── ... (other files)
+└── css/
+ ─ ─ ─ core. css ← basic styles
+ ─ ─ ─ header. css ← topbar, buttons
+ ─ ─ ─ layers-panel. css ← layers panel
+ ─ ─ ─ map. css ← map, legend, statistics
+ ─ ─ ─ responsive. css ← adaptability
+ ─ ─ ─ cii. css ← CII panel
+Shared GeoJSON in the public root:
+
+dashboard/public/world.geojson
+This is the source for copying to data/ of each map.
+
+General rules:
+
+RULES.txt
+MANIFEST.md
+Server:
+
+server. mjs ← port 3117
+Server startup script:
+
+bash
+cd "Crucix" && node server.mjs
+31.4. Service URLs
+Назначение	URL Assignment
+Metrics Map	http://localhost:3117/metrics-map/
+Event Map	http://localhost:3117/event-map/
+Semantic Map	http://localhost:3117/semantic-map/
+Network Map	http://localhost:3117/network-map/
+Forecast Map	http://localhost:3117/forecast-map/
+Home	Page http://localhost:3117/jarvis
+The registry	http://localhost:3117/registry
+Monitoring Center	http://localhost:3117/monitor
+Diagnostics	http://localhost:3117/diagnostics
+Help	http://localhost:3117/help
+CII API	http://localhost:3117/api/cii-api
+API слоя	http://localhost:3117/api/layers/<layerId>
+API FeatureCollection	http://localhost:3117/api/layers/<layerId>/featurecollection
+31.5. API endpoints (full list)
+Choropleth-слои (56):
+
+GET /api/layers/inflation/featurecollection
+GET /api/layers/unemployment/featurecollection
+GET /api/layers/gdp/featurecollection
+GET /api/layers/pmi/featurecollection
+... (and so on for all choropleth)
+Series-layers (14) — special routes:
+
+GET /api/layers/business-optimism
+GET /api/layers/consumer-expectations
+GET /api/layers/pmi
+GET /api/layers/recession
+GET /api/layers/copper-gold-ratio
+GET /api/layers/hy-spread
+GET /api/layers/ovx
+GET /api/layers/rublev-dubai
+GET /api/layers/sp500-vix
+GET /api/layers/vxx
+GET /api/layers/yield-curve
+GET /api/layers/crypto-fear
+GET /api/layers/cyber-threat-index
+GET /api/layers/wti-brent-spread
+Marker layers (6):
+
+GET /api/layers/vix-futures
+GET /api/layers/cftc-cot
+GET /api/layers/insider-trading
+GET /api/layers/sec-filings
+GET /api/layers/short-interest
+GET /api/layers/bankruptcy-filings
+CII:
+
+GET /api/cii-api
+31.6. HELP (paths )
+Russian version:
+
+docs/help/ru/pages/metrics-map.txt
+docs/help/ru/layers/*.txt
+English version:
+
+docs/help/en/pages/metrics-map.txt
+docs/help/en/layers/*.txt
+Help is called:
+
+Use the HELP button in the header: window. open('/help', '_blank')
+
+Using the /help route on the server
+
+31.7. Presets (paths)
+Metrics Map:
+
+dashboard/public/metrics-map/presets/presets.json
+Contains 5 presets:
+
+crucix-metrics-default — all categories
+
+crucix-metrics-economics — economics
+
+crucix-metrics-finance-finance + energy
+
+crucix-metrics-esg — ESG
+
+crucix-metrics-threats-threats
+
+31.8. Backups (paths)
+Automatically created:
+
+dashboard/public/metrics-map/backups/
+Name format:
+
+<filename>.$(date +%Y%m%d-%H%M%S)
+Example:
+
+layers.js.20260928-174221
+metrics-map.js.20260928-174221
+METRICS-MAP-MANIFEST.md.20260928-174221
+31.9. Outdated files — where they will be moved (after clean-archive.sh)
+All outdated files are not deleted, but moved to _archive/:
+
+metrics-map/_archive/
+├── _root/                              ← metrics-map-index.html, geo-map.new, README.*.txt
+├── js/                                 ← layers60.js, LAYERSCrucix.JS, etc.
+├── css/                                ← cii. css, core. css, header. css, etc.
+├── js_modules/                         , former js/modules/
+├── js_popup/                           , former js/popup/
+├── blocks/                             , former blocks/
+├── templates/                          , former templates/
+├── _presets/ ← former presets/
+├── _v1/ ← former 1/
+├── _v2/ ← former 2/
+├── _v3/ ← former 3/
+└── other/                              ← deploy-all-maps.sh, copy-world-*.sh, world.geojson.root
+31.10. Navigation commands
+Open the Metrics Map root:
+
+bash
+cd "dashboard/public/metrics-map"
+Open the Crucix project root:
+
+bash
+cd "Crucix"
+Open the documentation:
+
+bash
+cd "docs/help/ru/pages"
+Open the shopping cart:
+
+bash
+cd "data/basket"
+Open data collectors:
+
+bash
+cd "scripts/collectors"
+Open API modules:
+
+bash
+cd "apis/sources"
+Open importer logs:
+
+bash
+cd "logs/collectors"
+Open project backups:
+
+bash
+cd "backups"
+Open the preparatory folder:
+
+bash
+cd "Crucix_GIT"
+31.11. Commands for checking the structure
+Show the Metrics Map structure:
+
+bash
+cd "dashboard/public/metrics-map" && \
+find . -maxdepth 2 -type f \( -name "*.js" -o -name "*.html" -o -name "*.css" -o -name "*.json" -o -name "*.md" \) | grep -v "_archive\|backups" | sort
+Show the structure of all 5 maps:
+
+bash
+cd "dashboard/public" && \
+for map in event-map metrics-map semantic-map network-map forecast-map; do
+done
+Check the size of all critical Metrics Map files:
+
+bash
+cd "dashboard/public/metrics-map" && \
+      js/*.js css/*.css data/*.geojson presets/*.json 2>/dev/null | sort -n
+31.12. Start and stop commands
+Start the server:
+
+bash
+cd "Crucix" && node server.mjs
+Stop the server:
+
+bash
+pkill -f "node server.mjs"
+Stop and wait for 2 seconds:
+
+bash
+pkill -f "node server.mjs" && sleep 2
+Restart the server:
+
+bash
+pkill -f "node server.mjs" && sleep 2 && \
+cd "Crucix" && node server.mjs
+31.13. Commands for working with files
+Create a backup of the file:
+
+bash
+cd "dashboard/public/metrics-map" && \
+mkdir -p backups && \
+cp js/layers.js "backups/layers.js.$(date +%Y%m%d-%H%M%S)"
+Check the JavaScript syntax:
+
+bash
+cd "dashboard/public/metrics-map" && \
+node --check js/layers.js
+Check all JS files:
+
+bash
+cd "dashboard/public/metrics-map" && \
+for f in js/*.js; do
+    echo -n "$f: "
+done
+Find cross-map dependencies:
+
+bash
+cd "dashboard/public/metrics-map" && \
+grep -rn '\.\./' index.html js/*.js | grep -v 'AUTONOMY\|manifest'
+Calculate layers:
+
+bash
+cd "dashboard/public/metrics-map" && \
+grep -c 'id:' js/layers.js
+31.14. Debugging commands
+Check for required files:
+
+bash
+cd "dashboard/public/metrics-map" && \
+for f in index.html manifest.json \
+         js/core.js js/countries.js js/layers.js js/maps-config.js \
+         js/series-adapter.js js/map-controls.js js/markers.js \
+         js/metrics-map.js js/copy-data.js js/heat-timeline.js \
+         js/ssi.js js/refresh.js js/cii.js js/logger.js js/init.js \
+         css/metrics-map.css data/world.geojson presets/presets.json; do
+done
+Show recent changes:
+
+bash
+cd "dashboard/public/metrics-map" && \
+ls -lat js/*.js | head -10
+Show all backups:
+
+bash
+cd "dashboard/public/metrics-map" && \
+ls -la backups/ | tail -20
+31.15. Final formula: where to look for what
+If you need to find the map file:
+dashboard/public/<map-name>/
+
+If you need to find general data:
+dashboard/public/world.geojson
+
+If you need to find help:
+docs/help / ru/ (or en/)
+
+If you need to find a shopping cart:
+data/basket/
+
+If you need to find the importer:
+scripts/collectors/collect-*.mjs
+
+If you need to find an API module:
+apis/sources/*.mjs
+
+If you need to find the importer logs:
+logs/collectors/collect-*.log
+
+If you need to find backups:
+backups/ (shared) or <map>/backups/ (local)
+
+If you need to find the rules:
+RULES.txt
+
+If you need to find a common manifest:
+MANIFEST.md
+
+If you need to find a server:
+server.mjs
+
+If you need to find the main page:
+http://localhost:3117/jarvis
+
+If you need to find a monitoring center:
+http://localhost:3117/monitor
+
+grep -c '^## ' METRICS-MAP-MANIFEST.md &&
+
+
+Added 5 sections:
+
+| Section | Content |
+|--------|------------|
+| **27** | Testing — 14 scenarios (basic launch, choropleth, series, marker, Enable All button, COPY, GVF, toggle, legend, offline, cross-map navigation, failure domain, checklist) |
+| **28** | Performance — 8 target metrics, Performance API measurements, 5 optimized bottlenecks, memory monitoring, caching |
+| **29** | Security — CSP, XSS protection (escapeHTML), prototype pollution, open redirect, localStorage, CORS, data validation, security checklist |
+| **30** | Glossary — 60+ terms (Choropleth, Jenks, GVF, Bulkhead, DAG, etc.), 18 abbreviations, 19 data sources, 12 academic sources, 10 terms of the Crucix ecosystem |
+| **31** | Full path Map — project structure, full Metrics Map, adjacent folders, service URLs, API endpoints, Help, presets, backups, outdated files, 30+ navigation and debugging commands |
+
+# METRICS MAP-ARCHITECTURAL SPECIFICATION
+
+* * Map version:** 1.2
+* * Location:** `dashboard/public/metrics-map/`
+* * Server:** `http://localhost:3117/metrics-map/`
+* * Mode:** FULL ISOLATION, failure domain = 1
+
+---
+
+
+## 1. PURPOSE AND PLACE IN THE ECOSYSTEM
+
+# # # 1.1. The Crucix Ecosystem — 5 offline maps
+
+Crucix-a 5-map geopolitical OSINT platform:
+
+1. * * Event Map** (`/event-map/`) — 84 layers, event markers.
+2. * * Metrics Map** (`/metrics-map/`) — **75 layers**, choropleth (this map).
+3. * * Semantic Map** (`/semantic-map/`) — 35 layers, text semantics.
+4. * * Forecast Map** (`/forecast-map/`) — 16 layers, probabilistic forecasts.
+5. **Network Map** (`/network-map/`) — 12 слоёв, SVG force-directed.
+
+# # # 1.2. What does Metrics Map do?
+
+Metrics Map visualizes * * numeric indicators for 90 countries around the world**. Each layer contains one indicator:
+
+- **Choropleth (56 layers)** - fill countries with color based on the indicator value.
+- **Series (14 layers)** — time series (for example, US PMIs), converted to choropleth via 'SeriesAdapter'.
+- **Marker (6 layers)** — placemarks (VIX futures, insider trading).
+
+* * Total: 75 layers in 13 categories.**
+
+### 1.3. Autonomy
+
+- **R1:** zero` ../other-map/ ' links in scripts, fetch, link. Only navigation `<a href>'.
+- **R2:** local `data/world.geojson` (252 KB).
+- **R3:** exactly 75 Metrics Map layers, 0 alien layers.
+- **R4:** your own `maps-config.js ' and ' presets.json`.
+- **R5:** `manifest.json` → `local_cross_map: 0`, `failure_domain: 1`.
+- **R6:** the other 4 cards are not affected by the map crash.
+
+---
+
+## 2. FOLDER STRUCTURE
+
+metrics-map/
+├── index.html
+├── manifest.json
+├── METRICS-MAP-MANIFEST.md
+├── METRICS-MAP-ARCHITECTURE.md (this file)
+├── AUTONOMY-CHARTER.md
+├── clean-archive.sh
+├── backups/
+├── _archive/
+├── css/
+│   └── metrics-map.css
+├── js/
+│   ├── core.js
+│   ├── countries.js
+│   ├── layers.js
+│   ├── maps-config.js
+│   ├── series-adapter.js
+│   ├── map-controls.js
+│   ├── markers.js
+│   ├── metrics-map.js
+│   ├── copy-data.js
+│   ├── heat-timeline.js
+│   ├── ssi.js
+│   ├── refresh.js
+│   ├── cii.js
+│   ├── logger.js
+│   └── init.js
+├── data/
+│   └── world.geojson
+└── presets/
+    └── presets.json
+
+---
+
+## 3. UPLOAD DAG (16 steps, the order is critical)
+
+| # / File / Role / Depends on |
+|---|------|------|-----------|
+| S01 | inline `<script>` | `window.CrucixMap = {mapType:'metrics'}` | — |
+| S02 | `core.js` | `LANG_DATA`, `showNotification`, `setLanguage`, `markerData = []` | CrucixMap |
+| S03 | `countries.js` | `ALL_COUNTRIES[90]` | — |
+| S04 | `layers.js` | `allLayers[75]`, `layerCache`, `activeLayerIds`, `enableAllLayers`, `loadLayer` | — |
+| S05 | `maps-config.js` | `LAYER_CLASSIFICATION`, `COLOR_SCHEMES`, `getLayerConfig`, `getColorPalette` | allLayers |
+| S06 | `series-adapter.js` | `SeriesAdapter.convert()` - 14 modules | maps-config |
+| S07 | `map-controls.js` | `loadCountryBoundaries`, `applyChoropleth`, `jenksBreaks`, `computeGVF`, экспорт `window.currentChoroplethConfig` | Leaflet, countries |
+| S08 | `markers.js` | `generateAllMarkers`, `updateMarkers`, `renderLayerPanel` | allLayers, map |
+| S09 | `metrics-map.js` | `MetricsMap` оркестратор: `interceptLoad`, `fetchWithTimeout`, `renderFallback`, `renderMarkerFallback` | series-adapter, map-controls |
+| S10 / `copy-data.js ` | ' window. copyAllData` - status snapshot | — |
+| S11 | `heat-timeline.js` | `toggleHeat`, `toggleTimeline` | map |
+| S12 | `ssi.js` | `calculateSSI`, `updateLegend` | countries |
+| S13 | `refresh.js` | `startAutoRefresh`, `refreshMapData` | — |
+| S14 | `cii.js` | `updateCII` с fallback | countries, map-controls |
+| S15 / `logger.js ' / ' CrucixLogger '(log panel) | — |
+| S16 | `init.js` / ' loadData`, `initMap`, launching the map | all above |
+
+* * Out of order = the map doesn't work.**
+
+---
+
+## 4. FUNCTIONAL MATRIX
+
+| File | Responsibility | It DOESN'T |
+|------|-----------------|-----------|
+| `core.js` | Language, notifications, global variables | Map logic |
+| `countries.js` / 90 countries with coordinates and statuses | UI |
+| `layers.js | / 75 layers, panel, 'enableAllLayers` `' loadLayer` | Rendering choropleth |
+| `maps-config.js ' / choropleth configuration: method, palette, breaks | Rendering |
+| `series-adapter.js` | series → choropleth (spatial proxy) | Classification |
+| `map-controls.js` | Leaflet, Jenks, ColorBrewer, GVF, легенда, `applyChoropleth` | Solution by URL, fallback |
+| `markers.js ' / Markers on the map | Choropleth |
+| `metrics-map.js` | Orchestrator: decision tree ` ' fetchWithTimeout`, fallback generators / UI panel |
+| `copy-data.js` | Status snapshot (~600 KB) | Impact on the map |
+| `heat-timeline.js` / Heat map, timeline | — |
+| `ssi.js` | Strategic Stress Index | — |
+| `refresh.js` / Auto-update | — |
+| `cii.js` | Country Instability Index с fallback | — |
+| `logger.js` | Logging with the | — |panel
+| `init.js ' / 'loadData' (countries, layers, markers, borders, CII), `initMap` | Layer Logic |
+
+---
+
+## 5. DATA FLOW: CLICK ON THE LAYER BUTTON
+
+# # # 5.1. Sequence
+
+The user clicks on the " PMI " button.
+
+1. **`layers.js`** → `btn.onclick = () => loadLayer('pmi')`.
+2. **`loadLayer('pmi')`** — проверяет `activeLayerIds.has('pmi')`.
+ - If yes → toggle-off: removes from the set, removes the `.active 'class, cleans 'activeLayers', updates markers.
+ - If not - > adds to `activeLayerIds', calls 'MetricsMap.interceptLoad'.
+3. ** ' MetricsMap.interceptLoad ('pmi')`** - searches for a layer in `allLayers`, reads 'vizType'.
+   - `choropleth` → `loadChoroplethLayer`
+   - `series` → `loadSeriesLayer`
+   - `marker` → `loadMarkerLayer`
+4. **`loadChoroplethLayer('pmi')`**:
+   - Вызывает `fetchWithTimeout('/api/layers/pmi/featurecollection', 8000)`.
+ - If` resp.ok `and` data.features.length > 0 '— passes to 'applyChoropleth`, writes to' layerCache ['pmi'] = data.features`.
+   - Если 404 или timeout (`signal is aborted without reason`) — `renderFallback(layer)`.
+5. **`renderFallback('pmi')`**:
+ - Takes `ALL_COUNTRIES[90]`, generates a value for each country ` ' base(status) + noise(seed('pmi'), i)`.
+ - Classifies: if 'config. method = = = 'manual' - uses 'config.manualBreaks', otherwise `jenksBreaks(values, 5)`.
+   - Вызывает `applyChoropleth({features, breaks, palette, method, gvf:0.85}, {...})`.
+ - Writes ' layerCache ['pmi'] = features` (flat array).
+6. **`map-controls.js` → `applyChoropleth(data, layer)`**:
+   - Читает `window.MetricsMapConfig.getLayerConfig('pmi')` → `{method, palette, manualBreaks, numClasses}`.
+ - Retrieves `values 'from `data. features'.
+ - Classifies: 'classifyValues(values, method, numClasses, manualBreaks)` → `breaks`.
+ - Counts ' computeGVF(values, breaks)` → `gvf`.
+ - Saves in 'currentChoroplethConfig' and 'window.currentChoroplethConfig':
+     `{method, palette, numClasses, breaks, gvf, stats: {count, min, max, mean}, layerId, layerName}`.
+ - Iterates through 'currentGeoJsonLayer. eachLayer`, searches for each country in `data.features` by name (Russian or English), sets the color via' getColorForValue(value, breaks, palette)`.
+ - Calls ' renderChoroplethLegend(breaks, config, gvf)`.
+7. **`layers.js ' → ' loadLayer ('pmi')`* * continues:
+ - 'updateActiveCount () — - the counter in `#active-layers-count`.
+ - 'updateLegend()` — SSI legend.
+   - `localStorage.setItem('crucix-active-layer', 'pmi')`.
+
+### 5.2. Key invariants
+
+- **'window. layerCache[id]' - always a flat array.** Never `{features: [...]}`.
+ - Choropleth/series: an array of 90 objects `{name, value, properties: {name, value, status}}`.
+ - Marker: an array of 180 objects `{id, lat, lng, countryName, title, layer, status, color, date, severity}`.
+- **`window.activeLayerIds` — `Set` id слоёв.** Can contain `all " - a service token.
+- **`window.currentChoroplethConfig — - object of the last successful classification.** Available via ' window.currentChoroplethConfig '(export from `map-controls.js ' v4. 1).
+- **`window.currentChoroplethData` — текущая FeatureCollection.**
+- **`window.markerData — - array of all markers (1080 at full load).**
+
+---
+
+## 6. CHIEF ORCHESTRATOR — `metrics-map.js ' v1. 4
+
+### 6.1. Methods
+
+| Method | What it does |
+|-------|-----------|
+| 'init()` | Idempotent initialization, distribution log by vizType |
+| `fetchWithTimeout(url, ms = 8000)'/Fetch with AbortController, timeout 8 sec |
+| `interceptLoad(layerId, markerAccumulator)` | Decision tree по `vizType` |
+| `loadSeriesLayer(layer)` | Fetch → `SeriesAdapter.convert` → `applyChoropleth` |
+| `loadChoroplethLayer(layer)` | Fetch → `applyChoropleth` |
+| `loadMarkerLayer(layer, markerAccumulator)` | Fetch → `renderMarkerFallback` |
+| `renderFallback(layer)` | Local generation of 90 countries |
+| `renderMarkerFallback(layer, markerAccumulator)` | Local generation of 180 markers |
+| `resolveApiUrl(layerId)` | Routes map for 14 series layers |
+| 'stats()` | Summary by vizType |
+
+### 6.2 ` ' fetchWithTimeout — - critical element
+
+* * Issue (v1. 2 and earlier):** 'await fetch (url)' * * hangs indefinitely** if the server is silent. Chrome doesn't throw an error after N seconds. Only if the TCP connection is terminated. Because of this, `enableAllLayers` ended in the middle.
+
+* * Solution (v1. 3+):** `AbortController` + `setTimeout(controller.abort, ms)`. After `ms` milliseconds, fetch throws ' DOMException: signal is aborted without reason`. 'catch' in`loadChoroplethLayer`/`loadSeriesLayer`/` loadMarkerLayer 'intercepts and calls `renderFallback' /`renderMarkerFallback`.
+
+* * Version v1. 4 * * optional * * eliminates duplicate** 'fetchWithTimeout' (in v1. 3 it was defined twice in a row-an artifact of applying the patch).
+
+### 6.3 ` ' markerAccumulator — - preparing for concurrency
+
+`renderMarkerFallback(layer, markerAccumulator)`:
+- If 'markerAccumulator' is passed-markers are written **to it**, `window.markerData ' **is not touched**.
+- If not passed — the old path: 'window.markerData = window. markerData. concat(markers)`.
+
+**Why:** when loading 5 marker layers in parallel (for example, 'vix-futures` `' cftc-cot`, 'insider-trading`,` sec-filings`,` short-interest')** simultaneously * * do 'read → concat → write' in ' window.markerData`. This is * * race condition** (lost update): the first wrote 180 markers, the second reads an outdated array, loses 180 from the first.
+
+* * Solution:** coordinator `enableAllLayers ' (in a future version v1.5) creates * * one* * `markerAccumulator', passes it to all 5 parallel calls, after` Promise.all ` — merge in` window.markerData ' **atomically**.
+
+Compatibility check :
+```javascript
+const testAccumulator = [];
+await window.MetricsMap.interceptLoad('bankruptcy-filings', testAccumulator);
+// Result of interceptLoad: true
+/ / Battery after calling: 180
+// window. markerData: 0 ← not touched
+// layerCache.bankruptcy-filings: 180
+## 7. layers.js v1. 4-UNIFIED enableAllLayers
+7.1. Purpose
+Upload all 75 layers to layerCache, mark them as active, and display the latest choropleth.
+
+7.2. Architectural principles
+Direct call to MetricsMap.interceptLoad(layer.id) - not via loadLayer. Reason: loadLayer has toggle logic (checks activeLayerIds.has(layerId)). If the layer is there, it turns it off. This is not true for batch downloads.
+
+Block for jamming visualizations. For the duration of the cycle:
+
+window.applyChoropleth = no-op
+
+window.updateMarkers = no-op
+
+window.renderLayerPanel = no-op
+
+Reason: Without jamming, each of the 75 layers would redraw the map (75 × 200 ms = 15 sec) and the layers panel (75 × 50 ms = 3.75 sec). Total — +20 seconds.
+
+Critical: Disabled applyChoropleth — full no-op. It doesn't write to layerCache. The cache only fills the renderFallback inside interceptLoad.
+
+Cache — flat arrays. Array.isArray(layerCache[id] — - invariant.
+
+The final render is the last choropleth. After the loop, we search from the end of allLayers for the first choropleth with data in the cache. This is usually mobile (the last layer by number). Calling the saved origApplyChoropleth({features: cached}, layer).
+
+7.3. Re-entrancy guard
+javascript
+if (window._enableAllInProgress) return;
+window._enableAllInProgress = true;
+// ...
+window. _enableAllInProgress = false; // at the end
+When trying to run in parallel — the second call is canceled.
+
+7.4. await Promise. resolve () instead of setTimeout(30)
+It was (v1. 0–v1.3): await new Promise(r => setTimeout(r, 30)). Problem: in the background tab of Chrome, trottlits setTimeout to 1000 ms. 75 × 1000 = 75 sec, instead of the expected 2.5 sec.
+
+Now (v1. 4): await Promise. resolve (). Microtask will not be trottled. Event loop handles the pause, but the loop doesn't slow down.
+
+7.5. Metrics from the last run
+[enableAllLayers v1. 4] Total: 75, with data: 75, Empty: 0, Errors: 0, Skipped: 0, in cache: 75, Volume: ~975 KB
+Time: 9586 ms
+Cache: 75
+Active users: 76
+Markers: 1080
+9.5 seconds for 75 layers — mainly due to one layer (dxy), which is silent and timeouts after 8 seconds. The other 74 are responsible for ~50 ms each.
+
+## 8. map-controls.js v4. 1-WHAT WAS ADDED
+8.1. Export currentChoroplethData and currentChoroplethConfig to window
+Lines 441 and 483:
+
+javascript
+currentChoroplethData = data;
+window.currentChoroplethData = data;
+// ...
+currentChoroplethConfig = config;
+window.currentChoroplethConfig = config;
+Lines 558-559 (in resetChoropleth):
+
+javascript
+window.currentChoroplethData = null;
+window.currentChoroplethConfig = null;
+Why: copy-data.js v2. 0+ reads window. currentChoroplethConfig for the "CHOROPLETH-PARAMETERS OF THE CURRENT LAYER" section. Without exporting, this section is empty.
+
+8.2. config. gvf and config. stats
+Inside applyChoropleth, after computeGVF:
+
+javascript
+config.gvf = gvf;
+config.stats = {
+    count: data.features.length,
+    min: values.length ? Math.min.apply(null, values) : 0,
+    max: values.length ? Math.max.apply(null, values) : 0,
+    mean: values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0
+};
+Why: the snapshot shows the min / max/mean for each layer. Without it, only breaks and GVF are used.
+
+8.3. currentChoroplethConfig structure
+javascript
+{
+    method: 'jenks' | 'manual' | 'quantile' | 'equal' | 'std',
+ palette: ['#hex1', '#hex2',...], / / array of colors
+    numClasses: 5,
+ breaks: [b0, b1, b2, b3, b4, b5], / / 6 borders = 5 classes
+    manualBreaks: null | [42, 47, 53, 58],
+    gvf: 0.9199,
+    stats: {count: 90, min: 10.4, max: 84.4, mean: 43.2},
+    layerId: 'pmi',
+    layerName: 'PMI'
+}
+## 9. copy-data.js v3. 0-SNAPSHOT STRUCTURE
+9.1. Version history
+v1. 0-1. 3-basic, two copyAllData implementations in a row (bug).
+
+v2. 0 - removed duplication, flat cache, exact size via TextEncoder, choropleth parameters, marker splitting.
+
+v3. 0-combined: added "COUNTRIES BY STATUS", " CII Top-N "(DOM parsing), extended SSI, DOM-cast (300 elements), "ACTIVE LAYERS" (name, category, method, palette).
+
+9.2. Snapshot sections
+Title — date, URL, window, map, UA, version.
+
+Statistics — countries, layers, active, cache, markers.
+
+Full configuration of 75 layers.
+
+Layer matrix (ID × vizType × method × palette × active × count).
+
+Diagnostics by vizType and categories.
+
+Layer health (NOT LOADED / NO DATA AVAILABLE / INCOMPLETE / OK).
+
+Active layers (name, category, vizType, method, palette, count).
+
+Choropleth-parameters of the current layer (from window. currentChoroplethConfig).
+
+Legend from the DOM.
+
+Splitting markers into layers (6 marker layers × 180).
+
+Layer data (all 90 countries for each active layer).
+
+Countries (90 with coordinates).
+
+Countries by status (CRITICAL / PRE-WAR / HIGH / MEDIUM / NORMAL).
+
+DOM layer panels (categories, buttons, active ones).
+
+CII Top-N (parsing .cii-country).
+
+SSI (Advanced).
+
+DOM impression (up to 300 elements with coordinates, colors, and fonts).
+
+Map (center, zoom, bounds).
+
+Palettes (sequential, diverging).
+
+The status panel.
+
+Console log (last 200 entries).
+
+9.3. Snapshot size
+0 layers — ~96 KB.
+
+15 layers — ~605 KB.
+
+75 layers — ~605 KB (ceiling, then grows slightly — data in each section).
+
+## 10. init.js v1. 1-CHANGES
+10.1. Убрано setTimeout(loadLayer(saved), 2000)
+It was (v1. 0):
+
+javascript
+loadData();
+const saved = localStorage.getItem('crucix-active-layer');
+if (saved && saved !== 'all') {
+    setTimeout(() => {
+        if (typeof loadLayer === 'function') loadLayer(saved);
+    }, 2000);
+}
+Problem: 2 seconds after the page start, loadLayer (saved) was called in parallel with any manual enableAllLayers. Two threads wrote to layerCache and activeLayerIds - > break.
+
+It became (v1. 1): the block was deleted. The user will select the layer themselves.
+
+10.2. startAutoRefresh does not start automatically
+Было: startAutoRefresh(parseInt(select.value)) when loading. setInterval(refreshMapData, intervalMs) — the second parallel stream.
+
+Now: Autoplay is disabled. Only by changing the <select> or button.
+
+10.3. setInterval (updateCII, 5min) with pause check
+javascript
+setInterval(function() {
+    if (window._autoRefreshPaused) return;
+    window.updateCII();
+}, 5 * 60 * 1000);
+_autoRefreshPaused is not set anywhere yet, but it is a reserve for the future.
+
+## 11. DIAGNOSTICS-CONTROL METRICS
+11.1. Full verification (one command in the console)
+javascript
+(() => {
+    const stats = window.MetricsMap?.stats() || {};
+ console. log('=== METRICS MAP DIAGNOSTICS ===');
+    console.log('Layers:', window.allLayers?.length);               // 75
+    console.log('Countries:', window.ALL_COUNTRIES?.length);           // 90
+ console. log ('Active:', window.activeLayerIds?.size); // 76 (after enableAll)
+    console.log('In the cache:', Object.keys(window.layerCache || {}).length); // 75
+ console. log ('Markers:', (window.markerData || []).length);    // 1080
+ console. log ('Distribution:', stats);
+ console. log ('Map:', !!window.map);
+    console.log('===  ====================  ===');
+})();
+11.2. Checking the completeness of layerCache
+javascript
+const missing = window.allLayers.filter(l => !window.layerCache[l.id]);
+console.log('Layers without data:', missing. length, missing. map(l => l.id));
+Waiting after enableAllLayers: Layers without data: 0.
+
+11.3. Checking the cache structure
+javascript
+const bad = [];
+for (const [id, data] of Object.entries(window.layerCache)) {
+    if (!Array.isArray(data)) bad.push(id);
+}
+console. log ('Non-arrays in cache:', bad.length, bad);
+Expectation: Non-arrays in cache: 0.
+
+11.4. Cache size in KB
+javascript
+let total = 0;
+for (const data of Object.values(window.layerCache)) {
+    if (Array.isArray(data)) total += JSON.stringify(data).length;
+}
+console. log('Cache size:', Math. round(total / 1024), 'KB');
+Waiting after enableAllLayers: ~975 KB.
+
+## 12. KNOWN RAKES AND SOLUTIONS
+12.1. await fetch (url) without timeout-hangs
+Symptom: enableAllLayers breaks off in the middle. Logs end with N / 75: <id> without the final line.
+
+Reason: a layer where the server is silent (not 404, but no response). Chrome doesn't throw an error.
+
+Solution: fetchWithTimeout (url, 8000) via AbortController. Layers with a timeout go into fallback.
+
+History: first diagnosed on 28.09.2026, applied in metrics-map.js v1. 3.
+
+12.2. Duplicate fetchWithTimeout
+Symptom: grep-c "fetchWithTimeout:" returns 2.
+
+Reason: applying patch to patch — the second definition was inserted on top of the first one.
+
+Solution: v1. 4 is the only definition.
+
+History: discovered on 29.09.2026. It didn't have any functional impact (the last definition wins), but it violated rule # 36.
+
+12.3. Race condition in markerData for concurrency
+Symptom (potential): when loading 5 marker layers in parallel, markers are lost.
+
+Reason: read → concat → write without blocking.
+
+Solution: markerAccumulator in renderMarkerFallback. Done in v1. 4, will be activated in v1. 5 layers.js.
+
+History: the groundwork was laid on 29.09.2026.
+
+12.4. Toggle-loadLayer logic in enableAllLayers
+Symptom: enableAllLayers disables layers instead of loading them.
+
+Reason: loadLayer when activeLayerIds.has(layerId) goes toggle-off. If all layers are already in the set at the beginning of the loop, the loop turns them off.
+
+Solution: In v1.4, enableAllLayers calls interceptLoad directly, bypassing loadLayer. Plus-force activeLayerIds. delete (layerId) before uploading.
+
+History: v1. 1 first fix, v1.4 final.
+
+12.5. setTimeout(30) in the background tab
+Symptom: enableAllLayers takes 75 seconds instead of 2.5.
+
+Reason: Chrome throttles setTimeout to 1000 ms in the background tab.
+
+Solution: await Promise.resolve () instead of setTimeout. Microtask is not throttled.
+
+History: v1. 2.
+
+12.6. Parallel loadLayer calls from init.js
+Symptom: after F5, the layerCache composition is strange — allLayers are out of order.
+
+Reason: init.js v1. 0 called loadLayer(saved) from localStorage after 2 seconds. The second thread wrote to layerCache in parallel.
+
+Solution: init.js v1. 1 — the block was deleted.
+
+History: 29.09.2026.
+
+12.7. Offset of activeLayerIds when toggling
+Symptom: after enableAllLayers, all 76 buttons are active, but when you click on any of them, the layer turns off, not on.
+
+Reason: correct toggle behavior. If the layer is already active, a second click disables it.
+
+Solution: not a bug, but a feature. To reload a single layer — first turn it off, then turn it on.
+
+12.8. currentChoroplethConfig is not available from copy-data.js
+Symptom: the "CHOROPLETH-PARAMETERS" section in the snapshot is empty.
+
+Reason: map-controls.js v4. 0 stored currentChoroplethConfig as a local variable of the module, did not export it to window.
+
+Solution: v4. 1-added window.currentChoroplethConfig = config and window.currentChoroplethData = data.
+
+History: 28.09.2026.
+
+## 13. WHAT'S LEFT TO DO
+13.1. Concurrency in batches of 5
+Goal: Speed up enableAllLayers from ~9.5 sec to ~2.7 sec.
+
+The plan:
+
+layers.js v1. 5: split layers into batches of 5, Promise. all(layers. map(l => loadOne(l, markerAccumulator))).
+
+loadOne-wrapper over interceptLoad with passing markerAccumulator.
+
+After all batches, merge markerAccumulator in window.markerData atomically.
+
+The final render is an explicit choice of mobile (the last choropleth).
+
+13.2. localStorage cache
+Goal: Speed up re-runs from 9.5 sec to ~0.5 sec.
+
+The plan:
+
+layers.js v1. 5: When enableAllLayers are finished, save {version, timestamp, layerCache, markerData} to localStorage ['crucix-layer-cache'].
+
+init.js v1. 2: read the cache at startup, if Date. now () - timestamp < 3600000 (1 hour) - restore layerCache, activeLayerIds, markerData.
+
+TTL is 1 hour. After expiration-cleaning, complete reassembly.
+
+13.3. Reduce the fetch timeout
+Target: from 8000 ms to 2000-2500 ms.
+
+Plan: b metrics-map.js v1. 4 → v1.4.1 change ms = ms || 8000 to ms = ms | / 2500.
+
+Condition: measurement of the actual server response to localhost:3117. If the response is < 100 ms — 2500 ms with excess.
+
+14. PROJECT RULES APPLICABLE TO ARCHITECTURE
+
+
+15. CONTROL POINTS OF THE SESSION 28-29. 09. 2026
+15.1. What was achieved
+75/75 layers are uploaded to layerCache.
+
+1080 markers (6 marker layers × 180).
+
+The cache size is ~975 KB.
+
+A snapshot of ~605 KB (with 75 layers).
+
+enableAllLayers time: ~9.5 sec.
+
+The syntax of all critical files is checked (node --check).
+
+15.2. End-of-session file versions
+metrics-map.js — v1.4
+
+layers.js — v1.4
+
+map-controls.js — v4.1
+
+copy-data.js — v3.0
+
+init.js — v1.1
+
+15.3. Session Changes
+metrics-map.js: v1.1 → v1.2 (dead parameter removed) - > v1. 3 (fetchWithTimeout) - > v1.4 (duplicate removed, markerAccumulator).
+
+layers.js: v1. 0 → v1. 1 (toggle-fix) → v1. 2 (setTimeout → Promise) → v1. 3 (override) → v1. 4 (unified implementation).
+
+map-controls.js: v4. 0 → v4. 1 (export config, gvf, stats).
+
+copy-data.js: v2. 0 → v3. 0 (merged).
+
+init.js: v1. 0 → v1. 1 (removed autoruns).
+
+15.4. Next stage
+By priority:
+
+layers.js v1. 5-parallel batches 5.
+
+init.js v1.2 — localStorage-кеш.
+
+metrics-map.js v1. 4. 1 — timeout of 2500 ms.
+
+Updating the HELP in docs/help/ru/pages/metrics-map.txt.
+
+Go to the next map (Event Map / Semantic / Forecast / Network).
+
+## 14. ARCHITECTURE GLOSSARY
+allLayers-an array of 75 layer configurations. Created in layers.js from DEMO_LAYERS. Each element: {id, name, category, vizType, color, icon, number}.
+
+activeLayerIds — Set of active IDs. It can contain 'all'.
+
+layerCache — { [id]: Array }. Flat arrays. Choropleth/series — 90 elements. Marker — 180 elements.
+
+markerData-an array of all markers on the map. The renderMarkerFallback is filled in (after 6 marker layers-1080 elements).
+
+allMarkers-a copy of markerData for rollbacks.
+
+currentChoroplethConfig — конфигурация текущего choropleth: {method, palette, numClasses, breaks, manualBreaks, gvf, stats, layerId, layerName}. Exported to window.
+
+currentChoroplethData — текущая FeatureCollection. Exported to window.
+
+geoJsonData — full GeoJSON of country borders loaded from data / world.geojson.
+
+currentGeoJsonLayer — Leaflet-the border layer. Inside the module map-controls.js.
+
+window. MetricsMap-orchestrator. The only object with decision tree methods.
+
+window.MetricsMapConfig — API maps-config.js: getLayerConfig(id), getColorPalette(name).
+
+window.SeriesAdapter — API series-adapter.js: convert(layerId, seriesData, countries).
+
+window. CrucixMap-global map flag: {mapType, name}.
+
+window._enableAllInProgress — re-entrancy guard для enableAllLayers.
+
+window. _autoRefreshPaused — pause flag for refreshMapData and setInterval (updateCII). Not yet installed, groundwork.

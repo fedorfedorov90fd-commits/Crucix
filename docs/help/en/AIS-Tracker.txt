@@ -1,0 +1,47 @@
+============================================================
+AIS TRACKER — VESSEL TRACKING
+============================================================
+Version: 1.0.0
+Port: 3190
+Status: ✅ RUNNING
+
+DESCRIPTION
+-----------
+Maritime vessel tracking via AIS data. Extension of dark-ships module.
+Shows vessel positions, status, and movement through chokepoints.
+
+FEATURES
+--------
+- Real-time vessel tracking (from basket)
+- Geographic area filtering
+- Integration with dark-ships data
+- Chokepoint status with vessel counts
+
+API ENDPOINTS
+-------------
+GET    /ais/snapshot            - AIS snapshot (with filter)
+GET    /ais/vessels             - List of all vessels
+GET    /ais/chokepoints         - Chokepoints with vessels
+
+EXAMPLES
+--------
+# List vessels
+curl http://localhost:3190/ais/vessels
+
+# Chokepoints with vessels
+curl http://localhost:3190/ais/chokepoints
+
+# Snapshot by area (Hormuz Strait)
+curl "http://localhost:3190/ais/snapshot?sw_lat=25.5&sw_lon=55.5&ne_lat=27.2&ne_lon=57.5"
+
+DEPENDENCIES
+------------
+- Node.js v22+
+- dark-ships data in basket (/data/basket/)
+
+INSTALLATION
+------------
+cd /home/ta8_/Рабочий стол/Crucix/crucix-extensions/ais-tracker
+npm install
+node index.mjs
+============================================================

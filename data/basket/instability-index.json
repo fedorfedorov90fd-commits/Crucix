@@ -1,0 +1,132 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "instability-index",
+    "source": "Crucix instability index",
+    "source_url": "local://reference",
+    "fetched_at": "2026-09-27T16:36:17.784Z",
+    "normalized_at": "2026-09-27T16:38:26.543Z",
+    "collector": "collect-instability-index.mjs",
+    "license": "public-domain",
+    "count": 15,
+    "granularity": "snapshot",
+    "value_unit": "score_0_100",
+    "value_scale": null,
+    "value_type": "index",
+    "value_range": null
+  },
+  "series": [],
+  "points": [
+    {
+      "lat": 48.3794,
+      "lon": 31.1656,
+      "value": 85,
+      "label": "Украина"
+    },
+    {
+      "lat": 61.524,
+      "lon": 105.3188,
+      "value": 72,
+      "label": "Россия"
+    },
+    {
+      "lat": 37.0902,
+      "lon": -95.7129,
+      "value": 28,
+      "label": "США"
+    },
+    {
+      "lat": 35.8617,
+      "lon": 104.1954,
+      "value": 45,
+      "label": "Китай"
+    },
+    {
+      "lat": 20.5937,
+      "lon": 78.9629,
+      "value": 52,
+      "label": "Индия"
+    },
+    {
+      "lat": 31.0461,
+      "lon": 34.8516,
+      "value": 78,
+      "label": "Израиль"
+    },
+    {
+      "lat": 32.4279,
+      "lon": 53.688,
+      "value": 82,
+      "label": "Иран"
+    },
+    {
+      "lat": 38.9637,
+      "lon": 35.2433,
+      "value": 55,
+      "label": "Турция"
+    },
+    {
+      "lat": 30.3753,
+      "lon": 69.3451,
+      "value": 68,
+      "label": "Пакистан"
+    },
+    {
+      "lat": 33.9391,
+      "lon": 67.71,
+      "value": 92,
+      "label": "Афганистан"
+    },
+    {
+      "lat": 34.8021,
+      "lon": 38.9968,
+      "value": 88,
+      "label": "Сирия"
+    },
+    {
+      "lat": 15.5527,
+      "lon": 48.5164,
+      "value": 86,
+      "label": "Йемен"
+    },
+    {
+      "lat": 5.1521,
+      "lon": 46.1996,
+      "value": 90,
+      "label": "Сомали"
+    },
+    {
+      "lat": 12.8628,
+      "lon": 30.2176,
+      "value": 84,
+      "label": "Судан"
+    },
+    {
+      "lat": 9.145,
+      "lon": 40.4897,
+      "value": 80,
+      "label": "Эфиопия"
+    }
+  ],
+  "regions": [
+    {
+      "region": "GLOBAL",
+      "value": 72.33333333333333,
+      "count": 15,
+      "aggregation": "mean",
+      "extra": {
+        "max": 92,
+        "sum": 1085
+      }
+    }
+  ],
+  "documents": [],
+  "graph": null,
+  "extra": {
+    "adapter": "points",
+    "adapter_version": "2.2.1",
+    "skipped_invalid_coords": 0,
+    "unmapped_regions": [],
+    "unmapped_count": 0
+  }
+}

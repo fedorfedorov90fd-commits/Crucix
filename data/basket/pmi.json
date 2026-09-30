@@ -1,0 +1,167 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "pmi",
+    "source": "ISM PMI (demo)",
+    "source_url": "https://tradingeconomics.com/united-states/manufacturing-pmi",
+    "fetched_at": "2026-09-27T16:37:12.431Z",
+    "normalized_at": "2026-09-27T16:38:26.721Z",
+    "collector": "collect-pmi.mjs",
+    "license": "public-domain",
+    "count": 31,
+    "granularity": "daily",
+    "value_unit": "index",
+    "value_scale": null,
+    "value_type": "index",
+    "value_range": null,
+    "period": "P30D"
+  },
+  "series": [
+    {
+      "date": "2026-08-28",
+      "value": 54.37
+    },
+    {
+      "date": "2026-08-29",
+      "value": 51.58
+    },
+    {
+      "date": "2026-08-30",
+      "value": 49.25
+    },
+    {
+      "date": "2026-08-31",
+      "value": 53.07
+    },
+    {
+      "date": "2026-09-01",
+      "value": 47.84
+    },
+    {
+      "date": "2026-09-02",
+      "value": 52.07
+    },
+    {
+      "date": "2026-09-03",
+      "value": 53.51
+    },
+    {
+      "date": "2026-09-04",
+      "value": 54.3
+    },
+    {
+      "date": "2026-09-05",
+      "value": 46.99
+    },
+    {
+      "date": "2026-09-06",
+      "value": 47.76
+    },
+    {
+      "date": "2026-09-07",
+      "value": 57.29
+    },
+    {
+      "date": "2026-09-08",
+      "value": 53.85
+    },
+    {
+      "date": "2026-09-09",
+      "value": 45.36
+    },
+    {
+      "date": "2026-09-10",
+      "value": 55.63
+    },
+    {
+      "date": "2026-09-11",
+      "value": 50.4
+    },
+    {
+      "date": "2026-09-12",
+      "value": 49.96
+    },
+    {
+      "date": "2026-09-13",
+      "value": 50.57
+    },
+    {
+      "date": "2026-09-14",
+      "value": 46.46
+    },
+    {
+      "date": "2026-09-15",
+      "value": 46.91
+    },
+    {
+      "date": "2026-09-16",
+      "value": 51.75
+    },
+    {
+      "date": "2026-09-17",
+      "value": 53.17
+    },
+    {
+      "date": "2026-09-18",
+      "value": 52.81
+    },
+    {
+      "date": "2026-09-19",
+      "value": 49.33
+    },
+    {
+      "date": "2026-09-20",
+      "value": 57.49
+    },
+    {
+      "date": "2026-09-21",
+      "value": 51.43
+    },
+    {
+      "date": "2026-09-22",
+      "value": 50.2
+    },
+    {
+      "date": "2026-09-23",
+      "value": 46.83
+    },
+    {
+      "date": "2026-09-24",
+      "value": 45.4
+    },
+    {
+      "date": "2026-09-25",
+      "value": 52.97
+    },
+    {
+      "date": "2026-09-26",
+      "value": 55.76
+    },
+    {
+      "date": "2026-09-27",
+      "value": 55.55
+    }
+  ],
+  "points": [],
+  "regions": [
+    {
+      "region": "GLOBAL",
+      "value": 51.285806451612906,
+      "count": 31,
+      "aggregation": "mean",
+      "extra": {
+        "max": 57.49,
+        "sum": 1589.8600000000001
+      }
+    }
+  ],
+  "documents": [],
+  "graph": null,
+  "extra": {
+    "adapter": "timeseries",
+    "adapter_version": "2.2.1",
+    "unique_dates": 31,
+    "unmapped_regions": [],
+    "unmapped_count": 0
+  }
+}

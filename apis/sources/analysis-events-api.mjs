@@ -7,6 +7,21 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+export const route  = '/api/layers/analysis-events';
+export const method = 'GET';
+
+export const meta = {
+  category: "other",
+  icon: "📊",
+  color: "#64748b",
+  vizType: "marker",
+  source: null,
+  collector: "collect-analysis-events.mjs",
+  cache: 300,
+  description: "Слой analysis-events",
+  unit: "records",
+};
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -139,6 +154,7 @@ function generateMockEvents(history) {
     const avg = indices.reduce((s, v) => s + v, 0) / indices.length;
     const stdDev = Math.sqrt(indices.reduce((s, v) => s + Math.pow(v - avg, 2), 0) / indices.length);
     
+    if (!Array.isArray(history)) history = [];
     history.forEach((day, idx) => {
         // Пик индекса
         if (day.index > avg + stdDev * 0.8) {
@@ -179,6 +195,7 @@ function generateMockEvents(history) {
  */
 function calculateCorrelation(events, history) {
     const indexMap = {};
+    if (!Array.isArray(history)) history = [];
     history.forEach(d => { indexMap[d.date] = d.index; });
     
     return events.map(event => {
@@ -197,7 +214,7 @@ function calculateCorrelation(events, history) {
 /**
  * ГЛАВНЫЙ ОБРАБОТЧИК API
  */
-export async function handleAnalysisEventsAPI(req, res) {
+export async function handler(req, res) {
     const url = new URL(req.url, `http://${req.headers.host}`);
     const pathname = url.pathname;
     
@@ -281,9 +298,3 @@ export async function handleAnalysisEventsAPI(req, res) {
         }));
     }
 }
-
-export default {
-    handleAnalysisEventsAPI,
-    generateMockEvents,
-    detectEventType
-};

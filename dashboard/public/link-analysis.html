@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Анализ связей — Crucix</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0a0a1a; color: #e0e0e0; font-family: -apple-system, 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+        .topbar { position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(10,10,20,0.95); backdrop-filter: blur(12px); border-bottom: 2px solid rgba(91,192,248,0.25); box-shadow: 0 2px 20px rgba(91,192,248,0.08); z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
+        .topbar::after { content: ""; position: absolute; bottom: -2px; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, #5bc0f8, transparent); opacity: 0.6; }
+        .topbar-left { display: flex; align-items: center; gap: 12px; }
+        .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; }
+        .topbar-right { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .topbar-btn { height: 28px; padding: 0 12px; border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; background: rgba(255,255,255,0.03); color: #888; font-size: 11px; font-weight: 500; text-transform: uppercase; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 4px; font-family: inherit; }
+        .topbar-btn:hover { background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+        .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
+        .btn-home:hover { background: rgba(91,192,248,0.15); }
+        .btn-copy { color: #5bc0f8; border-color: rgba(91,192,248,0.15); background: rgba(91,192,248,0.06); }
+        .btn-copy.copied { background: rgba(76,175,80,0.2); border-color: #4caf50; color: #4caf50; }
+        .btn-rss { color: #f26522; border-color: rgba(242,101,34,0.2); background: rgba(242,101,34,0.06); }
+        .btn-rss:hover { background: rgba(242,101,34,0.15); }
+        .btn-help { color: #a78bfa; border-color: rgba(167,139,250,0.2); background: rgba(167,139,250,0.06); }
+        .btn-help:hover { background: rgba(167,139,250,0.15); }
+        .lang-switch { display: flex; gap: 2px; padding: 2px; background: rgba(255,255,255,0.03); border-radius: 4px; border: 1px solid rgba(255,255,255,0.06); }
+        .lang-btn { padding: 2px 8px; border: none; background: transparent; color: #666; font-size: 11px; font-weight: 500; cursor: pointer; border-radius: 3px; transition: all 0.2s; font-family: inherit; }
+        .lang-btn:hover { color: #888; background: rgba(255,255,255,0.05); }
+        .lang-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.1); }
+        .copy-dropdown { position: relative; display: inline-block; }
+        .copy-dropdown-content { display: none; position: absolute; right: 0; top: 32px; background: #0a0a1a; min-width: 220px; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; box-shadow: 0 12px 40px rgba(0,0,0,0.6); z-index: 200; padding: 6px 0; }
+        .copy-dropdown-content.show { display: block; }
+        .copy-dropdown-content button { display: block; width: 100%; padding: 8px 16px; background: transparent; border: none; color: #c8d0d8; font-size: 12px; text-align: left; cursor: pointer; transition: all 0.15s; font-family: inherit; }
+        .copy-dropdown-content button:hover { background: rgba(91,192,248,0.08); color: #5bc0f8; }
+        .copy-dropdown-content .divider { height: 1px; background: rgba(255,255,255,0.05); margin: 4px 12px; }
+        .copy-dropdown-content .label { padding: 4px 16px; font-size: 10px; color: #4a5a6a; text-transform: uppercase; letter-spacing: 0.5px; }
+        .nav-dashboards { position: fixed; top: 60px; left: 0; right: 0; height: 38px; background: rgba(6,10,18,0.92); backdrop-filter: blur(8px); border-bottom: 1px solid rgba(255,255,255,0.04); z-index: 99; display: flex; align-items: center; padding: 0 20px; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+        .nav-dashboards::-webkit-scrollbar { display: none; }
+        .nav-btn { padding: 4px 10px; border: none; border-radius: 4px; background: transparent; color: #666; font-size: 10px; font-weight: 500; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-family: inherit; border: 1px solid transparent; text-decoration: none; display: inline-flex; align-items: center; gap: 3px; }
+        .nav-btn:hover { color: #c8d0d8; background: rgba(255,255,255,0.04); }
+        .nav-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.08); border-color: rgba(91,192,248,0.15); }
+        .main-content { padding-top: 114px; max-width: 1440px; margin: 0 auto; padding-left: 20px; padding-right: 20px; padding-bottom: 40px; min-height: calc(100vh - 114px); }
+        .notification { position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); color: #ffffff; padding: 8px 20px; border-radius: 6px; font-size: 13px; z-index: 100001; border: 1px solid rgba(255,255,255,0.1); animation: notif-fade 2.5s forwards; }
+        @keyframes notif-fade { 0% { opacity: 0; transform: translateX(-50%) translateY(10px); } 10% { opacity: 1; transform: translateX(-50%) translateY(0); } 80% { opacity: 1; } 100% { opacity: 0; transform: translateX(-50%) translateY(-20px); } }
+        @media (max-width: 768px) { .topbar { padding: 0 12px; height: 52px; } .topbar-brand { font-size: 12px; } .topbar-btn { font-size: 10px; padding: 0 8px; height: 24px; } .nav-dashboards { top: 52px; height: 34px; padding: 0 10px; gap: 2px; } .nav-btn { font-size: 9px; padding: 2px 6px; } .main-content { padding-top: 102px; padding-left: 12px; padding-right: 12px; } }
+        @media (max-width: 480px) { .topbar { padding: 0 8px; height: 46px; } .topbar-brand { font-size: 10px; letter-spacing: 1px; } .topbar-btn { font-size: 9px; padding: 0 6px; height: 20px; } .lang-btn { font-size: 9px; padding: 1px 5px; } .nav-dashboards { top: 46px; height: 30px; padding: 0 6px; gap: 2px; overflow-x: auto; } .nav-btn { font-size: 8px; padding: 2px 5px; } .main-content { padding-top: 92px; padding-left: 8px; padding-right: 8px; } }
+        .link-controls { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+        .link-controls input { flex: 1; min-width: 150px; padding: 8px 14px; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; background: rgba(255,255,255,0.03); color: #e0e0e0; font-family: inherit; font-size: 14px; }
+        .link-controls input:focus { outline: none; border-color: #5bc0f8; }
+        .link-controls button { padding: 8px 20px; border: none; border-radius: 6px; background: #5bc0f8; color: #0a0a1a; font-weight: 600; cursor: pointer; font-family: inherit; font-size: 14px; }
+        .link-controls button:hover { opacity: 0.8; }
+        .link-result { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 16px; margin-top: 12px; }
+        .link-result .label { color: #8892b0; font-size: 13px; }
+        .link-result .value { color: #e0e0e0; font-size: 15px; margin-top: 4px; }
+        .link-result .confidence { display: inline-block; padding: 2px 12px; border-radius: 12px; font-size: 12px; background: rgba(91,192,248,0.1); color: #5bc0f8; }
+        .link-path { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
+        .link-path .node { background: rgba(91,192,248,0.06); border: 1px solid rgba(91,192,248,0.1); border-radius: 4px; padding: 2px 10px; font-size: 13px; color: #c8d0d8; }
+        .link-path .arrow { color: #4a5a6a; font-size: 16px; }
+        .page-title { font-size: 24px; font-weight: 700; color: #e0e0e0; margin-bottom: 8px; }
+        .page-subtitle { font-size: 14px; color: #8892b0; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+<header class="topbar">
+    <div class="topbar-left"><span class="topbar-brand">🔗 АНАЛИЗ СВЯЗЕЙ</span></div>
+    <div class="topbar-right">
+        <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+        <div class="copy-dropdown">
+            <button class="topbar-btn btn-copy" id="copy-btn">📋 КОПИРОВАТЬ ▼</button>
+            <div class="copy-dropdown-content" id="copyDropdown">
+                <div class="label">ФОРМАТЫ КОПИРОВАНИЯ</div>
+                <button data-format="text">📄 Как текст</button>
+                <button data-format="markdown">📝 Как Markdown</button>
+                <button data-format="json">📊 Как JSON</button>
+                <button data-format="csv">📋 Как CSV</button>
+                <div class="divider"></div>
+                <button data-format="dom">🌳 DOM-дерево</button>
+                <button data-format="storage">💾 localStorage</button>
+                <button data-format="api">📡 API-запросы</button>
+                <div class="divider"></div>
+                <button data-format="all">📦 ВСЁ В ОДНОМ</button>
+            </div>
+        </div>
+        <button class="topbar-btn btn-rss" onclick="window.location.href='/registry'">📡 Реестр</button>
+        <button class="topbar-btn btn-help" onclick="openHelp()">❓ HELP</button>
+        <div class="lang-switch">
+            <button class="lang-btn active" data-lang="ru" onclick="switchLang('ru')">RU</button>
+            <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
+        </div>
+    </div>
+</header>
+
+<nav class="nav-dashboards">
+    <button class="nav-btn" onclick="window.location.href='/dashboard-5in1'"><span class="icon">🎯</span>Центр аналитики</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-economic'"><span class="icon">📊</span>Экономика</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-financial'"><span class="icon">💰</span>Финансы</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-military'"><span class="icon">🛡️</span>Военный</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-geopolitical'"><span class="icon">🌍</span>Геополитика</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-ecological'"><span class="icon">🌿</span>Экология</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-cyber'"><span class="icon">🔒</span>Кибер</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-space'"><span class="icon">🚀</span>Космос</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-news'"><span class="icon">📰</span>Новости</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-ai'"><span class="icon">🧠</span>AI</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-scientific'"><span class="icon">🔬</span>Наука</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-esg'"><span class="icon">🌱</span>ESG</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-threats'"><span class="icon">⚡</span>Угрозы</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-health'"><span class="icon">🏥</span>Здоровье</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-energy'"><span class="icon">⛽</span>Энергетика</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-transport'"><span class="icon">🚛</span>Транспорт</button>
+    <button class="nav-btn" onclick="window.location.href='/dashboard-regions'"><span class="icon">🌏</span>Регионы</button>
+    <button class="nav-btn active" onclick="window.location.href='/link-analysis'"><span class="icon">🔗</span>Связи</button>
+</nav>
+
+<main class="main-content">
+    <div id="page-content">
+        <h1 class="page-title">🔗 Анализ связей</h1>
+        <p class="page-subtitle">Выявление скрытых связей между сущностями</p>
+
+        <div class="link-controls">
+            <input type="text" id="entity1" placeholder="Сущность 1" value="Россия" />
+            <input type="text" id="entity2" placeholder="Сущность 2" value="Украина" />
+            <button onclick="analyzeLinks()">🔍 Найти связи</button>
+        </div>
+
+        <div id="resultContainer"><div style="color:#4a5a6a;text-align:center;padding:40px 0;">Введите две сущности для анализа</div></div>
+    </div>
+</main>
+
+<script>
+let currentLang = localStorage.getItem('crucix-lang') || 'ru';
+
+function switchLang(lang) {
+    currentLang = lang;
+    localStorage.setItem('crucix-lang', lang);
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+    });
+    showNotification('🌐 Язык: ' + lang.toUpperCase());
+}
+
+document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === currentLang);
+});
+
+function showNotification(msg) {
+    document.querySelectorAll('.notification').forEach(el => el.remove());
+    const el = document.createElement('div');
+    el.className = 'notification';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2500);
+}
+
+function openHelp() {
+    alert('🔗 Анализ связей\n\nВыявляет скрытые связи между сущностями.\nAPI: /api/links/analyze');
+}
+
+document.getElementById('copy-btn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    document.getElementById('copyDropdown').classList.toggle('show');
+});
+
+document.addEventListener('click', function() {
+    document.getElementById('copyDropdown').classList.remove('show');
+});
+
+function copyPageData(format) {
+    const timestamp = new Date().toLocaleString();
+    const pageTitle = document.querySelector('.page-title')?.textContent || document.title || 'Без заголовка';
+    let report = '=== CRUCIX — СНАПШОТ СТРАНИЦЫ ===\n';
+    report += 'Дата: ' + timestamp + '\n';
+    report += 'Страница: ' + pageTitle + '\n\n';
+    report += document.getElementById('page-content')?.innerText || '';
+    navigator.clipboard.writeText(report).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = '✅ ' + format.toUpperCase();
+        btn.classList.add('copied');
+        setTimeout(() => {
+            btn.textContent = '📋 КОПИРОВАТЬ ▼';
+            btn.classList.remove('copied');
+        }, 3000);
+        showNotification('✅ Скопировано в формате ' + format.toUpperCase());
+    }).catch(() => {
+        const textarea = document.createElement('textarea');
+        textarea.value = report;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        showNotification('✅ Скопировано в формате ' + format.toUpperCase());
+    });
+}
+
+document.querySelectorAll('#copyDropdown button[data-format]').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        document.getElementById('copyDropdown').classList.remove('show');
+        copyPageData(this.dataset.format);
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const currentPath = window.location.pathname;
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        const href = btn.getAttribute('onclick');
+        if (href && href.includes(currentPath)) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+});
+
+async function analyzeLinks() {
+    const e1 = document.getElementById('entity1').value.trim();
+    const e2 = document.getElementById('entity2').value.trim();
+    if (!e1 || !e2) return;
+
+    const c = document.getElementById('resultContainer');
+    c.innerHTML = '<div style="color:#8892b0;text-align:center;padding:20px;">⏳ Анализ...</div>';
+
+    try {
+        const r = await fetch('/api/links/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ entity1: e1, entity2: e2, depth: 3 })
+        });
+        const d = await r.json();
+
+        if (d.success) {
+            let h = '<div class="link-result">';
+            h += '<div style="margin-bottom:12px;"><span class="label">📌 Прямые связи:</span> <span class="value">' + (d.directLinks?.length || 0) + '</span></div>';
+            if (d.directLinks && d.directLinks.length > 0) {
+                for (const l of d.directLinks) {
+                    h += '<div style="font-size:14px;color:#5bc0f8;">• ' + l.type + ' (вес: ' + l.weight + ')</div>';
+                }
+            }
+            if (d.indirectLinks && d.indirectLinks.length > 0) {
+                h += '<div style="margin:12px 0 8px;"><span class="label">🔗 Косвенные связи:</span></div>';
+                for (const p of d.indirectLinks.slice(0, 5)) {
+                    h += '<div class="link-path">';
+                    if (p.nodes) {
+                        for (const n of p.nodes) {
+                            h += '<span class="node">' + (n.name || '?') + '</span><span class="arrow">→</span>';
+                        }
+                    }
+                    h += '<span class="node" style="background:rgba(91,192,248,0.15);">' + e2 + '</span>';
+                    h += '<span class="confidence">' + Math.round((p.confidence || 0) * 100) + '%</span></div>';
+                }
+            }
+            if (d.commonConnections && d.commonConnections.length > 0) {
+                h += '<div style="margin:12px 0 8px;"><span class="label">🔄 Общие связи:</span></div>';
+                for (const c2 of d.commonConnections) {
+                    h += '<span style="background:rgba(255,255,255,0.03);padding:2px 10px;border-radius:12px;font-size:13px;display:inline-block;margin:2px;">' + (c2.name || c2) + '</span>';
+                }
+            }
+            h += '<div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.04);"><span class="label">Уверенность:</span><span class="confidence">' + Math.round((d.summary?.confidence || 0) * 100) + '%</span></div></div>';
+            c.innerHTML = h;
+        } else {
+            c.innerHTML = '<div style="color:#ff0044;text-align:center;padding:20px;">❌ ' + (d.error || 'Ошибка') + '</div>';
+        }
+    } catch(e) {
+        c.innerHTML = '<div style="color:#ff0044;text-align:center;padding:20px;">❌ Ошибка сети</div>';
+    }
+}
+</script>
+</body>
+</html>

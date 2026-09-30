@@ -1,0 +1,2198 @@
+{
+  "id": "mu1b6h8q-ks5x",
+  "timestamp": "2026-09-14T13:58:44.426Z",
+  "durationMs": 205294,
+  "overallStatus": "CRITICAL",
+  "health": {
+    "score": 59,
+    "grade": "D",
+    "modules_pct": 48,
+    "pages_pct": 100,
+    "external_pct": 0,
+    "integrity_pct": 100
+  },
+  "summary": {
+    "modules": {
+      "total": 202,
+      "online": 96,
+      "offline": 68,
+      "error": 38
+    },
+    "pages": {
+      "total": 35,
+      "online": 35,
+      "offline": 0,
+      "error": 0
+    },
+    "external": {
+      "total": 3,
+      "online": 0,
+      "offline": 3
+    },
+    "integrity": {
+      "basket": "OK",
+      "geo": "OK",
+      "feeds": "OK",
+      "history": "OK",
+      "logs": "OK",
+      "registry": "OK"
+    }
+  },
+  "modules": [
+    {
+      "route": "/api/layers/acled",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 11,
+      "bytes": 1644,
+      "error": null
+    },
+    {
+      "route": "/api/layers/adaptive-news-clustering",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 5,
+      "bytes": 6483,
+      "error": null
+    },
+    {
+      "route": "/api/layers/ai-forecasts",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 5,
+      "bytes": 780,
+      "error": null
+    },
+    {
+      "route": "/api/layers/ai-news-synthesis",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 8,
+      "bytes": 813,
+      "error": null
+    },
+    {
+      "route": "/api/layers/alert-dispatcher",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 5,
+      "bytes": 943,
+      "error": null
+    },
+    {
+      "route": "/api/layers/analysis-events",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 500,
+      "durationMs": 5,
+      "bytes": 61,
+      "error": null
+    },
+    {
+      "route": "/api/layers/arms-transfer-tracker",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 5,
+      "bytes": 2301,
+      "error": null
+    },
+    {
+      "route": "/api/layers/aviation",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 5,
+      "bytes": 6204,
+      "error": null
+    },
+    {
+      "route": "/api/layers/baseline-alerting",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 4,
+      "bytes": 740,
+      "error": null
+    },
+    {
+      "route": "/api/layers/bdi",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 3,
+      "bytes": 2608,
+      "error": null
+    },
+    {
+      "route": "/api/layers/big-mac-alt",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 4,
+      "bytes": 6342,
+      "error": null
+    },
+    {
+      "route": "/api/layers/big-mac",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 4,
+      "bytes": 8642,
+      "error": null
+    },
+    {
+      "route": "/api/layers/big-mac-main",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 2,
+      "bytes": 3778,
+      "error": null
+    },
+    {
+      "route": "/api/layers/botnets",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 3,
+      "bytes": 6333,
+      "error": null
+    },
+    {
+      "route": "/api/layers/business-optimism",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 503,
+      "durationMs": 4,
+      "bytes": 101,
+      "error": null
+    },
+    {
+      "route": "/api/layers/cache-manager",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 4,
+      "bytes": 579,
+      "error": null
+    },
+    {
+      "route": "/api/layers/central-bank-predictor",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 4,
+      "bytes": 861,
+      "error": null
+    },
+    {
+      "route": "/api/layers/cii",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 503,
+      "durationMs": 6,
+      "bytes": 101,
+      "error": null
+    },
+    {
+      "route": "/api/layers/cisa-kev",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/cli-analytics",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 8,
+      "bytes": 1370,
+      "error": null
+    },
+    {
+      "route": "/api/layers/config-validator",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/conflict-escalation-tracker",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 8,
+      "bytes": 1778,
+      "error": null
+    },
+    {
+      "route": "/api/layers/conflict-zone",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3002,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/consumer-confidence",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 5,
+      "bytes": 5762,
+      "error": null
+    },
+    {
+      "route": "/api/layers/consumer-expectations",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 503,
+      "durationMs": 5,
+      "bytes": 105,
+      "error": null
+    },
+    {
+      "route": "/api/layers/copper-gold",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 404,
+      "durationMs": 5,
+      "bytes": 44,
+      "error": null
+    },
+    {
+      "route": "/api/layers/copper-gold-ratio",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/country-instability",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 10,
+      "bytes": 1000,
+      "error": null
+    },
+    {
+      "route": "/api/layers/cross-stream-correlation",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/crucix-doctor",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 8,
+      "bytes": 1147,
+      "error": null
+    },
+    {
+      "route": "/api/layers/crypto-fear",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3000,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/currents",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 503,
+      "durationMs": 4,
+      "bytes": 92,
+      "error": null
+    },
+    {
+      "route": "/api/layers/cyber",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 3,
+      "bytes": 2528,
+      "error": null
+    },
+    {
+      "route": "/api/layers/cyber-apt",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 503,
+      "durationMs": 6,
+      "bytes": 93,
+      "error": null
+    },
+    {
+      "route": "/api/layers/cyber-attack-monitor",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/cyber-threat-index",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 5,
+      "bytes": 5390,
+      "error": null
+    },
+    {
+      "route": "/api/layers/dark-fleet",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/dark-ships",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 8,
+      "bytes": 3272,
+      "error": null
+    },
+    {
+      "route": "/api/layers/darkweb",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/dashboard-indicators",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 6,
+      "bytes": 1682,
+      "error": null
+    },
+    {
+      "route": "/api/layers/debt-gdp",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/derived-market-analytics",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 4,
+      "bytes": 946,
+      "error": null
+    },
+    {
+      "route": "/api/layers/diplomatic-tracker",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3002,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/dxy",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 6,
+      "bytes": 2979,
+      "error": null
+    },
+    {
+      "route": "/api/layers/earthquake-zone",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3002,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/earthquakes",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 7,
+      "bytes": 6853,
+      "error": null
+    },
+    {
+      "route": "/api/layers/economy",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/education",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 3,
+      "bytes": 3705,
+      "error": null
+    },
+    {
+      "route": "/api/layers/eia",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3002,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/emotion",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 503,
+      "durationMs": 5,
+      "bytes": 91,
+      "error": null
+    },
+    {
+      "route": "/api/layers/energy",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 5,
+      "bytes": 2215,
+      "error": null
+    },
+    {
+      "route": "/api/layers/energy-market-intelligence",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3005,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/entity-extraction",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 6,
+      "bytes": 11344,
+      "error": null
+    },
+    {
+      "route": "/api/layers/entity-graph",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 16,
+      "bytes": 436,
+      "error": null
+    },
+    {
+      "route": "/api/layers/epa",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 503,
+      "durationMs": 8,
+      "bytes": 87,
+      "error": null
+    },
+    {
+      "route": "/api/layers/epidemics",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3002,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/etf-flow-analysis",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 4,
+      "bytes": 1119,
+      "error": null
+    },
+    {
+      "route": "/api/layers/event-deduplicator",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 10,
+      "bytes": 447,
+      "error": null
+    },
+    {
+      "route": "/api/layers/events",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/export",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 500,
+      "durationMs": 5,
+      "bytes": 723,
+      "error": null
+    },
+    {
+      "route": "/api/layers/firms",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 4,
+      "bytes": 6560,
+      "error": null
+    },
+    {
+      "route": "/api/layers/flood-zone",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/focal-point-detection",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 6,
+      "bytes": 2121,
+      "error": null
+    },
+    {
+      "route": "/api/layers/food-security-monitor",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3002,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/fred",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 10,
+      "bytes": 2212,
+      "error": null
+    },
+    {
+      "route": "/api/layers/fx-reserves-monitor",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/gdelt",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 9,
+      "bytes": 1561,
+      "error": null
+    },
+    {
+      "route": "/api/layers/gdelt-news",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3000,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/geo-convergence",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 11,
+      "bytes": 1180,
+      "error": null
+    },
+    {
+      "route": "/api/layers/geo-markers",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 500,
+      "durationMs": 12,
+      "bytes": 738,
+      "error": null
+    },
+    {
+      "route": "/api/layers/github",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/global-index",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 500,
+      "durationMs": 5,
+      "bytes": 741,
+      "error": null
+    },
+    {
+      "route": "/api/layers/gold-oil-ratio",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 404,
+      "durationMs": 3,
+      "bytes": 44,
+      "error": null
+    },
+    {
+      "route": "/api/layers/gold-silver",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 5,
+      "bytes": 2963,
+      "error": null
+    },
+    {
+      "route": "/api/layers/google-trends",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 404,
+      "durationMs": 6,
+      "bytes": 44,
+      "error": null
+    },
+    {
+      "route": "/api/layers/gps-jamming",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/hackernews",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 5,
+      "bytes": 9222,
+      "error": null
+    },
+    {
+      "route": "/api/layers/happiness-alt",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3002,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/happiness",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 7,
+      "bytes": 6661,
+      "error": null
+    },
+    {
+      "route": "/api/layers/help",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 500,
+      "durationMs": 7,
+      "bytes": 717,
+      "error": null
+    },
+    {
+      "route": "/api/layers/historical-analysis",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 404,
+      "durationMs": 12,
+      "bytes": 67,
+      "error": null
+    },
+    {
+      "route": "/api/layers/hurricanes",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/hy-spread",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 8,
+      "bytes": 2480,
+      "error": null
+    },
+    {
+      "route": "/api/layers/indirect-indicators",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/inflation",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 5,
+      "bytes": 8801,
+      "error": null
+    },
+    {
+      "route": "/api/layers/infrastructure-cascade",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 503,
+      "durationMs": 8,
+      "bytes": 97,
+      "error": null
+    },
+    {
+      "route": "/api/layers/instability-index",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 503,
+      "durationMs": 7,
+      "bytes": 101,
+      "error": null
+    },
+    {
+      "route": "/api/layers/intelligence",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3000,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/internet-outages",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 9,
+      "bytes": 3472,
+      "error": null
+    },
+    {
+      "route": "/api/layers/langgraph-orchestrator",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3002,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/launches",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 7,
+      "bytes": 7867,
+      "error": null
+    },
+    {
+      "route": "/api/layers/live",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 500,
+      "durationMs": 10,
+      "bytes": 717,
+      "error": null
+    },
+    {
+      "route": "/api/layers/malware",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3000,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/market-composite",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 8,
+      "bytes": 2859,
+      "error": null
+    },
+    {
+      "route": "/api/layers/mcp-server",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/migration-flow-tracker",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 5,
+      "bytes": 2455,
+      "error": null
+    },
+    {
+      "route": "/api/layers/military-bases",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 500,
+      "durationMs": 8,
+      "bytes": 64,
+      "error": null
+    },
+    {
+      "route": "/api/layers/military-exercises",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/module-registration-controller",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 10,
+      "bytes": 12362,
+      "error": null
+    },
+    {
+      "route": "/api/layers/multi-source-corroboration",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/news",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 500,
+      "durationMs": 8,
+      "bytes": 717,
+      "error": null
+    },
+    {
+      "route": "/api/layers/noaa",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 8,
+      "bytes": 5199,
+      "error": null
+    },
+    {
+      "route": "/api/layers/notam",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3000,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/nuclear-monitor",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 8,
+      "bytes": 2524,
+      "error": null
+    },
+    {
+      "route": "/api/layers/ocean",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3000,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/ofac",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 6,
+      "bytes": 1280,
+      "error": null
+    },
+    {
+      "route": "/api/layers/ofac-sdn",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 503,
+      "durationMs": 6,
+      "bytes": 92,
+      "error": null
+    },
+    {
+      "route": "/api/layers/oil-gas",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/opensky",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 6,
+      "bytes": 1442,
+      "error": null
+    },
+    {
+      "route": "/api/layers/ovx",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3002,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/pipelines",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 9,
+      "bytes": 3842,
+      "error": null
+    },
+    {
+      "route": "/api/layers/pizza-index",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/pmi",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 6,
+      "bytes": 2902,
+      "error": null
+    },
+    {
+      "route": "/api/layers/political-stability-monitor",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3002,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/prediction-markets",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 10,
+      "bytes": 1091,
+      "error": null
+    },
+    {
+      "route": "/api/layers/rag",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 500,
+      "durationMs": 8,
+      "bytes": 714,
+      "error": null
+    },
+    {
+      "route": "/api/layers/recession",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/reddit",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 4,
+      "bytes": 1883,
+      "error": null
+    },
+    {
+      "route": "/api/layers/reports",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 404,
+      "durationMs": 8,
+      "bytes": 44,
+      "error": null
+    },
+    {
+      "route": "/api/layers/resilience-index",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/risk-heatmap",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 503,
+      "durationMs": 9,
+      "bytes": 96,
+      "error": null
+    },
+    {
+      "route": "/api/layers/risk-signal-aggregator",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 6,
+      "bytes": 2854,
+      "error": null
+    },
+    {
+      "route": "/api/layers/route-explorer",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/rss-feeds",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 15,
+      "bytes": 367188,
+      "error": null
+    },
+    {
+      "route": "/api/layers/rss-manager",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 500,
+      "durationMs": 6,
+      "bytes": 738,
+      "error": null
+    },
+    {
+      "route": "/api/layers/rublev-dubai",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/safecast",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 4,
+      "bytes": 2701,
+      "error": null
+    },
+    {
+      "route": "/api/layers/sanctions-pressure",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/satellite-analyzer",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 6,
+      "bytes": 423,
+      "error": null
+    },
+    {
+      "route": "/api/layers/satellite",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 503,
+      "durationMs": 5,
+      "bytes": 93,
+      "error": null
+    },
+    {
+      "route": "/api/layers/satellite-stac",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 503,
+      "durationMs": 6,
+      "bytes": 98,
+      "error": null
+    },
+    {
+      "route": "/api/layers/scan-pages",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/scenario-simulation-engine",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 3,
+      "bytes": 887,
+      "error": null
+    },
+    {
+      "route": "/api/layers/scheduler",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 500,
+      "durationMs": 5,
+      "bytes": 732,
+      "error": null
+    },
+    {
+      "route": "/api/layers/shipping",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 503,
+      "durationMs": 7,
+      "bytes": 92,
+      "error": null
+    },
+    {
+      "route": "/api/layers/ships",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3002,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/signal-aggregator",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 9,
+      "bytes": 951,
+      "error": null
+    },
+    {
+      "route": "/api/layers/silence",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 503,
+      "durationMs": 13,
+      "bytes": 91,
+      "error": null
+    },
+    {
+      "route": "/api/layers/snapshot-system",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/social-briefing",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 8,
+      "bytes": 1072,
+      "error": null
+    },
+    {
+      "route": "/api/layers/social-briefing-engine",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3000,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/social-sentiment-analyzer",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 6,
+      "bytes": 1355,
+      "error": null
+    },
+    {
+      "route": "/api/layers/social-unrest",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/source-credibility",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 5,
+      "bytes": 4637,
+      "error": null
+    },
+    {
+      "route": "/api/layers/sp500-vix",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3002,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/space",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 10,
+      "bytes": 3137,
+      "error": null
+    },
+    {
+      "route": "/api/layers/space-debris",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3002,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/stablecoin-monitor",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 5,
+      "bytes": 2221,
+      "error": null
+    },
+    {
+      "route": "/api/layers/starlink",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3000,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/storage",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 500,
+      "durationMs": 5,
+      "bytes": 726,
+      "error": null
+    },
+    {
+      "route": "/api/layers/strategic-ports",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 4,
+      "bytes": 26587,
+      "error": null
+    },
+    {
+      "route": "/api/layers/strategic-risk-composite",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3000,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/submarine-cable",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 500,
+      "durationMs": 4,
+      "bytes": 754,
+      "error": null
+    },
+    {
+      "route": "/api/layers/supply-chain-cascade-engine",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 4,
+      "bytes": 464,
+      "error": null
+    },
+    {
+      "route": "/api/layers/supply-chain-resilience",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 4,
+      "bytes": 883,
+      "error": null
+    },
+    {
+      "route": "/api/layers/surge-detection",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/tanker-fleet-monitor",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 4,
+      "bytes": 487,
+      "error": null
+    },
+    {
+      "route": "/api/layers/thinktanks",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 5,
+      "bytes": 19536,
+      "error": null
+    },
+    {
+      "route": "/api/layers/threat-classification",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3000,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/threats",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 20,
+      "bytes": 992,
+      "error": null
+    },
+    {
+      "route": "/api/layers/tick-data-analyzer",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3000,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/tips",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 5,
+      "bytes": 2773,
+      "error": null
+    },
+    {
+      "route": "/api/layers/treasury",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/trust",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 500,
+      "durationMs": 12,
+      "bytes": 720,
+      "error": null
+    },
+    {
+      "route": "/api/layers/undersea-cables",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 15,
+      "bytes": 10816,
+      "error": null
+    },
+    {
+      "route": "/api/layers/unemployment",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/unemployment-claims",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 5,
+      "bytes": 45,
+      "error": null
+    },
+    {
+      "route": "/api/layers/unique-indicators",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 3,
+      "bytes": 15194,
+      "error": null
+    },
+    {
+      "route": "/api/layers/uranium",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 404,
+      "durationMs": 11,
+      "bytes": 44,
+      "error": null
+    },
+    {
+      "route": "/api/layers/user",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 500,
+      "durationMs": 8,
+      "bytes": 717,
+      "error": null
+    },
+    {
+      "route": "/api/layers/usgs",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 500,
+      "durationMs": 10,
+      "bytes": 717,
+      "error": null
+    },
+    {
+      "route": "/api/layers/viirs",
+      "kind": "layer",
+      "status": "ERROR",
+      "statusCode": 404,
+      "durationMs": 7,
+      "bytes": 44,
+      "error": null
+    },
+    {
+      "route": "/api/layers/vix",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3002,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/volcanoes",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 12,
+      "bytes": 8157,
+      "error": null
+    },
+    {
+      "route": "/api/layers/vulnerabilities",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/vxx",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 4,
+      "bytes": 4454,
+      "error": null
+    },
+    {
+      "route": "/api/layers/war-preparation",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3000,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/watchdog",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 4,
+      "bytes": 420,
+      "error": null
+    },
+    {
+      "route": "/api/layers/weather",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 2,
+      "bytes": 1888,
+      "error": null
+    },
+    {
+      "route": "/api/layers/who",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3001,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/wildfires",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 13,
+      "bytes": 5282,
+      "error": null
+    },
+    {
+      "route": "/api/layers/wti-brent-spread",
+      "kind": "layer",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3000,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/layers/yield-curve",
+      "kind": "layer",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 5,
+      "bytes": 4740,
+      "error": null
+    },
+    {
+      "route": "/api/services/ai-chat",
+      "kind": "service",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 13,
+      "bytes": 379,
+      "error": null
+    },
+    {
+      "route": "/api/services/basket",
+      "kind": "service",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3000,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/services/basket-reader",
+      "kind": "service",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 5,
+      "bytes": 4367,
+      "error": null
+    },
+    {
+      "route": "/api/services/collector-config",
+      "kind": "service",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 5,
+      "bytes": 262,
+      "error": null
+    },
+    {
+      "route": "/api/services/collector-monitor",
+      "kind": "service",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 6,
+      "bytes": 292,
+      "error": null
+    },
+    {
+      "route": "/api/services/correlation",
+      "kind": "service",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 7,
+      "bytes": 243,
+      "error": null
+    },
+    {
+      "route": "/api/services/diagnostic-tool",
+      "kind": "service",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 145,
+      "bytes": 402,
+      "error": null
+    },
+    {
+      "route": "/api/services/diagnostics",
+      "kind": "service",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 4,
+      "bytes": 395,
+      "error": null
+    },
+    {
+      "route": "/api/services/gateway",
+      "kind": "service",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 5,
+      "bytes": 221,
+      "error": null
+    },
+    {
+      "route": "/api/services/infrastructure",
+      "kind": "service",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3000,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/services/lenses",
+      "kind": "service",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 5,
+      "bytes": 822,
+      "error": null
+    },
+    {
+      "route": "/api/services/monitor",
+      "kind": "service",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 4,
+      "bytes": 151,
+      "error": null
+    },
+    {
+      "route": "/api/services/nlp",
+      "kind": "service",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 5,
+      "bytes": 211,
+      "error": null
+    },
+    {
+      "route": "/api/services/preset",
+      "kind": "service",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3002,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/services/progressive-disclosure",
+      "kind": "service",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3002,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/services/rate-limiter",
+      "kind": "service",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 7,
+      "bytes": 642,
+      "error": null
+    },
+    {
+      "route": "/api/services/reference-data-provider",
+      "kind": "service",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3000,
+      "error": "timeout"
+    },
+    {
+      "route": "/api/services/registry",
+      "kind": "service",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 14,
+      "bytes": 188700,
+      "error": null
+    },
+    {
+      "route": "/api/services/scenarios",
+      "kind": "service",
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 3002,
+      "error": "timeout"
+    }
+  ],
+  "pages": [
+    {
+      "path": "/jarvis",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 8,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/rss-feed",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 4,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/rss-dashboard",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 4,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/ai-chat",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 6,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/geo-map",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 4,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/basket",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 3,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/global-index",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 5,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/historical-analysis",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 5,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/correlation",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 4,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/infrastructure",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 4,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/diagnostics",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 3,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/scheduler",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 4,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/kartochki",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 5,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/grid-tool",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 3,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/profile",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 3,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/silence",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 3,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/live",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 6,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/lenses",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 2,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/usgs",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 3,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/local",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 3,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/trust",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 3,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/ai-gateway",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 2,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/hidden-links",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 3,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/market-predictor",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 6,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/early-warning",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 3,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/scenarios",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 2,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/sentiment",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 3,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/kiwisdr",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 9,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/safecast",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 3,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/noaa",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 3,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/ofac",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 3,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/eia",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 4,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/cisa",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 3,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/who",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 3,
+      "bytes": 0,
+      "error": null
+    },
+    {
+      "path": "/news",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "durationMs": 2,
+      "bytes": 0,
+      "error": null
+    }
+  ],
+  "system": {
+    "memory": {
+      "heap_used_mb": 24.68,
+      "heap_total_mb": 29.1,
+      "rss_mb": 100.08,
+      "external_mb": 7.43,
+      "system_used_percent": 24,
+      "system_total_human": "15.6 GB",
+      "system_free_human": "11.9 GB"
+    },
+    "cpu": {
+      "cores": 4,
+      "model": "AMD Athlon(tm) X4 840 Quad Core Processor",
+      "speed_mhz": 3658,
+      "load_avg_1m": "3.48",
+      "load_avg_5m": "2.84",
+      "load_avg_15m": "2.66"
+    },
+    "uptime": {
+      "system_s": 11546,
+      "system_human": "3ч 12м 26с",
+      "process_s": 252,
+      "process_human": "4м 12с"
+    },
+    "env": {
+      "node_version": "v22.23.2",
+      "platform": "linux",
+      "release": "6.12.95+deb13-amd64",
+      "arch": "x64",
+      "hostname": "comp5vl",
+      "pid": 186526,
+      "cwd": "/home/ta8_/Рабочий стол/Crucix",
+      "env": "development"
+    },
+    "disk": {
+      "total_bytes": 80040603648,
+      "free_bytes": 12447596544,
+      "total_human": "74.5 GB",
+      "free_human": "11.6 GB",
+      "used_percent": 84
+    },
+    "timestamp": "2026-09-14T13:58:44.404Z"
+  },
+  "integrity": {
+    "basket": {
+      "status": "OK",
+      "files": 232,
+      "total_bytes": 1433710,
+      "total_human": "1.4 MB",
+      "newest": {
+        "file": "strategic-ports.json",
+        "mtimeMs": 1789388110716.601,
+        "mtime": "2026-09-14T12:15:10.717Z"
+      },
+      "oldest": {
+        "file": "cyber-threat-index.json",
+        "mtimeMs": 1788877405967.7878,
+        "mtime": "2026-09-08T14:23:25.968Z"
+      }
+    },
+    "geo": {
+      "status": "OK",
+      "files": 7
+    },
+    "feeds": {
+      "status": "OK",
+      "size": 1593,
+      "size_human": "1.6 KB",
+      "has_opml_tag": true
+    },
+    "history": {
+      "status": "OK",
+      "entries": 0,
+      "newest_date": null,
+      "oldest_date": null
+    },
+    "logs": {
+      "status": "OK",
+      "files": 130,
+      "total_bytes": 3506030,
+      "total_human": "3.3 MB"
+    },
+    "registry": {
+      "status": "OK",
+      "size": 232759,
+      "size_human": "227.3 KB",
+      "generated_at": "2026-09-14T13:54:31.986Z",
+      "routes": 366,
+      "services": 38
+    }
+  },
+  "external": [
+    {
+      "id": "ollama",
+      "critical": true,
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 1,
+      "error": "Failed to parse URL from http://127.0.0.1:3117http://localhost:11434/api/tags"
+    },
+    {
+      "id": "usgs",
+      "critical": false,
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 0,
+      "error": "Failed to parse URL from http://127.0.0.1:3117https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson"
+    },
+    {
+      "id": "coingecko",
+      "critical": false,
+      "status": "OFFLINE",
+      "statusCode": 0,
+      "durationMs": 0,
+      "error": "Failed to parse URL from http://127.0.0.1:3117https://api.coingecko.com/api/v3/ping"
+    }
+  ],
+  "aiAnalysis": null,
+  "registry": {
+    "generated_at": "2026-09-14T13:54:31.986Z",
+    "routes": 366,
+    "services": 38
+  }
+}

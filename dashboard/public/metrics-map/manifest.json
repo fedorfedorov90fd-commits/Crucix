@@ -1,0 +1,32 @@
+{
+  "mapType": "metrics",
+  "name": "Crucix — Metrics Map",
+  "version": "1.0",
+  "date": "2026-09-28",
+  "autonomous": true,
+  "principle": "FULL_ISOLATION",
+  "failure_domain": 1,
+  "local_cross_map": 0,
+  "layers": 75,
+  "categories": [
+    "economics", "finance", "esg", "cyber", "energy",
+    "health", "social", "geopolitical", "military",
+    "threats", "intelligence", "news", "other"
+  ],
+  "vizTypes": {
+    "choropleth": 56,
+    "series": 14,
+    "marker": 6
+  },
+  "scripts_order": [
+    "core.js", "countries.js", "layers.js", "maps-config.js",
+    "series-adapter.js", "map-controls.js", "markers.js",
+    "metrics-map.js", "copy-data.js", "heat-timeline.js",
+    "ssi.js", "refresh.js", "cii.js", "logger.js", "init.js"
+  ],
+  "data": {
+    "world_geojson": "data/world.geojson"
+  },
+  "css": "css/metrics-map.css",
+  "presets": "presets/presets.json"
+}

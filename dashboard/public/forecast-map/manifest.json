@@ -1,0 +1,18 @@
+{
+  "mapType": "forecasts",
+  "name": "Crucix Forecast Map",
+  "version": "3.0.0",
+  "description": "Прогностическая карта: Position + Color intensity + Transparency (Munzner 2014). Третий канал — прозрачность — кодирует confidence (Cressie 1993)",
+  "principle": "FULL_ISOLATION",
+  "layers": { "total": 16, "categories": ["forecast"], "vizTypes": { "choropleth": 6, "probability": 10 } },
+  "scientific_basis": {
+    "visualization": "Position + Color intensity + Transparency (Munzner 2014, Table 5.3)",
+    "classification": "Manual breaks [20,40,60,80] — ICD 203 thresholds",
+    "classes": 5,
+    "working_memory": "Cowan 2001: 4±1 chunks",
+    "opacity_formula": "fillOpacity = 0.4 + 0.5 * confidence (Cressie 1993)",
+    "fallback": "Deterministic seed from layer.id (reproducible)"
+  },
+  "dependencies": { "local_cross_map": 0, "failure_domain": 1 },
+  "autonomy": { "rules": ["R1: No ../ paths", "R2: Local world.geojson", "R3: Only forecast layers", "R4: No shared state", "R5: local_cross_map=0", "R6: Failure domain=1"] }
+}

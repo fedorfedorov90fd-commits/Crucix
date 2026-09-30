@@ -1,0 +1,64 @@
+{
+  "crucix": {
+    "name": "Crucix (по умолчанию)",
+    "description": "Все слои, все 16 категорий",
+    "groups": [
+      { "name": "Экономика и финансы", "categories": ["economics", "finance"] },
+      { "name": "Безопасность", "categories": ["military", "geopolitical", "threats", "cyber"] },
+      { "name": "Экология и космос", "categories": ["ecological", "space", "environment"] },
+      { "name": "Социальное и здоровье", "categories": ["esg", "health"] },
+      { "name": "Инфраструктура", "categories": ["energy", "transport", "other"] },
+      { "name": "Информация", "categories": ["news", "intelligence"] }
+    ],
+    "enabledLayers": [],
+    "center": [55.75, 37.61],
+    "zoom": 5,
+    "system": true
+  },
+  "crucix": {
+    "name": "Crucix",
+    "description": "Геополитика, конфликты, экономика, энергетика, транспорт",
+    "groups": [
+      { "name": "Геополитика и конфликты", "categories": ["geopolitical", "military"] },
+      { "name": "Экономика", "categories": ["economics"] },
+      { "name": "Энергетика", "categories": ["energy"] },
+      { "name": "Транспорт", "categories": ["transport"] },
+      { "name": "Киберугрозы", "categories": ["cyber"] },
+      { "name": "Новости", "categories": ["news"] }
+    ],
+    "enabledLayers": [
+      "geopolitical", "military", "acled", "social-unrest", "corruption", "democracy",
+      "economic", "inflation", "unemployment", "gdp", "recession",
+      "energy", "eia", "oil-gas", "pipelines", "power-grid",
+      "aviation", "opensky", "ships", "ports",
+      "cisa", "cve", "cyber-attacks", "darkweb",
+      "gdelt", "gdelt-news", "bbc", "rss"
+    ],
+    "center": [20, 0],
+    "zoom": 3,
+    "system": true
+  },
+  "crucix": {
+    "name": "Crucix",
+    "description": "Разведка, угрозы, кибер, космос, инфраструктура",
+    "groups": [
+      { "name": "Разведка и угрозы", "categories": ["intelligence", "threats"] },
+      { "name": "Кибер", "categories": ["cyber"] },
+      { "name": "Военный", "categories": ["military"] },
+      { "name": "Космос", "categories": ["space"] },
+      { "name": "Критическая инфраструктура", "categories": ["other", "energy"] },
+      { "name": "Аномалии", "categories": ["ecological"] }
+    ],
+    "enabledLayers": [
+      "intelligence", "ssi", "anomalies", "predict", "ofac",
+      "cisa", "shodan", "github", "cve", "cyber-attacks", "darkweb", "ddos", "malware", "ransomware",
+      "military", "conflict-zones", "military-bases", "military-spending", "nuclear-monitor", "war-preparation", "gps-jamming",
+      "satellites", "starlink", "space-debris", "spaceports",
+      "datacenters", "undersea-cables", "cables_34", "internet", "mobile",
+      "earthquakes", "fires", "floods", "volcanoes", "safecast"
+    ],
+    "center": [50, 10],
+    "zoom": 4,
+    "system": true
+  }
+}

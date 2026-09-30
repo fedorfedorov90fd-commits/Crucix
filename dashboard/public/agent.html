@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crucix Agent — интерфейс оператора</title>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #16161a;
+    --surface-2: #1e1e24;
+    --border: #2a2a32;
+    --accent: #4a9eff;
+    --accent-dim: #2c6cb8;
+    --success: #3ecf8e;
+    --warning: #ffc857;
+    --danger: #ff5c5c;
+    --text: #e8e8e8;
+    --text-dim: #8a8a92;
+    --mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+  header h1 {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  header h1 span { color: var(--accent); }
+  .status {
+    display: flex;
+    gap: 16px;
+    margin-left: auto;
+    font-size: 12px;
+    font-family: var(--mono);
+  }
+  .status-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-dim);
+  }
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--text-dim);
+  }
+  .dot.ok { background: var(--success); box-shadow: 0 0 8px var(--success); }
+  .dot.err { background: var(--danger); }
+  .dot.warn { background: var(--warning); }
+
+  main {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+  }
+
+  .chat-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border);
+  }
+
+  .messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .messages::-webkit-scrollbar { width: 8px; }
+  .messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .msg {
+    max-width: 85%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 13px;
+  }
+  .msg.user {
+    align-self: flex-end;
+    background: var(--accent-dim);
+    color: white;
+    border-bottom-right-radius: 4px;
+  }
+  .msg.agent {
+    align-self: flex-start;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-bottom-left-radius: 4px;
+    font-family: var(--sans);
+  }
+  .msg.agent .meta {
+    display: flex;
+    gap: 12px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed var(--border);
+  }
+  .msg.agent .meta .badge {
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: var(--surface);
+  }
+  .msg.agent .meta .badge.llm { color: var(--accent); }
+  .msg.agent .meta .badge.template { color: var(--warning); }
+  .msg.agent .meta .badge.high { color: var(--success); }
+  .msg.agent .meta .badge.moderate { color: var(--warning); }
+  .msg.agent .meta .badge.low { color: var(--danger); }
+
+  .msg.agent details {
+    margin-top: 12px;
+    font-family: var(--mono);
+    font-size: 11px;
+  }
+  .msg.agent details summary {
+    cursor: pointer;
+    color: var(--text-dim);
+    padding: 4px 0;
+    user-select: none;
+  }
+  .msg.agent details summary:hover { color: var(--accent); }
+  .msg.agent details pre {
+    background: var(--bg);
+    padding: 8px;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin-top: 6px;
+    font-size: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  .thinking {
+    align-self: flex-start;
+    padding: 12px 16px;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  .thinking .dots::after {
+    content: '';
+    animation: dots 1.5s steps(4, end) infinite;
+  }
+  @keyframes dots {
+    0%, 20% { content: ''; }
+    40% { content: '.'; }
+    60% { content: '..'; }
+    80%, 100% { content: '...'; }
+  }
+
+  .input-panel {
+    border-top: 1px solid var(--border);
+    padding: 12px 16px;
+    background: var(--surface);
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .input-panel textarea {
+    flex: 1;
+    background: var(--surface-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: var(--sans);
+    font-size: 13px;
+    resize: none;
+    height: 44px;
+    max-height: 150px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .input-panel textarea:focus { border-color: var(--accent); }
+  .input-panel button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0 20px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+    font-family: var(--sans);
+  }
+  .input-panel button:hover { background: var(--accent-dim); }
+  .input-panel button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .side-panel {
+    width: 340px;
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+  .side-panel::-webkit-scrollbar { width: 6px; }
+  .side-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .side-section {
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .side-section h3 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+  .side-section .item {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 12px;
+    font-family: var(--mono);
+  }
+  .side-section .item .k { color: var(--text-dim); }
+  .side-section .item .v { color: var(--text); }
+  .side-section .item .v.ok { color: var(--success); }
+  .side-section .item .v.warn { color: var(--warning); }
+  .side-section .item .v.err { color: var(--danger); }
+
+  .quick-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .quick-btn {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: 6px;
+    text-align: left;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: var(--sans);
+  }
+  .quick-btn:hover {
+    background: var(--surface);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .tool-list {
+    font-family: var(--mono);
+    font-size: 10px;
+    line-height: 1.6;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  .tool-list .tool {
+    padding: 4px 0;
+    color: var(--text-dim);
+  }
+  .tool-list .tool .cat {
+    display: inline-block;
+    padding: 0 4px;
+    border-radius: 3px;
+    background: var(--surface-2);
+    color: var(--accent);
+    margin-right: 6px;
+    font-size: 9px;
+  }
+  .tool-list .tool .cat.v6 { color: #a78bfa; }
+  .tool-list .tool .cat.catalog { color: #f59e0b; }
+  .tool-list .tool .cat.v7 { color: #3ecf8e; }
+  .tool-list .tool .cat.base { color: #60a5fa; }
+
+  .sessions-list {
+    font-family: var(--mono);
+    font-size: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  .sessions-list .session {
+    padding: 6px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .sessions-list .session:hover { background: var(--surface-2); }
+  .sessions-list .session .q {
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 2px;
+  }
+  .sessions-list .session .meta {
+    color: var(--text-dim);
+    font-size: 9px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Crucix <span>Agent</span></h1>
+  <div class="status">
+    <div class="status-item">
+      <div class="dot" id="llm-status"></div>
+      <span id="llm-label">LLM</span>
+    </div>
+    <div class="status-item">
+      <div class="dot" id="history-status"></div>
+      <span id="history-label">History</span>
+    </div>
+    <div class="status-item">
+      <div class="dot" id="snapshot-status"></div>
+      <span id="snapshot-label">Snapshot</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="chat-panel">
+    <div class="messages" id="messages">
+      <div class="msg agent">
+        <div class="meta">
+          <span class="badge">system</span>
+          <span>Crucix Agent v8.0</span>
+        </div>
+Готов к работе. Задай вопрос оператору — например:
+• Что будет через 12 часов?
+• Что если ввести санкции?
+• Какие переменные влияют на tension?
+• Есть ли аномалии?
+      </div>
+    </div>
+    <div class="input-panel">
+      <textarea id="input" placeholder="Запрос оператора... (Enter — отправить, Shift+Enter — новая строка)"></textarea>
+      <button id="send">Отправить</button>
+    </div>
+  </div>
+
+  <aside class="side-panel">
+    <div class="side-section">
+      <h3>Статус системы</h3>
+      <div id="system-status">
+        <div class="item"><span class="k">LLM</span><span class="v" id="ss-llm">—</span></div>
+        <div class="item"><span class="k">Tools</span><span class="v" id="ss-tools">—</span></div>
+        <div class="item"><span class="k">History</span><span class="v" id="ss-history">—</span></div>
+        <div class="item"><span class="k">Snapshot</span><span class="v" id="ss-snapshot">—</span></div>
+      </div>
+    </div>
+
+    <div class="side-section">
+      <h3>Быстрые запросы</h3>
+      <div class="quick-actions">
+        <button class="quick-btn" data-q="Что будет через 12 часов?">Что будет через 12 часов?</button>
+        <button class="quick-btn" data-q="Что если ввести санкции?">Что если ввести санкции?</button>
+        <button class="quick-btn" data-q="Какие переменные влияют на tension?">Влияние на tension</button>
+        <button class="quick-btn" data-q="Есть ли аномалии в последних данных?">Аномалии</button>
+        <button class="quick-btn" data-q="Какое действие оптимально?">Оптимальное действие</button>
+        <button class="quick-btn" data-q="Общий прогноз по всем событиям">Полный прогноз</button>
+      </div>
+    </div>
+
+    <div class="side-section">
+      <h3>Доступные tools</h3>
+      <div class="tool-list" id="tool-list">
+        <div class="tool">Загрузка...</div>
+      </div>
+    </div>
+
+    <div class="side-section">
+      <h3>Сессии (последние)</h3>
+      <div class="sessions-list" id="sessions-list">
+        <div class="tool">Нет сессий</div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<script>
+// ═══════════════════════════════════════════════════
+// КОНФИГ
+// ═══════════════════════════════════════════════════
+
+const CONFIG = {
+  apiBase: window.location.origin,
+  wsUrl: `ws://${window.location.host}/agent`,
+  pollIntervalMs: 5000,
+  useWebSocket: false, // переключается при успешном подключении
+};
+
+const TOOLS = [
+  { name: 'engine_full', category: 'base' },
+  { name: 'regime_shift', category: 'base' },
+  { name: 'explainability', category: 'base' },
+  { name: 'neural_causal_discovery', category: 'v6' },
+  { name: 'continual_learning', category: 'v6' },
+  { name: 'causal_rl', category: 'v6' },
+  { name: 'quantum_hypergraph', category: 'v6' },
+  { name: 'zk_federated', category: 'v6' },
+  { name: 'mcmc', category: 'catalog' },
+  { name: 'physics_inspired', category: 'catalog' },
+  { name: 'automl', category: 'catalog' },
+  { name: 'anomaly_detection', category: 'catalog' },
+  { name: 'graph_sage', category: 'catalog' },
+  { name: 'actor_critic', category: 'catalog' },
+  { name: 'world_model', category: 'v7' },
+  { name: 'neural_ode', category: 'v7' },
+  { name: 'dreamer', category: 'v7' },
+  { name: 'continuous_causal', category: 'v7' },
+  { name: 'simulation_engine', category: 'v7' },
+];
+
+// ═══════════════════════════════════════════════════
+// СОСТОЯНИЕ
+// ═══════════════════════════════════════════════════
+
+let ws = null;
+let isProcessing = false;
+let sessionCounter = 0;
+
+// ═══════════════════════════════════════════════════
+// WEB SOCKET
+// ═══════════════════════════════════════════════════
+
+function connectWS() {
+  try {
+    ws = new WebSocket(CONFIG.wsUrl);
+    ws.onopen = () => {
+      CONFIG.useWebSocket = true;
+      updateStatus('ws', 'ok', 'WS');
+      console.log('[agent] WebSocket подключён');
+    };
+    ws.onmessage = (ev) => {
+      try {
+        const msg = JSON.parse(ev.data);
+        if (msg.type === 'agent_response') {
+          renderAgentResponse(msg.data);
+          isProcessing = false;
+          updateSendButton();
+        } else if (msg.type === 'agent_status') {
+          updateSystemStatus(msg.data);
+        }
+      } catch (e) {
+        console.error('[agent] parse error:', e);
+      }
+    };
+    ws.onclose = () => {
+      CONFIG.useWebSocket = false;
+      updateStatus('ws', 'warn', 'WS off');
+      // Переподключение через 5 секунд
+      setTimeout(connectWS, 5000);
+    };
+    ws.onerror = () => {
+      CONFIG.useWebSocket = false;
+    };
+  } catch (e) {
+    CONFIG.useWebSocket = false;
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// HTTP API
+// ═══════════════════════════════════════════════════
+
+async function callAgentHTTP(query) {
+  const sessionId = `ui_${Date.now()}_${++sessionCounter}`;
+  try {
+    const resp = await fetch(`${CONFIG.apiBase}/api/agent/query`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, sessionId }),
+    });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    return await resp.json();
+  } catch (e) {
+    return {
+      error: `Не удалось вызвать agent: ${e.message}. Проверь что сервер /api/agent/query запущен.`,
+      sessionId,
+    };
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// UI
+// ═══════════════════════════════════════════════════
+
+function updateStatus(name, state, label) {
+  const dot = document.getElementById(`${name}-status`);
+  const lbl = document.getElementById(`${name}-label`);
+  if (dot) {
+    dot.className = 'dot ' + state;
+  }
+  if (lbl && label) lbl.textContent = label;
+}
+
+function updateSystemStatus(data) {
+  if (!data) return;
+  const set = (id, v, cls) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = v;
+    el.className = 'v' + (cls ? ' ' + cls : '');
+  };
+  if (data.llm !== undefined) set('ss-llm', data.llm ? 'online' : 'offline', data.llm ? 'ok' : 'err');
+  if (data.tools !== undefined) set('ss-tools', String(data.tools), data.tools > 0 ? 'ok' : 'err');
+  if (data.history !== undefined) set('ss-history', String(data.history), data.history >= 20 ? 'ok' : 'warn');
+  if (data.snapshot !== undefined) set('ss-snapshot', data.snapshot ? 'found' : 'missing', data.snapshot ? 'ok' : 'warn');
+}
+
+function appendMessage(role, content, meta) {
+  const msg = document.createElement('div');
+  msg.className = `msg ${role}`;
+  if (meta) {
+    const metaEl = document.createElement('div');
+    metaEl.className = 'meta';
+    for (const [k, v] of Object.entries(meta)) {
+      const span = document.createElement('span');
+      span.className = `badge ${v}`;
+      span.textContent = k;
+      metaEl.appendChild(span);
+    }
+    msg.appendChild(metaEl);
+  }
+  const textEl = document.createElement('div');
+  textEl.textContent = content;
+  msg.appendChild(textEl);
+  document.getElementById('messages').appendChild(msg);
+  msg.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  return msg;
+}
+
+function appendThinking() {
+  const el = document.createElement('div');
+  el.className = 'thinking';
+  el.innerHTML = 'Agent <span class="dots"></span>';
+  el.id = 'thinking-indicator';
+  document.getElementById('messages').appendChild(el);
+  el.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  return el;
+}
+
+function removeThinking() {
+  const el = document.getElementById('thinking-indicator');
+  if (el) el.remove();
+}
+
+function renderAgentResponse(data) {
+  removeThinking();
+
+  if (data.error) {
+    appendMessage('agent', `❌ ${data.error}`, { error: 'err' });
+    return;
+  }
+
+  const meta = {
+    mode: data.mode || 'unknown',
+    confidence: data.answer?.confidence || data.confidence || 'unknown',
+    source: data.answer?.source || 'template',
+  };
+
+  const text = data.answer?.text || data.answer || data.text || '(нет ответа)';
+  const msg = appendMessage('agent', text, meta);
+
+  // Раскрываемые детали (план + executions)
+  if (data.plan || data.executions) {
+    const details = document.createElement('details');
+    const summary = document.createElement('summary');
+    summary.textContent = `Детали (${data.plan?.length || 0} шагов, ${data.executions?.length || 0} вызовов)`;
+    details.appendChild(summary);
+
+    const pre = document.createElement('pre');
+    pre.textContent = JSON.stringify({
+      mode: data.mode,
+      reasoning: data.reasoning,
+      plan: data.plan,
+      executions: data.executions?.map(e => ({
+        tool: e.tool,
+        args: e.args,
+        ok: e.ok,
+        error: e.error || null,
+        elapsedMs: e.elapsedMs,
+        resultKeys: e.result ? Object.keys(e.result) : null,
+      })),
+    }, null, 2);
+    details.appendChild(pre);
+    msg.appendChild(details);
+  }
+}
+
+function updateSendButton() {
+  const btn = document.getElementById('send');
+  btn.disabled = isProcessing;
+  btn.textContent = isProcessing ? 'Обработка...' : 'Отправить';
+}
+
+// ═══════════════════════════════════════════════════
+// ОТПРАВКА
+// ═══════════════════════════════════════════════════
+
+async function sendQuery() {
+  const input = document.getElementById('input');
+  const query = input.value.trim();
+  if (!query || isProcessing) return;
+
+  appendMessage('user', query);
+  input.value = '';
+  isProcessing = true;
+  updateSendButton();
+  appendThinking();
+
+  if (CONFIG.useWebSocket && ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'query', query }));
+  } else {
+    const result = await callAgentHTTP(query);
+    renderAgentResponse(result);
+    isProcessing = false;
+    updateSendButton();
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// ИНИЦИАЛИЗАЦИЯ
+// ═══════════════════════════════════════════════════
+
+function renderToolList() {
+  const container = document.getElementById('tool-list');
+  container.innerHTML = '';
+  for (const tool of TOOLS) {
+    const el = document.createElement('div');
+    el.className = 'tool';
+    el.innerHTML = `<span class="cat ${tool.category}">${tool.category}</span>${tool.name}`;
+    container.appendChild(el);
+  }
+}
+
+async function pollStatus() {
+  try {
+    const resp = await fetch(`${CONFIG.apiBase}/api/agent/status`);
+    if (!resp.ok) throw new Error('status failed');
+    const data = await resp.json();
+    updateSystemStatus(data);
+    updateStatus('llm', data.llm ? 'ok' : 'err', data.llm ? 'LLM online' : 'LLM off');
+    updateStatus('history', data.history >= 20 ? 'ok' : 'warn', `History: ${data.history}`);
+    updateStatus('snapshot', data.snapshot ? 'ok' : 'warn', data.snapshot ? 'Snapshot found' : 'No snapshot');
+  } catch (e) {
+    updateStatus('llm', 'warn', 'API off');
+    updateStatus('history', 'warn', 'API off');
+    updateStatus('snapshot', 'warn', 'API off');
+  }
+}
+
+function init() {
+  renderToolList();
+  pollStatus();
+  setInterval(pollStatus, CONFIG.pollIntervalMs);
+  connectWS();
+
+  const input = document.getElementById('input');
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendQuery();
+    }
+  });
+
+  document.getElementById('send').addEventListener('click', sendQuery);
+
+  document.querySelectorAll('.quick-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      input.value = btn.dataset.q;
+      sendQuery();
+    });
+  });
+
+  // Автовысота textarea
+  input.addEventListener('input', () => {
+    input.style.height = 'auto';
+    input.style.height = Math.min(150, input.scrollHeight) + 'px';
+  });
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

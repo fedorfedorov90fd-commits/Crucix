@@ -1,0 +1,385 @@
+/* ============================================================
+   LAYERS-PANEL.CSS — Панель слоёв (справа) УВЕЛИЧЕННАЯ
+   ============================================================ */
+
+.nav-dashboards {
+    position: fixed;
+    top: 56px;
+    left: 0;
+    right: 0;
+    height: 38px;
+    background: rgba(6, 10, 18, 0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    z-index: 99;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    gap: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.nav-dashboards::-webkit-scrollbar {
+    display: none;
+}
+
+.nav-btn {
+    padding: 4px 10px;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: #666;
+    font-size: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    font-family: inherit;
+    border: 1px solid transparent;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+.nav-btn:hover {
+    color: #c8d0d8;
+    background: rgba(255, 255, 255, 0.04);
+}
+.nav-btn.active {
+    color: #5bc0f8;
+    background: rgba(91, 192, 248, 0.08);
+    border-color: rgba(91, 192, 248, 0.15);
+}
+.nav-btn .icon {
+    font-size: 11px;
+}
+
+/* ===== ПАНЕЛЬ СЛОЁВ — УВЕЛИЧЕННАЯ ===== */
+.layer-panel {
+    position: fixed;
+    top: 94px;
+    right: 0;
+    bottom: 0;
+    width: 450px;          /* было 380px — увеличено на 18% */
+    min-width: 320px;      /* было 280px */
+    max-width: 600px;      /* было 500px */
+    background: rgba(10, 10, 20, 0.95);
+    backdrop-filter: blur(12px);
+    border-left: 1px solid rgba(255, 255, 255, 0.06);
+    z-index: 90;
+    padding: 10px 14px;    /* было 8px 12px */
+    overflow-y: auto;
+    overflow-x: hidden;
+    transition: transform 0.3s ease;
+    resize: horizontal;
+}
+.layer-panel.collapsed {
+    transform: translateX(100%);
+}
+.layer-panel::-webkit-scrollbar {
+    width: 5px;           /* было 4px */
+}
+.layer-panel::-webkit-scrollbar-track {
+    background: transparent;
+}
+.layer-panel::-webkit-scrollbar-thumb {
+    background: rgba(91, 192, 248, 0.3);
+    border-radius: 4px;
+}
+
+/* ===== ЗАГОЛОВОК ПАНЕЛИ ===== */
+.layer-panel-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    margin-bottom: 8px;
+}
+.layer-panel-title {
+    font-size: 13px;      /* было 11px — увеличено */
+    font-weight: 600;
+    color: #e8f0f8;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+.layer-panel-title .count {
+    font-size: 11px;      /* было 9px */
+    color: #4a5a6a;
+    font-weight: 400;
+    margin-left: 6px;
+}
+.layer-panel-toggle {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 4px;
+    color: #666;
+    padding: 3px 9px;     /* было 2px 7px */
+    cursor: pointer;
+    font-size: 10px;      /* было 9px */
+    font-family: inherit;
+    transition: all 0.2s;
+}
+.layer-panel-toggle:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #c8d0d8;
+}
+
+/* ===== КНОПКИ УПРАВЛЕНИЯ СЛОЯМИ ===== */
+.layer-controls {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+}
+.layer-controls button {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 4px;
+    color: #888;
+    padding: 3px 10px;    /* было 2px 8px */
+    font-size: 10px;      /* было 9px */
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+.layer-controls button:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #c8d0d8;
+}
+.layer-controls .enable-all {
+    color: #5bc0f8;
+    border-color: rgba(91, 192, 248, 0.2);
+}
+.layer-controls .enable-all:hover {
+    background: rgba(91, 192, 248, 0.1);
+}
+.layer-controls .disable-all {
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.2);
+}
+.layer-controls .disable-all:hover {
+    background: rgba(239, 68, 68, 0.1);
+}
+.layer-controls .active-count {
+    color: #4a5a6a;
+    font-size: 10px;      /* было 9px */
+    margin-left: auto;
+    align-self: center;
+}
+
+/* ===== ПОИСК СЛОЁВ ===== */
+.layer-search {
+    width: 100%;
+    padding: 6px 10px;    /* было 4px 8px */
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 4px;
+    color: #c8d0d8;
+    font-size: 13px;      /* было 11px */
+    font-family: inherit;
+    margin-bottom: 6px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.layer-search:focus {
+    border-color: rgba(91, 192, 248, 0.3);
+}
+.layer-search::placeholder {
+    color: #4a5a6a;
+}
+
+/* ===== КАТЕГОРИИ СЛОЁВ ===== */
+.layer-category {
+    margin-bottom: 5px;   /* было 4px */
+}
+.layer-category-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 0;       /* было 2px 0 */
+    cursor: pointer;
+    user-select: none;
+    font-size: 12px;      /* было 10px — увеличено */
+    font-weight: 600;
+    color: #4a5a6a;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    transition: color 0.2s;
+}
+.layer-category-header:hover {
+    color: #8899aa;
+}
+.layer-category-header .arrow {
+    font-size: 10px;      /* было 8px */
+    transition: transform 0.2s;
+}
+.layer-category-header .arrow.open {
+    transform: rotate(90deg);
+}
+.layer-category-header .badge {
+    font-size: 10px;      /* было 8px */
+    background: rgba(255, 255, 255, 0.04);
+    padding: 0 6px;
+    border-radius: 10px;  /* было 8px */
+    color: #4a5a6a;
+}
+
+/* ===== СЕТКА СЛОЁВ ===== */
+.layer-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3px;            /* было 2px */
+    padding: 4px 0;      /* было 3px 0 */
+}
+.layer-grid.hidden {
+    display: none;
+}
+
+/* ===== КНОПКИ СЛОЁВ (УВЕЛИЧЕННЫЕ) ===== */
+.layer-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;            /* было 4px */
+    padding: 5px 8px;    /* было 3px 5px */
+    border: 1px solid transparent;
+    border-radius: 5px;  /* было 4px */
+    background: transparent;
+    color: #8899aa;
+    font-size: 12px;     /* было 10px — увеличено */
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+.layer-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #c8d0d8;
+}
+.layer-btn.active {
+    background: rgba(91, 192, 248, 0.15) !important;
+    color: #5bc0f8 !important;
+    border-color: rgba(91, 192, 248, 0.2);
+    box-shadow: 0 0 14px rgba(91, 192, 248, 0.06);
+}
+.layer-btn.active .number {
+    color: #5bc0f8 !important;
+    font-weight: 700;
+}
+.layer-btn .dot {
+    width: 10px;         /* было 8px */
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.layer-btn .icon {
+    font-size: 13px;     /* было 10px */
+    flex-shrink: 0;
+}
+.layer-btn .name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 12px;     /* было 10px */
+}
+.layer-btn .number {
+    color: #4a5a6a;
+    font-size: 10px;     /* было 8px */
+    min-width: 20px;     /* было 18px */
+}
+
+/* ===== КНОПКА ПЕРЕКЛЮЧЕНИЯ ПАНЕЛИ ===== */
+.panel-toggle-btn {
+    position: fixed;
+    top: 100px;          /* было 97px */
+    right: 8px;
+    z-index: 95;
+    background: rgba(6, 10, 18, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 4px;
+    color: #5bc0f8;
+    padding: 4px 8px;    /* было 3px 6px */
+    cursor: pointer;
+    font-size: 14px;     /* было 12px */
+    transition: all 0.2s;
+    display: none;
+}
+.panel-toggle-btn:hover {
+    background: rgba(91, 192, 248, 0.1);
+}
+.panel-toggle-btn.visible {
+    display: block;
+}
+
+/* ===== АДАПТИВ ===== */
+@media (max-width: 768px) {
+    .layer-panel {
+        width: 320px;    /* было 260px */
+        min-width: 240px;
+        top: 86px;
+    }
+    .layer-btn {
+        font-size: 11px;
+        padding: 4px 6px;
+    }
+    .layer-btn .name {
+        font-size: 11px;
+    }
+    .layer-btn .icon {
+        font-size: 12px;
+    }
+    .layer-search {
+        font-size: 12px;
+    }
+    .layer-panel-title {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .layer-panel {
+        width: 100%;
+        height: 55%;     /* было 50% */
+        top: auto;
+        bottom: 0;
+        right: 0;
+        border-left: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .layer-panel.collapsed {
+        transform: translateY(100%);
+    }
+    .layer-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 2px;
+    }
+    .layer-btn {
+        font-size: 10px;
+        padding: 3px 5px;
+    }
+    .layer-btn .name {
+        font-size: 10px;
+    }
+    .layer-btn .icon {
+        font-size: 11px;
+    }
+    .layer-search {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+    .layer-panel-title {
+        font-size: 11px;
+    }
+    .panel-toggle-btn {
+        top: 88px;
+        right: 4px;
+        font-size: 12px;
+        padding: 2px 6px;
+    }
+}

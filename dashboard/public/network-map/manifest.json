@@ -1,0 +1,21 @@
+{
+  "mapType": "relations",
+  "name": "Network Map",
+  "version": "1.0.0",
+  "principle": "FULL_ISOLATION",
+  "description": "Force-directed graph visualization of relational data",
+  "layerCount": 12,
+  "dependencies": {
+    "external": {
+      "leaflet": "none",
+      "d3": "none",
+      "world_geojson": "not_required"
+    },
+    "local_cross_map": 0
+  },
+  "autonomy": {
+    "charter": "AUTONOMY-CHARTER.md",
+    "rules": ["R1", "R2", "R3", "R4", "R5", "R6"],
+    "failure_domain": 1
+  }
+}

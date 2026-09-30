@@ -1,0 +1,1230 @@
+===== ЧАСТЬ part-4-modules · КУСОК 16/28 · 38.3 KB =====
+
+FILE: apis/predict/automl.mjs
+SIZE: 38978 bytes
+SHA1: 687c64eb3dc6dc60
+========================================================================
+
+// apis/predict/automl.mjs
+// AutoML + Bayesian Optimization для прогностического слоя Crucix
+// Часть A: шапка, утилиты, Gaussian Process, ядра, acquisition functions
+// Часть B: BayesianOptimizer, AutoML, crucixAutoML, экспорты
+//
+// Теоретическая основа:
+//   Bayesian Optimization:
+//     - Snoek, J., Larochelle, H., & Adams, R. P. (2012). "Practical Bayesian
+//       Optimization of Machine Learning Algorithms". NeurIPS.
+//     - Jones, D. R., Schonlau, M., & Welch, W. J. (1998). "Efficient Global
+//       Optimization of Expensive Black-Box Functions". Journal of Global
+//       Optimization.
+//     - Brochu, E., Cora, V. M., & de Freitas, N. (2010). "A Tutorial on
+//       Bayesian Optimization of Expensive Cost Functions". arXiv:1012.2599.
+//
+//   Acquisition functions:
+//     - Mockus, J. (1978). "The application of Bayesian methods for seeking
+//       the extremum". Towards Global Optimization.
+//     - Srinivas, N., et al. (2010). "Gaussian Process Optimization in the
+//       Bandit Setting: No Regret and Experimental Design". ICML.
+//     - Kushner, H. J. (1964). "A New Method of Locating the Maximum Point
+//       of an Arbitrary Multiparameter Function". Journal of Basic Engineering.
+//
+//   AutoML strategy:
+//     - Bergstra, J., & Bengio, Y. (2012). "Random Search for Hyper-Parameter
+//       Optimization". JMLR.
+//     - Jamieson, K., & Talwalkar, A. (2016). "Non-stochastic Best Arm
+//       Identification and Hyperparameter Optimization". AISTATS.
+//     - Li, L., et al. (2018). "Hyperband: A Novel Bandit-Based Approach to
+//       Hyperparameter Optimization". JMLR.
+//
+//   Gaussian Process:
+//     - Rasmussen, C. E., & Williams, C. K. I. (2006). "Gaussian Processes
+//       for Machine Learning". MIT Press.
+//
+// Версия: 6.0.0
+
+import { writeFileSync, mkdirSync, existsSync, readFileSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// ═══════════════════════════════════════════════════════════════════
+// УТИЛИТЫ
+// ═══════════════════════════════════════════════════════════════════
+
+function ensureDir(dir) { if (!existsSync(dir)) mkdirSync(dir, { recursive: true }); }
+function saveJSON(fp, data) { ensureDir(dirname(fp)); writeFileSync(fp, JSON.stringify(data, null, 2)); }
+
+function mean(arr) { return arr.length === 0 ? 0 : arr.reduce((a, b) => a + b, 0) / arr.length; }
+
+function std(arr, ddof = 1) {
+  const n = arr.length;
+  if (n <= ddof) return 0;
+  const m = mean(arr);
+  return Math.sqrt(arr.reduce((s, v) => s + (v - m) ** 2, 0) / (n - ddof));
+}
+
+function gaussianRandom(mu = 0, sd = 1) {
+  const u1 = Math.random(), u2 = Math.random();
+  const z = Math.sqrt(-2 * Math.log(u1 + 1e-10)) * Math.cos(2 * Math.PI * u2);
+  return mu + z * sd;
+}
+
+function normalCDF(x) {
+  return 0.5 * (1 + erf(x / Math.sqrt(2)));
+}
+
+function normalPDF(x) {
+  return Math.exp(-0.5 * x * x) / Math.sqrt(2 * Math.PI);
+}
+
+function erf(x) {
+  const sign = x < 0 ? -1 : 1;
+  x = Math.abs(x);
+  const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741;
+  const a4 = -1.453152027, a5 = 1.061405429, p = 0.3273271;
+  const t = 1 / (1 + p * x);
+  const y = 1 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+  return sign * y;
+}
+
+/**
+ * Матричное умножение (n×m · m×p).
+ */
+function matMul(A, B) {
+  const n = A.length, m = A[0].length, p = B[0].length;
+  const C = Array.from({ length: n }, () => new Array(p).fill(0));
+  for (let i = 0; i < n; i++) {
+    for (let k = 0; k < m; k++) {
+      const aik = A[i][k];
+      if (aik === 0) continue;
+      for (let j = 0; j < p; j++) C[i][j] += aik * B[k][j];
+    }
+  }
+  return C;
+}
+
+function matTranspose(A) {
+  return A[0].map((_, i) => A.map(row => row[i]));
+}
+
+/**
+ * Обращение матрицы через Gauss-Jordan с частичным пивотированием.
+ */
+function matInverse(A) {
+  const n = A.length;
+  const M = A.map((row, i) => [
+    ...row,
+    ...Array(n).fill(0).map((_, j) => (i === j ? 1 : 0)),
+  ]);
+
+  for (let i = 0; i < n; i++) {
+    let maxRow = i;
+    for (let k = i + 1; k < n; k++) {
+      if (Math.abs(M[k][i]) > Math.abs(M[maxRow][i])) maxRow = k;
+    }
+    [M[i], M[maxRow]] = [M[maxRow], M[i]];
+    if (Math.abs(M[i][i]) < 1e-12) M[i][i] += 1e-8;
+
+    const pivot = M[i][i];
+    for (let j = 0; j < 2 * n; j++) M[i][j] /= pivot;
+
+    for (let k = 0; k < n; k++) {
+      if (k === i) continue;
+      const factor = M[k][i];
+      for (let j = 0; j < 2 * n; j++) M[k][j] -= factor * M[i][j];
+    }
+  }
+
+  return M.map(row => row.slice(n));
+}
+
+/**
+ * Линейная регрессия (для случайного baseline).
+ */
+function linreg(x, y) {
+  const n = Math.min(x.length, y.length);
+  if (n < 2) return { slope: 0, intercept: 0, r2: 0 };
+  const mx = mean(x), my = mean(y);
+  let num = 0, den = 0;
+  for (let i = 0; i < n; i++) {
+    num += (x[i] - mx) * (y[i] - my);
+    den += (x[i] - mx) ** 2;
+  }
+  const slope = den > 0 ? num / den : 0;
+  const intercept = my - slope * mx;
+  let ssRes = 0, ssTot = 0;
+  for (let i = 0; i < n; i++) {
+    const pred = slope * x[i] + intercept;
+    ssRes += (y[i] - pred) ** 2;
+    ssTot += (y[i] - my) ** 2;
+  }
+  const r2 = ssTot > 0 ? 1 - ssRes / ssTot : 0;
+  return { slope, intercept, r2 };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 1. ЯДРА (KERNELS)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * RBF (Gaussian) ядро: k(x, x') = σ² · exp(-||x - x'||² / (2·ℓ²))
+ */
+function rbfKernel(x1, x2, sigmaF = 1, lengthScale = 1) {
+  let sum = 0;
+  for (let i = 0; i < x1.length; i++) {
+    const d = x1[i] - x2[i];
+    sum += d * d;
+  }
+  return sigmaF * sigmaF * Math.exp(-sum / (2 * lengthScale * lengthScale));
+}
+
+/**
+ * Matern 3/2 ядро
+ */
+function matern32Kernel(x1, x2, sigmaF = 1, lengthScale = 1) {
+  let sum = 0;
+  for (let i = 0; i < x1.length; i++) {
+    const d = x1[i] - x2[i];
+    sum += d * d;
+  }
+  const r = Math.sqrt(sum) / lengthScale;
+  return sigmaF * sigmaF * (1 + Math.sqrt(3) * r) * Math.exp(-Math.sqrt(3) * r);
+}
+
+/**
+ * Matern 5/2 ядро
+ */
+function matern52Kernel(x1, x2, sigmaF = 1, lengthScale = 1) {
+  let sum = 0;
+  for (let i = 0; i < x1.length; i++) {
+    const d = x1[i] - x2[i];
+    sum += d * d;
+  }
+  const r = Math.sqrt(sum) / lengthScale;
+  return sigmaF * sigmaF * (1 + Math.sqrt(5) * r + 5 * r * r / 3) * Math.exp(-Math.sqrt(5) * r);
+}
+
+/**
+ * Реестр ядер.
+ */
+const KERNELS = {
+  rbf: rbfKernel,
+  matern32: matern32Kernel,
+  matern52: matern52Kernel,
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// 2. GAUSSIAN PROCESS REGRESSION
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Gaussian Process Regression.
+ * Апостериорное распределение функции: f* | X, y, X* ~ N(μ*, Σ*)
+ *
+ * μ* = K* · (K + σ_n² I)⁻¹ · y
+ * Σ* = K** - K* · (K + σ_n² I)⁻¹ · K*ᵀ
+ */
+class GaussianProcess {
+  constructor(config = {}) {
+    this.kernelName = config.kernel || 'rbf';
+    this.sigmaF = config.sigmaF ?? 1.0;
+    this.lengthScale = config.lengthScale ?? 1.0;
+    this.sigmaN = config.sigmaN ?? 0.1;
+    this.X = [];
+    this.y = [];
+    this.Kinv = null;
+    this.trained = false;
+  }
+
+  /**
+   * Обучение на данных.
+   */
+  fit(X, y) {
+    this.X = X.map(x => [...x]);
+    this.y = [...y];
+    const n = X.length;
+
+    if (n === 0) { this.trained = false; return this; }
+
+    const kernel = KERNELS[this.kernelName] || rbfKernel;
+
+    // K + σ_n² I
+    const K = Array.from({ length: n }, (_, i) =>
+      Array.from({ length: n }, (_, j) =>
+        kernel(X[i], X[j], this.sigmaF, this.lengthScale) +
+        (i === j ? this.sigmaN * this.sigmaN : 0)
+      )
+    );
+
+    try {
+      this.Kinv = matInverse(K);
+      this.trained = true;
+    } catch (e) {
+      this.Kinv = null;
+      this.trained = false;
+    }
+
+    return this;
+  }
+
+  /**
+   * Предсказание одной точки.
+   */
+  predictOne(x) {
+    if (!this.trained || this.X.length === 0) {
+      return { mean: 0, variance: this.sigmaF ** 2 };
+    }
+    const kernel = KERNELS[this.kernelName] || rbfKernel;
+    const n = this.X.length;
+
+    // K* (1 × n)
+    const Ks = this.X.map(xi => kernel(x, xi, this.sigmaF, this.lengthScale));
+
+    // μ* = K* · Kinv · y
+    let muStar = 0;
+    for (let i = 0; i < n; i++) {
+      let sumRow = 0;
+      for (let j = 0; j < n; j++) {
+        sumRow += this.Kinv[i][j] * this.y[j];
+      }
+      muStar += Ks[i] * sumRow;
+    }
+
+    // σ²* = k(x, x) - K* · Kinv · K*ᵀ
+    const kxx = kernel(x, x, this.sigmaF, this.lengthScale);
+    let kStarKinvKStar = 0;
+    for (let i = 0; i < n; i++) {
+      for (let j = 0; j < n; j++) {
+        kStarKinvKStar += Ks[i] * this.Kinv[i][j] * Ks[j];
+      }
+    }
+    const varStar = Math.max(kxx - kStarKinvKStar, 1e-10);
+
+    return { mean: muStar, variance: varStar };
+  }
+
+  /**
+   * Пакетное предсказание.
+   */
+  predict(X) {
+    return X.map(x => this.predictOne(x));
+  }
+
+  /**
+   * Логарифм маргинального правдоподобия.
+   * log p(y | X) = -0.5 yᵀ K⁻¹ y - 0.5 log|K| - n/2 log 2π
+   */
+  logMarginalLikelihood() {
+    if (!this.trained) return -Infinity;
+    const n = this.X.length;
+    let ytKinvY = 0;
+    for (let i = 0; i < n; i++) {
+      for (let j = 0; j < n; j++) {
+        ytKinvY += this.y[i] * this.Kinv[i][j] * this.y[j];
+      }
+    }
+    // Грубая оценка log|K| через диагональ
+    const logDetK = this.Kinv.reduce((s, row, i) => s + Math.log(Math.abs(1 / (row[i] || 1e-10))), 0);
+    return -0.5 * ytKinvY - 0.5 * logDetK - 0.5 * n * Math.log(2 * Math.PI);
+  }
+
+  /**
+   * Оптимизация гиперпараметров через grid search.
+   */
+  optimizeHyperparams(candidates = null) {
+    const c = candidates || {
+      sigmaF: [0.5, 1, 2],
+      lengthScale: [0.5, 1, 2, 5],
+      sigmaN: [0.01, 0.05, 0.1, 0.3],
+    };
+
+    const savedSigmaF = this.sigmaF;
+    const savedLS = this.lengthScale;
+    const savedSN = this.sigmaN;
+
+    let best = { lml: -Infinity, sigmaF: savedSigmaF, lengthScale: savedLS, sigmaN: savedSN };
+
+    for (const sf of c.sigmaF) {
+      for (const ls of c.lengthScale) {
+        for (const sn of c.sigmaN) {
+          this.sigmaF = sf;
+          this.lengthScale = ls;
+          this.sigmaN = sn;
+          this.fit(this.X, this.y);
+          const lml = this.logMarginalLikelihood();
+          if (lml > best.lml) {
+            best = { lml, sigmaF: sf, lengthScale: ls, sigmaN: sn };
+          }
+        }
+      }
+    }
+
+    this.sigmaF = best.sigmaF;
+    this.lengthScale = best.lengthScale;
+    this.sigmaN = best.sigmaN;
+    this.fit(this.X, this.y);
+
+    return best;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 3. ACQUISITION FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Expected Improvement (Mockus, 1978).
+ * EI(x) = E[max(0, f_best - f(x))]
+ *       = (f_best - μ - ξ) · Φ(Z) + σ · φ(Z)
+ * где Z = (f_best - μ - ξ) / σ
+ */
+function expectedImprovement(mu, sigma, fBest, xi = 0.01) {
+  if (sigma <= 1e-10) return Math.max(0, fBest - mu - xi);
+  const z = (fBest - mu - xi) / sigma;
+  return (fBest - mu - xi) * normalCDF(z) + sigma * normalPDF(z);
+}
+
+/**
+ * Upper Confidence Bound (Srinivas et al., 2010).
+ * UCB(x) = μ(x) + κ · σ(x)
+ * Для минимизации: минимизируем μ - κ·σ
+ */
+function upperConfidenceBound(mu, sigma, kappa = 2.576) {
+  return mu + kappa * sigma;
+}
+
+/**
+ * Probability of Improvement (Kushner, 1964).
+ * PI(x) = Φ((f_best - μ - ξ) / σ)
+ */
+function probabilityImprovement(mu, sigma, fBest, xi = 0.01) {
+  if (sigma <= 1e-10) return mu < fBest ? 1 : 0;
+  const z = (fBest - mu - xi) / sigma;
+  return normalCDF(z);
+}
+
+/**
+ * Реестр acquisition functions.
+ */
+const ACQUISITION = {
+  ei: expectedImprovement,
+  ucb: upperConfidenceBound,
+  pi: probabilityImprovement,
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// Продолжение следует в части B:
+//   - BayesianOptimizer (поиск минимума)
+//   - Random search, grid search, Hyperband
+//   - AutoML класс
+//   - crucixAutoML() интеграция с Crucix
+//   - экспорт
+// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
+// 4. BAYESIAN OPTIMIZER
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Bayesian Optimizer для минимизации чёрного ящика.
+ *
+ * Алгоритм:
+ *   1. Начальные точки — random sampling
+ *   2. Построение GP на текущих точках
+ *   3. Выбор следующей точки через acquisition function
+ *   4. Обновление GP с новой точкой
+ *   5. Повтор до maxIterations или tolerance
+ */
+class BayesianOptimizer {
+  constructor(config = {}) {
+    this.bounds = config.bounds || [[0, 1]];
+    this.nInitial = config.nInitial || 5;
+    this.nIterations = config.nIterations || 30;
+    this.acquisitionName = config.acquisition || 'ei';
+    this.xi = config.xi ?? 0.01;
+    this.kappa = config.kappa ?? 2.576;
+    this.nCandidates = config.nCandidates || 500;
+    this.gpConfig = config.gpConfig || {};
+    this.seed = config.seed;
+
+    this.X = [];
+    this.y = [];
+    this.history = [];
+  }
+
+  /**
+   * Случайная точка внутри bounds.
+   */
+  _randomPoint() {
+    return this.bounds.map(([lo, hi]) => lo + Math.random() * (hi - lo));
+  }
+
+  /**
+   * Оптимизация.
+   */
+  optimize(f, options = {}) {
+    const verbose = options.verbose ?? false;
+    const dim = this.bounds.length;
+
+    // Фаза 1: начальные точки (random)
+    for (let i = 0; i < this.nInitial; i++) {
+      const x = this._randomPoint();
+      const y = f(x);
+      this.X.push(x);
+      this.y.push(y);
+      this.history.push({ iteration: i, x: [...x], y, phase: 'initial' });
+    }
+
+    let bestIdx = this.y.indexOf(Math.min(...this.y));
+    let bestX = [...this.X[bestIdx]];
+    let bestY = this.y[bestIdx];
+
+    // Фаза 2: BO-итерации
+    for (let iter = 0; iter < this.nIterations; iter++) {
+      // Строим GP
+      const gp = new GaussianProcess(this.gpConfig);
+      gp.fit(this.X, this.y);
+
+      // Генерируем кандидатов
+      const candidates = [];
+      for (let i = 0; i < this.nCandidates; i++) {
+        candidates.push(this._randomPoint());
+      }
+
+      // Оценка acquisition
+      const predictions = gp.predict(candidates);
+      const acq = this.acquisitionName;
+      const acqFn = ACQUISITION[acq] || expectedImprovement;
+
+      let bestAcqIdx = 0;
+      let bestAcqVal = -Infinity;
+      for (let i = 0; i < candidates.length; i++) {
+        const { mean: mu, variance } = predictions[i];
+        const sigma = Math.sqrt(variance);
+
+        let acqVal;
+        if (acq === 'ucb') {
+          // Для минимизации: -μ + κ·σ (выше = лучше)
+          acqVal = -mu + this.kappa * sigma;
+        } else {
+          acqVal = acqFn(mu, sigma, bestY, this.xi);
+        }
+
+        if (acqVal > bestAcqVal) {
+          bestAcqVal = acqVal;
+          bestAcqIdx = i;
+        }
+      }
+
+      // Новая точка
+      const xNew = candidates[bestAcqIdx];
+      const yNew = f(xNew);
+
+      this.X.push(xNew);
+      this.y.push(yNew);
+      this.history.push({ iteration: this.nInitial + iter, x: [...xNew], y: yNew, phase: 'bo', acqValue: bestAcqVal });
+
+      if (yNew < bestY) {
+        bestY = yNew;
+        bestX = [...xNew];
+      }
+
+      if (verbose) {
+        console.log(`[BO] iter ${iter + 1}: y=${yNew.toFixed(4)}, best=${bestY.toFixed(4)}`);
+      }
+    }
+
+    return {
+      bestX,
+      bestY,
+      history: this.history,
+      nEvaluations: this.X.length,
+    };
+  }
+
+  /**
+   * Get best point.
+   */
+  getBest() {
+    if (this.y.length === 0) return null;
+    const idx = this.y.indexOf(Math.min(...this.y));
+    return { x: this.X[idx], y: this.y[idx] };
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 5. SEARCH STRATEGIES (Baselines + Hyperband)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Grid search: перебор всех комбинаций.
+ */
+function gridSearch(f, paramGrid) {
+  const keys = Object.keys(paramGrid);
+  const values = keys.map(k => paramGrid[k]);
+
+  const combinations = values.reduce((acc, vals) => {
+    const newAcc = [];
+    for (const combo of acc) {
+      for (const v of vals) newAcc.push([...combo, v]);
+    }
+    return newAcc;
+  }, [[]]);
+
+  let best = { y: Infinity, params: null };
+  const history = [];
+
+  for (const combo of combinations) {
+    const params = {};
+    keys.forEach((k, i) => { params[k] = combo[i]; });
+    const y = f(params);
+    history.push({ params: { ...params }, y });
+    if (y < best.y) best = { y, params };
+  }
+
+  return { best, history, nEvaluations: combinations.length };
+}
+
+/**
+ * Random search: N случайных точек.
+ */
+function randomSearch(f, bounds, nTrials = 50) {
+  let best = { y: Infinity, x: null };
+  const history = [];
+
+  for (let i = 0; i < nTrials; i++) {
+    const x = bounds.map(([lo, hi]) => lo + Math.random() * (hi - lo));
+    const y = f(x);
+    history.push({ x: [...x], y });
+    if (y < best.y) best = { y, x: [...x] };
+  }
+
+  return { best, history, nEvaluations: nTrials };
+}
+
+/**
+ * Hyperband (Li et al., 2018) — упрощённая версия.
+ * Successive halving: отбрасываем худшие конфигурации на каждом этапе.
+ *
+ * @param {Function} f — (params, budget) => loss
+ * @param {Object} paramSpace — { paramName: [values] }
+ * @param {Object} config — { maxBudget, eta, minBudget }
+ */
+function hyperband(f, paramSpace, config = {}) {
+  const maxBudget = config.maxBudget || 81;
+  const eta = config.eta || 3;
+  const minBudget = config.minBudget || 1;
+
+  const sMax = Math.floor(Math.log(maxBudget / minBudget) / Math.log(eta));
+  const results = [];
+
+  for (let s = sMax; s >= 0; s--) {
+    const n = Math.ceil((sMax + 1) / (s + 1) * eta ** s);
+    const r = maxBudget * eta ** (-s);
+
+    // Инициализация случайных конфигураций
+    let configs = [];
+    for (let i = 0; i < n; i++) {
+      const params = {};
+      for (const [key, values] of Object.entries(paramSpace)) {
+        params[key] = values[Math.floor(Math.random() * values.length)];
+      }
+      configs.push({ params, loss: null });
+    }
+
+    // Successive halving
+    let budget = r;
+    while (configs.length > 1) {
+      for (const c of configs) {
+        c.loss = f(c.params, Math.max(minBudget, Math.floor(budget)));
+      }
+      configs.sort((a, b) => a.loss - b.loss);
+      const keep = Math.max(1, Math.floor(configs.length / eta));
+      configs = configs.slice(0, keep);
+      budget *= eta;
+    }
+
+    // Финальная оценка
+    if (configs.length === 1) {
+      const c = configs[0];
+      c.loss = f(c.params, maxBudget);
+      results.push({ s, params: c.params, loss: c.loss });
+    }
+  }
+
+  results.sort((a, b) => a.loss - b.loss);
+  return {
+    best: { params: results[0]?.params, y: results[0]?.loss },
+    allResults: results,
+    nBrackets: sMax + 1,
+  };
+}
+
+/**
+ * Successive halving — простой baseline.
+ */
+function successiveHalving(f, paramSpace, config = {}) {
+  const maxBudget = config.maxBudget || 81;
+  const eta = config.eta || 3;
+  const minBudget = config.minBudget || 1;
+
+  let n = config.nConfigs || 27;
+  let budget = minBudget;
+  let configs = [];
+  for (let i = 0; i < n; i++) {
+    const params = {};
+    for (const [key, values] of Object.entries(paramSpace)) {
+      params[key] = values[Math.floor(Math.random() * values.length)];
+    }
+    configs.push({ params, loss: null });
+  }
+
+  while (configs.length > 1 && budget <= maxBudget) {
+    for (const c of configs) {
+      c.loss = f(c.params, budget);
+    }
+    configs.sort((a, b) => a.loss - b.loss);
+    const keep = Math.max(1, Math.floor(configs.length / eta));
+    configs = configs.slice(0, keep);
+    budget *= eta;
+  }
+
+  return {
+    best: { params: configs[0]?.params, y: configs[0]?.loss },
+    nEvaluations: n,
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 6. AUTOML — автоматический выбор модели
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * AutoML: автоматический выбор модели + гиперпараметров.
+ * Работает с заданной пользователем моделью (modelFactory),
+ * перебирает гиперпараметры через Bayesian Optimization,
+ * возвращает лучшую конфигурацию.
+ *
+ * @param {Object} config
+ * @param {Function} config.modelFactory — (params) => model с .fit(X, y) и .predict(X)
+ * @param {Array} config.X — обучающие признаки
+ * @param {Array} config.y — целевые значения
+ * @param {Object} config.paramSpace — { paramName: { type: 'continuous'|'discrete', bounds or values } }
+ * @param {Object} config.options — { nInitial, nIterations, cvFolds, metric }
+ */
+class AutoML {
+  constructor(config = {}) {
+    this.modelFactory = config.modelFactory;
+    this.X = config.X || [];
+    this.y = config.y || [];
+    this.paramSpace = config.paramSpace || {};
+    this.options = config.options || {};
+    this.cvFolds = this.options.cvFolds || 3;
+    this.metric = this.options.metric || 'mse';
+
+    this.bestModel = null;
+    this.bestParams = null;
+    this.bestScore = Infinity;
+    this.history = [];
+
+    // Bounds для BO
+    this._bounds = this._paramSpaceToBounds();
+  }
+
+  _paramSpaceToBounds() {
+    const bounds = [];
+    for (const [key, spec] of Object.entries(this.paramSpace)) {
+      if (spec.type === 'continuous') bounds.push(spec.bounds);
+      else if (spec.type === 'discrete') bounds.push([0, spec.values.length - 1]);
+    }
+    return bounds;
+  }
+
+  _decodeParams(x) {
+    const params = {};
+    let i = 0;
+    for (const [key, spec] of Object.entries(this.paramSpace)) {
+      if (spec.type === 'continuous') {
+        params[key] = x[i];
+      } else if (spec.type === 'discrete') {
+        const idx = Math.round(x[i]);
+        params[key] = spec.values[Math.max(0, Math.min(spec.values.length - 1, idx))];
+      }
+      i++;
+    }
+    return params;
+  }
+
+  /**
+   * K-fold CV: обучение + оценка.
+   */
+  _crossValidate(params) {
+    const X = this.X;
+    const y = this.y;
+    const n = X.length;
+    if (n < this.cvFolds * 2) return Infinity;
+
+    // Shuffle indices
+    const indices = Array.from({ length: n }, (_, i) => i);
+    for (let i = n - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [indices[i], indices[j]] = [indices[j], indices[i]];
+    }
+
+    const foldSize = Math.floor(n / this.cvFolds);
+    const scores = [];
+
+    for (let f = 0; f < this.cvFolds; f++) {
+      const valStart = f * foldSize;
+      const valEnd = f === this.cvFolds - 1 ? n : valStart + foldSize;
+      const valIdx = new Set(indices.slice(valStart, valEnd));
+      const trainIdx = indices.filter(i => !valIdx.has(i));
+
+      const XTrain = trainIdx.map(i => X[i]);
+      const yTrain = trainIdx.map(i => y[i]);
+      const XVal = Array.from(valIdx).map(i => X[i]);
+      const yVal = Array.from(valIdx).map(i => y[i]);
+
+      try {
+        const model = this.modelFactory(params);
+        model.fit(XTrain, yTrain);
+        const preds = model.predict(XVal);
+
+        // Вычисление метрики
+        let sumSq = 0;
+        let sumAbs = 0;
+        let correct = 0;
+        for (let i = 0; i < preds.length; i++) {
+          const pred = Array.isArray(preds[i]) ? preds[i][0] : preds[i];
+          const target = Array.isArray(yVal[i]) ? yVal[i][0] : yVal[i];
+          sumSq += (pred - target) ** 2;
+          sumAbs += Math.abs(pred - target);
+          if (Math.abs(pred - target) < 0.1) correct++;
+        }
+
+        let score;
+        if (this.metric === 'mse') score = sumSq / preds.length;
+        else if (this.metric === 'mae') score = sumAbs / preds.length;
+        else if (this.metric === 'accuracy') score = 1 - correct / preds.length;
+        else score = sumSq / preds.length;
+
+        scores.push(score);
+      } catch (e) {
+        scores.push(Infinity);
+      }
+    }
+
+    const validScores = scores.filter(s => s < Infinity);
+    if (validScores.length === 0) return Infinity;
+    return mean(validScores);
+  }
+
+  /**
+   * Оптимизация гиперпараметров через Bayesian Optimization.
+   */
+  optimize(options = {}) {
+    if (this._bounds.length === 0) {
+      throw new Error('Empty parameter space');
+    }
+
+    const bo = new BayesianOptimizer({
+      bounds: this._bounds,
+      nInitial: options.nInitial || 5,
+      nIterations: options.nIterations || 20,
+      acquisition: options.acquisition || 'ei',
+      xi: options.xi ?? 0.01,
+      kappa: options.kappa ?? 2.576,
+    });
+
+    const objective = (x) => {
+      const params = this._decodeParams(x);
+      const score = this._crossValidate(params);
+      this.history.push({ params: { ...params }, score });
+      return score;
+    };
+
+    const result = bo.optimize(objective, { verbose: options.verbose });
+
+    // Лучшая конфигурация
+    this.bestParams = this._decodeParams(result.bestX);
+    this.bestScore = result.bestY;
+
+    // Обучение финальной модели на всех данных
+    try {
+      this.bestModel = this.modelFactory(this.bestParams);
+      this.bestModel.fit(this.X, this.y);
+    } catch (e) {
+      this.bestModel = null;
+    }
+
+    return {
+      bestParams: this.bestParams,
+      bestScore: this.bestScore,
+      nEvaluations: result.nEvaluations,
+      history: this.history,
+    };
+  }
+
+  /**
+   * Предсказание через лучшую модель.
+   */
+  predict(X) {
+    if (!this.bestModel) throw new Error('No trained model');
+    return this.bestModel.predict(X);
+  }
+
+  /**
+   * Leaderboard: топ-N конфигураций по score.
+   */
+  leaderboard(topN = 10) {
+    const sorted = [...this.history].sort((a, b) => a.score - b.score);
+    return sorted.slice(0, topN).map((h, i) => ({
+      rank: i + 1,
+      params: h.params,
+      score: Math.round(h.score * 10000) / 10000,
+    }));
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 7. ИНТЕГРАЦИЯ С CRUCIX
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Извлечение данных из history для AutoML.
+ */
+function extractTrainingData(history) {
+  const X = [];
+  const y = [];
+
+  for (let i = 1; i < history.length - 1; i++) {
+    const h = history[i];
+    const next = history[i + 1];
+
+    const features = [
+      (h.fred?.vix ?? 20) / 50,
+      (h.fred?.hySpread ?? 3) / 10,
+      (h.gdelt?.conflictEvents?.length ?? 0) / 20,
+      (h.sanctions?.count ?? 0) / 10,
+      (h.energy?.oilPrice ?? 70) / 120,
+      (h.gold?.price ?? 1900) / 2200,
+      (h.dxy?.value ?? 100) / 110,
+      (h.delta?.newAlerts ?? 0) / 10,
+    ];
+
+    const target = (next.fred?.vix ?? 20) / 50;
+
+    X.push(features);
+    y.push([target]);
+  }
+
+  return { X, y };
+}
+
+/**
+ * Простая линейная модель для AutoML (как fallback).
+ */
+class LinearRegressor {
+  constructor(config = {}) {
+    this.lambda = config.lambda ?? 0.01;
+    this.weights = null;
+  }
+
+  fit(X, y) {
+    const n = X.length;
+    const d = X[0].length;
+    // Ridge regression через нормальное уравнение
+    const XtX = Array.from({ length: d }, () => new Array(d).fill(0));
+    const XtY = new Array(d).fill(0);
+
+    for (let i = 0; i < n; i++) {
+      const xi = X[i];
+      const yi = Array.isArray(y[i]) ? y[i][0] : y[i];
+      for (let j = 0; j < d; j++) {
+        for (let k = 0; k < d; k++) {
+          XtX[j][k] += xi[j] * xi[k];
+        }
+        XtY[j] += xi[j] * yi;
+      }
+    }
+    // + λI
+    for (let j = 0; j < d; j++) XtX[j][j] += this.lambda;
+
+    try {
+      const XtXInv = matInverse(XtX);
+      this.weights = XtXInv.map(row => row.reduce((sum, v, k) => sum + v * XtY[k], 0));
+    } catch (e) {
+      this.weights = new Array(d).fill(0);
+    }
+    return this;
+  }
+
+  predict(X) {
+    return X.map(x => {
+      const pred = x.reduce((s, xi, i) => s + xi * this.weights[i], 0);
+      return [pred];
+    });
+  }
+}
+
+/**
+ * Простая MLP для AutoML.
+ */
+class SimpleMLP {
+  constructor(config = {}) {
+    this.hiddenSize = config.hiddenSize || 16;
+    this.learningRate = config.learningRate || 0.01;
+    this.epochs = config.epochs || 50;
+    this.W1 = null;
+    this.b1 = null;
+    this.W2 = null;
+    this.b2 = null;
+  }
+
+  _init(inputDim) {
+    const h = this.hiddenSize;
+    this.W1 = Array.from({ length: inputDim }, () =>
+      Array.from({ length: h }, () => (Math.random() * 2 - 1) * Math.sqrt(2 / inputDim))
+    );
+    this.b1 = new Array(h).fill(0);
+    this.W2 = Array.from({ length: h }, () =>
+      Array.from({ length: 1 }, () => (Math.random() * 2 - 1) * Math.sqrt(2 / h))
+    );
+    this.b2 = new Array(1).fill(0);
+  }
+
+  _forward(x) {
+    const z1 = new Array(this.hiddenSize).fill(0);
+    for (let j = 0; j < this.hiddenSize; j++) {
+      for (let i = 0; i < x.length; i++) z1[j] += x[i] * this.W1[i][j];
+      z1[j] += this.b1[j];
+    }
+    const h = z1.map(v => Math.max(0, v));
+    let out = this.b2[0];
+    for (let j = 0; j < this.hiddenSize; j++) out += h[j] * this.W2[j][0];
+    return { h, out };
+  }
+
+  fit(X, y) {
+    const n = X.length;
+    const inputDim = X[0].length;
+    if (!this.W1 || this.W1.length !== inputDim) this._init(inputDim);
+
+    for (let epoch = 0; epoch < this.epochs; epoch++) {
+      for (let i = 0; i < n; i++) {
+        const { h, out } = this._forward(X[i]);
+        const yi = Array.isArray(y[i]) ? y[i][0] : y[i];
+        const err = out - yi;
+
+        // Backprop
+        for (let j = 0; j < this.hiddenSize; j++) {
+          this.W2[j][0] -= this.learningRate * err * h[j];
+        }
+        this.b2[0] -= this.learningRate * err;
+
+        for (let k = 0; k < inputDim; k++) {
+          for (let j = 0; j < this.hiddenSize; j++) {
+            if (h[j] > 0) {
+              this.W1[k][j] -= this.learningRate * err * this.W2[j][0] * X[i][k];
+            }
+          }
+        }
+        for (let j = 0; j < this.hiddenSize; j++) {
+          if (h[j] > 0) this.b1[j] -= this.learningRate * err * this.W2[j][0];
+        }
+      }
+    }
+    return this;
+  }
+
+  predict(X) {
+    return X.map(x => [this._forward(x).out]);
+  }
+}
+
+/**
+ * Полный AutoML-цикл для Crucix.
+ *
+ * @param {Array} history — массив sweep-объектов
+ * @param {Object} options — параметры
+ * @returns {Object} — агрегированный результат
+ */
+export function crucixAutoML(history, options = {}) {
+  if (!history || history.length < 30) {
+    return {
+      module: 'automl',
+      available: false,
+      reason: 'insufficient_history',
+      minimumRequired: 30,
+      actual: history.length,
+    };
+  }
+
+  const t0 = Date.now();
+  console.log(`[automl] Запуск на ${history.length} sweep'ах`);
+
+  const result = {
+    module: 'automl',
+    available: true,
+    timestamp: new Date().toISOString(),
+    nSweeps: history.length,
+  };
+
+  const { X, y } = extractTrainingData(history);
+  if (X.length < 20) {
+    result.error = 'not enough training samples';
+    result.elapsedMs = Date.now() - t0;
+    return result;
+  }
+
+  // Задача: предсказание VIX. Пробуем два класса моделей.
+  const models = [];
+
+  // 1. Linear Regressor
+  try {
+    const linearAutoml = new AutoML({
+      modelFactory: (params) => new LinearRegressor(params),
+      X, y,
+      paramSpace: {
+        lambda: { type: 'continuous', bounds: [0.001, 1.0] },
+      },
+      options: { cvFolds: 3, metric: 'mse' },
+    });
+    const linearResult = linearAutoml.optimize({ nInitial: 3, nIterations: 8 });
+    models.push({
+      name: 'linear',
+      bestParams: linearResult.bestParams,
+      bestScore: linearResult.bestScore,
+      leaderboard: linearAutoml.leaderboard(5),
+    });
+  } catch (e) {
+    models.push({ name: 'linear', error: e.message });
+  }
+
+  // 2. Simple MLP
+  try {
+    const mlpAutoml = new AutoML({
+      modelFactory: (params) => new SimpleMLP(params),
+      X, y,
+      paramSpace: {
+        hiddenSize: { type: 'discrete', values: [8, 16, 32] },
+        learningRate: { type: 'continuous', bounds: [0.001, 0.05] },
+        epochs: { type: 'discrete', values: [30, 50, 100] },
+      },
+      options: { cvFolds: 3, metric: 'mse' },
+    });
+    const mlpResult = mlpAutoml.optimize({ nInitial: 4, nIterations: 10 });
+    models.push({
+      name: 'mlp',
+      bestParams: mlpResult.bestParams,
+      bestScore: mlpResult.bestScore,
+      leaderboard: mlpAutoml.leaderboard(5),
+    });
+  } catch (e) {
+    models.push({ name: 'mlp', error: e.message });
+  }
+
+  // Выбор лучшей модели
+  const validModels = models.filter(m => !m.error && m.bestScore < Infinity);
+  validModels.sort((a, b) => a.bestScore - b.bestScore);
+
+  result.models = models;
+  result.bestModel = validModels[0]?.name || null;
+  result.bestScore = validModels[0]?.bestScore || null;
+  result.bestParams = validModels[0]?.bestParams || null;
+
+  // Leaderboard по всем моделям
+  const allLeaderboard = [];
+  for (const m of validModels) {
+    for (const entry of (m.leaderboard || [])) {
+      allLeaderboard.push({ model: m.name, ...entry });
+    }
+  }
+  allLeaderboard.sort((a, b) => a.score - b.score);
+  result.leaderboard = allLeaderboard.slice(0, 10);
+
+  // Быстрый baseline: random search
+  const randomBaseline = randomSearch(
+    (params) => {
+      try {
+        const model = new LinearRegressor(params);
+        // Простая оценка на последних 20% данных
+        const split = Math.floor(X.length * 0.8);
+        const XTrain = X.slice(0, split);
+        const yTrain = y.slice(0, split);
+        const XVal = X.slice(split);
+        const yVal = y.slice(split);
+        model.fit(XTrain, yTrain);
+        const preds = model.predict(XVal);
+        let sumSq = 0;
+        for (let i = 0; i < preds.length; i++) {
+          sumSq += (preds[i][0] - yVal[i][0]) ** 2;
+        }
+        return sumSq / preds.length;
+      } catch {
+        return Infinity;
+      }
+    },
+    [[0.001, 1.0]],
+    15
+  );
+
+  result.randomBaseline = {
+    bestScore: randomBaseline.best.y,
+    improvement: result.bestScore !== null
+      ? Math.round((randomBaseline.best.y - result.bestScore) / randomBaseline.best.y * 1000) / 10
+      : null,
+  };
+
+  result.elapsedMs = Date.now() - t0;
+  result.interpretation = result.bestModel
+    ? `Лучшая модель: ${result.bestModel} (CV MSE=${result.bestScore.toFixed(4)}). Улучшение над random baseline: ${result.randomBaseline.improvement}%`
+    : 'Не удалось обучить ни одну модель';
+
+  // Сохранение
+  const dir = join(__dirname, '..', '..', 'runs', 'predictions');
+  ensureDir(dir);
+  saveJSON(join(dir, 'automl.json'), result);
+
+  console.log(`[automl] Цикл завершён за ${result.elapsedMs}ms`);
+  return result;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 8. ЭКСПОРТ
+// ═══════════════════════════════════════════════════════════════════
+
+export {
+  GaussianProcess,
+  BayesianOptimizer,
+  AutoML,
+  LinearRegressor,
+  SimpleMLP,
+  rbfKernel,
+  matern32Kernel,
+  matern52Kernel,
+  expectedImprovement,
+  upperConfidenceBound,
+  probabilityImprovement,
+  gridSearch,
+  randomSearch,
+  hyperband,
+  successiveHalving,
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+========================================================================

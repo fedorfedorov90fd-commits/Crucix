@@ -1,0 +1,53 @@
+============================================================
+DAILY BRIEFING — AI-POWERED DAILY SUMMARY
+============================================================
+Version: 1.0.0
+Port: 3160
+Status: ✅ RUNNING
+
+DESCRIPTION
+-----------
+Automatic generation of daily AI summaries based on Crucix basket data.
+Uses Ollama to create structured briefings highlighting key events,
+economic trends, and geopolitical risks.
+
+FEATURES
+--------
+- Data collection from basket (latest 50 records)
+- Structured briefing generation via Ollama
+- Sections: key events, economy, risks, conclusions
+- Concise format (up to 500 words)
+
+API ENDPOINTS
+-------------
+GET    /briefing/latest          - Latest briefing
+POST   /briefing/generate        - Generate briefing
+
+EXAMPLES
+--------
+# Get latest briefing
+curl http://localhost:3160/briefing/latest
+
+# Generate new briefing
+curl -X POST http://localhost:3160/briefing/generate \
+  -H "Content-Type: application/json" \
+  -d '{"topics": ["geopolitics", "economy"]}'
+
+BRIEFING STRUCTURE
+------------------
+1. KEY EVENTS (3-5 main)
+2. ECONOMIC OVERVIEW
+3. GEOPOLITICAL RISKS
+4. CONCLUSIONS AND RECOMMENDATIONS
+
+DEPENDENCIES
+------------
+- Node.js v22+
+- Ollama (model: llama3.2 or deepseek-r1)
+
+INSTALLATION
+------------
+cd /home/ta8_/Рабочий стол/Crucix/crucix-extensions/daily-briefing
+npm install
+node index.mjs
+============================================================

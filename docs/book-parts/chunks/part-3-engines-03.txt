@@ -1,0 +1,561 @@
+===== ЧАСТЬ part-3-engines · КУСОК 03/06 · 18.0 KB =====
+
+FILE: apis/predict/engine_coordinat.mjs
+SIZE: 18221 bytes
+SHA1: 62c48eca5a7e42e3
+========================================================================
+
+// apis/predict/engine_coordinat.mjs
+// Оркестратор прогностических модулей Crucix
+// Координация: загрузка данных -> параллельный запуск -> ансамблирование -> публикация
+// engine_coordinat не знает о транспорте (WASM/WebGL/WS) — только о модулях и данных.
+// Версия: 1.0.0
+
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const ENGINE_VERSION = '1.0.0';
+
+// =======================================================
+// СЕКЦИЯ 1: КОНСТАНТЫ, ПРОФИЛИ, УТИЛИТЫ
+// =======================================================
+
+// --- ПРОФИЛИ ЗАПУСКА ---
+// minimal  — офлайн, 7B, без интернета (~30 сек)
+// balanced — локальный сервер с интернетом (~2 мин)
+// full     — облако/кластер, максимум глубины (~10 мин)
+
+const PROFILES = {
+  minimal: {
+    name: 'minimal',
+    description: 'Офлайн, 7B, без интернета',
+    expectedTimeMs: 30_000,
+    modules: {
+      reflexive:      { enabled: true },
+      regime_shift:   { enabled: true },
+      explainability: { enabled: true },
+    },
+  },
+  balanced: {
+    name: 'balanced',
+    description: 'Локальный сервер с интернетом',
+    expectedTimeMs: 120_000,
+    modules: {
+      reflexive:          { enabled: true },
+      regime_shift:       { enabled: true },
+      explainability:     { enabled: true },
+      causal:             { enabled: true },
+      gametheory:         { enabled: true },
+      active_learning:    { enabled: true },
+      entity_graph:       { enabled: true },
+      prediction_markets: { enabled: true },
+      multilang:          { enabled: true },
+    },
+  },
+  full: {
+    name: 'full',
+    description: 'Облако/кластер, максимум глубины',
+    expectedTimeMs: 600_000,
+    modules: {
+      reflexive:          { enabled: true },
+      regime_shift:       { enabled: true },
+      explainability:     { enabled: true },
+      causal:             { enabled: true },
+      gametheory:         { enabled: true },
+      active_learning:    { enabled: true },
+      entity_graph:       { enabled: true },
+      prediction_markets: { enabled: true },
+      multilang:          { enabled: true },
+      swarm:              { enabled: true, agentCount: 500 },
+      narrative:          { enabled: true },
+      satellite:          { enabled: true },
+    },
+  },
+};
+
+// --- БАЗОВЫЕ ВЕСА АНСАМБЛЯ ---
+// reflexive — корректирующий, применяется поверх ансамбля как поправка.
+
+const BASE_WEIGHTS = {
+  swarm:        0.15,
+  causal:       0.25,
+  gametheory:   0.20,
+  narrative:    0.15,
+  regime_shift: 0.15,
+  reflexive:    0.10,
+};
+
+// Общее число модулей ансамбля — для расчёта coverage penalty.
+const TOTAL_ENSEMBLE_MODULES = Object.keys(BASE_WEIGHTS).length;
+
+// --- УТИЛИТЫ ---
+
+function hashData(data) {
+  // Защита от BigInt и circular reference: JSON.stringify может упасть.
+  // Fallback — хеш от timestamp+random, чтобы engine не крашился на битых данных.
+  try {
+    return createHash('sha256')
+      .update(JSON.stringify(data))
+      .digest('hex')
+      .slice(0, 16);
+  } catch {
+    return createHash('sha256')
+      .update(String(Date.now()) + String(Math.random()))
+      .digest('hex')
+      .slice(0, 16);
+  }
+}
+
+function timing() {
+  const start = process.hrtime.bigint();
+  return () => Number(process.hrtime.bigint() - start) / 1_000_000;
+}
+
+function safeJsonParse(text, fallback = null) {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return fallback;
+  }
+}
+
+// --- CIRCUIT BREAKER ---
+// Если модуль падает threshold раз подряд — circuit_open на cooldown запусков.
+// Защищает ансамбль от бесконечного падения одного источника.
+
+class CircuitBreaker {
+  constructor(threshold = 3, cooldown = 5) {
+    this.threshold = threshold;
+    this.cooldown = cooldown;
+    this.failures = new Map();
+  }
+
+  canRun(moduleName) {
+    const entry = this.failures.get(moduleName);
+    if (!entry) return true;
+    if (entry.circuitOpenUntil > 0) {
+      entry.circuitOpenUntil--;
+      return false;
+    }
+    return true;
+  }
+
+  recordFailure(moduleName) {
+    const entry = this.failures.get(moduleName) || { count: 0, circuitOpenUntil: 0 };
+    entry.count++;
+    if (entry.count >= this.threshold) {
+      entry.circuitOpenUntil = this.cooldown;
+      entry.count = 0;
+    }
+    this.failures.set(moduleName, entry);
+  }
+
+  recordSuccess(moduleName) {
+    this.failures.delete(moduleName);
+  }
+
+  getStatus(moduleName) {
+    const entry = this.failures.get(moduleName);
+    if (!entry) return { circuitOpen: false, failures: 0 };
+    return { circuitOpen: entry.circuitOpenUntil > 0, failures: entry.count };
+  }
+}
+
+// =======================================================
+// СЕКЦИЯ 2: КЛАСС FORECASTENGINE
+// =======================================================
+
+class ForecastEngine {
+  constructor(options = {}) {
+    this.version = ENGINE_VERSION;
+    this.dataPath = options.dataPath || join(__dirname, '..', '..', 'data', 'basket');
+    this.outputPath = options.outputPath || join(__dirname, '..', '..', 'runs', 'predictions');
+    this.publishFn = typeof options.publishFn === 'function' ? options.publishFn : () => {};
+    this.breaker = new CircuitBreaker(
+      options.circuitThreshold || 3,
+      options.circuitCooldown || 5,
+    );
+    this.modules = new Map();
+    this.lastWeights = { ...BASE_WEIGHTS };
+  }
+
+  // --- РЕГИСТРАЦИЯ МОДУЛЯ ---
+  // type: 'predictive' (даёт вероятность), 'source' (даёт данные), 'meta' (управляет)
+
+  register(name, fn, type = 'predictive') {
+    if (typeof fn !== 'function') {
+      throw new Error(`Module "${name}" must be a function, got ${typeof fn}`);
+    }
+    if (!['predictive', 'source', 'meta'].includes(type)) {
+      throw new Error(`Module type must be predictive|source|meta, got "${type}"`);
+    }
+    this.modules.set(name, { fn, type });
+    return this;
+  }
+
+  unregister(name) {
+    this.modules.delete(name);
+    return this;
+  }
+
+  // --- ЗАГРУЗКА ДАННЫХ ИЗ КОРЗИНЫ ---
+  // Engine не ходит в сеть — только читает data/basket/latest.json
+
+  loadData() {
+    const latestPath = join(this.dataPath, 'latest.json');
+    const historyPath = join(this.dataPath, 'history.json');
+
+    if (!existsSync(latestPath)) {
+      throw new Error(`No latest data found at ${latestPath}. Run data sweep first.`);
+    }
+
+    const latest = safeJsonParse(readFileSync(latestPath, 'utf-8'), null);
+    if (!latest) {
+      throw new Error(`Failed to parse ${latestPath}`);
+    }
+
+    let history = [];
+    if (existsSync(historyPath)) {
+      history = safeJsonParse(readFileSync(historyPath, 'utf-8'), []) || [];
+    }
+
+    return { latest, history };
+  }
+
+  // --- ЗАПУСК ОДНОГО МОДУЛЯ С ЗАЩИТОЙ ---
+
+  async runModule(name, config, latest, history) {
+    if (!config || !config.enabled) {
+      return { name, ok: false, skipped: true, reason: 'disabled' };
+    }
+
+    if (!this.modules.has(name)) {
+      return { name, ok: false, skipped: true, reason: 'not_registered' };
+    }
+
+    if (!this.breaker.canRun(name)) {
+      return { name, ok: false, skipped: true, reason: 'circuit_open' };
+    }
+
+    const timer = timing();
+
+    try {
+      const mod = this.modules.get(name);
+      const result = await mod.fn(latest, history, config);
+      const elapsed = timer();
+      this.breaker.recordSuccess(name);
+      return { name, ok: true, result, elapsed_ms: elapsed };
+    } catch (err) {
+      const elapsed = timer();
+      this.breaker.recordFailure(name);
+      return { name, ok: false, error: err.message, elapsed_ms: elapsed };
+    }
+  }
+
+  // --- АНСАМБЛИРОВАНИЕ ---
+
+  ensemble(moduleResults) {
+    const predictions = [];
+
+    for (const [name, res] of Object.entries(moduleResults)) {
+      if (!res.ok || res.skipped) continue;
+      const mod = this.modules.get(name);
+      if (!mod || mod.type !== 'predictive') continue;
+      if (res.result == null) continue;
+
+      const prob = res.result.probability;
+      if (typeof prob !== 'number' || isNaN(prob)) continue;
+
+      predictions.push({
+        name,
+        probability: prob,
+        confidence: typeof res.result.confidence === 'number' ? res.result.confidence : 0.5,
+        weight: this.lastWeights[name] || 0,
+      });
+    }
+
+    if (predictions.length === 0) {
+      return {
+        probability: 0.5,
+        confidence: 0,
+        weights: {},
+        calibration: { brier_score: null, reliability_curve_points: [], coverage_penalty: 0 },
+      };
+    }
+
+    // Динамическая корректировка весов:
+    // 1) regime_shift severity=high -> консервативный сдвиг (* 0.8)
+    // 2) active_learning рекомендует модуль -> +10% к весу
+
+    const regime = moduleResults.regime_shift;
+    const regimeHigh = regime?.ok && regime.result?.severity === 'high';
+
+    const al = moduleResults.active_learning;
+    const alRecommended = al?.ok && al.result?.recommendedModule;
+
+    let totalWeight = 0;
+    let weightedProb = 0;
+    let weightedConf = 0;
+    const finalWeights = {};
+
+    for (const pred of predictions) {
+      let w = pred.weight;
+
+      if (regimeHigh) w *= 0.8;
+      if (alRecommended === pred.name) w *= 1.1;
+
+      finalWeights[pred.name] = w;
+      totalWeight += w;
+      weightedProb += pred.probability * w;
+      weightedConf += pred.confidence * w;
+    }
+
+    if (totalWeight === 0) {
+      return {
+        probability: 0.5,
+        confidence: 0,
+        weights: finalWeights,
+        calibration: { brier_score: null, reliability_curve_points: [], coverage_penalty: 0 },
+      };
+    }
+
+    // Нормализация весов до 1.0
+    for (const k of Object.keys(finalWeights)) {
+      finalWeights[k] = finalWeights[k] / totalWeight;
+    }
+
+    const ensembleProb = weightedProb / totalWeight;
+
+    // COVERAGE PENALTY: чем меньше модулей участвует — тем ниже честная confidence.
+    // Это предотвращает искусственно завышенную уверенность в minimal-профиле,
+    // где активны только reflexive + regime_shift (2 из 6 ансамблевых модулей).
+    const coveragePenalty = predictions.length / TOTAL_ENSEMBLE_MODULES;
+    const ensembleConf = (weightedConf / totalWeight) * coveragePenalty;
+
+    return {
+      probability: ensembleProb,
+      confidence: ensembleConf,
+      weights: finalWeights,
+      calibration: {
+        brier_score: null,
+        reliability_curve_points: [],
+        coverage_penalty: coveragePenalty,
+      },
+    };
+  }
+
+  // --- ПОЛНЫЙ ЗАПУСК ---
+
+  async run(options = {}) {
+    const profileName = options.profile || 'balanced';
+    const profile = PROFILES[profileName];
+    if (!profile) {
+      throw new Error(`Unknown profile "${profileName}". Available: ${Object.keys(PROFILES).join(', ')}`);
+    }
+
+    const presetId = options.presetId || 'default';
+    const mapId = options.mapId || 'global_map_1';
+
+    // Слияние профиля с ручными переопределениями
+    const moduleConfigs = {};
+    for (const [name, config] of Object.entries(profile.modules)) {
+      moduleConfigs[name] = { ...config };
+      if (options.modules && options.modules[name]) {
+        moduleConfigs[name] = { ...moduleConfigs[name], ...options.modules[name] };
+      }
+    }
+
+    // Загрузка данных
+    const { latest, history } = this.loadData();
+    const latestHash = hashData(latest);
+
+    const totalTimer = timing();
+    const failures = [];
+    const moduleMeta = {};
+
+    // Параллельный запуск через Promise.allSettled
+    const moduleNames = Object.keys(moduleConfigs);
+    const modulePromises = moduleNames.map(name =>
+      this.runModule(name, moduleConfigs[name], latest, history)
+    );
+    const results = await Promise.allSettled(modulePromises);
+
+    // Сбор результатов
+    const moduleResults = {};
+    for (let i = 0; i < results.length; i++) {
+      const name = moduleNames[i];
+      const settled = results[i];
+
+      if (settled.status === 'fulfilled') {
+        moduleResults[name] = settled.value;
+
+        if (settled.value.skipped) {
+          moduleMeta[name] = {
+            enabled: false,
+            reason: settled.value.reason || 'disabled',
+          };
+        } else if (settled.value.ok) {
+          moduleMeta[name] = {
+            enabled: true,
+            latency_ms: Math.round(settled.value.elapsed_ms || 0),
+          };
+        } else {
+          moduleMeta[name] = {
+            enabled: true,
+            error: true,
+            latency_ms: Math.round(settled.value.elapsed_ms || 0),
+          };
+          failures.push({ module: name, error: settled.value.error || 'unknown' });
+        }
+      } else {
+        moduleResults[name] = { name, ok: false, error: settled.reason?.message || 'rejected' };
+        moduleMeta[name] = { enabled: true, error: true };
+        failures.push({ module: name, error: settled.reason?.message || 'rejected' });
+      }
+    }
+
+    // Ансамблирование
+    const ensembleResult = this.ensemble(moduleResults);
+
+    // Рефлексивная коррекция — отдельным полем.
+    // ВАЖНО: reflexive.applyReflexiveCorrection возвращает { reflexiveProbability, ... }.
+    // Fallback на correctedProbability — на случай другого интерфейса модуля.
+    let reflexiveCorrection = {
+      applied: false,
+      before: ensembleResult.probability,
+      after: ensembleResult.probability,
+      magnitude: 0,
+    };
+
+    if (moduleResults.reflexive?.ok && moduleResults.reflexive.result) {
+      const before = ensembleResult.probability;
+      const reflex = moduleResults.reflexive.result;
+      const after = typeof reflex.reflexiveProbability === 'number'
+        ? reflex.reflexiveProbability
+        : (typeof reflex.correctedProbability === 'number' ? reflex.correctedProbability : before);
+      reflexiveCorrection = {
+        applied: true,
+        before,
+        after,
+        magnitude: Math.abs(after - before),
+      };
+      ensembleResult.probability = after;
+    }
+
+    // Объяснение
+    let explanation = { reasoning_steps: [], summary: '' };
+
+    if (moduleResults.explainability?.ok && moduleResults.explainability.result?.reasoning_steps) {
+      explanation = moduleResults.explainability.result;
+    } else {
+      const steps = [];
+      for (const [name, res] of Object.entries(moduleResults)) {
+        if (res.ok && res.result?.probability !== undefined) {
+          steps.push({
+            module: name,
+            signal: res.result.severity || res.result.signal || 'normal',
+            text: `${name}: вероятность ${(res.result.probability * 100).toFixed(1)}%`,
+            weight: ensembleResult.weights[name] || 0,
+          });
+        }
+      }
+      explanation = {
+        reasoning_steps: steps,
+        summary: `Ансамбль из ${steps.length} модулей. Итоговая вероятность ${(ensembleResult.probability * 100).toFixed(1)}%.`,
+      };
+    }
+
+    // Статистика графа сущностей
+    let graphStats = { nodes: 0, edges: 0, density: 0, top_entities: [] };
+    if (moduleResults.entity_graph?.ok && moduleResults.entity_graph.result?.stats) {
+      graphStats = moduleResults.entity_graph.result.stats;
+    }
+
+    const totalElapsed = Math.round(totalTimer());
+
+    // Сборка финального snapshot
+    const timestamp = new Date().toISOString();
+    const tsCompact = timestamp.replace(/[-:T.Z]/g, '').slice(0, 14);
+
+    const snapshot = {
+      id: `pred_${tsCompact}`,
+      timestamp,
+      engine_version: ENGINE_VERSION,
+      profile: profileName,
+      preset_id: presetId,
+      map_id: mapId,
+
+      source_sweep: {
+        type: latest?.source || 'unknown',
+        version: latest?.version || 'unknown',
+        count: Array.isArray(latest?.events) ? latest.events.length : 0,
+      },
+
+      latest_hash: latestHash,
+
+      modules: moduleMeta,
+
+      ensemble: ensembleResult,
+
+      reflexive_correction: reflexiveCorrection,
+
+      explanation,
+
+      graph: graphStats,
+
+      elapsed_ms: {
+        total: totalElapsed,
+        modules: Object.fromEntries(
+          Object.entries(moduleMeta)
+            .filter(([, v]) => typeof v.latency_ms === 'number')
+            .map(([k, v]) => [k, v.latency_ms]),
+        ),
+      },
+
+      failures,
+    };
+
+    // --- ПЕРСИСТЕНТНОСТЬ ---
+    if (!existsSync(this.outputPath)) {
+      mkdirSync(this.outputPath, { recursive: true });
+    }
+    const filename = `ensemble_${tsCompact}.json`;
+    writeFileSync(join(this.outputPath, filename), JSON.stringify(snapshot, null, 2));
+
+    // --- ПУБЛИКАЦИЯ ---
+    try {
+      this.publishFn('forecast', snapshot);
+    } catch (e) {
+      failures.push({ module: 'publish', error: e.message });
+    }
+
+    return snapshot;
+  }
+}
+
+// =======================================================
+// СЕКЦИЯ 3: ЭКСПОРТЫ + ФАБРИКА
+// =======================================================
+
+export function createForecastEngine(options) {
+  return new ForecastEngine(options);
+}
+
+export {
+  ForecastEngine,
+  PROFILES,
+  BASE_WEIGHTS,
+  TOTAL_ENSEMBLE_MODULES,
+  CircuitBreaker,
+  ENGINE_VERSION,
+  hashData,
+  timing,
+  safeJsonParse,
+};
+
+
+
+========================================================================

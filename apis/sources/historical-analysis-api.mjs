@@ -7,6 +7,21 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+export const route  = '/api/layers/historical-analysis';
+export const method = 'GET';
+
+export const meta = {
+  category: "other",
+  icon: "📊",
+  color: "#64748b",
+  vizType: "marker",
+  source: null,
+  collector: "collect-historical-analysis.mjs",
+  cache: 300,
+  description: "Слой historical-analysis",
+  unit: "records",
+};
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -273,7 +288,7 @@ function getMonthlyData(history) {
 /**
  * ГЛАВНЫЙ ОБРАБОТЧИК API
  */
-export async function handleHistoricalAnalysisAPI(req, res) {
+export async function handler(req, res) {
     const url = new URL(req.url, `http://${req.headers.host}`);
     const pathname = url.pathname;
 
@@ -283,8 +298,23 @@ export async function handleHistoricalAnalysisAPI(req, res) {
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
     if (req.method === 'OPTIONS') {
+        if (pathname === '/api/layers/historical-analysis') {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                type: 'FeatureCollection',
+                features: [],
+                metadata: { source: 'computed', count: 0, timestamp: new Date().toISOString() }
+            }));
+            return;
+        }
         res.writeHead(200);
         res.end();
+        return;
+    }
+
+    if (pathname === '/api/layers/historical-analysis') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ type: 'FeatureCollection', features: [], metadata: { source: 'computed', count: 0, timestamp: new Date().toISOString() } }));
         return;
     }
 
@@ -444,6 +474,3 @@ export async function handleHistoricalAnalysisAPI(req, res) {
 }
 
 // Экспорт для server.mjs
-export default {
-    handleHistoricalAnalysisAPI
-};

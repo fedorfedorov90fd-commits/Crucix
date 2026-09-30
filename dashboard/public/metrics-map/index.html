@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crucix — Metrics Map</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <!-- Локальный CSS -->
+    <link rel="stylesheet" href="css/metrics-map.css" />
+
+    <!-- Флаг карты — ПЕРВЫЙ скрипт -->
+    <script>window.CrucixMap = { mapType: 'metrics', name: 'Crucix — Metrics Map' };</script>
+</head>
+<body>
+
+    <!-- ===== ТОПБАР ===== -->
+    <header class="topbar">
+        <div class="topbar-left">
+            <span class="topbar-brand" id="brand-text">📊 CRUCIX METRICS</span>
+        </div>
+        <div class="topbar-right">
+            <div class="map-switcher">
+                <a class="map-switch-btn" data-map="events" href="../event-map/">Events</a>
+                <a class="map-switch-btn active" data-map="metrics" href="../metrics-map/">Metrics</a>
+                <a class="map-switch-btn" data-map="semantic" href="../semantic-map/">Semantic</a>
+                <a class="map-switch-btn" data-map="forecast" href="../forecast-map/">Forecast</a>
+                <a class="map-switch-btn" data-map="network" href="../network-map/">Network</a>
+            </div>
+            <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+            <button class="topbar-btn btn-copy" id="copy-btn" onclick="copyAllData()">📋 КОПИРОВАТЬ</button>
+            <button class="topbar-btn btn-rss" onclick="window.location.href='/registry'">📡 Список страниц</button>
+            <button class="topbar-btn btn-help" onclick="openHelp()">❓ HELP</button>
+            <button class="topbar-btn btn-heat" id="btn-heat" onclick="toggleHeat()">🌡️ Тепловая</button>
+            <button class="topbar-btn btn-timeline" id="btn-timeline" onclick="toggleTimeline()">📅 Хронология</button>
+            <button class="topbar-btn btn-pdf" onclick="exportPDF()">📄 PDF</button>
+            <div class="lang-switch">
+                <button class="lang-btn active" data-lang="ru" onclick="setLanguage('ru')">RU</button>
+                <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">EN</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ===== ПАНЕЛЬ СЛОЁВ ===== -->
+    <button class="panel-toggle-btn" id="panel-toggle-btn" onclick="toggleLayerPanel()">📋</button>
+
+    <div class="layer-panel" id="layer-panel">
+        <div class="layer-panel-header">
+            <div style="display:flex;gap:6px;margin-top:4px;width:100%;justify-content:space-between;">
+                <div>
+                    <button onclick="enableAllLayers()" style="background:rgba(91,192,248,0.12);border:1px solid rgba(91,192,248,0.2);color:#5bc0f8;border-radius:3px;padding:2px 8px;font-size:9px;cursor:pointer;">Включить все</button>
+                    <button onclick="disableAllLayers()" style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.2);color:#ef4444;border-radius:3px;padding:2px 8px;font-size:9px;cursor:pointer;">Выключить все</button>
+                </div>
+                <span id="active-layers-count" style="font-size:9px;color:#4a5a6a;align-self:center;">0 активных</span>
+            </div>
+            <span class="layer-panel-title" id="layers-title">🎯 СЛОИ <span class="count" id="layer-count">0</span></span>
+            <button class="layer-panel-toggle" onclick="toggleLayerPanel()">✕</button>
+        </div>
+        <input class="layer-search" id="layer-search" type="text" placeholder="🔍 Поиск слоёв..." oninput="filterLayers()">
+        <div id="layer-list"></div>
+    </div>
+
+    <!-- ===== КАРТА ===== -->
+    <div class="map-container" id="map-container">
+        <div id="map"></div>
+        <div class="loading-overlay" id="loading-overlay">
+            <div class="spinner"></div>
+            <div class="text" id="loading-text">ЗАГРУЗКА КАРТЫ...</div>
+        </div>
+
+        <div id="choropleth-legend"></div>
+
+        <div class="stats" id="stats">
+            <div class="count" id="marker-count">0</div>
+            <div class="label" id="stats-label">объектов</div>
+            <div class="countries-count" id="countries-count">🌍 0 стран</div>
+        </div>
+
+        <div class="ssi-panel" id="ssi-panel">
+            <div class="ssi-title" id="ssi-title">📊 Индекс напряжённости (SSI)</div>
+            <div class="ssi-bar"><div class="ssi-fill" id="ssi-fill"></div></div>
+            <div class="ssi-value" id="ssi-label">0%</div>
+        </div>
+
+        <div class="timeline-panel" id="timeline-panel">
+            <div class="timeline-title">
+                <span>📅 Хронология событий</span>
+                <button class="close-btn" onclick="toggleTimeline()" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.06);color:#8899aa;border-radius:4px;padding:2px 12px;font-size:12px;cursor:pointer;">✕ Закрыть</button>
+            </div>
+            <div class="timeline-track" id="timeline-track"></div>
+            <div class="timeline-date" id="timeline-date">—</div>
+            <div class="timeline-stats">
+                <span>📊 <span id="timeline-events">0</span> событий</span>
+                <span>📅 <span id="timeline-days">0</span> дней</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ЛОКАЛЬНЫЕ СКРИПТЫ (порядок критичен) ===== -->
+    <script src="js/core.js"></script>
+    <script src="js/countries.js"></script>
+    <script src="js/layers.js"></script>
+    <script src="js/maps-config.js"></script>
+    <script src="js/series-adapter.js"></script>
+    <script src="js/map-controls.js"></script>
+    <script src="js/markers.js"></script>
+    <script src="js/metrics-map.js"></script>
+    <script src="js/copy-data.js"></script>
+    <script src="js/heat-timeline.js"></script>
+    <script src="js/ssi.js"></script>
+    <script src="js/refresh.js"></script>
+    <script src="js/cii.js"></script>
+    <script src="js/logger.js"></script>
+    <script src="js/init.js"></script>
+
+    <!-- ===== UI ХЕЛПЕРЫ ===== -->
+    <script>
+        function openHelp() {
+            window.open('/help', '_blank');
+        }
+        function exportPDF() {
+            if (typeof html2canvas !== 'undefined' && window.map) {
+                html2canvas(document.getElementById('map')).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = 'crucix-metrics-' + Date.now() + '.png';
+                    link.href = canvas.toDataURL();
+                    link.click();
+                });
+            } else if (typeof showNotification === 'function') {
+                showNotification('❌ html2canvas не загружен');
+            }
+        }
+        function goToDashboard(name) {
+            window.location.href = '/dashboard-' + name;
+        }
+    </script>
+</body>
+</html>

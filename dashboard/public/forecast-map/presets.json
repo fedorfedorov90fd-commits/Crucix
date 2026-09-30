@@ -1,0 +1,16 @@
+{
+  "presets": [
+    { "key": "forecast-all", "name": "Все прогнозы", "description": "Все 16 слоёв", "center": [30, 20], "zoom": 2.5,
+      "enabledLayers": ["ssi","predict","war-preparation","crucix-pattern-life","anomalies","crucix-anomalies-geo","cyber-attacks-threat","ddos-threat","malware-threat","phishing-threat","ransomware-threat","cve-threat","ai-forecasts-api","central-bank-predictor-api","social-briefing-api","social-briefing-engine-api"] },
+    { "key": "forecast-strategic", "name": "Стратегические", "description": "Стратегические индексы", "center": [30, 20], "zoom": 2.5,
+      "enabledLayers": ["ssi","predict","war-preparation","crucix-pattern-life"] },
+    { "key": "forecast-cyber", "name": "Киберпрогнозы", "description": "Прогнозы киберугроз", "center": [30, 20], "zoom": 2.5,
+      "enabledLayers": ["cyber-attacks-threat","ddos-threat","malware-threat","phishing-threat","ransomware-threat","cve-threat"] },
+    { "key": "forecast-ai", "name": "AI-прогнозы", "description": "AI и API-прогнозы", "center": [30, 20], "zoom": 2.5,
+      "enabledLayers": ["ai-forecasts-api","central-bank-predictor-api","social-briefing-api","social-briefing-engine-api"] },
+    { "key": "forecast-geo", "name": "Геопрогнозы", "description": "Аномалии и геоаномалии", "center": [30, 20], "zoom": 2.5,
+      "enabledLayers": ["anomalies","crucix-anomalies-geo","crucix-pattern-life"] },
+    { "key": "forecast-risk", "name": "Риски", "description": "Стратегические + кибер", "center": [30, 20], "zoom": 2.5,
+      "enabledLayers": ["ssi","war-preparation","cyber-attacks-threat","ransomware-threat","cve-threat"] }
+  ]
+}

@@ -1,0 +1,1222 @@
+===== ЧАСТЬ part-1-foundation · КУСОК 03/04 · 36.6 KB =====
+
+FILE: apis/predict/models/ising.mjs
+SIZE: 7184 bytes
+SHA1: 7e745d0114457b2d
+========================================================================
+
+// apis/predict/models/ising.mjs
+// Модель Изинга — фазовые переходы в социальных/политических системах.
+//
+// Теоретическая основа:
+//   Ising, E. (1925). "Beitrag zur Theorie des Ferromagnetismus".
+//   Zeitschrift für Physik, 31(1), 253-258.
+//   Onsager, L. (1944). "Crystal Statistics. I. A Two-Dimensional Model with
+//   an Order-Disorder Transition". Physical Review, 65(3-4), 117-149.
+//   Castellano, C., Fortunato, S., & Loreto, V. (2009). "Statistical physics
+//   of social dynamics". Reviews of Modern Physics, 81(2), 591-646.
+//
+//   Гамильтониан: H = −J · Σ s_i · s_j − h · Σ s_i
+//   где s_i ∈ {−1, +1} — «спин» (настроение актора),
+//       J — константа связи, h — внешнее поле.
+//
+//   При температуре T < Tc — порядок (консенсус).
+//   При T > Tc — беспорядок (фрагментация).
+//   Критическая температура T_c ≈ J · ⟨k⟩ (mean-field).
+//
+// Применение в Crucix:
+//   N акторов (стран/рынков), спин = настроение (+1 оптимизм, −1 пессимизм).
+//   Температура T растёт с VIX и конфликтами. Близость к T_c — сигнал
+//   приближающегося коллективного разворота.
+
+// ============================================================
+// Модель Изинга
+// ============================================================
+
+class IsingModel {
+  constructor({ nNodes, adjacency, temperature = 1.0, coupling = 0.5 } = {}) {
+    this.n = nNodes;
+    this.adjacency = adjacency || this._randomGraph(nNodes, 0.3);
+    this.T = temperature;
+    this.J = coupling;
+    this.spins = new Array(nNodes).fill(0).map(() => (Math.random() > 0.5 ? 1 : -1));
+    this.history = [];
+  }
+
+  /**
+   * Случайный граф Эрдёша-Реньи.
+   */
+  _randomGraph(n, p) {
+    const adj = Array.from({ length: n }, () => new Array(n).fill(0));
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++) {
+        if (Math.random() < p) {
+          adj[i][j] = 1;
+          adj[j][i] = 1;
+        }
+      }
+    }
+    return adj;
+  }
+
+  /**
+   * Энергия системы: H = −J · Σ_{i<j} A_ij · s_i · s_j
+   */
+  energy() {
+    let E = 0;
+    for (let i = 0; i < this.n; i++) {
+      for (let j = i + 1; j < this.n; j++) {
+        E -= this.J * this.adjacency[i][j] * this.spins[i] * this.spins[j];
+      }
+    }
+    return E;
+  }
+
+  /**
+   * Намагниченность — мера консенсуса:
+   *   M ≈ +1: все «бычьи»
+   *   M ≈ −1: все «медвежьи»
+   *   M ≈ 0: фрагментация
+   */
+  magnetization() {
+    return this.spins.reduce((a, b) => a + b, 0) / this.n;
+  }
+
+  /**
+   * Шаг Метрополиса-Гастингса.
+   */
+  metropolisStep() {
+    const i = Math.floor(Math.random() * this.n);
+
+    let neighborSum = 0;
+    for (let j = 0; j < this.n; j++) {
+      if (this.adjacency[i][j]) neighborSum += this.spins[j];
+    }
+
+    const dE = 2 * this.J * this.spins[i] * neighborSum;
+
+    if (dE < 0 || Math.random() < Math.exp(-dE / Math.max(this.T, 1e-10))) {
+      this.spins[i] *= -1;
+    }
+  }
+
+  /**
+   * Симуляция MCMC.
+   */
+  simulate(steps = 1000) {
+    const magHistory = [];
+    for (let step = 0; step < steps; step++) {
+      this.metropolisStep();
+      if (step % 10 === 0) {
+        magHistory.push({
+          step,
+          M: this.magnetization(),
+          E: this.energy(),
+        });
+      }
+    }
+    this.history.push(...magHistory);
+    return {
+      finalMagnetization: this.magnetization(),
+      finalEnergy: this.energy(),
+      magHistory,
+    };
+  }
+
+  /**
+   * Критическая температура (mean-field приближение).
+   *   T_c = J · ⟨k⟩, где ⟨k⟩ — средняя степень узла.
+   */
+  criticalTemperature() {
+    let avgDeg = 0;
+    for (let i = 0; i < this.n; i++) {
+      avgDeg += this.adjacency[i].reduce((a, b) => a + b, 0);
+    }
+    avgDeg /= this.n;
+    return this.J * avgDeg;
+  }
+
+  /**
+   * Восприимчивость (susceptibility):
+   *   χ = (⟨M²⟩ − ⟨M⟩²) · N / T
+   * Стремится к бесконечности при T → T_c.
+   */
+  susceptibility() {
+    const M = this.magnetization();
+    const M2 = this.spins.reduce((s, si) => s + si * si, 0) / this.n;
+    return ((M2 - M * M) * this.n) / Math.max(this.T, 1e-10);
+  }
+
+  /**
+   * Прогноз вероятности коллективного разворота.
+   */
+  predictFlipProbability() {
+    const Tc = this.criticalTemperature();
+    const ratio = this.T / Tc;
+    const M = this.magnetization();
+    const chi = this.susceptibility();
+
+    // Близость к критической точке
+    const proximityToCritical = Math.exp(-Math.abs(ratio - 1) * 5);
+    const lowMagnetization = 1 - Math.abs(M);
+
+    return {
+      flipProbability: Math.max(
+        0,
+        Math.min(1, proximityToCritical * (0.5 + 0.5 * lowMagnetization))
+      ),
+      temperature: this.T,
+      criticalTemperature: Tc,
+      ratio: parseFloat(ratio.toFixed(3)),
+      magnetization: M,
+      susceptibility: chi,
+      nearPhaseTransition: ratio > 0.7 && ratio < 1.3,
+    };
+  }
+
+  /**
+   * Установка температуры по данным sweep.
+   *   VIX 10-50 → T 0.5-3.0 + конфликты повышают.
+   */
+  setTemperatureFromSweep(latest) {
+    const vix = (latest.fred && latest.fred.vix) || 20;
+    const conflicts =
+      (latest.gdelt && latest.gdelt.conflictEvents && latest.gdelt.conflictEvents.length) || 0;
+    this.T = 0.5 + (vix / 50) * 2.5 + Math.min(conflicts / 20, 1) * 0.5;
+  }
+}
+
+// ============================================================
+// Готовый сценарий Crucix
+// ============================================================
+
+/**
+ * Оценка «температуры» системы по sweep + прогноз фазового перехода.
+ *
+ * @param {Object} latest — latest.json
+ * @param {Object} opts — {nNodes, coupling, steps}
+ * @returns {Object}
+ */
+function crucixIsingAnalysis(latest, opts = {}) {
+  const { nNodes = 12, coupling = 0.5, steps = 500 } = opts;
+
+  const ising = new IsingModel({ nNodes, coupling, temperature: 1.0 });
+  ising.setTemperatureFromSweep(latest);
+  ising.simulate(steps);
+
+  const flip = ising.predictFlipProbability();
+
+  return {
+    available: true,
+    nNodes,
+    temperature: flip.temperature,
+    criticalTemperature: flip.criticalTemperature,
+    ratio: flip.ratio,
+    magnetization: parseFloat(flip.magnetization.toFixed(3)),
+    susceptibility: parseFloat(flip.susceptibility.toFixed(3)),
+    nearPhaseTransition: flip.nearPhaseTransition,
+    flipProbability: parseFloat(flip.flipProbability.toFixed(3)),
+    regime: flip.nearPhaseTransition ? 'critical' : flip.ratio > 1.3 ? 'disordered' : 'ordered',
+  };
+}
+
+export { IsingModel, crucixIsingAnalysis };
+
+
+
+========================================================================
+
+FILE: apis/predict/models/transferentropy.mjs
+SIZE: 7402 bytes
+SHA1: 1b25cceb48a4b5b4
+========================================================================
+
+// apis/predict/models/transferentropy.mjs
+// Transfer Entropy — направленный поток информации между временными рядами.
+//
+// Теоретическая основа:
+//   Schreiber, T. (2000). "Measuring Information Transfer". Physical Review
+//   Letters, 85(2), 461-464.
+//   Barnett, L., Barrett, A. B., & Seth, A. K. (2009). "Granger Causality
+//   and Transfer Entropy are Equivalent for Gaussian Variables". Physical
+//   Review Letters, 103(23), 238701.
+//
+//   TE(X → Y) = Σ p(y_{t+1}, y_t, x_t) · log [ p(y_{t+1} | y_t, x_t)
+//                                            / p(y_{t+1} | y_t) ]
+//
+//   TE > 0: X влияет на Y (прошлое X улучшает предсказание Y).
+//   TE = 0: направленного влияния нет.
+//   TE не симметричен: TE(X→Y) ≠ TE(Y→X).
+//
+// Применение в Crucix:
+//   Определение, какие сигналы «ведут» другие. Например: рост VIX
+//   ведёт конфликты или наоборот? Ответ — через TE, не через корреляцию.
+
+// ============================================================
+// Дискретизация
+// ============================================================
+
+/**
+ * Дискретизация непрерывного ряда в N бинов по квантилям.
+ */
+function discretize(series, nBins = 3) {
+  const valid = series.filter((v) => typeof v === 'number' && isFinite(v));
+  if (valid.length === 0) return series.map(() => 0);
+
+  const sorted = [...valid].sort((a, b) => a - b);
+  const quantiles = [];
+  for (let i = 1; i < nBins; i++) {
+    quantiles.push(sorted[Math.floor((sorted.length * i) / nBins)]);
+  }
+
+  return series.map((v) => {
+    if (typeof v !== 'number' || !isFinite(v)) return 0;
+    for (let i = 0; i < quantiles.length; i++) {
+      if (v <= quantiles[i]) return i;
+    }
+    return nBins - 1;
+  });
+}
+
+// ============================================================
+// Transfer Entropy
+// ============================================================
+
+/**
+ * TE(X → Y) с дискретизацией.
+ * @param {number[]} xSeries
+ * @param {number[]} ySeries
+ * @param {number} nBins — число бинов дискретизации
+ * @returns {{te: number, normalized: number}}
+ */
+function transferEntropy(xSeries, ySeries, nBins = 3) {
+  const n = Math.min(xSeries.length, ySeries.length);
+  if (n < 15) return { te: 0, normalized: 0 };
+
+  const xd = discretize(xSeries.slice(0, n), nBins);
+  const yd = discretize(ySeries.slice(0, n), nBins);
+
+  // Считаем совместные частоты
+  const counts = {};
+  const total = n - 1;
+
+  for (let t = 0; t < total; t++) {
+    const yNext = yd[t + 1];
+    const yCurr = yd[t];
+    const xCurr = xd[t];
+
+    const k3 = `${yNext}|${yCurr}|${xCurr}`;
+    const k2Y = `${yNext}|${yCurr}`;
+    const k2YX = `${yCurr}|${xCurr}`;
+    const k1Y = `${yCurr}`;
+
+    counts[k3] = (counts[k3] || 0) + 1;
+    counts[k2Y] = (counts[k2Y] || 0) + 1;
+    counts[k2YX] = (counts[k2YX] || 0) + 1;
+    counts[k1Y] = (counts[k1Y] || 0) + 1;
+  }
+
+  let te = 0;
+
+  for (const key of Object.keys(counts)) {
+    if (!key.includes('|') || key.split('|').length !== 3) continue;
+
+    const [yNext, yCurr, xCurr] = key.split('|');
+    const p3 = counts[key] / total;
+    if (p3 === 0) continue;
+
+    // p(y_{t+1} | y_t, x_t)
+    const pYtXt = (counts[`${yCurr}|${xCurr}`] || 0) / total;
+    if (pYtXt === 0) continue;
+    const pNextGivenYtXt = p3 / pYtXt;
+
+    // p(y_{t+1} | y_t) = Σ_x p(y_{t+1}, y_t, x) / p(y_t)
+    const pYt = (counts[`${yCurr}`] || 0) / total;
+    if (pYt === 0) continue;
+
+    let pNextGivenYt = 0;
+    for (let x = 0; x < nBins; x++) {
+      const k = `${yNext}|${yCurr}|${x}`;
+      pNextGivenYt += (counts[k] || 0) / total;
+    }
+    pNextGivenYt /= pYt;
+
+    if (pNextGivenYt <= 0 || pNextGivenYtXt <= 0) continue;
+
+    te += p3 * Math.log2(pNextGivenYtXt / pNextGivenYt);
+  }
+
+  return {
+    te: Math.max(0, te),
+    normalized: Math.max(0, te) / Math.log2(nBins),
+  };
+}
+
+// ============================================================
+// Матрица влияний
+// ============================================================
+
+/**
+ * Матрица направленных влияний между всеми парами переменных.
+ *
+ * @param {Object} variables — {vix: [...], conflicts: [...], alerts: [...]}
+ * @param {number} nBins
+ * @returns {Object} — {matrix, ranked, topInfluence}
+ */
+function influenceMatrix(variables, nBins = 3) {
+  const names = Object.keys(variables);
+  const matrix = {};
+
+  for (const x of names) {
+    for (const y of names) {
+      if (x === y) continue;
+      const { te, normalized } = transferEntropy(
+        variables[x],
+        variables[y],
+        nBins
+      );
+      matrix[`${x}→${y}`] = { te, normalized };
+    }
+  }
+
+  // Ранжирование по силе TE
+  const ranked = Object.entries(matrix)
+    .map(([pair, val]) => ({
+      pair,
+      transferEntropy: val.te,
+      normalized: val.normalized,
+    }))
+    .sort((a, b) => b.transferEntropy - a.transferEntropy);
+
+  return {
+    matrix,
+    ranked,
+    topInfluence: ranked[0] || null,
+  };
+}
+
+/**
+ * Асимметрия влияния между парой.
+ *   asymmetry = TE(X→Y) − TE(Y→X)
+ *   > 0: X ведёт Y
+ *   < 0: Y ведёт X
+ */
+function influenceAsymmetry(xSeries, ySeries, nBins = 3) {
+  const teXY = transferEntropy(xSeries, ySeries, nBins).te;
+  const teYX = transferEntropy(ySeries, xSeries, nBins).te;
+  return {
+    xToY: teXY,
+    yToX: teYX,
+    asymmetry: teXY - teYX,
+    leader: teXY > teYX ? 'x' : teYX > teXY ? 'y' : 'none',
+  };
+}
+
+// ============================================================
+// Сценарий Crucix
+// ============================================================
+
+/**
+ * Определение направленных влияний между ключевыми индикаторами Crucix.
+ *
+ * @param {Array} history — sweep-история
+ * @param {Object} opts — {nBins, minTE}
+ * @returns {Object}
+ */
+function crucixInfluenceAnalysis(history, opts = {}) {
+  const { nBins = 3, minTE = 0.02 } = opts;
+
+  if (!Array.isArray(history) || history.length < 15) {
+    return {
+      available: false,
+      reason: 'insufficient_history',
+      count: history?.length || 0,
+    };
+  }
+
+  const vars = {
+    vix: history.map((h) => (h.fred && h.fred.vix) || 20),
+    hySpread: history.map((h) => (h.fred && h.fred.hySpread) || 3),
+    conflicts: history.map(
+      (h) => (h.gdelt && h.gdelt.conflictEvents && h.gdelt.conflictEvents.length) || 0
+    ),
+    alerts: history.map((h) => (h.delta && h.delta.newAlerts) || 0),
+    sanctions: history.map((h) => (h.sanctions && h.sanctions.count) || 0),
+  };
+
+  const { matrix, ranked, topInfluence } = influenceMatrix(vars, nBins);
+
+  // Фильтрация по порогу TE
+  const significant = ranked.filter((r) => r.transferEntropy >= minTE);
+
+  return {
+    available: true,
+    nObservations: history.length,
+    nBins,
+    topInfluence,
+    significantLinks: significant.slice(0, 10),
+    allLinks: ranked.slice(0, 20),
+    matrix,
+  };
+}
+
+export {
+  discretize,
+  transferEntropy,
+  influenceMatrix,
+  influenceAsymmetry,
+  crucixInfluenceAnalysis,
+};
+
+
+
+========================================================================
+
+FILE: apis/predict/models/contagion.mjs
+SIZE: 7587 bytes
+SHA1: 6debfe79569fd437
+========================================================================
+
+// apis/predict/models/contagion.mjs
+// SIR/SEIR модели распространения — для нарративов, паники, санкций.
+//
+// Теоретическая основа:
+//   Kermack, W. O., & McKendrick, A. G. (1927). "A Contribution to the
+//   Mathematical Theory of Epidemics". Proceedings of the Royal Society A,
+//   115(772), 700-721.
+//   Anderson, R. M., & May, R. M. (1991). "Infectious Diseases of Humans:
+//   Dynamics and Control". Oxford University Press.
+//
+//   SIR:  dS/dt = −β·S·I/N
+//         dI/dt = β·S·I/N − γ·I
+//         dR/dt = γ·I
+//
+//   SEIR: добавляет латентную фазу E (заражён, ещё не распространяет).
+//
+//   R0 = β/γ — базовое репродуктивное число.
+//   R0 > 1 — эпидемия растёт, R0 < 1 — затухает.
+//
+// Применение в Crucix:
+//   Финансовая паника, распространение нарративов, каскад санкций
+//   моделируются как эпидемия на графе стран/рынков.
+
+// ============================================================
+// SIR-модель
+// ============================================================
+
+class SIRModel {
+  constructor({ S0, I0, R0, beta, gamma } = {}) {
+    this.S = S0 || 100;
+    this.I = I0 || 1;
+    this.R = R0 || 0;
+    this.beta = beta || 0.3;
+    this.gamma = gamma || 0.1;
+    this.N = this.S + this.I + this.R;
+    this.history = [];
+  }
+
+  /**
+   * Базовое репродуктивное число.
+   */
+  reproductionNumber() {
+    return this.beta / this.gamma;
+  }
+
+  /**
+   * Шаг симуляции (метод Эйлера).
+   */
+  step(dt = 1) {
+    const dS = (-this.beta * this.S * this.I / this.N) * dt;
+    const dI = ((this.beta * this.S * this.I / this.N) - this.gamma * this.I) * dt;
+    const dR = (this.gamma * this.I) * dt;
+
+    this.S = Math.max(0, this.S + dS);
+    this.I = Math.max(0, this.I + dI);
+    this.R = Math.max(0, this.R + dR);
+
+    return { S: this.S, I: this.I, R: this.R, t: this.history.length };
+  }
+
+  /**
+   * Симуляция на N шагов.
+   */
+  simulate(steps = 100, dt = 1) {
+    const traj = [];
+    for (let i = 0; i < steps; i++) {
+      traj.push(this.step(dt));
+    }
+    this.history.push(...traj);
+    return traj;
+  }
+
+  /**
+   * Пик эпидемии — максимум I.
+   */
+  peak() {
+    if (this.history.length === 0) return { step: 0, value: this.I, fraction: this.I / this.N };
+    let maxI = 0;
+    let maxStep = 0;
+    this.history.forEach((s, i) => {
+      if (s.I > maxI) {
+        maxI = s.I;
+        maxStep = i;
+      }
+    });
+    return { step: maxStep, value: maxI, fraction: maxI / this.N };
+  }
+
+  /**
+   * Вероятность крупной вспышки.
+   *   P(major outbreak) = 1 − (1/R0)^{I0}
+   */
+  majorOutbreakProbability() {
+    const R0 = this.reproductionNumber();
+    if (R0 <= 1) return 0;
+    return 1 - Math.pow(1 / R0, Math.max(1, this.I));
+  }
+}
+
+// ============================================================
+// SEIR-модель
+// ============================================================
+
+class SEIRModel extends SIRModel {
+  constructor({ S0, E0, I0, R0, beta, sigma, gamma } = {}) {
+    super({ S0, I0, R0, beta, gamma });
+    this.E = E0 || 0;
+    this.sigma = sigma || 0.5;
+    this.N = this.S + this.E + this.I + this.R;
+  }
+
+  step(dt = 1) {
+    const dS = (-this.beta * this.S * this.I / this.N) * dt;
+    const dE = ((this.beta * this.S * this.I / this.N) - this.sigma * this.E) * dt;
+    const dI = (this.sigma * this.E - this.gamma * this.I) * dt;
+    const dR = (this.gamma * this.I) * dt;
+
+    this.S = Math.max(0, this.S + dS);
+    this.E = Math.max(0, this.E + dE);
+    this.I = Math.max(0, this.I + dI);
+    this.R = Math.max(0, this.R + dR);
+
+    return { S: this.S, E: this.E, I: this.I, R: this.R, t: this.history.length };
+  }
+}
+
+// ============================================================
+// Сетевая контагия (SIR на графе)
+// ============================================================
+
+class NetworkContagion {
+  constructor({ nodes, adjacency, beta, gamma, initialInfected }) {
+    this.nodes = nodes;
+    this.adj = adjacency;
+    this.beta = beta;
+    this.gamma = gamma;
+    this.state = nodes.map((_, i) =>
+      (initialInfected || []).includes(i) ? 'I' : 'S'
+    );
+    this.history = [];
+  }
+
+  step(dt = 1) {
+    const newState = [...this.state];
+    for (let i = 0; i < this.nodes.length; i++) {
+      if (this.state[i] === 'S') {
+        let risk = 0;
+        for (let j = 0; j < this.nodes.length; j++) {
+          if (this.state[j] === 'I' && this.adj[i][j] > 0) {
+            risk += this.beta * this.adj[i][j] * dt;
+          }
+        }
+        if (Math.random() < 1 - Math.exp(-risk)) {
+          newState[i] = 'I';
+        }
+      } else if (this.state[i] === 'I') {
+        if (Math.random() < this.gamma * dt) {
+          newState[i] = 'R';
+        }
+      }
+    }
+    this.state = newState;
+    const counts = { S: 0, I: 0, R: 0 };
+    this.state.forEach((s) => counts[s]++);
+    this.history.push(counts);
+    return counts;
+  }
+
+  simulate(steps = 50) {
+    const traj = [];
+    for (let i = 0; i < steps; i++) traj.push(this.step());
+    return traj;
+  }
+
+  prevalence() {
+    const infected = this.state.filter((s) => s === 'I').length;
+    return infected / this.nodes.length;
+  }
+}
+
+// ============================================================
+// Готовый сценарий Crucix
+// ============================================================
+
+/**
+ * Моделирование распространения паники по 50 «узлам» (страны/рынки).
+ *
+ * @param {Object} latest — latest.json
+ * @param {Object} opts — {nNodes, horizon}
+ * @returns {Object}
+ */
+function crucixContagionAnalysis(latest, opts = {}) {
+  const { nNodes = 50, horizon = 30 } = opts;
+
+  const conflictCount =
+    (latest.gdelt && latest.gdelt.conflictEvents && latest.gdelt.conflictEvents.length) || 0;
+  const alertCount = (latest.delta && latest.delta.newAlerts) || 0;
+  const vix = (latest.fred && latest.fred.vix) || 20;
+
+  // Начальное число «заражённых» — по числу конфликтных событий
+  const I0 = Math.max(1, Math.min(5, Math.floor(conflictCount / 3)));
+
+  // Скорость заражения растёт с VIX и конфликтами
+  const beta = 0.15 + vix / 200 + Math.min(alertCount / 100, 0.1);
+
+  // Скорость выздоровления
+  const gamma = 0.05;
+
+  const sir = new SIRModel({
+    S0: nNodes - I0,
+    I0,
+    R0: 0,
+    beta,
+    gamma,
+  });
+
+  const traj = sir.simulate(horizon);
+  const peak = sir.peak();
+  const R0 = sir.reproductionNumber();
+  const outbreakProb = sir.majorOutbreakProbability();
+
+  return {
+    available: true,
+    nNodes,
+    horizon,
+    reproductionNumber: parseFloat(R0.toFixed(3)),
+    outbreakProbability: parseFloat(outbreakProb.toFixed(3)),
+    peak: {
+      step: peak.step,
+      fraction: parseFloat(peak.fraction.toFixed(3)),
+    },
+    finalState: {
+      susceptible: Math.round(traj[traj.length - 1].S),
+      infected: Math.round(traj[traj.length - 1].I),
+      recovered: Math.round(traj[traj.length - 1].R),
+    },
+    trajectory: traj.filter((_, i) => i % 3 === 0),
+    interpretation: R0 > 1 ? 'contagion_growing' : 'contagion_fading',
+  };
+}
+
+export { SIRModel, SEIRModel, NetworkContagion, crucixContagionAnalysis };
+
+
+
+========================================================================
+
+FILE: apis/predict/models/evt.mjs
+SIZE: 7846 bytes
+SHA1: c3c199fedab97b49
+========================================================================
+
+// apis/predict/models/evt.mjs
+// Extreme Value Theory — моделирование хвостов распределений.
+//
+// Теоретическая основа:
+//   Fisher, R. A., & Tippett, L. H. C. (1928). "Limiting Forms of the
+//   Frequency Distribution of the Largest or Smallest Member of a Sample".
+//   Proceedings of the Cambridge Philosophical Society, 24(2), 180-190.
+//   Pickands, J. (1975). "Statistical Inference Using Extreme Order
+//   Statistics". Annals of Statistics, 3(1), 119-131.
+//   Embrechts, P., Klüppelberg, C., & Mikosch, T. (1997). "Modelling
+//   Extremal Events for Insurance and Finance". Springer.
+//
+//   Block Maxima (GEV):
+//     G(z) = exp(−(1 + ξ·(z−μ)/σ)^(−1/ξ))
+//
+//   Peaks Over Threshold (GPD):
+//     F(x) = 1 − (1 + ξ·x/σ)^(−1/ξ)
+//
+//   ξ > 0 — тяжёлый хвост (Fréchet)
+//   ξ = 0 — экспоненциальный (Gumbel)
+//   ξ < 0 — ограниченный (Weibull)
+//
+// Применение в Crucix:
+//   Оценка вероятности экстремальных событий (VIX > 40, конфликты > 25)
+//   на основе хвоста исторического распределения.
+
+// ============================================================
+// Generalized Pareto Distribution (GPD)
+// ============================================================
+
+class GPD {
+  constructor({ sigma = 1, xi = 0.1 } = {}) {
+    this.sigma = sigma;
+    this.xi = xi;
+  }
+
+  pdf(x) {
+    if (x < 0) return 0;
+    if (Math.abs(this.xi) < 1e-8) {
+      return (1 / this.sigma) * Math.exp(-x / this.sigma);
+    }
+    return (1 / this.sigma) *
+      Math.pow(1 + (this.xi * x) / this.sigma, -1 / this.xi - 1);
+  }
+
+  cdf(x) {
+    if (x < 0) return 0;
+    if (Math.abs(this.xi) < 1e-8) {
+      return 1 - Math.exp(-x / this.sigma);
+    }
+    return 1 - Math.pow(1 + (this.xi * x) / this.sigma, -1 / this.xi);
+  }
+
+  quantile(p) {
+    if (p >= 1) return Infinity;
+    if (Math.abs(this.xi) < 1e-8) {
+      return -this.sigma * Math.log(1 - p);
+    }
+    return (this.sigma / this.xi) * (Math.pow(1 - p, -this.xi) - 1);
+  }
+
+  /**
+   * Оценка параметров методом моментов.
+   * @param {number[]} exceedances — значения сверх порога
+   */
+  fit(exceedances) {
+    const clean = (exceedances || []).filter(
+      (v) => typeof v === 'number' && isFinite(v) && v > 0
+    );
+    if (clean.length < 5) return this;
+
+    const n = clean.length;
+    const mean = clean.reduce((a, b) => a + b, 0) / n;
+    const variance = clean.reduce((s, x) => s + (x - mean) ** 2, 0) / n;
+
+    // Method of moments
+    const cv2 = variance / (mean * mean);
+    this.xi = 0.5 * (cv2 - 1);
+    this.sigma = mean * (1 - this.xi);
+
+    // Клиппинг для устойчивости
+    this.xi = Math.max(-0.5, Math.min(0.5, this.xi));
+    this.sigma = Math.max(0.01, this.sigma);
+
+    return this;
+  }
+
+  /**
+   * Уровень возврата: значение, превышаемое раз в T периодов.
+   */
+  returnLevel(T, rate) {
+    const prob = 1 / (T * rate);
+    return this.quantile(1 - prob);
+  }
+}
+
+// ============================================================
+// Generalized Extreme Value (GEV)
+// ============================================================
+
+class GEV {
+  constructor({ mu = 0, sigma = 1, xi = 0 } = {}) {
+    this.mu = mu;
+    this.sigma = sigma;
+    this.xi = xi;
+  }
+
+  cdf(x) {
+    const z = (x - this.mu) / this.sigma;
+    if (Math.abs(this.xi) < 1e-8) return Math.exp(-Math.exp(-z));
+    return Math.exp(-Math.pow(1 + this.xi * z, -1 / this.xi));
+  }
+
+  quantile(p) {
+    if (Math.abs(this.xi) < 1e-8) {
+      return this.mu - this.sigma * Math.log(-Math.log(p));
+    }
+    return this.mu + (this.sigma / this.xi) *
+      (Math.pow(-Math.log(p), -this.xi) - 1);
+  }
+
+  /**
+   * Оценка по block maxima (годовым/месячным максимумам).
+   */
+  fit(blockMaxima) {
+    const clean = (blockMaxima || []).filter(
+      (v) => typeof v === 'number' && isFinite(v)
+    );
+    if (clean.length < 3) return this;
+
+    const n = clean.length;
+    this.mu = clean.reduce((a, b) => a + b, 0) / n;
+    const variance = clean.reduce((s, x) => s + (x - this.mu) ** 2, 0) / n;
+    this.sigma = Math.sqrt(variance);
+
+    const skew = clean.reduce(
+      (s, x) => s + Math.pow((x - this.mu) / this.sigma, 3),
+      0
+    ) / n;
+    this.xi = Math.max(-0.5, Math.min(0.5, skew / 2));
+
+    return this;
+  }
+
+  /**
+   * Период возврата для данного значения.
+   */
+  returnPeriod(x) {
+    const p = this.cdf(x);
+    return 1 / Math.max(1 - p, 1e-10);
+  }
+}
+
+// ============================================================
+// Peaks-over-threshold анализ
+// ============================================================
+
+/**
+ * Вероятность экстремального события.
+ *
+ * @param {number[]} series — временной ряд
+ * @param {number} threshold — порог экстремальности (например, VIX > 40)
+ * @param {number} horizonDays — горизонт прогноза
+ * @returns {Object}
+ */
+function extremeEventProbability(series, threshold, horizonDays = 30) {
+  const clean = (series || []).filter((v) => typeof v === 'number' && isFinite(v));
+
+  if (clean.length < 10) {
+    return { probability: 0, method: 'insufficient_data', count: clean.length };
+  }
+
+  // Peaks over threshold
+  const exceedances = clean.filter((v) => v > threshold).map((v) => v - threshold);
+  const rate = exceedances.length / clean.length;
+
+  if (exceedances.length < 3) {
+    // Частотная оценка
+    const prob = 1 - Math.pow(1 - rate, horizonDays);
+    return {
+      probability: prob,
+      method: 'frequency',
+      rate,
+      exceedances: exceedances.length,
+    };
+  }
+
+  // GPD fit
+  const gpd = new GPD();
+  gpd.fit(exceedances);
+
+  // Вероятность хотя бы одного превышения за horizonDays
+  const probPerDay = rate;
+  const probAtLeastOne = 1 - Math.pow(1 - probPerDay, horizonDays);
+
+  // Return levels для 95% и 99%
+  const rl95 = gpd.returnLevel(0.05, rate || 0.01);
+  const rl99 = gpd.returnLevel(0.01, rate || 0.01);
+
+  return {
+    probability: probAtLeastOne,
+    method: 'GPD',
+    rate,
+    tailIndex: gpd.xi,
+    heavyTail: gpd.xi > 0.1,
+    sigma: gpd.sigma,
+    returnLevel95: rl95,
+    returnLevel99: rl99,
+  };
+}
+
+// ============================================================
+// Готовый сценарий Crucix
+// ============================================================
+
+/**
+ * EVT-анализ VIX с несколькими порогами.
+ *
+ * @param {Array} history — sweep-история
+ * @param {Object} opts — {horizonDays}
+ * @returns {Object}
+ */
+function crucixEVTAnalysis(history, opts = {}) {
+  const { horizonDays = 30 } = opts;
+
+  if (!Array.isArray(history) || history.length < 20) {
+    return {
+      available: false,
+      reason: 'insufficient_history',
+      count: history?.length || 0,
+    };
+  }
+
+  const vixSeries = history
+    .map((h) => h.fred && h.fred.vix)
+    .filter((v) => typeof v === 'number' && isFinite(v));
+
+  if (vixSeries.length < 20) {
+    return {
+      available: false,
+      reason: 'insufficient_vix',
+      count: vixSeries.length,
+    };
+  }
+
+  const thresholds = [25, 30, 35, 40, 50];
+  const results = {};
+
+  for (const t of thresholds) {
+    results[`above${t}`] = extremeEventProbability(vixSeries, t, horizonDays);
+  }
+
+  return {
+    available: true,
+    nObservations: vixSeries.length,
+    currentVix: vixSeries[vixSeries.length - 1],
+    maxHistorical: Math.max(...vixSeries),
+    thresholds: results,
+    horizonDays,
+  };
+}
+
+export { GPD, GEV, extremeEventProbability, crucixEVTAnalysis };
+
+
+
+========================================================================
+
+FILE: apis/predict/models/ornstein.mjs
+SIZE: 6296 bytes
+SHA1: 39677c311648e78e
+========================================================================
+
+// apis/predict/models/ornstein.mjs
+// Ornstein-Uhlenbeck процесс — mean-reverting диффузия.
+//
+// Теоретическая основа:
+//   Uhlenbeck, G. E., & Ornstein, L. S. (1930). "On the Theory of the
+//   Brownian Motion". Physical Review, 36(5), 823-841.
+//   Vasicek, O. (1977). "An Equilibrium Characterization of the Term
+//   Structure". Journal of Financial Economics, 5(2), 177-188.
+//
+//   dX_t = θ·(μ − X_t)·dt + σ·dW_t
+//   где θ — скорость возврата, μ — долгосрочное среднее,
+//       σ — волатильность, W — винеровский процесс.
+//
+//   Half-life = ln(2)/θ — время возврата к середине.
+//   Стационарное распределение: N(μ, σ²/(2θ)).
+//
+// Применение в Crucix:
+//   VIX, HY-спред, курсы валют возвращаются к среднему. OU даёт
+//   вероятностный прогноз с 95% интервалом и оценку half-life.
+
+// ============================================================
+// Ornstein-Uhlenbeck
+// ============================================================
+
+class OrnsteinUhlenbeck {
+  constructor({ theta = 0.1, mu = 20, sigma = 2 } = {}) {
+    this.theta = theta;
+    this.mu = mu;
+    this.sigma = sigma;
+  }
+
+  /**
+   * Оценка параметров через OLS на дискретизованной версии:
+   *   Δx_t = a + b·x_{t-1} + ε
+   *   θ = −b/Δt
+   *   μ = −a/b
+   *   σ = std(ε)/√Δt
+   */
+  fit(series, dt = 1) {
+    const clean = (series || []).filter(
+      (v) => typeof v === 'number' && isFinite(v)
+    );
+    if (clean.length < 5) return this;
+
+    const dX = [];
+    const xPrev = [];
+    for (let i = 1; i < clean.length; i++) {
+      dX.push(clean[i] - clean[i - 1]);
+      xPrev.push(clean[i - 1]);
+    }
+
+    const n = xPrev.length;
+    const meanX = xPrev.reduce((a, b) => a + b, 0) / n;
+    const meanDX = dX.reduce((a, b) => a + b, 0) / n;
+
+    let cov = 0;
+    let varX = 0;
+    for (let i = 0; i < n; i++) {
+      cov += (xPrev[i] - meanX) * (dX[i] - meanDX);
+      varX += (xPrev[i] - meanX) ** 2;
+    }
+    cov /= n;
+    varX /= n;
+
+    const b = cov / Math.max(varX, 1e-10);
+    const a = meanDX - b * meanX;
+
+    this.theta = Math.max(0.001, -b / dt);
+    this.mu = Math.abs(b) > 1e-8 ? -a / b : meanX;
+
+    const residuals = dX.map((dx, i) => dx - (a + b * xPrev[i]));
+    const varRes = residuals.reduce((s, r) => s + r * r, 0) / n;
+    this.sigma = Math.sqrt(varRes / dt);
+
+    return {
+      theta: this.theta,
+      mu: this.mu,
+      sigma: this.sigma,
+      a,
+      b,
+    };
+  }
+
+  /**
+   * Прогноз: E[X_{t+h}] = μ + (X_t − μ)·exp(−θ·h)
+   * Var[X_{t+h}] = σ²/(2θ)·(1 − exp(−2θ·h))
+   */
+  forecast(currentValue, horizon) {
+    const forecasts = [];
+    for (let h = 1; h <= horizon; h++) {
+      const mean = this.mu + (currentValue - this.mu) * Math.exp(-this.theta * h);
+      const variance =
+        (this.sigma ** 2) / (2 * this.theta) *
+        (1 - Math.exp(-2 * this.theta * h));
+      const std = Math.sqrt(variance);
+
+      forecasts.push({
+        h,
+        mean,
+        lower: mean - 1.96 * std,
+        upper: mean + 1.96 * std,
+        std,
+      });
+    }
+    return forecasts;
+  }
+
+  /**
+   * Half-life: ln(2)/θ.
+   */
+  halfLife() {
+    return Math.log(2) / this.theta;
+  }
+
+  /**
+   * Вероятность пересечения порога за горизонт.
+   */
+  probabilityOfThreshold(currentValue, threshold, horizon) {
+    const forecasts = this.forecast(currentValue, horizon);
+    let maxProb = 0;
+    for (const f of forecasts) {
+      const z = (threshold - f.mean) / Math.max(f.std, 1e-6);
+      const prob = 1 - normalCDF(z);
+      maxProb = Math.max(maxProb, prob);
+    }
+    return maxProb;
+  }
+}
+
+// ============================================================
+// Вспомогательные
+// ============================================================
+
+function normalCDF(x) {
+  return 0.5 * (1 + erf(x / Math.SQRT2));
+}
+
+function erf(x) {
+  const a1 = 0.254829592;
+  const a2 = -0.284496736;
+  const a3 = 1.421413741;
+  const a4 = -1.453152027;
+  const a5 = 1.061405429;
+  const p = 0.3275911;
+
+  const sign = x < 0 ? -1 : 1;
+  const ax = Math.abs(x);
+  const t = 1 / (1 + p * ax);
+  const y = 1 - ((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t * Math.exp(-ax * ax);
+  return sign * y;
+}
+
+// ============================================================
+// Готовый сценарий Crucix
+// ============================================================
+
+/**
+ * OU-анализ VIX.
+ *
+ * @param {Array} history — sweep-история
+ * @param {Object} opts — {horizon, threshold}
+ * @returns {Object}
+ */
+function crucixOUAnalysis(history, opts = {}) {
+  const { horizon = 5, threshold = 35 } = opts;
+
+  if (!Array.isArray(history) || history.length < 15) {
+    return {
+      available: false,
+      reason: 'insufficient_history',
+      count: history?.length || 0,
+    };
+  }
+
+  const vixSeries = history
+    .map((h) => h.fred && h.fred.vix)
+    .filter((v) => typeof v === 'number' && isFinite(v));
+
+  if (vixSeries.length < 15) {
+    return {
+      available: false,
+      reason: 'insufficient_vix',
+      count: vixSeries.length,
+    };
+  }
+
+  const ou = new OrnsteinUhlenbeck();
+  ou.fit(vixSeries);
+
+  const currentVix = vixSeries[vixSeries.length - 1];
+  const forecasts = ou.forecast(currentVix, horizon);
+  const halfLife = ou.halfLife();
+  const probThreshold = ou.probabilityOfThreshold(currentVix, threshold, horizon);
+
+  return {
+    available: true,
+    nObservations: vixSeries.length,
+    currentVix,
+    longRunMean: parseFloat(ou.mu.toFixed(2)),
+    meanReversionSpeed: parseFloat(ou.theta.toFixed(4)),
+    volatility: parseFloat(ou.sigma.toFixed(2)),
+    halfLife: parseFloat(halfLife.toFixed(1)),
+    forecast: forecasts.map((f) => ({
+      step: f.h,
+      mean: parseFloat(f.mean.toFixed(2)),
+      lower: parseFloat(f.lower.toFixed(2)),
+      upper: parseFloat(f.upper.toFixed(2)),
+    })),
+    probabilityAboveThreshold: parseFloat(probThreshold.toFixed(3)),
+    threshold,
+  };
+}
+
+export { OrnsteinUhlenbeck, crucixOUAnalysis, normalCDF, erf };
+
+
+
+========================================================================

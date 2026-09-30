@@ -1,0 +1,132 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "google-trends",
+    "source": "Google Trends RSS",
+    "source_url": "https://trends.google.com/trends/trendingsearches/daily/rss",
+    "fetched_at": "2026-09-27T16:36:08.582Z",
+    "normalized_at": "2026-09-27T16:38:26.491Z",
+    "collector": "collect-google-trends.mjs",
+    "license": "public-domain",
+    "count": 5,
+    "granularity": "event",
+    "value_unit": "index",
+    "value_scale": null,
+    "value_type": "index",
+    "value_range": null
+  },
+  "series": [],
+  "points": [
+    {
+      "lat": 59.30687355208592,
+      "lon": 90.27984114826128,
+      "value": 53,
+      "label": "беженцы в Россия",
+      "region": "RUS",
+      "extra": {
+        "id": "TREND-1790526968572-cznr"
+      }
+    },
+    {
+      "lat": 49.419047595559185,
+      "lon": 30.2657638493526,
+      "value": 50,
+      "label": "эвакуация в Украина",
+      "region": "UKR",
+      "extra": {
+        "id": "TREND-1790526968573-yvfl"
+      }
+    },
+    {
+      "lat": 52.45330963673865,
+      "lon": 18.826577782353144,
+      "value": 69,
+      "label": "эвакуация в Польша",
+      "region": "POL",
+      "extra": {
+        "id": "TREND-1790526968573-o953"
+      }
+    },
+    {
+      "lat": 50.3340070701986,
+      "lon": 10.80254709973564,
+      "value": 52,
+      "label": "мобилизация в Германия",
+      "region": "DEU",
+      "extra": {
+        "id": "TREND-1790526968573-b2y8"
+      }
+    },
+    {
+      "lat": 39.90304126917459,
+      "lon": -99.98684326142588,
+      "value": 69,
+      "label": "беженцы в США",
+      "region": "USA",
+      "extra": {
+        "id": "TREND-1790526968573-oi5o"
+      }
+    }
+  ],
+  "regions": [
+    {
+      "region": "RUS",
+      "value": 53,
+      "count": 1,
+      "aggregation": "mean",
+      "extra": {
+        "max": 53,
+        "sum": 53
+      }
+    },
+    {
+      "region": "UKR",
+      "value": 50,
+      "count": 1,
+      "aggregation": "mean",
+      "extra": {
+        "max": 50,
+        "sum": 50
+      }
+    },
+    {
+      "region": "POL",
+      "value": 69,
+      "count": 1,
+      "aggregation": "mean",
+      "extra": {
+        "max": 69,
+        "sum": 69
+      }
+    },
+    {
+      "region": "DEU",
+      "value": 52,
+      "count": 1,
+      "aggregation": "mean",
+      "extra": {
+        "max": 52,
+        "sum": 52
+      }
+    },
+    {
+      "region": "USA",
+      "value": 69,
+      "count": 1,
+      "aggregation": "mean",
+      "extra": {
+        "max": 69,
+        "sum": 69
+      }
+    }
+  ],
+  "documents": [],
+  "graph": null,
+  "extra": {
+    "adapter": "points",
+    "adapter_version": "2.2.1",
+    "skipped_invalid_coords": 0,
+    "unmapped_regions": [],
+    "unmapped_count": 0
+  }
+}

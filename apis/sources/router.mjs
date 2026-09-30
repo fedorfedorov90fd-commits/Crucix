@@ -1,6 +1,6 @@
 /**
  * Адаптивный шлюз для выбора драйвера мессенджера
- *
+ * 
  * При запуске проверяет доступность всех драйверов
  * и выбирает тот, у которого наивысший рейтинг.
  * Поддерживает автоматическое переключение при сбоях
@@ -8,19 +8,24 @@
  */
 
 import { MAXDriver } from './drivers/max-driver.mjs';
-import { TelegramDriver } from './drivers/telegram-driver.mjs';
 
 class MessengerRouter {
   constructor() {
     this.drivers = [];
     this.currentDriver = null;
-    this.mode = 'auto';
+    this.mode = 'auto'; // 'auto' | 'manual'
     this.manualChoice = null;
     this.status = {};
+    
+    // Регистрируем все доступные драйверы
     this.registerDrivers();
   }
 
+  /**
+   * Регистрация всех драйверов
+   */
   registerDrivers() {
+    // MAX
     try {
       const max = new MAXDriver();
       this.drivers.push(max);
@@ -29,19 +34,25 @@ class MessengerRouter {
       console.log('[Router] ⚠️ Не удалось зарегистрировать MAX:', e.message);
     }
 
-    try {
-      const tg = new TelegramDriver();
-      this.drivers.push(tg);
-      console.log('[Router] ✅ Зарегистрирован драйвер: Telegram');
-    } catch (e) {
-      console.log('[Router] ⚠️ Не удалось зарегистрировать Telegram:', e.message);
-    }
+    // Telegram (будет добавлен позже)
+    // try {
+    //   const tg = new TelegramDriver();
+    //   this.drivers.push(tg);
+    //   console.log('[Router] ✅ Зарегистрирован драйвер: Telegram');
+    // } catch (e) {
+    //   console.log('[Router] ⚠️ Не удалось зарегистрировать Telegram:', e.message);
+    // }
   }
 
+  /**
+   * Выбор наилучшего драйвера
+   */
   async selectDriver() {
+    // Ручной режим
     if (this.mode === 'manual' && this.manualChoice) {
       const driver = this.drivers.find(d => d.getDriverName() === this.manualChoice);
       if (driver) {
+        // Проверяем доступность выбранного драйвера
         const status = await driver.checkAvailability();
         if (status.available) {
           this.currentDriver = driver;
@@ -49,11 +60,13 @@ class MessengerRouter {
           return driver;
         } else {
           console.log(`[Router] ⚠️ Выбранный драйвер ${this.manualChoice} недоступен`);
+          // Если выбранный недоступен — переключаемся на авто
           this.mode = 'auto';
         }
       }
     }
 
+    // Автоматический режим
     if (this.mode === 'auto') {
       const results = [];
       for (const driver of this.drivers) {
@@ -65,6 +78,7 @@ class MessengerRouter {
         }
       }
 
+      // Сортируем по оценке доступности (убывание)
       results.sort((a, b) => b.status.score - a.status.score);
 
       if (results.length > 0 && results[0].status.available) {
@@ -81,6 +95,9 @@ class MessengerRouter {
     return null;
   }
 
+  /**
+   * Получение данных через текущий драйвер
+   */
   async fetch(options = {}) {
     if (!this.currentDriver) {
       await this.selectDriver();
@@ -93,10 +110,11 @@ class MessengerRouter {
     try {
       return await this.currentDriver.fetch(options);
     } catch (error) {
+      // Если драйвер упал — пытаемся переключиться
       console.log(`[Router] ⚠️ Драйвер ${this.currentDriver.getDriverName()} упал, переключение...`);
       this.currentDriver = null;
       await this.selectDriver();
-
+      
       if (this.currentDriver) {
         return await this.currentDriver.fetch(options);
       } else {
@@ -105,14 +123,23 @@ class MessengerRouter {
     }
   }
 
+  /**
+   * Получение списка доступных драйверов
+   */
   getAvailableDrivers() {
     return this.drivers.map(d => d.getDriverName());
   }
 
+  /**
+   * Получение имени текущего драйвера
+   */
   getCurrentDriverName() {
     return this.currentDriver ? this.currentDriver.getDriverName() : 'Не выбран';
   }
 
+  /**
+   * Получение статуса всех драйверов
+   */
   async getAllStatus() {
     const statuses = {};
     for (const driver of this.drivers) {
@@ -126,6 +153,9 @@ class MessengerRouter {
     return statuses;
   }
 
+  /**
+   * Установка режима работы
+   */
   setMode(mode, choice = null) {
     if (mode === 'manual' && choice) {
       this.mode = 'manual';
@@ -134,8 +164,9 @@ class MessengerRouter {
       this.mode = 'auto';
       this.manualChoice = null;
     }
-    this.currentDriver = null;
+    this.currentDriver = null; // Сброс, чтобы при следующем запросе выбрался новый
   }
 }
 
+// Экспортируем синглтон
 export default new MessengerRouter();

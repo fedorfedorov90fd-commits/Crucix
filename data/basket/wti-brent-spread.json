@@ -1,0 +1,232 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "wti-brent-spread",
+    "source": "WTI-Brent spread (Yahoo Finance)",
+    "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
+    "fetched_at": "2026-09-27T16:38:19.506Z",
+    "normalized_at": "2026-09-27T16:38:27.018Z",
+    "collector": "collect-wti-brent-spread.mjs",
+    "license": "public-domain",
+    "count": 21,
+    "granularity": "daily",
+    "value_unit": "usd_per_bbl",
+    "value_scale": null,
+    "value_type": "price",
+    "value_range": null,
+    "period": "P30D"
+  },
+  "series": [
+    {
+      "date": "2026-08-27",
+      "value": 6.17,
+      "extra": {
+        "wti": 83.53,
+        "brent": 89.7,
+        "spread": 6.17
+      }
+    },
+    {
+      "date": "2026-08-28",
+      "value": 5.91,
+      "extra": {
+        "wti": 83.4,
+        "brent": 89.31,
+        "spread": 5.91
+      }
+    },
+    {
+      "date": "2026-08-31",
+      "value": 4.73,
+      "extra": {
+        "wti": 85.76,
+        "brent": 90.49,
+        "spread": 4.73
+      }
+    },
+    {
+      "date": "2026-09-01",
+      "value": 4.43,
+      "extra": {
+        "wti": 90.22,
+        "brent": 94.65,
+        "spread": 4.43
+      }
+    },
+    {
+      "date": "2026-09-02",
+      "value": 4.62,
+      "extra": {
+        "wti": 91.01,
+        "brent": 95.63,
+        "spread": 4.62
+      }
+    },
+    {
+      "date": "2026-09-03",
+      "value": 4.22,
+      "extra": {
+        "wti": 91.3,
+        "brent": 95.52,
+        "spread": 4.22
+      }
+    },
+    {
+      "date": "2026-09-04",
+      "value": 4.8,
+      "extra": {
+        "wti": 91.48,
+        "brent": 96.28,
+        "spread": 4.8
+      }
+    },
+    {
+      "date": "2026-09-08",
+      "value": 4.89,
+      "extra": {
+        "wti": 93.03,
+        "brent": 97.92,
+        "spread": 4.89
+      }
+    },
+    {
+      "date": "2026-09-09",
+      "value": 5.16,
+      "extra": {
+        "wti": 96.05,
+        "brent": 101.21,
+        "spread": 5.16
+      }
+    },
+    {
+      "date": "2026-09-10",
+      "value": 5.15,
+      "extra": {
+        "wti": 102.48,
+        "brent": 107.63,
+        "spread": 5.15
+      }
+    },
+    {
+      "date": "2026-09-11",
+      "value": 4.56,
+      "extra": {
+        "wti": 100.05,
+        "brent": 104.61,
+        "spread": 4.56
+      }
+    },
+    {
+      "date": "2026-09-14",
+      "value": 4.29,
+      "extra": {
+        "wti": 101.39,
+        "brent": 105.68,
+        "spread": 4.29
+      }
+    },
+    {
+      "date": "2026-09-15",
+      "value": 2.92,
+      "extra": {
+        "wti": 105.83,
+        "brent": 108.75,
+        "spread": 2.92
+      }
+    },
+    {
+      "date": "2026-09-16",
+      "value": 3.4,
+      "extra": {
+        "wti": 102.43,
+        "brent": 105.83,
+        "spread": 3.4
+      }
+    },
+    {
+      "date": "2026-09-17",
+      "value": 2.91,
+      "extra": {
+        "wti": 101.91,
+        "brent": 104.82,
+        "spread": 2.91
+      }
+    },
+    {
+      "date": "2026-09-18",
+      "value": 3.57,
+      "extra": {
+        "wti": 100.3,
+        "brent": 103.87,
+        "spread": 3.57
+      }
+    },
+    {
+      "date": "2026-09-21",
+      "value": 4.56,
+      "extra": {
+        "wti": 95.78,
+        "brent": 100.34,
+        "spread": 4.56
+      }
+    },
+    {
+      "date": "2026-09-22",
+      "value": 4.66,
+      "extra": {
+        "wti": 94.59,
+        "brent": 99.25,
+        "spread": 4.66
+      }
+    },
+    {
+      "date": "2026-09-23",
+      "value": 10.92,
+      "extra": {
+        "wti": 92.16,
+        "brent": 103.08,
+        "spread": 10.92
+      }
+    },
+    {
+      "date": "2026-09-24",
+      "value": 11.99,
+      "extra": {
+        "wti": 94.61,
+        "brent": 106.6,
+        "spread": 11.99
+      }
+    },
+    {
+      "date": "2026-09-25",
+      "value": 5.03,
+      "extra": {
+        "wti": 92.41,
+        "brent": 97.44,
+        "spread": 5.03
+      }
+    }
+  ],
+  "points": [],
+  "regions": [
+    {
+      "region": "GLOBAL",
+      "value": 5.185238095238096,
+      "count": 21,
+      "aggregation": "mean",
+      "extra": {
+        "max": 11.99,
+        "sum": 108.89
+      }
+    }
+  ],
+  "documents": [],
+  "graph": null,
+  "extra": {
+    "adapter": "timeseries",
+    "adapter_version": "2.2.1",
+    "unique_dates": 21,
+    "unmapped_regions": [],
+    "unmapped_count": 0
+  }
+}

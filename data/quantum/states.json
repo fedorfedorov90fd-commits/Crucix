@@ -1,0 +1,162 @@
+[
+  {
+    "id": "conflict",
+    "name": "Конфликтный потенциал",
+    "probability": 0.35,
+    "superposition": [
+      "escalation",
+      "de-escalation",
+      "status_quo"
+    ],
+    "amplitudes": [
+      0.6,
+      0.2,
+      0.2
+    ],
+    "entangled_with": [
+      "economy",
+      "military",
+      "diplomacy"
+    ]
+  },
+  {
+    "id": "economy",
+    "name": "Экономическая стабильность",
+    "probability": 0.45,
+    "superposition": [
+      "growth",
+      "recession",
+      "stagnation"
+    ],
+    "amplitudes": [
+      0.3,
+      0.5,
+      0.2
+    ],
+    "entangled_with": [
+      "conflict",
+      "energy",
+      "markets"
+    ]
+  },
+  {
+    "id": "military",
+    "name": "Военная активность",
+    "probability": 0.3,
+    "superposition": [
+      "high",
+      "medium",
+      "low"
+    ],
+    "amplitudes": [
+      0.4,
+      0.4,
+      0.2
+    ],
+    "entangled_with": [
+      "conflict",
+      "diplomacy",
+      "intelligence"
+    ]
+  },
+  {
+    "id": "diplomacy",
+    "name": "Дипломатические отношения",
+    "probability": 0.55,
+    "superposition": [
+      "improving",
+      "deteriorating",
+      "stable"
+    ],
+    "amplitudes": [
+      0.2,
+      0.5,
+      0.3
+    ],
+    "entangled_with": [
+      "conflict",
+      "military",
+      "economy"
+    ]
+  },
+  {
+    "id": "energy",
+    "name": "Энергетическая безопасность",
+    "probability": 0.4,
+    "superposition": [
+      "secure",
+      "vulnerable",
+      "crisis"
+    ],
+    "amplitudes": [
+      0.3,
+      0.4,
+      0.3
+    ],
+    "entangled_with": [
+      "economy",
+      "diplomacy",
+      "climate"
+    ]
+  },
+  {
+    "id": "climate",
+    "name": "Климатические риски",
+    "probability": 0.25,
+    "superposition": [
+      "critical",
+      "moderate",
+      "low"
+    ],
+    "amplitudes": [
+      0.5,
+      0.3,
+      0.2
+    ],
+    "entangled_with": [
+      "energy",
+      "economy",
+      "natural"
+    ]
+  },
+  {
+    "id": "markets",
+    "name": "Рыночная волатильность",
+    "probability": 0.5,
+    "superposition": [
+      "high",
+      "medium",
+      "low"
+    ],
+    "amplitudes": [
+      0.4,
+      0.4,
+      0.2
+    ],
+    "entangled_with": [
+      "economy",
+      "energy",
+      "conflict"
+    ]
+  },
+  {
+    "id": "intelligence",
+    "name": "Разведывательная активность",
+    "probability": 0.28,
+    "superposition": [
+      "high",
+      "medium",
+      "low"
+    ],
+    "amplitudes": [
+      0.3,
+      0.5,
+      0.2
+    ],
+    "entangled_with": [
+      "military",
+      "conflict",
+      "diplomacy"
+    ]
+  }
+]

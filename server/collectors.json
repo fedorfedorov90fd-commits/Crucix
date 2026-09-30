@@ -1,0 +1,1085 @@
+{
+  "collectors": [
+    {
+      "id": "acled",
+      "name": "acled",
+      "path": "scripts/collectors/collect-acled.mjs",
+      "description": "Crucix Collector: ACLED (Armed Conflict Location & Event Data). Версия 2.0.0. Принят 18.09.2026. Роль: собирает события конфликтов с координатами, сдаёт через saveRaw. Сборщик НЕ пишет в basket напрям",
+      "dataSource": "e.source || null,",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "aviation",
+      "name": "aviation",
+      "path": "scripts/collectors/collect-aviation.mjs",
+      "description": "Crucix Collector: aviation (OpenSky / demo) — синтез из трёх источников. Версия 2.0.0. Принят 20.09.2026. СИНТЕЗ (правило #871): объединяет данные трёх версий: - collect-aviation.v1.0.0        (demo 3",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "bdi",
+      "name": "bdi",
+      "path": "scripts/collectors/collect-bdi.mjs",
+      "description": "Crucix Collector: bdi (Baltic Dry Index). Версия 2.0.0. Принят 19.09.2026. Реальный источник Yahoo Finance BDI, fallback — демо. Тип — timeseries.",
+      "dataSource": "",
+      "interval": 1,
+      "hasHelpRu": false
+    },
+    {
+      "id": "big-mac",
+      "name": "big-mac",
+      "path": "scripts/collectors/collect-big-mac.mjs",
+      "description": "Crucix Collector: Big Mac Index (The Economist) — синтез из трёх источников. Версия 2.0.0. Принят 20.09.2026. СИНТЕЗ (правило #871): объединяет данные трёх версий: - collect-big-mac.v1.0.0       (10 с",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "bls",
+      "name": "bls",
+      "path": "scripts/collectors/collect-bls.mjs",
+      "description": "Crucix Collector: BLS (Bureau of Labor Statistics) — demo-режим. Версия 2.0.0. Принят 20.09.2026. Роль: генерирует сырьё (демо-режим) и сдаёт его на склад через collector-helper. Сборщик НЕ пишет в ba",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "business-optimism",
+      "name": "business-optimism",
+      "path": "scripts/collectors/collect-business-optimism.mjs",
+      "description": "Crucix Collector: business-optimism (Conference Board / FRED) — demo-режим. Версия 2.0.0. Принят 20.09.2026. Роль: генерирует сырьё (демо-режим) и сдаёт его на склад через collector-helper. Сборщик НЕ",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "celestrak",
+      "name": "celestrak",
+      "path": "scripts/collectors/collect-celestrak.mjs",
+      "description": "Crucix Collector: Celestrak satellites. Версия 2.0.0. Принят 20.09.2026. Роль: загружает данные о спутниках с Celestrak.org (11 групп, без ключа) и сдаёт на склад через collector-helper. Сборщик НЕ пи",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "cisa-kev",
+      "name": "cisa-kev",
+      "path": "scripts/collectors/collect-cisa-kev.mjs",
+      "description": "Crucix Collector: CISA KEV (Known Exploited Vulnerabilities) — реальный API. Версия 2.0.0. Принят 20.09.2026. Роль: реальный API → saveRaw. Сборщик НЕ пишет в basket. Источник: https://www.cisa.gov/si",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "cisa",
+      "name": "cisa",
+      "path": "scripts/collectors/collect-cisa.mjs",
+      "description": "Crucix Collector: CISA KEV (известные эксплуатируемые уязвимости). Версия 2.0.0. Принят 19.09.2026. Синтез из collect-cisa.mjs (demo) + collect-cisa-kev.mjs (реальная логика). Правило #871: единый фай",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "coingecko",
+      "name": "coingecko",
+      "path": "scripts/collectors/collect-coingecko.mjs",
+      "description": "Crucix Collector: coingecko (криптовалюты). Версия 2.0.1. Принят 19.09.2026. Источник: CoinGecko public API (без ключа). Endpoint: /api/v3/coins/markets (top-50 по market cap). Формат: catalog (снимок",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "comtrade",
+      "name": "comtrade",
+      "path": "scripts/collectors/collect-comtrade.mjs",
+      "description": "Crucix Collector: UN Comtrade (международная торговля) — demo. Версия 2.0.0. Принят 20.09.2026. Роль: demo-сырьё → saveRaw. Сборщик НЕ пишет в basket. Реальный источник: https://comtradeapi.un.org/ (б",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "conflict-zones",
+      "name": "conflict-zones",
+      "path": "scripts/collectors/collect-conflict-zones.mjs",
+      "description": "Crucix Collector: conflict-zones (ACLED-совместимый, реальные зоны). Версия 2.0.0. Принят 20.09.2026. Роль: реальные зоны конфликтов → saveRaw. Сборщик НЕ пишет в basket. Источник: ACLED + открытые да",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "conflicts",
+      "name": "conflicts",
+      "path": "scripts/collectors/collect-conflicts.mjs",
+      "description": "Crucix Collector: conflicts (ACLED-совместимый, тестовые данные). Версия 2.0.0. Принят 20.09.2026. Роль: тестовое сырьё → saveRaw. Сборщик НЕ пишет в basket. Источник: ACLED (для реальных данных нужен",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "consumer-confidence",
+      "name": "consumer-confidence",
+      "path": "scripts/collectors/collect-consumer-confidence.mjs",
+      "description": "Crucix Collector: consumer-confidence (индекс потребительского доверия) — demo. Версия 2.0.0. Принят 20.09.2026. Роль: demo-сырьё → saveRaw. Сборщик НЕ пишет в basket. Реальный источник: FRED / Confer",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "consumer-expectations",
+      "name": "consumer-expectations",
+      "path": "scripts/collectors/collect-consumer-expectations.mjs",
+      "description": "Crucix Collector: consumer-expectations (индекс потребительских ожиданий) — demo. Версия 2.0.0. Принят 20.09.2026. Роль: demo-сырьё → saveRaw. Сборщик НЕ пишет в basket. Реальный источник: FRED / Conf",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "copper-gold",
+      "name": "copper-gold",
+      "path": "scripts/collectors/collect-copper-gold.mjs",
+      "description": "Crucix Collector: copper-gold. Версия 2.0.0. Принят 19.09.2026. Демо-данные индекса Медь/Золото. Тип — timeseries. Формат: [{date, value: ratio, copper, gold}].",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "covid",
+      "name": "covid",
+      "path": "scripts/collectors/collect-covid.mjs",
+      "description": "Crucix Collector: COVID-19 (disease.sh API, без ключа). Версия 2.0.0. Принят 20.09.2026. Роль: реальный API → saveRaw. Сборщик НЕ пишет в basket. Источник: https://disease.sh/v3/covid-19/countries Фор",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "crypto-fear",
+      "name": "crypto-fear",
+      "path": "scripts/collectors/collect-crypto-fear.mjs",
+      "description": "Crucix Collector: crypto-fear (BTC/ETH, demo). Версия 2.0.0. Принят 20.09.2026. Роль: demo-сырьё → saveRaw. Сборщик НЕ пишет в basket. Формат: [{date, btc, eth, ratio}]. Тип — timeseries.",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "cyber-apt",
+      "name": "cyber-apt",
+      "path": "scripts/collectors/collect-cyber-apt.mjs",
+      "description": "Crucix Collector: cyber-apt (реальные данные APT-групп). Версия 2.0.0. Принят 20.09.2026. Роль: справочник APT → saveRaw. Сборщик НЕ пишет в basket. Формат: [{name, country, lat, lng, type, active, co",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "cyber-attacks",
+      "name": "cyber-attacks",
+      "path": "scripts/collectors/collect-cyber-attacks.mjs",
+      "description": "Crucix Collector: cyber-attacks (реальные sample-данные). Версия 2.0.0. Принят 20.09.2026. Роль: справочник кибератак → saveRaw. Сборщик НЕ пишет в basket. Источник: CISA KEV + открытые данные. Формат",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "cyber-threat-index",
+      "name": "cyber-threat-index",
+      "path": "scripts/collectors/collect-cyber-threat-index.mjs",
+      "description": "Crucix Collector: cyber-threat-index (композитный индекс) — demo. Версия 2.0.0. Принят 20.09.2026. Роль: demo-сырьё → saveRaw. Сборщик НЕ пишет в basket. Источник: CISA + Darkweb (для реальных данных ",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "cyber-threats",
+      "name": "cyber-threats",
+      "path": "scripts/collectors/collect-cyber-threats.mjs",
+      "description": "Crucix Collector: cyber-threats. Версия 2.0.0. Принят 18.09.2026. Роль: генерирует демо-данные кибер-угроз и сдаёт через saveRaw. Сборщик НЕ пишет в basket напрямую — только raw + накладная. Формат да",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "daily-report",
+      "name": "daily-report",
+      "path": "scripts/collectors/collect-daily-report.mjs",
+      "description": "Crucix Collector: daily-report (АГРЕГАТОР). Версия 2.0.0. Принят 18.09.2026. ВНИМАНИЕ: это НЕ классический сборщик. Он агрегирует данные из basket (notam, gps-jamming, google-trends, vix, yield-curve,",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "dark-fleet",
+      "name": "dark-fleet",
+      "path": "scripts/collectors/collect-dark-fleet.mjs",
+      "description": "Crucix Collector: dark-fleet (тёмный флот) — demo. Версия 2.0.0. Принят 20.09.2026. Роль: demo-сырьё → saveRaw. Сборщик НЕ пишет в basket. Источник: Dark Ships + OFAC (реальные данные — интеграция с O",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "dark-ships-real",
+      "name": "dark-ships-real",
+      "path": "scripts/collectors/collect-dark-ships-real.mjs",
+      "description": "Crucix Collector: dark-ships-real (тёмные суда, конкретные позиции). Версия 2.0.0. Принят 20.09.2026. Роль: реальные sample-данные → saveRaw. Сборщик НЕ пишет в basket. Формат: [{name, lat, lng, type,",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "dark-ships",
+      "name": "dark-ships",
+      "path": "scripts/collectors/collect-dark-ships.mjs",
+      "description": "Crucix Collector: dark-ships. Версия 2.0.0. Принят 18.09.2026. Роль: генерирует демо-данные тёмного флота и сдаёт через saveRaw. Сборщик НЕ пишет в basket напрямую — только raw + накладная. Формат дан",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "debt-gdp",
+      "name": "debt-gdp",
+      "path": "scripts/collectors/collect-debt-gdp.mjs",
+      "description": "Crucix Collector: debt-gdp (долг/ВВП по странам) — demo. Версия 2.0.0. Принят 20.09.2026. Роль: demo-сырьё → saveRaw. Сборщик НЕ пишет в basket. Реальный источник: IMF WEO, World Bank. Формат: [{date,",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "dxy",
+      "name": "dxy",
+      "path": "scripts/collectors/collect-dxy.mjs",
+      "description": "Crucix Collector: dxy (индекс доллара США) — demo. Версия 2.0.0. Принят 20.09.2026. Роль: demo-сырьё → saveRaw. Сборщик НЕ пишет в basket. Реальный источник: Yahoo Finance (DX-Y.NYB), FRED (DTWEXBGS).",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "earthquakes",
+      "name": "earthquakes",
+      "path": "scripts/collectors/collect-earthquakes.mjs",
+      "description": "Crucix Collector: earthquakes (USGS-совместимый, реальные сейсмоактивные зоны). Версия 2.0.0. Принят 20.09.2026. Роль: реальные сейсмоактивные зоны → saveRaw. Сборщик НЕ пишет в basket. Источник: USGS",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "ecb",
+      "name": "ecb",
+      "path": "scripts/collectors/collect-ecb.mjs",
+      "description": "Crucix Collector: ECB (курсы валют ЕЦБ) — реальный API, без ключа. Версия 2.0.1. Принят 20.09.2026. Изменения от 2.0.0: - Реальные даты вместо индексов observations. ECB API возвращает observations: {",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "economy",
+      "name": "economy",
+      "path": "scripts/collectors/collect-economy.mjs",
+      "description": "Crucix Collector: economy (FRED-индикаторы: VIX, 10Y Treasury, AAA) — demo. Версия 2.0.0. Принят 20.09.2026. Роль: demo-сырьё → saveRaw. Сборщик НЕ пишет в basket. Реальный источник: FRED API (https:/",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "eia-real",
+      "name": "eia-real",
+      "path": "scripts/collectors/collect-eia-real.mjs",
+      "description": "Crucix Collector: eia-real — заглушка (EIA требует API-ключ). Версия 2.0.0. Принят 20.09.2026. Роль: информация о статусе → saveRaw. Сборщик НЕ пишет в basket. Правило 12.2: EIA требует ключ → заменён",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "eia",
+      "name": "eia",
+      "path": "scripts/collectors/collect-eia.mjs",
+      "description": "Crucix Collector: EIA (энергоносители — WTI, Brent, Natural Gas, Gasoline, Heating Oil). Версия 2.0.0. Принят 19.09.2026. Источник: Yahoo Finance (без ключа, без регистрации). EIA API v2 требует ключ ",
+      "dataSource": "",
+      "interval": 1,
+      "hasHelpRu": false
+    },
+    {
+      "id": "epa",
+      "name": "epa",
+      "path": "scripts/collectors/collect-epa.mjs",
+      "description": "Crucix Collector: EPA (Air Quality — PM2.5, PM10, озон, NO2). Версия 2.0.1. Принят 19.09.2026. Источник: Open-Meteo Air Quality API (без ключа, без регистрации). Основные air quality API (AirNow, Open",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "feeds",
+      "name": "feeds",
+      "path": "scripts/collectors/collect-feeds.mjs",
+      "description": "Crucix Collector: feeds (RSS через OPML) — реальный сборщик. Версия 2.0.0. Принят 20.09.2026. Роль: RSS-агрегация → saveRaw. Сборщик НЕ пишет в basket. Источник: data/feeds/feeds.opml (список RSS). Фо",
+      "dataSource": "feed.name,",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "fires",
+      "name": "fires",
+      "path": "scripts/collectors/collect-fires.mjs",
+      "description": "Crucix Collector: fires (пожары, FIRMS-совместимые) — demo. Версия 2.0.0. Принят 20.09.2026. Роль: demo с реальными координатами пожароопасных зон → saveRaw. Источник: NASA FIRMS (https://firms.modaps",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "firms",
+      "name": "firms",
+      "path": "scripts/collectors/collect-firms.mjs",
+      "description": "Crucix Collector: firms (NASA FIRMS — пожары). Версия 2.0.0. Принят 18.09.2026. Роль: генерирует демо-данные пожаров и сдаёт через saveRaw. Сборщик НЕ пишет в basket напрямую — только raw + накладная.",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "frankfurter",
+      "name": "frankfurter",
+      "path": "scripts/collectors/collect-frankfurter.mjs",
+      "description": "Crucix Collector: frankfurter (курсы валют ЕЦБ) — реальный API, без ключа. Версия 2.0.0. Принят 20.09.2026. Источник: https://api.frankfurter.app/latest?from=USD Формат: {source, updated, base, date, ",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "fred-real",
+      "name": "fred-real",
+      "path": "scripts/collectors/collect-fred-real.mjs",
+      "description": "Crucix Collector: fred-real — замена FRED на открытые источники (без ключа). Версия 2.0.0. Принят 20.09.2026. Правило 12.2: API-ключи запрещены. FRED требует ключ → заменён на: - ECB Data Portal (курс",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "fred",
+      "name": "fred",
+      "path": "scripts/collectors/collect-fred.mjs",
+      "description": "Crucix Collector: FRED (макроэкономические индикаторы). Версия 2.0.1. Принят 19.09.2026. Синтез из collect-fred.mjs (demo) + collect-fred-real.mjs (реальная логика). Правило #871: единый файл, вбирающ",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "frostbyte",
+      "name": "frostbyte",
+      "path": "scripts/collectors/collect-frostbyte.mjs",
+      "description": "Crucix Collector: frostbyte (крипто, sample-данные). Версия 2.0.0. Принят 20.09.2026. Источник: Frostbyte (для реальных данных — интеграция). Формат: {source, timestamp, crypto:{...}}. Тип — catalog.",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "gdelt",
+      "name": "gdelt",
+      "path": "scripts/collectors/collect-gdelt.mjs",
+      "description": "Crucix Collector: GDELT news events. Версия 2.5.0. Принят 23.09.2026. Изменения v2.5: - Интеграция Tor SOCKS5 через socks-proxy-agent + axios. Причина: прогон 23.09.2026 16:36 показал 0/4 запросов — в",
+      "dataSource": "domain,",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "geo-data",
+      "name": "geo-data",
+      "path": "scripts/collectors/collect-geo-data.mjs",
+      "description": "Crucix Collector: geo-data (справочник 192 стран + 14 маркеров + 8 слоёв). Версия 2.0.0. Принят 20.09.2026. Роль: справочник гео-данных → saveRaw. Сборщик НЕ пишет в basket. Формат: {timestamp, versio",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "global-price",
+      "name": "global-price",
+      "path": "scripts/collectors/collect-global-price.mjs",
+      "description": "Crucix Collector: global-price (цены на сырьё) — demo. Версия 2.0.0. Принят 20.09.2026. Источник: GlobalPrice API (не работает, fallback demo). Формат: {source, lastUpdated, commodities:[{name,price,u",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "gold-oil",
+      "name": "gold-oil",
+      "path": "scripts/collectors/collect-gold-oil.mjs",
+      "description": "Crucix Collector: gold-oil (золото/нефть + ratio) — ЕДИНЫЙ после синтеза 5 версий. Версия 2.0.0. Принят 20.09.2026. СИНТЕЗ по правилу #871 из пяти источников: - collect-gold-oil.mjs         (demo, про",
+      "dataSource": "",
+      "interval": 1,
+      "hasHelpRu": false
+    },
+    {
+      "id": "gold-silver",
+      "name": "gold-silver",
+      "path": "scripts/collectors/collect-gold-silver.mjs",
+      "description": "Crucix Collector: gold-silver (золото/серебро, ratio) — demo. Версия 2.0.0. Принят 20.09.2026. Источник: демо (реальные — Yahoo Finance GC=F + SI=F). Формат: [{date, gold, silver, ratio}]. Тип — times",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "google-trends",
+      "name": "google-trends",
+      "path": "scripts/collectors/collect-google-trends.mjs",
+      "description": "Crucix Collector: google-trends. Версия 2.0.0. Принят 18.09.2026. Роль: собирает тренды Google Trends RSS по 5 регионам и 5 ключевым словам. Сборщик НЕ пишет в basket напрямую — только raw + накладная",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "gps-jamming",
+      "name": "gps-jamming",
+      "path": "scripts/collectors/collect-gps-jamming.mjs",
+      "description": "Crucix Collector: gps-jamming (GPS-глушение по 5 регионам). Версия 2.0.0. Принят 20.09.2026. Роль: реальный OpenSky API + demo-fallback → saveRaw. Источник: https://opensky-network.org/api/states/all ",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "gscpi",
+      "name": "gscpi",
+      "path": "scripts/collectors/collect-gscpi.mjs",
+      "description": "Crucix Collector: gscpi (Global Supply Chain Pressure Index) — demo. Версия 2.0.0. Принят 20.09.2026. Источник: NY Fed GSCPI (реальные данные). Формат: [{date, value}]. Тип — timeseries.",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "hackernews",
+      "name": "hackernews",
+      "path": "scripts/collectors/collect-hackernews.mjs",
+      "description": "Crucix Collector: hackernews (топ-30 HN, реальный API). Версия 2.0.0. Принят 20.09.2026. Источник: https://hacker-news.firebaseio.com/v0/topstories.json Формат: {source, updated, count, items:[{id,tit",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "happiness",
+      "name": "happiness",
+      "path": "scripts/collectors/collect-happiness.mjs",
+      "description": "Crucix Collector: happiness (World Happiness Report) — реальные данные (30 стран). Версия 2.0.0. Принят 20.09.2026. Источник: World Happiness Report 2026. Формат: [{id, country, score, rank, updated}]",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "hy-spread",
+      "name": "hy-spread",
+      "path": "scripts/collectors/collect-hy-spread.mjs",
+      "description": "Crucix Collector: hy-spread (HY Spread) — demo. Версия 2.0.0. Принят 20.09.2026. Источник: FRED BAMLH0A0HYM2 (реальные данные). Формат: [{date, value, change, status}]. Тип — timeseries.",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "indirect-indicators",
+      "name": "indirect-indicators",
+      "path": "scripts/collectors/collect-indirect-indicators.mjs",
+      "description": "Crucix Collector: indirect-indicators (косвенные индикаторы — Пицца Пентагона, Такси Лэнгли) — demo. Версия 2.0.0. Принят 20.09.2026. Источник: Google Maps / Yelp / Uber / Lyft (демо). Формат: {source",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "inflation",
+      "name": "inflation",
+      "path": "scripts/collectors/collect-inflation.mjs",
+      "description": "Crucix Collector: inflation (инфляция США) — реальный API Trading Economics. Версия 2.0.0. Принят 20.09.2026. Источник: https://api.tradingeconomics.com/markets/united-states-inflation-rate Формат: [{",
+      "dataSource": "ok ?",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "infrastructure",
+      "name": "infrastructure",
+      "path": "scripts/collectors/collect-infrastructure.mjs",
+      "description": "Crucix Collector: infrastructure. Версия 2.0.0. Принят 18.09.2026. Роль: читает data/infrastructure/objects.json (справочник объектов), нормализует координаты и уязвимость, сдаёт на склад через collec",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "instability-index",
+      "name": "instability-index",
+      "path": "scripts/collectors/collect-instability-index.mjs",
+      "description": "Crucix Collector: instability-index (индекс нестабильности по 15 странам). Версия 2.0.0. Принят 20.09.2026. Формат: [{name, lat, lng, index, collected}]. Тип — points.",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "internet-outages",
+      "name": "internet-outages",
+      "path": "scripts/collectors/collect-internet-outages.mjs",
+      "description": "Crucix Collector: internet-outages (отключения интернета по 5 странам). Версия 2.0.0. Принят 20.09.2026. Формат: [{country, lat, lng, severity, description, collected}]. Тип — points.",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "iss",
+      "name": "iss",
+      "path": "scripts/collectors/collect-iss.mjs",
+      "description": "Crucix Collector: iss (позиция МКС в реальном времени). Версия 2.0.0. Принят 20.09.2026. Источник: https://api.wheretheiss.at/v1/satellites/25544 Формат: {source, updated, iss:{lat,lng,altitude,veloci",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "launches",
+      "name": "launches",
+      "path": "scripts/collectors/collect-launches.mjs",
+      "description": "Crucix Collector: launches (предстоящие космические запуски). Версия 2.0.0. Принят 20.09.2026. Источник: https://ll.thespacedevs.com/2.2.0/launch/upcoming/ Формат: {source, updated, count, launches:[{",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "map-layer-vix",
+      "name": "map-layer-vix",
+      "path": "scripts/collectors/collect-map-layer-vix.mjs",
+      "description": "Crucix Collector: map-layer-vix (обогащение VIX координатами). Версия 2.0.0. Принят 18.09.2026. ВНИМАНИЕ: это не классический сборщик внешнего источника. Он обогащает уже собранные VIX-данные (из data",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "maritime-monitor",
+      "name": "maritime-monitor",
+      "path": "scripts/collectors/collect-maritime-monitor.mjs",
+      "description": "Crucix Collector: maritime-monitor (морской трафик) — demo. Версия 2.0.0. Принят 20.09.2026. Формат: [{date, region, vessels}]. Тип — timeseries.",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "military-bases",
+      "name": "military-bases",
+      "path": "scripts/collectors/collect-military-bases.mjs",
+      "description": "Crucix Collector: military-bases. Версия 2.0.0. Принят 18.09.2026. Роль: сохраняет справочник военных баз (60+ объектов с координатами). Сборщик НЕ пишет в basket напрямую — только raw + накладная. Фо",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "military-exercises",
+      "name": "military-exercises",
+      "path": "scripts/collectors/collect-military-exercises.mjs",
+      "description": "Crucix Collector: military-exercises (военные учения) — demo. Версия 2.0.0. Принят 20.09.2026. Источник: OpenSky + NOTAM (демо). Формат: {source, lastUpdated, data:[{date,value,exercises,region,notam,",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "news",
+      "name": "news",
+      "path": "scripts/collectors/collect-news.mjs",
+      "description": "Crucix Collector: news (топ-10 новостей) — demo. Версия 2.0.0. Принят 20.09.2026. Формат: {articles:[...], summary:{total,byCategory,byRegion,byImportance}}. Тип — events.",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "newsapi-real",
+      "name": "newsapi-real",
+      "path": "scripts/collectors/collect-newsapi-real.mjs",
+      "description": "Crucix Collector: newsapi-real — замена NewsAPI на GDELT + HN (без ключей). Версия 2.0.0. Принят 20.09.2026. Правило 12.2: NewsAPI требует ключ → заменён на GDELT + HN. ВАЖНО: читает из data/basket/ (",
+      "dataSource": "a.domain ||",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "newsapi",
+      "name": "newsapi",
+      "path": "scripts/collectors/collect-newsapi.mjs",
+      "description": "Crucix Collector: newsapi (топ-новости NewsAPI) — требует ключ. Версия 2.0.0. Принят 20.09.2026. Правило 12.2: NewsAPI требует ключ → fallback demo (10 статей). Формат: {source, lastUpdated, totalArti",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "noaa",
+      "name": "noaa",
+      "path": "scripts/collectors/collect-noaa.mjs",
+      "description": "Crucix Collector: noaa (погода по 7 городам) — demo. Версия 2.0.0. Принят 20.09.2026. Формат: [{date, value, city, temp, condition}]. Тип — timeseries.",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "notam",
+      "name": "notam",
+      "path": "scripts/collectors/collect-notam.mjs",
+      "description": "Crucix Collector: notam (NOTAM через Eurocontrol RSS). Версия 2.0.0. Принят 18.09.2026. Роль: собирает NOTAM (авиационные ограничения) по 6 регионам. Сборщик НЕ пишет в basket напрямую — только raw + ",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "nuclear-monitor",
+      "name": "nuclear-monitor",
+      "path": "scripts/collectors/collect-nuclear-monitor.mjs",
+      "description": "Crucix Collector: nuclear-monitor (ядерный мониторинг) — demo. Версия 2.0.0. Принят 20.09.2026. Формат: [{date, value, site, status}]. Тип — timeseries.",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "ofac-sdn",
+      "name": "ofac-sdn",
+      "path": "scripts/collectors/collect-ofac-sdn.mjs",
+      "description": "Crucix Collector: OFAC SDN (санкции США). Версия 2.0.0. Принят 18.09.2026. Роль: скачивает XML с treasury.gov, парсит в массив entries, сдаёт через saveRaw. Сборщик НЕ пишет в basket напрямую. Формат ",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "ofac",
+      "name": "ofac",
+      "path": "scripts/collectors/collect-ofac.mjs",
+      "description": "Crucix Collector: ofac (санкционные данные OFAC по странам) — demo. Версия 2.0.0. Принят 20.09.2026. Формат: [{date, country, type, count}]. Тип — catalog. ПРИМЕЧАНИЕ: отдельный от collect-ofac-sdn.mj",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "oil-gas",
+      "name": "oil-gas",
+      "path": "scripts/collectors/collect-oil-gas.mjs",
+      "description": "Crucix Collector: oil-gas (нефть/газ, ratio) — demo. Версия 2.0.0. Принят 20.09.2026. Формат: [{date, oil, gas, ratio}]. Тип — timeseries.",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "open-meteo (копия)",
+      "name": "open-meteo (копия)",
+      "path": "scripts/collectors/collect-open-meteo (копия).mjs",
+      "description": "Crucix Collector: open-meteo (погода) — ЕДИНЫЙ после синтеза 2 версий. Версия 2.0.0. Принят 20.09.2026. СИНТЕЗ по правилу #871: - collect-open-meteo.mjs (10 городов с кодами: Kyiv, Moscow, Beijing, Wa",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "open-meteo",
+      "name": "open-meteo",
+      "path": "scripts/collectors/collect-open-meteo.mjs",
+      "description": "Crucix Collector: open-meteo (погода) — ЕДИНЫЙ после синтеза 2 версий. Версия 2.1.1. Принят 23.09.2026. Изменения v2.1.1: - Устранены 4 мусорные вставки, попавшие в файл при копировании v2.1.0 через т",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "openaq",
+      "name": "openaq",
+      "path": "scripts/collectors/collect-openaq.mjs",
+      "description": "Crucix Collector: openaq (качество воздуха, реальный API + fallback). Версия 2.0.0. Принят 20.09.2026. Источник: https://api.openaq.org/v2/latest?limit=100 Формат: {source, lastUpdated, totalRecords, ",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "opensanctions",
+      "name": "opensanctions",
+      "path": "scripts/collectors/collect-opensanctions.mjs",
+      "description": "Crucix Collector: opensanctions (OpenSanctions.org) — demo. Версия 2.0.0. Принят 20.09.2026. Источник: https://www.opensanctions.org/ Формат: [{date, country, type, count}]. Тип — catalog.",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "opensky",
+      "name": "opensky",
+      "path": "scripts/collectors/collect-opensky.mjs",
+      "description": "Crucix Collector: opensky (5 аэропортов) — demo. Версия 2.0.0. Принят 20.09.2026. Источник: OpenSky Network (демо). Формат: {source, timestamp, total, airports:[{airport,code,lat,lng,flights_count,upd",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "openweather",
+      "name": "openweather",
+      "path": "scripts/collectors/collect-openweather.mjs",
+      "description": "Crucix Collector: openweather (OpenWeatherMap, опционально с ключом). Версия 2.0.0. Принят 20.09.2026. Правило 12.2: OpenWeatherMap требует ключ — опционален. Без ключа — demo-fallback. Источник: http",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "ovx",
+      "name": "ovx",
+      "path": "scripts/collectors/collect-ovx.mjs",
+      "description": "Crucix Collector: ovx (OVX — волатильность нефти) — demo. Версия 2.0.0. Принят 20.09.2026. Источник: CBOE OVX (реальные — Yahoo Finance ^OVX). Формат: [{date, value, change, status}]. Тип — timeseries",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "pipelines",
+      "name": "pipelines",
+      "path": "scripts/collectors/collect-pipelines.mjs",
+      "description": "Crucix Collector: pipelines (трубопроводы, 6 объектов с координатами). Версия 2.0.0. Принят 20.09.2026. Формат: [{name, lat1, lng1, lat2, lng2, type, countries, collected}]. Тип — points.",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "pmi",
+      "name": "pmi",
+      "path": "scripts/collectors/collect-pmi.mjs",
+      "description": "Crucix Collector: pmi (PMI — индекс менеджеров по закупкам) — demo. Версия 2.0.0. Принят 20.09.2026. Источник: ISM PMI (реальные — Trading Economics). Формат: [{date, value}]. Тип — timeseries.",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "prediction-markets",
+      "name": "prediction-markets",
+      "path": "scripts/collectors/collect-prediction-markets.mjs",
+      "description": "Crucix Collector: prediction-markets (Polymarket-совместимые) — реальные данные. Версия 2.0.0. Принят 20.09.2026. Источник: Polymarket, Metaculus, Kalshi, Manifold. Формат: [{event, probability, volum",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "recession",
+      "name": "recession",
+      "path": "scripts/collectors/collect-recession.mjs",
+      "description": "Crucix Collector: recession (индекс вероятности рецессии) — demo. Версия 2.0.0. Принят 20.09.2026. Источник: NY Fed / FRED RECPROUSM156N (реальные данные). Формат: [{date, value}]. Тип — timeseries.",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "rest-countries",
+      "name": "rest-countries",
+      "path": "scripts/collectors/collect-rest-countries.mjs",
+      "description": "Crucix Collector: rest-countries (справочник стран) — реальные данные. Версия 2.0.0. Принят 20.09.2026. Источник: https://raw.githubusercontent.com/mledoze/countries/master/countries.json Формат: {sou",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "ria",
+      "name": "ria",
+      "path": "scripts/collectors/collect-ria.mjs",
+      "description": "Crucix Collector: ria (новости РИА) — demo. Версия 2.0.0. Принят 20.09.2026. Источник: РИА Новости (демо). Формат: {source, timestamp, total, news:[{title,category}]}. Тип — events.",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "risk-heatmap",
+      "name": "risk-heatmap",
+      "path": "scripts/collectors/collect-risk-heatmap.mjs",
+      "description": "Crucix Collector: risk-heatmap (11 точек риска). Версия 2.0.0. Принят 20.09.2026. Формат: [{lat, lng, intensity, region, collected}]. Тип — points.",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "rss-extra",
+      "name": "rss-extra",
+      "path": "scripts/collectors/collect-rss-extra.mjs",
+      "description": "Crucix Collector: rss-extra (RSS-новости дополнительный) — demo. Версия 2.0.0. Принят 20.09.2026. Формат: {source, timestamp, total_sources, success, failed, results:[...]}. Тип — events.",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "rss-universal",
+      "name": "rss-universal",
+      "path": "scripts/collectors/collect-rss-universal.mjs",
+      "description": "Crucix Collector: rss-universal (универсальный RSS). Версия 2.0.0. Принят 20.09.2026. Три режима: direct | rsshub-public | rsshub-local (автовыбор по числу источников). УБРАН setInterval — сборщик зап",
+      "dataSource": "feed.name, sourceUrl: feed.url, collectedAt: new Date().toISOString(), category:",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "rsshub",
+      "name": "rsshub",
+      "path": "scripts/collectors/collect-rsshub.mjs",
+      "description": "Crucix Collector: rsshub (RSS через прямой парсинг или RSSHub). Версия 2.0.0. Принят 18.09.2026. Роль: читает OPML (data/feeds/feeds.opml), парсит RSS-ленты, дедуплицирует по id, сдаёт через saveRaw. ",
+      "dataSource": "feed.name, collectedAt: new Date().toISOString(), category:",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "rublev-dubai",
+      "name": "rublev-dubai",
+      "path": "scripts/collectors/collect-rublev-dubai.mjs",
+      "description": "Crucix Collector: rublev-dubai (RUB/USDT) — demo. Версия 2.0.0. Принят 20.09.2026. Источник: Garantex / CommEX (demo). Формат: {source, lastUpdated, data:[{date,rate,exchange,spread,source}], meta}. Т",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "russian-sources",
+      "name": "russian-sources",
+      "path": "scripts/collectors/collect-russian-sources.mjs",
+      "description": "Crucix Collector: russian-sources (сводка российских источников) — demo. Версия 2.0.0. Принят 20.09.2026. Формат: {source, timestamp, weather:[...], tass:[...], rbc:[...], interfax:[...]}. Тип — hiera",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "safecast",
+      "name": "safecast",
+      "path": "scripts/collectors/collect-safecast.mjs",
+      "description": "Crucix Collector: safecast (радиация, 5 АЭС) — demo. Версия 2.0.0. Принят 20.09.2026. Источник: Safecast (реальные — https://api.safecast.org/). Формат: [{date, value, site, cpm}]. Тип — timeseries.",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "satellite-stac",
+      "name": "satellite-stac",
+      "path": "scripts/collectors/collect-satellite-stac.mjs",
+      "description": "Crucix Collector: satellite-stac (5 спутниковых снимков, STAC). Версия 2.0.0. Принят 20.09.2026. Источник: STAC (Sentinel, Landsat). Формат: [{name, lat, lng, date, resolution, cloud, collected}]. Тип",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "ships",
+      "name": "ships",
+      "path": "scripts/collectors/collect-ships.mjs",
+      "description": "Crucix Collector: ships (суда, AIS) — ЕДИНЫЙ после синтеза 2 версий. Версия 2.0.0. Принят 20.09.2026. СИНТЕЗ по правилу #871: - collect-ships.v1.0.0       (demo 31 день, 8 портов: ships, port, lat/lng",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "social-unrest",
+      "name": "social-unrest",
+      "path": "scripts/collectors/collect-social-unrest.mjs",
+      "description": "Crucix Collector: social-unrest (индекс социальной напряжённости) — demo. Версия 2.0.0. Принят 20.09.2026. Формат: [{date, value, region, status}]. Тип — timeseries.",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "sp500-vix",
+      "name": "sp500-vix",
+      "path": "scripts/collectors/collect-sp500-vix.mjs",
+      "description": "Crucix Collector: sp500-vix. Версия 2.0.0. Принят 19.09.2026. Демо-данные SP500 и VIX. Тип — timeseries. Формат: [{date, value: vix, sp500, vix}].",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "space-track",
+      "name": "space-track",
+      "path": "scripts/collectors/collect-space-track.mjs",
+      "description": "Crucix Collector: space-track (космический мусор) — demo. Версия 2.0.0. Принят 20.09.2026. Правило 12.2: space-track.org требует регистрации → fallback demo. Формат: {source, lastUpdated, totalObjects",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "starlink",
+      "name": "starlink",
+      "path": "scripts/collectors/collect-starlink.mjs",
+      "description": "Crucix Collector: starlink (18 спутников) — demo. Версия 2.0.0. Принят 20.09.2026. Формат: [{name, lat, lng, type, status, severity, collected}]. Тип — points.",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "strategic-ports",
+      "name": "strategic-ports",
+      "path": "scripts/collectors/collect-strategic-ports.mjs",
+      "description": "scripts/collectors/collect-strategic-ports.mjs — СБОРЩИК: СТРАТЕГИЧЕСКИЕ ПОРТЫ Версия 2.0.0. Принят 20.09.2026. Перевод на контракт v3: сохранение через saveRaw (raw + накладная), backwardCompat: fals",
+      "dataSource": "`Strategic ports (${source})`,",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "thermal",
+      "name": "thermal",
+      "path": "scripts/collectors/collect-thermal.mjs",
+      "description": "Crucix Collector: thermal (FIRMS-совместимый, 3 региона) — demo. Версия 2.0.1. Принят 20.09.2026. Изменения от 2.0.0: - regions переименовано в meta.regions, perRegion в meta.perRegion. Это освобождае",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "thinktanks",
+      "name": "thinktanks",
+      "path": "scripts/collectors/collect-thinktanks.mjs",
+      "description": "scripts/collectors/collect-thinktanks.mjs — СБОРЩИК: АНАЛИТИЧЕСКИЕ ЦЕНТРЫ Версия 2.4.0. Принят 23.09.2026. Изменения v2.4.0: все проблемные thinktanks переведены на Google News RSS по site: (CSIS, IIS",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "tips",
+      "name": "tips",
+      "path": "scripts/collectors/collect-tips.mjs",
+      "description": "Crucix Collector: tips (ставки TIPS) — demo. Версия 2.0.0. Принят 20.09.2026. Источник: US Treasury TIPS (реальные — FRED DFII10). Формат: [{date, value, change, status}]. Тип — timeseries.",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "trading-economics",
+      "name": "trading-economics",
+      "path": "scripts/collectors/collect-trading-economics.mjs",
+      "description": "Crucix Collector: trading-economics (5 макро-индикаторов) — demo. Версия 2.0.0. Принят 20.09.2026. Правило 12.2: Trading Economics требует ключ → demo-fallback. Формат: {source, lastUpdated, indicator",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "treasury",
+      "name": "treasury",
+      "path": "scripts/collectors/collect-treasury.mjs",
+      "description": "Crucix Collector: treasury (госдолг США) — реальный API Fiscal Data. Версия 2.0.0. Принят 20.09.2026. Источник: https://api.fiscaldata.treasury.gov/.../debt_to_penny Формат: {source, updated, latest, ",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "ucdp",
+      "name": "ucdp",
+      "path": "scripts/collectors/collect-ucdp.mjs",
+      "description": "Crucix Collector: ucdp (конфликты UCDP) — demo. Версия 2.0.0. Принят 20.09.2026. Источник: UCDP PRIO (zip+CSV — прямой парсинг сложен, demo-fallback). Формат: {source, lastUpdated, conflicts:[...], no",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "un-votes",
+      "name": "un-votes",
+      "path": "scripts/collectors/collect-un-votes.mjs",
+      "description": "scripts/collectors/collect-un-votes.mjs — СБОРЩИК: ГОЛОСОВАНИЯ ООН Версия 1.0.1. Принят 23.09.2026. ИСТОЧНИК: Erik Voeten \"United Nations General Assembly Voting Data\". Основной файл: Idealpointestima",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "undersea-cables",
+      "name": "undersea-cables",
+      "path": "scripts/collectors/collect-undersea-cables.mjs",
+      "description": "Crucix Collector: undersea-cables (8 подводных кабелей). Версия 2.0.0. Принят 20.09.2026. Формат: [{name, lat1, lng1, lat2, lng2, countries, length, collected}]. Тип — points.",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "unemployment",
+      "name": "unemployment",
+      "path": "scripts/collectors/collect-unemployment.mjs",
+      "description": "Crucix Collector: unemployment (безработица) — demo. Версия 2.0.0. Принят 20.09.2026. Источник: FRED UNRATE (реальные). Формат: [{date, value}]. Тип — timeseries.",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "unique-indicators",
+      "name": "unique-indicators",
+      "path": "scripts/collectors/collect-unique-indicators.mjs",
+      "description": "scripts/collectors/collect-unique-indicators.mjs — СБОРЩИК: КОСВЕННЫЕ ИНДИКАТОРЫ Версия 2.0.0. Принят 20.09.2026. Перевод на контракт v3: один saveRaw('unique-indicators', ...) с двумя индикаторами (p",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "uranium",
+      "name": "uranium",
+      "path": "scripts/collectors/collect-uranium.mjs",
+      "description": "Crucix Collector: uranium (цена урана) — demo. Версия 2.0.0. Принят 20.09.2026. Источник: UxC / Cameco (реальные требуют подписки). Формат: [{date, price}]. Тип — timeseries.",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "usgs",
+      "name": "usgs",
+      "path": "scripts/collectors/collect-usgs.mjs",
+      "description": "Crucix Collector: USGS earthquakes. Версия 2.0.0. Принят 18.09.2026. Роль: генерирует сырьё (демо-режим) и сдаёт его на склад через collector-helper. Сборщик НЕ пишет в basket — только в raw + накладн",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "viirs",
+      "name": "viirs",
+      "path": "scripts/collectors/collect-viirs.mjs",
+      "description": "Crucix Collector: viirs (ночные огни, 5 регионов × 31 день) — demo. Версия 2.0.0. Принят 20.09.2026. Формат: [{date, region, lat, lon, brightness}]. Тип — points.",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "vix",
+      "name": "vix",
+      "path": "scripts/collectors/collect-vix.mjs",
+      "description": "Crucix Collector: vix (индекс волатильности CBOE VIX). Версия 2.0.0. Принят 20.09.2026. Источник: Yahoo Finance ^VIX (реальный API) + fallback demo 365 дней. Формат: [{date, value}]. Тип — timeseries.",
+      "dataSource": "ok ?",
+      "interval": 1,
+      "hasHelpRu": false
+    },
+    {
+      "id": "vxx",
+      "name": "vxx",
+      "path": "scripts/collectors/collect-vxx.mjs",
+      "description": "Crucix Collector: vxx (VXX — волатильность). Версия 1.0.0. Принят 19.09.2026. Роль: генерирует демо-данные VXX и сдаёт через saveRaw. Восстановлен с нуля — сборщика не существовало, но слой (vxx в lay",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "war-preparation",
+      "name": "war-preparation",
+      "path": "scripts/collectors/collect-war-preparation.mjs",
+      "description": "Crucix Collector: war-preparation (индекс подготовки к войне) — demo. Версия 2.0.0. Принят 20.09.2026. Формат: [{date, value, region, notam, gps, status}]. Тип — timeseries.",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "who",
+      "name": "who",
+      "path": "scripts/collectors/collect-who.mjs",
+      "description": "Crucix Collector: who (алерты ВОЗ) — demo. Версия 2.0.0. Принят 20.09.2026. Формат: {source, updated, alerts:[...], summary:{...}}. Тип — catalog.",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "worldbank",
+      "name": "worldbank",
+      "path": "scripts/collectors/collect-worldbank.mjs",
+      "description": "collect-worldbank.mjs — Сборщик данных World Bank (v2.3.0) ИСПРАВЛЕНО 12.09.2026: - v2.2.0 с рекурсивным retry давал взрыв запросов (100→50+50→25×4→...) до 128 запросов при одном падении. Это вызывало",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "wti-brent-spread",
+      "name": "wti-brent-spread",
+      "path": "scripts/collectors/collect-wti-brent-spread.mjs",
+      "description": "scripts/collectors/collect-wti-brent-spread.mjs — СБОРЩИК: СПРЕД WTI-BRENT Версия 2.0.0. Принят 20.09.2026. Перевод на контракт v3: saveRaw (raw + накладная), backwardCompat: false. Merge с basket зам",
+      "dataSource": "`WTI-Brent spread (${source})`,",
+      "interval": 1,
+      "hasHelpRu": false
+    },
+    {
+      "id": "yahoo",
+      "name": "yahoo",
+      "path": "scripts/collectors/collect-yahoo.mjs",
+      "description": "Crucix Collector: yahoo (S&P 500, Nasdaq, WTI) — demo. Версия 2.0.0. Принят 20.09.2026. Формат: {source, timestamp, markets:{...}}. Тип — catalog.",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    },
+    {
+      "id": "yield-curve",
+      "name": "yield-curve",
+      "path": "scripts/collectors/collect-yield-curve.mjs",
+      "description": "Crucix Collector: yield-curve. Версия 2.0.0. Принят 19.09.2026. Демо-данные кривой доходности. Тип — timeseries. Формат: [{date, value: spread, y10, y2, inverted}].",
+      "dataSource": "",
+      "interval": 0,
+      "hasHelpRu": false
+    }
+  ],
+  "updated": "2026-09-23T19:27:29.783Z"
+}

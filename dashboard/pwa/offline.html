@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crucix · Offline</title>
+<style>
+:root {
+  --bg: #06080f;
+  --surface: #0d1220;
+  --border: #1a2540;
+  --text: #e8edf5;
+  --text-dim: #8fa1c2;
+  --accent: #3b82f6;
+  --accent2: #8b5cf6;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.container {
+  max-width: 500px;
+  text-align: center;
+}
+.icon {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 32px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 56px;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+}
+h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  letter-spacing: -0.5px;
+}
+p {
+  color: var(--text-dim);
+  font-size: 15px;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+.features {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  text-align: left;
+}
+.features h2 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  margin-bottom: 16px;
+}
+.feature {
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+.feature:last-child { border-bottom: none; }
+.feature-icon { font-size: 20px; }
+.feature-text { flex: 1; }
+.feature-text strong { display: block; margin-bottom: 2px; }
+.feature-text span { color: var(--text-dim); font-size: 12px; }
+button {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+button:hover { opacity: 0.9; }
+button:disabled { opacity: 0.5; cursor: wait; }
+.status {
+  margin-top: 20px;
+  font-size: 12px;
+  color: var(--text-dim);
+  font-family: 'SF Mono', monospace;
+}
+.dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ef4444;
+  margin-right: 6px;
+  animation: blink 1.5s infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="icon">📡</div>
+  <h1>Нет соединения</h1>
+  <p>Crucix ожидает восстановления связи. Прогнозы и алерты появятся автоматически, как только сеть вернётся.</p>
+
+  <div class="features">
+    <h2>Доступно offline:</h2>
+    <div class="feature">
+      <div class="feature-icon">📊</div>
+      <div class="feature-text">
+        <strong>Последний прогноз</strong>
+        <span>Кэшированная версия сохранена локально</span>
+      </div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">📈</div>
+      <div class="feature-text">
+        <strong>История сигналов</strong>
+        <span>Доступна без интернета</span>
+      </div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">🔔</div>
+      <div class="feature-text">
+        <strong>Push-уведомления</strong>
+        <span>Придут при следующем соединении</span>
+      </div>
+    </div>
+  </div>
+
+  <button id="retry-btn" onclick="retryConnection()">Попробовать снова</button>
+
+  <div class="status">
+    <span class="dot"></span>
+    <span id="status-text">offline · проверка через 10s</span>
+  </div>
+</div>
+
+<script>
+let attempts = 0;
+const maxAttempts = 30;
+
+function retryConnection() {
+  const btn = document.getElementById('retry-btn');
+  btn.disabled = true;
+  btn.textContent = 'Проверка...';
+  attempts++;
+
+  fetch('/health', { cache: 'no-store' })
+    .then(r => {
+      if (r.ok) {
+        window.location.reload();
+      } else {
+        throw new Error('Server not ready');
+      }
+    })
+    .catch(() => {
+      btn.disabled = false;
+      btn.textContent = `Попробовать снова (${attempts})`;
+      document.getElementById('status-text').textContent =
+        `offline · попытка ${attempts} · следующий retry через 10s`;
+    });
+}
+
+setInterval(() => {
+  if (attempts >= maxAttempts) return;
+  fetch('/health', { cache: 'no-store' })
+    .then(r => {
+      if (r.ok) window.location.reload();
+    })
+    .catch(() => {});
+}, 10000);
+
+window.addEventListener('online', () => {
+  document.getElementById('status-text').textContent = 'online · обновление...';
+  setTimeout(() => window.location.reload(), 500);
+});
+
+console.log('[offline] Page loaded, retry every 10s');
+</script>
+</body>
+</html>

@@ -1,0 +1,760 @@
+===== ЧАСТЬ part-6-infra-and-tests · КУСОК 10/23 · 26.2 KB =====
+
+FILE: tests/v6/neural_causal_discovery.test.mjs
+SIZE: 10459 bytes
+SHA1: d1bc10953e84eafb
+========================================================================
+
+// tests/v6/neural_causal_discovery.test.mjs
+// Unit-тесты для apis/predict/v6/neural_causal_discovery.mjs
+//
+// Запуск: node tests/v6/neural_causal_discovery.test.mjs
+// Или через test runner: node --test tests/v6/neural_causal_discovery.test.mjs
+
+import { strict as assert } from 'node:assert';
+import { test } from 'node:test';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const MODULE_PATH = join(__dirname, '..', '..', 'apis', 'predict', 'v6', 'neural_causal_discovery.mjs');
+
+const {
+  NeuralCausalDiscovery,
+  MultiHeadAttention,
+  crucixNeuralCausalDiscovery,
+} = await import(MODULE_PATH);
+
+// ═══════════════════════════════════════════════════
+// ХЕЛПЕРЫ
+// ═══════════════════════════════════════════════════
+
+function makeHistory(n, options = {}) {
+  const noise = options.noise ?? 0.1;
+  return Array.from({ length: n }, (_, i) => ({
+    timestamp: new Date(Date.now() - (n - i) * 15 * 60 * 1000).toISOString(),
+    fred: {
+      vix: 20 + Math.sin(i / 4) * 10 + (Math.random() - 0.5) * noise * 10,
+      hySpread: 3 + Math.cos(i / 5) * 1.5,
+    },
+    gdelt: {
+      conflictEvents: Array(Math.floor(Math.abs(Math.sin(i / 3)) * 10) + 1).fill({}),
+    },
+    sanctions: { count: Math.floor(Math.random() * 5) },
+    tension: 0.4 + Math.sin(i / 4) * 0.3,
+    radiation: { max: 50 + Math.random() * 30 },
+  }));
+}
+
+function isFiniteNumber(x) {
+  return typeof x === 'number' && Number.isFinite(x);
+}
+
+function isFiniteMatrix(m) {
+  if (!Array.isArray(m)) return false;
+  for (const row of m) {
+    if (!Array.isArray(row)) return false;
+    for (const v of row) if (!Number.isFinite(v)) return false;
+  }
+  return true;
+}
+
+// ═══════════════════════════════════════════════════
+// SMOKE ТЕСТЫ
+// ═══════════════════════════════════════════════════
+
+test('module loads without errors', () => {
+  assert.ok(NeuralCausalDiscovery, 'NeuralCausalDiscovery должен быть классом');
+  assert.ok(MultiHeadAttention, 'MultiHeadAttention должен быть классом');
+  assert.equal(typeof crucixNeuralCausalDiscovery, 'function');
+});
+
+test('NeuralCausalDiscovery constructor initializes correctly', () => {
+  const ncd = new NeuralCausalDiscovery({ nVariables: 5 });
+  assert.equal(ncd.nVariables, 5);
+  assert.equal(ncd.W.length, 5);
+  assert.equal(ncd.W[0].length, 5);
+  // Диагональ должна быть 0
+  for (let i = 0; i < 5; i++) {
+    assert.equal(ncd.W[i][i], 0);
+  }
+  assert.ok(isFiniteMatrix(ncd.W));
+});
+
+test('MultiHeadAttention forward produces finite values', () => {
+  const mha = new MultiHeadAttention(8, 2);
+  const X = [
+    [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8],
+    [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
+  ];
+  const out = mha.forward(X);
+  assert.equal(out.length, 2);
+  assert.equal(out[0].length, 8);
+  assert.ok(isFiniteMatrix(out));
+});
+
+// ═══════════════════════════════════════════════════
+// ФУНКЦИОНАЛЬНЫЕ ТЕСТЫ
+// ═══════════════════════════════════════════════════
+
+test('acyclicityConstraint returns 0 for zero matrix', () => {
+  const ncd = new NeuralCausalDiscovery({ nVariables: 3 });
+  // Обнулить W
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) ncd.W[i][j] = 0;
+  }
+  const h = ncd.acyclicityConstraint();
+  assert.ok(isFiniteNumber(h));
+  assert.ok(Math.abs(h) < 1e-6, `h(W) должен быть ≈0 для нулевой матрицы, получено ${h}`);
+});
+
+test('acyclicityConstraint returns positive for DAG', () => {
+  const ncd = new NeuralCausalDiscovery({ nVariables: 3 });
+  // W: 0→1, 1→2 (простой DAG)
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) ncd.W[i][j] = 0;
+  }
+  ncd.W[0][1] = 1.0;
+  ncd.W[1][2] = 1.0;
+  const h = ncd.acyclicityConstraint();
+  // Для DAG h(W) > 0 (мера "не-нулевая" через trace-exp)
+  assert.ok(isFiniteNumber(h));
+});
+
+test('sparsityLoss computes L1 norm correctly', () => {
+  const ncd = new NeuralCausalDiscovery({ nVariables: 2 });
+  for (let i = 0; i < 2; i++) {
+    for (let j = 0; j < 2; j++) ncd.W[i][j] = 0;
+  }
+  ncd.W[0][1] = 0.5;
+  ncd.W[1][0] = -0.3;
+  const loss = ncd.sparsityLoss();
+  assert.ok(isFiniteNumber(loss));
+  assert.ok(Math.abs(loss - 0.8) < 1e-6);
+});
+
+test('computeLoss returns structured object', () => {
+  const ncd = new NeuralCausalDiscovery({ nVariables: 3 });
+  const X = [
+    [0.1, 0.2, 0.3],
+    [0.4, 0.5, 0.6],
+    [0.7, 0.8, 0.9],
+  ];
+  const loss = ncd.computeLoss(X);
+  assert.ok('total' in loss, 'total должен быть');
+  assert.ok('mse' in loss, 'mse должен быть');
+  assert.ok('sparse' in loss, 'sparse должен быть');
+  assert.ok('acyc' in loss, 'acyc должен быть');
+  assert.ok(isFiniteNumber(loss.total));
+  assert.ok(isFiniteNumber(loss.mse));
+});
+
+test('extractDAG returns array of edges with thresholds', () => {
+  const ncd = new NeuralCausalDiscovery({ nVariables: 3 });
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) ncd.W[i][j] = 0;
+  }
+  ncd.W[0][1] = 0.5;
+  ncd.W[1][2] = -0.8;
+  ncd.W[2][0] = 0.05; // ниже порога
+  const edges = ncd.extractDAG(0.1);
+  assert.ok(Array.isArray(edges));
+  assert.equal(edges.length, 2, `ожидалось 2 ребра, получено ${edges.length}`);
+  // Топ-ребро должно быть с большим |weight|
+  assert.equal(edges[0].to, 2);
+  assert.ok(edges[0].weight < 0);
+  assert.equal(edges[0].direction, 'negative');
+});
+
+test('getMetrics returns valid structure', () => {
+  const ncd = new NeuralCausalDiscovery({ nVariables: 4 });
+  for (let i = 0; i < 4; i++) {
+    for (let j = 0; j < 4; j++) ncd.W[i][j] = 0;
+  }
+  ncd.W[0][1] = 0.5;
+  ncd.W[1][2] = 0.3;
+  ncd.W[2][3] = 0.4;
+  const m = ncd.getMetrics();
+  assert.equal(m.nVariables, 4);
+  assert.equal(m.nEdges, 3);
+  assert.ok(isFiniteNumber(m.density));
+  assert.equal(typeof m.isAcyclic, 'boolean');
+  assert.ok(Array.isArray(m.topEdges));
+});
+
+test('_checkAcyclic detects cycle correctly', () => {
+  const ncd = new NeuralCausalDiscovery({ nVariables: 3 });
+  // DAG: 0→1, 1→2
+  const dagAdj = [
+    [0, 1, 0],
+    [0, 0, 1],
+    [0, 0, 0],
+  ];
+  assert.equal(ncd._checkAcyclic(dagAdj), true);
+
+  // Цикл: 0→1, 1→2, 2→0
+  const cycleAdj = [
+    [0, 1, 0],
+    [0, 0, 1],
+    [1, 0, 0],
+  ];
+  assert.equal(ncd._checkAcyclic(cycleAdj), false);
+});
+
+// ═══════════════════════════════════════════════════
+// ИНТЕГРАЦИОННЫЕ ТЕСТЫ (crucixNeuralCausalDiscovery)
+// ═══════════════════════════════════════════════════
+
+test('crucixNeuralCausalDiscovery fails on insufficient history', () => {
+  const result = crucixNeuralCausalDiscovery([], {});
+  assert.equal(result.available, false);
+  assert.equal(result.reason, 'insufficient_history');
+  assert.equal(result.minimumRequired, 20);
+});
+
+test('crucixNeuralCausalDiscovery works on 25 sweep history', () => {
+  const history = makeHistory(25);
+  const result = crucixNeuralCausalDiscovery(history, { iterations: 5 });
+  assert.equal(result.available, true);
+  assert.ok(result.elapsedMs > 0);
+  assert.equal(result.nVariables, 5, 'default vars: 5');
+  assert.equal(result.nTimesteps, 25);
+  assert.ok(Array.isArray(result.discoveredEdges));
+  assert.ok(isFiniteNumber(result.nEdges));
+  assert.ok(typeof result.isAcyclic === 'boolean');
+  assert.ok(isFiniteNumber(result.density));
+  assert.ok(typeof result.interpretation === 'string');
+  assert.ok(result.interpretation.length > 0);
+});
+
+test('crucixNeuralCausalDiscovery returns finite finalLoss', () => {
+  const history = makeHistory(30);
+  const result = crucixNeuralCausalDiscovery(history, { iterations: 10 });
+  assert.equal(result.available, true);
+  // finalLoss может быть 0 (если все loss finite), но не NaN
+  if (result.finalLoss !== null) {
+    assert.ok(isFiniteNumber(result.finalLoss),
+      `finalLoss должен быть finite, получено ${result.finalLoss}`);
+  }
+});
+
+// ═══════════════════════════════════════════════════
+// EDGE CASES
+// ═══════════════════════════════════════════════════
+
+test('NeuralCausalDiscovery handles 1 variable', () => {
+  const ncd = new NeuralCausalDiscovery({ nVariables: 1 });
+  assert.equal(ncd.W.length, 1);
+  assert.equal(ncd.W[0].length, 1);
+  const X = [[0.5], [0.6], [0.7]];
+  const loss = ncd.computeLoss(X);
+  assert.ok(isFiniteNumber(loss.total));
+});
+
+test('extractDAG on empty matrix returns empty array', () => {
+  const ncd = new NeuralCausalDiscovery({ nVariables: 2 });
+  for (let i = 0; i < 2; i++) {
+    for (let j = 0; j < 2; j++) ncd.W[i][j] = 0;
+  }
+  const edges = ncd.extractDAG(0.1);
+  assert.equal(edges.length, 0);
+});
+
+test('neural causal discovery result has all required fields', () => {
+  const history = makeHistory(25);
+  const result = crucixNeuralCausalDiscovery(history, { iterations: 3 });
+  const requiredFields = [
+    'module', 'available', 'elapsedMs',
+    'nVariables', 'nTimesteps', 'variables',
+    'discoveredEdges', 'nEdges', 'isAcyclic',
+    'density', 'interpretation',
+  ];
+  for (const field of requiredFields) {
+    assert.ok(field in result, `поле "${field}" отсутствует в результате`);
+  }
+  assert.equal(result.module, 'neural_causal_discovery');
+});
+
+console.log('\n✅ Все тесты neural_causal_discovery завершены\n');
+
+
+
+========================================================================
+
+FILE: tests/v6/v6_pack.test.mjs
+SIZE: 7360 bytes
+SHA1: 093c6d7b7460de68
+========================================================================
+
+// tests/v6/v6_pack.test.mjs
+
+import { strict as assert } from 'node:assert';
+import { test, describe } from 'node:test';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const V6 = join(__dirname, '..', '..', 'apis', 'predict', 'v6');
+
+const ncdMod = await import(join(V6, 'neural_causal_discovery.mjs'));
+const clMod = await import(join(V6, 'continual_learning.mjs'));
+const crlMod = await import(join(V6, 'causal_rl.mjs'));
+const qhgMod = await import(join(V6, 'quantum_hypergraph.mjs'));
+const zkfMod = await import(join(V6, 'zk_federated.mjs'));
+
+function makeHistory(n) {
+  return Array.from({ length: n }, (_, i) => ({
+    timestamp: new Date(Date.now() - (n - i) * 15 * 60 * 1000).toISOString(),
+    fred: {
+      vix: 20 + Math.sin(i / 4) * 10,
+      hySpread: 3 + Math.cos(i / 5) * 1.5,
+      treasury10y: 4 + Math.sin(i / 6) * 0.5,
+      dxy: 100 + Math.cos(i / 7) * 3,
+    },
+    gdelt: {
+      conflictEvents: Array(Math.floor(Math.abs(Math.sin(i / 3)) * 10) + 1).fill({}),
+      tone: -1 + Math.sin(i / 6),
+    },
+    sanctions: { count: Math.floor(Math.abs(Math.cos(i / 4)) * 5) },
+    tension: 0.4 + Math.sin(i / 4) * 0.3,
+    radiation: { max: 50 + Math.random() * 30 },
+    energy: { oilPrice: 70 + Math.sin(i / 3) * 10 },
+    gold: { price: 1900 + Math.cos(i / 4) * 100 },
+  }));
+}
+
+function isFiniteNum(x) { return typeof x === 'number' && Number.isFinite(x); }
+
+describe('v6 pack: smoke loading', () => {
+  test('neural_causal_discovery exports', () => {
+    assert.ok(ncdMod.NeuralCausalDiscovery);
+    assert.ok(ncdMod.MultiHeadAttention);
+    assert.equal(typeof ncdMod.crucixNeuralCausalDiscovery, 'function');
+  });
+
+  test('continual_learning exports', () => {
+    assert.ok(clMod.EWCLearner);
+    assert.ok(clMod.SynapticIntelligence);
+    assert.equal(typeof clMod.crucixContinualLearning, 'function');
+  });
+
+  test('causal_rl exports', () => {
+    assert.ok(crlMod.CausalEnvironment);
+    assert.ok(crlMod.CausalQLearner);
+    assert.ok(crlMod.CausalPolicyGradient);
+    assert.equal(typeof crlMod.crucixCausalRL, 'function');
+  });
+
+  test('quantum_hypergraph exports', () => {
+    assert.ok(qhgMod.QUBOFormulation);
+    assert.ok(qhgMod.QuantumAnnealer);
+    assert.ok(qhgMod.HypergraphMAP);
+    assert.equal(typeof qhgMod.crucixQuantumHypergraph, 'function');
+  });
+
+  test('zk_federated exports', () => {
+    assert.ok(zkfMod.ZKSchnorrProver);
+    assert.ok(zkfMod.DPMechanism);
+    assert.ok(zkfMod.FederatedNode);
+    assert.ok(zkfMod.SecureAggregator);
+    assert.equal(typeof zkfMod.crucixZKFederated, 'function');
+  });
+});
+
+describe('continual_learning: functional', () => {
+  test('insufficient history returns unavailable', () => {
+    const r = clMod.crucixContinualLearning([], {});
+    assert.equal(r.available, false);
+    assert.equal(r.reason, 'insufficient_history');
+  });
+
+  test('works on 35 sweep history (EWC)', () => {
+    const h = makeHistory(35);
+    const r = clMod.crucixContinualLearning(h, { method: 'ewc', epochs: 3 });
+    assert.equal(r.available, true);
+    assert.equal(r.method, 'ewc');
+    assert.ok(isFiniteNum(r.lossBefore));
+    assert.ok(isFiniteNum(r.lossAfter));
+    assert.ok(r.prediction);
+    assert.ok(['crisis', 'elevated', 'stable'].includes(r.prediction.class));
+  });
+
+  test('works with Synaptic Intelligence', () => {
+    const h = makeHistory(35);
+    const r = clMod.crucixContinualLearning(h, { method: 'si', epochs: 3 });
+    assert.equal(r.available, true);
+    assert.equal(r.method, 'si');
+    assert.ok(r.prediction);
+  });
+
+  test('EWCLearner forward/backward finite', () => {
+    const l = new clMod.EWCLearner({ inputSize: 10, hiddenSize: 8, outputSize: 3 });
+    const x = new Array(10).fill(0.5);
+    const probs = l.predict(x);
+    assert.equal(probs.length, 3);
+    assert.ok(probs.every(isFiniteNum));
+    const sum = probs.reduce((a, b) => a + b, 0);
+    assert.ok(Math.abs(sum - 1) < 1e-6);
+  });
+});
+
+describe('causal_rl: functional', () => {
+  test('insufficient history returns unavailable', () => {
+    const r = crlMod.crucixCausalRL([], {});
+    assert.equal(r.available, false);
+  });
+
+  test('works on 25 sweep history', () => {
+    const h = makeHistory(25);
+    const r = crlMod.crucixCausalRL(h, { episodes: 10 });
+    assert.equal(r.available, true);
+    assert.equal(r.method, 'q_learning');
+    assert.ok(r.training);
+    assert.ok(isFiniteNum(r.training.avgReward));
+    assert.ok(typeof r.recommendedAction === 'string');
+    assert.ok(Array.isArray(r.causalInsights));
+  });
+
+  test('CausalEnvironment reset works', () => {
+    const env = new crlMod.CausalEnvironment({
+      nodes: ['a', 'b', 'c'],
+      edges: [{ from: 'a', to: 'b', weight: 0.8 }, { from: 'b', to: 'c', weight: 0.5 }],
+      maxSteps: 5,
+    });
+    const s = env.reset();
+    assert.ok(s.a !== undefined);
+    assert.ok(s.b !== undefined);
+    assert.ok(s.c !== undefined);
+  });
+});
+
+describe('quantum_hypergraph: functional', () => {
+  test('insufficient history returns unavailable', () => {
+    const r = qhgMod.crucixQuantumHypergraph([], {});
+    assert.equal(r.available, false);
+  });
+
+  test('works on 30 sweep history', () => {
+    const h = makeHistory(30);
+    const r = qhgMod.crucixQuantumHypergraph(h, { nSteps: 200, nReplicas: 4 });
+    assert.equal(r.available, true);
+    assert.ok(r.nQubits > 0);
+    assert.ok(r.annealing);
+    assert.ok(isFiniteNum(r.annealing.bestEnergy));
+    assert.ok(r.hypergraph);
+    assert.ok(isFiniteNum(r.hypergraph.nHyperedges));
+    assert.ok(typeof r.hypergraph.isAcyclic === 'boolean');
+  });
+
+  test('QUBOFormulation energy finite', () => {
+    const q = new qhgMod.QUBOFormulation({ nVariables: 3, maxHyperedgeSize: 2 });
+    const data = Array.from({ length: 20 }, () => [Math.random(), Math.random(), Math.random()]);
+    q.build(data);
+    const x = new Array(q.nQubits).fill(0);
+    const e = q.energy(x);
+    assert.ok(isFiniteNum(e));
+  });
+});
+
+describe('zk_federated: functional', () => {
+  test('insufficient history returns unavailable', () => {
+    const r = zkfMod.crucixZKFederated([], {});
+    assert.equal(r.available, false);
+  });
+
+  test('works on 35 sweep history', () => {
+    const h = makeHistory(35);
+    const r = zkfMod.crucixZKFederated(h, { nNodes: 3, rounds: 3, epsilon: 1.0 });
+    assert.equal(r.available, true);
+    assert.equal(r.nNodes, 3);
+    assert.equal(r.rounds, 3);
+    assert.ok(r.privacy);
+    assert.ok(isFiniteNum(r.privacy.epsilon));
+    assert.ok(r.training);
+    assert.ok(isFiniteNum(r.training.initialLoss));
+    assert.ok(isFiniteNum(r.training.finalLoss));
+    assert.ok(r.security);
+    assert.equal(r.security.zkProtocol, 'schnorr_fiat_shamir');
+  });
+
+  test('ZKSchnorrProver verifies correctly', () => {
+    const prover = new zkfMod.ZKSchnorrProver();
+    prover.commit();
+    const proof = prover.proveNonInteractive('test_context');
+    const valid = zkfMod.ZKSchnorrProver.verify(proof, 'test_context');
+    assert.equal(valid, true);
+    const invalid = zkfMod.ZKSchnorrProver.verify(proof, 'wrong_context');
+    assert.equal(invalid, false);
+  });
+
+  test('DPMechanism sigma positive', () => {
+    const dp = new zkfMod.DPMechanism({ epsilon: 1.0, delta: 1e-5, clipNorm: 1.0 });
+    assert.ok(isFiniteNum(dp.sigma));
+    assert.ok(dp.sigma > 0);
+  });
+});
+
+
+
+========================================================================
+
+FILE: tests/v7/v7_pack.test.mjs
+SIZE: 8357 bytes
+SHA1: ff7dc31deaefa81b
+========================================================================
+
+// tests/v7/v7_pack.test.mjs
+
+import { strict as assert } from 'node:assert';
+import { test, describe } from 'node:test';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const V7 = join(__dirname, '..', '..', 'apis', 'predict', 'v7');
+
+const wmMod = await import(join(V7, 'world_model.mjs'));
+const nodeMod = await import(join(V7, 'neural_ode.mjs'));
+const drMod = await import(join(V7, 'dreamer.mjs'));
+const ccMod = await import(join(V7, 'continuous_causal.mjs'));
+const seMod = await import(join(V7, 'simulation_engine.mjs'));
+
+function makeHistory(n) {
+  return Array.from({ length: n }, (_, i) => ({
+    timestamp: new Date(Date.now() - (n - i) * 15 * 60 * 1000).toISOString(),
+    fred: {
+      vix: 20 + Math.sin(i / 4) * 10,
+      hySpread: 3 + Math.cos(i / 5) * 1.5,
+      treasury10y: 4 + Math.sin(i / 6) * 0.5,
+      dxy: 100 + Math.cos(i / 7) * 3,
+    },
+    gdelt: {
+      conflictEvents: Array(Math.floor(Math.abs(Math.sin(i / 3)) * 10) + 1).fill({}),
+      tone: -1 + Math.sin(i / 6),
+    },
+    sanctions: { count: Math.floor(Math.abs(Math.cos(i / 4)) * 5) },
+    tension: 0.4 + Math.sin(i / 4) * 0.3,
+    radiation: { max: 50 + Math.random() * 30 },
+    energy: { oilPrice: 70 + Math.sin(i / 3) * 10 },
+    gold: { price: 1900 + Math.cos(i / 4) * 100 },
+  }));
+}
+
+function isFiniteNum(x) { return typeof x === 'number' && Number.isFinite(x); }
+
+describe('v7 pack: smoke loading', () => {
+  test('world_model exports', () => {
+    assert.ok(wmMod.WorldModel);
+    assert.ok(wmMod.VAE);
+    assert.ok(wmMod.MDNRNN);
+    assert.ok(wmMod.Controller);
+    assert.equal(typeof wmMod.crucixWorldModel, 'function');
+  });
+
+  test('neural_ode exports', () => {
+    assert.ok(nodeMod.NeuralODEFunc);
+    assert.ok(nodeMod.NeuralODETrainer);
+    assert.equal(typeof nodeMod.rk4Solve, 'function');
+    assert.equal(typeof nodeMod.counterfactual, 'function');
+    assert.equal(typeof nodeMod.rewind, 'function');
+    assert.equal(typeof nodeMod.crucixNeuralODE, 'function');
+  });
+
+  test('dreamer exports', () => {
+    assert.ok(drMod.Dreamer);
+    assert.ok(drMod.Actor);
+    assert.ok(drMod.Critic);
+    assert.equal(typeof drMod.computeReward, 'function');
+    assert.equal(typeof drMod.crucixDreamer, 'function');
+  });
+
+  test('continuous_causal exports', () => {
+    assert.ok(ccMod.CausalDAG);
+    assert.ok(ccMod.ContinuousSCM);
+    assert.equal(typeof ccMod.crucixContinuousCausal, 'function');
+  });
+
+  test('simulation_engine exports', () => {
+    assert.equal(typeof seMod.crucixSimulationEngine, 'function');
+    assert.equal(typeof seMod.synthesize, 'function');
+    assert.equal(typeof seMod.consensusDirection, 'function');
+  });
+});
+
+describe('world_model: functional', () => {
+  test('insufficient history', () => {
+    const r = wmMod.crucixWorldModel([], {});
+    assert.equal(r.available, false);
+    assert.equal(r.reason, 'insufficient_history');
+  });
+
+  test('VAE encode/decode round trip', () => {
+    const vae = new wmMod.VAE({ inputDim: 11, hiddenDim: 12, latentDim: 6 });
+    const x = new Array(11).fill(0.5);
+    const enc = vae.encode(x, true);
+    assert.equal(enc.z.length, 6);
+    assert.ok(enc.z.every(isFiniteNum));
+    const dec = vae.decode(enc.z);
+    assert.equal(dec.xHat.length, 11);
+    assert.ok(dec.xHat.every(isFiniteNum));
+  });
+
+  test('works on 30 sweeps', () => {
+    const h = makeHistory(30);
+    const r = wmMod.crucixWorldModel(h, {
+      vaeEpochs: 1, rnnEpochs: 1, latentDim: 4, hiddenDim: 8, horizon: 5,
+    });
+    assert.equal(r.available, true);
+    assert.ok(r.imagination);
+    assert.ok(Array.isArray(r.imagination.imaginedFeatures));
+    assert.ok(r.direction);
+    assert.ok(['escalation', 'deescalation', 'stable'].includes(r.direction));
+  });
+});
+
+describe('neural_ode: functional', () => {
+  test('insufficient history', () => {
+    const r = nodeMod.crucixNeuralODE([], {});
+    assert.equal(r.available, false);
+  });
+
+  test('rk4Solve on dz/dt = 0', () => {
+    const f = new nodeMod.NeuralODEFunc({ stateDim: 2, hiddenDim: 4 });
+    for (let i = 0; i < 4; i++) {
+      for (let j = 0; j < 3; j++) f.W1[i][j] = 0;
+      for (let j = 0; j < 4; j++) f.W2[i][j] = 0;
+    }
+    for (let i = 0; i < 2; i++) {
+      for (let j = 0; j < 4; j++) f.W3[i][j] = 0;
+      f.b3[i] = 0;
+    }
+    const sol = nodeMod.rk4Solve(f, [1, 2], 0, 1, 10);
+    assert.ok(isFiniteNum(sol.z[0]));
+    assert.ok(Math.abs(sol.z[0] - 1) < 0.5);
+  });
+
+  test('works on 25 sweeps', () => {
+    const h = makeHistory(25);
+    const r = nodeMod.crucixNeuralODE(h, { epochs: 1, hiddenDim: 8, horizon: 5 });
+    assert.equal(r.available, true);
+    assert.ok(r.forecast);
+    assert.ok(r.forecast.trend);
+    assert.ok(['escalation', 'deescalation', 'stable'].includes(r.forecast.direction));
+  });
+});
+
+describe('dreamer: functional', () => {
+  test('insufficient history', () => {
+    const r = drMod.crucixDreamer([], {});
+    assert.equal(r.available, false);
+  });
+
+  test('Actor sampling sums to 1', () => {
+    const actor = new drMod.Actor({ latentDim: 8, hiddenDim: 8, nActions: 5 });
+    const z = new Array(8).fill(0.5);
+    const { probs } = actor.forward(z);
+    const sum = probs.reduce((a, b) => a + b, 0);
+    assert.ok(Math.abs(sum - 1) < 1e-6);
+    assert.ok(probs.every(p => p >= 0 && p <= 1));
+  });
+
+  test('Critic returns finite value', () => {
+    const critic = new drMod.Critic({ latentDim: 8, hiddenDim: 8 });
+    const z = new Array(8).fill(0.5);
+    const { value } = critic.forward(z);
+    assert.ok(isFiniteNum(value));
+  });
+
+  test('works on 30 sweeps', () => {
+    const h = makeHistory(30);
+    const r = drMod.crucixDreamer(h, {
+      latentDim: 4, hiddenDim: 8, nActions: 3,
+      vaeEpochs: 1, rnnEpochs: 1, trainSteps: 3, horizon: 4,
+    });
+    assert.equal(r.available, true);
+    assert.ok(r.bestAction);
+    assert.ok(r.evaluation);
+    assert.ok(isFiniteNum(r.evaluation.before.meanReturn));
+  });
+});
+
+describe('continuous_causal: functional', () => {
+  test('insufficient history', () => {
+    const r = ccMod.crucixContinuousCausal([], {});
+    assert.equal(r.available, false);
+  });
+
+  test('CausalDAG detects cycle', () => {
+    assert.throws(() => {
+      new ccMod.CausalDAG({
+        nodes: ['a', 'b'],
+        edges: [
+          { from: 'a', to: 'b' },
+          { from: 'b', to: 'a' },
+        ],
+      });
+    });
+  });
+
+  test('CausalDAG topological order valid', () => {
+    const dag = new ccMod.CausalDAG({
+      nodes: ['a', 'b', 'c'],
+      edges: [
+        { from: 'a', to: 'b' },
+        { from: 'b', to: 'c' },
+      ],
+    });
+    const order = dag.topologicalOrder();
+    assert.equal(order.length, 3);
+    assert.ok(order.indexOf('a') < order.indexOf('b'));
+    assert.ok(order.indexOf('b') < order.indexOf('c'));
+  });
+
+  test('works on 30 sweeps', () => {
+    const h = makeHistory(30);
+    const r = ccMod.crucixContinuousCausal(h, { epochs: 1, hiddenDim: 8, horizon: 5 });
+    assert.equal(r.available, true);
+    assert.ok(r.dag);
+    assert.ok(Array.isArray(r.dag.edges));
+    assert.ok(r.forecast);
+    assert.ok(isFiniteNum(r.ate?.totalMagnitude));
+  });
+});
+
+describe('simulation_engine: functional', () => {
+  test('insufficient history', async () => {
+    const r = await seMod.crucixSimulationEngine([], {});
+    assert.equal(r.available, false);
+  });
+
+  test('consensusDirection works', () => {
+    const c = seMod.consensusDirection(['escalation', 'escalation', 'stable']);
+    assert.equal(c.direction, 'escalation');
+    assert.equal(c.nVoters, 3);
+    assert.ok(isFiniteNum(c.agreement));
+    assert.ok(c.agreement > 0.5);
+  });
+
+  test('works on 30 sweeps (full engine)', async () => {
+    const h = makeHistory(30);
+    const r = await seMod.crucixSimulationEngine(h, {
+      horizon: 5,
+      modules: {
+        worldModel: { vaeEpochs: 1, rnnEpochs: 1, latentDim: 4, hiddenDim: 8 },
+        neuralODE: { epochs: 1, hiddenDim: 8 },
+        dreamer: { trainSteps: 3, horizon: 3 },
+        continuousCausal: { epochs: 1, hiddenDim: 8 },
+      },
+    });
+    assert.equal(r.available, true);
+    assert.ok(r.moduleStatus);
+    assert.ok(r.synthesis);
+    assert.ok(Array.isArray(r.answers));
+    assert.ok(isFiniteNum(r.synthesis.confidence));
+    assert.ok(r.synthesis.confidence >= 0 && r.synthesis.confidence <= 1);
+  });
+});
+
+
+
+========================================================================

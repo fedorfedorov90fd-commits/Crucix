@@ -1,0 +1,642 @@
+{
+  "_meta": {
+    "id": "convergence-engine",
+    "category": "specialist",
+    "version": "1.0.4",
+    "schema_version": "1.0.4",
+    "sources": [
+      "detector",
+      "forecast",
+      "semantic",
+      "flow",
+      "market",
+      "specialist",
+      "index",
+      "space"
+    ],
+    "calculator": "ConvergenceEngine",
+    "updated_at": "2026-09-20T09:51:56.420Z",
+    "period": "latest",
+    "duration_ms": 33,
+    "checksum": "2d323e9afc9e1bbe",
+    "stats": {
+      "modules_read": 45,
+      "by_category": {
+        "detector": 6,
+        "forecast": 3,
+        "semantic": 6,
+        "flow": 7,
+        "market": 3,
+        "specialist": 18,
+        "index": 2
+      },
+      "regions": 40,
+      "convergences": 6,
+      "min_categories": 3
+    },
+    "description": "Универсальный движок схождения сигналов: пересечение сигналов из 8 категорий анализаторов (59 модулей × 30 наук). Уникальное преимущество над World Monitor (только RSS). Нормализация регионов к ISO3."
+  },
+  "data": {
+    "convergences": [
+      {
+        "region": "GLOBAL",
+        "categories": 7,
+        "moduleCount": 31,
+        "weightedSignal": 0.539,
+        "convergenceScore": 2.28,
+        "level": "high",
+        "categorySignals": {
+          "detector": 0.296,
+          "forecast": 0.15,
+          "semantic": 0.816,
+          "flow": 0.667,
+          "market": 0.534,
+          "specialist": 0.605,
+          "index": 1
+        },
+        "modules": [
+          {
+            "id": "baseline-alerting",
+            "category": "detector",
+            "signal": 0.3
+          },
+          {
+            "id": "focal-point-detection",
+            "category": "detector",
+            "signal": 0.349
+          },
+          {
+            "id": "snapshot-system",
+            "category": "detector",
+            "signal": 0.238
+          },
+          {
+            "id": "social-briefing",
+            "category": "forecast",
+            "signal": 0.15
+          },
+          {
+            "id": "adaptive-news-clustering",
+            "category": "semantic",
+            "signal": 1
+          },
+          {
+            "id": "ai-news-synthesis",
+            "category": "semantic",
+            "signal": 0.852
+          },
+          {
+            "id": "multi-source-corroboration",
+            "category": "semantic",
+            "signal": 1
+          },
+          {
+            "id": "social-sentiment-analyzer",
+            "category": "semantic",
+            "signal": 0.3
+          },
+          {
+            "id": "source-credibility",
+            "category": "semantic",
+            "signal": 0.93
+          },
+          {
+            "id": "migration-flow-tracker",
+            "category": "flow",
+            "signal": 0.556
+          },
+          {
+            "id": "route-explorer",
+            "category": "flow",
+            "signal": 0.81
+          },
+          {
+            "id": "signal-aggregator",
+            "category": "flow",
+            "signal": 1
+          },
+          {
+            "id": "supply-chain-resilience",
+            "category": "flow",
+            "signal": 0.3
+          },
+          {
+            "id": "energy-market-intelligence",
+            "category": "market",
+            "signal": 0.3
+          },
+          {
+            "id": "market-composite",
+            "category": "market",
+            "signal": 1
+          },
+          {
+            "id": "stablecoin-monitor",
+            "category": "market",
+            "signal": 0.3
+          },
+          {
+            "id": "cli-analytics",
+            "category": "specialist",
+            "signal": 0.476
+          },
+          {
+            "id": "convergence-engine",
+            "category": "specialist",
+            "signal": 0.834
+          },
+          {
+            "id": "crucix-doctor",
+            "category": "specialist",
+            "signal": 0.15
+          },
+          {
+            "id": "dashboard-indicators",
+            "category": "specialist",
+            "signal": 0.499
+          },
+          {
+            "id": "data-discrepancy",
+            "category": "specialist",
+            "signal": 0.451
+          },
+          {
+            "id": "langgraph-orchestrator",
+            "category": "specialist",
+            "signal": 0.388
+          },
+          {
+            "id": "mcp-server",
+            "category": "specialist",
+            "signal": 0.52
+          },
+          {
+            "id": "module-registration-controller",
+            "category": "specialist",
+            "signal": 1
+          },
+          {
+            "id": "progressive-disclosure",
+            "category": "specialist",
+            "signal": 0.52
+          },
+          {
+            "id": "rate-limiter",
+            "category": "specialist",
+            "signal": 0.422
+          },
+          {
+            "id": "sanctions-pressure",
+            "category": "specialist",
+            "signal": 0.601
+          },
+          {
+            "id": "scenario-simulation-engine",
+            "category": "specialist",
+            "signal": 1
+          },
+          {
+            "id": "strategic-risk-composite",
+            "category": "specialist",
+            "signal": 1
+          },
+          {
+            "id": "country-instability",
+            "category": "index",
+            "signal": 1
+          },
+          {
+            "id": "resilience-index",
+            "category": "index",
+            "signal": 1
+          }
+        ]
+      },
+      {
+        "region": "UKR",
+        "categories": 4,
+        "moduleCount": 6,
+        "weightedSignal": 0.581,
+        "convergenceScore": 1.34,
+        "level": "medium",
+        "categorySignals": {
+          "detector": 0.689,
+          "forecast": 0.388,
+          "flow": 0.872,
+          "specialist": 0.412
+        },
+        "modules": [
+          {
+            "id": "threat-classification",
+            "category": "detector",
+            "signal": 0.689
+          },
+          {
+            "id": "ai-forecasts",
+            "category": "forecast",
+            "signal": 0.388
+          },
+          {
+            "id": "diplomatic-tracker",
+            "category": "flow",
+            "signal": 0.744
+          },
+          {
+            "id": "risk-signal-aggregator",
+            "category": "flow",
+            "signal": 1
+          },
+          {
+            "id": "deception-index",
+            "category": "specialist",
+            "signal": 0.476
+          },
+          {
+            "id": "narrative-drift",
+            "category": "specialist",
+            "signal": 0.349
+          }
+        ]
+      },
+      {
+        "region": "IRN",
+        "categories": 3,
+        "moduleCount": 3,
+        "weightedSignal": 0.755,
+        "convergenceScore": 1.31,
+        "level": "medium",
+        "categorySignals": {
+          "forecast": 0.388,
+          "semantic": 1,
+          "flow": 1
+        },
+        "modules": [
+          {
+            "id": "ai-forecasts",
+            "category": "forecast",
+            "signal": 0.388
+          },
+          {
+            "id": "entity-extraction",
+            "category": "semantic",
+            "signal": 1
+          },
+          {
+            "id": "risk-signal-aggregator",
+            "category": "flow",
+            "signal": 1
+          }
+        ]
+      },
+      {
+        "region": "RUS",
+        "categories": 3,
+        "moduleCount": 6,
+        "weightedSignal": 0.701,
+        "convergenceScore": 1.21,
+        "level": "medium",
+        "categorySignals": {
+          "detector": 0.601,
+          "flow": 0.822,
+          "specialist": 0.722
+        },
+        "modules": [
+          {
+            "id": "cyber-attack-monitor",
+            "category": "detector",
+            "signal": 0.601
+          },
+          {
+            "id": "arms-transfer-tracker",
+            "category": "flow",
+            "signal": 0.722
+          },
+          {
+            "id": "diplomatic-tracker",
+            "category": "flow",
+            "signal": 0.744
+          },
+          {
+            "id": "risk-signal-aggregator",
+            "category": "flow",
+            "signal": 1
+          },
+          {
+            "id": "food-security-monitor",
+            "category": "specialist",
+            "signal": 0.722
+          },
+          {
+            "id": "political-stability-monitor",
+            "category": "specialist",
+            "signal": 0.722
+          }
+        ]
+      },
+      {
+        "region": "USA",
+        "categories": 3,
+        "moduleCount": 5,
+        "weightedSignal": 0.675,
+        "convergenceScore": 1.17,
+        "level": "medium",
+        "categorySignals": {
+          "detector": 0.601,
+          "flow": 0.733,
+          "specialist": 0.722
+        },
+        "modules": [
+          {
+            "id": "cyber-attack-monitor",
+            "category": "detector",
+            "signal": 0.601
+          },
+          {
+            "id": "arms-transfer-tracker",
+            "category": "flow",
+            "signal": 0.722
+          },
+          {
+            "id": "diplomatic-tracker",
+            "category": "flow",
+            "signal": 0.744
+          },
+          {
+            "id": "food-security-monitor",
+            "category": "specialist",
+            "signal": 0.722
+          },
+          {
+            "id": "political-stability-monitor",
+            "category": "specialist",
+            "signal": 0.722
+          }
+        ]
+      },
+      {
+        "region": "JPN",
+        "categories": 3,
+        "moduleCount": 4,
+        "weightedSignal": 0.671,
+        "convergenceScore": 1.16,
+        "level": "medium",
+        "categorySignals": {
+          "detector": 0.601,
+          "flow": 0.722,
+          "specialist": 0.722
+        },
+        "modules": [
+          {
+            "id": "cyber-attack-monitor",
+            "category": "detector",
+            "signal": 0.601
+          },
+          {
+            "id": "arms-transfer-tracker",
+            "category": "flow",
+            "signal": 0.722
+          },
+          {
+            "id": "food-security-monitor",
+            "category": "specialist",
+            "signal": 0.722
+          },
+          {
+            "id": "political-stability-monitor",
+            "category": "specialist",
+            "signal": 0.722
+          }
+        ]
+      }
+    ],
+    "total": 6,
+    "modules_summary": [
+      {
+        "id": "baseline-alerting",
+        "category": "detector",
+        "signal": 0.3
+      },
+      {
+        "id": "cyber-attack-monitor",
+        "category": "detector",
+        "signal": 0.601
+      },
+      {
+        "id": "focal-point-detection",
+        "category": "detector",
+        "signal": 0.349
+      },
+      {
+        "id": "geo-convergence",
+        "category": "detector",
+        "signal": 0.737
+      },
+      {
+        "id": "snapshot-system",
+        "category": "detector",
+        "signal": 0.238
+      },
+      {
+        "id": "threat-classification",
+        "category": "detector",
+        "signal": 0.689
+      },
+      {
+        "id": "ai-forecasts",
+        "category": "forecast",
+        "signal": 0.388
+      },
+      {
+        "id": "conflict-escalation-tracker",
+        "category": "forecast",
+        "signal": 0.349
+      },
+      {
+        "id": "social-briefing",
+        "category": "forecast",
+        "signal": 0.15
+      },
+      {
+        "id": "adaptive-news-clustering",
+        "category": "semantic",
+        "signal": 1
+      },
+      {
+        "id": "ai-news-synthesis",
+        "category": "semantic",
+        "signal": 0.852
+      },
+      {
+        "id": "entity-extraction",
+        "category": "semantic",
+        "signal": 1
+      },
+      {
+        "id": "multi-source-corroboration",
+        "category": "semantic",
+        "signal": 1
+      },
+      {
+        "id": "social-sentiment-analyzer",
+        "category": "semantic",
+        "signal": 0.3
+      },
+      {
+        "id": "source-credibility",
+        "category": "semantic",
+        "signal": 0.93
+      },
+      {
+        "id": "arms-transfer-tracker",
+        "category": "flow",
+        "signal": 0.722
+      },
+      {
+        "id": "diplomatic-tracker",
+        "category": "flow",
+        "signal": 0.744
+      },
+      {
+        "id": "migration-flow-tracker",
+        "category": "flow",
+        "signal": 0.556
+      },
+      {
+        "id": "risk-signal-aggregator",
+        "category": "flow",
+        "signal": 1
+      },
+      {
+        "id": "route-explorer",
+        "category": "flow",
+        "signal": 0.81
+      },
+      {
+        "id": "signal-aggregator",
+        "category": "flow",
+        "signal": 1
+      },
+      {
+        "id": "supply-chain-resilience",
+        "category": "flow",
+        "signal": 0.3
+      },
+      {
+        "id": "energy-market-intelligence",
+        "category": "market",
+        "signal": 0.3
+      },
+      {
+        "id": "market-composite",
+        "category": "market",
+        "signal": 1
+      },
+      {
+        "id": "stablecoin-monitor",
+        "category": "market",
+        "signal": 0.3
+      },
+      {
+        "id": "cli-analytics",
+        "category": "specialist",
+        "signal": 0.476
+      },
+      {
+        "id": "convergence-engine",
+        "category": "specialist",
+        "signal": 0.834
+      },
+      {
+        "id": "crucix-doctor",
+        "category": "specialist",
+        "signal": 0.15
+      },
+      {
+        "id": "dashboard-indicators",
+        "category": "specialist",
+        "signal": 0.499
+      },
+      {
+        "id": "data-discrepancy",
+        "category": "specialist",
+        "signal": 0.451
+      },
+      {
+        "id": "deception-index",
+        "category": "specialist",
+        "signal": 0.476
+      },
+      {
+        "id": "food-security-monitor",
+        "category": "specialist",
+        "signal": 0.722
+      },
+      {
+        "id": "langgraph-orchestrator",
+        "category": "specialist",
+        "signal": 0.388
+      },
+      {
+        "id": "logistics-anomalies",
+        "category": "specialist",
+        "signal": 0.422
+      },
+      {
+        "id": "mcp-server",
+        "category": "specialist",
+        "signal": 0.52
+      },
+      {
+        "id": "module-registration-controller",
+        "category": "specialist",
+        "signal": 1
+      },
+      {
+        "id": "narrative-drift",
+        "category": "specialist",
+        "signal": 0.349
+      },
+      {
+        "id": "political-stability-monitor",
+        "category": "specialist",
+        "signal": 0.722
+      },
+      {
+        "id": "progressive-disclosure",
+        "category": "specialist",
+        "signal": 0.52
+      },
+      {
+        "id": "rate-limiter",
+        "category": "specialist",
+        "signal": 0.422
+      },
+      {
+        "id": "sanctions-pressure",
+        "category": "specialist",
+        "signal": 0.601
+      },
+      {
+        "id": "scenario-simulation-engine",
+        "category": "specialist",
+        "signal": 1
+      },
+      {
+        "id": "strategic-risk-composite",
+        "category": "specialist",
+        "signal": 1
+      },
+      {
+        "id": "country-instability",
+        "category": "index",
+        "signal": 1
+      },
+      {
+        "id": "resilience-index",
+        "category": "index",
+        "signal": 1
+      }
+    ],
+    "generated_at": "2026-09-20T09:51:56.420Z"
+  }
+}

@@ -1,0 +1,346 @@
+// apis/predict/llm_agents.mjs
+// Мультиагентный LLM-ансамбль для прогностического анализа.
+//
+// Теоретическая основа:
+//   Sunstein, C. R., & Hastie, R. (2015). "Wiser: Getting Beyond Groupthink
+//   to Make Groups Smarter". Harvard Business Review Press.
+//   Tetlock, P. E., & Gardner, D. (2015). "Superforecasting: The Art and
+//   Science of Prediction". Crown.
+//   Multi-agent debate: Du, Y., et al. (2023). "Improving Factuality and
+//   Reasoning in Language Models through Multiagent Debate". arXiv:2305.14325.
+//
+//   Ключевая идея: разные когнитивные роли (Hawk/Dove/Bull/Bear) системно
+//   смещают прогноз в разные стороны. Skeptic ищет когнитивные искажения,
+//   Arbiter синтезирует. Ансамбль ролей устойчивее одного аналитика.
+//
+// Применение в Crucix:
+//   Прогноз по конкретному событию с противостоящими bias:
+//     * Hawk — склонен к эскалации (+15%)
+//     * Dove — склонен к деэскалации (−10%)
+//     * Bull — рыночный оптимист (−12%)
+//     * Bear — рыночный пессимист (+13%)
+//     * Neutral — без bias
+//     * Skeptic — критика и коррекция
+//     * Arbiter — финальный синтез
+
+// ============================================================
+// Профили агентов
+// ============================================================
+
+const AGENT_PERSONAS = {
+  hawk: {
+    name: 'Hawk',
+    systemPrompt: `Ты — аналитик-ястреб. Ты фокусируешься на рисках, эскалации, угрозах и негативных сценариях. Твои прогнозы склонны к консервативной оценке рисков. При анализе данных ты ищешь признаки надвигающегося кризиса, конфликта, обвала. Всегда обосновывай свою оценку конкретными данными. Отвечай строго в JSON: {"probability": 0.XX, "reasoning": "..."}`,
+    bias: 0.15,
+    category: 'geopolitical',
+  },
+  dove: {
+    name: 'Dove',
+    systemPrompt: `Ты — аналитик-голубь. Ты фокусируешься на деэскалации, дипломатических решениях, позитивных сценариях. Ты ищешь признаки стабилизации, компромисса, восстановления. Твои прогнозы склонны к более оптимистичной оценке. Всегда обосновывай свою оценку конкретными данными. Отвечай строго в JSON: {"probability": 0.XX, "reasoning": "..."}`,
+    bias: -0.10,
+    category: 'geopolitical',
+  },
+  bull: {
+    name: 'Bull',
+    systemPrompt: `Ты — бычий рыночный аналитик. Ты фокусируешься на росте, возможностях, восстановлении рынков. Ты ищешь признаки восстановления, притока капитала, расширения. Всегда обосновывай свою оценку конкретными данными. Отвечай строго в JSON: {"probability": 0.XX, "reasoning": "..."}`,
+    bias: -0.12,
+    category: 'market',
+  },
+  bear: {
+    name: 'Bear',
+    systemPrompt: `Ты — медвежий рыночный аналитик. Ты фокусируешься на падении, рисках, стагнации. Ты ищешь признаки снижения, оттока капитала, сжатия. Всегда обосновывай свою оценку конкретными данными. Отвечай строго в JSON: {"probability": 0.XX, "reasoning": "..."}`,
+    bias: 0.13,
+    category: 'market',
+  },
+  neutral: {
+    name: 'Neutral',
+    systemPrompt: `Ты — нейтральный аналитик. Ты не имеешь предвзятости. Твоя задача — дать максимально объективную оценку вероятности события, взвешивая все факты за и против. Всегда обосновывай свою оценку конкретными данными. Отвечай строго в JSON: {"probability": 0.XX, "reasoning": "..."}`,
+    bias: 0,
+    category: 'general',
+  },
+  skeptic: {
+    name: 'Skeptic',
+    systemPrompt: `Ты — скептик. Твоя задача — проверить прогнозы других аналитиков на когнитивные искажения: предвзятость подтверждения (confirmation bias), эффект якоря, эффект оверконфидентности, стадное поведение. Указывай на логические ошибки, необоснованные допущения, пропущенные альтернативные сценарии. Отвечай строго в JSON: {"adjustment": -0.20..0.20, "critique": "...", "biases_found": [...]}`,
+    bias: 0,
+    category: 'meta',
+  },
+  arbiter: {
+    name: 'Arbiter',
+    systemPrompt: `Ты — арбитр. Твоя задача — синтезировать все оценки аналитиков и скептика в единый итоговый прогноз. Учитывай обоснованность каждого мнения, качество аргументации, соответствие данным. Отвечай строго в JSON: {"final_probability": 0.XX, "rationale": "...", "confidence": "low|moderate|high"}`,
+    bias: 0,
+    category: 'meta',
+  },
+};
+
+// ============================================================
+// Формирование контекста для агента
+// ============================================================
+
+/**
+ * Формирование промпта с текущим состоянием sweep и историей.
+ */
+function buildAgentContext(sweepData, event, history = []) {
+  const lines = [];
+
+  lines.push('## Контекст прогноза\n');
+  lines.push(`**Событие:** ${event.name}`);
+  lines.push(`**Текущая априорная вероятность:** ${event.prior}`);
+  lines.push(`**Горизонт:** ${event.horizon || 24} часов\n`);
+
+  lines.push('## Текущие данные sweep\n');
+
+  if (sweepData && sweepData.fred) {
+    lines.push('### Рыночные показатели');
+    lines.push(`- VIX: ${sweepData.fred.vix || 'N/A'}`);
+    lines.push(`- HY-спред: ${sweepData.fred.hySpread || 'N/A'}`);
+    lines.push(`- Treasury 10Y: ${sweepData.fred.treasury10y || 'N/A'}\n`);
+  }
+
+  if (sweepData && sweepData.gdelt) {
+    lines.push('### Конфликты (GDELT)');
+    lines.push(`- Событий конфликта: ${sweepData.gdelt.conflictEvents?.length || 0}`);
+    lines.push(`- Avg Goldstein: ${sweepData.gdelt.avgGoldsteinScore || 'N/A'}\n`);
+  }
+
+  if (sweepData && sweepData.radiation) {
+    const maxCpm = Math.max(
+      ...Object.values(sweepData.radiation).map((s) => (s && s.cpm) || 0)
+    );
+    lines.push('### Радиационный фон');
+    lines.push(`- Максимум CPM: ${maxCpm}\n`);
+  }
+
+  if (sweepData && sweepData.delta) {
+    lines.push('### Изменения с предыдущего sweep');
+    lines.push(`- Новые алерты: ${sweepData.delta.newAlerts || 0}`);
+    lines.push(`- Эскалированные: ${sweepData.delta.escalatedAlerts || 0}\n`);
+  }
+
+  if (Array.isArray(history) && history.length > 0) {
+    lines.push('### История (последние 5 sweep)');
+    const recent = history.slice(-5);
+    for (const h of recent) {
+      const vix = h.fred?.vix ?? '?';
+      const conf = h.gdelt?.conflictEvents?.length ?? 0;
+      const alerts = h.delta?.newAlerts ?? 0;
+      lines.push(`- ${h.timestamp}: VIX=${vix}, конфликт=${conf}, алерты=${alerts}`);
+    }
+    lines.push('');
+  }
+
+  lines.push('## Задача');
+  lines.push(`Дай вероятность наступления события "${event.name}" `);
+  lines.push(`в течение ${event.horizon || 24} часов. `);
+  lines.push('Ответ в формате JSON: {"probability": 0.XX, "reasoning": "краткое обоснование"}\n');
+
+  return lines.join('\n');
+}
+
+// ============================================================
+// Запуск одного агента
+// ============================================================
+
+/**
+ * Запуск одного LLM-агента.
+ *
+ * @param {Object} llmProvider — {chat(messages) => string}
+ * @param {string} role — ключ из AGENT_PERSONAS
+ * @param {string} context — подготовленный контекст
+ * @returns {Promise<Object>} — {role, name, probability, reasoning}
+ */
+async function runAgent(llmProvider, role, context) {
+  const persona = AGENT_PERSONAS[role];
+  if (!persona) {
+    throw new Error(`Unknown agent role: ${role}`);
+  }
+
+  const messages = [
+    { role: 'system', content: persona.systemPrompt },
+    { role: 'user', content: context },
+  ];
+
+  let response;
+  try {
+    response = await llmProvider.chat(messages);
+  } catch (err) {
+    console.error(`Agent ${role} failed:`, err.message);
+    return {
+      role,
+      name: persona.name,
+      probability: 0.5,
+      reasoning: `Agent failed: ${err.message}`,
+      error: true,
+    };
+  }
+
+  // --- Парсинг ответа ---
+  let probability = 0.5;
+  let reasoning = '';
+
+  try {
+    const jsonMatch = response.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      const parsed = JSON.parse(jsonMatch[0]);
+      probability = typeof parsed.probability === 'number' ? parsed.probability : 0.5;
+      reasoning = parsed.reasoning || '';
+    } else {
+      // Fallback: ищем первое число
+      const probMatch = response.match(/(\d+\.?\d*)/);
+      if (probMatch) {
+        probability = parseFloat(probMatch[1]);
+        if (probability > 1) probability = probability / 100;
+      }
+      reasoning = response.slice(0, 500);
+    }
+  } catch {
+    reasoning = response.slice(0, 500);
+  }
+
+  // --- Применение bias ---
+  probability = Math.max(0.001, Math.min(0.999, probability + persona.bias));
+
+  return {
+    role,
+    name: persona.name,
+    probability,
+    rawProbability: probability - persona.bias,
+    bias: persona.bias,
+    reasoning,
+  };
+}
+
+// ============================================================
+// Полный мультиагентный прогноз
+// ============================================================
+
+/**
+ * Мультиагентный прогноз с Skeptic и Arbiter.
+ *
+ * @param {Object} params
+ * @param {Object} params.llmProvider — провайдер LLM
+ * @param {Object} params.sweepData — latest.json
+ * @param {Object} params.event — {id, name, prior, horizon}
+ * @param {Array} params.history — история sweeps
+ * @param {Array} params.agentRoles — роли ['hawk', 'dove', 'neutral']
+ * @param {boolean} params.useSkeptic
+ * @param {boolean} params.useArbiter
+ * @returns {Promise<Object>}
+ */
+async function multiAgentForecast({
+  llmProvider,
+  sweepData,
+  event,
+  history = [],
+  agentRoles = ['hawk', 'dove', 'neutral'],
+  useSkeptic = true,
+  useArbiter = true,
+}) {
+  const context = buildAgentContext(sweepData, event, history);
+
+  // --- Фаза 1: аналитики параллельно ---
+  const agentPromises = agentRoles.map((role) => runAgent(llmProvider, role, context));
+  const agentResults = await Promise.all(agentPromises);
+
+  let finalProbability;
+  let skepticAnalysis = null;
+  let arbiterSynthesis = null;
+
+  // --- Фаза 2: скептик ---
+  if (useSkeptic) {
+    const skepticInput =
+      context +
+      '\n## Прогнозы аналитиков\n' +
+      agentResults
+        .map((r) => `- ${r.name}: ${r.probability.toFixed(3)} — ${r.reasoning}`)
+        .join('\n');
+
+    skepticAnalysis = await runAgent(llmProvider, 'skeptic', skepticInput);
+  }
+
+  // --- Фаза 3: арбитр ---
+  if (useArbiter) {
+    const arbiterInput =
+      context +
+      '\n## Прогнозы аналитиков\n' +
+      agentResults
+        .map((r) => `- ${r.name}: ${r.probability.toFixed(3)} — ${r.reasoning}`)
+        .join('\n') +
+      (skepticAnalysis
+        ? `\n## Анализ скептика\n${skepticAnalysis.probability.toFixed(3)} — ${skepticAnalysis.reasoning}`
+        : '');
+
+    arbiterSynthesis = await runAgent(llmProvider, 'arbiter', arbiterInput);
+    finalProbability = arbiterSynthesis.probability;
+  } else {
+    // Простое среднее без арбитра
+    const validProbs = agentResults
+      .filter((r) => !r.error)
+      .map((r) => r.probability);
+    finalProbability = validProbs.length > 0
+      ? validProbs.reduce((a, b) => a + b, 0) / validProbs.length
+      : 0.5;
+    if (skepticAnalysis && !skepticAnalysis.error) {
+      finalProbability = (finalProbability + skepticAnalysis.probability) / 2;
+    }
+  }
+
+  // --- Мера разногласия ---
+  const probs = agentResults.filter((r) => !r.error).map((r) => r.probability);
+  const mean = probs.length > 0 ? probs.reduce((a, b) => a + b, 0) / probs.length : 0;
+  const disagreement = probs.length > 0
+    ? Math.sqrt(probs.reduce((s, p) => s + (p - mean) ** 2, 0) / probs.length)
+    : 0;
+
+  return {
+    eventId: event.id,
+    eventName: event.name,
+    finalProbability: Math.max(0.001, Math.min(0.999, finalProbability)),
+    agents: agentResults,
+    skeptic: skepticAnalysis,
+    arbiter: arbiterSynthesis,
+    disagreement,
+    timestamp: new Date().toISOString(),
+  };
+}
+
+// ============================================================
+// Утилиты
+// ============================================================
+
+/**
+ * Заготовка llmProvider из Crucix lib/llm/.
+ * Если в системе уже есть llmRouter, оберните его так:
+ *   const llmProvider = { chat: (messages) => llmRouter.complete(messages) };
+ */
+function wrapLLMRouter(router) {
+  return {
+    chat: async (messages) => {
+      if (typeof router.chat === 'function') return router.chat(messages);
+      if (typeof router.complete === 'function') return router.complete(messages);
+      if (typeof router.call === 'function') return router.call(messages);
+      throw new Error('llmRouter must have chat/complete/call method');
+    },
+  };
+}
+
+/**
+ * Проверка доступности LLM-провайдера.
+ */
+async function isLLMAvailable(llmProvider) {
+  if (!llmProvider || typeof llmProvider.chat !== 'function') return false;
+  try {
+    const r = await llmProvider.chat([{ role: 'user', content: 'ping' }]);
+    return typeof r === 'string';
+  } catch {
+    return false;
+  }
+}
+
+export {
+  AGENT_PERSONAS,
+  buildAgentContext,
+  runAgent,
+  multiAgentForecast,
+  wrapLLMRouter,
+  isLLMAvailable,
+};

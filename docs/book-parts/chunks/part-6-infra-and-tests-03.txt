@@ -1,0 +1,1195 @@
+===== ЧАСТЬ part-6-infra-and-tests · КУСОК 03/23 · 38.3 KB =====
+
+FILE: .github/workflows/docker.yml
+SIZE: 2620 bytes
+SHA1: a9991e314b58f3f3
+========================================================================
+
+name: Docker Publish
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*.*.*']
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/Dockerfile.engine
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+          provenance: true
+          sbom: true
+
+      - name: Image digest
+        run: echo "${{ steps.meta.outputs.tags }}" | head -1
+
+  docker-python:
+    name: Build and Push Python Service
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-python
+          tags: |
+            type=semver,pattern={{version}}
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - uses: docker/build-push-action@v5
+        with:
+          context: ./python_service
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+
+
+========================================================================
+
+FILE: .github/workflows/release.yml
+SIZE: 3553 bytes
+SHA1: bea4b079de45002f
+========================================================================
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version (e.g., v3.0.1)'
+        required: true
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
+jobs:
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION="${GITHUB_REF#refs/tags/}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -z "$PREV_TAG" ]; then
+            CHANGELOG="Initial release"
+          else
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" "$PREV_TAG"..HEAD)
+          fi
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install wabt and build WASM
+        run: |
+          sudo apt-get install -y wabt
+          cd apis/predict/wasm
+          wat2wasm linear_algebra.wat -o linear_algebra.wasm
+          wat2wasm --enable-simd linear_algebra_simd.wat -o linear_algebra_simd.wasm
+
+      - name: Build handbook
+        continue-on-error: true
+        run: |
+          sudo apt-get install -y pandoc texlive-xetex texlive-fonts-recommended
+          cd docs/handbook
+          bash build.sh || echo "Handbook build failed - continuing"
+
+      - name: Create release tarball
+        run: |
+          mkdir -p release
+          cp -r apis dashboard benchmark docs tests scripts observability release/
+          cp README.md LICENSE* release/ 2>/dev/null || true
+          cd release
+          tar -czf ../crucix-core-${{ steps.version.outputs.version }}.tar.gz .
+          cd ..
+          sha256sum crucix-core-*.tar.gz > crucix-core-${{ steps.version.outputs.version }}.tar.gz.sha256
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: "Crucix Core ${{ steps.version.outputs.version }}"
+          body: |
+            # Crucix Core ${{ steps.version.outputs.version }}
+
+            ## Changes
+            ${{ steps.changelog.outputs.changelog }}
+
+            ## Installation
+
+            Download the release tarball and extract:
+
+            curl -L https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.version }}/crucix-core-${{ steps.version.outputs.version }}.tar.gz | tar xz
+            cd crucix-core
+            bash scripts/build.sh
+            bash scripts/deploy.sh local
+
+            ## Docker
+
+            docker pull ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}
+            docker run -p 3118:3118 ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}
+          files: |
+            crucix-core-${{ steps.version.outputs.version }}.tar.gz
+            crucix-core-${{ steps.version.outputs.version }}.tar.gz.sha256
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+
+========================================================================
+
+FILE: .github/workflows/security.yml
+SIZE: 2077 bytes
+SHA1: e21efccb9e150018
+========================================================================
+
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          queries: security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript-typescript"
+
+  dependency-scan:
+    name: Dependency Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for suspicious dependencies
+        run: |
+          if [ -f "package.json" ]; then
+            echo "Dependencies:"
+            cat package.json | grep -A 100 '"dependencies"' | grep '":' || echo "No dependencies"
+          else
+            echo "OK: No package.json — zero dependencies"
+          fi
+
+      - name: Trivy filesystem scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+        continue-on-error: true
+
+      - name: Upload Trivy results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+        continue-on-error: true
+
+  secrets-scan:
+    name: Secrets Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: TruffleHog
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --debug --only-verified
+        continue-on-error: true
+
+
+
+========================================================================
+
+FILE: .github/workflows/nightly-property.yml
+SIZE: 2493 bytes
+SHA1: d2a921b5c0c62a7c
+========================================================================
+
+name: Nightly Property Tests
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Каждую ночь в 2:00 UTC
+  workflow_dispatch:
+    inputs:
+      num_cases:
+        description: 'Number of property test cases'
+        required: false
+        default: '10000'
+
+jobs:
+  property-deep:
+    name: Property Tests (10K cases)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      PROPERTY_CASES: ${{ github.event.inputs.num_cases || '10000' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          # Увеличиваем heap для больших прогонов
+          node-version-file: '.nvmrc'
+
+      - name: Set Node heap size
+        run: echo "NODE_OPTIONS=--max-old-space-size=4096" >> $GITHUB_ENV
+
+      - name: Install wabt (для WASM)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wabt
+
+      - name: Build WASM
+        run: bash scripts/compile-wasm-simd.sh || echo "WASM build skipped"
+
+      - name: Deep property tests — MetaLearner
+        run: |
+          node --test tests/property/meta_ensemble.property.mjs
+        env:
+          PROPERTY_CASES: ${{ env.PROPERTY_CASES }}
+
+      - name: Deep property tests — Regime Signature
+        run: node --test tests/property/regime_signature.property.mjs
+
+      - name: Deep property tests — Reflexive
+        run: node --test tests/property/reflexive.property.mjs
+
+      - name: Deep property tests — Multilayer Causal
+        run: node --test tests/property/multilayer_causal.property.mjs
+
+      - name: Deep property tests — Temporal Causal
+        run: node --test tests/property/temporal_causal.property.mjs
+
+      - name: Deep fuzz tests
+        run: |
+          node --test tests/fuzz/scenario_generator.fuzz.mjs
+          node --test tests/fuzz/temporal_causal.fuzz.mjs
+          node --test tests/fuzz/multilayer_causal.fuzz.mjs
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: property-test-results-${{ github.run_id }}
+          path: |
+            runs/tests/
+            *.log
+          retention-days: 30
+
+      - name: Notify on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            console.log('Property tests failed — investigation needed');
+            // Здесь можно добавить уведомление в Slack/Discord
+
+
+
+========================================================================
+
+FILE: .github/workflows/nightly-neo4j.yml
+SIZE: 4148 bytes
+SHA1: a4d0927beadb5e99
+========================================================================
+
+name: Nightly Neo4j Export
+
+on:
+  schedule:
+    - cron: '0 3 * * *'  # Каждую ночь в 3:00 UTC
+  workflow_dispatch:
+
+jobs:
+  export-neo4j:
+    name: Export Causal Graph to Neo4j
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      neo4j:
+        image: neo4j:5
+        env:
+          NEO4J_AUTH: neo4j/testpassword
+          NEO4J_PLUGINS: '["apoc"]'
+        ports:
+          - 7474:7474
+          - 7687:7687
+        options: >-
+          --health-cmd "wget --no-verbose --tries=1 --spider localhost:7474 || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python deps
+        run: pip install -r scripts/neo4j_requirements.txt
+
+      - name: Generate latest forecast
+        run: |
+          mkdir -p runs/memory runs/predictions
+          node -e "
+            const { writeFileSync } = require('fs');
+            const history = [];
+            for (let i = 0; i < 100; i++) {
+              history.push({
+                timestamp: new Date(Date.now() - (100 - i) * 15 * 60 * 1000).toISOString(),
+                fred: { vix: 20 + Math.random() * 15, hySpread: 3 + Math.random() * 3 },
+                gdelt: { conflictEvents: Array.from({ length: Math.floor(Math.random() * 15) }, () => ({})) },
+                sanctions: { count: Math.floor(Math.random() * 6) },
+                delta: { newAlerts: Math.floor(Math.random() * 6), escalatedAlerts: Math.floor(Math.random() * 3) },
+              });
+            }
+            writeFileSync('runs/history.json', JSON.stringify(history));
+          "
+          node -e "
+            import('./apis/predict/engine.mjs').then(async m => {
+              const history = JSON.parse(require('fs').readFileSync('runs/history.json'));
+              const latest = history[99];
+              await m.runForecastPipeline(latest, { skipSources: true, skipMetaScenarios: true });
+              console.log('✓ Forecast generated');
+            });
+          "
+
+      - name: Wait for Neo4j
+        run: |
+          for i in $(seq 1 30); do
+            if nc -z localhost 7687 2>/dev/null; then
+              echo "✓ Neo4j ready"
+              break
+            fi
+            sleep 2
+          done
+
+      - name: Export to Neo4j
+        env:
+          NEO4J_URI: bolt://localhost:7687
+          NEO4J_USER: neo4j
+          NEO4J_PASSWORD: testpassword
+        run: |
+          python scripts/neo4j_export.py --clear --analyze
+
+      - name: Verify graph
+        env:
+          NEO4J_URI: bolt://localhost:7687
+          NEO4J_USER: neo4j
+          NEO4J_PASSWORD: testpassword
+        run: |
+          python -c "
+            from neo4j import GraphDatabase
+            driver = GraphDatabase.driver('bolt://localhost:7687', auth=('neo4j', 'testpassword'))
+            with driver.session() as s:
+              nodes = s.run('MATCH (n:CrucixNode) RETURN count(n) AS c').single()['c']
+              edges = s.run('MATCH ()-[r:CAUSES]->() RETURN count(r) AS c').single()['c']
+              layers = s.run('MATCH (l:CrucixLayer) RETURN count(l) AS c').single()['c']
+              print(f'Nodes: {nodes}, Edges: {edges}, Layers: {layers}')
+              assert nodes > 0, 'No nodes'
+              assert edges > 0, 'No edges'
+              assert layers == 4, f'Expected 4 layers, got {layers}'
+              print('✓ Graph validation passed')
+            driver.close()
+          "
+
+      - name: Dump Neo4j data as artifact
+        if: always()
+        run: |
+          mkdir -p neo4j-dump
+          docker exec $(docker ps -q -f name=neo4j) neo4j-admin database dump neo4j --to-path=/tmp 2>/dev/null || true
+          docker cp $(docker ps -q -f name=neo4j):/tmp/neo4j.dump neo4j-dump/ 2>/dev/null || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: neo4j-dump-${{ github.run_id }}
+          path: neo4j-dump/
+          retention-days: 30
+
+
+
+========================================================================
+
+FILE: .github/workflows/neo4j-export.yml
+SIZE: 3162 bytes
+SHA1: 70df8a8d9afcbbeb
+========================================================================
+
+# .github/workflows/neo4j-export.yml
+# Ночной экспорт Multi-Layer Causal Graph в Neo4j.
+# Запускается по расписанию или вручную через workflow_dispatch.
+# Требует latest_forecast.json в runs/predictions/.
+
+name: Nightly Neo4j Export
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  export-neo4j:
+    name: Export Causal Graph to Neo4j
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      neo4j:
+        image: neo4j:5
+        env:
+          NEO4J_AUTH: neo4j/testpassword
+          NEO4J_PLUGINS: '["apoc"]'
+        ports:
+          - 7474:7474
+          - 7687:7687
+        options: >-
+          --health-cmd "wget --no-verbose --tries=1 --spider http://localhost:7474 || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r scripts/neo4j_requirements.txt
+
+      - name: Wait for Neo4j to be ready
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:7474 > /dev/null; then
+              echo "Neo4j is ready"
+              exit 0
+            fi
+            echo "Waiting for Neo4j... ($i/30)"
+            sleep 5
+          done
+          echo "Neo4j did not become ready in time"
+          exit 1
+
+      - name: Ensure forecast exists
+        run: |
+          mkdir -p runs/predictions
+          if [ ! -f runs/predictions/latest_forecast.json ]; then
+            echo '{"timestamp":"'$(date -u +%Y-%m-%dT%H:%M:%SZ)'","version":"4.0.0","multiLayerCausal":{"nodes":[],"edges":[]}}' > runs/predictions/latest_forecast.json
+            echo "Created stub latest_forecast.json"
+          fi
+
+      - name: Export to Neo4j
+        env:
+          NEO4J_URI: bolt://localhost:7687
+          NEO4J_USER: neo4j
+          NEO4J_PASSWORD: testpassword
+        run: |
+          python scripts/neo4j_export.py --clear --analyze
+
+      - name: Verify import
+        env:
+          NEO4J_URI: bolt://localhost:7687
+          NEO4J_USER: neo4j
+          NEO4J_PASSWORD: testpassword
+        run: |
+          python - << 'PYEOF'
+          import os
+          from neo4j import GraphDatabase
+          uri = os.environ["NEO4J_URI"]
+          user = os.environ["NEO4J_USER"]
+          password = os.environ["NEO4J_PASSWORD"]
+          driver = GraphDatabase.driver(uri, auth=(user, password))
+          with driver.session() as session:
+              nodes = session.run("MATCH (n:CrucixNode) RETURN count(n) AS c").single()["c"]
+              edges = session.run("MATCH ()-[r:CAUSES]->() RETURN count(r) AS c").single()["c"]
+              print(f"CrucixNode count: {nodes}")
+              print(f"CAUSES count: {edges}")
+          driver.close()
+          PYEOF
+
+
+
+========================================================================
+
+FILE: .github/workflows/weekly-chaos.yml
+SIZE: 1519 bytes
+SHA1: 624a76c108498d91
+========================================================================
+
+name: Weekly Chaos Engineering
+
+on:
+  schedule:
+    - cron: '0 4 * * 0'  # Каждое воскресенье в 4:00 UTC
+  workflow_dispatch:
+
+jobs:
+  chaos-suite:
+    name: Chaos Engineering Suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run chaos experiments
+        run: npm run chaos
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: chaos-report
+          path: runs/chaos/
+          retention-days: 30
+
+      - name: Analyze chaos results
+        run: |
+          node -e "
+            const fs = require('fs');
+            const files = fs.readdirSync('runs/chaos').filter(f => f.startsWith('chaos_suite'));
+            if (files.length === 0) { console.log('No chaos reports'); process.exit(0); }
+            const latest = JSON.parse(fs.readFileSync('runs/chaos/' + files.sort().pop()));
+            console.log('Chaos suite results:');
+            console.log('  Total:', latest.totalExperiments);
+            console.log('  Successful:', latest.successful);
+            console.log('  Failed:', latest.failed);
+            console.log('  Success rate:', ((latest.successful / latest.totalExperiments) * 100).toFixed(1) + '%');
+            if (latest.failed > latest.totalExperiments * 0.5) {
+              console.error('::error::Too many chaos failures');
+              process.exit(1);
+            }
+          "
+
+
+
+========================================================================
+
+FILE: tests/predict/adversarial_coevolution.test.mjs
+SIZE: 5151 bytes
+SHA1: 1c50955faf46ad38
+========================================================================
+
+// tests/predict/adversarial_coevolution.test.mjs
+import { describe, it, beforeEach } from 'node:test';
+import assert from 'node:assert';
+import { OpponentModel, AdversarialCoEvolution, crucixAdversarialCoEvolution } from '../../apis/predict/adversarial_coevolution.mjs';
+
+describe('OpponentModel — базовые операции', () => {
+  let om;
+  beforeEach(() => { om = new OpponentModel({ opponentId: 'test' }); });
+
+  it('инициализируется равномерным распределением', () => {
+    assert.strictEqual(om.strategyProbabilities.size, 4);
+    for (const p of om.strategyProbabilities.values()) {
+      assert.ok(Math.abs(p - 0.25) < 1e-9);
+    }
+  });
+
+  it('обновляет вероятности после наблюдения', () => {
+    // Многократно наблюдаем escalate
+    for (let i = 0; i < 20; i++) om.observe('escalate');
+
+    const pEscalate = om.strategyProbabilities.get('escalate');
+    assert.ok(pEscalate > 0.7, `Expected escalate > 0.7, got ${pEscalate}`);
+  });
+
+  it('нормализует вероятности к 1', () => {
+    om.observe('escalate');
+    om.observe('hold');
+    om.observe('deceive');
+    const sum = [...om.strategyProbabilities.values()].reduce((a, b) => a + b, 0);
+    assert.ok(Math.abs(sum - 1) < 1e-9);
+  });
+
+  it('predictNextStrategy возвращает наиболее вероятную', () => {
+    for (let i = 0; i < 30; i++) om.observe('deceive');
+    const prediction = om.predictNextStrategy();
+    assert.strictEqual(prediction.strategy, 'deceive');
+    assert.ok(prediction.probability > 0.5);
+  });
+});
+
+describe('OpponentModel — detectAdaptation', () => {
+  it('возвращает insufficient_data при малом числе наблюдений', () => {
+    om.observe('escalate', { ourPrediction: 'escalation' });
+    const result = om.detectAdaptation();
+    assert.strictEqual(result.adapted, false);
+    assert.strictEqual(result.reason, 'insufficient_data');
+  });
+
+  it('детектирует адаптацию при разных стратегиях', () => {
+    // Когда мы предсказывали escalation → противник escalate
+    for (let i = 0; i < 10; i++) {
+      om.observe('escalate', { ourPrediction: 'escalation' });
+    }
+    // Когда мы предсказывали de-escalation → противник deceive
+    for (let i = 0; i < 10; i++) {
+      om.observe('deceive', { ourPrediction: 'de-escalation' });
+    }
+
+    const result = om.detectAdaptation();
+    assert.strictEqual(result.adapted, true);
+    assert.ok(result.klDivergence > 0.3);
+  });
+
+  it('не детектирует адаптацию при одинаковых стратегиях', () => {
+    for (let i = 0; i < 10; i++) {
+      om.observe('hold', { ourPrediction: 'escalation' });
+    }
+    for (let i = 0; i < 10; i++) {
+      om.observe('hold', { ourPrediction: 'de-escalation' });
+    }
+
+    const result = om.detectAdaptation();
+    assert.strictEqual(result.adapted, false);
+  });
+});
+
+describe('AdversarialCoEvolution — раунды', () => {
+  it('добавляет противников', () => {
+    const ace = new AdversarialCoEvolution();
+    ace.addOpponent('russia');
+    ace.addOpponent('china');
+
+    assert.strictEqual(ace.opponents.size, 2);
+  });
+
+  it('round обновляет модели противников', () => {
+    const ace = new AdversarialCoEvolution();
+    ace.addOpponent('russia');
+
+    const roundData = ace.round('forecast_high', {
+      russia: { strategy: 'escalate', context: {} },
+    });
+
+    assert.strictEqual(roundData.round, 1);
+    assert.strictEqual(roundData.actions.length, 1);
+    assert.strictEqual(roundData.actions[0].opponent, 'russia');
+    assert.strictEqual(roundData.actions[0].observed, 'escalate');
+  });
+
+  it('simulateCoEvolution запускает N раундов', () => {
+    const ace = new AdversarialCoEvolution();
+    ace.addOpponent('russia');
+
+    const results = ace.simulateCoEvolution(10);
+    assert.strictEqual(results.length, 10);
+    assert.strictEqual(ace.evolutionHistory.length, 10);
+  });
+
+  it('toJSON возвращает сериализуемое состояние', () => {
+    const ace = new AdversarialCoEvolution();
+    ace.addOpponent('russia');
+    ace.round('forecast_high', { russia: { strategy: 'escalate', context: {} } });
+
+    const json = ace.toJSON();
+    assert.ok(Array.isArray(json.opponents));
+    assert.strictEqual(json.opponents.length, 1);
+    assert.ok(json.opponents[0].adaptation);
+  });
+});
+
+describe('crucixAdversarialCoEvolution — интеграция', () => {
+  it('обрабатывает sweep', () => {
+    const result = crucixAdversarialCoEvolution({}, []);
+    assert.strictEqual(result.module, 'adversarial_coevolution');
+    assert.ok(result.opponentsCount > 0);
+    assert.ok(Array.isArray(result.adaptations));
+  });
+
+  it('возвращает keyInsight', () => {
+    const result = crucixAdversarialCoEvolution({}, []);
+    assert.ok(typeof result.keyInsight === 'string');
+    assert.ok(result.keyInsight.length > 0);
+  });
+});
+
+
+
+========================================================================
+
+FILE: tests/predict/attention_dynamics.test.mjs
+SIZE: 5619 bytes
+SHA1: 91e5c797cb2fce76
+========================================================================
+
+// tests/predict/attention_dynamics.test.mjs
+import { describe, it, beforeEach } from 'node:test';
+import assert from 'node:assert';
+import { AttentionDynamics, crucixAttentionDynamics, extractTopicsFromSweep } from '../../apis/predict/attention_dynamics.mjs';
+
+describe('AttentionDynamics — базовые операции', () => {
+  let ad;
+  beforeEach(() => { ad = new AttentionDynamics({ halfLifeHours: 24 }); });
+
+  it('создаёт тему при первом обновлении', () => {
+    ad.update('topic_a', 5, 0.25);
+    assert.strictEqual(ad.topics.size, 1);
+    const topic = ad.topics.get('topic_a');
+    assert.ok(topic.attention > 0);
+  });
+
+  it('применяет затухание с течением времени', () => {
+    ad.update('topic_a', 10, 0.25);
+    const afterFirst = ad.topics.get('topic_a').attention;
+
+    // Симулируем 24 часа спустя без новых упоминаний
+    ad.update('topic_a', 0, 24);
+    const afterDecay = ad.topics.get('topic_a').attention;
+
+    assert.ok(afterDecay < afterFirst * 0.6, 'Attention should decay by half-life');
+  });
+
+  it('momentum отражает изменение attention', () => {
+    ad.update('topic_a', 5, 0.25);
+    ad.update('topic_a', 10, 0.25);
+    const momentum = ad.topics.get('topic_a').momentum;
+    assert.ok(momentum > 0, 'Momentum should be positive with growing mentions');
+  });
+
+  it('velocity нормализована по времени', () => {
+    ad.update('topic_a', 10, 1);   // 10 mentions за 1 час
+    const t1 = ad.topics.get('topic_a').velocity;
+
+    ad.update('topic_b', 10, 4);   // 10 mentions за 4 часа
+    const t2 = ad.topics.get('topic_b').velocity;
+
+    assert.ok(t1 > t2, 'Faster growth = higher velocity');
+  });
+});
+
+describe('AttentionDynamics — allocation', () => {
+  it('распределяет внимание пропорционально', () => {
+    const ad = new AttentionDynamics({ halfLifeHours: 1000 }); // медленное затухание
+    ad.update('a', 10, 0.01);
+    ad.update('b', 20, 0.01);
+    ad.update('c', 30, 0.01);
+
+    const alloc = ad.getAttentionAllocation();
+    assert.ok(alloc.a.share < alloc.b.share);
+    assert.ok(alloc.b.share < alloc.c.share);
+
+    const total = alloc.a.share + alloc.b.share + alloc.c.share;
+    assert.ok(Math.abs(total - 1) < 1e-6);
+  });
+
+  it('возвращает пустой объект без тем', () => {
+    const alloc = ad.getAttentionAllocation();
+    assert.deepStrictEqual(alloc, {});
+  });
+});
+
+describe('AttentionDynamics — detectShifts', () => {
+  it('обнаруживает shift когда одна тема растёт, другая падает', () => {
+    const ad = new AttentionDynamics({ halfLifeHours: 1000 });
+    // Тема A активно растёт
+    for (let i = 0; i < 5; i++) ad.update('topic_a', 5, 0.01);
+    // Тема B затухает (нет упоминаний)
+    for (let i = 0; i < 5; i++) ad.update('topic_b', 0, 0.01);
+    // Начальный буст для B
+    ad.topics.get('topic_b').attention = 20;
+    ad.topics.get('topic_b').history = [{ attention: 20 }, { attention: 15 }, { attention: 10 }, { attention: 5 }, { attention: 1 }];
+
+    const shifts = ad.detectShifts(5);
+    assert.ok(Array.isArray(shifts.shifts));
+  });
+
+  it('не падает при малой истории', () => {
+    ad.update('a', 5, 0.01);
+    const shifts = ad.detectShifts(5);
+    assert.strictEqual(shifts.totalShifts, 0);
+  });
+});
+
+describe('AttentionDynamics — predictExplosive', () => {
+  it('определяет растущие темы', () => {
+    const ad = new AttentionDynamics({ halfLifeHours: 1000 });
+    for (let i = 0; i < 5; i++) ad.update('rising', 10, 0.01);
+    for (let i = 0; i < 5; i++) ad.update('flat', 1, 0.01);
+
+    const predictions = ad.predictExplosive(5, 24);
+    assert.strictEqual(predictions[0].topic, 'rising');
+    assert.ok(predictions[0].explosiveness > predictions[1].explosiveness);
+  });
+
+  it('пустой список при отсутствии тем', () => {
+    const predictions = ad.predictExplosive(5, 24);
+    assert.deepStrictEqual(predictions, []);
+  });
+});
+
+describe('extractTopicsFromSweep', () => {
+  it('извлекает темы из GDELT событий', () => {
+    const latest = {
+      gdelt: {
+        conflictEvents: [
+          { summary: 'conflict escalation region strategic' },
+          { summary: 'military operation strategic region' },
+        ],
+      },
+    };
+    const topics = extractTopicsFromSweep(latest);
+    assert.ok(topics.size > 0);
+    assert.ok(topics.has('strategic'));
+  });
+
+  it('возвращает пустой Map при отсутствии событий', () => {
+    const topics = extractTopicsFromSweep({});
+    assert.strictEqual(topics.size, 0);
+  });
+});
+
+describe('crucixAttentionDynamics — интеграция', () => {
+  it('обрабатывает sweep', () => {
+    const latest = {
+      gdelt: {
+        conflictEvents: [
+          { summary: 'conflict strategic region escalation' },
+          { summary: 'military operation strategic region' },
+        ],
+      },
+    };
+    const result = crucixAttentionDynamics(latest, []);
+    assert.strictEqual(result.module, 'attention_dynamics');
+    assert.ok(typeof result.totalAttention === 'number');
+  });
+
+  it('не падает на пустом входе', () => {
+    const result = crucixAttentionDynamics({}, []);
+    assert.strictEqual(result.module, 'attention_dynamics');
+    assert.strictEqual(result.totalTopics, 0);
+  });
+});
+
+
+
+========================================================================
+
+FILE: tests/predict/hypergraph_contagion.test.mjs
+SIZE: 6567 bytes
+SHA1: 3222ebcb9474cd1c
+========================================================================
+
+// tests/predict/hypergraph_contagion.test.mjs
+import { describe, it, beforeEach } from 'node:test';
+import assert from 'node:assert';
+import { Hypergraph, buildCrucixHypergraph, crucixHypergraphContagion } from '../../apis/predict/hypergraph_contagion.mjs';
+
+describe('Hypergraph — базовая функциональность', () => {
+  let hg;
+  beforeEach(() => { hg = new Hypergraph(); });
+
+  it('добавляет узлы с дефолтной вероятностью', () => {
+    hg.addNode('a', 'Node A', 'cyber');
+    hg.addNode('b', 'Node B', 'finance', 0.7);
+
+    assert.strictEqual(hg.nodes.size, 2);
+    assert.strictEqual(hg.nodes.get('a').currentProb, 0.5);
+    assert.strictEqual(hg.nodes.get('b').currentProb, 0.7);
+  });
+
+  it('добавляет гиперребро с 3+ узлами', () => {
+    hg.addNode('a', 'A', 'cyber');
+    hg.addNode('b', 'B', 'info');
+    hg.addNode('c', 'C', 'finance');
+
+    const id = hg.addHyperedge(['a', 'b', 'c'], { weight: 2.0, type: 'AND' });
+    assert.ok(id.startsWith('he_'));
+    assert.strictEqual(hg.hyperedges.size, 1);
+
+    const he = hg.hyperedges.get(id);
+    assert.strictEqual(he.nodes.length, 3);
+    assert.strictEqual(he.weight, 2.0);
+    assert.strictEqual(he.type, 'AND');
+  });
+
+  it('бросает ошибку при гиперребре с <3 узлами', () => {
+    hg.addNode('a', 'A', 'cyber');
+    hg.addNode('b', 'B', 'info');
+
+    assert.throws(
+      () => hg.addHyperedge(['a', 'b'], {}),
+      /at least 3 nodes/
+    );
+  });
+
+  it('бросает ошибку при неизвестном узле в гиперребре', () => {
+    hg.addNode('a', 'A', 'cyber');
+    hg.addNode('b', 'B', 'info');
+
+    assert.throws(
+      () => hg.addHyperedge(['a', 'b', 'unknown'], {}),
+      /Node unknown not found/
+    );
+  });
+});
+
+describe('Hypergraph — propagate', () => {
+  it('AND-гиперребро: активируется только когда ВСЕ узлы активны', () => {
+    const hg = new Hypergraph();
+    hg.addNode('a', 'A', 'cyber', 0.9);
+    hg.addNode('b', 'B', 'info', 0.9);
+    hg.addNode('target', 'Target', 'finance', 0.2);
+
+    hg.addHyperedge(['a', 'b', 'target'], { weight: 2.0, type: 'AND' });
+
+    // Случай 1: оба активны → target растёт
+    const updates1 = hg.propagate('target');
+    assert.ok(updates1.length > 0);
+    assert.ok(updates1[0].activation > 0.5);
+
+    // Сброс и тест: один неактивен
+    hg.nodes.get('b').currentProb = 0.1;
+    hg.nodes.get('target').currentProb = 0.2;
+    const updates2 = hg.propagate('target');
+    if (updates2.length > 0) {
+      assert.ok(updates2[0].activation < 0.5, 'AND with one low should not activate');
+    }
+  });
+
+  it('OR-гиперребро: активируется когда ХОТЯ БЫ ОДИН узел активен', () => {
+    const hg = new Hypergraph();
+    hg.addNode('a', 'A', 'cyber', 0.9);
+    hg.addNode('b', 'B', 'info', 0.1);
+    hg.addNode('target', 'Target', 'finance', 0.2);
+
+    hg.addHyperedge(['a', 'b', 'target'], { weight: 2.0, type: 'OR' });
+
+    const updates = hg.propagate('target');
+    assert.ok(updates.length > 0);
+    assert.ok(updates[0].activation > 0.5, 'OR with one high should activate');
+  });
+
+  it('MAJORITY-гиперребро: активируется при большинстве', () => {
+    const hg = new Hypergraph();
+    hg.addNode('a', 'A', 'cyber', 0.9);
+    hg.addNode('b', 'B', 'info', 0.8);
+    hg.addNode('c', 'C', 'physical', 0.1);
+    hg.addNode('target', 'Target', 'finance', 0.2);
+
+    hg.addHyperedge(['a', 'b', 'c', 'target'], { weight: 2.0, type: 'MAJORITY' });
+
+    const updates = hg.propagate('target');
+    assert.ok(updates.length > 0);
+    // 2 из 3 активны → activation = 2/3
+    assert.ok(Math.abs(updates[0].activation - 2 / 3) < 0.01);
+  });
+
+  it('не мутирует узел если дельта слишком мала', () => {
+    const hg = new Hypergraph();
+    hg.addNode('a', 'A', 'cyber', 0.1);
+    hg.addNode('b', 'B', 'info', 0.1);
+    hg.addNode('target', 'Target', 'finance', 0.1);
+
+    hg.addHyperedge(['a', 'b', 'target'], { weight: 1.0, type: 'AND' });
+
+    const updates = hg.propagate('target');
+    assert.strictEqual(updates.length, 0);
+  });
+});
+
+describe('Hypergraph — propagateAll', () => {
+  it('распространяет по нескольким итерациям', () => {
+    const hg = buildCrucixHypergraph();
+
+    // Активируем несколько узлов
+    hg.nodes.get('sanctions').currentProb = 0.8;
+    hg.nodes.get('conflict').currentProb = 0.8;
+    hg.nodes.get('media_campaign').currentProb = 0.8;
+
+    const updates = hg.propagateAll(3);
+    assert.ok(updates.length > 0);
+
+    // market_crash должен вырасти через гиперребро [sanctions, conflict, media_campaign]
+    const marketCrashUpdate = updates.find(u => u.target === 'market_crash');
+    assert.ok(marketCrashUpdate, 'market_crash should be updated');
+    assert.ok(marketCrashUpdate.delta > 0);
+  });
+
+  it('останавливается, если нет обновлений', () => {
+    const hg = new Hypergraph();
+    hg.addNode('isolated', 'Isolated', 'cyber', 0.5);
+
+    const updates = hg.propagateAll(5);
+    assert.strictEqual(updates.length, 0);
+  });
+});
+
+describe('crucixHypergraphContagion — интеграция', () => {
+  it('обрабатывает sweep без падений', () => {
+    const latest = {
+      sanctions: { count: 5 },
+      gdelt: { conflictEvents: Array.from({ length: 12 }, () => ({})) },
+      fred: { vix: 28 },
+      delta: { escalatedAlerts: 4 },
+    };
+
+    const result = crucixHypergraphContagion(latest, []);
+    assert.strictEqual(result.module, 'hypergraph_contagion');
+    assert.ok(result.stats.nodeCount > 0);
+    assert.ok(result.stats.hyperedgeCount > 0);
+    assert.ok(Array.isArray(result.updates));
+  });
+
+  it('возвращает критичные гиперрёбра при высоких данных', () => {
+    const latest = {
+      sanctions: { count: 15 },
+      gdelt: { conflictEvents: Array.from({ length: 20 }, () => ({})) },
+      fred: { vix: 40 },
+      delta: { escalatedAlerts: 8 },
+    };
+
+    const result = crucixHypergraphContagion(latest, []);
+    assert.ok(result.criticalHyperedges.length >= 0);
+  });
+
+  it('не падает на пустом latest', () => {
+    const result = crucixHypergraphContagion({}, []);
+    assert.strictEqual(result.module, 'hypergraph_contagion');
+  });
+});
+
+
+
+========================================================================

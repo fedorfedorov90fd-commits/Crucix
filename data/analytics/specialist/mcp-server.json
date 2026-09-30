@@ -1,0 +1,70 @@
+{
+  "_meta": {
+    "id": "mcp-server",
+    "category": "specialist",
+    "version": "1.0.0",
+    "schema_version": "1.0.0",
+    "sources": [
+      "self"
+    ],
+    "calculator": "MCPServer",
+    "updated_at": "2026-09-12T15:17:25.540Z",
+    "duration_ms": 0,
+    "checksum": "0596bb0f91148423",
+    "stats": {
+      "tools": 5,
+      "resources": 0,
+      "sessions": 0
+    }
+  },
+  "data": {
+    "tools": [
+      {
+        "name": "get_country_risk",
+        "description": "Get country risk score",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "name": "get_top_risks",
+        "description": "Get top risk countries",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "n": {
+              "type": "number"
+            }
+          }
+        }
+      },
+      {
+        "name": "get_market_score",
+        "description": "Get market composite score",
+        "inputSchema": {}
+      },
+      {
+        "name": "get_infrastructure",
+        "description": "Get infrastructure stats",
+        "inputSchema": {}
+      },
+      {
+        "name": "get_conflicts",
+        "description": "Get active conflicts",
+        "inputSchema": {}
+      }
+    ],
+    "resources": [],
+    "stats": {
+      "tools": 5,
+      "resources": 0,
+      "sessions": 0
+    },
+    "generated_at": "2026-09-12T15:17:25.540Z"
+  }
+}

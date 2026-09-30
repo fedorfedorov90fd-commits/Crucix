@@ -1,0 +1,31 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "gold-oil",
+    "source": "Yahoo Finance (GC=F + CL=F)",
+    "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
+    "fetched_at": "2026-09-27T16:36:06.233Z",
+    "normalized_at": "2026-09-27T16:38:26.485Z",
+    "collector": "collect-gold-oil.mjs",
+    "license": "public-domain",
+    "count": 0,
+    "granularity": "daily",
+    "value_unit": "ratio",
+    "value_scale": "gold_usd_per_oil_usd",
+    "value_type": "price",
+    "value_range": null,
+    "period": "P365D"
+  },
+  "series": [],
+  "points": [],
+  "regions": [],
+  "documents": [],
+  "graph": null,
+  "extra": {
+    "adapter": "timeseries",
+    "adapter_version": "2.2.1",
+    "unique_dates": 0,
+    "unmapped_regions": [],
+    "unmapped_count": 0
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "daily-report",
+    "source": "Crucix daily aggregate",
+    "source_url": "local://daily-report",
+    "fetched_at": "2026-09-27T16:35:25.325Z",
+    "normalized_at": "2026-09-27T16:38:26.360Z",
+    "collector": "collect-daily-report.mjs",
+    "license": "proprietary",
+    "count": 1,
+    "granularity": "snapshot",
+    "value_unit": "count",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null
+  },
+  "series": [],
+  "points": [],
+  "regions": [],
+  "documents": [],
+  "graph": null,
+  "extra": {
+    "adapter": "catalog",
+    "adapter_version": "1.1.0",
+    "type_counts": {
+      "unknown": 1
+    },
+    "regions_count": 0,
+    "entries": [
+      {
+        "date": "2026-09-27",
+        "timestamp": "2026-09-27T16:35:25.313Z",
+        "summary": {
+          "total_critical": 0,
+          "total_warning": 1,
+          "total_normal": 2
+        },
+        "indicators": {
+          "notam": {
+            "count": 5,
+            "critical": 0
+          },
+          "gps": {
+            "count": 1,
+            "critical": 0
+          },
+          "trends": {
+            "count": 5,
+            "critical": 0
+          },
+          "vix": {
+            "current": 14.87,
+            "status": {
+              "status": "normal",
+              "color": "#4ade80",
+              "label": "Норма"
+            }
+          },
+          "yield_curve": {
+            "current": null,
+            "status": {
+              "status": "unknown",
+              "color": "#888",
+              "label": "Нет данных"
+            }
+          },
+          "gold_oil": {
+            "current": 24.2461,
+            "status": {
+              "status": "warning",
+              "color": "#f59e0b",
+              "label": "Средний"
+            }
+          },
+          "bdi": {
+            "current": 1681,
+            "status": {
+              "status": "normal",
+              "color": "#4ade80",
+              "label": "Норма"
+            }
+          }
+        }
+      }
+    ],
+    "entries_count": 1,
+    "wrapped_single_object": true
+  }
+}

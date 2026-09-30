@@ -1,0 +1,1210 @@
+===== ЧАСТЬ part-5-sources-and-ui · КУСОК 14/15 · 38.2 KB =====
+
+FILE: plugins/registry.mjs
+SIZE: 8798 bytes
+SHA1: e19c697eb9bfe525
+========================================================================
+
+// plugins/registry.mjs
+// Реестр плагинов Crucix: discovery, versioning, dependency resolution.
+//
+// Назначение:
+//   Хранит локальный реестр установленных плагинов (plugins/registry.json).
+//   Разрешает зависимости с поддержкой диапазонов версий (>=, ^, ~, ||).
+//   Строит топологический порядок загрузки с обнаружением циклов.
+//   Хранит список рекомендуемых (featured) плагинов.
+//
+// Особенности:
+//   - Zero dependencies: только node:fs, node:path, node:url.
+//   - Атомарная запись через writeFileSync во временный файл + renameSync.
+//   - Валидация структуры при загрузке.
+//   - Сохранение installedAt при повторной регистрации.
+//   - Singleton через getPluginRegistry() с поддержкой reset.
+
+import { readFileSync, existsSync, writeFileSync, renameSync, unlinkSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { checkVersionCompatibility } from './manifest_schema.mjs';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const REGISTRY_FILE = join(__dirname, 'registry.json');
+
+function _atomicWrite(filePath, content) {
+  const tmp = filePath + '.tmp.' + process.pid + '.' + Date.now();
+  try {
+    writeFileSync(tmp, content, 'utf-8');
+    renameSync(tmp, filePath);
+  } catch (e) {
+    try { if (existsSync(tmp)) unlinkSync(tmp); } catch (_) { /* ignore */ }
+    throw e;
+  }
+}
+
+export class PluginRegistry {
+  constructor({ registryFile } = {}) {
+    this.registryFile = registryFile || REGISTRY_FILE;
+    this.registry = this._load();
+  }
+
+  _load() {
+    if (!existsSync(this.registryFile)) {
+      return { plugins: {}, lastUpdated: null };
+    }
+
+    try {
+      const parsed = JSON.parse(readFileSync(this.registryFile, 'utf-8'));
+      if (!parsed || typeof parsed !== 'object') {
+        return { plugins: {}, lastUpdated: null };
+      }
+      if (!parsed.plugins || typeof parsed.plugins !== 'object') {
+        parsed.plugins = {};
+      }
+      if (!('lastUpdated' in parsed)) {
+        parsed.lastUpdated = null;
+      }
+      return parsed;
+    } catch (e) {
+      console.error('[registry] load failed: ' + e.message);
+      return { plugins: {}, lastUpdated: null };
+    }
+  }
+
+  _save() {
+    this.registry.lastUpdated = new Date().toISOString();
+    try {
+      _atomicWrite(this.registryFile, JSON.stringify(this.registry, null, 2));
+      return { ok: true };
+    } catch (e) {
+      console.error('[registry] save failed: ' + e.message);
+      return { ok: false, error: e.message };
+    }
+  }
+
+  register(manifest, metadata = {}) {
+    if (!manifest || typeof manifest !== 'object' || !manifest.name) {
+      return { ok: false, error: 'invalid_manifest' };
+    }
+
+    const existing = this.registry.plugins[manifest.name] || null;
+    const now = new Date().toISOString();
+
+    // Защищённые поля name/version нельзя перетереть через metadata
+    const safeMeta = { ...metadata };
+    delete safeMeta.name;
+    delete safeMeta.version;
+    delete safeMeta.installedAt;
+
+    this.registry.plugins[manifest.name] = {
+      name: manifest.name,
+      version: manifest.version,
+      type: manifest.type,
+      hooks: Array.isArray(manifest.hooks) ? manifest.hooks.slice() : [],
+      permissions: Array.isArray(manifest.permissions) ? manifest.permissions.slice() : [],
+      description: manifest.description || '',
+      author: manifest.author || '',
+      installedAt: existing ? existing.installedAt : now,
+      updatedAt: now,
+      ...safeMeta,
+    };
+
+    const saved = this._save();
+    return { ok: saved.ok, plugin: manifest.name, replaced: !!existing };
+  }
+
+  unregister(pluginName) {
+    const existed = !!this.registry.plugins[pluginName];
+    if (!existed) return { ok: true, existed: false };
+
+    delete this.registry.plugins[pluginName];
+    const saved = this._save();
+    return { ok: saved.ok, existed: true };
+  }
+
+  get(pluginName) {
+    return this.registry.plugins[pluginName] || null;
+  }
+
+  list() {
+    return Object.values(this.registry.plugins)
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  /**
+   * Разрешение зависимостей с поддержкой диапазонов версий.
+   * Возвращает: missing (не установлено), satisfied (ок), mismatched (несовместимая версия).
+   */
+  resolveDependencies(manifest, _seen = new Set()) {
+    const deps = (manifest && manifest.dependencies) || {};
+    const missing = [];
+    const satisfied = [];
+    const mismatched = [];
+
+    if (_seen.has(manifest && manifest.name)) {
+      return { ok: true, missing, satisfied, mismatched, cycle: true };
+    }
+    if (manifest && manifest.name) _seen.add(manifest.name);
+
+    for (const [depName, depVersion] of Object.entries(deps)) {
+      const installed = this.registry.plugins[depName];
+      if (!installed) {
+        missing.push({ name: depName, required: depVersion });
+      } else if (checkVersionCompatibility(depVersion, installed.version)) {
+        satisfied.push({ name: depName, required: depVersion, installed: installed.version });
+      } else {
+        mismatched.push({ name: depName, required: depVersion, installed: installed.version });
+      }
+    }
+
+    return {
+      ok: missing.length === 0 && mismatched.length === 0,
+      missing,
+      satisfied,
+      mismatched,
+    };
+  }
+
+  /**
+   * Топологический порядок загрузки на основе зависимостей.
+   * Обнаруживает циклы.
+   */
+  checkDependencyGraph() {
+    const plugins = this.registry.plugins;
+    const order = [];
+    const visiting = new Set();
+    const visited = new Set();
+    const cycles = [];
+
+    const visit = (name, path) => {
+      if (visited.has(name)) return;
+      if (visiting.has(name)) {
+        cycles.push({ cycle: path.concat(name) });
+        return;
+      }
+      visiting.add(name);
+      const plugin = plugins[name];
+      if (plugin && plugin.dependencies) {
+        for (const dep of Object.keys(plugin.dependencies)) {
+          if (plugins[dep]) visit(dep, path.concat(name));
+        }
+      }
+      visiting.delete(name);
+      visited.add(name);
+      order.push(name);
+    };
+
+    for (const name of Object.keys(plugins)) {
+      visit(name, []);
+    }
+
+    return { order, cycles, ok: cycles.length === 0 };
+  }
+
+  findByType(type) {
+    return this.list().filter(p => p.type === type);
+  }
+
+  findByHook(hookName) {
+    return this.list().filter(p => Array.isArray(p.hooks) && p.hooks.includes(hookName));
+  }
+
+  findByPermission(permission) {
+    return this.list().filter(p => Array.isArray(p.permissions) && p.permissions.includes(permission));
+  }
+
+  stats() {
+    const list = this.list();
+    const byType = {};
+    const byAuthor = {};
+    for (const p of list) {
+      byType[p.type] = (byType[p.type] || 0) + 1;
+      const a = p.author || 'unknown';
+      byAuthor[a] = (byAuthor[a] || 0) + 1;
+    }
+    return {
+      total: list.length,
+      byType,
+      byAuthor,
+      lastUpdated: this.registry.lastUpdated,
+    };
+  }
+
+  clear() {
+    this.registry = { plugins: {}, lastUpdated: null };
+    const saved = this._save();
+    return { ok: saved.ok };
+  }
+
+  export() {
+    return JSON.stringify(this.registry, null, 2);
+  }
+}
+
+export const FEATURED_PLUGINS = [
+  {
+    name: 'crucix-telegram-bot',
+    description: 'Telegram bot для Crucix',
+    type: 'notifier',
+    author: 'crucix-team',
+    official: true,
+  },
+  {
+    name: 'crucix-twitter-publisher',
+    description: 'Публикация алертов в Twitter',
+    type: 'notifier',
+    author: 'community',
+  },
+  {
+    name: 'crucix-crypto-signals',
+    description: 'Crypto-specific signals',
+    type: 'signal',
+    author: 'community',
+  },
+  {
+    name: 'crucix-backtesting',
+    description: 'Backtesting framework',
+    type: 'analyzer',
+    author: 'crucix-team',
+    official: true,
+  },
+  {
+    name: 'crucix-postgres-connector',
+    description: 'Persist predictions to PostgreSQL',
+    type: 'full',
+    author: 'community',
+  },
+];
+
+let _registry = null;
+
+export function getPluginRegistry(options) {
+  if (!_registry) _registry = new PluginRegistry(options);
+  return _registry;
+}
+
+export function _resetPluginRegistry() {
+  _registry = null;
+}
+
+export const REGISTRY_INFO = {
+  name: 'Plugin Registry',
+  description: 'Local registry + featured plugins',
+  featuredCount: FEATURED_PLUGINS.length,
+  registryFile: REGISTRY_FILE,
+};
+
+
+
+========================================================================
+
+FILE: plugins/manifest_schema.mjs
+SIZE: 12173 bytes
+SHA1: 9d8c7fde411c5d66
+========================================================================
+
+// plugins/manifest_schema.mjs
+// Схема и валидация manifest.json для плагинов Crucix.
+//
+// Ожидаемая схема манифеста:
+// {
+//   "name": "my-plugin",
+//   "version": "1.0.0",
+//   "description": "What this plugin does",
+//   "author": "Your Name <you@example.com>",
+//   "license": "MIT",
+//   "entryPoint": "index.mjs",
+//   "crucixVersion": ">=3.0.0",
+//   "type": "signal" | "notifier" | "fetcher" | "analyzer" | "full",
+//   "hooks": ["afterPrediction", "onSignal"],
+//   "permissions": ["read:memory", "write:predictions"],
+//   "config": { "schema": { ... }, "defaults": { ... } },
+//   "dependencies": {},
+//   "optionalDependencies": {}
+// }
+//
+// Особенности:
+//   - Zero dependencies: только стандартные средства Node.js.
+//   - Поддержка диапазонов версий: >=, >, <, ^, ~, ||.
+//   - Валидация config по подмножеству JSON Schema (properties, required,
+//     enum, minimum, maximum, minLength, maxLength, pattern, items,
+//     oneOf, anyOf, const, default).
+
+const VALID_TYPES = ['signal', 'notifier', 'fetcher', 'analyzer', 'full'];
+
+const VALID_HOOKS = [
+  'beforePrediction',
+  'afterPrediction',
+  'onSignal',
+  'onAlert',
+  'onRegimeChange',
+  'onStartup',
+  'onShutdown',
+  'onTimer',
+];
+
+const VALID_PERMISSIONS = [
+  'read:memory',
+  'write:memory',
+  'read:predictions',
+  'write:predictions',
+  'read:config',
+  'write:config',
+  'network:outbound',
+  'network:inbound',
+  'filesystem:read',
+  'filesystem:write',
+  'system:exec',
+];
+
+const SENSITIVE_PERMISSIONS = ['filesystem:write', 'system:exec'];
+
+const HOOK_CATEGORIES = {
+  lifecycle: ['onStartup', 'onShutdown'],
+  prediction: ['beforePrediction', 'afterPrediction'],
+  signal: ['onSignal', 'onAlert'],
+  alert: ['onRegimeChange'],
+  timer: ['onTimer'],
+};
+
+function _isPlainObject(v) {
+  return v !== null && typeof v === 'object' && !Array.isArray(v);
+}
+
+export function validateManifest(manifest) {
+  const errors = [];
+  const warnings = [];
+
+  if (!_isPlainObject(manifest)) {
+    return {
+      valid: false,
+      errors: ['manifest must be a plain object'],
+      warnings: [],
+      manifest: null,
+    };
+  }
+
+  if (!manifest.name || typeof manifest.name !== 'string') {
+    errors.push('name is required (string)');
+  } else if (!/^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(manifest.name)) {
+    errors.push('name must be lowercase alphanumeric with hyphens (e.g., "my-plugin")');
+  }
+
+  if (!manifest.version || typeof manifest.version !== 'string') {
+    errors.push('version is required (semver string)');
+  } else if (!/^\d+\.\d+\.\d+/.test(manifest.version)) {
+    errors.push('version must be semver (e.g., "1.0.0")');
+  }
+
+  if (!manifest.entryPoint || typeof manifest.entryPoint !== 'string') {
+    errors.push('entryPoint is required (e.g., "index.mjs")');
+  }
+
+  if (!manifest.crucixVersion || typeof manifest.crucixVersion !== 'string') {
+    warnings.push('crucixVersion not specified — assuming any version');
+  }
+
+  if (!manifest.type) {
+    errors.push('type is required');
+  } else if (!VALID_TYPES.includes(manifest.type)) {
+    errors.push('type must be one of: ' + VALID_TYPES.join(', '));
+  }
+
+  if (manifest.hooks) {
+    if (!Array.isArray(manifest.hooks)) {
+      errors.push('hooks must be an array');
+    } else {
+      for (const hook of manifest.hooks) {
+        if (!VALID_HOOKS.includes(hook)) {
+          errors.push('invalid hook: ' + hook + ' (valid: ' + VALID_HOOKS.join(', ') + ')');
+        }
+      }
+    }
+  }
+
+  if (manifest.permissions) {
+    if (!Array.isArray(manifest.permissions)) {
+      errors.push('permissions must be an array');
+    } else {
+      for (const perm of manifest.permissions) {
+        if (!VALID_PERMISSIONS.includes(perm)) {
+          errors.push('invalid permission: ' + perm + ' (valid: ' + VALID_PERMISSIONS.join(', ') + ')');
+        } else if (SENSITIVE_PERMISSIONS.includes(perm)) {
+          warnings.push('sensitive permission requested: ' + perm);
+        }
+      }
+
+      if (manifest.type === 'full' && manifest.permissions.length === 0) {
+        warnings.push('type "full" declared but no permissions requested');
+      }
+    }
+  }
+
+  if (manifest.dependencies !== undefined) {
+    if (!_isPlainObject(manifest.dependencies)) {
+      errors.push('dependencies must be an object');
+    }
+  }
+
+  if (manifest.optionalDependencies !== undefined) {
+    if (!_isPlainObject(manifest.optionalDependencies)) {
+      errors.push('optionalDependencies must be an object');
+    }
+  }
+
+  if (manifest.config !== undefined) {
+    if (!_isPlainObject(manifest.config)) {
+      errors.push('config must be an object');
+    } else if (manifest.config.schema !== undefined && !_isPlainObject(manifest.config.schema)) {
+      errors.push('config.schema must be a valid JSON Schema object');
+    }
+  }
+
+  if (!manifest.description) warnings.push('description not provided');
+  if (!manifest.author) warnings.push('author not provided');
+  if (!manifest.license) warnings.push('license not provided');
+
+  return {
+    valid: errors.length === 0,
+    errors,
+    warnings,
+    manifest: errors.length === 0 ? normalizeManifest(manifest) : null,
+  };
+}
+
+function normalizeManifest(manifest) {
+  return {
+    name: manifest.name,
+    version: manifest.version,
+    description: manifest.description || '',
+    author: manifest.author || '',
+    license: manifest.license || 'MIT',
+    homepage: manifest.homepage || '',
+    repository: manifest.repository || '',
+    keywords: Array.isArray(manifest.keywords) ? manifest.keywords.slice() : [],
+    tags: Array.isArray(manifest.tags) ? manifest.tags.slice() : [],
+    icon: manifest.icon || '',
+    entryPoint: manifest.entryPoint,
+    crucixVersion: manifest.crucixVersion || '>=3.0.0',
+    type: manifest.type,
+    hooks: Array.isArray(manifest.hooks) ? manifest.hooks.slice() : [],
+    permissions: Array.isArray(manifest.permissions) ? manifest.permissions.slice() : [],
+    dependencies: _isPlainObject(manifest.dependencies) ? { ...manifest.dependencies } : {},
+    optionalDependencies: _isPlainObject(manifest.optionalDependencies) ? { ...manifest.optionalDependencies } : {},
+    config: _isPlainObject(manifest.config) ? { ...manifest.config } : { schema: {}, defaults: {} },
+  };
+}
+
+function _parseVersion(v) {
+  const m = String(v || '').match(/(\d+)\.(\d+)\.(\d+)/);
+  if (!m) return [0, 0, 0];
+  return [parseInt(m[1], 10), parseInt(m[2], 10), parseInt(m[3], 10)];
+}
+
+function _compare(a, b) {
+  for (let i = 0; i < 3; i++) {
+    if (a[i] > b[i]) return 1;
+    if (a[i] < b[i]) return -1;
+  }
+  return 0;
+}
+
+function _satisfiesSingle(requirement, actual) {
+  const req = requirement.trim();
+  const a = _parseVersion(actual);
+
+  if (req.startsWith('>=')) return _compare(a, _parseVersion(req.slice(2))) >= 0;
+  if (req.startsWith('>')) return _compare(a, _parseVersion(req.slice(1))) > 0;
+  if (req.startsWith('<=')) return _compare(a, _parseVersion(req.slice(2))) <= 0;
+  if (req.startsWith('<')) return _compare(a, _parseVersion(req.slice(1))) < 0;
+
+  if (req.startsWith('^')) {
+    const r = _parseVersion(req.slice(1));
+    if (a[0] !== r[0]) return false;
+    return _compare(a, r) >= 0;
+  }
+
+  if (req.startsWith('~')) {
+    const r = _parseVersion(req.slice(1));
+    if (a[0] !== r[0] || a[1] !== r[1]) return false;
+    return _compare(a, r) >= 0;
+  }
+
+  // Точное совпадение или диапазон вида "3.0.0 - 3.5.0"
+  if (req.includes(' - ')) {
+    const [low, high] = req.split(' - ').map(s => s.trim());
+    return _compare(a, _parseVersion(low)) >= 0 && _compare(a, _parseVersion(high)) <= 0;
+  }
+
+  return _compare(a, _parseVersion(req)) === 0;
+}
+
+export function checkVersionCompatibility(requiredVersion, actualVersion = '3.0.0') {
+  const req = String(requiredVersion || '>=0.0.0');
+  const parts = req.split('||').map(s => s.trim()).filter(Boolean);
+  if (parts.length === 0) return true;
+  return parts.some(part => _satisfiesSingle(part, actualVersion));
+}
+
+export function validateAgainstSchema(data, schema, _seen = new Set()) {
+  const errors = [];
+
+  if (!schema || typeof schema !== 'object' || Object.keys(schema).length === 0) return errors;
+
+  // Защита от циклической рекурсии
+  if (_seen.has(schema)) return errors;
+  _seen.add(schema);
+
+  // oneOf / anyOf
+  if (Array.isArray(schema.oneOf)) {
+    const matches = schema.oneOf.filter(sub => validateAgainstSchema(data, sub, new Set(_seen)).length === 0);
+    if (matches.length !== 1) errors.push('value does not match exactly one of oneOf schemas');
+    return errors;
+  }
+
+  if (Array.isArray(schema.anyOf)) {
+    const matches = schema.anyOf.filter(sub => validateAgainstSchema(data, sub, new Set(_seen)).length === 0);
+    if (matches.length === 0) errors.push('value does not match any of anyOf schemas');
+    return errors;
+  }
+
+  // const
+  if (schema.const !== undefined && data !== schema.const) {
+    errors.push('value must equal const ' + JSON.stringify(schema.const));
+  }
+
+  // type
+  if (schema.type) {
+    const actualType = Array.isArray(data) ? 'array'
+      : data === null ? 'null'
+      : typeof data;
+
+    if (schema.type !== actualType) {
+      errors.push('expected type ' + schema.type + ', got ' + actualType);
+      return errors;
+    }
+  }
+
+  // required
+  if (schema.required && Array.isArray(schema.required) && _isPlainObject(data)) {
+    for (const key of schema.required) {
+      if (data[key] === undefined) errors.push('missing required property: ' + key);
+    }
+  }
+
+  // properties
+  if (schema.properties && _isPlainObject(data)) {
+    for (const [key, propSchema] of Object.entries(schema.properties)) {
+      if (data[key] !== undefined) {
+        const propErrors = validateAgainstSchema(data[key], propSchema, new Set(_seen));
+        for (const err of propErrors) errors.push(key + ': ' + err);
+      }
+    }
+  }
+
+  // items (для массивов)
+  if (schema.items && Array.isArray(data)) {
+    data.forEach((item, i) => {
+      const itemErrors = validateAgainstSchema(item, schema.items, new Set(_seen));
+      for (const err of itemErrors) errors.push('[' + i + ']: ' + err);
+    });
+  }
+
+  // Числовые проверки
+  if (typeof data === 'number') {
+    if (schema.minimum !== undefined && data < schema.minimum) {
+      errors.push('value ' + data + ' < minimum ' + schema.minimum);
+    }
+    if (schema.maximum !== undefined && data > schema.maximum) {
+      errors.push('value ' + data + ' > maximum ' + schema.maximum);
+    }
+  }
+
+  // Строковые проверки
+  if (typeof data === 'string') {
+    if (schema.minLength !== undefined && data.length < schema.minLength) {
+      errors.push('string length ' + data.length + ' < minLength ' + schema.minLength);
+    }
+    if (schema.maxLength !== undefined && data.length > schema.maxLength) {
+      errors.push('string length ' + data.length + ' > maxLength ' + schema.maxLength);
+    }
+    if (schema.pattern) {
+      try {
+        if (!new RegExp(schema.pattern).test(data)) {
+          errors.push('string does not match pattern ' + schema.pattern);
+        }
+      } catch (e) {
+        errors.push('invalid pattern in schema: ' + e.message);
+      }
+    }
+  }
+
+  // enum
+  if (Array.isArray(schema.enum) && !schema.enum.includes(data)) {
+    errors.push('value ' + JSON.stringify(data) + ' not in enum [' + schema.enum.join(', ') + ']');
+  }
+
+  return errors;
+}
+
+export function getSchema() {
+  return {
+    required: ['name', 'version', 'entryPoint', 'type'],
+    optional: [
+      'description', 'author', 'license', 'homepage', 'repository',
+      'keywords', 'tags', 'icon', 'crucixVersion', 'hooks',
+      'permissions', 'dependencies', 'optionalDependencies', 'config',
+    ],
+    validTypes: VALID_TYPES.slice(),
+    validHooks: VALID_HOOKS.slice(),
+    validPermissions: VALID_PERMISSIONS.slice(),
+    sensitivePermissions: SENSITIVE_PERMISSIONS.slice(),
+  };
+}
+
+export const SCHEMA_INFO = {
+  validTypes: VALID_TYPES,
+  validHooks: VALID_HOOKS,
+  validPermissions: VALID_PERMISSIONS,
+  sensitivePermissions: SENSITIVE_PERMISSIONS,
+  hookCategories: HOOK_CATEGORIES,
+};
+
+
+
+========================================================================
+
+FILE: plugins/README.md
+SIZE: 10553 bytes
+SHA1: b2efcd2d6ff7243e
+========================================================================
+
+# Crucix Plugins
+
+Система расширений для Crucix. Плагины могут добавлять:
+
+- **Signals** — новые сигналы в композитный индикатор
+- **Notifiers** — новые способы уведомлений
+- **Fetchers** — источники данных
+- **Analyzers** — пост-обработка прогнозов
+- **Full** — комбинация всего
+
+## Структура проекта
+plugins/
+├── loader.mjs — загрузка плагинов, регистрация hooks
+├── manifest_schema.mjs — валидация manifest.json
+├── sandbox.mjs — изолированное исполнение (worker_threads)
+├── sandbox_worker.mjs — worker для sandbox
+├── registry.mjs — локальный реестр + featured плагины
+├── hooks.mjs — lifecycle hooks с приоритетами и timeout
+├── installed/ — установленные плагины (создаётся автоматически)
+└── examples/ — примеры
+├── hello-world/ — минимальный плагин
+├── custom-signal/ — добавление сигнала
+└── data-fetcher/ — периодический fetcher
+
+text
+
+## Быстрый старт
+
+### 1. Создать директорию плагина
+
+```bash
+mkdir -p plugins/installed/my-plugin
+cd plugins/installed/my-plugin
+2. Создать manifest.json
+json
+{
+  "name": "my-plugin",
+  "version": "1.0.0",
+  "description": "My awesome plugin",
+  "author": "Your Name",
+  "license": "MIT",
+  "entryPoint": "index.mjs",
+  "crucixVersion": ">=3.0.0",
+  "type": "analyzer",
+  "hooks": ["afterPrediction"],
+  "permissions": ["read:predictions"]
+}
+3. Создать index.mjs
+javascript
+ Run JS
+export async function init(config) {
+  console.log('Plugin initialized with', config);
+}
+
+export async function afterPrediction(result) {
+  const cr = result.compositeRisk;
+  console.log('Composite Risk:', cr.composite, 'Level:', cr.level);
+}
+
+export async function onShutdown() {
+  console.log('Plugin shutting down');
+}
+4. Загрузить плагин
+javascript
+ Run JS
+import { getPluginLoader } from './plugins/loader.mjs';
+
+const loader = getPluginLoader();
+const results = await loader.loadAll();
+console.log(results);
+
+// Запустить хук
+const hookResults = await loader.runHook('afterPrediction', predictionResult);
+Manifest Schema
+Обязательные поля
+name	string	Lowercase, hyphens (например my-plugin)
+version	string	Semver (например 1.0.0)
+entryPoint	string	Путь к файлу входа (например index.mjs)
+type	string	signal, notifier, fetcher, analyzer, full
+Опциональные поля
+description	string	''	Краткое описание
+author	string	''	Автор
+license	string	MIT	Лицензия
+homepage	string	''	Сайт проекта
+repository	string	''	Git-репозиторий
+keywords	string[]	[]	Ключевые слова для поиска
+tags	string[]	[]	Теги
+icon	string	''	Иконка
+crucixVersion	string	>=3.0.0	Semver range: >=, >, <, ^, ~, ||, A - B
+hooks	string[]	[]	Lifecycle hooks
+permissions	string[]	[]	Требуемые разрешения
+config.schema	object	{}	JSON Schema для config
+config.defaults	object	{}	Значения по умолчанию
+dependencies	object	{}	Зависимости: { name: "range" }
+optionalDependencies	object	{}	Опциональные зависимости
+Получить схему программно:
+
+javascript
+ Run JS
+import { getSchema } from './plugins/manifest_schema.mjs';
+const schema = getSchema();
+// { required: [...], optional: [...], validTypes: [...], ... }
+Lifecycle Hooks
+onStartup	lifecycle	При старте Crucix	—
+onShutdown	lifecycle	При завершении	—
+beforePrediction	prediction	Перед prediction cycle	latest
+afterPrediction	prediction	После prediction cycle	result
+onSignal	signal	Для каждого сигнала	signal, value
+onSignalHigh	signal	Сигнал превысил порог	signal
+onAlert	alert	Алерт сработал	alert
+onRegimeChange	alert	Смена режима	changeData
+onTimer	timer	Периодически	elapsedMs
+Приоритеты handler'ов: чем выше priority, тем раньше вызывается. Timeout на handler — 5 секунд по умолчанию.
+
+javascript
+ Run JS
+import { getHookManager } from './plugins/hooks.mjs';
+
+const hooks = getHookManager({ handlerTimeoutMs: 5000, parallel: false });
+hooks.on('afterPrediction', handler, { pluginName: 'my-plugin', priority: 10 });
+hooks.scheduleTimer('onTimer', 60000);
+const results = await hooks.emit('afterPrediction', predictionResult);
+Permissions
+Плагин объявляет разрешения в манифесте. По умолчанию — никаких разрешений.
+
+read:memory	Чтение runs/memory
+write:memory	Запись в runs/memory
+read:predictions	Чтение прогнозов
+write:predictions	Запись прогнозов
+read:config	Чтение конфига
+write:config	Изменение конфига
+network:outbound	HTTP-запросы
+network:inbound	HTTP-сервер
+filesystem:read	Чтение файлов
+filesystem:write	Запись файлов	да
+system:exec	Выполнение команд	да
+При валидации манифеста filesystem:write и system:exec дают warning — «sensitive permission requested».
+
+Sandboxing
+Плагины выполняются в изолированных worker_threads с ограничениями:
+
+Memory limit — 128 MB по умолчанию (maxOldGenerationSizeMb)
+
+Timeout — 30 секунд на вызов функции
+
+Init timeout — 10 секунд
+
+Shutdown timeout — 5 секунд
+
+Permission checks — перехват fetch (проверка network:outbound)
+
+Empty environment — переменные окружения недоступны (env: {})
+
+Защита от prototype pollution — __proto__, constructor, prototype запрещены как имена функций
+
+javascript
+ Run JS
+import { SandboxManager } from './plugins/sandbox.mjs';
+
+const manager = new SandboxManager({ maxSandboxes: 10 });
+const sandbox = await manager.createSandbox(manifest, entryPath, config);
+const result = await sandbox.call('myFunction', arg1, arg2);
+await manager.destroySandbox(manifest.name);
+Registry
+Локальный реестр: plugins/registry.json (атомарная запись).
+
+javascript
+ Run JS
+import { getPluginRegistry } from './plugins/registry.mjs';
+
+const registry = getPluginRegistry();
+registry.register(manifest);
+registry.list();
+registry.findByHook('afterPrediction');
+registry.findByType('signal');
+registry.findByPermission('network:outbound');
+registry.resolveDependencies(manifest);   // поддерживает >=, ^, ~, ||
+registry.checkDependencyGraph();          // топологический порядок + циклы
+registry.stats();
+Примеры
+hello-world
+Минимальный плагин, логирует прогнозы.
+
+bash
+cp -r plugins/examples/hello-world plugins/installed/
+custom-signal
+Добавляет кастомный сигнал в composite risk.
+
+bash
+cp -r plugins/examples/custom-signal plugins/installed/
+data-fetcher
+Периодически фетчит данные из API.
+
+bash
+cp -r plugins/examples/data-fetcher plugins/installed/
+Разработка
+Локальное тестирование
+javascript
+ Run JS
+import { PluginLoader } from './plugins/loader.mjs';
+
+const loader = new PluginLoader({ pluginsDir: './my-test-plugins' });
+const result = await loader.loadAll();
+console.log(result);
+
+// Ошибки при обнаружении/загрузке
+console.log(loader.getErrors());
+console.log(loader.stats());
+Sandbox testing
+javascript
+ Run JS
+import { SandboxManager } from './plugins/sandbox.mjs';
+
+const manager = new SandboxManager();
+const sandbox = await manager.createSandbox(manifest, entryPath, config);
+const result = await sandbox.call('myFunction', arg1, arg2);
+await manager.destroyAll();
+Публикация плагина
+Опубликовать на GitHub с тегом crucix-plugin
+
+Добавить в Community Plugins
+
+Опционально — в официальный реестр (FEATURED_PLUGINS в registry.mjs)
+
+Безопасность
+Всегда проверяйте код плагина перед установкой
+
+Запрашивайте минимальные разрешения
+
+Используйте sandbox для недоверенных плагинов
+
+Проверяйте manifest — валидация автоматическая
+
+Сенситивные permissions (filesystem:write, system:exec) дают предупреждение
+
+Worker не имеет доступа к env, файловой системе и сети без явного permission
+
+Zero-dependency
+Все модули и примеры плагинов работают на чистом Node.js (>= 20). Никаких npm-пакетов.
+
+Единственное, что нужно — правильно структурировать код и указать permissions в манифесте.
+
+Частые вопросы
+Плагин не загружается, что делать?
+
+Проверьте loader.getErrors() — там список всех проблем (manifest.json отсутствует, невалидный JSON, версия несовместима и т.д.).
+
+Как отладить sandbox?
+
+Временно запустите плагин вне sandbox через PluginLoader — но только для доверенного кода.
+
+Можно ли переопределить существующий плагин?
+
+loader.load() возвращает { ok: false, error: 'already_loaded' }. Явно вызовите loader.unload(name), затем loader.load(...) заново, или используйте loader.reload(name).
+
+Где хранится реестр?
+
+plugins/registry.json. Пишется атомарно — при сбое питания файл не побьётся.
+
+Как обновить плагин?
+
+register() сохранит installedAt первой установки и обновит updatedAt. reload(name) перезагрузит код без перезапуска Crucix.
+
+
+
+========================================================================
+
+FILE: plugins/examples/hello-world/index.mjs
+SIZE: 958 bytes
+SHA1: 4181ff34282cc3c7
+========================================================================
+
+// plugins/examples/hello-world/index.mjs
+// Минимальный пример плагина Crucix
+
+let config = null;
+
+export async function init(userConfig) {
+  config = userConfig;
+  console.log(`[hello-world] Initialized with config:`, config);
+}
+
+export async function onShutdown() {
+  console.log(`[hello-world] Shutting down`);
+}
+
+export async function afterPrediction(result) {
+  if (!config.verbose) return;
+
+  const cr = result.compositeRisk;
+  if (!cr) return;
+
+  console.log(`[hello-world] Prediction: composite=${cr.composite.toFixed(3)}, ` +
+    `level=${cr.level}, signals=${cr.signals?.length || 0}`);
+
+  return { logged: true, composite: cr.composite };
+}
+
+export async function onSignalHigh(signal) {
+  console.log(`[hello-world] HIGH SIGNAL: ${signal.name} = ${(signal.value * 100).toFixed(1)}%`);
+  return { alert: true };
+}
+
+export function getStatus() {
+  return {
+    name: 'hello-world',
+    config,
+    status: 'running',
+  };
+}
+
+
+
+========================================================================
+
+FILE: plugins/examples/hello-world/manifest.json
+SIZE: 616 bytes
+SHA1: eb526aa6b42721ed
+========================================================================
+
+{
+  "name": "hello-world",
+  "version": "1.0.0",
+  "description": "Minimal example plugin that logs predictions",
+  "author": "Crucix Team",
+  "license": "MIT",
+  "entryPoint": "index.mjs",
+  "crucixVersion": ">=3.0.0",
+  "type": "analyzer",
+  "hooks": ["afterPrediction", "onSignalHigh"],
+  "permissions": ["read:predictions"],
+  "config": {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "verbose": { "type": "boolean" },
+        "logLevel": { "type": "string", "enum": ["info", "warn", "error"] }
+      }
+    },
+    "defaults": {
+      "verbose": true,
+      "logLevel": "info"
+    }
+  }
+}
+
+
+
+========================================================================
+
+FILE: plugins/examples/data-fetcher/index.mjs
+SIZE: 1279 bytes
+SHA1: 12d9395e47796215
+========================================================================
+
+// plugins/examples/data-fetcher/index.mjs
+// Пример плагина-фетчера данных
+
+let config = null;
+let lastFetch = 0;
+let fetchCount = 0;
+
+export async function init(userConfig) {
+  config = userConfig;
+  console.log(`[data-fetcher] Initialized: url=${config.apiUrl}, interval=${config.intervalMinutes}min`);
+}
+
+export async function onTimer(elapsedMs) {
+  const now = Date.now();
+  const interval = config.intervalMinutes * 60 * 1000;
+
+  if (now - lastFetch < interval) return;
+  lastFetch = now;
+  fetchCount++;
+
+  try {
+    const res = await fetch(config.apiUrl, {
+      headers: { 'User-Agent': 'crucix-data-fetcher/1.0' },
+      signal: AbortSignal.timeout(10000),
+    });
+
+    if (!res.ok) {
+      return { ok: false, error: `HTTP ${res.status}` };
+    }
+
+    const data = await res.json();
+    console.log(`[data-fetcher] Fetched #${fetchCount}: ${JSON.stringify(data).length} bytes`);
+
+    return { ok: true, bytes: JSON.stringify(data).length, fetchCount };
+  } catch (e) {
+    console.error(`[data-fetcher] Fetch error: ${e.message}`);
+    return { ok: false, error: e.message };
+  }
+}
+
+export function getStatus() {
+  return {
+    name: 'data-fetcher',
+    fetchCount,
+    lastFetch: lastFetch ? new Date(lastFetch).toISOString() : null,
+  };
+}
+
+
+
+========================================================================
+
+FILE: plugins/examples/data-fetcher/manifest.json
+SIZE: 681 bytes
+SHA1: ae13f31e800aeace
+========================================================================
+
+{
+  "name": "data-fetcher",
+  "version": "1.0.0",
+  "description": "Example plugin that fetches data from external API",
+  "author": "Crucix Team",
+  "license": "MIT",
+  "entryPoint": "index.mjs",
+  "crucixVersion": ">=3.0.0",
+  "type": "fetcher",
+  "hooks": ["onTimer"],
+  "permissions": ["network:outbound", "write:memory"],
+  "config": {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "apiUrl": { "type": "string", "pattern": "^https?://" },
+        "intervalMinutes": { "type": "number", "minimum": 1 }
+      },
+      "required": ["apiUrl"]
+    },
+    "defaults": {
+      "apiUrl": "https://api.example.com/data",
+      "intervalMinutes": 15
+    }
+  }
+}
+
+
+
+========================================================================
+
+FILE: plugins/examples/custom-signal/index.mjs
+SIZE: 1306 bytes
+SHA1: 7671801d0b194148
+========================================================================
+
+// plugins/examples/custom-signal/index.mjs
+// Пример плагина, добавляющего кастомный сигнал
+
+let config = null;
+
+export async function init(userConfig) {
+  config = userConfig;
+  console.log(`[custom-signal] Initialized: weight=${config.weight}, threshold=${config.threshold}`);
+}
+
+export function computeSignal(result, latest) {
+  if (!latest) return 0;
+
+  const vix = latest.fred?.vix || 20;
+  const conflicts = latest.gdelt?.conflictEvents?.length || 0;
+  const hySpread = latest.fred?.hySpread || 3;
+
+  const vixFactor = Math.max(0, Math.min(1, (vix - 15) / 30));
+  const conflictFactor = Math.max(0, Math.min(1, conflicts / 20));
+  const spreadFactor = Math.max(0, Math.min(1, (hySpread - 2) / 6));
+
+  const stress = (vixFactor * 0.4 + conflictFactor * 0.35 + spreadFactor * 0.25);
+
+  return stress;
+}
+
+export async function afterPrediction(result) {
+  const latest = result.extended?._latest || {};
+  const signal = computeSignal(result, latest);
+
+  return {
+    signal: {
+      key: 'customStress',
+      name: 'Custom Stress Indicator',
+      value: signal,
+      weight: config.weight,
+      rationale: `stress=${signal.toFixed(3)}, threshold=${config.threshold}`,
+    },
+  };
+}
+
+export function getStatus() {
+  return { name: 'custom-signal', config };
+}
+
+
+
+========================================================================
+
+FILE: plugins/examples/custom-signal/manifest.json
+SIZE: 649 bytes
+SHA1: fde0d591fbe616a5
+========================================================================
+
+{
+  "name": "custom-signal",
+  "version": "1.0.0",
+  "description": "Example plugin that adds a custom signal to the composite risk",
+  "author": "Crucix Team",
+  "license": "MIT",
+  "entryPoint": "index.mjs",
+  "crucixVersion": ">=3.0.0",
+  "type": "signal",
+  "hooks": ["afterPrediction"],
+  "permissions": ["read:memory", "read:predictions"],
+  "config": {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "weight": { "type": "number", "minimum": 0, "maximum": 5 },
+        "threshold": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "defaults": {
+      "weight": 1.0,
+      "threshold": 0.6
+    }
+  }
+}
+
+
+
+========================================================================

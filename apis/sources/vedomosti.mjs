@@ -1,70 +1,39 @@
-// Ведомости — деловая газета России
-export async function briefing() {
-  try {
-    const response = await fetch('http://www.vedomosti.ru/rss/issue', {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0',
-        'Accept': 'application/rss+xml, application/xml, text/xml, */*',
-        'Accept-Language': 'ru-RU,ru;q=0.9,en;q=0.8',
-        'Cache-Control': 'no-cache',
-      },
-    });
+#!/usr/bin/env node
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
+// ============================================================
+// VEDOMOSTI — Модуль Crucix
+// ============================================================
+// Версия: 1.0
+// ============================================================
 
-    const xmlString = await response.text();
+export async function handleVedomostiAPI(req, res) {
+  const url = new URL(req.url, `http://${req.headers.host}`);
+  const path = url.pathname;
 
-    if (!xmlString.includes('<item>')) {
-      return {
-        source: 'Ведомости',
-        timestamp: new Date().toISOString(),
-        items: [],
-        error: 'Лента пуста',
-      };
-    }
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-    const items = [];
-    const itemMatches = xmlString.matchAll(/<item>([\s\S]*?)<\/item>/g);
-
-    for (const match of itemMatches) {
-      const item = match[1];
-      const title = item.match(/<title>([\s\S]*?)<\/title>/)?.[1] || '';
-      const link = item.match(/<link>([\s\S]*?)<\/link>/)?.[1] || '';
-      const pubDate = item.match(/<pubDate>([\s\S]*?)<\/pubDate>/)?.[1] || '';
-      const description = item.match(/<description>([\s\S]*?)<\/description>/)?.[1] || '';
-
-      if (title) {
-        items.push({
-          title: title.replace(/<[^>]*>/g, '').trim(),
-          url: link.replace(/<!\[CDATA\[|\]\]>/g, '').trim() || '#',
-          publishedAt: pubDate.trim() || new Date().toISOString(),
-          summary: description.replace(/<[^>]*>/g, '').trim().substring(0, 200),
-          source: 'Ведомости',
-        });
-      }
-    }
-
-    console.error(`[Ведомости] Загружено ${items.length} новостей`);
-
-    return {
-      source: 'Ведомости',
-      timestamp: new Date().toISOString(),
-      items: items.slice(0, 15),
-    };
-  } catch (error) {
-    console.error('[Ведомости] Ошибка:', error.message);
-    return {
-      source: 'Ведомости',
-      timestamp: new Date().toISOString(),
-      error: error.message || 'Неизвестная ошибка',
-      items: [],
-    };
+  if (req.method === 'OPTIONS') {
+    res.writeHead(200);
+    res.end();
+    return;
   }
+
+  if (path === '/api/vedomosti/status' && req.method === 'GET') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      success: true,
+      module: 'vedomosti',
+      status: 'online',
+      version: '1.0',
+      timestamp: new Date().toISOString()
+    }));
+    return;
+  }
+
+  res.writeHead(404, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ success: false, error: 'Неизвестный путь' }));
 }
 
-if (process.argv[1]?.endsWith('vedomosti.mjs')) {
-  const data = await briefing();
-  console.log(JSON.stringify(data, null, 2));
-}
+export default { handleVedomostiAPI };

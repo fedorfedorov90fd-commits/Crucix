@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0.0",
+  "description": "Схема полей справочников.",
+  "country-characteristics": {
+    "required": ["name", "nameRu", "regime", "baseRisk", "region", "tier", "multiplier"],
+    "fields": {
+      "name":       "Полное название на английском",
+      "nameRu":     "Полное название на русском",
+      "regime":     "Тип режима: democracy | authoritarian | hybrid",
+      "baseRisk":   "Базовый структурный риск 0-100",
+      "region":     "Регион: Europe | Asia | Americas | Africa | Middle East | Oceania",
+      "tier":       "Приоритет мониторинга: 1 (Tier-1) | 2 | 3",
+      "multiplier": "Множитель для амплификации событий 0.5-3.0"
+    }
+  },
+  "country-aliases": {
+    "format": "Map<alias, ISO-3166-alpha-3>",
+    "example": { "United States": "USA", "Russian Federation": "RUS" }
+  }
+}

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crucix · Dashboard</title>
+<style>
+:root{--bg:#06080f;--surface:#0d1220;--surface2:#161d2e;--surface3:#1f2842;--border:#1a2540;--border2:#2b3a5c;--text:#e8edf5;--text-dim:#8fa1c2;--text-faint:#5a6b8a;--accent:#3b82f6;--accent2:#8b5cf6;--accent3:#ec4899;--green:#22c55e;--yellow:#eab308;--orange:#f97316;--red:#ef4444;--cyan:#06b6d4;--mono:'SF Mono',monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text);padding:20px;min-height:100vh;font-size:13px}
+.header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.header h1{font-size:20px;font-weight:800}
+.header h1 span{color:var(--text-dim);font-weight:400;font-size:13px}
+.badge{padding:4px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;font-family:var(--mono);font-size:11px}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;max-width:1900px;margin:0 auto}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px}
+.card-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);margin-bottom:14px}
+.col-12{grid-column:span 12}.col-8{grid-column:span 8}.col-6{grid-column:span 6}.col-4{grid-column:span 4}
+.event-row{padding:12px;background:var(--surface2);border-radius:8px;margin-bottom:8px;border-left:3px solid var(--accent)}
+.event-header{display:flex;justify-content:space-between;margin-bottom:6px}
+.event-name{font-weight:600;font-size:13px}
+.event-prob{font-family:var(--mono);font-size:16px;font-weight:700}
+.bar{height:6px;background:var(--surface3);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width 0.8s}
+.empty{text-align:center;padding:40px;color:var(--text-faint);font-size:12px}
+
+/* Навигация */
+.header-brand{flex-shrink:0}
+.header-nav{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-left:auto}
+.nav-link{display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:7px;background:var(--surface2);color:var(--text-dim);text-decoration:none;font-size:11px;font-weight:600;letter-spacing:0.2px;transition:all 0.25s;border:1px solid transparent;white-space:nowrap;position:relative}
+.nav-link:hover{background:var(--surface3);color:var(--text);border-color:var(--border2);transform:translateY(-1px)}
+.nav-link.active{background:rgba(59,130,246,0.12);color:var(--accent);border-color:rgba(59,130,246,0.4);box-shadow:0 0 0 1px rgba(59,130,246,0.1),0 2px 8px rgba(59,130,246,0.15)}
+.nav-link .nav-icon{font-size:14px;line-height:1}
+.nav-link .nav-badge{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--red);color:white;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;font-family:var(--mono);box-shadow:0 2px 6px rgba(239,68,68,0.4);animation:nav-badge-pulse 2s infinite}
+@keyframes nav-badge-pulse{0%,100%{transform:scale(1);box-shadow:0 2px 6px rgba(239,68,68,0.4)}50%{transform:scale(1.1);box-shadow:0 2px 12px rgba(239,68,68,0.7)}}
+.nav-separator{width:1px;height:20px;background:var(--border2);margin:0 4px}
+@media (max-width:1400px){.nav-link .nav-text{display:none}.nav-link{padding:7px 10px}}
+@media (max-width:900px){.header-nav{order:3;width:100%;margin-left:0}.nav-separator{display:none}}
+
+/* Advanced Preview Widget */
+.advanced-preview{display:flex;flex-direction:column;gap:6px}
+.adv-section-label{font-size:9px;color:var(--text-faint);text-transform:uppercase;letter-spacing:1px;font-weight:700;padding:6px 4px 2px;border-top:1px solid var(--border);margin-top:4px}
+.adv-section-label:first-child{border-top:none;margin-top:0;padding-top:0}
+.adv-signal{display:flex;align-items:center;gap:9px;padding:7px 10px;background:var(--surface2);border-radius:7px;border-left:3px solid var(--accent);transition:transform 0.2s,background 0.2s,box-shadow 0.2s;cursor:pointer;position:relative}
+.adv-signal:hover{transform:translateX(3px);background:var(--surface3);box-shadow:0 2px 8px rgba(0,0,0,0.25)}
+.adv-signal.critical{animation:adv-critical-pulse 2s infinite}
+@keyframes adv-critical-pulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.4)}50%{box-shadow:0 0 0 6px rgba(239,68,68,0)}}
+.adv-signal-icon{font-size:15px;flex-shrink:0;line-height:1}
+.adv-signal-content{flex:1;min-width:0}
+.adv-signal-label{font-size:9px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:1px;font-weight:600}
+.adv-signal-value{font-size:12px;font-weight:700;font-family:var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-0.3px}
+.adv-signal-trend{font-size:10px;font-family:var(--mono);font-weight:700;margin-left:6px}
+.adv-signal-trend.up{color:var(--red)}
+.adv-signal-trend.down{color:var(--green)}
+.adv-empty{text-align:center;padding:24px 12px;color:var(--text-faint);font-size:11px;line-height:1.6}
+.adv-empty a{color:var(--accent);text-decoration:none;display:inline-block;margin-top:10px;font-weight:600;padding:6px 14px;border-radius:6px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);transition:all 0.2s}
+.adv-empty a:hover{background:rgba(59,130,246,0.2);transform:translateY(-1px)}
+.adv-footer{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;gap:6px;font-size:10px;font-family:var(--mono);color:var(--text-faint);justify-content:space-between}
+.adv-footer-item{display:flex;align-items:center;gap:4px}
+.adv-footer-dot{width:5px;height:5px;border-radius:50%;background:var(--green)}
+.adv-footer-dot.warning{background:var(--yellow)}
+.adv-footer-dot.critical{background:var(--red)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-brand">
+    <h1>Crucix <span>· Dashboard</span></h1>
+  </div>
+  <nav class="header-nav" aria-label="Основная навигация">
+    <a href="/crucix.html" class="nav-link active" title="Главный прогностический дашборд">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-text">Crucix</span>
+    </a>
+    <a href="/advanced.html" class="nav-link" title="Продвинутая аналитика v3.0">
+      <span class="nav-icon">🧠</span>
+      <span class="nav-text">Advanced</span>
+      <span class="nav-badge" id="badge-advanced" style="display: none;">!</span>
+    </a>
+    <a href="/hypergraph.html" class="nav-link" title="Гиперграф N-арных причинных связей">
+      <span class="nav-icon">🕸</span>
+      <span class="nav-text">Hypergraph</span>
+    </a>
+    <a href="/attention.html" class="nav-link" title="Динамика коллективного внимания">
+      <span class="nav-icon">👁</span>
+      <span class="nav-text">Attention</span>
+    </a>
+    <a href="/coevolution.html" class="nav-link" title="Моделирование адаптации противника">
+      <span class="nav-icon">⚔</span>
+      <span class="nav-text">Co-evolution</span>
+    </a>
+    <div class="nav-separator"></div>
+    <a href="/realtime.html" class="nav-link" title="События в реальном времени">
+      <span class="nav-icon">⚡</span>
+      <span class="nav-text">Live</span>
+    </a>
+    <a href="/predictions_composite.html" class="nav-link" title="Композитный индикатор">
+      <span class="nav-icon">📊</span>
+      <span class="nav-text">Composite</span>
+    </a>
+    <a href="/plugins.html" class="nav-link" title="Менеджер плагинов">
+      <span class="nav-icon">🔌</span>
+      <span class="nav-text">Plugins</span>
+    </a>
+  </nav>
+  <div style="display:flex;gap:10px;font-family:var(--mono);font-size:11px">
+    <span class="badge" id="last-update">—</span>
+    <span class="badge" id="sweep-id">sweep: —</span>
+  </div>
+</div>
+
+<div class="grid">
+
+<div class="card col-12">
+<div class="card-title">Топ-5 рисков</div>
+<div id="top-risks"><div class="empty">Загрузка...</div></div>
+</div>
+
+<div class="card col-6">
+<div class="card-title">Системное состояние</div>
+<div id="system-state"><div class="empty">Загрузка...</div></div>
+</div>
+
+<div class="card col-6">
+<div class="card-title">Brier Score</div>
+<div id="brier-info"><div class="empty">Загрузка...</div></div>
+</div>
+
+<!-- Advanced Preview Widget — 11 сигналов фаз J, K, L, M -->
+<div class="card col-12" id="advanced-preview">
+  <div class="card-title">
+    <span>Advanced v3.0</span>
+    <a href="/advanced.html" class="tag" style="
+      text-decoration: none;
+      color: var(--accent2);
+      background: rgba(139, 92, 246, 0.15);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 9px;
+      font-weight: 600;
+      margin-left: auto;
+      transition: all 0.2s;
+    ">детали →</a>
+  </div>
+  <div class="advanced-preview" id="advanced-preview-content">
+    <div class="adv-empty">Загрузка…</div>
+  </div>
+  <div class="adv-footer" id="advanced-footer" style="display: none;">
+    <div class="adv-footer-item">
+      <span class="adv-footer-dot" id="footer-status-dot"></span>
+      <span id="footer-status-text">—</span>
+    </div>
+    <div class="adv-footer-item">
+      <span id="footer-refresh">—</span>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const COLORS = {low:'#06b6d4',moderate:'#22c55e',elevated:'#eab308',high:'#f97316',critical:'#ef4444'};
+
+// === Advanced Preview v3.0 — 11 сигналов фаз J, K, L, M ===
+
+const ADVANCED_SIGNAL_DEFS = [
+  // Фаза J: причинность
+  { id: 'causal_chain', phase: 'J', section: 'Причинность', icon: '🔗', label: 'Causal Chain', color: '#8b5cf6',
+    extract: (d) => d.combinedCausalSignal ? {
+      value: d.combinedCausalSignal.type,
+      severity: d.combinedCausalSignal.severity,
+      tooltip: d.combinedCausalSignal.interpretation,
+      trend: null,
+    } : null },
+  { id: 'lag_shift', phase: 'J', section: 'Причинность', icon: '⚡', label: 'Lag Shifts', color: '#f97316',
+    extract: (d) => {
+      const shifts = d.temporalCausal?.shiftDetections || [];
+      const accelerating = shifts.filter(s => s.type === 'accelerating');
+      if (accelerating.length === 0) return null;
+      return {
+        value: accelerating.length + ' ускор.',
+        severity: accelerating.some(s => s.severity === 'high') ? 'critical' : 'medium',
+        tooltip: accelerating.map(s => s.from + ' → ' + s.to + ': ' + (s.shiftPct > 0 ? '+' : '') + s.shiftPct.toFixed(0) + '%').join(' | '),
+        trend: 'up',
+      };
+    } },
+  { id: 'vulnerability', phase: 'J', section: 'Причинность', icon: '⚠️', label: 'Vulnerability', color: '#eab308',
+    extract: (d) => {
+      const v = d.temporalCausal?.vulnerabilityWindow;
+      if (!v) return null;
+      return {
+        value: (v.vulnerability * 100).toFixed(0) + '% · ' + v.level,
+        severity: v.level,
+        tooltip: v.interpretation,
+        trend: v.level === 'critical' || v.level === 'high' ? 'up' : 'down',
+      };
+    } },
+  { id: 'cross_layer', phase: 'J', section: 'Причинность', icon: '🌐', label: 'Cross-Layer', color: '#06b6d4',
+    extract: (d) => {
+      const prop = d.multiLayerCausal?.propagation;
+      if (!prop || prop.totalUpdates === 0) return null;
+      const ratio = prop.crossLayerUpdates / prop.totalUpdates;
+      return {
+        value: prop.crossLayerUpdates + '/' + prop.totalUpdates + ' (' + (ratio * 100).toFixed(0) + '%)',
+        severity: ratio > 0.5 ? 'high' : ratio > 0.3 ? 'medium' : 'low',
+        tooltip: prop.crossLayerUpdates + ' кросс-слойных обновлений из ' + prop.totalUpdates,
+        trend: ratio > 0.3 ? 'up' : null,
+      };
+    } },
+
+  // Фаза K: инфовойна + истощение
+  { id: 'narrative_warfare', phase: 'K', section: 'Инфовойна & Ресурсы', icon: '📢', label: 'Info Ops', color: '#ec4899',
+    extract: (d) => {
+      const nw = d.narrativeWarfare;
+      if (!nw?.available || nw.campaignsDetected === 0) return null;
+      return {
+        value: nw.campaignsDetected + ' кампаний',
+        severity: nw.threatLevel > 0.7 ? 'critical' : nw.threatLevel > 0.5 ? 'high' : 'medium',
+        tooltip: nw.assessment + ' · ' + (nw.campaigns?.[0]?.classification || ''),
+        trend: 'up',
+      };
+    } },
+  { id: 'strategic_assessment', phase: 'K', section: 'Инфовойна & Ресурсы', icon: '⚔️', label: 'Strategic', color: '#ef4444',
+    extract: (d) => d.combinedStrategicAssessment ? {
+      value: d.combinedStrategicAssessment.type,
+      severity: d.combinedStrategicAssessment.severity,
+      tooltip: d.combinedStrategicAssessment.interpretation,
+      trend: 'up',
+    } : null },
+  { id: 'resources', phase: 'K', section: 'Инфовойна & Ресурсы', icon: '⛽', label: 'Resources', color: '#f97316',
+    extract: (d) => {
+      const re = d.resourceExhaustion;
+      if (!re?.overallStatus) return null;
+      const militaryDays = re.military?.criticalResource?.daysUntilCritical;
+      return {
+        value: re.overallStatus,
+        severity: re.overallStatus,
+        tooltip: re.interpretation + (militaryDays ? ' · ' + militaryDays.toFixed(0) + 'д до критического' : ''),
+        trend: re.overallPressure > 0.5 ? 'up' : null,
+      };
+    } },
+
+  // Фаза L: meta-ensemble + сценарии
+  { id: 'meta_regime', phase: 'L', section: 'Meta & Сценарии', icon: '🎯', label: 'Regime', color: '#3b82f6',
+    extract: (d) => {
+      const me = d.metaEnsemble;
+      if (!me?.currentRegime) return null;
+      const topModel = Object.entries(me.modelWeights || {}).sort((a, b) => b[1] - a[1])[0];
+      return {
+        value: me.currentRegime,
+        severity: me.currentRegime === 'crisis' ? 'critical' : me.currentRegime === 'elevated' ? 'high' : 'low',
+        tooltip: me.interpretation + (topModel ? ' · top: ' + topModel[0] + ' (' + (topModel[1] * 100).toFixed(0) + '%)' : ''),
+        trend: null,
+      };
+    } },
+  { id: 'scenarios', phase: 'L', section: 'Meta & Сценарии', icon: '🌳', label: 'Top Scenario', color: '#22c55e',
+    extract: (d) => {
+      const sc = d.scenarios;
+      if (!sc?.scenarios?.length) return null;
+      const top = sc.scenarios[0];
+      return {
+        value: top.name + ' (' + (top.probability * 100).toFixed(0) + '%)',
+        severity: top.severity,
+        tooltip: top.description || '',
+        trend: null,
+      };
+    } },
+
+  // Фаза M: новые слои v3.0
+  { id: 'hypergraph', phase: 'M', section: 'v3.0 Слои', icon: '🕸', label: 'Hypergraph', color: '#8b5cf6',
+    extract: (d) => {
+      const hg = d.hypergraphContagion;
+      if (!hg?.stats) return null;
+      const active = (hg.criticalHyperedges || []).length;
+      return {
+        value: hg.stats.hyperedgeCount + ' рёбер · ' + active + ' активных',
+        severity: active > 2 ? 'critical' : active > 0 ? 'medium' : 'low',
+        tooltip: 'Узлов: ' + hg.stats.nodeCount + ' · ср. размер гиперребра: ' + hg.stats.avgHyperedgeSize?.toFixed(2),
+        trend: active > 0 ? 'up' : null,
+      };
+    } },
+  { id: 'attention', phase: 'M', section: 'v3.0 Слои', icon: '👁', label: 'Attention', color: '#06b6d4',
+    extract: (d) => {
+      const ad = d.attentionDynamics;
+      if (!ad?.totalTopics) return null;
+      const explosive = (ad.topExplosive || []).filter(e => e.willExplode).length;
+      return {
+        value: ad.totalTopics + ' тем · ' + explosive + ' взрывных',
+        severity: explosive > 1 ? 'critical' : explosive === 1 ? 'high' : 'low',
+        tooltip: 'Сдвигов внимания: ' + (ad.shifts?.length || 0) + ' · total: ' + ad.totalAttention?.toFixed(1),
+        trend: explosive > 0 ? 'up' : null,
+      };
+    } },
+  { id: 'coevolution', phase: 'M', section: 'v3.0 Слои', icon: '⚔', label: 'Co-evolution', color: '#ef4444',
+    extract: (d) => {
+      const ace = d.adversarialCoEvolution;
+      if (!ace?.opponentsCount) return null;
+      const adapting = (ace.adaptations || []).filter(a => a.adaptation?.adapted).length;
+      return {
+        value: ace.opponentsCount + ' противн. · ' + adapting + ' адапт.',
+        severity: adapting > 1 ? 'critical' : adapting === 1 ? 'high' : 'low',
+        tooltip: ace.keyInsight || '',
+        trend: adapting > 0 ? 'up' : null,
+      };
+    } },
+];
+
+function renderSignalRow(s) {
+  const severityClass = s.severity === 'critical' ? 'critical' : '';
+  const trendHtml = s.trend
+    ? '<span class="adv-signal-trend ' + s.trend + '">' + (s.trend === 'up' ? '↑' : '↓') + '</span>'
+    : '';
+  const escapedTooltip = String(s.tooltip || '')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  return (
+    '<div class="adv-signal ' + severityClass + '" style="border-left-color:' + s.color + ';" data-tooltip="' + escapedTooltip + '">' +
+    '<span class="adv-signal-icon">' + s.icon + '</span>' +
+    '<div class="adv-signal-content">' +
+    '<div class="adv-signal-label">' + s.label + '</div>' +
+    '<div class="adv-signal-value" style="color:' + s.color + ';">' + s.value + trendHtml + '</div>' +
+    '</div></div>'
+  );
+}
+
+function renderAdvancedPreview(data) {
+  const el = $('advanced-preview-content');
+  const footer = $('advanced-footer');
+  if (!el) return;
+
+  const signals = [];
+  for (const def of ADVANCED_SIGNAL_DEFS) {
+    try {
+      const extracted = def.extract(data);
+      if (extracted) signals.push({ ...def, ...extracted });
+    } catch (e) {
+      console.warn('[advanced-preview] Signal ' + def.id + ' extraction failed:', e.message);
+    }
+  }
+
+  const sections = {};
+  for (const sig of signals) {
+    if (!sections[sig.section]) sections[sig.section] = [];
+    sections[sig.section].push(sig);
+  }
+
+  if (signals.length === 0) {
+    el.innerHTML =
+      '<div class="adv-empty">' +
+      'Advanced-модули неактивны в последнем прогнозе.<br>' +
+      'Запустите pipeline с опциями по умолчанию.' +
+      '<a href="/advanced.html">Открыть Advanced Analytics →</a>' +
+      '</div>';
+    if (footer) footer.style.display = 'none';
+    return;
+  }
+
+  const html = Object.entries(sections).map(([sectionName, sigs]) =>
+    '<div class="adv-section-label">' + sectionName + '</div>' +
+    sigs.map(s => renderSignalRow(s)).join('')
+  ).join('');
+  el.innerHTML = html;
+
+  const criticalCount = signals.filter(s => s.severity === 'critical' || s.severity === 'high').length;
+  if (footer) {
+    footer.style.display = 'flex';
+    const dotEl = $('footer-status-dot');
+    if (dotEl) {
+      dotEl.className = 'adv-footer-dot' + (criticalCount > 2 ? ' critical' : criticalCount > 0 ? ' warning' : '');
+    }
+    const statusEl = $('footer-status-text');
+    if (statusEl) statusEl.textContent = criticalCount > 0 ? criticalCount + ' критичных' : 'все стабильно';
+    const refreshEl = $('footer-refresh');
+    if (refreshEl && data.timestamp) {
+      refreshEl.textContent = new Date(data.timestamp).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    }
+  }
+
+  const badge = $('badge-advanced');
+  if (badge) {
+    if (criticalCount > 0) {
+      badge.textContent = criticalCount > 9 ? '9+' : String(criticalCount);
+      badge.style.display = 'flex';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+}
+
+// === Загрузка данных ===
+
+async function load() {
+  try {
+    const res = await fetch('../runs/predictions/latest_forecast.json');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    render(data);
+  } catch (e) {
+    document.querySelectorAll('.empty').forEach(el => el.textContent = 'Нет данных: ' + e.message);
+  }
+}
+
+function render(data) {
+  if (data.timestamp) $('last-update').textContent = new Date(data.timestamp).toLocaleTimeString('ru-RU');
+  if (data.sweepId) $('sweep-id').textContent = 'sweep: ' + data.sweepId.substring(0, 12);
+
+  // Top risks
+  if (data.topRisks && data.topRisks.length > 0) {
+    $('top-risks').innerHTML = data.topRisks.map(r => {
+      const color = COLORS[r.level || 'moderate'] || '#3b82f6';
+      const prob = r.probability || 0;
+      return '<div class="event-row" style="border-left-color:' + color + '">' +
+        '<div class="event-header"><span class="event-name">' + (r.name || r.id) + '</span>' +
+        '<span class="event-prob" style="color:' + color + '">' + (prob * 100).toFixed(1) + '%</span></div>' +
+        '<div class="bar"><div class="bar-fill" style="width:' + (prob * 100) + '%;background:' + color + '"></div></div>' +
+        '</div>';
+    }).join('');
+  }
+
+  // System state
+  if (data.systemState) {
+    const s = data.systemState;
+    $('system-state').innerHTML = '<div style="font-size:20px;font-weight:700;color:var(--accent);margin-bottom:8px">' + (s.current || '—') + '</div>' +
+      '<div style="font-size:11px;color:var(--text-dim);font-family:var(--mono)">Markov next: ' + (s.markov?.next || '—') + '</div>';
+  }
+
+  // Brier
+  if (data.calibration) {
+    const brier = data.calibration.brierScores || {};
+    const entries = Object.entries(brier).sort((a, b) => (a[1].score || 0) - (b[1].score || 0));
+    if (entries.length > 0) {
+      $('brier-info').innerHTML = entries.map(([src, b]) => {
+        const score = b.score || 0;
+        const color = score < 0.1 ? '#22c55e' : score < 0.2 ? '#eab308' : '#ef4444';
+        return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px">' +
+          '<span>' + src + '</span>' +
+          '<span style="font-family:var(--mono);color:' + color + ';font-weight:700">' + score.toFixed(4) + '</span></div>';
+      }).join('');
+    }
+  }
+
+  // Advanced preview
+  renderAdvancedPreview(data);
+}
+
+load();
+setInterval(load, 60000);
+</script>
+
+</body>
+</html>

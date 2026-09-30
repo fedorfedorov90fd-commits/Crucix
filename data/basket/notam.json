@@ -1,0 +1,143 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "notam",
+    "source": "Eurocontrol NOTAM RSS",
+    "source_url": "https://www.eurocontrol.int/rss/notam",
+    "fetched_at": "2026-09-27T16:36:26.195Z",
+    "normalized_at": "2026-09-27T16:38:26.680Z",
+    "collector": "collect-notam.mjs",
+    "license": "public-domain",
+    "count": 5,
+    "granularity": "event",
+    "value_unit": "count",
+    "value_scale": null,
+    "value_type": "count",
+    "value_range": null
+  },
+  "series": [],
+  "points": [
+    {
+      "lat": 50.515371523429984,
+      "lon": 29.30678550315429,
+      "label": "КРИТИЧЕСКИЙ",
+      "region": "Восточная Европа",
+      "extra": {
+        "id": "NOTAM-1790526986184-b43v",
+        "unmapped_region": true,
+        "unmapped_original": "Восточная Европа"
+      }
+    },
+    {
+      "lat": 43.608629862629755,
+      "lon": 34.05865917782834,
+      "label": "КРИТИЧЕСКИЙ",
+      "region": "Черное море",
+      "extra": {
+        "id": "NOTAM-1790526986185-nhdm",
+        "unmapped_region": true,
+        "unmapped_original": "Черное море"
+      }
+    },
+    {
+      "lat": 29.682819562411698,
+      "lon": 45.19812325922093,
+      "label": "ВЫСОКИЙ",
+      "region": "Ближний Восток",
+      "extra": {
+        "id": "NOTAM-1790526986185-vzqw",
+        "unmapped_region": true,
+        "unmapped_original": "Ближний Восток"
+      }
+    },
+    {
+      "lat": 14.890070528432403,
+      "lon": 115.25728028251386,
+      "label": "ВЫСОКИЙ",
+      "region": "Южно-Китайское море",
+      "extra": {
+        "id": "NOTAM-1790526986185-eghm",
+        "unmapped_region": true,
+        "unmapped_original": "Южно-Китайское море"
+      }
+    },
+    {
+      "lat": 58.07956358765981,
+      "lon": 19.74834474565883,
+      "label": "СРЕДНИЙ",
+      "region": "Балтийское море",
+      "extra": {
+        "id": "NOTAM-1790526986185-jdjy",
+        "unmapped_region": true,
+        "unmapped_original": "Балтийское море"
+      }
+    }
+  ],
+  "regions": [
+    {
+      "region": "Восточная Европа",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "Черное море",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "Ближний Восток",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "Южно-Китайское море",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    },
+    {
+      "region": "Балтийское море",
+      "value": 0,
+      "count": 0,
+      "aggregation": "sum",
+      "extra": {
+        "max": null,
+        "sum": 0
+      }
+    }
+  ],
+  "documents": [],
+  "graph": null,
+  "extra": {
+    "adapter": "points",
+    "adapter_version": "2.2.1",
+    "skipped_invalid_coords": 0,
+    "unmapped_regions": [
+      "Восточная Европа",
+      "Черное море",
+      "Ближний Восток",
+      "Южно-Китайское море",
+      "Балтийское море"
+    ],
+    "unmapped_count": 5
+  }
+}

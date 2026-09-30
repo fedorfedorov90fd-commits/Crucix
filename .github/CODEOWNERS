@@ -1,1 +1,35 @@
 * @calesthio
+
+# Predictive Core — владельцы из песочницы
+# Crucix Core · CODEOWNERS
+
+# Default
+*                       @crucix/maintainers
+
+# Core math
+/apis/predict/core/     @crucix/math-team
+
+# Models
+/apis/predict/models/   @crucix/ml-team
+
+# Sciences
+/apis/predict/exotic/   @crucix/research-team
+
+# WASM
+/apis/predict/wasm/     @crucix/systems-team
+
+# Infrastructure
+/docker/                @crucix/infra-team
+/k8s/                   @crucix/infra-team
+/.github/               @crucix/infra-team
+
+# Docs
+/docs/                  @crucix/docs-team
+/README.md              @crucix/docs-team
+
+# Benchmark
+/benchmark/             @crucix/research-team
+
+# Security-critical
+/apis/predict/federated/  @crucix/security-team
+/observability/           @crucix/security-team

@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "crucix.incoming.v1",
+  "title": "Crucix Warehouse Incoming Invoice",
+  "description": "Схема накладной склада Crucix. Одна накладная = один день. Каждая запись в items описывает один акт сбора сырья сборщиком и его последующую обработку кладовщиком. Контракт зафиксирован 20.09.2026.",
+  "type": "object",
+  "required": ["date", "items"],
+  "properties": {
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+      "description": "Дата накладной в формате YYYY-MM-DD"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Время последнего изменения накладной (ISO 8601)"
+    },
+    "items": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/item" }
+    }
+  },
+  "$defs": {
+    "item": {
+      "type": "object",
+      "required": ["id", "collector", "source", "raw_file", "status"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Идентификатор источника (например, 'firms', 'ecb-usd-eur')"
+        },
+        "collector": {
+          "type": "string",
+          "pattern": "^collect-.+\\.mjs$",
+          "description": "Имя файла сборщика в scripts/collectors/"
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Человекочитаемое имя источника"
+        },
+        "source_url": {
+          "type": "string",
+          "description": "URL источника или 'local://...' для локальных данных"
+        },
+        "fetched_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Время получения сырья сборщиком"
+        },
+        "raw_file": {
+          "type": "string",
+          "pattern": "^data/raw/.+\\.json$",
+          "description": "Путь к сырому файлу относительно корня проекта"
+        },
+        "format_hint": {
+          "type": "string",
+          "enum": ["timeseries", "points", "regions", "events", "hierarchical", "catalog", "unknown"],
+          "description": "Подсказка формата от сборщика. Кладовщик может переопределить по данным (правило 1.1.1)"
+        },
+        "expected_schema": {
+          "type": "string",
+          "description": "Ожидаемая схема basket-файла (обычно 'crucix.basket.v1')"
+        },
+        "checksum_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "SHA-256 сырого файла для проверки целостности"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Размер сырого файла в байтах"
+        },
+        "record_count_hint": {
+          "type": ["integer", "null"],
+          "minimum": 0,
+          "description": "Ожидаемое число записей (подсказка сборщика)"
+        },
+        "license": {
+          "type": "string",
+          "description": "Лицензия данных источника (например, 'public-domain', 'CC-BY-4.0')"
+        },
+        "value_unit": {
+          "type": "string",
+          "description": "Единица измерения значения (count, price, USD, ...)"
+        },
+        "value_scale": {
+          "type": ["string", "null"],
+          "description": "Масштаб значения (например, 'millions')"
+        },
+        "value_type": {
+          "type": ["string", "null"],
+          "description": "Тип значения (price, count, ratio, ...)"
+        },
+        "period": {
+          "type": ["string", "null"],
+          "description": "Период данных (например, 'daily', 'monthly') или null"
+        },
+        "granularity": {
+          "type": "string",
+          "description": "Гранулярность данных (event, daily, hourly, ...)"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Свободные заметки сборщика"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "processed", "failed", "archived"],
+          "description": "Текущий статус обработки. pending — ждёт кладовщика; processed — успешно уложено в basket; failed — ошибка обработки; archived — снято с обработки (устарело, замещено)"
+        },
+        "status_updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Время последнего изменения status. Введено 20.09.2026 (правка updateItemStatus)"
+        },
+        "status_prev": {
+          "type": "string",
+          "enum": ["pending", "processed", "failed", "archived"],
+          "description": "Предыдущий статус для трассировки переходов. Введено 20.09.2026"
+        },
+        "processed_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Время успешной обработки кладовщиком (только при status='processed')"
+        },
+        "processed_to": {
+          "type": "string",
+          "pattern": "^data/basket/.+\\.json$",
+          "description": "Путь к basket-файлу (только при status='processed')"
+        },
+        "format_used": {
+          "type": "string",
+          "enum": ["timeseries", "points", "regions", "events", "hierarchical", "catalog", "unknown"],
+          "description": "Формат, который реально применил кладовщик (может отличаться от format_hint)"
+        },
+        "failed_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Время неудачной обработки (только при status='failed')"
+        },
+        "error": {
+          "type": "string",
+          "description": "Текст ошибки обработки (только при status='failed')"
+        },
+        "archived_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Время архивации (только при status='archived')"
+        },
+        "archived_reason": {
+          "type": "string",
+          "description": "Причина архивации (только при status='archived')"
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "const": "processed" } }, "required": ["status"] },
+          "then": { "required": ["processed_at", "processed_to"] }
+        },
+        {
+          "if": { "properties": { "status": { "const": "failed" } }, "required": ["status"] },
+          "then": { "required": ["failed_at", "error"] }
+        },
+        {
+          "if": { "properties": { "status": { "const": "archived" } }, "required": ["status"] },
+          "then": { "required": ["archived_at", "archived_reason"] }
+        }
+      ]
+    }
+  }
+}

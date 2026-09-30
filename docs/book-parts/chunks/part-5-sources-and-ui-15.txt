@@ -1,0 +1,1199 @@
+===== ЧАСТЬ part-5-sources-and-ui · КУСОК 15/15 · 31.7 KB =====
+
+FILE: observability/otel.mjs
+SIZE: 13553 bytes
+SHA1: 67629e63224894b4
+========================================================================
+
+// observability/otel.mjs
+// OpenTelemetry-совместимый трейсинг и метрики (pure JS, без зависимостей)
+//
+// Реализует:
+//   - Distributed tracing (spans, context propagation)
+//   - Metrics (counters, gauges, histograms)
+//   - Structured logs
+//   - OTLP HTTP export
+
+import { performance } from 'node:perf_hooks';
+
+class Span {
+  constructor(name, { parentSpan, attributes = {}, kind = 'internal' }) {
+    this.name = name;
+    this.traceId = parentSpan?.traceId || generateId(32);
+    this.spanId = generateId(16);
+    this.parentSpanId = parentSpan?.spanId || null;
+    this.kind = kind;
+    this.startTime = performance.now();
+    this.endTime = null;
+    this.attributes = { ...attributes };
+    this.events = [];
+    this.status = 'unset';
+    this.error = null;
+  }
+
+  setAttribute(key, value) {
+    this.attributes[key] = value;
+    return this;
+  }
+
+  setAttributes(attrs) {
+    Object.assign(this.attributes, attrs);
+    return this;
+  }
+
+  addEvent(name, attributes = {}) {
+    this.events.push({
+      name,
+      timestamp: performance.now(),
+      attributes,
+    });
+    return this;
+  }
+
+  recordException(error) {
+    this.status = 'error';
+    this.error = {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+    };
+    this.setAttribute('error', true);
+    this.setAttribute('error.message', error.message);
+    return this;
+  }
+
+  end() {
+    this.endTime = performance.now();
+    this.durationMs = this.endTime - this.startTime;
+    if (this.status === 'unset') this.status = 'ok';
+    return this;
+  }
+
+  toJSON() {
+    return {
+      traceId: this.traceId,
+      spanId: this.spanId,
+      parentSpanId: this.parentSpanId,
+      name: this.name,
+      kind: this.kind,
+      startTime: this.startTime,
+      endTime: this.endTime,
+      durationMs: this.durationMs,
+      attributes: this.attributes,
+      events: this.events,
+      status: this.status,
+      error: this.error,
+    };
+  }
+}
+
+class Tracer {
+  constructor(name, version = '3.0.0') {
+    this.name = name;
+    this.version = version;
+    this.spans = [];
+    this.exporters = [];
+    this.sampler = null;
+  }
+
+  startSpan(name, options = {}) {
+    if (this.sampler && !this.sampler(options)) return null;
+
+    const span = new Span(name, options);
+    this.spans.push(span);
+    return span;
+  }
+
+  async trace(name, fn, attributes = {}) {
+    const span = this.startSpan(name, { attributes });
+    if (!span) return fn();
+
+    try {
+      const result = await fn(span);
+      span.end();
+      return result;
+    } catch (e) {
+      span.recordException(e);
+      span.end();
+      throw e;
+    }
+  }
+
+  traceSync(name, fn, attributes = {}) {
+    const span = this.startSpan(name, { attributes });
+    if (!span) return fn();
+
+    try {
+      const result = fn(span);
+      span.end();
+      return result;
+    } catch (e) {
+      span.recordException(e);
+      span.end();
+      throw e;
+    }
+  }
+
+  addExporter(exporter) {
+    this.exporters.push(exporter);
+  }
+
+  async flush() {
+    if (this.spans.length === 0) return;
+
+    const spans = this.spans.splice(0);
+    for (const exporter of this.exporters) {
+      try {
+        await exporter.export(spans.map(s => s.toJSON()));
+      } catch (e) {
+        console.error(`[otel] Export failed: ${e.message}`);
+      }
+    }
+  }
+}
+
+class Meter {
+  constructor(name) {
+    this.name = name;
+    this.counters = new Map();
+    this.gauges = new Map();
+    this.histograms = new Map();
+    this.exporters = [];
+    this.startTime = Date.now();
+  }
+
+  counter(name, { description = '', unit = '' } = {}) {
+    if (!this.counters.has(name)) {
+      this.counters.set(name, {
+        name, description, unit,
+        value: 0,
+        type: 'counter',
+      });
+    }
+    const c = this.counters.get(name);
+    return {
+      add: (value = 1, attributes = {}) => {
+        c.value += value;
+      },
+    };
+  }
+
+  gauge(name, { description = '', unit = '' } = {}) {
+    if (!this.gauges.has(name)) {
+      this.gauges.set(name, { name, description, unit, value: 0, type: 'gauge' });
+    }
+    const g = this.gauges.get(name);
+    return {
+      record: (value, attributes = {}) => {
+        g.value = value;
+      },
+    };
+  }
+
+  histogram(name, { description = '', unit = '', buckets = [1, 5, 10, 25, 50, 100, 250, 500, 1000, 5000] } = {}) {
+    if (!this.histograms.has(name)) {
+      this.histograms.set(name, {
+        name, description, unit, buckets,
+        counts: new Array(buckets.length + 1).fill(0),
+        sum: 0,
+        count: 0,
+        min: Infinity,
+        max: -Infinity,
+        type: 'histogram',
+      });
+    }
+    const h = this.histograms.get(name);
+    return {
+      record: (value) => {
+        h.sum += value;
+        h.count++;
+        h.min = Math.min(h.min, value);
+        h.max = Math.max(h.max, value);
+        for (let i = 0; i < buckets.length; i++) {
+          if (value <= buckets[i]) {
+            h.counts[i]++;
+            return;
+          }
+        }
+        h.counts[buckets.length]++;
+      },
+    };
+  }
+
+  snapshot() {
+    return {
+      timestamp: new Date().toISOString(),
+      uptimeSeconds: (Date.now() - this.startTime) / 1000,
+      counters: Object.fromEntries(
+        Array.from(this.counters.entries()).map(([k, v]) => [k, v.value])
+      ),
+      gauges: Object.fromEntries(
+        Array.from(this.gauges.entries()).map(([k, v]) => [k, v.value])
+      ),
+      histograms: Object.fromEntries(
+        Array.from(this.histograms.entries()).map(([k, v]) => [k, {
+          count: v.count,
+          sum: v.sum,
+          min: v.min === Infinity ? 0 : v.min,
+          max: v.max === -Infinity ? 0 : v.max,
+          avg: v.count > 0 ? v.sum / v.count : 0,
+          counts: v.counts,
+          buckets: v.buckets,
+        }])
+      ),
+    };
+  }
+
+  toPrometheus() {
+    const lines = [];
+
+    for (const [name, c] of this.counters) {
+      lines.push(`# TYPE ${sanitize(name)} counter`);
+      lines.push(`${sanitize(name)} ${c.value}`);
+    }
+
+    for (const [name, g] of this.gauges) {
+      lines.push(`# TYPE ${sanitize(name)} gauge`);
+      lines.push(`${sanitize(name)} ${g.value}`);
+    }
+
+    for (const [name, h] of this.histograms) {
+      lines.push(`# TYPE ${sanitize(name)} histogram`);
+      for (let i = 0; i < h.buckets.length; i++) {
+        lines.push(`${sanitize(name)}_bucket{le="${h.buckets[i]}"} ${h.counts.slice(0, i + 1).reduce((a, b) => a + b, 0)}`);
+      }
+      lines.push(`${sanitize(name)}_bucket{le="+Inf"} ${h.count}`);
+      lines.push(`${sanitize(name)}_sum ${h.sum}`);
+      lines.push(`${sanitize(name)}_count ${h.count}`);
+    }
+
+    return lines.join('\n');
+  }
+}
+
+class Logger {
+  constructor(serviceName, { level = 'info' } = {}) {
+    this.serviceName = serviceName;
+    this.level = level;
+    this.levels = { debug: 0, info: 1, warn: 2, error: 3 };
+  }
+
+  _log(level, message, attributes = {}) {
+    if (this.levels[level] < this.levels[this.level]) return;
+
+    const entry = {
+      timestamp: new Date().toISOString(),
+      level,
+      service: this.serviceName,
+      message,
+      ...attributes,
+    };
+
+    console.log(JSON.stringify(entry));
+    return entry;
+  }
+
+  debug(msg, attrs) { return this._log('debug', msg, attrs); }
+  info(msg, attrs) { return this._log('info', msg, attrs); }
+  warn(msg, attrs) { return this._log('warn', msg, attrs); }
+  error(msg, attrs) { return this._log('error', msg, attrs); }
+}
+
+class OTLPHttpExporter {
+  constructor(endpoint, { headers = {}, timeout = 5000 } = {}) {
+    this.endpoint = endpoint;
+    this.headers = headers;
+    this.timeout = timeout;
+  }
+
+  async export(spans) {
+    if (spans.length === 0) return;
+
+    const payload = {
+      resourceSpans: [{
+        resource: {
+          attributes: [
+            { key: 'service.name', value: { stringValue: 'crucix-monitor' } },
+            { key: 'service.version', value: { stringValue: '3.0.0' } },
+          ],
+        },
+        scopeSpans: [{
+          scope: { name: 'crucix-predict', version: '3.0.0' },
+          spans: spans.map(s => this._toOTLP(s)),
+        }],
+      }],
+    };
+
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), this.timeout);
+
+      const response = await fetch(`${this.endpoint}/v1/traces`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...this.headers,
+        },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timer);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+    } catch (e) {
+      console.error(`[otel] OTLP export failed: ${e.message}`);
+    }
+  }
+
+  _toOTLP(span) {
+    return {
+      traceId: span.traceId,
+      spanId: span.spanId,
+      parentSpanId: span.parentSpanId,
+      name: span.name,
+      kind: span.kind === 'server' ? 2 : span.kind === 'client' ? 3 : 1,
+      startTimeUnixNano: String(Math.floor(span.startTime * 1e6)),
+      endTimeUnixNano: String(Math.floor(span.endTime * 1e6)),
+      attributes: Object.entries(span.attributes).map(([k, v]) => ({
+        key: k,
+        value: typeof v === 'number' ? { doubleValue: v } : { stringValue: String(v) },
+      })),
+      status: {
+        code: span.status === 'error' ? 2 : 1,
+        message: span.error?.message || '',
+      },
+    };
+  }
+}
+
+class ConsoleExporter {
+  async export(spans) {
+    for (const span of spans) {
+      console.log(`[span] ${span.name} (${span.durationMs.toFixed(2)}ms) ${span.status}`);
+    }
+  }
+}
+
+class PrometheusExporter {
+  constructor(meter) {
+    this.meter = meter;
+  }
+
+  render() {
+    return this.meter.toPrometheus();
+  }
+}
+
+let globalTracer = null;
+let globalMeter = null;
+let globalLogger = null;
+
+export function initObservability({
+  serviceName = 'crucix-monitor',
+  serviceVersion = '3.0.0',
+  otlpEndpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT || null,
+  logLevel = process.env.LOG_LEVEL || 'info',
+  samplingRate = 1.0,
+} = {}) {
+  globalTracer = new Tracer(serviceName, serviceVersion);
+  globalMeter = new Meter(serviceName);
+  globalLogger = new Logger(serviceName, { level: logLevel });
+
+  if (samplingRate < 1.0) {
+    globalTracer.sampler = () => Math.random() < samplingRate;
+  }
+
+  if (otlpEndpoint) {
+    globalTracer.addExporter(new OTLPHttpExporter(otlpEndpoint));
+    globalLogger.info('OTLP exporter enabled', { endpoint: otlpEndpoint });
+  } else {
+    globalTracer.addExporter(new ConsoleExporter());
+  }
+
+  const flushInterval = setInterval(() => {
+    globalTracer.flush().catch(() => {});
+  }, 10000);
+  flushInterval.unref();
+
+  globalLogger.info('Observability initialized', {
+    serviceName, serviceVersion, samplingRate,
+  });
+
+  return { tracer: globalTracer, meter: globalMeter, logger: globalLogger };
+}
+
+export function getTracer() {
+  if (!globalTracer) throw new Error('Observability not initialized');
+  return globalTracer;
+}
+
+export function getMeter() {
+  if (!globalMeter) throw new Error('Observability not initialized');
+  return globalMeter;
+}
+
+export function getLogger() {
+  if (!globalLogger) throw new Error('Observability not initialized');
+  return globalLogger;
+}
+
+function generateId(length) {
+  const chars = '0123456789abcdef';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return result;
+}
+
+function sanitize(name) {
+  return name.replace(/[^a-zA-Z0-9_:]/g, '_');
+}
+
+export function registerCrucixMetrics(meter) {
+  return {
+    predictionCycles: meter.counter('crucix_prediction_cycles_total', {
+      description: 'Total prediction cycles',
+    }),
+    cycleDuration: meter.histogram('crucix_cycle_duration_seconds', {
+      description: 'Duration of prediction cycle',
+      unit: 's',
+      buckets: [0.5, 1, 2, 5, 10, 20, 30, 60],
+    }),
+    cycleErrors: meter.counter('crucix_cycle_errors_total', {
+      description: 'Errors during cycles',
+    }),
+    compositeRisk: meter.gauge('crucix_composite_risk', {
+      description: 'Current composite risk (0-1)',
+    }),
+    compositeLevel: meter.gauge('crucix_composite_level', {
+      description: 'Composite risk level (0-4)',
+    }),
+    signalValue: meter.gauge('crucix_signal_value', {
+      description: 'Value of a specific signal',
+    }),
+    signalsHigh: meter.counter('crucix_signals_high_total', {
+      description: 'Signals above threshold',
+    }),
+    wsConnections: meter.gauge('crucix_ws_connections', {
+      description: 'Active WS connections',
+    }),
+    wsMessages: meter.counter('crucix_ws_messages_total', {
+      description: 'WS messages sent',
+    }),
+    wsErrors: meter.counter('crucix_ws_errors_total', {
+      description: 'WS errors',
+    }),
+    predictionsMade: meter.counter('crucix_predictions_total', {
+      description: 'Predictions registered',
+    }),
+    predictionsResolved: meter.counter('crucix_predictions_resolved_total', {
+      description: 'Predictions resolved with outcome',
+    }),
+    brierScore: meter.gauge('crucix_brier_score', {
+      description: 'Current Brier score',
+    }),
+    notificationsSent: meter.counter('crucix_notifications_sent_total', {
+      description: 'Notifications sent',
+    }),
+    flRounds: meter.counter('crucix_fl_rounds_total', {
+      description: 'Federated learning rounds',
+    }),
+    flClients: meter.gauge('crucix_fl_clients', {
+      description: 'Active FL clients',
+    }),
+  };
+}
+
+export { Tracer, Meter, Logger, Span, OTLPHttpExporter, PrometheusExporter };
+
+
+
+========================================================================
+
+FILE: observability/instrumentation.mjs
+SIZE: 5124 bytes
+SHA1: c36e100c23c410aa
+========================================================================
+
+// observability/instrumentation.mjs
+// Автоматическая инструментация ключевых модулей Crucix
+
+import { initObservability, getTracer, getMeter, getLogger, registerCrucixMetrics } from './otel.mjs';
+
+let metrics = null;
+
+export function setupObservability(opts = {}) {
+  const obs = initObservability(opts);
+  metrics = registerCrucixMetrics(obs.meter);
+  return { ...obs, metrics };
+}
+
+export function getMetrics() {
+  return metrics;
+}
+
+export function instrumentModule(name, fn) {
+  return async function instrumentedFn(...args) {
+    const tracer = getTracer();
+    const logger = getLogger();
+
+    const span = tracer.startSpan(`module.${name}`, {
+      attributes: {
+        'module.name': name,
+        'module.args_count': args.length,
+      },
+    });
+
+    try {
+      const result = await fn(...args);
+
+      if (result && result.error) {
+        span.setAttribute('module.result', 'error');
+        span.setAttribute('module.error', result.error);
+        logger.warn(`Module ${name} returned error`, { error: result.error });
+      } else {
+        span.setAttribute('module.result', 'ok');
+      }
+
+      if (metrics && result) {
+        if (result.probability !== undefined) {
+          metrics.signalValue.record(result.probability);
+        }
+      }
+
+      span.end();
+      return result;
+    } catch (e) {
+      span.recordException(e);
+      span.end();
+
+      logger.error(`Module ${name} threw exception`, {
+        error: e.message,
+        stack: e.stack,
+      });
+
+      if (metrics) {
+        metrics.cycleErrors.add(1, { module: name });
+      }
+
+      throw e;
+    }
+  };
+}
+
+export async function tracePredictionCycle(fn) {
+  const tracer = getTracer();
+  const logger = getLogger();
+  const meter = getMeter();
+  const m = metrics || registerCrucixMetrics(meter);
+
+  const span = tracer.startSpan('prediction.cycle', {
+    kind: 'server',
+    attributes: { 'cycle.version': '3.0.0' },
+  });
+
+  const startTime = Date.now();
+
+  try {
+    const result = await fn(span);
+
+    const duration = (Date.now() - startTime) / 1000;
+    m.cycleDuration.record(duration);
+    m.predictionCycles.add(1);
+
+    if (result?.compositeRisk) {
+      m.compositeRisk.record(result.compositeRisk.composite);
+      const levelNum = { low: 0, moderate: 1, elevated: 2, high: 3, critical: 4 }[result.compositeRisk.level] || 0;
+      m.compositeLevel.record(levelNum);
+
+      span.setAttribute('composite.risk', result.compositeRisk.composite);
+      span.setAttribute('composite.level', result.compositeRisk.level);
+      span.setAttribute('composite.signals', result.compositeRisk.signals?.length || 0);
+
+      if (result.compositeRisk.signals) {
+        for (const sig of result.compositeRisk.signals) {
+          span.addEvent('signal', {
+            name: sig.key,
+            value: sig.value,
+            weight: sig.weight,
+          });
+
+          if (sig.value > 0.7) {
+            m.signalsHigh.add(1, { signal: sig.key });
+          }
+        }
+      }
+    }
+
+    if (result?.trackerStats) {
+      m.predictionsMade.add(result.trackerStats.total || 0);
+      m.predictionsResolved.add(result.trackerStats.resolved || 0);
+      if (result.trackerStats.overallBrier !== null) {
+        m.brierScore.record(result.trackerStats.overallBrier);
+      }
+    }
+
+    span.setAttribute('cycle.duration_seconds', duration);
+    span.end();
+
+    logger.info('Prediction cycle completed', {
+      durationSeconds: duration,
+      compositeRisk: result?.compositeRisk?.composite,
+      compositeLevel: result?.compositeRisk?.level,
+    });
+
+    return result;
+  } catch (e) {
+    span.recordException(e);
+    span.end();
+    m.cycleErrors.add(1);
+    logger.error('Prediction cycle failed', { error: e.message });
+    throw e;
+  }
+}
+
+export function httpMiddleware() {
+  return async (req, res, next) => {
+    const tracer = getTracer();
+    const span = tracer.startSpan(`http.${req.method} ${req.path}`, {
+      kind: 'server',
+      attributes: {
+        'http.method': req.method,
+        'http.path': req.path,
+        'http.user_agent': req.headers?.['user-agent'] || '',
+      },
+    });
+
+    res.on('finish', () => {
+      span.setAttribute('http.status_code', res.statusCode);
+      span.end();
+    });
+
+    next();
+  };
+}
+
+export function instrumentWebSocket(ws, clientId) {
+  const tracer = getTracer();
+  const logger = getLogger();
+  const meter = getMeter();
+
+  const span = tracer.startSpan('ws.connection', {
+    kind: 'server',
+    attributes: { 'ws.client_id': clientId },
+  });
+
+  ws.on('close', () => {
+    span.setAttribute('ws.duration_seconds', span.durationMs / 1000);
+    span.end();
+    logger.info('WS connection closed', { clientId });
+  });
+
+  return {
+    onMessage: (msg) => span.addEvent('message', { type: msg?.type }),
+    onError: (err) => {
+      span.recordException(err);
+      meter.counter('crucix_ws_errors_total').add(1);
+    },
+  };
+}
+
+export function getPrometheusMetrics() {
+  const meter = getMeter();
+  return meter.toPrometheus();
+}
+
+export function getMetricsSnapshot() {
+  const meter = getMeter();
+  return meter.snapshot();
+}
+
+
+
+========================================================================
+
+FILE: observability/alerts/prometheus.yml
+SIZE: 3742 bytes
+SHA1: a09a19412c44b2dc
+========================================================================
+
+groups:
+  - name: crucix.availability
+    interval: 30s
+    rules:
+      - alert: CrucixDown
+        expr: up{job="crucix-monitor"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: availability
+        annotations:
+          summary: "Crucix instance down"
+          description: "{{ $labels.instance }} has been down for more than 2 minutes"
+          runbook: "https://github.com/crucix/monitor-monitor/wiki/Runbooks#instance-down"
+
+      - alert: CrucixHighLatency
+        expr: |
+          histogram_quantile(0.95,
+            rate(crucix_cycle_duration_seconds_bucket[5m])
+          ) > 30
+        for: 10m
+        labels:
+          severity: warning
+          component: performance
+        annotations:
+          summary: "Prediction cycle p95 latency > 30s"
+          description: "Current p95: {{ $value }}s"
+
+      - alert: CrucixCycleErrors
+        expr: rate(crucix_cycle_errors_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          component: reliability
+        annotations:
+          summary: "High rate of cycle errors"
+
+  - name: crucix.risk
+    interval: 30s
+    rules:
+      - alert: CrucixCriticalRisk
+        expr: crucix_composite_risk > 0.7
+        for: 5m
+        labels:
+          severity: critical
+          component: risk
+          category: market
+        annotations:
+          summary: "Composite risk in CRITICAL zone"
+          description: "Current: {{ $value }}"
+          runbook: "https://github.com/crucix/monitor-monitor/wiki/Runbooks#critical-risk"
+
+      - alert: CrucixHighRisk
+        expr: crucix_composite_risk > 0.5
+        for: 15m
+        labels:
+          severity: warning
+          component: risk
+        annotations:
+          summary: "Composite risk HIGH"
+          description: "Current: {{ $value }}"
+
+      - alert: CrucixManyHighSignals
+        expr: sum(crucix_signals_high_total) > 10
+        for: 5m
+        labels:
+          severity: warning
+          component: risk
+        annotations:
+          summary: "Many signals above threshold"
+
+  - name: crucix.websocket
+    interval: 30s
+    rules:
+      - alert: CrucixWSCapacityHigh
+        expr: crucix_ws_connections > 1500
+        for: 5m
+        labels:
+          severity: warning
+          component: websocket
+        annotations:
+          summary: "WS connections approaching capacity"
+          description: "Current: {{ $value }} / limit: 2000"
+
+      - alert: CrucixWSHighErrorRate
+        expr: rate(crucix_ws_errors_total[5m]) > 1
+        for: 5m
+        labels:
+          severity: warning
+          component: websocket
+        annotations:
+          summary: "High WS error rate"
+          description: "Errors/sec: {{ $value }}"
+
+  - name: crucix.quality
+    interval: 1h
+    rules:
+      - alert: CrucixBrierDegraded
+        expr: crucix_brier_score > 0.25
+        for: 1h
+        labels:
+          severity: warning
+          component: quality
+        annotations:
+          summary: "Brier score degraded (worse than random)"
+          description: "Current: {{ $value }} — models need retraining"
+          runbook: "https://github.com/crucix/monitor-monitor/wiki/Runbooks#brier-degraded"
+
+      - alert: CrucixLowResolutionRate
+        expr: rate(crucix_predictions_resolved_total[6h]) < 1
+        for: 6h
+        labels:
+          severity: warning
+          component: quality
+        annotations:
+          summary: "Low prediction resolution rate"
+
+  - name: crucix.federated
+    interval: 1m
+    rules:
+      - alert: CrucixFewFLClients
+        expr: crucix_fl_clients < 3
+        for: 15m
+        labels:
+          severity: warning
+          component: federated
+        annotations:
+          summary: "Too few FL clients"
+
+
+
+========================================================================
+
+FILE: observability/dashboards/grafana/crucix-overview.json
+SIZE: 5064 bytes
+SHA1: 2b00286aadd6ca1c
+========================================================================
+
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": true,
+  "panels": [
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.3 },
+              { "color": "orange", "value": 0.5 },
+              { "color": "red", "value": 0.7 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "textMode": "auto"
+      },
+      "title": "Composite Risk",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "crucix_composite_risk",
+          "legendFormat": "Risk",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 3
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 0 },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area"
+      },
+      "title": "Cycle Duration (seconds)",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, rate(crucix_cycle_duration_seconds_bucket[5m]))",
+          "legendFormat": "p95",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.50, rate(crucix_cycle_duration_seconds_bucket[5m]))",
+          "legendFormat": "p50",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 0 },
+      "id": 3,
+      "options": {
+        "colorMode": "value"
+      },
+      "title": "WS Connections",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "crucix_ws_connections",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 0.5
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 0 },
+      "id": 4,
+      "options": {
+        "colorMode": "value"
+      },
+      "title": "Brier Score",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "crucix_brier_score",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "lineWidth": 2, "fillOpacity": 10 }
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "id": 5,
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right" },
+        "tooltip": { "mode": "multi" }
+      },
+      "title": "Signal Values",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "crucix_signal_value",
+          "legendFormat": "{{signal}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "id": 6,
+      "options": {
+        "legend": { "displayMode": "table" },
+        "tooltip": { "mode": "multi" }
+      },
+      "title": "Prediction Cycle Rate",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(crucix_prediction_cycles_total[5m])",
+          "legendFormat": "cycles/sec",
+          "refId": "A"
+        },
+        {
+          "expr": "rate(crucix_cycle_errors_total[5m])",
+          "legendFormat": "errors/sec",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
+      "id": 7,
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      },
+      "title": "Prediction Accuracy (Brier)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "crucix_brier_score",
+          "legendFormat": "overall",
+          "refId": "A"
+        },
+        {
+          "expr": "rate(crucix_predictions_resolved_total[1h])",
+          "legendFormat": "resolutions/hour",
+          "refId": "B"
+        }
+      ]
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "tags": ["crucix", "predictions"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Crucix Monitor Overview",
+  "uid": "crucix-overview",
+  "version": 1
+}
+
+
+
+========================================================================
+
+FILE: observability/README.md
+SIZE: 3610 bytes
+SHA1: b416d1d23aebd5a1
+========================================================================
+
+# Crucix Observability
+
+Production-grade monitoring для Crucix Monitor. Zero external dependencies — работает на чистом Node.js.
+
+## Что внутри
+
+- OpenTelemetry-совместимый трейсинг — spans, context propagation, OTLP export
+- Prometheus метрики — counters, gauges, histograms
+- Structured logs — JSON-формат для ELK/Loki
+- Grafana dashboards — готовые панели
+- Prometheus alerts — правила алертинга
+
+## Быстрый старт
+
+import { setupObservability, tracePredictionCycle } from './observability/instrumentation.mjs';
+
+setupObservability({
+  serviceName: 'crucix-monitor',
+  otlpEndpoint: process.env.OTEL_EXPORTER_OTLP_ENDPOINT,
+  samplingRate: 0.1,
+});
+
+const result = await tracePredictionCycle(async (span) => {
+  span.setAttribute('custom.attr', 'value');
+  return prediction;
+});
+
+## Метрики
+
+Основные:
+
+| Метрика | Тип | Описание |
+|---------|-----|----------|
+| crucix_composite_risk | gauge | Текущий риск (0-1) |
+| crucix_composite_level | gauge | Уровень (0-4) |
+| crucix_prediction_cycles_total | counter | Всего циклов |
+| crucix_cycle_duration_seconds | histogram | Длительность цикла |
+| crucix_brier_score | gauge | Brier score |
+| crucix_ws_connections | gauge | WS соединения |
+| crucix_signal_value | gauge | Значения сигналов |
+
+Полный список в otel.mjs — registerCrucixMetrics().
+
+## Endpoints
+
+- /metrics — Prometheus формат
+- /health — healthcheck
+- /stats — JSON snapshot метрик
+
+## Grafana
+
+Импортировать dashboard: observability/dashboards/grafana/crucix-overview.json
+
+Панели:
+1. Composite Risk (gauge)
+2. Cycle Duration p50/p95
+3. WS Connections
+4. Brier Score
+5. Signal Values (timeseries)
+6. Prediction Cycle Rate
+7. Prediction Accuracy
+
+## Alerts
+
+Все алерты в observability/alerts/prometheus.yml:
+
+- Critical: instance down, critical risk
+- Warning: high latency, many signals, degraded quality
+- Info: low resolution rate
+
+## OTLP Export
+
+Экспорт в Jaeger/Tempo:
+
+export OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318
+
+Или в Honeycomb/Datadog — через OTLPHttpExporter с headers.
+
+## Production-конфигурация
+
+setupObservability({
+  serviceName: 'crucix-monitor',
+  serviceVersion: '3.0.0',
+  otlpEndpoint: process.env.OTEL_EXPORTER_OTLP_ENDPOINT,
+  logLevel: 'info',
+  samplingRate: parseFloat(process.env.OTEL_SAMPLING_RATE || '0.1'),
+});
+
+## Примеры запросов Prometheus
+
+Top-10 самых активных сигналов:
+topk(10, crucix_signal_value)
+
+Средний composite risk за час:
+avg_over_time(crucix_composite_risk[1h])
+
+Скорость разрешения прогнозов:
+rate(crucix_predictions_resolved_total[1h])
+
+p95 latency:
+histogram_quantile(0.95, rate(crucix_cycle_duration_seconds_bucket[5m]))
+
+## Интеграция с ELK/Loki
+
+Логи в JSON:
+{
+  "timestamp": "2026-09-15T07:12:39.000Z",
+  "level": "info",
+  "service": "crucix-monitor",
+  "message": "Prediction cycle completed",
+  "durationSeconds": 4.5,
+  "compositeRisk": 0.42
+}
+
+## Zero-dependency philosophy
+
+Crucix реализует observability без зависимостей:
+
+- Нет @opentelemetry/sdk-node (150+ MB)
+- Нет prom-client (тяжёлый)
+- Нет winston/pino
+
+Только чистый Node.js + стандартные модули. Всё, что делает observability, читается в otel.mjs (504 строки).
+
+
+
+========================================================================
+КОНЕЦ ТОМА part-5-sources-and-ui
+ФАЙЛОВ НАЙДЕНО: 50
+ФАЙЛОВ НЕ НАЙДЕНО: 0
+ФАЙЛОВ ОБРЕЗАНО: 0
+РАЗМЕР ТОМА: 481.7 KB
+========================================================================

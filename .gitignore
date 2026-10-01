@@ -1,142 +1,69 @@
-# Node.js
+# ─── Node.js ───
 node_modules/
 npm-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# Временные файлы
-*.tmp
-*.swp
-*.swo
-*~
-.DS_Store
-
-# Бэкапы (лично хозяина)
-backups/
-
-
-# Логи (не коммитим)
-logs/**/*.log
-
-# Персональные копии (правило 42)
-**/[А-Яа-яЁё]*.mjs
-**/*(копия)*
-**/*(copy)*
-**/*=*
-**/*.bak
-**/*.old
-.env
-.env.local
-.env.*.local
-*.tar.gz
-*.zip
-*.7z
-*.bak
-*.backup
-*.old
-*.log
-*.tmp
-*.swp
-*.swo
-*~
-*(копия)*
-
-# Реальные секреты (не коммитить!)
-data/secrets/acled.json
-data/secrets/*.json
-!data/secrets/*.template
-
-
-
-# Python
+# ─── Python ───
 __pycache__/
 *.py[cod]
 venv/
 .pytest_cache/
 
+# ─── Временные файлы ───
+*.tmp
+*.temp
+*.swp
+*.swo
+*.swn
+*~
+.DS_Store
+Thumbs.db
 
-# ─── Приватные папки (НЕ публиковать!) ───
+# ─── Бэкапы (личное) ───
 backups/
-reports/
-snapshots/
-snapshots_full/
-runs/
-node_modules/
-.cache/
-dist/
-build/
-AI_MEMORY/
-test/
-PROJECT/
 logs/
-Тексты/
-Чат/
-Корзина/
-Резервные копии/
-депсеку дать посмотреть/
-1opml/
-RSS_lenta/
-
-
-# ─── Дополнительно: бэкапы с датами и суффиксами ───
-*.bak-*
-*.bak_*
-*.backup_*
-*.save
-*.save.*
-*.old-*
-
-# Дополнительно: русские имена с скобками (правило 42)
-**/*дубль*
-**/*копия*
-**/*(копия)*
-**/*(1копия)*
-**/*(70копия)*
-**/*(автомат)*
-**/*с_деморежимом*
-**/новый файл
-**/*ЛОГИ_И_РОТАЦИЯ*
-**/* (1-я копия)*
-
-# Промежуточные снапшоты (не публикуем — их слишком много)
-data/raw/**
-data/warehouse/incoming/**
-data/analytics/rss-history/**
-
-# Бэкапы OPML
-data/feeds/*.bak-*
-data/feeds/*.bak_*
-
-
-# Дубликаты README
-README.en.md
-README_ru.md
-README_en.md
-CRUCIX_FULL_REGISTRY.txt
-
-# ─── Дополнительно (очистка 24.09.2026) ───
+*.bak
 *.bak2
-*.bak_*
+*.bak[0-9]
+*.bak[0-9][0-9]
 *.bak-*
+*.bak_*
 *.bak.*
+*.backup
 *.backup_*
 *.backup-*
 *.backup.*
+*.old
+*.old-*
 *.orig
 *.rej
-*.swn
-*.temp
-*.log.*
+*.save
+*.save.*
 *.dump
 *.sql.gz
 *.pid
 *.lock
 core.*
 *.core
-.DS_Store
-Thumbs.db
-.vscode/
-.idea/
+
+# ─── Архивы ───
+*.tar.gz
+*.zip
+*.7z
+*.log
+*.log.*
+
+# ─── Секреты и конфиги ───
+.env
+.env.local
+.env.*.local
+
+# ─── Приватные папки (НЕ публиковать!) ───
+reports/
+snapshots/
+snapshots_full/
+runs/
 .cache/
 .parcel-cache/
 .next/
@@ -145,46 +72,55 @@ build/
 coverage/
 .nyc_output/
 .turbo/
-data/raw/**
-data/warehouse/incoming/**
-data/analytics/rss-history/**
-data/feeds/*.bak-*
-data/feeds/*.bak_*
+.vscode/
+.idea/
+AI_MEMORY/
+test/
+PROJECT/
+Тексты/
+Чат/
+Корзина/
+Резервные копии/
+депсеку дать посмотреть/
+1opml/
+RSS_lenta/
+
+# ─── Русские имена с скобками и суффиксами (правило 42) ───
+**/[А-Яа-яЁё]*.mjs
+**/*(копия)*
+**/*(copy)*
+**/*=*
+**/*дубль*
+**/*копия*
+**/*(1копия)*
+**/*(70копия)*
+**/*(автомат)*
+**/*с_деморежимом*
+**/новый файл
+**/*ЛОГИ_И_РОТАЦИЯ*
+**/* (1-я копия)*
+
+# ─── Дубликаты README / дампы ───
+README.en.md
+README_ru.md
+README_en.md
+CRUCIX_FULL_REGISTRY.txt
+*.mjs_
+{name}.mjs
+*с_логами*
+*_FULL_DUMP*
+dashboard/public/geo-map_FULL_DUMP.txt
 
 # ─── Личные файлы (не публиковать!) ───
 dashboard/public/geo-map/пресеты/чат депсека с алисой.txt
 dashboard/public/geo-map/пресеты/Универсальный роут для сервера
-111
+dashboard/public/geo-map/пресеты/
 jarvis_(панель_в_2_ряда.md
 collector-monitor-api-с_логами.md
-dashboard/public/geo-map/пресеты/
-
-# ─── Дубликаты / мусор ───
 dashboard/public/geo-map/js/111layers.js
 
-# ─── Дубликаты README ───
-README.en.md
-README_en.md
-
-# === Удалённые дубликаты и мусор ===
+# ─── Удалённые дубликаты и мусор ───
 apis/sources/collector-monitor-api[0-9].mjs
 apis/sources/collector-monitor-api_.mjs
 apis/sources/collector-monitor-api-*.mjs
 apis/sources/knowledge-graph.mjs_
-dashboard/public/geo-map_FULL_DUMP.txt
-*.bak
-*.bak[0-9]
-*.bak[0-9][0-9]
-*.backup
-*.old
-*.orig
-*.tmp
-*.swp
-*.swo
-*~
-*_FULL_DUMP*
-*.mjs_
-{name}.mjs
-*с_логами*
-*копия*
-*(копия)*

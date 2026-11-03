@@ -1,0 +1,387 @@
+{
+  "_meta": {
+    "version": "1.0",
+    "description": "Таксономия сущностей для C2 (taxonomy-multilayer). 3 слоя: entities (что), languages (как), contexts (почему).",
+    "updated": "2026-11-01"
+  },
+  "entities": {
+    "россия": {
+      "aliases": [
+        "россии",
+        "россия",
+        "россию",
+        "россией",
+        "рф",
+        "russia",
+        "russian federation"
+      ],
+      "type": "country",
+      "parent": null
+    },
+    "москва": {
+      "aliases": [
+        "москве",
+        "москвы",
+        "москва",
+        "москву",
+        "москвой",
+        "moscow"
+      ],
+      "type": "city",
+      "parent": "россия"
+    },
+    "украина": {
+      "aliases": [
+        "украине",
+        "украина",
+        "украины",
+        "украину",
+        "украиной",
+        "ukraine"
+      ],
+      "type": "country",
+      "parent": null
+    },
+    "киев": {
+      "aliases": [
+        "киеве",
+        "киева",
+        "киев",
+        "киеву",
+        "киевом",
+        "kyiv",
+        "kiev"
+      ],
+      "type": "city",
+      "parent": "украина"
+    },
+    "путин": {
+      "aliases": [
+        "путин",
+        "путина",
+        "путину",
+        "путиным",
+        "putin",
+        "vladimir putin"
+      ],
+      "type": "person",
+      "parent": null,
+      "role": "president"
+    },
+    "зеленский": {
+      "aliases": [
+        "зеленский",
+        "зеленского",
+        "зеленскому",
+        "зеленским",
+        "zelensky",
+        "zelenskyy"
+      ],
+      "type": "person",
+      "parent": null,
+      "role": "president"
+    },
+    "песков": {
+      "aliases": [
+        "песков",
+        "пескова",
+        "пескову",
+        "песковым",
+        "peskov"
+      ],
+      "type": "person",
+      "parent": null,
+      "role": "press_secretary"
+    },
+    "ушаков": {
+      "aliases": [
+        "ушаков",
+        "ушакова",
+        "ушакову",
+        "ушаковым",
+        "ushakov"
+      ],
+      "type": "person",
+      "parent": null,
+      "role": "aide"
+    },
+    "медведев": {
+      "aliases": [
+        "медведев",
+        "медведева",
+        "медведеву",
+        "медведевым",
+        "medvedev"
+      ],
+      "type": "person",
+      "parent": null,
+      "role": "deputy_chairman"
+    },
+    "новак": {
+      "aliases": [
+        "новак",
+        "новака",
+        "новаку",
+        "новаком",
+        "novak"
+      ],
+      "type": "person",
+      "parent": null,
+      "role": "deputy_pm"
+    },
+    "германия": {
+      "aliases": [
+        "германии",
+        "германия",
+        "германию",
+        "германией",
+        "germany"
+      ],
+      "type": "country",
+      "parent": null
+    },
+    "франция": {
+      "aliases": [
+        "франции",
+        "франция",
+        "францию",
+        "францией",
+        "france"
+      ],
+      "type": "country",
+      "parent": null
+    },
+    "нидерланды": {
+      "aliases": [
+        "нидерландах",
+        "нидерланды",
+        "нидерландов",
+        "netherlands",
+        "holland"
+      ],
+      "type": "country",
+      "parent": null
+    },
+    "сша": {
+      "aliases": [
+        "сша",
+        "соединенных штатов",
+        "америка",
+        "америке",
+        "usa",
+        "united states",
+        "us"
+      ],
+      "type": "country",
+      "parent": null
+    },
+    "трамп": {
+      "aliases": [
+        "трамп",
+        "трампа",
+        "трампу",
+        "трампом",
+        "trump",
+        "donald trump"
+      ],
+      "type": "person",
+      "parent": null,
+      "role": "president"
+    },
+    "европа": {
+      "aliases": [
+        "европе",
+        "европа",
+        "европы",
+        "европу",
+        "europe",
+        "eu",
+        "евросоюз"
+      ],
+      "type": "region",
+      "parent": null
+    },
+    "оон": {
+      "aliases": [
+        "оон",
+        "объединенных наций",
+        "un",
+        "united nations"
+      ],
+      "type": "organization",
+      "parent": null
+    },
+    "байден": {
+      "aliases": [
+        "байден",
+        "байдена",
+        "байдену",
+        "biden",
+        "joe biden"
+      ],
+      "type": "person",
+      "parent": null,
+      "role": "president"
+    },
+    "макрон": {
+      "aliases": [
+        "макрон",
+        "макрона",
+        "макрону",
+        "macron",
+        "emmanuel macron"
+      ],
+      "type": "person",
+      "parent": null,
+      "role": "president"
+    },
+    "великобритания": {
+      "aliases": [
+        "великобритании",
+        "великобритания",
+        "великобританию",
+        "britain",
+        "uk",
+        "united kingdom"
+      ],
+      "type": "country",
+      "parent": null
+    },
+    "лондон": {
+      "aliases": [
+        "лондоне",
+        "лондон",
+        "лондона",
+        "london"
+      ],
+      "type": "city",
+      "parent": "великобритания"
+    },
+    "китай": {
+      "aliases": [
+        "китае",
+        "китай",
+        "китая",
+        "китаю",
+        "china",
+        "китайский"
+      ],
+      "type": "country",
+      "parent": null
+    },
+    "пекин": {
+      "aliases": [
+        "пекине",
+        "пекин",
+        "пекина",
+        "beijing"
+      ],
+      "type": "city",
+      "parent": "китай"
+    },
+    "нато": {
+      "aliases": [
+        "нато",
+        "nato"
+      ],
+      "type": "organization",
+      "parent": null
+    },
+    "ес": {
+      "aliases": [
+        "ес",
+        "евросоюзе",
+        "евросоюза",
+        "eu",
+        "european union"
+      ],
+      "type": "organization",
+      "parent": null
+    }
+  },
+  "languages": {
+    "russian": [
+      "ru",
+      "русский"
+    ],
+    "western": [
+      "en",
+      "английский",
+      "english"
+    ],
+    "neutral": []
+  },
+  "contexts": {
+    "politics": [
+      "политик",
+      "выбор",
+      "президент",
+      "парламент",
+      "саммит",
+      "переговор"
+    ],
+    "economy": [
+      "экономик",
+      "инфляц",
+      "ввп",
+      "бюджет",
+      "налог",
+      "банк"
+    ],
+    "conflict": [
+      "конфликт",
+      "войн",
+      "удар",
+      "атак",
+      "обстрел",
+      "взрыв",
+      "сво"
+    ],
+    "energy": [
+      "энерг",
+      "нефт",
+      "газ",
+      "аэс",
+      "электро",
+      "топлив"
+    ],
+    "cyber": [
+      "кибер",
+      "хакер",
+      "утечк",
+      "взлом",
+      "ddos"
+    ],
+    "sport": [
+      "спорт",
+      "матч",
+      "чемпионат",
+      "олимпиад",
+      "футбол",
+      "хокке"
+    ],
+    "culture": [
+      "культур",
+      "фильм",
+      "концерт",
+      "фестивал",
+      "выставк",
+      "премьер"
+    ],
+    "health": [
+      "здоров",
+      "болезн",
+      "эпидем",
+      "вакцин",
+      "ковид",
+      "врач"
+    ]
+  },
+  "settings": {
+    "min_entity_mentions": 2,
+    "group_entities_by_parent": true,
+    "apply_context_filter": false,
+    "group_persons_by_parent": false,
+    "group_cities_by_parent": true
+  }
+}

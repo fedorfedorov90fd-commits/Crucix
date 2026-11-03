@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Нарративы — Crucix</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0a0a1a; color: #e0e0e0; font-family: -apple-system, 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+    .topbar { position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(10,10,20,0.95); backdrop-filter: blur(12px); border-bottom: 2px solid rgba(91,192,248,0.25); z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
+    .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; }
+    .topbar-btn { height: 28px; padding: 0 12px; border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; background: rgba(255,255,255,0.03); color: #888; font-size: 11px; text-transform: uppercase; cursor: pointer; }
+    .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); }
+    .main-content { padding-top: 80px; max-width: 1440px; margin: 0 auto; padding-left: 20px; padding-right: 20px; padding-bottom: 40px; }
+    .page-title { font-size: 28px; font-weight: 700; color: #e8f0f8; margin-bottom: 8px; }
+    .page-subtitle { color: #8899aa; font-size: 14px; margin-bottom: 24px; }
+    .section-title { font-size: 14px; font-weight: 600; color: #8899aa; margin: 24px 0 8px; text-transform: uppercase; }
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-brand">⚖️ НАРРАТИВЫ</div>
+  <div style="display:flex;gap:6px;">
+    <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+    <button class="topbar-btn btn-home" onclick="window.location.href='/dashboard-signals'">🚨 Сигналы</button>
+    <button class="topbar-btn btn-home" onclick="window.location.href='/dashboard-news'">📰 Новости</button>
+  </div>
+</header>
+<main class="main-content">
+  <div class="page-title">⚖️ Narrative Contrast — запад vs РФ</div>
+  <div class="page-subtitle">Scatter: западный охват (X) vs российский охват (Y). Диагональ = паритет.</div>
+
+  <div class="section-title">Scatter — запад vs РФ</div>
+  <div id="narrative-scatter"></div>
+
+  <div class="section-title">Source Matrix — сравнение тем</div>
+  <div id="source-matrix"></div>
+</main>
+<script type="module" src="/widgets/narrative-scatter.js"></script>
+<script type="module" src="/widgets/source-matrix.js"></script>
+</body>
+</html>

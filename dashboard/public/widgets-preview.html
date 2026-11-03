@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Widgets Preview — Crucix (11)</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0a0a1a; color: #e0e0e0; font-family: -apple-system, 'Segoe UI', system-ui, sans-serif; padding: 20px; }
+    h1 { color: #5bc0f8; font-size: 20px; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; }
+    h2 { color: #8899aa; font-size: 14px; margin: 24px 0 8px; }
+    .row { margin-bottom: 24px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Widgets Preview — 11 из 11</h1>
+
+  <h2>1. Ticker (бегущая строка)</h2>
+  <div id="ticker" class="row"></div>
+
+  <div class="grid-2">
+    <div>
+      <h2>2. Word Cloud</h2>
+      <div id="wordcloud" class="row"></div>
+    </div>
+    <div>
+      <h2>3. Pie</h2>
+      <div id="pie" class="row"></div>
+    </div>
+  </div>
+
+  <h2>4. Source Matrix</h2>
+  <div id="source-matrix" class="row"></div>
+
+  <h2>5. Real Chart (Plotly)</h2>
+  <div id="real-chart" class="row"></div>
+
+  <h2>6. RSS-Map (Leaflet)</h2>
+  <div id="rss-map" class="row"></div>
+
+  <h2>7. RSS-Graph</h2>
+  <div id="rss-graph" class="row"></div>
+
+  <h2>8. Articles — 20 последних</h2>
+  <div id="articles" class="row"></div>
+
+  <h2>9. Sources Table</h2>
+  <div id="sources-table" class="row"></div>
+
+  <h2>10. Narrative Scatter</h2>
+  <div id="narrative-scatter" class="row"></div>
+
+  <h2>11. Coordination Heatmap</h2>
+  <div id="coordination-heatmap" class="row"></div>
+
+  <script type="module" src="/widgets/ticker.js"></script>
+  <script type="module" src="/widgets/wordcloud.js"></script>
+  <script type="module" src="/widgets/pie.js"></script>
+  <script type="module" src="/widgets/source-matrix.js"></script>
+  <script type="module" src="/widgets/real-chart.js"></script>
+  <script type="module" src="/widgets/rss-map.js"></script>
+  <script type="module" src="/widgets/rss-graph.js"></script>
+  <script type="module" src="/widgets/articles.js"></script>
+  <script type="module" src="/widgets/sources-table.js"></script>
+  <script type="module" src="/widgets/narrative-scatter.js"></script>
+  <script type="module" src="/widgets/coordination-heatmap.js"></script>
+</body>
+</html>

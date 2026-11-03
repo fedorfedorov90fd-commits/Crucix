@@ -691,7 +691,17 @@ const CARD_CONFIG = [
 
     // === MCP И DAILY BRIEFING ===
     { id: 'mcp-server', number: '34', icon: '🔌', name: 'MCP-сервер', source: 'Crucix', url: '/mcp-server', api: '/api/mcp/tools', key: 'tools' },
-    { id: 'daily-briefing', number: '35', icon: '📋', name: 'Daily Briefing', source: 'Crucix', url: '/daily-briefing', api: '/api/daily-briefing/', key: 'summary' }
+    { id: 'daily-briefing', number: '35', icon: '📋', name: 'Daily Briefing', source: 'Crucix', url: '/daily-briefing', api: '/api/daily-briefing/', key: 'summary' },
+
+    // === НОВЫЕ RSS-КАРТОЧКИ (интеграция из песочницы) ===
+    { id: 'articles', number: '36', icon: '📰', name: 'Статьи RSS', source: 'basket/rss-latest.json', url: '/api/layers/articles', api: '/api/layers/articles/stats', key: 'count' },
+    { id: 'sources', number: '37', icon: '📡', name: 'Источники RSS', source: 'basket/rss-latest.json', url: '/api/layers/sources', api: '/api/layers/sources/stats', key: 'count' },
+    { id: 'rss-stats', number: '38', icon: '📊', name: 'Агрегаты RSS', source: 'basket/rss-latest.json', url: '/api/layers/rss-stats', api: '/api/layers/rss-stats/stats', key: 'total' },
+    { id: 'silence', number: '39', icon: '🔇', name: 'Инфотишина', source: 'basket/silence.json', url: '/api/layers/silence', api: '/api/layers/silence/stats', key: 'count' },
+    { id: 'taxonomy-gaps', number: '40', icon: '🔍', name: 'Тематические gaps', source: 'basket/taxonomy-gaps.json', url: '/api/layers/taxonomy-gaps', api: '/api/layers/taxonomy-gaps/stats', key: 'count' },
+    { id: 'narrative-framing', number: '41', icon: '⚖️', name: 'Фрейминг нарративов', source: 'basket/narrative-framing.json', url: '/api/layers/narrative-framing', api: '/api/layers/narrative-framing/stats', key: 'count' },
+    { id: 'alerts', number: '42', icon: '🚨', name: 'Алерты', source: 'basket/alerts.json', url: '/api/layers/alerts', api: '/api/layers/alerts/stats', key: 'count' },
+    { id: 'events', number: '43', icon: '📅', name: 'События', source: 'basket/rsshub.json + taxonomy.json', url: '/api/layers/events', api: '/api/layers/events/stats', key: 'count' }
 ];
 
 // ============================================================

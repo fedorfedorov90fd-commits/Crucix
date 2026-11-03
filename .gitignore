@@ -101,10 +101,6 @@ RSS_lenta/
 **/* (1-я копия)*
 
 # ─── Дубликаты README / дампы ───
-README.en.md
-README_ru.md
-README_en.md
-CRUCIX_FULL_REGISTRY.txt
 *.mjs_
 {name}.mjs
 *с_логами*
@@ -124,3 +120,33 @@ apis/sources/collector-monitor-api[0-9].mjs
 apis/sources/collector-monitor-api_.mjs
 apis/sources/collector-monitor-api-*.mjs
 apis/sources/knowledge-graph.mjs_
+
+data/raw/
+data/help/ru/
+config/reference-backup/
+
+
+
+
+
+
+
+
+
+
+
+
+# ─── Исходники справочников (готовые продукты в data/reference/) ───
+config/reference/cities.json
+config/reference/cities-lookup.json
+config/reference/iso-3166-1.json
+config/reference/sanctions.jsonl
+config/reference/sanctions-lookup.json
+
+# ─── Runtime-история RSS (пересоздаётся, не образец) ───
+data/analytics/rss-history/
+
+# ─── Временные файлы warehouse ───
+data/warehouse/incoming/
+data/warehouse/*.tmp
+*.pre-patch*

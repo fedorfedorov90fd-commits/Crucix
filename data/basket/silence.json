@@ -1,0 +1,62 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "silence",
+    "source": "rsshub.json",
+    "collected_at": "2026-11-01T16:19:11.082Z",
+    "collector": "collect-silence.mjs",
+    "count": 3,
+    "total_items": 500,
+    "description": "Детектор информационной тишины: аномальные падения потока по группам источников"
+  },
+  "regions": [
+    {
+      "id": "russian",
+      "name": "Российские СМИ",
+      "lat": 60,
+      "lng": 100,
+      "status": "normal",
+      "drop": 0,
+      "baseline": 443,
+      "current": 443,
+      "category": "source_group",
+      "region": "russian",
+      "since": "2026-10-31T16:19:11.080Z",
+      "notes": "baseline=443 (нет истории, baseline=current), current=443",
+      "source": "rsshub"
+    },
+    {
+      "id": "western",
+      "name": "Западные СМИ",
+      "lat": 50,
+      "lng": 0,
+      "status": "normal",
+      "drop": 0,
+      "baseline": 48,
+      "current": 48,
+      "category": "source_group",
+      "region": "western",
+      "since": "2026-10-31T16:19:11.080Z",
+      "notes": "baseline=48 (нет истории, baseline=current), current=48",
+      "source": "rsshub"
+    },
+    {
+      "id": "neutral",
+      "name": "Нейтральные СМИ",
+      "lat": 20,
+      "lng": 30,
+      "status": "normal",
+      "drop": 0,
+      "baseline": 9,
+      "current": 9,
+      "category": "source_group",
+      "region": "neutral",
+      "since": "2026-10-31T16:19:11.080Z",
+      "notes": "baseline=9 (нет истории, baseline=current), current=9",
+      "source": "rsshub"
+    }
+  ],
+  "series": [],
+  "points": [],
+  "documents": []
+}

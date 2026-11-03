@@ -399,6 +399,11 @@
       .cards-grid { grid-template-columns: 1fr; }
     }
   </style>
+
+    <!-- Библиотеки для виджетов -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
 </head>
 <body>
 
@@ -480,6 +485,81 @@
   </div>
 
   <div class="feed"><div class="title">📋 Поток событий</div><div id="feedList"></div></div>
+
+    <!-- ============================================================
+         RSS-ВИДЖЕТЫ (11 штук, интеграция из песочницы)
+         ============================================================ -->
+    <div style="margin-top:32px;padding-top:24px;border-top:2px solid rgba(91,192,248,0.15);">
+        <h2 style="font-size:18px;font-weight:700;color:#5bc0f8;margin-bottom:16px;text-transform:uppercase;letter-spacing:1px;">
+            📡 RSS-Виджеты — 11 штук
+        </h2>
+
+        <!-- 1. Ticker -->
+        <div style="margin-bottom:16px;">
+            <div style="font-size:13px;font-weight:600;color:#8899aa;margin-bottom:8px;">🚨 1. Ticker — критические алерты</div>
+            <div id="ticker"></div>
+        </div>
+
+        <!-- 2+3. Word Cloud + Pie (grid 2) -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+            <div>
+                <div style="font-size:13px;font-weight:600;color:#8899aa;margin-bottom:8px;">☁️ 2. Word Cloud</div>
+                <div id="wordcloud"></div>
+            </div>
+            <div>
+                <div style="font-size:13px;font-weight:600;color:#8899aa;margin-bottom:8px;">🥧 3. Pie</div>
+                <div id="pie"></div>
+            </div>
+        </div>
+
+        <!-- 4. Source Matrix -->
+        <div style="margin-bottom:16px;">
+            <div style="font-size:13px;font-weight:600;color:#8899aa;margin-bottom:8px;">📊 4. Source Matrix</div>
+            <div id="source-matrix"></div>
+        </div>
+
+        <!-- 5. Real Chart -->
+        <div style="margin-bottom:16px;">
+            <div style="font-size:13px;font-weight:600;color:#8899aa;margin-bottom:8px;">📈 5. Real Chart (Plotly)</div>
+            <div id="real-chart"></div>
+        </div>
+
+        <!-- 6. RSS-Map -->
+        <div style="margin-bottom:16px;">
+            <div style="font-size:13px;font-weight:600;color:#8899aa;margin-bottom:8px;">🗺️ 6. RSS-Map (Leaflet)</div>
+            <div id="rss-map"></div>
+        </div>
+
+        <!-- 7. RSS-Graph -->
+        <div style="margin-bottom:16px;">
+            <div style="font-size:13px;font-weight:600;color:#8899aa;margin-bottom:8px;">🕸️ 7. RSS-Graph</div>
+            <div id="rss-graph"></div>
+        </div>
+
+        <!-- 8. Articles -->
+        <div style="margin-bottom:16px;">
+            <div style="font-size:13px;font-weight:600;color:#8899aa;margin-bottom:8px;">📰 8. Articles — 20 последних</div>
+            <div id="articles"></div>
+        </div>
+
+        <!-- 9. Sources Table -->
+        <div style="margin-bottom:16px;">
+            <div style="font-size:13px;font-weight:600;color:#8899aa;margin-bottom:8px;">📡 9. Sources Table</div>
+            <div id="sources-table"></div>
+        </div>
+
+        <!-- 10. Narrative Scatter -->
+        <div style="margin-bottom:16px;">
+            <div style="font-size:13px;font-weight:600;color:#8899aa;margin-bottom:8px;">⚖️ 10. Narrative Scatter</div>
+            <div id="narrative-scatter"></div>
+        </div>
+
+        <!-- 11. Coordination Heatmap -->
+        <div style="margin-bottom:16px;">
+            <div style="font-size:13px;font-weight:600;color:#8899aa;margin-bottom:8px;">🔗 11. Coordination Heatmap</div>
+            <div id="coordination-heatmap"></div>
+        </div>
+    </div>
 </main>
 
 <script>
@@ -677,5 +757,18 @@ async function updateDashboard() {
 updateDashboard();
 setInterval(updateDashboard, 30000);
 </script>
+
+    <!-- 11 виджетов -->
+    <script type="module" src="/widgets/ticker.js"></script>
+    <script type="module" src="/widgets/wordcloud.js"></script>
+    <script type="module" src="/widgets/pie.js"></script>
+    <script type="module" src="/widgets/source-matrix.js"></script>
+    <script type="module" src="/widgets/real-chart.js"></script>
+    <script type="module" src="/widgets/rss-map.js"></script>
+    <script type="module" src="/widgets/rss-graph.js"></script>
+    <script type="module" src="/widgets/articles.js"></script>
+    <script type="module" src="/widgets/sources-table.js"></script>
+    <script type="module" src="/widgets/narrative-scatter.js"></script>
+    <script type="module" src="/widgets/coordination-heatmap.js"></script>
 </body>
 </html>

@@ -2,18 +2,18 @@
   "meta": {
     "schema_version": "crucix.registry.basket.v1",
     "generated_by": "server/build-registry.mjs",
-    "generated_at": "2026-09-30T08:10:34.515Z",
+    "generated_at": "2026-11-03T19:28:41.086Z",
     "description": "Детальный реестр корзины Crucix (data/basket/*.json). Источник: server/registry.generated.json и прямой скан файлов.",
     "help_ru_link": "docs/help/ru/basket/README.md",
     "help_en_link": "docs/help/en/basket/README.md",
     "source_dir": "data/basket",
-    "total_files": 260,
-    "total_with_meta": 118,
-    "total_without_meta": 142,
+    "total_files": 264,
+    "total_with_meta": 117,
+    "total_without_meta": 147,
     "by_status": {
-      "active": 118,
-      "legacy": 0,
-      "unknown": 142
+      "active": 117,
+      "legacy": 4,
+      "unknown": 143
     }
   },
   "items": [
@@ -122,6 +122,32 @@
       "status": "unknown",
       "help_ru_link": "docs/help/ru/basket/air-quality.md",
       "help_en_link": "docs/help/en/basket/air-quality.md",
+      "parse_error": null
+    },
+    {
+      "id": "alerts",
+      "file": "data/basket/alerts.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": false,
+      "missing_meta_fields": [
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "license",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "alerts-api"
+      ],
+      "writers": [
+        "collect-alerts.mjs"
+      ],
+      "status": "legacy",
+      "help_ru_link": "docs/help/ru/basket/alerts.md",
+      "help_en_link": "docs/help/en/basket/alerts.md",
       "parse_error": null
     },
     {
@@ -1475,9 +1501,7 @@
         "value_type"
       ],
       "series_len": 0,
-      "readers": [
-        "events-api"
-      ],
+      "readers": [],
       "writers": [],
       "status": "unknown",
       "help_ru_link": "docs/help/ru/basket/events.md",
@@ -3133,6 +3157,32 @@
       "parse_error": null
     },
     {
+      "id": "narrative-framing",
+      "file": "data/basket/narrative-framing.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": false,
+      "missing_meta_fields": [
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "license",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "narrative-framing-api"
+      ],
+      "writers": [
+        "collect-narrative-framing.mjs"
+      ],
+      "status": "legacy",
+      "help_ru_link": "docs/help/ru/basket/narrative-framing.md",
+      "help_en_link": "docs/help/en/basket/narrative-framing.md",
+      "parse_error": null
+    },
+    {
       "id": "news",
       "file": "data/basket/news.json",
       "schema": "crucix.basket.v1",
@@ -4413,17 +4463,28 @@
     {
       "id": "rsshub",
       "file": "data/basket/rsshub.json",
-      "schema": "crucix.basket.v1",
-      "has_meta": true,
-      "missing_meta_fields": [],
-      "series_len": 1,
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
       "readers": [
+        "articles-api",
         "rss-feeds-api"
       ],
-      "writers": [
-        "collect-rsshub.mjs"
-      ],
-      "status": "active",
+      "writers": [],
+      "status": "unknown",
       "help_ru_link": "docs/help/ru/basket/rsshub.md",
       "help_en_link": "docs/help/en/basket/rsshub.md",
       "parse_error": null
@@ -4728,6 +4789,32 @@
       "status": "unknown",
       "help_ru_link": "docs/help/ru/basket/shodan.md",
       "help_en_link": "docs/help/en/basket/shodan.md",
+      "parse_error": null
+    },
+    {
+      "id": "silence",
+      "file": "data/basket/silence.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": false,
+      "missing_meta_fields": [
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "license",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "silence-api"
+      ],
+      "writers": [
+        "collect-silence.mjs"
+      ],
+      "status": "legacy",
+      "help_ru_link": "docs/help/ru/basket/silence.md",
+      "help_en_link": "docs/help/en/basket/silence.md",
       "parse_error": null
     },
     {
@@ -5050,6 +5137,32 @@
       "status": "unknown",
       "help_ru_link": "docs/help/ru/basket/tass.md",
       "help_en_link": "docs/help/en/basket/tass.md",
+      "parse_error": null
+    },
+    {
+      "id": "taxonomy-gaps",
+      "file": "data/basket/taxonomy-gaps.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": false,
+      "missing_meta_fields": [
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "license",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "taxonomy-gaps-api"
+      ],
+      "writers": [
+        "collect-taxonomy-gaps.mjs"
+      ],
+      "status": "legacy",
+      "help_ru_link": "docs/help/ru/basket/taxonomy-gaps.md",
+      "help_en_link": "docs/help/en/basket/taxonomy-gaps.md",
       "parse_error": null
     },
     {

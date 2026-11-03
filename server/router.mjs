@@ -53,6 +53,48 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { randomUUID } from 'crypto';
 
+import LEGACY_ALIASES from './legacy-aliases.generated.json' with { type: 'json' };
+
+// ============================================================
+// LEGACY-АЛИАСЫ (для старых страниц: /api/vix/ → /api/layers/vix)
+// ============================================================
+// Проблема: старые страницы (dashboard-5in1.html, dashboard-ai.html, etc.)
+// вызывают /api/vix/, /api/dxy/, /api/inflation/ — но эти API теперь
+// только в /api/layers/vix/, /api/layers/dxy/, etc.
+//
+// Решение: прозрачный редирект на уровне роутера. Страницы не меняются,
+// но получают данные из v2.
+//
+// Это НЕ удаление. Это ремонт: старые страницы работают.
+
+// LEGACY_ALIASES импортируется из ./legacy-aliases.generated.json
+// (см. server/build-legacy-aliases.mjs). Не редактировать вручную!
+
+function resolveLegacyAlias(pathname) {
+  // CRUCIX FIX (build 332): срезаем trailing slash для матчинга.
+  // /api/copper-gold/ → /api/copper-gold (в LEGACY_ALIASES без /).
+  const _clean = pathname.endsWith('/') && pathname.length > 1
+    ? pathname.slice(0, -1)
+    : pathname;
+  if (LEGACY_ALIASES[_clean]) return LEGACY_ALIASES[_clean];
+  if (LEGACY_ALIASES[_clean + '/']) return LEGACY_ALIASES[_clean + '/'];
+
+  if (!pathname || !pathname.startsWith('/api/')) return null;
+  if (pathname.startsWith('/api/layers/')) return null;
+  if (pathname.startsWith('/api/services/')) return null;
+  if (pathname.startsWith('/api/registry')) return null;
+  if (pathname.startsWith('/api/legacy')) return null;
+
+  for (const [oldPath, newPath] of Object.entries(LEGACY_ALIASES)) {
+    if (pathname === oldPath || pathname.startsWith(oldPath + '/')) {
+      return newPath + pathname.slice(oldPath.length);
+    }
+  }
+  return null;
+}
+
+
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
 const PROJECT_ROOT = join(__dirname, '..');
@@ -291,6 +333,13 @@ function matchRoute(route, pathname) {
 }
 
 function findRoute(pathname) {
+  // LEGACY-АЛИАС: /api/vix/ → /api/layers/vix
+  const _legacyPath = resolveLegacyAlias(pathname);
+  if (_legacyPath) {
+    console.log('[LEGACY] ' + pathname + ' → ' + _legacyPath);
+    pathname = _legacyPath;
+  }
+
   if (!state.registry) return null;
   let best = null;
   for (const route of Object.keys(state.registry.routes)) {
@@ -912,6 +961,19 @@ export async function handleAPI(req, res, pathname) {
     return true;
   }
 
+  // CRUCIX FIX (build 314): обновляем req.url для LEGACY-редиректа ДО findRoute.
+  // findRoute сам делает resolveLegacyAlias, но модули внутри handler
+  // читают req.url и ждут уже переписанный путь (иначе 404 для 57 модулей).
+  {
+    const _legacyPath = resolveLegacyAlias(pathname);
+    if (_legacyPath && _legacyPath !== pathname) {
+      const _search = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+      req._originalUrl = req.url;
+      req.legacyRedirect = { from: pathname, to: _legacyPath };
+      req.url = _legacyPath + _search;
+    }
+  }
+
   const match = findRoute(pathname);
   if (!match) {
     sendJSON(res, 404, { error: 'route_not_found', path: pathname });
@@ -1000,7 +1062,7 @@ export async function handleAPI(req, res, pathname) {
     finalHeaders['Content-Length'] = String(finalBody.length);
     originalWriteHead(status, finalHeaders);
 
-    if (CONFIG.gzip.enabled && finalBody.length >= CONFIG.gzip.minBytes && /\bgzip\b/.test(req.headers['accept-encoding'] || '')) {
+    if (CONFIG.gzip.enabled && !pathname.startsWith('/api/rss') && finalBody.length >= CONFIG.gzip.minBytes && /\bgzip\b/.test(req.headers['accept-encoding'] || '')) {
       originalSetHeader('Content-Encoding', 'gzip');
       const gz = createGzip();
       gz.on('data', d => originalWrite(d));
@@ -1022,15 +1084,48 @@ export async function handleAPI(req, res, pathname) {
     return res;
   };
 
+  // CRUCIX FIX (build 321): idempotent res.end.
+  // Promise.race не отменяет handler — если timeout победил, handler
+  // продолжает работать и может сделать res.end() ПОСЛЕ router.mjs.
+  // Это вызывает "Cannot set headers after they are sent".
+  // Решение: обернуть res.end — второй вызов становится no-op.
+  let _resEnded = false;
+  let _resHeadersWritten = false;
+  const _origResEnd = res.end.bind(res);
+  const _origResWriteHead = res.writeHead.bind(res);
+  
+  // CRUCIX FIX (build 326): обёртка res.end + res.writeHead.
+  // Оба должны быть idempotent, иначе "Cannot set headers after they are sent".
+  res.end = function (...args) {
+    if (_resEnded || res.writableEnded || res.destroyed) {
+      if (CONFIG.dev) console.warn('[router] duplicate res.end ignored for', pathname);
+      return res;
+    }
+    _resEnded = true;
+    return _origResEnd(...args);
+  };
+  
+  res.writeHead = function (...args) {
+    if (_resEnded || _resHeadersWritten || res.writableEnded || res.destroyed) {
+      if (CONFIG.dev) console.warn('[router] duplicate res.writeHead ignored for', pathname);
+      return res;
+    }
+    _resHeadersWritten = true;
+    return _origResWriteHead(...args);
+  };
+
   try {
     const loaded = await loadModule(moduleId, file);
     const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('handler_timeout')), CONFIG.timeout.handlerMs));
     await Promise.race([loaded.handler(req, res), timeout]);
   } catch (e) {
     const status = e.message === 'handler_timeout' ? 504 : 500;
-    if (!res.headersSent) {
-      originalWriteHead(status, { 'Content-Type': 'application/json' });
-      originalEnd(JSON.stringify({
+    // CRUCIX FIX (build 324): используем res.writeHead/res.end (обёрнутые),
+    // а не originalWriteHead/originalEnd (оригинальные). Иначе idempotent-обёртка
+    // пропускается, и получается второй res.end → "Cannot set headers".
+    if (!res.headersSent && !res.writableEnded) {
+      res.writeHead(status, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
         error: status === 504 ? 'handler_timeout' : 'handler_threw',
         moduleId,
         message: e.message,

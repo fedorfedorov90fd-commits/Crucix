@@ -45,6 +45,21 @@ const STATUS_FALLBACK = join(PROJECT_ROOT, 'data', 'geo', 'status.json');
 const BOUNDARIES_FILE = join(PROJECT_ROOT, 'data', 'geo', 'world.geojson');
 const INDEX_FILE = join(PROJECT_ROOT, 'data', 'geo', 'index-history.json');
 
+// Универсальный asArray: приводим любой ответ к массиву.
+// Причина: geo-markers.json может быть { markers: [...] }, { items: [...] }
+// или плоским массивом. Без этой функции handler падает на .map().
+function asArray(d) {
+  if (!d) return [];
+  if (Array.isArray(d)) return d;
+  if (typeof d !== 'object') return [];
+  if (Array.isArray(d.markers)) return d.markers;
+  if (Array.isArray(d.items)) return d.items;
+  if (Array.isArray(d.data)) return d.data;
+  if (Array.isArray(d.features)) return d.features;
+  if (d.data) return asArray(d.data);
+  return [];
+}
+
 export const route = '/api/layers/geo-markers';
 export const method = 'GET';
 
@@ -135,6 +150,21 @@ async function loadMarkers() {
 }
 
 
+
+async function loadStatuses() {
+  // Загружаем статусы стран из country-status.json (fallback: status.json).
+  // Возвращает объект { countries: {...} } или массив.
+  for (const file of [STATUS_FILE, STATUS_FALLBACK]) {
+    try {
+      const raw = await fs.readFile(file, 'utf8');
+      return JSON.parse(raw);
+    } catch (e) {
+      if (e.code === 'ENOENT') continue;
+      throw e;
+    }
+  }
+  return null;
+}
 
 async function loadBoundariesRaw() {
   try { return await fs.readFile(BOUNDARIES_FILE, 'utf8'); }
@@ -373,7 +403,7 @@ export async function handler(req, res) {
       return sendJSON(res, status, { error: status === 503 ? 'no_data' : 'handler_error', message: markersError.message, hint: markersError.hint }, extra);
     }
 
-    const all = (rawMarkers || []).map(normalizeMarker);
+    const all = asArray(rawMarkers).map(normalizeMarker);
 
     // ============================================================
     //  /markers
@@ -433,10 +463,16 @@ export async function handler(req, res) {
         byCountry[r.country].count++;
         byCountry[r.country].by_status[r.status] = (byCountry[r.country].by_status[r.status] || 0) + 1;
       }
+      // CRUCIX FIX (build 333): country-status.json имеет { countries: {...} } (объект).
+      // Object.values приводит к массиву. Array.isArray проверяет.
       const statuses = await loadStatuses();
       let statusRows = [];
       if (statuses) {
-        const list = Array.isArray(statuses) ? statuses : (statuses.countries || statuses.data || Object.values(statuses));
+        let list;
+        if (Array.isArray(statuses)) list = statuses;
+        else if (statuses.countries) list = Object.values(statuses.countries);
+        else if (statuses.data) list = Array.isArray(statuses.data) ? statuses.data : Object.values(statuses.data);
+        else list = Object.values(statuses);
         statusRows = list.map(normalizeCountryStatus).filter(Boolean);
       }
       return sendJSON(res, 200, {

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>__TITLE__ — Crucix Sandbox</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0a0a1a; color: #e0e0e0; font-family: -apple-system, 'Segoe UI', sans-serif; min-height: 100vh; }
+    .header { padding: 16px 20px; border-bottom: 1px solid #1a1a2e; display: flex; justify-content: space-between; align-items: center; }
+    .header h1 { font-size: 18px; color: #5bc0f8; }
+    .header a { color: #5bc0f8; text-decoration: none; font-size: 13px; }
+    .content { padding: 20px; max-width: 1440px; margin: 0 auto; }
+    .error { color: #ef4444; padding: 20px; background: rgba(239,68,68,0.1); border-radius: 8px; margin: 20px 0; }
+    .loading { color: #8899aa; padding: 20px; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1>__TITLE__</h1>
+    <a href="/dashboard-5in1.html">← Центр аналитики</a>
+  </header>
+  <main class="content" id="app">
+    <div class="loading">Загрузка...</div>
+  </main>
+  <script type="module" src="/widgets/__SCRIPT__"></script>
+</body>
+</html>

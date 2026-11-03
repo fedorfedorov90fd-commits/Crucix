@@ -1,14 +1,11 @@
 /**
- * apis/sources/crypto-fear-api.mjs — API-МОДУЛЬ: КРИПТО-СТРАХ (BTC/ETH RATIO)
+ * apis/sources/crypto-fear-api.mjs — API-МОДУЛЬ: crypto-fear
  *
- * КОНТРАКТ CRUCIX v2.
- * ИСТОЧНИК: data/basket/crypto-fear.json — [{ date, btc, eth, ratio }].
+ * КОНТРАКТ CRUCIX v2 (Layer).
+ * ИСТОЧНИК: data/basket/crypto-fear.json
  * Сборщик: scripts/collectors/collect-crypto-fear.mjs.
  *
- * Крипто-индикатор страха: BTC, ETH, ratio BTC/ETH. Временной ряд + stats.
- *
- * ФОРМАТЫ: json (FC + series + stats), csv, series, stats, raw.
- * ФИЛЬТРЫ: ?since=, ?until=, ?limit=.
+ * Автосозданный fallback-API для crypto-fear.
  */
 
 import { promises as fs } from 'fs';
@@ -25,158 +22,78 @@ export const method = 'GET';
 
 export const meta = {
   category: 'finance',
-  icon: '📉',
-  color: '#ff8800',
-  vizType: 'series',
+  icon: '😱',
+  color: '#ef4444',
+  vizType: 'choropleth',
   source: 'basket/crypto-fear.json',
   collector: 'collect-crypto-fear.mjs',
-  cache: 300,
-  description: 'Крипто-страх: BTC, ETH, ratio',
-  unit: 'ratio',
+  cache: 120,
+  description: 'crypto-fear (автосозданный API)',
+  unit: 'value',
 };
 
-async function loadData() {
-  let raw;
-  try { raw = await fs.readFile(BASKET_FILE, 'utf8'); }
-  catch (e) {
+let _cache = null;
+let _cacheTime = 0;
+
+async function loadBasket() {
+  const now = Date.now();
+  if (_cache && (now - _cacheTime) < 2 * 60 * 1000) return _cache;
+
+  try {
+    const raw = await fs.readFile(BASKET_FILE, 'utf8');
+    const parsed = JSON.parse(raw);
+    _cache = { data: parsed, loaded_at: new Date().toISOString() };
+    _cacheTime = now;
+    return _cache;
+  } catch (e) {
     if (e.code === 'ENOENT') {
-      const err = new Error('no_data'); err.statusCode = 503;
-      err.hint = 'run scripts/collectors/collect-crypto-fear.mjs'; throw err;
+      return { data: null, error: 'not_found', hint: 'запустите collect-crypto-fear.mjs' };
     }
     throw e;
   }
-  let parsed;
-  try { parsed = JSON.parse(raw); }
-  catch (e) { const err = new Error('invalid_json_in_basket: ' + e.message); err.statusCode = 500; throw err; }
-
-  // --- basket v1 auto-convert (auto-patch) ---
-  if (parsed && !Array.isArray(parsed) && parsed.schema === 'crucix.basket.v1') {
-    parsed = (Array.isArray(parsed.points) && parsed.points.length ? parsed.points
-           : Array.isArray(parsed.series) && parsed.series.length ? parsed.series
-           : Array.isArray(parsed.regions) ? parsed.regions : []).map(r => {
-      const _ex = r.extra || {};
-      return { ...r, ..._ex,
-        lng: r.lng ?? r.lon,
-        longitude: r.longitude ?? r.lon,
-        magnitude: r.magnitude ?? r.value,
-        mag: r.mag ?? r.value,
-        severity: r.severity ?? r.value,
-        count: r.count ?? r.value,
-        score: r.score ?? r.value,
-        index: r.index ?? r.value,
-        amount: r.amount ?? r.value,
-        name: r.name ?? r.label,
-        title: r.title ?? r.label,
-        place: r.place ?? r.label,
-        date: r.date ?? (r.timestamp ? String(r.timestamp).slice(0, 10) : null),
-        time: r.time ?? r.timestamp,
-      };
-    });
-  }
-
-  if (!Array.isArray(parsed)) {
-    const err = new Error('unrecognized_basket_format: ожидался массив [{date,btc,eth,ratio}]'); err.statusCode = 500; throw err;
-  }
-  return parsed.map(r => ({
-    date: String(r.date || r.timestamp || '').slice(0, 10) || null,
-    btc: Number(r.btc ?? r.bitcoin),
-    eth: Number(r.eth ?? r.ethereum),
-    ratio: Number(r.ratio ?? r.value),
-  })).filter(r => Number.isFinite(r.ratio)).sort((a, b) => (a.date || '').localeCompare(b.date || ''));
-}
-
-function applyFilters(rows, query) {
-  let r = rows.slice();
-  if (query.since) r = r.filter(x => !x.date || x.date >= String(query.since).slice(0, 10));
-  if (query.until) r = r.filter(x => !x.date || x.date <= String(query.until).slice(0, 10));
-  if (query.limit) { const n = parseInt(query.limit, 10); if (n > 0) r = r.slice(-n); }
-  return r;
-}
-
-function computeStats(rows) {
-  const ratios = rows.map(r => r.ratio).filter(Number.isFinite);
-  if (ratios.length === 0) return { count: 0 };
-  const sorted = [...ratios].sort((a, b) => a - b);
-  const dates = rows.map(r => r.date).filter(Boolean).sort();
-  const last = rows.slice(-1)[0] || null;
-  const first = rows[0] || null;
-  const trend = (last && first && Number.isFinite(first.ratio) && first.ratio !== 0)
-    ? Number(((last.ratio - first.ratio) / first.ratio * 100).toFixed(2)) : null;
-  return {
-    count: rows.length,
-    date_from: dates[0] || null,
-    date_to: dates[dates.length - 1] || null,
-    ratio_mean: Number((ratios.reduce((a,b)=>a+b,0)/ratios.length).toFixed(4)),
-    ratio_median: sorted.length % 2 === 0
-      ? Number(((sorted[sorted.length/2-1] + sorted[sorted.length/2])/2).toFixed(4))
-      : Number(sorted[Math.floor(sorted.length/2)].toFixed(4)),
-    ratio_min: Number(Math.min(...ratios).toFixed(4)),
-    ratio_max: Number(Math.max(...ratios).toFixed(4)),
-    last_btc: last?.btc ?? null,
-    last_eth: last?.eth ?? null,
-    last_ratio: last?.ratio ?? null,
-    last_date: last?.date ?? null,
-    trend_pct: trend,
-  };
-}
-
-function toCSV(rows) {
-  const lines = ['date,btc,eth,ratio'];
-  for (const r of rows) lines.push(`${r.date || ''},${r.btc ?? ''},${r.eth ?? ''},${r.ratio ?? ''}`);
-  return lines.join('\n') + '\n';
-}
-
-function sendJSON(res, status, payload, extra = {}) {
-  const body = JSON.stringify(payload);
-  res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Content-Length': String(Buffer.byteLength(body)), ...extra });
-  res.end(body);
-}
-function sendText(res, status, text, ct = 'text/plain; charset=utf-8') {
-  res.writeHead(status, { 'Content-Type': ct, 'Content-Length': String(Buffer.byteLength(text)) });
-  res.end(text);
 }
 
 export async function handler(req, res) {
+  const url = new URL(req.url, 'http://localhost');
+  const path = url.pathname.replace(route, '') || '/';
+
   try {
-    const urlObj = new URL(req.url, 'http://x');
-    const sub = urlObj.pathname.replace(/^\/api\/layers\/crypto-fear/, '') || '/';
-    const query = Object.fromEntries(urlObj.searchParams.entries());
-    const format = (query.format || 'json').toLowerCase();
+    const data = await loadBasket();
 
-    const all = await loadData();
-    const extra = {
-      'X-Module': 'crypto-fear-api',
-      'X-Module-Version': '2.0.0',
-      'Cache-Control': `public, max-age=${meta.cache}`,
-    };
-
-    if (sub === '/stats' || format === 'stats') {
-      return sendJSON(res, 200, { stats: computeStats(all) }, extra);
-    }
-    if (sub === '/latest') return sendJSON(res, 200, { latest: all.slice(-1)[0] || null }, extra);
-    if (sub === '/status') return sendJSON(res, 200, { status: 'online', count: all.length }, extra);
-
-    const rows = applyFilters(all, query);
-
-    if (format === 'csv')    return sendText(res, 200, toCSV(rows), 'text/csv; charset=utf-8');
-    if (format === 'series') return sendJSON(res, 200, { series: rows, meta: { count: rows.length } }, extra);
-    if (format === 'raw')    return sendJSON(res, 200, { data: rows }, extra);
-
-    return sendJSON(res, 200, {
-      type: 'FeatureCollection',
-      features: [],
-      meta: {
-        source: meta.source, category: meta.category, unit: meta.unit,
-        total_records: all.length, returned_records: rows.length,
+    if (path === '/status') {
+      const count = Array.isArray(data.data?.series) ? data.data.series.length
+                   : Array.isArray(data.data) ? data.data.length : 0;
+      return res.end(JSON.stringify({
+        status: data.error ? 'degraded' : 'online',
+        count,
+        source: 'basket/crypto-fear.json',
+        hint: data.hint || null,
         generated_at: new Date().toISOString(),
-      },
-      series: rows,
-      stats: computeStats(rows),
-    }, extra);
+      }));
+    }
+
+    if (path === '/stats') {
+      const d = data.data || {};
+      const series = Array.isArray(d.series) ? d.series : [];
+      return res.end(JSON.stringify({
+        stats: {
+          count: series.length,
+          date_from: d.meta?.date_from || null,
+          date_to: d.meta?.date_to || null,
+        },
+        source: 'basket/crypto-fear.json',
+      }));
+    }
+
+    // Корень — отдаём данные как есть
+    if (data.data) {
+      return res.end(JSON.stringify(data.data));
+    }
+
+    res.statusCode = 404;
+    return res.end(JSON.stringify({ error: 'not_found', path }));
   } catch (e) {
-    const status = e.statusCode || 500;
-    const payload = { error: status === 503 ? 'no_data' : 'handler_error', message: e.message };
-    if (e.hint) payload.hint = e.hint;
-    try { sendJSON(res, status, payload); } catch {}
+    res.statusCode = 500;
+    return res.end(JSON.stringify({ error: e.message }));
   }
 }

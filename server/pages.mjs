@@ -15,6 +15,15 @@
 
 import { loadPageRoutes, loadPages } from './loader.mjs';
 
+// CRUCIX FIX (build 301): NFC-нормализация кириллических URL.
+// Проблема: macOS/Linux могут хранить имена файлов в NFD, а URL из браузера — в NFC.
+// Визуально одно и то же, но по байтам — разные строки → 404.
+function normalizeNFC(s) {
+  if (s == null) return s;
+  try { return String(s).normalize('NFC'); } catch { return String(s); }
+}
+
+
 const PAGE_ROUTES = loadPageRoutes();
 const PAGES = loadPages();
 
@@ -81,6 +90,14 @@ if (Array.isArray(PAGE_ROUTES)) {
 
 export function getPageFile(pathname) {
     if (!pathname) return null;
+    // CRUCIX FIX (build 317): decodeURIComponent + NFC для кириллицы.
+    // server.mjs передаёт percent-encoded pathname (из new URL().pathname),
+    // поэтому сначала декодируем, потом нормализуем в NFC.
+    try {
+        pathname = decodeURIComponent(pathname).normalize('NFC');
+    } catch {
+        pathname = normalizeNFC(pathname);
+    }
 
     // 1. Точное совпадение по route
     if (byRoute[pathname]) return byRoute[pathname];
@@ -143,3 +160,19 @@ export default {
     getDashboardPages,
     getMainPages
 };
+
+
+// CRUCIX FIX (build 301): middleware для кириллических URL.
+// decodeURIComponent нужен, если Express приходит с percent-encoded path.
+export function cyrillicNormalizer(req, res, next) {
+  try {
+    const decoded = decodeURIComponent(req.path);
+    const nfc = normalizeNFC(decoded);
+    if (nfc !== req.path) {
+      req._originalPath = req.path;
+      req.path = nfc;
+      req.url = nfc + (req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '');
+    }
+  } catch { /* игнорируем ошибки декодирования */ }
+  next();
+}

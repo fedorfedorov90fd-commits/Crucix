@@ -2,54 +2,55 @@
   "meta": {
     "schema_version": "crucix.registry.generated.v1",
     "generated_by": "server/build-registry.mjs",
-    "generated_at": "2026-09-30T08:10:34.505Z",
+    "generated_at": "2026-11-03T19:28:41.080Z",
     "description": "Единый реестр Crucix: маршруты API (layers + services), корзина данных (basket), версии всех модулей (modules).",
     "help_ru_link": "docs/help/ru/api/build-registry.md",
     "help_en_link": "docs/help/en/api/build-registry.md",
     "source_dir": "apis/sources",
-    "total_scanned": 492,
-    "total_modules": 170,
-    "total_layers": 142,
+    "total_scanned": 502,
+    "total_modules": 179,
+    "total_layers": 151,
     "total_services": 28,
-    "total_routes": 284,
+    "total_routes": 302,
     "total_service_routes": 56,
-    "skipped": 322,
+    "skipped": 323,
     "duplicates": 0,
-    "warnings": 37,
-    "total_basket_files": 260,
-    "total_basket_with_meta": 118,
-    "total_basket_without_meta": 142,
-    "total_basket_with_readers": 117,
+    "warnings": 40,
+    "total_basket_files": 264,
+    "total_basket_with_meta": 117,
+    "total_basket_without_meta": 147,
+    "total_basket_with_readers": 120,
     "basket_by_status": {
-      "active": 118,
-      "legacy": 0,
-      "unknown": 142
+      "active": 117,
+      "legacy": 4,
+      "unknown": 143
     },
     "layer_by_category": {
       "geopolitical": 11,
+      "semantic": 10,
       "flow": 10,
       "transport": 7,
       "detector": 8,
-      "finance": 10,
+      "finance": 11,
       "cyber": 9,
       "forecast": 1,
       "economics": 7,
       "index": 4,
-      "news": 10,
+      "news": 9,
       "other": 3,
       "market": 8,
       "ecological": 14,
       "social": 2,
       "energy": 3,
-      "semantic": 3,
       "health": 2,
-      "specialist": 5,
+      "specialist": 6,
       "infrastructure": 5,
       "military": 5,
       "esg": 2,
       "intelligence": 4,
       "space": 7,
-      "threats": 2
+      "threats": 2,
+      "unknown": 1
     },
     "services_by_method": {
       "GET": 28,
@@ -58,14 +59,14 @@
       "PUT": 2,
       "PATCH": 1
     },
-    "total_modules_all": 843,
+    "total_modules_all": 860,
     "modules_with_version": 189,
-    "modules_without_version": 654,
+    "modules_without_version": 671,
     "versions_summary": {
       "1": 29,
       "2": 126,
-      "3": 9,
-      "6": 12,
+      "3": 8,
+      "6": 13,
       "7": 6,
       "8": 7
     },
@@ -114,6 +115,45 @@
         "unit": "events",
         "mapTypes": [
           "events"
+        ]
+      },
+      "method": "GET",
+      "subpath": true
+    },
+    "/api/layers/alerts": {
+      "moduleId": "alerts-api",
+      "file": "alerts-api.mjs",
+      "meta": {
+        "category": "semantic",
+        "icon": "🚨",
+        "color": "#ef4444",
+        "vizType": "marker",
+        "source": "basket/alerts.json",
+        "collector": "collect-alerts.mjs",
+        "cache": 60,
+        "description": "Единый поток алертов (silence + taxonomy-gaps + narrative-framing)",
+        "unit": "alerts",
+        "mapTypes": [
+          "meanings"
+        ]
+      },
+      "method": "GET"
+    },
+    "/api/layers/alerts/*": {
+      "moduleId": "alerts-api",
+      "file": "alerts-api.mjs",
+      "meta": {
+        "category": "semantic",
+        "icon": "🚨",
+        "color": "#ef4444",
+        "vizType": "marker",
+        "source": "basket/alerts.json",
+        "collector": "collect-alerts.mjs",
+        "cache": 60,
+        "description": "Единый поток алертов (silence + taxonomy-gaps + narrative-framing)",
+        "unit": "alerts",
+        "mapTypes": [
+          "meanings"
         ]
       },
       "method": "GET",
@@ -194,6 +234,45 @@
         "unit": "transfers",
         "mapTypes": [
           "relations"
+        ]
+      },
+      "method": "GET",
+      "subpath": true
+    },
+    "/api/layers/articles": {
+      "moduleId": "articles-api",
+      "file": "articles-api.mjs",
+      "meta": {
+        "category": "semantic",
+        "icon": "📰",
+        "color": "#5bc0f8",
+        "vizType": "marker",
+        "source": "basket/rsshub.json",
+        "collector": "collect-rsshub.mjs",
+        "cache": 120,
+        "description": "Статьи из RSS (адаптация articles.mjs песочницы на basket)",
+        "unit": "articles",
+        "mapTypes": [
+          "meanings"
+        ]
+      },
+      "method": "GET"
+    },
+    "/api/layers/articles/*": {
+      "moduleId": "articles-api",
+      "file": "articles-api.mjs",
+      "meta": {
+        "category": "semantic",
+        "icon": "📰",
+        "color": "#5bc0f8",
+        "vizType": "marker",
+        "source": "basket/rsshub.json",
+        "collector": "collect-rsshub.mjs",
+        "cache": 120,
+        "description": "Статьи из RSS (адаптация articles.mjs песочницы на basket)",
+        "unit": "articles",
+        "mapTypes": [
+          "meanings"
         ]
       },
       "method": "GET",
@@ -1221,6 +1300,43 @@
       "method": "GET",
       "subpath": true
     },
+    "/api/layers/direct-basket": {
+      "moduleId": "direct-basket-fallback",
+      "file": "direct-basket-fallback.mjs",
+      "meta": {
+        "category": "finance",
+        "icon": "📊",
+        "color": "#5bc0f8",
+        "vizType": "choropleth",
+        "source": "basket/*.json (direct)",
+        "cache": 60,
+        "description": "Прямой читатель basket для исключённых API (pmi, recession, crypto-fear, hy-spread, ovx, sp500-vix, vxx, yield-curve)",
+        "unit": "value",
+        "mapTypes": [
+          "metrics"
+        ]
+      },
+      "method": "GET"
+    },
+    "/api/layers/direct-basket/*": {
+      "moduleId": "direct-basket-fallback",
+      "file": "direct-basket-fallback.mjs",
+      "meta": {
+        "category": "finance",
+        "icon": "📊",
+        "color": "#5bc0f8",
+        "vizType": "choropleth",
+        "source": "basket/*.json (direct)",
+        "cache": 60,
+        "description": "Прямой читатель basket для исключённых API (pmi, recession, crypto-fear, hy-spread, ovx, sp500-vix, vxx, yield-curve)",
+        "unit": "value",
+        "mapTypes": [
+          "metrics"
+        ]
+      },
+      "method": "GET",
+      "subpath": true
+    },
     "/api/layers/dxy": {
       "moduleId": "dxy-api",
       "file": "dxy-api.mjs",
@@ -1732,17 +1848,16 @@
       "moduleId": "events-api",
       "file": "events-api.mjs",
       "meta": {
-        "category": "news",
-        "icon": "📢",
-        "color": "#ec4899",
+        "category": "semantic",
+        "icon": "📅",
+        "color": "#8b5cf6",
         "vizType": "marker",
-        "source": "basket/events.json",
-        "collector": "collect-events.mjs",
-        "cache": 60,
-        "description": "Поток событий: инциденты из разных источников (NOTAM, GPS, ACLED, и др.)",
+        "source": "basket/rsshub.json + config/taxonomy.json",
+        "collector": "collect-rsshub.mjs",
+        "cache": 120,
+        "description": "События (карточки): группировка статей по taxonomy-сущностям",
         "unit": "events",
         "mapTypes": [
-          "events",
           "meanings"
         ]
       },
@@ -1752,17 +1867,16 @@
       "moduleId": "events-api",
       "file": "events-api.mjs",
       "meta": {
-        "category": "news",
-        "icon": "📢",
-        "color": "#ec4899",
+        "category": "semantic",
+        "icon": "📅",
+        "color": "#8b5cf6",
         "vizType": "marker",
-        "source": "basket/events.json",
-        "collector": "collect-events.mjs",
-        "cache": 60,
-        "description": "Поток событий: инциденты из разных источников (NOTAM, GPS, ACLED, и др.)",
+        "source": "basket/rsshub.json + config/taxonomy.json",
+        "collector": "collect-rsshub.mjs",
+        "cache": 120,
+        "description": "События (карточки): группировка статей по taxonomy-сущностям",
         "unit": "events",
         "mapTypes": [
-          "events",
           "meanings"
         ]
       },
@@ -2779,6 +2893,39 @@
       "method": "GET",
       "subpath": true
     },
+    "/api/legacy": {
+      "moduleId": "legacy-fallback-api",
+      "file": "legacy-fallback-api.mjs",
+      "meta": {
+        "category": "specialist",
+        "icon": "🔧",
+        "color": "#f59e0b",
+        "vizType": "marker",
+        "source": "legacy-fallback",
+        "cache": 60,
+        "description": "Fallback для старых API-путей (перенаправляет на v2)",
+        "unit": "legacy",
+        "mapTypes": []
+      },
+      "method": "GET"
+    },
+    "/api/legacy/*": {
+      "moduleId": "legacy-fallback-api",
+      "file": "legacy-fallback-api.mjs",
+      "meta": {
+        "category": "specialist",
+        "icon": "🔧",
+        "color": "#f59e0b",
+        "vizType": "marker",
+        "source": "legacy-fallback",
+        "cache": 60,
+        "description": "Fallback для старых API-путей (перенаправляет на v2)",
+        "unit": "legacy",
+        "mapTypes": []
+      },
+      "method": "GET",
+      "subpath": true
+    },
     "/api/layers/live": {
       "moduleId": "live-api",
       "file": "live-api.mjs",
@@ -3045,6 +3192,45 @@
         "unit": "exercises",
         "mapTypes": [
           "events"
+        ]
+      },
+      "method": "GET",
+      "subpath": true
+    },
+    "/api/layers/narrative-framing": {
+      "moduleId": "narrative-framing-api",
+      "file": "narrative-framing-api.mjs",
+      "meta": {
+        "category": "semantic",
+        "icon": "⚖️",
+        "color": "#f59e0b",
+        "vizType": "marker",
+        "source": "basket/narrative-framing.json",
+        "collector": "collect-narrative-framing.mjs",
+        "cache": 300,
+        "description": "Поляризация фреймингов: сравнение тональности российских и западных источников по темам",
+        "unit": "topics",
+        "mapTypes": [
+          "meanings"
+        ]
+      },
+      "method": "GET"
+    },
+    "/api/layers/narrative-framing/*": {
+      "moduleId": "narrative-framing-api",
+      "file": "narrative-framing-api.mjs",
+      "meta": {
+        "category": "semantic",
+        "icon": "⚖️",
+        "color": "#f59e0b",
+        "vizType": "marker",
+        "source": "basket/narrative-framing.json",
+        "collector": "collect-narrative-framing.mjs",
+        "cache": 300,
+        "description": "Поляризация фреймингов: сравнение тональности российских и западных источников по темам",
+        "unit": "topics",
+        "mapTypes": [
+          "meanings"
         ]
       },
       "method": "GET",
@@ -3791,6 +3977,33 @@
       "method": "GET",
       "subpath": true
     },
+    "/api/rss": {
+      "moduleId": "router-rss-alias",
+      "file": "router-rss-alias.mjs",
+      "meta": {
+        "mapTypes": []
+      },
+      "methods": [
+        "GET",
+        "POST",
+        "DELETE"
+      ],
+      "version": "2.1.0"
+    },
+    "/api/rss/*": {
+      "moduleId": "router-rss-alias",
+      "file": "router-rss-alias.mjs",
+      "meta": {
+        "mapTypes": []
+      },
+      "methods": [
+        "GET",
+        "POST",
+        "DELETE"
+      ],
+      "version": "2.1.0",
+      "subpath": true
+    },
     "/api/layers/rss-convergence": {
       "moduleId": "rss-convergence-api",
       "file": "rss-convergence-api.mjs",
@@ -3865,6 +4078,45 @@
         "unit": "articles",
         "mapTypes": [
           "events",
+          "meanings"
+        ]
+      },
+      "method": "GET",
+      "subpath": true
+    },
+    "/api/layers/rss-stats": {
+      "moduleId": "rss-stats-api",
+      "file": "rss-stats-api.mjs",
+      "meta": {
+        "category": "semantic",
+        "icon": "📊",
+        "color": "#10b981",
+        "vizType": "series",
+        "source": "basket/rss-*.json",
+        "collector": "collect-rsshub.mjs",
+        "cache": 120,
+        "description": "Агрегаты RSS (адаптация stats.mjs песочницы)",
+        "unit": "stats",
+        "mapTypes": [
+          "meanings"
+        ]
+      },
+      "method": "GET"
+    },
+    "/api/layers/rss-stats/*": {
+      "moduleId": "rss-stats-api",
+      "file": "rss-stats-api.mjs",
+      "meta": {
+        "category": "semantic",
+        "icon": "📊",
+        "color": "#10b981",
+        "vizType": "series",
+        "source": "basket/rss-*.json",
+        "collector": "collect-rsshub.mjs",
+        "cache": 120,
+        "description": "Агрегаты RSS (адаптация stats.mjs песочницы)",
+        "unit": "stats",
+        "mapTypes": [
           "meanings"
         ]
       },
@@ -4376,6 +4628,45 @@
       "method": "GET",
       "subpath": true
     },
+    "/api/layers/sources": {
+      "moduleId": "sources-api",
+      "file": "sources-api.mjs",
+      "meta": {
+        "category": "semantic",
+        "icon": "📡",
+        "color": "#f26522",
+        "vizType": "marker",
+        "source": "basket/rss-*.json",
+        "collector": "collect-rsshub.mjs",
+        "cache": 120,
+        "description": "Источники RSS (адаптация feeds.mjs песочницы)",
+        "unit": "sources",
+        "mapTypes": [
+          "meanings"
+        ]
+      },
+      "method": "GET"
+    },
+    "/api/layers/sources/*": {
+      "moduleId": "sources-api",
+      "file": "sources-api.mjs",
+      "meta": {
+        "category": "semantic",
+        "icon": "📡",
+        "color": "#f26522",
+        "vizType": "marker",
+        "source": "basket/rss-*.json",
+        "collector": "collect-rsshub.mjs",
+        "cache": 120,
+        "description": "Источники RSS (адаптация feeds.mjs песочницы)",
+        "unit": "sources",
+        "mapTypes": [
+          "meanings"
+        ]
+      },
+      "method": "GET",
+      "subpath": true
+    },
     "/api/layers/space": {
       "moduleId": "space-api",
       "file": "space-api.mjs",
@@ -4761,6 +5052,45 @@
         "unit": "vessels",
         "mapTypes": [
           "relations"
+        ]
+      },
+      "method": "GET",
+      "subpath": true
+    },
+    "/api/layers/taxonomy-gaps": {
+      "moduleId": "taxonomy-gaps-api",
+      "file": "taxonomy-gaps-api.mjs",
+      "meta": {
+        "category": "semantic",
+        "icon": "🔍",
+        "color": "#a78bfa",
+        "vizType": "marker",
+        "source": "basket/taxonomy-gaps.json",
+        "collector": "collect-taxonomy-gaps.mjs",
+        "cache": 300,
+        "description": "Тематические gaps: темы, которые активно освещаются одной группой и отсутствуют у другой",
+        "unit": "topics",
+        "mapTypes": [
+          "meanings"
+        ]
+      },
+      "method": "GET"
+    },
+    "/api/layers/taxonomy-gaps/*": {
+      "moduleId": "taxonomy-gaps-api",
+      "file": "taxonomy-gaps-api.mjs",
+      "meta": {
+        "category": "semantic",
+        "icon": "🔍",
+        "color": "#a78bfa",
+        "vizType": "marker",
+        "source": "basket/taxonomy-gaps.json",
+        "collector": "collect-taxonomy-gaps.mjs",
+        "cache": 300,
+        "description": "Тематические gaps: темы, которые активно освещаются одной группой и отсутствуют у другой",
+        "unit": "topics",
+        "mapTypes": [
+          "meanings"
         ]
       },
       "method": "GET",
@@ -6546,6 +6876,32 @@
       "parse_error": null
     },
     {
+      "id": "alerts",
+      "file": "data/basket/alerts.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": false,
+      "missing_meta_fields": [
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "license",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "alerts-api"
+      ],
+      "writers": [
+        "collect-alerts.mjs"
+      ],
+      "status": "legacy",
+      "help_ru_link": "docs/help/ru/basket/alerts.md",
+      "help_en_link": "docs/help/en/basket/alerts.md",
+      "parse_error": null
+    },
+    {
       "id": "aurora",
       "file": "data/basket/aurora.json",
       "schema": null,
@@ -7896,9 +8252,7 @@
         "value_type"
       ],
       "series_len": 0,
-      "readers": [
-        "events-api"
-      ],
+      "readers": [],
       "writers": [],
       "status": "unknown",
       "help_ru_link": "docs/help/ru/basket/events.md",
@@ -9554,6 +9908,32 @@
       "parse_error": null
     },
     {
+      "id": "narrative-framing",
+      "file": "data/basket/narrative-framing.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": false,
+      "missing_meta_fields": [
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "license",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "narrative-framing-api"
+      ],
+      "writers": [
+        "collect-narrative-framing.mjs"
+      ],
+      "status": "legacy",
+      "help_ru_link": "docs/help/ru/basket/narrative-framing.md",
+      "help_en_link": "docs/help/en/basket/narrative-framing.md",
+      "parse_error": null
+    },
+    {
       "id": "news",
       "file": "data/basket/news.json",
       "schema": "crucix.basket.v1",
@@ -10834,17 +11214,28 @@
     {
       "id": "rsshub",
       "file": "data/basket/rsshub.json",
-      "schema": "crucix.basket.v1",
-      "has_meta": true,
-      "missing_meta_fields": [],
-      "series_len": 1,
+      "schema": null,
+      "has_meta": false,
+      "missing_meta_fields": [
+        "id",
+        "source",
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "collector",
+        "license",
+        "count",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
       "readers": [
+        "articles-api",
         "rss-feeds-api"
       ],
-      "writers": [
-        "collect-rsshub.mjs"
-      ],
-      "status": "active",
+      "writers": [],
+      "status": "unknown",
       "help_ru_link": "docs/help/ru/basket/rsshub.md",
       "help_en_link": "docs/help/en/basket/rsshub.md",
       "parse_error": null
@@ -11149,6 +11540,32 @@
       "status": "unknown",
       "help_ru_link": "docs/help/ru/basket/shodan.md",
       "help_en_link": "docs/help/en/basket/shodan.md",
+      "parse_error": null
+    },
+    {
+      "id": "silence",
+      "file": "data/basket/silence.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": false,
+      "missing_meta_fields": [
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "license",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "silence-api"
+      ],
+      "writers": [
+        "collect-silence.mjs"
+      ],
+      "status": "legacy",
+      "help_ru_link": "docs/help/ru/basket/silence.md",
+      "help_en_link": "docs/help/en/basket/silence.md",
       "parse_error": null
     },
     {
@@ -11471,6 +11888,32 @@
       "status": "unknown",
       "help_ru_link": "docs/help/ru/basket/tass.md",
       "help_en_link": "docs/help/en/basket/tass.md",
+      "parse_error": null
+    },
+    {
+      "id": "taxonomy-gaps",
+      "file": "data/basket/taxonomy-gaps.json",
+      "schema": "crucix.basket.v1",
+      "has_meta": false,
+      "missing_meta_fields": [
+        "source_url",
+        "fetched_at",
+        "normalized_at",
+        "license",
+        "granularity",
+        "value_unit",
+        "value_type"
+      ],
+      "series_len": 0,
+      "readers": [
+        "taxonomy-gaps-api"
+      ],
+      "writers": [
+        "collect-taxonomy-gaps.mjs"
+      ],
+      "status": "legacy",
+      "help_ru_link": "docs/help/ru/basket/taxonomy-gaps.md",
+      "help_en_link": "docs/help/en/basket/taxonomy-gaps.md",
       "parse_error": null
     },
     {
@@ -12384,6 +12827,11 @@
       "has_header_version": false,
       "dir": "apis/sources"
     },
+    "apis/sources/alerts-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
     "apis/sources/analysis-events-api.mjs": {
       "version": null,
       "has_header_version": false,
@@ -12420,6 +12868,11 @@
       "dir": "apis/sources"
     },
     "apis/sources/arms-transfer-tracker.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/articles-api.mjs": {
       "version": null,
       "has_header_version": false,
       "dir": "apis/sources"
@@ -12900,6 +13353,11 @@
       "dir": "apis/sources"
     },
     "apis/sources/diplomatic-tracker.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/direct-basket-fallback.mjs": {
       "version": null,
       "has_header_version": false,
       "dir": "apis/sources"
@@ -13529,6 +13987,11 @@
       "has_header_version": false,
       "dir": "apis/sources"
     },
+    "apis/sources/legacy-fallback-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
     "apis/sources/lenses-api.mjs": {
       "version": null,
       "has_header_version": false,
@@ -13732,6 +14195,11 @@
     "apis/sources/narrative-drift.mjs": {
       "version": "1.0.0",
       "has_header_version": true,
+      "dir": "apis/sources"
+    },
+    "apis/sources/narrative-framing-api.mjs": {
+      "version": null,
+      "has_header_version": false,
       "dir": "apis/sources"
     },
     "apis/sources/narrative-splitter-api.mjs": {
@@ -14114,6 +14582,11 @@
       "has_header_version": false,
       "dir": "apis/sources"
     },
+    "apis/sources/router-rss-alias.mjs": {
+      "version": "2.1.0",
+      "has_header_version": true,
+      "dir": "apis/sources"
+    },
     "apis/sources/router.mjs": {
       "version": null,
       "has_header_version": false,
@@ -14135,6 +14608,11 @@
       "dir": "apis/sources"
     },
     "apis/sources/rss-manager-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/rss-stats-api.mjs": {
       "version": null,
       "has_header_version": false,
       "dir": "apis/sources"
@@ -14424,6 +14902,11 @@
       "has_header_version": false,
       "dir": "apis/sources"
     },
+    "apis/sources/sources-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
     "apis/sources/sp500-vix-api.mjs": {
       "version": null,
       "has_header_version": false,
@@ -14574,6 +15057,11 @@
       "has_header_version": false,
       "dir": "apis/sources"
     },
+    "apis/sources/taxonomy-gaps-api.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
     "apis/sources/telegram-driver.mjs": {
       "version": null,
       "has_header_version": false,
@@ -14695,6 +15183,11 @@
       "dir": "apis/sources"
     },
     "apis/sources/unique-indicators-дубль.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "apis/sources"
+    },
+    "apis/sources/unique-indicators.mjs": {
       "version": null,
       "has_header_version": false,
       "dir": "apis/sources"
@@ -14830,8 +15323,8 @@
       "dir": "apis/sources"
     },
     "apis/sources/yield-curve-api.mjs": {
-      "version": "3.0.1",
-      "has_header_version": true,
+      "version": null,
+      "has_header_version": false,
       "dir": "apis/sources"
     },
     "apis/sources/{name}.mjs": {
@@ -14880,6 +15373,11 @@
       "dir": "apis/predict"
     },
     "apis/predict/anomaly_detection-дубль.mjs": {
+      "version": "6.0.0",
+      "has_header_version": true,
+      "dir": "apis/predict"
+    },
+    "apis/predict/anomaly_detection.mjs": {
       "version": "6.0.0",
       "has_header_version": true,
       "dir": "apis/predict"
@@ -15799,6 +16297,11 @@
       "has_header_version": true,
       "dir": "scripts/collectors"
     },
+    "scripts/collectors/collect-alerts.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/collectors"
+    },
     "scripts/collectors/collect-aviation.mjs": {
       "version": "2.0.0",
       "has_header_version": true,
@@ -16109,6 +16612,11 @@
       "has_header_version": true,
       "dir": "scripts/collectors"
     },
+    "scripts/collectors/collect-narrative-framing.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "scripts/collectors"
+    },
     "scripts/collectors/collect-news.mjs": {
       "version": "2.0.0",
       "has_header_version": true,
@@ -16240,8 +16748,8 @@
       "dir": "scripts/collectors"
     },
     "scripts/collectors/collect-rsshub.mjs": {
-      "version": "2.0.0",
-      "has_header_version": true,
+      "version": null,
+      "has_header_version": false,
       "dir": "scripts/collectors"
     },
     "scripts/collectors/collect-rublev-dubai.mjs": {
@@ -16267,6 +16775,11 @@
     "scripts/collectors/collect-ships.mjs": {
       "version": "2.0.0",
       "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-silence.mjs": {
+      "version": null,
+      "has_header_version": false,
       "dir": "scripts/collectors"
     },
     "scripts/collectors/collect-smartscroll.mjs": {
@@ -16297,6 +16810,11 @@
     "scripts/collectors/collect-strategic-ports.mjs": {
       "version": "2.0.0",
       "has_header_version": true,
+      "dir": "scripts/collectors"
+    },
+    "scripts/collectors/collect-taxonomy-gaps.mjs": {
+      "version": null,
+      "has_header_version": false,
       "dir": "scripts/collectors"
     },
     "scripts/collectors/collect-thermal.mjs": {
@@ -16449,6 +16967,11 @@
       "has_header_version": false,
       "dir": "server"
     },
+    "server/build-legacy-aliases.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "server"
+    },
     "server/build-registry.mjs": {
       "version": null,
       "has_header_version": false,
@@ -16480,6 +17003,11 @@
       "dir": "server"
     },
     "server/utils.mjs": {
+      "version": null,
+      "has_header_version": false,
+      "dir": "server"
+    },
+    "server/verify.mjs": {
       "version": null,
       "has_header_version": false,
       "dir": "server"
@@ -17973,6 +18501,11 @@
       "hasHandler": false
     },
     {
+      "file": "unique-indicators.mjs",
+      "reason": "no_route",
+      "hasHandler": false
+    },
+    {
       "file": "usaspending.mjs",
       "reason": "no_route",
       "hasHandler": false
@@ -18123,6 +18656,14 @@
       "category": "specialist"
     },
     {
+      "file": "direct-basket-fallback.mjs",
+      "reason": "basket_file_missing_static",
+      "basket": "*.json (direct)",
+      "basket_expected": [
+        "*.json (direct)"
+      ]
+    },
+    {
       "file": "emotion-api.mjs",
       "reason": "basket_file_missing_static",
       "basket": "emotion.json",
@@ -18157,6 +18698,11 @@
     },
     {
       "file": "langgraph-orchestrator-api.mjs",
+      "reason": "category_has_no_mapTypes",
+      "category": "specialist"
+    },
+    {
+      "file": "legacy-fallback-api.mjs",
       "reason": "category_has_no_mapTypes",
       "category": "specialist"
     },
@@ -18199,6 +18745,14 @@
       "category": "other"
     },
     {
+      "file": "rss-stats-api.mjs",
+      "reason": "basket_file_missing_static",
+      "basket": "rss-*.json",
+      "basket_expected": [
+        "rss-*.json"
+      ]
+    },
+    {
       "file": "sanctions-pressure-api.mjs",
       "reason": "category_has_no_mapTypes",
       "category": "specialist"
@@ -18225,14 +18779,6 @@
       ]
     },
     {
-      "file": "silence-api.mjs",
-      "reason": "basket_file_missing_static",
-      "basket": "silence.json",
-      "basket_expected": [
-        "silence.json"
-      ]
-    },
-    {
       "file": "silence-patterns-api.mjs",
       "reason": "category_has_no_mapTypes",
       "category": "specialist"
@@ -18241,6 +18787,14 @@
       "file": "source-coordination-api.mjs",
       "reason": "category_has_no_mapTypes",
       "category": "specialist"
+    },
+    {
+      "file": "sources-api.mjs",
+      "reason": "basket_file_missing_static",
+      "basket": "rss-*.json",
+      "basket_expected": [
+        "rss-*.json"
+      ]
     },
     {
       "file": "strategic-risk-composite-api.mjs",

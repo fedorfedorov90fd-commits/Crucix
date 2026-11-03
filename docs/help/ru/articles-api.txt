@@ -1,0 +1,56 @@
+=== ARTICLES-API — СПРАВКА ===
+
+МОДУЛЬ:      apis/sources/articles-api.mjs
+ТИП:         Layer (single-method, контракт v2)
+ПОРТ:        3117
+СТАТУС:      ✅ работает (200)
+
+НАЗНАЧЕНИЕ:
+  Отдаёт список RSS-статей из basket (адаптация articles.mjs песочницы
+  с Fastify+PostgreSQL на Express+basket).
+
+ИСТОЧНИК:
+  Fallback-цепочка:
+    1. data/basket/rsshub.json       (0 items — сейчас пустой)
+    2. data/basket/rss-latest.json   (500 items — рабочий)
+    3. data/basket/rss-universal.json (500 items — запасной)
+    4. data/basket/rss.json          (5340 items — старый)
+
+  Сборщик: scripts/collectors/collect-rsshub.mjs.
+
+ЭНДПОИНТЫ:
+  GET /api/layers/articles              — список (фильтры: group, source, since, limit, offset)
+  GET /api/layers/articles/:id          — одна статья
+  GET /api/layers/articles/stats        — статистика (by_group, by_source, unique_sources)
+  GET /api/layers/articles/status       — health-check
+  GET /api/layers/articles/groups       — группировка по группам
+  GET /api/layers/articles/sources      — уникальные источники
+  GET /api/layers/articles/raw          — сырые items (первые 50) для отладки
+
+ВАЖНЫЙ НЮАНС (порядок подпутей):
+  Все именованные подпути (/raw, /sources, /groups, /stats, /status)
+  должны идти ДО path.startsWith('/'), иначе они перехватываются
+  как :id и возвращают 404.
+
+ПРИМЕРЫ:
+  curl http://localhost:3117/api/layers/articles/stats
+  curl http://localhost:3117/api/layers/articles?group=russian&limit=10
+  curl http://localhost:3117/api/layers/articles/raw
+  curl "http://localhost:3117/api/layers/articles/groups"
+
+ДАННЫЕ (на 02.11.2026):
+  count: 500
+  by_group: { russian: 385, western: 115 }
+  unique_sources: 11
+  Топ-источники: Lenta.ru (199), ТАСС (99), The Guardian (36), Sputnik (27)
+
+СВЯЗИ:
+  ← data/basket/rss-latest.json
+  → widgets/articles.js
+  → dashboard-news.html (виджет 8)
+  → dashboard-signals.html (виджет 8)
+  → dashboard-5in1.html (карточка 36)
+
+ФАЙЛЫ:
+  apis/sources/articles-api.mjs
+  dashboard/public/widgets/articles.js

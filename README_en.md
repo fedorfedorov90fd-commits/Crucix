@@ -1,70 +1,74 @@
 # 🧠 CRUCIX — Open Source Intelligence Terminal
 
+**Full project summary. Updated: November 3, 2026.**
+*Maintenance rules: nothing is ever deleted from this document; outdated entries are rewritten as "Before → Now"; every update is dated in the header and logged in the Changelog at the end of the file.*
+
 ![image](https://img.shields.io/badge/live-crucix.live-00d4ff?style=for-the-badge)
 ![image](https://img.shields.io/badge/open-live%20dashboard-0b1220?style=for-the-badge&logo=googlechrome&logoColor=white)
-![image](https://img.shields.io/badge/node-22%2B-brightgreen)
+![image](https://img.shields.io/badge/node-%E2%89%A5%2018-brightgreen)
 ![image](https://img.shields.io/badge/license-AGPLv3-blue.svg)
 ![image](https://img.shields.io/badge/OSINT%20sources-226-cyan)
-![image](https://img.shields.io/badge/analyzers-59-purple)
-![image](https://img.shields.io/badge/API%20modules-370%2B-orange)
-![image](https://img.shields.io/badge/docker-ready-blue?logo=docker)
+![image](https://img.shields.io/badge/analyzers-68-purple)
+![image](https://img.shields.io/badge/API%20modules-655-orange)
+![image](https://img.shields.io/badge/Node.js%20only-no%20Docker-lightgrey)
 ![image](https://img.shields.io/badge/Signal%20Wire-%40crucixmonitor-111111?style=for-the-badge&logo=x&logoColor=white)
 ![image](https://img.shields.io/badge/Ops%20Room-Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)
 
 ---
 
 ## 📖 Table of Contents
-
 1. [Overview](#-overview)
 2. [Screenshots](#-screenshots)
-3. [Quick Start](#-quick-start)
-4. [What You Get](#-what-you-get)
-5. [Analytics Platform](#-analytics-platform)
-6. [Infrastructure Analyzer](#️-infrastructure-analyzer)
-7. [Router v3.1 — Mechanism A+B](#-router-v31--mechanism-ab)
-8. [Five Crucix Maps — Five Dimensions of Reality](#-five-crucix-maps--five-dimensions-of-reality)
-9. [AI Laboratory](#-ai-laboratory)
-10. [API Keys](#-api-keys)
-11. [Architecture](#-architecture)
-12. [Server Module Architecture](#-server-module-architecture)
-13. [Polarity System & Narrative Verification](#-polarity-system--narrative-verification)
-14. [Data Sources](#-data-sources)
-15. [npm Scripts](#-npm-scripts)
-16. [Configuration](#-configuration)
-17. [API Endpoints](#-api-endpoints)
-18. [Troubleshooting](#-troubleshooting)
-19. [Extensions](#-extensions)
-20. [AI Chat](#-ai-chat)
-21. [Contributing](#-contributing)
-22. [🧠 Crucix Predictive Core](#-crucix-predictive-core)
-23. [📰 SmartScroll — RSS & Telegram Integration](#-smartscroll--rss--telegram-integration)
-24. [License](#-license)
-
----
+3. [Quick start](#-quick-start)
+4. [What you get](#-what-you-get)
+5. [🗺️ The Five Maps of Crucix — five dimensions of reality](#️-the-five-maps-of-crucix--five-dimensions-of-reality)
+6. [📊 Analytics platform](#-analytics-platform)
+7. [🏗️ Infrastructure analyzer](#️-infrastructure-analyzer)
+8. [🔀 Router v3.1 — the A+B mechanism](#-router-v31--the-ab-mechanism)
+9. [🧪 AI lab](#-ai-lab)
+10. [🔑 API keys](#-api-keys)
+11. [🏛️ Architecture](#️-architecture)
+12. [🧩 Modular server architecture](#-modular-server-architecture)
+13. [🧭 Polarity system and narrative reconciliation](#-polarity-system-and-narrative-reconciliation)
+14. [Data sources](#-data-sources)
+15. [📰 RSS system — the full pipeline](#-rss-system--the-full-pipeline)
+16. [🧺 The Basket — the crucix.basket.v1 contract](#-the-basket--the-crucixbasketv1-contract)
+17. [📁 config/](#-config)
+18. [npm scripts](#-npm-scripts)
+19. [Configuration](#-configuration)
+20. [API endpoints](#-api-endpoints)
+21. [Troubleshooting](#-troubleshooting)
+22. [Extensions](#-extensions)
+23. [💬 AI chat](#-ai-chat)
+24. [🤝 Contributing](#-contributing)
+25. [🧠 Predictive core](#-predictive-core)
+26. [📰 SmartScroll — RSS and Telegram integration](#-smartscroll--rss-and-telegram-integration)
+27. [📜 README changelog](#-readme-changelog)
+28. [License](#-license)
 
 ## 🚀 Overview
 
-**Crucix** is a platform for collecting, analyzing, and visualizing data from open sources. Designed for real-time monitoring of geopolitical, economic, military, and environmental situations.
+**Crucix** is a platform for collecting, analyzing and visualizing open-source data. It is designed for real-time monitoring of the geopolitical, economic, military and environmental situation.
 
 The architecture follows the **"Basket → AI → Map"** principle:
 
 - **Collection** — data arrives from 226 sources into the basket (`data/basket/`)
-- **Analysis** — 59 analyzers compute indices, composites, forecasts (`data/analytics/`)
-- **AI** — local LLM (Ollama) generates briefs and forecasts
-- **Map** — results are visualized on geographic maps (3D WebGL Globe + 2D D3 Map + Leaflet)
+- **Analysis** — 68 analyzers compute indices, composites and forecasts (`data/analytics/`); *before: 59 — the count has grown with the RSS analyzer family*
+- **AI** — the LLM backend (Mistral by default, with support for local OpenAI-compatible LLMs such as Ollama and LM Studio) generates briefs and forecasts; *before: local LLM via Ollama only*
+- **Map** — the result is visualized in **5 autonomous maps**, each displaying its own class of data
 
-### Key Features
+### Key features
 
-- ✅ **226 OSINT sources** — satellites, aviation, conflicts, economics, ecology
-- ✅ **59 analyzers** — indices, detectors, forecasts, composites
-- ✅ **370+ API modules** — all endpoints pull data from the basket
+- ✅ **226 OSINT sources** — satellites, aviation, conflicts, economy, ecology
+- ✅ **68 analyzers** — indices, detectors, forecasts, composites (*before: 59*)
+- ✅ **655 API modules** — all endpoints serve data from the basket (*before: 370+*)
 - ✅ **8 analytics categories** — index, detector, forecast, semantic, flow, market, specialist, space
-- ✅ **5 autonomous maps** — Event, Metrics, Semantic, Forecast, Network (222 layers total)
-- ✅ **3D WebGL globe** + 2D map with 9 marker types
+- ✅ **5 autonomous maps** — Event, Metrics, Semantic, Forecast, Network — each with its own layers, palettes and visualization models
+- ✅ **222 layers in total** — 84 + 75 + 35 + 16 + 12, distributed across 5 maps by the channel-separability principle
 - ✅ **Infrastructure analyzer** — 114 objects, 15 endpoints
 - ✅ **Auto-refresh** every 15 minutes via SSE
 - ✅ **Telegram + Discord bots** with two-way control
-- ✅ **AI analytics** via Ollama (local, no cloud)
+- ✅ **AI analytics** — Mistral cloud by default; local models (Ollama, LM Studio) supported out of the box (*before: Ollama only*)
 - ✅ **Modular architecture** — easy to extend
 - ✅ **Zero cloud, zero telemetry, zero subscriptions**
 
@@ -79,82 +83,76 @@ The architecture follows the **"Basket → AI → Map"** principle:
 |![image](docs/dashboard.png)|![image](docs/boot.png)|
 |**Main dashboard**|**Boot animation**|
 
-| |
-|-|
-|![image](docs/map.png)|
-|**2D map with markers**|
-
-| |
-|-|
-|![image](docs/globe.png)|
-|**3D WebGL globe**|
+| | |
+|-|-|
+|![image](docs/map.png)|![image](docs/globe.png)|
+|**Map with markers**|**3D WebGL globe**|
 
 ---
 
-## ⚡ Quick Start
+## ⚡ Quick start
 
-### Local Launch
+### Local run
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/calesthio/Crucix.git
+git clone https://github.com/fedorfedorov90fd-commits/Crucix.git
 cd Crucix
+# (This is an actively developed fork. Upstream: https://github.com/calesthio/Crucix)
 
 # 2. Install dependencies (Express only)
 npm install
 
-# 3. Copy .env template and add API keys
+# 3. Copy the .env template and add API keys
 cp .env.example .env
 
 # 4. Start the dashboard
 npm run dev
 ```
 
-Dashboard opens at `http://localhost:3117`
+The dashboard opens at `http://localhost:3117`
+*(check the actual port value — it may be configurable via `.env`)*
 
-If `npm run dev` doesn't work, run directly:
+If `npm run dev` does not work, run directly:
 
 ```bash
 node --trace-warnings server.mjs
 ```
 
-### Docker
+### Docker — Before → Now
 
-```bash
-git clone https://github.com/calesthio/Crucix.git
-cd Crucix
-cp .env.example .env
-docker compose up -d
-```
+**Before:** the project shipped with Docker Compose files and a `docker-ready` badge.
+
+**Now:** the Docker files were removed (commit `37af83c`) — the project runs on Node.js **without containerization**. To run, use the local instructions above. There is no container mode in the current version.
 
 ---
 
-## 🎯 What You Get
+## 🎯 What you get
 
 ### Dashboard
 
-- **3D WebGL globe** (Globe.gl) with atmosphere and starfield
+- **3D WebGL globe** (Globe.gl) with atmosphere and star field
 - **2D map** (D3) with 9 marker types
-- **5 autonomous maps** with 222 layers total, heatmap and timeline
-- **Animated flight arcs** between aviation hubs
+- **5 autonomous maps** — each with its own visualization model, independent layers and local reference data
+- **Animated arcs** of flights between aviation hubs
 - **Region filters** (World, Americas, Europe, Middle East, Asia, Africa)
 - **Real-time market data** (indices, crypto, energy, metals)
 
 ### Analytics
 
-- **59 analyzers** — from basic indices to composite risks
+- **68 analyzers** — from basic indices to composite risk scores (*before: 59*)
 - **197 countries** in the characteristics reference
-- **147 countries** with real Gini coefficient
+- **147 countries** with a real Gini coefficient
 - **194 countries** with World Bank macroeconomics
-- **114 critical infrastructure objects** (25 military bases, 20 nuclear plants, 26 ports, 15 chokepoints, 15 dams, 13 power grids)
-- **8 analytics categories** in `data/analytics/`
+- **114 objects** of critical infrastructure (25 military bases, 20 nuclear plants, 26 ports, 15 chokepoints, 15 dams, 13 power grids)
+- **8 categories** of analytics in `data/analytics/`
 
-### AI Capabilities
+### AI capabilities
 
-- **Local LLM** via Ollama
+- **LLM backend** — Mistral by default (`mistral-small-latest`); OpenAI-compatible local LLMs (Ollama, LM Studio) supported
 - **AI briefs** (daily, alert, summary)
-- **Forecasts** via AI
-- **Semantic search** through news (TF-IDF + cosine similarity)
+- **AI-powered forecasts**
+- **Semantic search** over news (TF-IDF + cosine similarity)
 - **Entity extraction** (NER) from texts
 
 ### Integrations
@@ -162,59 +160,459 @@ docker compose up -d
 - **Telegram bot** (two-way)
 - **Discord bot** (two-way)
 - **MCP Server** (Model Context Protocol) — access Crucix from external AI clients
-- **CLI analytics** — query analyzers from terminal
+- **CLI analytics** — query analyzers from the terminal
 
 ---
 
-## 📊 Analytics Platform
+## 🗺️ The Five Maps of Crucix — five dimensions of reality
 
-Crucix includes a **full analytics platform** — 59 analyzers divided into **8 categories**.
+### Why five, not one
 
-### Analyzer Categories
+Data visualization is the translation of information into visual signals the brain can process. Each data type requires its own "language": events call for points on a map, numeric indicators call for area fills, relationships call for a graph with edges. When different data types are mixed on a single canvas, the brain fails — the signals interfere like two radio channels on one frequency.
+
+This is not an organizational convenience but a consequence of the **theory of perceptual channels** (Munzner, *Visualization Analysis & Design*, 2014, Table 5.3). Human vision has a limited set of channels: position, color, size, shape, transparency. Each channel has a different "bandwidth" — the ability to accurately convey quantitative or categorical values. When two data types claim the same channel at once, **cognitive interference** occurs: the observer cannot separate one signal from another.
+
+The **channel separability principle** (Munzner 2014) states: two visual channels are separable if they can be perceived simultaneously without mutual interference. The five data classes in Crucix use five different channel combinations:
+
+| Map | Visual channels | Data type | vizType |
+|-----|----------------|-----------|---------|
+| **Event Map** | Position + Hue + Shape | Point events | `marker` |
+| **Metrics Map** | Position + Color intensity | Country-level numeric indicators | `choropleth` / `series` |
+| **Semantic Map** | Position + Hue (categorical) + Shape | Sentiment and narratives | `choropleth` (diverging) |
+| **Forecast Map** | Position + Color intensity + Transparency | Probabilities with confidence | `probability` |
+| **Network Map** | Position (force) + Shape + Edge width | Links and relations | `graph` (SVG) |
+
+If all five lived on a single map, four of the five encodings would have to be either disabled or overlaid on each other — and the value of each would drop to zero.
+
+**In plain words:** imagine a world map where terrorist attacks are marked with red dots, countries are colored by inflation level, trade-flow arrows are overlaid on top, and transparency shows recession probability. You cannot make sense of it — the eye cannot read four different "languages" at once. That is why each language gets its own map.
+
+### The autonomy principle
+
+Each of the five maps is **fully autonomous**. This is implemented through the **Bulkhead** pattern (Nygard, *Release It!*, 2007): if one map goes down, the other four keep working. Autonomy is guaranteed by six rules (R1–R6):
+
+- **R1:** No `<script>`, `<link>` or `fetch` reaches outside its own folder. Check: `grep -rn '\.\./' index.html js/*.js` returns 0 lines.
+- **R2:** Geographic boundaries (`world.geojson`) live locally in the `data/` folder of each map.
+- **R3:** Each map's `layers.js` contains only its own layers — zero foreign ones.
+- **R4:** Configuration (`maps-config.js`, `presets.json`) is map-specific.
+- **R5:** Each map's `manifest.json` records `local_cross_map: 0`, `failure_domain: 1`.
+- **R6:** A failure in one map does not affect the other four.
+
+Each map lives in its own folder: `/dashboard/public/<map-name>/` with its own `index.html`, `js/`, `css/`, `data/`, `presets/`. No shared scripts, no shared styles, no shared data — only a shared server.
+
+---
+
+### 1. Event Map — the Map of Events
+
+**Location:** `/dashboard/public/event-map/`
+**URL:** `http://localhost:3117/event-map/`
+**Layers:** 84 in 12 categories
+
+Event Map is a world map where specific events are shown as point markers: protests, military incidents, cyberattacks, diplomatic meetings, disasters, migration waves, disease outbreaks. Each dot is one event with coordinates, time, category and priority.
+
+**Data model:** one marker = one event. Thousands of markers on the map, grouped into 84 layers across 12 categories (conflicts, protests, disasters, cyber, politics, diplomacy, economy, terrorism, migration, health, infrastructure, social). Markers cluster on zoom, are colored by category, and open a detail popup on click.
+
+**Visual channel:** Position + Hue + Shape. Position on the map = geographic coordinates of the event. Color = category. Shape = type (circle, triangle, square).
+
+**How it differs from Metrics Map:** Event Map shows individual events (a rally on March 15 in Tbilisi), Metrics Map shows aggregated country indicators (Georgia's unemployment rate = 14%). An event does not reduce to a number, and a number does not reduce to an event — these are different ontologies.
+
+**How it differs from Network Map:** Event Map shows points on a geographic map. Network Map shows links between nodes in an abstract graph space — there are no latitudes or longitudes there.
+
+**Folder:**
+```
+event-map/
+├── index.html
+├── manifest.json
+├── EVENT-MAP-MANIFEST.md
+├── ARCHITECTURE.md
+├── AUTONOMY-CHARTER.md
+├── css/event-map.css
+├── js/
+│   ├── core.js
+│   ├── countries.js
+│   ├── layers.js          ← 84 layers, 12 categories
+│   ├── maps-config.js
+│   ├── map-controls.js
+│   ├── markers.js          ← marker generation and clustering
+│   ├── event-map.js
+│   ├── copy-data.js
+│   ├── heat-timeline.js
+│   ├── ssi.js
+│   ├── refresh.js
+│   ├── cii.js
+│   ├── logger.js
+│   └── init.js
+├── data/world.geojson
+└── presets/presets.json
+```
+
+**Markers and clustering:**
+- Up to 1000+ markers per layer, with a deterministic geo-jitter by seed.
+- Clustering: Leaflet.markercluster with adaptive zoom.
+- Prioritization: 5 levels (critical → low), affecting size and z-index.
+- Popup: category, description, source, time, coordinates.
+
+**Autonomous fallback:**
+When the API is unavailable, data is generated locally: 2 markers per country × 90 countries = 180 markers per layer. Position = country coordinates + deterministic jitter. Category and priority — by layer seed.
+
+---
+
+### 2. Metrics Map — the Map of Quantitative Indicators
+
+**Location:** `/dashboard/public/metrics-map/`
+**URL:** `http://localhost:3117/metrics-map/`
+**Layers:** 75 in 13 categories
+
+Metrics Map is a choropleth world map where each country is filled with a color whose intensity corresponds to the value of a numeric indicator. Inflation, GDP, unemployment, debt/GDP, dollar index, spreads, yield curve, uranium, cyber threats, ESG metrics, HDI, defense spending — 75 indicators in 13 categories.
+
+**Data model:** one country = one indicator value. 90 countries on the map, the value is classified by the Jenks DP method (or Quantile / Equal Interval / Standard Dev / Manual — per domain), then a ColorBrewer palette (sequential or diverging) is applied. The result is country fills with a legend showing class thresholds, classification method and quality (GVF).
+
+**Visual channel:** Position + Color intensity. Position = the country's territory. Color intensity = the indicator value. These two channels are fully separable (Munzner 2014) — position conveys "where", color conveys "how much".
+
+**How it differs from Semantic Map:** Metrics Map shows quantitative values (inflation = 7.2%). Semantic Map shows categorical sentiment (mood = "negative", "neutral", "positive"). Numbers and categories are different data types and need different palettes: sequential (for numbers) and diverging (for categories with a neutral midpoint).
+
+**How it differs from Forecast Map:** Metrics Map displays current, observed values. Forecast Map displays probabilities of future events with an extra channel — transparency encoding model confidence. A current value and the probability of a future event are different semantic entities.
+
+**Folder:**
+```
+metrics-map/
+├── index.html
+├── manifest.json
+├── METRICS-MAP-MANIFEST.md
+├── ARCHITECTURE.md
+├── AUTONOMY-CHARTER.md
+├── css/metrics-map.css
+├── js/
+│   ├── core.js
+│   ├── countries.js        ← 90 countries with coordinates and statuses
+│   ├── layers.js           ← 75 layers, 13 categories
+│   ├── maps-config.js      ← classification methods, palettes, breaks
+│   ├── series-adapter.js    ← series → choropleth (14 modules, spatial proxies)
+│   ├── map-controls.js     ← Leaflet init, Jenks DP, ColorBrewer, GVF, legend
+│   ├── markers.js          ← 6 marker layers × 180 = 1080 markers
+│   ├── metrics-map.js      ← decision tree: choropleth / series / marker
+│   ├── copy-data.js        ← ~500 KB snapshot
+│   ├── heat-timeline.js
+│   ├── ssi.js              ← Strategic Stress Index
+│   ├── refresh.js
+│   ├── cii.js              ← Country Instability Index (fallback)
+│   ├── logger.js
+│   └── init.js
+├── data/world.geojson      ← local copy of boundaries (252 KB)
+└── presets/presets.json    ← 5 presets with unique keys
+```
+
+**Classification methods (Jenks 1963, Brewer 2005):**
+
+| Method | Formula | Use |
+|--------|---------|-----|
+| Jenks DP | minimizes SDCM, \(O(k \cdot n^2)\) | Default |
+| Quantile | equal groups | With outliers |
+| Equal Interval | \((max - min) / k\) | Smooth scales |
+| Standard Dev | \(\mu \pm 0.5\sigma\), \(\pm 1.5\sigma\) | Normal distribution |
+| Manual | expert thresholds | ISM 50, recession 20/40/60/80 |
+
+Quality control: \(GVF = (SDAM - SDCM) / SDAM > 0.7\). Typical values in Metrics Map: 0.90–0.93.
+
+**ColorBrewer palettes:**
+- Sequential (7): Blues, YlOrRd, Greens, Oranges, Purples, BuPu, OrRd
+- Diverging (4): RdYlGn5, RdBu5, BrBG5, PiYG5
+
+Domain rules: PMI → diverging RdYlGn5 with manual breaks [42, 47, 53, 58] (ISM 50 = boundary). Recession → sequential YlOrRd5 with manual breaks [20, 40, 60, 80]. Copper/Gold → diverging RdBu5, Jenks. Yield Curve → diverging RdBu5, Jenks (inversion = red).
+
+**Layer types:**
+- **Choropleth (56):** country fills by indicator value. API → fallback (deterministic seed by `layer.id`, base(status) + noise).
+- **Series (14):** market series → choropleth via `SeriesAdapter` with spatial proxies (us_market, oil_producers, financial_centers...). 6 transformations: weighted_value, stress_indicator, ratio_indicator and others.
+- **Marker (6):** point markers on a choropleth map (180 markers/layer, 1080 when fully activated).
+
+**Autonomous fallback:**
+When the API is unavailable, data is generated locally from `countries.js`: deterministic seed by `layer.id`, for each of the 90 countries value = base(status) + noise(seed), Jenks classification, `applyChoropleth()`, GVF logging.
+
+---
+
+### 3. Semantic Map — the Map of Semantic Analysis
+
+**Location:** `/dashboard/public/semantic-map/`
+**URL:** `http://localhost:3117/semantic-map/`
+**Layers:** 35 in 12 categories
+
+Semantic Map is a world map where countries are filled by text sentiment: negative, neutral, positive. Sentiment is computed from news and social media streams for each region. Additionally: narratives, disinformation, media tone, propaganda, information warfare, cognitive biases, manipulation, toxicity.
+
+**Data model:** one country = a categorical sentiment class (5 classes per Cowan 2001: very_negative, negative, neutral, positive, very_positive). 35 layers in 12 categories (sentiment, narratives, disinformation, media tone, propaganda, info warfare, social media, topics, credibility, cognitive biases, manipulation, toxicity).
+
+**Visual channel:** Position + Hue (categorical) + Shape. Palette — diverging RdYlGn5 (red → yellow → green) where the middle = neutral sentiment and the edges are extreme values. For narrative clusters — categorical Set1. Marker shape (Circle, Square, Triangle, Diamond) — for categorical differentiation of layers.
+
+**How it differs from Metrics Map:** Metrics Map classifies values by intensity (sequential: "the bigger, the darker"). Semantic Map classifies by category with a neutral center (diverging: "bad — neutral — good"). These are different palettes because the number 7.2 (inflation) has no "neutral" value, while "neutral" sentiment is a zero point on the scale.
+
+**How it differs from Event Map:** Event Map shows individual events as points. Semantic Map shows aggregated sentiment of the information field per country as fills. An event is "what happened". Sentiment is "how it is being reported".
+
+**Folder:**
+```
+semantic-map/
+├── index.html
+├── manifest.json
+├── SEMANTIC-MAP-MANIFEST.md
+├── ARCHITECTURE.md
+├── AUTONOMY-CHARTER.md
+├── css/semantic-map.css
+├── js/
+│   ├── core.js
+│   ├── countries.js
+│   ├── layers.js           ← 35 layers, 12 categories
+│   ├── maps-config.js      ← diverging RdYlGn5, Set1 for clusters
+│   ├── sentiment-adapter.js ← 5 sentiment classes (Cowan 2001)
+│   ├── map-controls.js     ← Leaflet, diverging choropleth, legend
+│   ├── markers.js          ← markers by type (Circle, Square, Triangle, Diamond)
+│   ├── semantic-map.js     ← decision tree
+│   ├── copy-data.js
+│   ├── heat-timeline.js
+│   ├── ssi.js
+│   ├── refresh.js
+│   ├── cii.js
+│   ├── logger.js
+│   └── init.js
+├── data/world.geojson
+└── presets/presets.json
+```
+
+**Sentiment adapter:**
+5 classes per Cowan 2001: very_negative (0–20%), negative (20–40%), neutral (40–60%), positive (60–80%), very_positive (80–100%). Diverging palette RdYlGn5: red → orange → yellow → light green → green. The neutral class is yellow, at the center of the scale.
+
+**Autonomous fallback:**
+When the API is unavailable, sentiment is generated from `countries.js`: seed by `layer.id` + `country.status`, 5 classes with a weighted distribution (neutral dominates ~40%), diverging fills, logging.
+
+---
+
+### 4. Forecast Map — the Map of Probabilistic Forecasts
+
+**Location:** `/dashboard/public/forecast-map/`
+**URL:** `http://localhost:3117/forecast-map/`
+**Layers:** 16, all of type `probability`
+
+Forecast Map is a world map where countries are filled by the probability of an event: recession, conflict escalation, political crisis, food crisis. Each forecast carries **double encoding**: color = probability class, transparency = model confidence.
+
+**Data model:** one country = probability (0–100%) + model confidence (0–1). 16 layers, all of type `probability`. Forecast horizon — from 1 month to 1 year.
+
+**Visual channel:** Position + Color intensity + Transparency. This is a **three-channel encoding** — the only one in Crucix that uses transparency as an information channel rather than decoration. Color (sequential YlOrRd5, manual breaks [20, 40, 60, 80]) conveys the probability class. Transparency (`opacity = 0.4 + 0.5 × confidence`, Cressie 1993, *Statistics for Spatial Data*) conveys model confidence: the more transparent the fill, the less confidence in the forecast.
+
+**In plain words:** if the recession forecast for country X is 75% and the model is 90% confident, you will see a bright red fill. If the same 75% probability but only 40% confidence, the fill will be pale red. The eye immediately reads: "high probability, but low confidence — the forecast is unreliable." A regular choropleth map carries none of this information.
+
+**How it differs from Metrics Map:** Metrics Map shows observed facts: inflation = 7.2%. Forecast Map shows probabilities of future events with uncertainty metadata. Fact and forecast are different epistemological entities. A fact has no "confidence" (it has already happened). A forecast without stated confidence is not a forecast but a guess.
+
+**How it differs from Semantic Map:** Semantic Map uses a diverging palette (two-sided: bad ↔ good). Forecast Map uses a sequential palette (one-sided: 0% → 100%) with an extra transparency channel. A two-sided palette does not suit probabilities because "0% probability" is not "the opposite of 100%" but simply the lower bound of the scale.
+
+**Folder:**
+```
+forecast-map/
+├── index.html
+├── manifest.json
+├── FORECAST-MAP-MANIFEST.md
+├── ARCHITECTURE.md
+├── AUTONOMY-CHARTER.md
+├── css/forecast-map.css
+├── js/
+│   ├── core.js
+│   ├── countries.js
+│   ├── layers.js           ← 16 layers, all of type probability
+│   ├── maps-config.js      ← manual breaks [20,40,60,80], YlOrRd5, opacity formula
+│   ├── forecast-adapter.js ← spatial proxies for 4 forecast sources
+│   ├── map-controls.js     ← Leaflet, double encoding (color + opacity), legend
+│   ├── markers.js
+│   ├── forecast-map.js     ← decision tree
+│   ├── copy-data.js
+│   ├── heat-timeline.js
+│   ├── ssi.js
+│   ├── refresh.js
+│   ├── cii.js
+│   ├── logger.js
+│   └── init.js
+├── data/world.geojson
+└── presets/presets.json
+```
+
+**Double encoding (Cressie 1993):**
+Color: sequential YlOrRd5, manual breaks [20, 40, 60, 80] → 5 probability classes (very_low, low, medium, high, very_high). Transparency: `opacity = 0.4 + 0.5 × confidence`, where confidence ∈ [0, 1]. At confidence = 1.0 → opacity = 0.9 (bright fill). At confidence = 0.0 → opacity = 0.4 (pale fill). Visibility threshold: at opacity < 0.4 the fill is not drawn.
+
+**Spatial proxies for forecast sources:**
+4 sources: market_prediction (prediction_markets), model_forecast (Bayesian models), ai_forecast (LLM agents), composite (ensemble). Each source is mapped to countries via spatial proxies (us_market, eu_zone, emerging_markets, global_all).
+
+**Autonomous fallback:**
+When the API is unavailable, data is generated locally: probability = base(status) + noise(seed), confidence = 0.5 + noise(seed) × 0.3, classification by manual breaks, double fill (color + transparency), logging.
+
+---
+
+**Location:** `/dashboard/public/network-map/`
+**URL:** `http://localhost:3117/network-map/`
+**Layers:** 12, type `graph` (SVG force-directed)
+
+Network Map is not a geographic map. It is a **graph of relationships**, visualized through force-directed simulation in SVG. Nodes are countries, organizations, financial flows, cyber networks. Edges are trade links, sanctions relations, migration flows, financial channels. There are no latitudes or longitudes here; node position is computed by a physical simulation.
+
+**Data model:** nodes (entities) + edges (relations). 12 layers across categories (cyber networks, trade, finance, migration, diplomacy, energy). Nodes have a type (Circle, Square, Triangle, Diamond) and a size (proportional to Degree centrality). Edges have a width (proportional to the link weight) and a color (relation type).
+
+**Visual channel:** Position (force) + Shape + Edge width. Position is not geographic but topological: it is computed by force simulation (Coulomb repulsion between nodes, Hooke attraction along edges, Verlet integration). Node shape — categorical type (Circle = country, Square = organization, Triangle = financial center, Diamond = cyber node). Edge width — link weight.
+
+**Why Network Map does not use Leaflet or world.geojson:**
+A geographic map (Leaflet + GeoJSON) encodes position through latitude and longitude. But for a relationship graph, geographic position is not the point; the point is topology (who is connected to whom, who is central, who is peripheral). A force-directed layout places connected nodes close and unconnected ones far apart, regardless of their real position on Earth. If we used Leaflet, nodes would be stuck in their geographic coordinates and the link structure would become unreadable.
+
+**In plain words:** if Event Map is a world map with dots and Metrics Map is a world map with fills, Network Map is a "web map" where relationships matter more than location. You see who is connected to whom, who is at the center, who is on the periphery, and which nodes carry the most paths. That cannot be shown on a regular map.
+
+**How it differs from the other four maps:**
+Network Map is the only map without Leaflet and without `world.geojson`. Instead of raster rendering — an SVG force-directed graph. Instead of geographic coordinates — topological simulation. Instead of choropleth or marker — edges and nodes. The dossier panel shows graph metrics (Degree, Betweenness, PageRank) instead of country indicators.
+
+**Folder:**
+```
+network-map/
+├── index.html
+├── manifest.json
+├── NETWORK-MAP-MANIFEST.md
+├── ARCHITECTURE.md
+├── AUTONOMY-CHARTER.md
+├── css/network-map.css
+├── js/
+│   ├── core.js
+│   ├── countries.js        ← node reference (countries, organizations)
+│   ├── layers.js           ← 12 graph layers
+│   ├── network-config.js  ← force simulation parameters (alpha, charge, link distance)
+│   ├── graph-engine.js    ← force simulation: Coulomb repulsion, Hooke attraction, Verlet
+│   ├── graph-renderer.js   ← SVG rendering: nodes, edges, labels
+│   ├── graph-panel.js      ← dossier panel: Degree, Betweenness, PageRank
+│   ├── network-map.js      ← decision tree
+│   ├── copy-data.js
+│   ├── refresh.js
+│   ├── logger.js
+│   └── init.js
+├── data/
+│   └── nodes.json          ← node reference (no world.geojson)
+└── presets/presets.json
+```
+
+**Force simulation (Barabási 2016, *Network Science*):**
+- **Repulsion:** Coulomb repulsion, `F = k² / d` (Fruchterman-Reingold 1991), where k is the ideal link length, d is the distance.
+- **Attraction:** Hooke attraction along edges, `F = d² / k`.
+- **Integration:** Verlet (velocity-free), `x_new = 2·x − x_prev + a·dt²`.
+- **Cooling:** alpha decay from 1.0 to 0.001 over 300 iterations.
+- **Stabilization:** the simulation stops at alpha < 0.005.
+
+**4 node shapes:**
+- Circle — country (90 nodes)
+- Square — international organization
+- Triangle — financial center
+- Diamond — cyber node
+
+**Graph metrics (dossier panel):**
+- **Degree centrality** — the number of a node's direct links.
+- **Betweenness centrality** — the share of shortest paths passing through the node (Freeman 1977).
+- **PageRank** — an iterative importance metric (Page et al. 1999), damping = 0.85.
+
+**Autonomous fallback:**
+When the API is unavailable, the graph is generated locally: seed by `layer.id`, 30–60 nodes from the reference, edges by weighted random (preferential attachment, Barabási-Albert), force simulation runs on the client.
+
+---
+
+### Summary table of the five maps
+
+| Parameter | Event Map | Metrics Map | Semantic Map | Forecast Map | Network Map |
+|-----------|-----------|-------------|--------------|--------------|-------------|
+| **Folder** | `event-map/` | `metrics-map/` | `semantic-map/` | `forecast-map/` | `network-map/` |
+| **Layers** | 84 | 75 | 35 | 16 | 12 |
+| **Categories** | 12 | 13 | 12 | 1 | 6 |
+| **vizType** | `marker` | `choropleth` / `series` | `choropleth` (diverging) | `probability` | `graph` (SVG) |
+| **Channels** | Position + Hue + Shape | Position + Color intensity | Position + Hue (cat.) + Shape | Position + Color + Transparency | Position (force) + Shape + Edge |
+| **Palette** | categorical | sequential + diverging | diverging RdYlGn5, Set1 | sequential YlOrRd5 + opacity | categorical (node shapes) |
+| **Map** | Leaflet + GeoJSON | Leaflet + GeoJSON | Leaflet + GeoJSON | Leaflet + GeoJSON | SVG (no Leaflet, no GeoJSON) |
+| **Data type** | Events (points) | Numbers (country aggregates) | Categories (sentiment) | Probabilities + confidence | Links (graph) |
+| **Fallback** | 180 markers/layer | 90 countries, Jenks, GVF | 90 countries, diverging | 90 countries, double encoding | 30–60 nodes, preferential attachment |
+| **Failure domain** | 1 | 1 | 1 | 1 | 1 |
+
+### Why the maps cannot live together — the scientific rationale
+
+#### 1. Cognitive channel interference
+
+Human vision can process 2–3 visual channels simultaneously, but only if they are **separable** — that is, they do not compete for the same visual resources (Munzner 2014, §5.3). Position and color intensity are separable. Color intensity and transparency are **not separable**: the brain cannot distinguish "darker because the value is higher" from "darker because the layer is less transparent". That is why Forecast Map uses transparency deliberately — as the only layer encoding uncertainty — and only because probability is the only data type where uncertainty is part of the semantics, not noise.
+
+If we tried to overlay choropleth (Metrics) on top of marker (Event), both encodings would use the map position, and the brain could not separate "where the event is" from "where the country ends". The result is visual noise in which no pattern is legible.
+
+#### 2. Different data models
+
+The five maps are five different **data models**, each with its own ontology:
+
+- **Event** — a point in space-time. Entity: "something happened here and now". Attributes: coordinates, time, category, priority.
+- **Indicator** — a number aggregated over a territory. Entity: "a country's metric on a date". Attributes: value, unit, period.
+- **Sentiment** — a category computed from texts. Entity: "how it is being reported". Attributes: class (5 levels), source, confidence.
+- **Forecast** — the probability of a future event with uncertainty. Entity: "what may happen and how sure we are". Attributes: probability, horizon, confidence.
+- **Relation** — a link between entities. Entity: "who is connected to whom". Attributes: nodes, edges, weights, types.
+
+These models do not reduce to one another. An event cannot be "averaged" into an indicator without losing temporal and spatial precision. An indicator cannot be "unclustered" back into events. A forecast cannot be "observed" as a fact. A relation cannot be "painted" as a choropleth. Each model requires its own visual language, and these languages are incompatible.
+
+#### 3. The Separation of Concerns principle (Dijkstra 1974)
+
+Splitting into five maps is also an architectural decision. Each map has its own load DAG, its own set of scripts, its own CSS, its own `manifest.json`, its own `layers.js`. A failure in one map (an error in `layers.js`, a dead API, a broken fallback) does not spread to the rest. This is the Bulkhead pattern (Nygard 2007): isolation of failure domains.
+
+If all layers lived in a single `layers.js` (84 + 75 + 35 + 16 + 12 = 222 layers), a single syntax error in one layer would take down all 222. With five maps, an error in one Event Map layer leaves Metrics, Semantic, Forecast and Network fully operational.
+
+#### 4. An explanation for the layperson
+
+Imagine you work at an airport and need to simultaneously:
+1. Track every aircraft on radar (events — Event Map)
+2. See each terminal's load in percent (metrics — Metrics Map)
+3. Understand how passengers rate the service (sentiment — Semantic Map)
+4. Know the probability of tomorrow's flight delays (forecast — Forecast Map)
+5. See the airline route diagram (relations — Network Map)
+
+Can this all be drawn on one screen? Technically — yes. But you will understand nothing: aircraft dots will obscure terminal fills, route arrows will cover the radar, and forecast transparency will clash with metric colors. So each type of information gets its own screen. Five screens — not because it is more convenient, but because otherwise the data becomes invisible.
+
+---
+
+## 📊 Analytics platform
+
+Crucix ships with a **full analytics platform** — 68 analyzers grouped into **8 categories** (*before: 59 — the count grew with the RSS analyzer family*).
+
+### Analyzer categories
 
 | Category | Description | Count |
 |---|---|---|
-| **index** | Indices (country, regional) | 2 |
+| **index** | Indices (country-level, regional) | 2 |
 | **detector** | Event and anomaly detectors | 8 |
-| **forecast** | Predictive models | 4 |
+| **forecast** | Forecast models | 4 |
 | **semantic** | Semantic text analysis | 6 |
 | **flow** | Flows (trade, migration, resources) | 10 |
 | **market** | Market indicators | 7 |
-| **specialist** | Specialized (infra, nuclear, sanctions) | 21 |
+| **specialist** | Specialized (infrastructure, nuclear, sanctions) | 21 |
 | **space** | Space | 1 |
 | **TOTAL** | | **59** |
 
-### Key Analyzers
+*Note: the category distribution reflects the state as of the date this table was composed; the current actual number of analyzers is 68 (the growth came from the RSS family: silence-detector, taxonomy-gaps, source-coordination, narrative-framing, alert-engine and related). For live counts see `/registry`.*
+
+### Key analyzers
 
 **Indices (index):**
-- `country-instability` — Country Instability Index (CII). Reference implementation.
+- `country-instability` — Country Instability Index (CII). The reference implementation.
 - `resilience-index` — Resilience Index (197 countries, 152 unique scores)
 
 **Composites (specialist):**
 - `strategic-risk-composite` — Strategic risk (instability + resilience deficit + infrastructure + geopolitics)
-- `infrastructure-cascade` — Cascade infrastructure analysis (13 files, 15 endpoints)
+- `infrastructure-cascade` — Infrastructure cascade analysis (13 files, 15 endpoints)
 
 **Forecasts (forecast):**
 - `conflict-escalation-tracker` — Conflict escalation (6 levels)
-- `ai-forecasts` — LLM-based forecasts
-- `social-briefing` — LLM briefs (daily, alert, summary)
-- `central-bank-predictor` — Central bank action forecasts
+- `ai-forecasts` — Forecasts via LLM
+- `social-briefing` — Briefs via LLM (daily, alert, summary)
+- `central-bank-predictor` — Central bank action forecast
 
 **Detectors (detector):**
 - `geo-convergence` — Geographic convergence
 - `threat-classification` — Threat classification
 - `surge-detection` — Anomaly surges
-- `focal-point-detection` — Focal points of activity
+- `focal-point-detection` — Focal activity points
 - `baseline-alerting` — Threshold alerts
-- `cyber-attack-monitor` — Cyber attacks
+- `cyber-attack-monitor` — Cyberattacks
 - `snapshot-system` — State snapshots
-- `pizza-index` — Activity near headquarters (internal index)
+- `pizza-index` — Headquarters activity (internal index)
 
 **Semantics (semantic):**
 - `adaptive-news-clustering` — News clustering (TF-IDF)
 - `ai-news-synthesis` — AI news synthesis
 - `entity-extraction` — NER
-- `multi-source-corroboration` — Fact checking
+- `multi-source-corroboration` — Fact-checking
 - `source-credibility` — Source credibility
 - `social-sentiment-analyzer` — Social media sentiment
 
@@ -223,7 +621,7 @@ Crucix includes a **full analytics platform** — 59 analyzers divided into **8 
 - `route-explorer` — Alternative routes
 - `supply-chain-cascade-engine` — Supply chain cascades
 - `supply-chain-resilience` — Supply resilience
-- `tanker-fleet-monitor` — Tanker fleet (dark vessels)
+- `tanker-fleet-monitor` — Tanker fleet (dark ships)
 - `arms-transfer-tracker` — Arms transfers
 - `diplomatic-tracker` — Diplomatic activity
 - `migration-flow-tracker` — Migration flows
@@ -248,20 +646,20 @@ Crucix includes a **full analytics platform** — 59 analyzers divided into **8 
 **Space (space):**
 - `satellite-analyzer` — Satellite analysis
 
-### How Analysis Works
+### How the analysis works
 
 1. **Collection** — collectors (`scripts/collectors/`) put data into the basket `data/basket/`
-2. **Computation** — analyzers (`scripts/analyzers/`) read the basket + references, compute indices, write to `data/analytics/{category}/`
-3. **Delivery** — API modules (`apis/sources/{name}-api.mjs`) read results, serve via `/api/layers/{name}`
-4. **Display** — a layer on the map (`dashboard/public/{map}/js/layers.js`) shows the result
+2. **Computation** — analyzers (`scripts/analyzers/`) read the basket + reference data, compute indices, write to `data/analytics/{category}/`
+3. **Serving** — API modules (`apis/sources/{name}-api.mjs`) read the results and serve them via `/api/layers/{name}`
+4. **Display** — a layer on one of the 5 maps (`dashboard/public/<map-name>/js/layers.js`) renders the result
 
-### `data/analytics/` Structure
+### `data/analytics/` structure
 
 ```
 data/analytics/
 ├── _manifest.json     # registry of all analyzers
-├── _catalog.json      # class catalog
-├── _lineage.json      # data provenance
+├── _catalog.json      # catalog of classes
+├── _lineage.json      # data lineage
 ├── _health.json       # status
 ├── _schema.json       # schema
 ├── index/             # indices
@@ -274,16 +672,16 @@ data/analytics/
 └── space/             # space
 ```
 
-### Running an Analyzer
+### Running an analyzer
 
 ```bash
-# Single analyzer
+# One analyzer
 node scripts/analyzers/resilience-index.mjs
 
-# All analyzers (manual)
+# All analyzers (manually)
 for f in scripts/analyzers/*.mjs; do node "$f"; done
 
-# Full cycle: collect → analyze → serve
+# Full cycle: collection → analysis → serving
 node scripts/collectors/collect-worldbank.mjs
 node scripts/analyzers/strategic-risk-composite.mjs
 curl http://localhost:3117/api/layers/strategic-risk-composite/stats
@@ -291,9 +689,9 @@ curl http://localhost:3117/api/layers/strategic-risk-composite/stats
 
 ---
 
-## 🏗️ Infrastructure Analyzer
+## 🏗️ Infrastructure analyzer
 
-**Infrastructure Cascade** — the most complex analyzer in Crucix. Consists of **13 files** and serves **15 endpoints**.
+**Infrastructure Cascade** is the most complex analyzer in Crucix. It consists of **13 files** and serves **15 endpoints**.
 
 ### Files
 
@@ -304,31 +702,31 @@ curl http://localhost:3117/api/layers/strategic-risk-composite/stats
 - `infrastructure-temporal.mjs` — temporal decay
 
 **Block B (computation):**
-- `infrastructure-vulnerability-calc.mjs` — adaptive vulnerability calculation
+- `infrastructure-vulnerability-calc.mjs` — adaptive vulnerability computation
 - `infrastructure-monte-carlo.mjs` — Monte Carlo, sensitivity
-- `infrastructure-scenario-engine.mjs` — 8 scenarios (Hormuz, Taiwan, NPP...)
+- `infrastructure-scenario-engine.mjs` — 8 scenarios (Hormuz, Taiwan, nuclear plants...)
 
 **Block C (monitoring):**
 - `infrastructure-military-monitor.mjs` — military bases
 - `infrastructure-chokepoint-monitor.mjs` — straits, canals
-- `infrastructure-nuclear-monitor.mjs` — nuclear plants
+- `infrastructure-nuclear-monitor.mjs` — nuclear power plants
 - `infrastructure-supply-chain.mjs` — HHI concentration
 - `infrastructure-cargo-anomaly.mjs` — cargo flow anomalies
 
-**+ `infrastructure-api.mjs`** — HTTP handler
+**+ `infrastructure-api.mjs`** — the HTTP handler
 
-### Infrastructure Objects
+### Infrastructure objects
 
 `data/infrastructure/objects.json` — **114 objects:**
 
-- 25 military bases
-- 20 nuclear power plants
+- 25 military bases (USA, Russia, China, NATO)
+- 20 nuclear power plants (Zaporizhzhia, Fukushima, Bushehr, Akkuyu...)
 - 26 ports (Shanghai, Singapore, Rotterdam...)
-- 15 chokepoints (Hormuz, Suez, Taiwan, Bab-el-Mandeb...)
+- 15 chokepoints (Hormuz, Suez, Taiwan, Bab el-Mandeb...)
 - 15 dams (Three Gorges, Itaipu, Kakhovka...)
-- 13 power grids
+- 13 power grids (East China, ERCOT, Ukrenergo...)
 
-### 15 Endpoints
+### 15 endpoints
 
 ```
 GET /api/layers/infrastructure-api                    — root
@@ -341,62 +739,75 @@ GET /api/layers/infrastructure-api/sensitivity        — sensitivity
 GET /api/layers/infrastructure-api/featurecollection  — GeoJSON
 GET /api/layers/infrastructure-api/stats              — statistics
 GET /api/layers/infrastructure-api/military           — military objects
-GET /api/layers/infrastructure-api/chokepoints        — straits
-GET /api/layers/infrastructure-api/nuclear            — NPPs
+GET /api/layers/infrastructure-api/chokepoints        — chokepoints
+GET /api/layers/infrastructure-api/nuclear            — nuclear plants
 GET /api/layers/infrastructure-api/supply-chain       — supply chains
 GET /api/layers/infrastructure-api/cargo-anomalies    — anomalies
 GET /api/layers/infrastructure-api/scenarios          — scenarios
 ```
 
-### Key Results
+### Key results
 
-- **PageRank → chokepoint-taiwan** (most connected node)
+- **PageRank → chokepoint-taiwan** (the most connected node)
 - **Top bottleneck → chokepoint-malacca**
 - **Vulnerability max → npp-zaporizhzhia**
-- **Sensitivity → exposure** (most influential factor)
+- **Sensitivity → exposure** (the most influential factor)
 - **Taiwan blockade scenario → 3 nodes affected**
 - **Hormuz closure scenario → 5 nodes affected**
 
 ---
 
-## 🔀 Router v3.1 — Mechanism A+B
+## 🔀 Router v3.1 — the A+B mechanism
 
-**Router** (`server/router.mjs`) — key component. Determines which module handles a request.
+**Router** (`server/router.mjs`) — the key component. It decides which module handles a request.
 
-### 4 Lookup Mechanisms
+### 4 lookup mechanisms
 
-**1. Mechanism A (priority) — `export const route`:**
+**Mechanism A (priority) — `export const route`:**
 
-API module self-declares its prefix:
+The API module declares its own prefix:
 ```javascript
 export const route = '/api/layers/infrastructure-api';
 export default handleInfrastructureAPI;
 ```
 
-Router reads `module.route` on load and registers in `modulePrefixCache`. All subsequent requests to `/api/layers/infrastructure-api/*` go **in microseconds** from cache.
+On module load, Router reads `module.route` and registers it in `modulePrefixCache`. All subsequent requests to `/api/layers/infrastructure-api/*` resolve **in microseconds** from cache.
 
-**2. routes-api.json — exact match:**
+**routes-api.json — exact match:**
 
-Entry `{ path: '/api/layers/country-instability', module: 'country-instability-api' }`. Works for legacy modules.
+An entry like `{ path: '/api/layers/country-instability', module: 'country-instability-api' }`. Works for legacy modules.
 
-**3. routes-api.json — wildcard:**
+**routes-api.json — wildcard:**
 
-Entry `{ path: '/api/layers/infrastructure-api/*', module: 'infrastructure-api' }`. Works as fallback.
+An entry like `{ path: '/api/layers/infrastructure-api/*', module: 'infrastructure-api' }`. Works as a fallback.
 
-**4. Mechanism B — auto-prefix:**
+**Mechanism B — auto-prefix:**
 
-If a file in `apis/sources/` is named `{name}-api.mjs` — automatically available via `/api/layers/{name}/*`. For 300+ legacy modules.
+If a file in `apis/sources/` is named `{name}-api.mjs`, it is automatically available via `/api/layers/{name}/*`. Covers 300+ legacy modules.
 
-### Lookup Priority
+### Lookup priority
 
 1. `modulePrefixCache` (Mechanism A) — fastest
 2. `routes-api.json (exact)` — exact match
-3. `routes-api.json (wildcard)` — with `*` support
-4. `autoPrefixCache` (Mechanism B) — by filename
+3. `routes-api.json (wildcard)` — honoring `*`
+4. `autoPrefixCache` (Mechanism B) — by file name
 
-### For Developers
+### Before → Now: the registry-driven evolution
 
-**New API module** — recommended to add `export const route` (Mechanism A):
+**Before:** `server/router.mjs` carried a hard-coded `LEGACY_ALIASES` object, edited by hand. Modules that renamed or moved silently broke — dozens of routes returned 404 (in one audit, `usgs-api` and 57 other modules), and each fix was a manual edit with a risk of breaking the rest.
+
+**Now:** the legacy map is generated automatically:
+- `server/build-registry.mjs` — before start, builds the registry of modules from `apis/sources/`;
+- `server/build-legacy-aliases.mjs` — generates `server/legacy-aliases.generated.json` (358 records), which `router.mjs` imports instead of a hard-coded object;
+- `server/legacy-stubs.json` — the whitelist of 34 API stubs (no v2, no basket) is kept in a separate file;
+- `server/verify.mjs` — a single verifier: it walks all registered routes and pages, and reports the status (200 / stub / 404) for each;
+- `scripts/lint-contract.mjs` — checks basket contracts; the server **refuses to start** on a contract violation. This is a feature, not a bug: a broken contract is caught at boot, not in production;
+- the `req.url` rewrite fix in LEGACY redirects — the target module now sees the rewritten path, not the original one; this closed the 404s for 58 modules;
+- the generator handles dots in file names (fixed for `rsshub.classified`).
+
+### For the developer
+
+**A new API module** — adding `export const route` (Mechanism A) is recommended:
 
 ```javascript
 // apis/sources/my-module-api.mjs
@@ -407,902 +818,54 @@ export default async function handler(req, res) {
 }
 ```
 
-**No longer needed** to manually add an entry to `routes-api.json`. The module self-registers.
+There is **no longer any need** to add an entry to `routes-api.json` manually. The module registers itself.
 
 ---
 
-## 🗺️ Five Crucix Maps — Five Dimensions of Reality
+## 🧪 AI lab
 
-Crucix consists of **5 autonomous maps**, each visualizing its own class of data. This is not an organizational convenience — it's a scientifically grounded decision based on visualization theory.
-
-### Why Five Maps, Not One
-
-The separation follows the principle of **Separation of Concerns** (Dijkstra, 1974) and the theory of **channel separability** (Munzner, 2014). Each data class requires its own visual encoding:
-
-| Data class | Visual channel | Encoding | Capacity |
-|---|---|---|---|
-| **Events** | Position + Color | Point markers | High for localization |
-| **Quantitative metrics** | Position + Color intensity | Choropleth | High for country comparison |
-| **Semantics** | Position + Hue + Shape | Categorical color + shape | Medium for typology |
-| **Probabilities** | Position + Color intensity + Transparency | Probability fill | Medium for uncertainty |
-| **Relations** | Topology (force) + Shape | Force-directed graph | High for structure |
-
-An attempt to combine all of this into a single map would violate the **channel separability principle** (Munzner, 2014, Table 5.3). The user would not be able to simultaneously perceive 5 different encodings without **cognitive interference** — a phenomenon where one channel distorts the perception of another (Ware, 2013, Chapter 6).
-
-### Explanation for Non-Specialists
-
-Imagine an airport. The control tower uses a **radar** (dots for planes), the terminal shows a **departure board** (numbers for flights), passengers read **reviews** (text with sentiment), the weather service provides a **forecast** (probabilities for storms), and the airline's route map shows a **network of connections** (lines between cities).
-
-All five are about the same airport — but mixing them on one screen would create chaos. Each tool is designed for its own data type. Crucix maps work the same way: same world, different lenses.
-
-- **Event Map** = radar: where did something happen right now?
-- **Metrics Map** = departure board: what are the numbers for each country?
-- **Semantic Map** = reviews: what is the tone of the discussion?
-- **Forecast Map** = weather forecast: what is the probability of an event?
-- **Network Map** = route map: who is connected to whom?
-
-### The Five Maps
-
----
-
-#### 1. Event Map (`/event-map/`)
-
-**Purpose:** Visualize discrete events on a geographic map — rallies, attacks, incidents, disasters, cyber attacks, diplomatic events, economic events, terrorist incidents, migration crises, health emergencies, infrastructure failures, social movements.
-
-- **Data model:** point events (lat/lng + type + severity + timestamp + attributes)
-- **Visualization:** Leaflet markers with clustering, prioritization, popups with event details
-- **Layers:** 84 layers in 12 categories
-- **Visual channel:** Position + Color (marker type determines icon and color)
-- **Distinguishing feature:** Each point is a separate event, not an aggregate. Thousands of markers per layer. Events have temporal dimension — can be filtered by time range.
-- **Folder structure:** `dashboard/public/event-map/` — `index.html`, `js/` (15 files), `css/`, `data/world.geojson`, `presets/`
-- **Rendering:** Leaflet + `world.geojson` for boundaries. Markers rendered via `updateMarkers()`. Marker clustering prevents overlap at high zoom.
-- **Fallback:** If API returns 404 — deterministic marker generation from `countries.js` (2 markers per country, 180 total per layer). Coordinates = country center + deterministic offset.
-
-**Layer Catalog (84 layers, 12 categories):**
-
-| Category | Layers | Description |
-|---|---|---|
-| conflicts | 14 | Armed conflicts, border incidents, military clashes, ceasefire violations, artillery strikes, drone attacks, naval incidents, air defense activations, troop movements, proxy attacks, cross-border shelling, military escalations, battlefield reports, combat losses |
-| protests | 10 | Mass protests, civil unrest, labor strikes, student demonstrations, opposition rallies, election protests, police crackdowns, anti-government marches, civic mobilization, revolutionary movements |
-| disasters | 10 | Earthquakes, floods, wildfires, hurricanes, tsunamis, volcanic eruptions, industrial accidents, chemical spills, nuclear incidents, infrastructure collapses |
-| cyber | 8 | Cyber attacks, ransomware campaigns, DDoS attacks, data breaches, supply chain compromises, critical infrastructure intrusions, state-sponsored APT campaigns, zero-day exploits |
-| politics | 8 | Elections, government changes, constitutional amendments, political appointments, impeachment proceedings, referendums, party congresses, legislative crises |
-| diplomacy | 8 | Diplomatic visits, treaty signings, summit meetings, ambassador recalls, diplomatic expulsions, peace negotiations, alliance formations, bilateral agreements |
-| economics | 7 | Sanctions announcements, trade restrictions, currency crises, market crashes, bond defaults, sovereign rating changes, capital controls |
-| terrorism | 6 | Terrorist attacks, bombing incidents, hostage situations, terror cell arrests, terror financing disruptions, insurgent operations |
-| migration | 5 | Refugee flows, border crossings, migrant crises, displacement waves, asylum processing |
-| health | 4 | Epidemic outbreaks, pandemic alerts, vaccination campaigns, health system failures |
-| infrastructure | 2 | Power grid failures, transportation disruptions |
-| social | 2 | Social media campaigns, information operations |
-| **TOTAL** | **84** | |
-
----
-
-#### 2. Metrics Map (`/metrics-map/`)
-
-**Purpose:** Visualize quantitative indicators by country — economic, financial, ESG, cyber, energy, social, geopolitical, military metrics.
-
-- **Data model:** country aggregates (ISO code + numeric value)
-- **Visualization:** Choropleth (color intensity encodes value)
-- **Layers:** 75 layers in 13 categories
-- **Visual channel:** Position + Color intensity (choropleth)
-- **Distinguishing feature:** Each country is an aggregate of a numeric indicator. 90 countries. Classification via Jenks DP, Quantile, Equal Interval, Standard Deviation, or Manual (domain-specific thresholds). GVF quality control (typically 0.90–0.93).
-- **Folder structure:** `dashboard/public/metrics-map/` — `index.html`, `js/` (15 files), `css/`, `data/world.geojson`, `presets/`
-- **Rendering:** Leaflet + choropleth via `applyChoropleth()`. ColorBrewer palettes (7 sequential, 4 diverging). Legend with class breaks, method, and GVF quality.
-- **Fallback:** If API returns 404 — deterministic value generation per country based on `layer.id` seed and country status (critical → higher, normal → lower)
-
-**Layer Catalog (75 layers, 13 categories):**
-
-| Category | Layers | vizType | Key indicators |
-|---|---|---|---|
-| finance | 26 | 12 choropleth + 8 series + 6 marker | DXY, copper/gold, gold/oil, gold/silver, yield curve, Big Mac, uranium, HY OAS, OVX, S&P/VIX, VXX, crypto fear, WTI/Brent |
-| economics | 15 | 11 choropleth + 4 series | PMI, inflation, GDP, unemployment, trade balance, consumer confidence, business optimism, consumer expectations, recession probability, debt/GDP |
-| esg | 8 | 8 choropleth | Happiness, population density, refugees, urbanization, WHO health, COVID-19, HDI |
-| geopolitical | 6 | 6 choropleth | Social tension, corruption, democracy index, instability, resilience, strategic risk |
-| energy | 5 | 4 choropleth + 1 series | EIA, nuclear, renewable, oil/gas, WTI/Brent spread |
-| health | 3 | 3 choropleth | WHO health index, COVID-19, medical infrastructure |
-| social | 3 | 3 choropleth | Population displacement, refugees, phone activity |
-| cyber | 2 | 1 choropleth + 1 series | CVE vulnerabilities, composite cyber threat index |
-| military | 2 | 2 choropleth | Military spending, war readiness |
-| other | 2 | 2 choropleth | Internet penetration, mobile connectivity |
-| threats | 1 | 1 choropleth | CVE vulnerability density |
-| intelligence | 1 | 1 choropleth | Behavioral patterns |
-| news | 1 | 1 choropleth | Google Trends |
-| **TOTAL** | **75** | 56 choropleth + 14 series + 6 marker | |
-
-**Classification Methods (Jenks 1963, Brewer 2005):**
-
-| Method | Formula | Application |
-|---|---|---|
-| Jenks DP | Minimize SDCM, O(k·n²) | Default |
-| Quantile | Equal groups | When outliers present |
-| Equal Interval | (max−min)/k | Smooth scales |
-| Standard Dev | μ ± 0.5σ, ± 1.5σ | Normal distribution |
-| Manual | Expert thresholds | ISM 50, recession 20/40/60/80 |
-
-Quality control: GVF = (SDAM − SDCM) / SDAM > 0.7.
-
-**ColorBrewer Palettes:**
-
-- Sequential (7): Blues, YlOrRd, Greens, Oranges, Purples, BuPu, OrRd
-- Diverging (4): RdYlGn5, RdBu5, BrBG5, PiYG5
-
-Domain rules:
-- PMI → diverging RdYlGn5, manual breaks [42, 47, 53, 58] (ISM 50 = boundary)
-- Recession → sequential YlOrRd5, manual breaks [20, 40, 60, 80]
-- Copper/Gold → diverging RdBu5, Jenks
-- Yield Curve → diverging RdBu5, Jenks (inversion = red)
-
----
-
-#### 3. Semantic Map (`/semantic-map/`)
-
-**Purpose:** Visualize semantic text analysis — sentiment, narratives, disinformation, media tone, propaganda, info-war operations, social media dynamics, topic modeling, source credibility, cognitive biases, manipulation tactics, toxicity.
-
-- **Data model:** sentiment scores + categorical clusters (country + sentiment class + cluster type)
-- **Visualization:** Choropleth with diverging palette + categorical overlays
-- **Layers:** 35 layers in 12 categories
-- **Visual channel:** Position + Hue (diverging RdYlGn5 for sentiment) + Shape (Set1 categorical for clusters)
-- **Distinguishing feature:** 5 sentiment classes (Cowan, 2001: 4±1 chunk). Categorical color for cluster types. Diverging palette for sentiment polarity — positive sentiment is green, negative is red, neutral is yellow.
-- **Folder structure:** `dashboard/public/semantic-map/` — `index.html`, `js/` (15 files), `css/`, `data/world.geojson`, `presets/`
-- **Rendering:** Leaflet + choropleth via `sentiment-adapter.js`. Diverging RdYlGn5 for sentiment, OrRd5 for credibility, Set1 (10 colors) for categorical clusters.
-- **Fallback:** If API returns 404 — deterministic sentiment generation (5 classes) with sentiment-adapter
-
-**Layer Catalog (35 layers, 12 categories):**
-
-| Category | Layers | Description |
-|---|---|---|
-| sentiment | 5 | Overall sentiment, social media sentiment, news sentiment, political sentiment, economic sentiment |
-| narratives | 4 | Dominant narratives, counter-narratives, narrative momentum, narrative origin |
-| disinformation | 4 | Fake news detected, debunked claims, coordinated inauthentic behavior, bot activity |
-| media_tone | 3 | Media tone index, editorial bias, coverage intensity |
-| propaganda | 3 | State propaganda index, propaganda themes, propaganda reach |
-| info_war | 3 | Info-war operations, narrative warfare, cognitive warfare |
-| social_media | 3 | Social media activity, engagement patterns, viral content |
-| topics | 3 | Trending topics, topic clusters, topic evolution |
-| credibility | 2 | Source credibility, fact-check density |
-| cognitive_biases | 2 | Confirmation bias index, availability bias index |
-| manipulation | 2 | Manipulation tactics, influence operations |
-| toxicity | 1 | Toxicity index |
-| **TOTAL** | **35** | |
-
-**Sentiment Classification (Cowan, 2001):**
-
-5 classes with diverging RdYlGn5 palette:
-- Strongly negative (red, class 1)
-- Negative (orange, class 2)
-- Neutral (yellow, class 3)
-- Positive (light green, class 4)
-- Strongly positive (dark green, class 5)
-
----
-
-#### 4. Forecast Map (`/forecast-map/`)
-
-**Purpose:** Visualize probabilistic forecasts — recession probability, conflict risk, economic risk, geopolitical stability, energy supply disruption, pandemic resurgence, market crash probability, sovereign default risk, currency crisis probability, trade disruption risk, cyber attack probability, migration crisis probability, food insecurity risk, water stress forecast, climate event probability, infrastructure failure probability.
-
-- **Data model:** probability + confidence (country + probability 0–100% + model confidence 0–1)
-- **Visualization:** Choropleth with **dual encoding** — color = probability class, transparency = model confidence
-- **Layers:** 16 layers, all of type `probability`
-- **Visual channel:** Position + Color intensity (probability) + Transparency (confidence). Dual encoding per Cressie (1993).
-- **Distinguishing feature:** Unique opacity formula: `opacity = 0.4 + 0.5 × confidence` (Cressie, 1993). Manual breaks [20, 40, 60, 80] with YlOrRd5 palette. Spatial proxies for 4 forecast sources. Low-confidence forecasts are semi-transparent — high-confidence forecasts are opaque.
-- **Folder structure:** `dashboard/public/forecast-map/` — `index.html`, `js/` (15 files), `css/`, `data/world.geojson`, `presets/`
-- **Rendering:** Leaflet + choropleth via `forecast-adapter.js`. Dual encoding: color (probability class via manual breaks) + opacity (confidence via Cressie formula). Legend shows both probability thresholds and confidence range.
-- **Fallback:** If API returns 404 — deterministic probability generation with confidence parameter (probability = base + noise(seed), confidence = 0.5 + noise(seed))
-
-**Layer Catalog (16 layers, all probability type):**
-
-| # | Layer ID | Forecast | Horizon |
-|---|---|---|---|
-| 1 | recession-probability | Recession probability (model ensemble) | 6 months |
-| 2 | conflict-escalation-forecast | Conflict escalation probability | 3 months |
-| 3 | sovereign-default-risk | Sovereign default probability | 12 months |
-| 4 | currency-crisis-probability | Currency crisis probability | 3 months |
-| 5 | trade-disruption-risk | Trade disruption probability | 6 months |
-| 6 | energy-supply-risk | Energy supply disruption probability | 6 months |
-| 7 | cyber-attack-probability | Major cyber attack probability | 1 month |
-| 8 | pandemic-resurgence | Pandemic resurgence probability | 6 months |
-| 9 | market-crash-probability | Stock market crash probability | 3 months |
-| 10 | political-instability-forecast | Political instability probability | 6 months |
-| 11 | migration-crisis-forecast | Migration crisis probability | 6 months |
-| 12 | food-insecurity-forecast | Food insecurity probability | 6 months |
-| 13 | water-stress-forecast | Water stress probability | 12 months |
-| 14 | climate-event-probability | Extreme climate event probability | 12 months |
-| 15 | infrastructure-failure-forecast | Critical infrastructure failure probability | 3 months |
-| 16 | geopolitical-risk-forecast | Composite geopolitical risk probability | 6 months |
-| **TOTAL** | **16** | | |
-
-**Dual Encoding Explained:**
-
-Unlike Metrics Map where color intensity encodes a single value, Forecast Map uses **two visual channels simultaneously**:
-
-1. **Color intensity** → probability class (5 classes via manual breaks at 20, 40, 60, 80)
-   - 0–20%: very low (light yellow)
-   - 20–40%: low (yellow)
-   - 40–60%: moderate (orange)
-   - 60–80%: high (dark orange)
-   - 80–100%: very high (red)
-
-2. **Transparency** → model confidence
-   - opacity = 0.4 + 0.5 × confidence
-   - confidence = 0.0 → opacity = 0.4 (semi-transparent, uncertain forecast)
-   - confidence = 1.0 → opacity = 0.9 (nearly opaque, confident forecast)
-
-This dual encoding allows the user to immediately see both **what** the forecast says (color) and **how much to trust it** (opacity). A high-probability, low-confidence forecast appears as a washed-out red — visually distinct from a high-probability, high-confidence forecast which appears as a solid red.
-
----
-
-#### 5. Network Map (`/network-map/`)
-
-**Purpose:** Visualize relational graphs — cyber networks, trade flows, financial connections, migration routes, diplomatic ties, supply chains, arms transfer networks, sanctions networks, energy trade, information flow networks.
-
-- **Data model:** graph (nodes + edges with type and weight)
-- **Visualization:** SVG force-directed graph (no Leaflet, no world.geojson)
-- **Layers:** 12 layers with 4 node shapes and multiple edge types
-- **Visual channel:** Position (force simulation) + Shape (node type) + Edge width (relation strength)
-- **Distinguishing feature:** No geographic map. Force simulation: Coulomb repulsion, Hooke attraction, Verlet integration (Barabási, 2016). Dossier panel with graph metrics (Degree, Betweenness, PageRank, Eigenvector centrality).
-- **Folder structure:** `dashboard/public/network-map/` — `index.html`, `js/` (15 files), `css/`. **No `data/world.geojson`** — uses SVG, not geographic projection.
-- **Rendering:** SVG force-directed graph. Force simulation with charge (Coulomb), link (Hooke), and center forces. Verlet integration for stable physics. Interactive: drag nodes, zoom, pan.
-- **Fallback:** If API returns 404 — deterministic graph generation from `countries.js` (nodes = countries, edges = deterministic connections based on geographic proximity and status similarity)
-
-**Layer Catalog (12 layers):**
-
-| # | Layer ID | Node type | Edge type | Description |
-|---|---|---|---|---|
-| 1 | cyber-network | Country (Circle) | Attack (red arrow) | Cyber attack attribution networks |
-| 2 | trade-network | Country (Square) | Trade flow (width = volume) | International trade relationships |
-| 3 | financial-network | Country (Circle) | Capital flow (width = amount) | Financial connections and capital flows |
-| 4 | migration-network | Country (Triangle) | Migration flow (width = count) | Migration routes and patterns |
-| 5 | diplomatic-network | Country (Diamond) | Diplomatic tie (solid line) | Diplomatic recognition and relations |
-| 6 | supply-chain-network | Country (Square) | Supply link (width = dependency) | Supply chain dependencies |
-| 7 | arms-transfer-network | Country (Triangle) | Transfer (red arrow, width = volume) | Arms trade networks |
-| 8 | sanctions-network | Country (Diamond) | Sanction (red dashed) | Sanctions relationship networks |
-| 9 | energy-trade-network | Country (Square) | Energy flow (width = volume) | Energy trade relationships |
-| 10 | info-flow-network | Country (Circle) | Info flow (blue arrow) | Information dissemination networks |
-| 11 | alliance-network | Country (Diamond) | Alliance (solid thick) | Military and strategic alliances |
-| 12 | intelligence-network | Country (Triangle) | Intel sharing (dashed) | Intelligence sharing relationships |
-| **TOTAL** | **12** | | | |
-
-**Node Shapes (4 types):**
-- **Circle** — countries (general actors)
-- **Square** — countries (economic actors: trade, supply chain, energy)
-- **Triangle** — countries (human actors: migration, arms transfers, intelligence)
-- **Diamond** — countries (institutional actors: diplomacy, sanctions, alliances)
-
-**Graph Metrics (Dossier Panel):**
-
-When a node is clicked, the dossier panel shows:
-- **Degree** — number of direct connections
-- **Betweenness** — how often this node lies on shortest paths between others (Freeman, 1977)
-- **PageRank** — importance based on the PageRank algorithm (Page et al., 1999)
-- **Eigenvector centrality** — importance based on the importance of neighbors (Bonacich, 1987)
-- **Clustering coefficient** — how densely the node's neighbors are interconnected
-
-**Force Simulation Parameters:**
-- Charge strength: −300 (Coulomb repulsion)
-- Link distance: 80px (Hooke attraction)
-- Center force: 0.05 (gravity toward center)
-- Alpha decay: 0.0228 (cooling rate)
-- Verlet integration (Barabási, 2016, Chapter 4)
-
----
-
-### Summary Table
-
-| Parameter | Event Map | Metrics Map | Semantic Map | Forecast Map | Network Map |
-|---|---|---|---|---|---|
-| **URL** | `/event-map/` | `/metrics-map/` | `/semantic-map/` | `/forecast-map/` | `/network-map/` |
-| **Layers** | 84 | 75 | 35 | 16 | 12 |
-| **Categories** | 12 | 13 | 12 | 1 | 1 |
-| **Data class** | Events | Metrics | Semantics | Probabilities | Relations |
-| **Data model** | Point features | Country aggregates | Country + sentiment | Country + probability | Graph (nodes + edges) |
-| **Visual type** | Markers | Choropleth | Choropleth + categorical | Probability fill | Force graph |
-| **Leaflet** | Yes | Yes | Yes | Yes | No (SVG) |
-| **world.geojson** | Yes | Yes | Yes | Yes | No |
-| **Adapter** | — | series-adapter | sentiment-adapter | forecast-adapter | network-adapter |
-| **Classification** | Priority | Jenks/Manual | Sentiment (5 classes) | Manual breaks | Graph metrics |
-| **Color palette** | By type | ColorBrewer seq/div | RdYlGn5 + Set1 | YlOrRd5 | By node/edge type |
-| **Opacity encoding** | — | — | — | 0.4 + 0.5×confidence | — |
-| **Fallback** | 180 markers/layer | 90 countries | 5 sentiment classes | Probability + confidence | Generated graph |
-| **JS files** | 15 | 15 | 15 | 15 | 15 |
-| **Total** | **222 layers across 5 maps** | | | | |
-
----
-
-### Detailed Layer Catalogs
-
-#### Event Map — All 84 Layer IDs
-
-**Conflicts (14):**
-`armed-conflict`, `border-incident`, `military-clash`, `ceasefire-violation`, `artillery-strike`, `drone-attack`, `naval-incident`, `air-defense-activation`, `troop-movement`, `proxy-attack`, `cross-border-shelling`, `military-escalation`, `battlefield-report`, `combat-losses`
-
-**Protests (10):**
-`mass-protest`, `civil-unrest`, `labor-strike`, `student-demonstration`, `opposition-rally`, `election-protest`, `police-crackdown`, `anti-government-march`, `civic-mobilization`, `revolutionary-movement`
-
-**Disasters (10):**
-`earthquake-event`, `flood-event`, `wildfire-event`, `hurricane-event`, `tsunami-event`, `volcanic-eruption`, `industrial-accident`, `chemical-spill`, `nuclear-incident`, `infrastructure-collapse`
-
-**Cyber (8):**
-`cyber-attack`, `ransomware-campaign`, `ddos-attack`, `data-breach`, `supply-chain-compromise`, `infrastructure-intrusion`, `apt-campaign`, `zero-day-exploit`
-
-**Politics (8):**
-`election-event`, `government-change`, `constitutional-amendment`, `political-appointment`, `impeachment-proceeding`, `referendum-event`, `party-congress`, `legislative-crisis`
-
-**Diplomacy (8):**
-`diplomatic-visit`, `treaty-signing`, `summit-meeting`, `ambassador-recall`, `diplomatic-expulsion`, `peace-negotiation`, `alliance-formation`, `bilateral-agreement`
-
-**Economics (7):**
-`sanctions-announcement`, `trade-restriction`, `currency-crisis`, `market-crash`, `bond-default`, `sovereign-rating-change`, `capital-controls`
-
-**Terrorism (6):**
-`terrorist-attack`, `bombing-incident`, `hostage-situation`, `terror-cell-arrest`, `terror-financing-disruption`, `insurgent-operation`
-
-**Migration (5):**
-`refugee-flow`, `border-crossing`, `migrant-crisis`, `displacement-wave`, `asylum-processing`
-
-**Health (4):**
-`epidemic-outbreak`, `pandemic-alert`, `vaccination-campaign`, `health-system-failure`
-
-**Infrastructure (2):**
-`power-grid-failure`, `transportation-disruption`
-
-**Social (2):**
-`social-media-campaign`, `information-operation`
-
----
-
-#### Metrics Map — All 75 Layer IDs
-
-**Finance (26):**
-`dxy`, `copper-gold-ratio`, `gold-oil-ratio`, `gold-silver-ratio`, `yield-curve`, `big-mac-index`, `uranium-price`, `hy-oas-spread`, `ovx-volatility`, `sp-vix-ratio`, `vxx-benchmark`, `crypto-fear-greed`, `rouble-dubai`, `wti-brent-spread`, `gold-price`, `oil-price-wti`, `oil-price-brent`, `silver-price`, `copper-price`, `platinum-price`, `palladium-price`, `natural-gas-price`, `coal-price`, `wheat-price`, `corn-price`, `soybean-price`
-
-**Economics (15):**
-`pmi-manufacturing`, `pmi-services`, `inflation-rate`, `gdp-growth`, `unemployment-rate`, `trade-balance`, `consumer-confidence`, `business-optimism`, `consumer-expectations`, `recession-probability`, `debt-to-gdp`, `interest-rate`, `central-bank-rate`, `budget-balance`, `current-account`
-
-**ESG (8):**
-`happiness-index`, `population-density`, `refugees-count`, `urbanization-rate`, `who-health-index`, `covid-19-cases`, `covid-19-deaths`, `hdi-index`
-
-**Geopolitical (6):**
-`social-tension`, `corruption-index`, `democracy-index`, `instability-index`, `resilience-index`, `strategic-risk`
-
-**Energy (5):**
-`eia-energy`, `nuclear-energy`, `renewable-energy`, `oil-gas-reserves`, `wti-brent-spread-energy`
-
-**Health (3):**
-`who-health-metrics`, `covid-19-metrics`, `medical-infrastructure`
-
-**Social (3):**
-`population-displacement`, `refugees-metrics`, `phone-activity`
-
-**Cyber (2):**
-`cve-vulnerabilities`, `composite-cyber-threat`
-
-**Military (2):**
-`military-spending`, `war-readiness`
-
-**Other (2):**
-`internet-penetration`, `mobile-connectivity`
-
-**Threats (1):**
-`cve-density`
-
-**Intelligence (1):**
-`behavioral-patterns`
-
-**News (1):**
-`google-trends`
-
----
-
-#### Semantic Map — All 35 Layer IDs
-
-**Sentiment (5):**
-`overall-sentiment`, `social-media-sentiment`, `news-sentiment`, `political-sentiment`, `economic-sentiment`
-
-**Narratives (4):**
-`dominant-narratives`, `counter-narratives`, `narrative-momentum`, `narrative-origin`
-
-**Disinformation (4):**
-`fake-news-detected`, `debunked-claims`, `coordinated-inauthentic`, `bot-activity`
-
-**Media Tone (3):**
-`media-tone-index`, `editorial-bias`, `coverage-intensity`
-
-**Propaganda (3):**
-`state-propaganda-index`, `propaganda-themes`, `propaganda-reach`
-
-**Info War (3):**
-`info-war-operations`, `narrative-warfare`, `cognitive-warfare`
-
-**Social Media (3):**
-`social-media-activity`, `engagement-patterns`, `viral-content`
-
-**Topics (3):**
-`trending-topics`, `topic-clusters`, `topic-evolution`
-
-**Credibility (2):**
-`source-credibility`, `fact-check-density`
-
-**Cognitive Biases (2):**
-`confirmation-bias-index`, `availability-bias-index`
-
-**Manipulation (2):**
-`manipulation-tactics`, `influence-operations`
-
-**Toxicity (1):**
-`toxicity-index`
-
----
-
-#### Forecast Map — All 16 Layer IDs
-
-`recession-probability`, `conflict-escalation-forecast`, `sovereign-default-risk`, `currency-crisis-probability`, `trade-disruption-risk`, `energy-supply-risk`, `cyber-attack-probability`, `pandemic-resurgence`, `market-crash-probability`, `political-instability-forecast`, `migration-crisis-forecast`, `food-insecurity-forecast`, `water-stress-forecast`, `climate-event-probability`, `infrastructure-failure-forecast`, `geopolitical-risk-forecast`
-
----
-
-#### Network Map — All 12 Layer IDs
-
-`cyber-network`, `trade-network`, `financial-network`, `migration-network`, `diplomatic-network`, `supply-chain-network`, `arms-transfer-network`, `sanctions-network`, `energy-trade-network`, `info-flow-network`, `alliance-network`, `intelligence-network`
-
----
-
-### Scientific References
-
-The separation of Crucix into 5 maps is grounded in the following scientific literature:
-
-| Reference | Field | Relevance |
-|---|---|---|
-| Dijkstra, 1974 | Computer Science | Separation of Concerns — each module handles one concern |
-| Munzner, 2014 | Visualization | Channel separability — visual channels must be separable to avoid interference (Table 5.3) |
-| Ware, 2013 | Perception | Cognitive interference — overlapping channels reduce reading accuracy by 40–60% (Chapter 6) |
-| Nygard, 2007 | Software Architecture | Bulkhead pattern — isolate failure domains to prevent cascading failures |
-| Jenks, 1963 | Cartography | Natural breaks classification — minimize variance within classes |
-| Brewer, 2005 | Cartography | ColorBrewer — perceptually uniform color palettes for choropleth maps |
-| Cowan, 2001 | Sentiment Analysis | 5-class sentiment model — discrete categories with ordinal properties |
-| Cressie, 1993 | Spatial Statistics | Dual encoding — color + transparency for probability and confidence |
-| Barabási, 2016 | Network Science | Force-directed layout — physics-based graph visualization |
-| Freeman, 1977 | Network Science | Betweenness centrality — node importance via shortest paths |
-| Page et al., 1999 | Network Science | PageRank — node importance via link analysis |
-| Bonacich, 1987 | Network Science | Eigenvector centrality — importance via neighbor importance |
-
-
-### How Each Map Works: End-to-End Workflow
-
-#### Event Map Workflow
-
-When a user clicks a layer button (e.g., "Armed Conflicts"):
-
-1. `layers.js` calls `loadLayer('armed-conflict')`
-2. `event-map.js` intercepts the call
-3. `fetch('/api/layers/armed-conflict')` — API request
-4. If API returns 200:
-   - Data contains an array of events with lat/lng, type, severity, timestamp
-   - `updateMarkers()` places a Leaflet marker for each event
-   - Markers are clustered to prevent overlap at low zoom
-   - Popup shows event details: type, location, date, severity, description
-5. If API returns 404 (fallback):
-   - `renderFallback()` generates 180 markers (2 per country × 90 countries)
-   - Position = country center + deterministic offset
-   - Marker type and color from layer definition
-   - Severity = random with seed based on `layer.id`
-6. Layer button gets `active` class
-7. Log: `[EventMap] Loaded layer 'armed-conflict': 180 markers`
-
-#### Metrics Map Workflow
-
-When a user clicks a layer button (e.g., "PMI Manufacturing"):
-
-1. `layers.js` calls `loadLayer('pmi-manufacturing')`
-2. `metrics-map.js` intercepts the call via `MetricsMap.interceptLoad()`
-3. `vizType === 'choropleth'` → `loadChoroplethLayer(layer)`
-4. `fetch('/api/layers/pmi-manufacturing/featurecollection')` — API request
-5. If API returns 200:
-   - Data contains GeoJSON FeatureCollection with country polygons + PMI values
-   - `applyChoropleth()` colors each country based on its value
-   - Classification: manual breaks [42, 47, 53, 58] (ISM 50 = boundary)
-   - Palette: RdYlGn5 (diverging: red = contraction, green = expansion)
-   - Legend shows breaks, method, and GVF
-6. If API returns 404 (fallback):
-   - `renderFallback()` generates deterministic values per country
-   - For PMI: base = 50 + noise(seed, status) — critical countries get lower values
-   - Jenks classification (or manual for PMI)
-   - `applyChoropleth()` colors countries
-   - GVF logged (typically 0.90–0.93)
-7. For `vizType === 'series'`: `SeriesAdapter.convert()` transforms series data to choropleth via spatial proxy
-8. For `vizType === 'marker'`: `renderMarkerFallback()` generates 180 markers
-9. Log: `[Choropleth] method=manual, breaks=[42,47,53,58], GVF=0.9199`
-
-#### Semantic Map Workflow
-
-When a user clicks a layer button (e.g., "Overall Sentiment"):
-
-1. `layers.js` calls `loadLayer('overall-sentiment')`
-2. Semantic Map orchestrator intercepts the call
-3. `fetch('/api/layers/overall-sentiment/featurecollection')` — API request
-4. If API returns 200:
-   - Data contains country + sentiment class (1–5) + confidence
-   - `sentiment-adapter.js` converts sentiment to choropleth features
-   - Classification: 5 classes (Cowan 2001) with RdYlGn5 palette
-   - Legend shows sentiment classes: strongly negative → strongly positive
-5. If API returns 404 (fallback):
-   - Deterministic sentiment generation per country (5 classes)
-   - Sentiment-adapter converts to choropleth
-   - Palette: RdYlGn5 (red = negative, yellow = neutral, green = positive)
-6. For categorical layers (narratives, topics): Set1 palette (10 distinct colors)
-7. Log: `[Semantic] method=sentiment, classes=5, palette=RdYlGn5`
-
-#### Forecast Map Workflow
-
-When a user clicks a layer button (e.g., "Recession Probability"):
-
-1. `layers.js` calls `loadLayer('recession-probability')`
-2. Forecast Map orchestrator intercepts the call
-3. `fetch('/api/layers/recession-probability/featurecollection')` — API request
-4. If API returns 200:
-   - Data contains country + probability (0–100%) + confidence (0–1)
-   - `forecast-adapter.js` converts to choropleth features with dual encoding
-   - Color: manual breaks [20, 40, 60, 80] with YlOrRd5 palette (5 classes)
-   - Opacity: `0.4 + 0.5 × confidence` (Cressie 1993)
-   - Legend shows both probability thresholds and confidence range
-5. If API returns 404 (fallback):
-   - `probability = base + noise(seed)` (range 0–100)
-   - `confidence = 0.5 + noise(seed)` (range 0–1)
-   - Dual encoding applied
-6. Log: `[Forecast] probability=recession, breaks=[20,40,60,80], opacity=0.4+0.5×conf`
-
-#### Network Map Workflow
-
-When a user clicks a layer button (e.g., "Trade Network"):
-
-1. `layers.js` calls `loadLayer('trade-network')`
-2. Network Map orchestrator intercepts the call
-3. `fetch('/api/layers/trade-network')` — API request
-4. If API returns 200:
-   - Data contains nodes (countries) and edges (trade relationships)
-   - Force simulation initializes: charge = −300, link distance = 80px
-   - SVG `<circle>` / `<rect>` / `<polygon>` for nodes (shape = type)
-   - SVG `<line>` for edges (width = trade volume, color = direction)
-   - Verlet integration runs until alpha decays below threshold
-   - Dossier panel shows graph metrics on node click
-5. If API returns 404 (fallback):
-   - Deterministic graph: nodes = 90 countries, edges = connections based on geographic proximity
-   - Force simulation runs as above
-6. Log: `[Network] layer=trade-network, nodes=90, edges=245, alpha=0.0228`
-
-### Inter-Map Contracts
-
-Maps communicate through two contracts only:
-
-**1. Navigation (HTML links):**
-Each map's `index.html` contains `<a href="/metrics-map/">`, `<a href="/event-map/">`, etc. These are pure HTML — no JavaScript coupling. Clicking a link loads a fresh page with a clean JavaScript context.
-
-**2. Manifest declaration:**
-Each map's `manifest.json` declares:
-```json
-{
-  "mapType": "metrics",
-  "layers": 75,
-  "local_cross_map": 0,
-  "failure_domain": 1,
-  "dependencies": []
-}
-```
-
-The `dependencies` array is always empty. `local_cross_map: 0` means zero cross-map dependencies. `failure_domain: 1` means this map's failure affects only itself.
-
-**What maps do NOT share:**
-- No shared JavaScript files (each map has its own `core.js`, `layers.js`, etc.)
-- No shared CSS files (each map has its own `{map-name}.css`)
-- No shared data files (each map has its own `world.geojson` copy)
-- No shared configuration (each map has its own `maps-config.js`, `presets.json`)
-- No shared state (each page load is a fresh JavaScript context)
-
-### Performance Characteristics by Map
-
-| Map | Render bottleneck | Typical DOM elements | Memory | Main thread load |
-|---|---|---|---|---|
-| Event Map | Marker clustering | 180–5000 markers | Low–Medium | DOM updates |
-| Metrics Map | Choropleth coloring | 90 polygons | Low | Classification math (Jenks O(k·n²)) |
-| Semantic Map | Categorical rendering | 90 polygons + legend | Low | Sentiment adapter |
-| Forecast Map | Dual encoding | 90 polygons with opacity | Low | Color + opacity computation |
-| Network Map | Force simulation | 90 nodes + 245 edges (SVG) | Medium | Physics ticks (Verlet) |
-
-### What Fallback Means in Practice
-
-Each map is designed to work **even when the API server is down**. This is a core design principle — a map that shows nothing when the API is unavailable is useless in a crisis.
-
-**Fallback mechanism:**
-1. User clicks a layer button
-2. `fetch('/api/layers/{id}')` is sent
-3. If the server responds → real data is used
-4. If the server is down (404, 500, network error) → fallback kicks in:
-   - A **deterministic** generator creates synthetic data using the `layer.id` as a random seed
-   - The seed ensures the same layer always produces the same fallback data
-   - Country status (critical/normal) influences the generated values
-   - The result looks realistic — not random noise, but structured synthetic data
-5. The map renders the fallback data as if it were real
-6. The user sees a populated map, not a blank screen
-7. A log entry notes: `[Fallback] layer=xxx, reason=404, generated=true`
-
-This means every Crucix map is fully functional in **air-gapped environments** — no internet, no API, no data. The fallback provides a working demo of every layer's visualization.
-
-
-### Maps File Structure (Unified Template)
-
-Each map follows the same file structure (except Network Map which omits `world.geojson`):
-
-```
-dashboard/public/{map-name}/
-├── index.html              # entry point, 15-18 local scripts
-├── manifest.json           # passport (mapType, layers, cross_map: 0, failure_domain: 1)
-├── {MAP}-MANIFEST.md       # full state description
-├── ARCHITECTURE.md         # technical specification, DAG loading
-├── AUTONOMY-CHARTER.md      # R1–R6 autonomy charter
-├── css/
-│   └── {map-name}.css      # single CSS (dark theme + map-specific legend)
-├── js/                     # 15 files, load order is critical
-│   ├── core.js             # language, notifications, globals
-│   ├── countries.js        # ALL_COUNTRIES array
-│   ├── layers.js           # layer definitions (this map only)
-│   ├── maps-config.js      # classification methods, palettes
-│   ├── {adapter}.js        # data adapter (series/sentiment/forecast/network)
-│   ├── map-controls.js     # Leaflet init, classification, legend
-│   ├── markers.js          # marker rendering (Event Map only)
-│   ├── {map-name}-map.js   # orchestrator (decision tree)
-│   ├── copy-data.js        # snapshot button
-│   ├── heat-timeline.js    # heatmap and timeline
-│   ├── ssi.js              # Strategic Stress Index
-│   ├── refresh.js          # auto-refresh
-│   ├── cii.js              # Country Instability Index
-│   ├── logger.js           # logging panel
-│   └── init.js             # initialization
-├── data/
-│   └── world.geojson       # local copy of country boundaries (not in Network Map)
-├── presets/
-│   └── presets.json        # preset configurations
-├── _archive/               # deprecated files (never deleted, per rule 19)
-└── backups/                # automatic backups
-```
-
-### Maps Initialization Sequence
-
-When a user opens a map URL (e.g., `http://localhost:3117/metrics-map/`):
-
-1. Browser loads `index.html`
-2. Inline `<script>` sets `window.CrucixMap = { mapType: 'metrics' }`
-3. 15 JavaScript files load in strict DAG order (S01–S16)
-4. Each file logs its readiness: `LAYERS.JS ready (75 layers, version 1.1)`
-5. `init.js` calls `loadData()` → `loadCountryBoundaries()` → orchestrator `.init()`
-6. `loadCountryBoundaries()` fetches `data/world.geojson` (local, not remote)
-7. Country boundaries are rendered on the Leaflet map
-8. Layer panel is populated from `layers.js`
-9. Map is ready — user can click layer buttons
-
-If any step fails, the map degrades gracefully:
-- Missing `world.geojson` → empty map with error notification
-- API 404 → fallback data (deterministic, per layer)
-- JavaScript error → logged to panel, map continues with remaining functionality
-
-### Maps Dashboard Integration
-
-The 5 maps are accessible from the main dashboard at `http://localhost:3117/`:
-
-- Navigation menu links to all 5 maps
-- Each map opens in its own page (no iframes, no embedded maps)
-- The main dashboard shows aggregated statistics across all 5 maps
-- Switching between maps is a full page reload — clean JavaScript context
-
-This ensures:
-- No shared state between maps
-- No memory leaks from one map affecting another
-- No CSS conflicts between maps
-- Each map can be developed, tested, and deployed independently
-
-
-### Why the Maps Cannot Be Combined
-
-#### Argument 1: Cognitive Interference (Ware, 2013)
-
-Visual channels interfere when they encode different data types on the same surface. Color intensity (choropleth) and point position (markers) compete for visual attention. Research shows that users cannot accurately read values from a choropleth when markers are overlaid — the eye is drawn to the markers and misses the color gradient. Combining 5 different encodings would make all 5 unreadable.
-
-The concept of **cognitive interference** comes from visual perception research. When the brain processes multiple visual channels simultaneously, channels that are not separable (in the sense of Munzner, 2014) begin to interfere with each other. The result is that accuracy of reading values from any single channel drops significantly — sometimes by 40–60% compared to isolated viewing (Ware, 2013, Chapter 6, Figure 6.8).
-
-#### Argument 2: Data Model Incompatibility
-
-Each map operates on a fundamentally different data model:
-
-- **Event Map:** point features (lat/lng + event attributes) — GeoJSON FeatureCollection with Point geometry
-- **Metrics Map:** polygon features (country + numeric value) — GeoJSON FeatureCollection with Polygon geometry, choropleth
-- **Semantic Map:** polygon features (country + categorical class) — GeoJSON FeatureCollection with Polygon geometry, categorical encoding
-- **Forecast Map:** polygon features (country + probability + confidence) — GeoJSON FeatureCollection with dual encoding
-- **Network Map:** graph (nodes + edges, no geographic coordinates) — JSON with adjacency structure, no GeoJSON
-
-These data models are not interchangeable. A graph cannot be rendered as a choropleth — nodes have no polygon geometry. A choropleth cannot be rendered as markers without losing the aggregate meaning — a country is an area, not a point. A point event cannot be aggregated into a country value without losing the event-level detail.
-
-#### Argument 3: Separation of Concerns (Dijkstra, 1974)
-
-Each map has its own:
-- `layers.js` with its own layer definitions (84 / 75 / 35 / 16 / 12 — zero overlap)
-- `maps-config.js` with its own classification methods and color palettes
-- `*-adapter.js` with its own data transformation logic (series-adapter, sentiment-adapter, forecast-adapter, network-adapter)
-- CSS with its own visual style (dark theme for all, but different legend styles, different panel layouts)
-- Fallback logic adapted to its data type (markers vs. choropleth vs. probability vs. graph)
-- `manifest.json` with its own metadata (mapType, layers, cross_map: 0, failure_domain: 1)
-
-Combining them would create a monolith with:
-- 222 layers in a single `layers.js` file — unmaintainable
-- 4 different adapter types in a single file — each with different I/O contracts
-- 5 different rendering pipelines in a single `map-controls.js` — a switch statement with 5 branches, each requiring its own setup, fallback, and error handling
-- A single CSS file trying to style 5 different UI paradigms
-
-The Bulkhead pattern (Nygard, 2007) ensures that a failure in one map does not affect the other four. If Event Map's marker clustering crashes, Metrics Map's choropleth continues to work. If Network Map's force simulation enters an infinite loop, the other 4 maps are unaffected.
-
-#### Argument 4: Performance
-
-Each map has different performance characteristics:
-
-- **Event Map** can render thousands of markers — this requires marker clustering, DOM management, and virtualization. The main thread is busy with DOM updates.
-- **Metrics Map** renders 90 country polygons — this requires color interpolation, legend management, and classification computation (Jenks DP is O(k·n²)). The main thread is busy with math.
-- **Semantic Map** renders 90 country polygons with categorical overlays — similar to Metrics Map but with additional categorical rendering logic.
-- **Forecast Map** renders 90 country polygons with dual encoding — requires both color interpolation and opacity computation per country.
-- **Network Map** runs a force simulation — requires continuous physics calculations (Coulomb, Hooke, Verlet). The main thread is busy with physics ticks.
-
-Running all five simultaneously on a single page would:
-- Overwhelm the browser's main thread with competing computations
-- Create excessive DOM elements (markers + polygons + SVG nodes)
-- Cause layout thrashing from competing style recalculations
-- Result in janky, unresponsive UI
-
-Separation into 5 pages means each page has its own render loop, its own memory budget, and its own failure domain. The browser can garbage-collect one map's memory when the user navigates to another.
-
-### Principle of Autonomy (R1–R6)
-
-Each map follows 6 rules of full isolation:
-
-**R1: Zero cross-map dependencies.**
-No `<script>`, `<link>`, or `fetch` goes outside its own folder.
-Verification: `grep -rn '\.\./' index.html js/*.js | grep -v 'AUTONOMY\|manifest'` → 0 results.
-
-**R2: Local geojson.**
-`world.geojson` is stored locally in `data/` within each map's folder (except Network Map, which uses SVG). No fetch to a shared geojson file.
-
-**R3: Self-contained layers.**
-`layers.js` contains only that map's layers. Zero layers from other maps. A layer in Event Map must not appear in Metrics Map, and vice versa.
-
-**R4: Self-contained configuration.**
-`maps-config.js` and `presets.json` are specific to that map only. No shared configuration files across maps.
-
-**R5: Manifest declares isolation.**
-`manifest.json` declares:
-- `local_cross_map: 0` — zero cross-map dependencies
-- `failure_domain: 1` — this map's failure affects only itself
-
-**R6: Failure isolation.**
-A crash in one map does not affect the other four maps. If a JavaScript error occurs in Event Map, the user can still navigate to Metrics Map, Semantic Map, Forecast Map, and Network Map without any issues.
-
-### DAG Loading Sequence
-
-Each map has its own directed acyclic graph (DAG) of script loading. The order is critical — violating it causes `window.CrucixMap` to be undefined and the entire map to crash.
-
-Example DAG (Metrics Map, 16 steps):
-
-| Step | File | What it does | Depends on |
-|---|---|---|---|
-| S01 | inline `<script>` | `window.CrucixMap = {mapType:'metrics'}` | — |
-| S02 | `js/core.js` | Language, notifications, global variables | CrucixMap |
-| S03 | `js/countries.js` | `ALL_COUNTRIES[90]` | — |
-| S04 | `js/layers.js` | `allLayers[75]` + layer panel | — |
-| S05 | `js/maps-config.js` | `MAP_TYPES`, `COLOR_SCHEMES`, `LAYER_CLASSIFICATION` | allLayers |
-| S06 | `js/series-adapter.js` | `SeriesAdapter.convert()` — 14 modules | maps-config |
-| S07 | `js/map-controls.js` | Leaflet init, Jenks DP, ColorBrewer, GVF, legend | Leaflet, countries |
-| S08 | `js/markers.js` | `generateAllMarkers`, `updateMarkers`, `renderLayerPanel` | allLayers, map |
-| S09 | `js/metrics-map.js` | `MetricsMap.init()` — orchestrator | series-adapter, map-controls |
-| S10 | `js/copy-data.js` | `copyAllData` — snapshot (~500 KB) | — |
-| S11 | `js/heat-timeline.js` | `toggleHeat`, `toggleTimeline` | map |
-| S12 | `js/ssi.js` | `calculateSSI`, `updateLegend` | countries |
-| S13 | `js/refresh.js` | `startAutoRefresh`, `refreshMapData` | — |
-| S14 | `js/cii.js` | `updateCII` with fallback | countries, map-controls |
-| S15 | `js/logger.js` | `CrucixLogger` (log panel) | — |
-| S16 | `js/init.js` | `loadData` → `loadCountryBoundaries` → `MetricsMap.init()` | all above |
-
-Each map has a similar DAG, adapted to its specific adapter and orchestrator.
-
-### Inter-Map Navigation
-
-Maps are connected through **navigation links only** — not through code dependencies. Each map's `index.html` contains navigation `<a href>` links to the other 4 maps. These are pure HTML links — no `<script>` includes from other maps, no shared JavaScript modules.
-
-This means:
-- A user on Event Map can click a link to go to Metrics Map
-- The link opens a new page load — a completely fresh JavaScript context
-- No shared state, no shared memory, no shared variables
-- Each map boots from scratch, loads its own scripts, initializes its own map
-
-### How to Add a New Map
-
-1. Create a folder `dashboard/public/{new-map}/`
-2. Copy the file structure from Metrics Map as a template (20 files: index.html, manifest.json, 15 JS files, 1 CSS, 1 geojson, 1 presets.json)
-3. Adapt `layers.js` — define new layers with appropriate `vizType` (marker, choropleth, series, probability, graph)
-4. Adapt `maps-config.js` — set classification methods and palettes for the new layer types
-5. Create a specific adapter if the data model differs from choropleth (e.g., `sentiment-adapter.js`, `forecast-adapter.js`, `network-adapter.js`)
-6. Copy `world.geojson` to `data/` (unless the map is graph-based, in which case skip geojson and use SVG)
-7. Create `manifest.json` with `mapType`, `layers`, `cross_map: 0`, `failure_domain: 1`
-8. Create `AUTONOMY-CHARTER.md` documenting R1–R6 compliance
-9. Verify autonomy: `grep -rn '\.\./' index.html js/*.js | grep -v 'AUTONOMY\|manifest'` must return 0
-10. Add the map to the main dashboard navigation
-
-### Verification Checklist (All 5 Maps)
-
-```bash
-cd dashboard/public
-
-# 1. Structure: each map has index.html and manifest.json
-for map in event-map metrics-map semantic-map network-map forecast-map; do
-    echo "=== $map ==="
-    ls -la "$map/index.html" "$map/manifest.json" 2>/dev/null || echo "  (missing)"
-done
-
-# 2. Autonomy: zero cross-map dependencies
-for map in event-map metrics-map semantic-map network-map forecast-map; do
-    echo -n "$map: "
-    grep -rn '\.\./' "$map/js/"*.js 2>/dev/null | grep -v 'AUTONOMY\|manifest' | wc -l
-done
-
-# 3. Layer counts
-for map in event-map metrics-map semantic-map network-map forecast-map; do
-    echo -n "$map layers: "
-    grep -c 'id:' "$map/js/layers.js" 2>/dev/null || echo "N/A"
-done
-
-# 4. world.geojson (except network-map)
-for map in event-map metrics-map semantic-map forecast-map; do
-    echo -n "$map geojson: "
-    ls -la "$map/data/world.geojson" 2>/dev/null | awk '{print $5}' || echo "MISSING"
-done
-```
-
-Expected results:
-- Event Map: 84 layers, 0 cross-map dependencies, geojson present
-- Metrics Map: 75 layers, 0 cross-map dependencies, geojson present
-- Semantic Map: 35 layers, 0 cross-map dependencies, geojson present
-- Forecast Map: 16 layers, 0 cross-map dependencies, geojson present
-- Network Map: 12 layers, 0 cross-map dependencies, no geojson (SVG-based)
-
----
-
-## 🧪 AI Laboratory
-
-The AI Lab is an environment where a local LLM (Ollama) becomes an active participant in analysis.
+The AI lab is the environment where the LLM becomes an active participant of the analysis.
 
 ### Components
 
-- **Ollama** — `http://localhost:11434`, models: llama3.1:8b, mistral:7b, phi3:3.8b
+- **LLM backend** — **Mistral cloud by default** (`mistral-small-latest`); *before: local LLM via Ollama only*
+- **OpenAI-compatible local LLMs** — Ollama (`http://localhost:11434`: llama3.1:8b, mistral:7b, phi3:3.8b) and LM Studio; any endpoint speaking the OpenAI protocol works
 - **AI Gateway** — `apis/sources/ai-gateway.mjs`
 - **RAG module** — `apis/sources/rag-module/`, port 3120
 - **AI Chat** — `http://localhost:8080`
 
-### AI Lab Pipeline
+### AI lab pipeline
 
 1. **Data collection** → `data/basket/*.json`
 2. **Analyzer computation** → `data/analytics/{category}/*.json`
-3. **API delivery** → `GET /api/layers/{name}`
+3. **Serving via API** → `GET /api/layers/{name}`
 4. **AI forecasting** → `data/analytics/forecast/*.json`
-5. **Brief generation** → `daily-briefing.mjs` via Ollama
+5. **Brief generation** → `daily-briefing.mjs` via the LLM backend
 6. **Semantic search** → RAG module on port 3120
 
-### AI Modules
+### AI modules
 
 - **ai-news-synthesis** — news synthesis via LLM
 - **ai-forecasts** — probabilistic forecasting
 - **social-briefing** — 3 brief formats (daily, alert, summary)
 - **daily-briefing.mjs** — daily digest
+- **ai-chat-api** — chat API
+- **ai-news-analyzer** — news analysis via LLM
+- **ai-news-rating** — news rating
+- **ai-processor** — text processing
+- **ai-filter** — content filtering
+- **llm_agents** — LLM agents
+- **agentic_engine** — the agentic engine (planner / executor / narrator / tool_registry)
+
+The division of labor: **numbers are computed by code, text is written by the model.** AI never replaces analyzers — it reads their outputs and turns them into human language.
 
 ---
 
-## 🔑 API Keys
+## 🔑 API keys
 
-Crucix **works without API keys** — only open sources are used. Project rule (12.2): no registrations, keys, or OAuth.
+Crucix **works without API keys** — only open sources are used. Project rule (12.2): no registrations, no keys, no OAuth.
 
-### Open Sources (no keys)
+### Open sources (keyless)
 
 - **USGS Earthquakes** — earthquakes
 - **NOAA SWPC** — space weather
@@ -1311,24 +874,24 @@ Crucix **works without API keys** — only open sources are used. Project rule (
 - **Where the ISS at** — ISS
 - **Launch Library 2** — space launches
 - **Frankfurter** — ECB exchange rates
-- **Hacker News** — top stories
-- **mledoze/countries** — 250-country reference
+- **Hacker News** — top news
+- **mledoze/countries** — reference of 257 countries (*before: 250; the reference was expanded to the full ISO 3166-1 set: alpha2/alpha3/numeric, en/ru names, UN regions, aliases*)
 - **CISA KEV** — vulnerabilities
 - **CoinGecko** — crypto
 - **US Treasury** — US debt
 - **ECB Data Portal** — EU macro
 - **World Bank** — macro for 197 countries
-- **GDELT** — news (requires browser User-Agent, ≥5s pause)
+- **GDELT** — news (requires a browser User-Agent, pause ≥5 s)
 
-### If a Key Is Still Needed
+### If a key is still needed
 
-One key (may be useful): `OLLAMA_HOST` for external Ollama. This is local — no registration needed.
+One key (may be useful): `OLLAMA_HOST` for an external Ollama. That is local — no registration required. Mistral cloud uses a key from `.env` if configured.
 
 ---
 
 ## 🏛️ Architecture
 
-### "Basket → AI → Map" Principle
+### The "Basket → AI → Map" principle
 
 ```
 External API
@@ -1343,104 +906,118 @@ Analytics (data/analytics/{category}/*.json)
     ↓
 API module (apis/sources/*-api.mjs)
     ↓
-Map (dashboard/public/{map}/)
+Map (dashboard/public/<map-name>/)
 ```
 
-### Key Rule
+### The key rule
 
 **No module makes fetch calls to external APIs.** All data comes only from the basket. The only exception is collectors, which fill the basket.
 
-### Project Structure
+### Project structure
 
 ```
 Crucix/
-├── apis/sources/            # 370+ API modules
+├── apis/sources/            # 655 API modules (before: 370+)
 ├── scripts/
-│   ├── collectors/          # collectors into basket
+│   ├── collectors/          # collectors into the basket
 │   └── analyzers/           # analyzers
 ├── data/
-│   ├── basket/              # 226 data files
+│   ├── basket/              # data files, crucix.basket.v1 contract
 │   ├── analytics/           # 8 analytics categories
 │   ├── infrastructure/      # 114 objects
 │   ├── reference/           # references (197 countries, Gini)
+│   ├── feeds/               # feed lists: urls-classified, urls-direct, urls-tor, urls-dead, topics
 │   └── geo/                 # world.geojson, country-coords
+├── config/                  # project config: taxonomy.json, smartscroll.json, reference/
 ├── server/                  # server modules
+│   ├── server.mjs           # entry point
 │   ├── router.mjs           # router v3.1
+│   ├── build-registry.mjs   # registry builder (runs before start)
+│   ├── build-legacy-aliases.mjs  # legacy alias generator
+│   ├── legacy-aliases.generated.json
+│   ├── legacy-stubs.json    # whitelist of 34 stubs
+│   ├── verify.mjs           # route verifier
 │   ├── loader.mjs           # module loader
-│   ├── modules.json         # 370+ modules
+│   ├── modules.json         # 655 modules
 │   ├── routes-api.json      # legacy routes
-│   └── server.mjs           # entry point
+│   └── pages.mjs            # page routes
 ├── dashboard/public/        # pages and 5 maps
-│   ├── event-map/           # 84 layers
-│   ├── metrics-map/         # 75 layers
-│   ├── semantic-map/        # 35 layers
-│   ├── forecast-map/        # 16 layers
-│   └── network-map/         # 12 layers
-├── docs/help/               # docs ru/en
+│   ├── event-map/           # 84 layers, markers
+│   ├── metrics-map/         # 75 layers, choropleth
+│   ├── semantic-map/        # 35 layers, sentiment
+│   ├── forecast-map/        # 16 layers, probability
+│   └── network-map/         # 12 layers, SVG graph
+├── docs/help/               # reference docs ru/en (582 ru + 566 en)
 ├── ai-memory-sync/          # AI memory files
 └── logs/collectors/         # collector logs
 ```
 
 ---
 
-## 🧩 Server Module Architecture
+## 🧩 Modular server architecture
 
-All server files in `server/`:
+All server files live in `server/`:
 
 - `server.mjs` — entry point (30 lines)
 - `router.mjs` — API router (Mechanism A+B)
+- `build-registry.mjs` — module registry builder (runs before server start)
+- `build-legacy-aliases.mjs` — LEGACY_ALIASES generator
+- `legacy-aliases.generated.json` — generated legacy map (imported by router.mjs)
+- `legacy-stubs.json` — whitelist of API stubs (34)
+- `verify.mjs` — single verifier for all routes and pages
 - `loader.mjs` — module loader from `modules.json`
-- `api.mjs` — API routes (registry, etc.)
+- `api.mjs` — API routes (registry and others)
 - `pages.mjs` — page routes
 - `utils.mjs` — utilities (`sendJSON`, `sendError`)
 - `config.mjs` — port, MIME types
 - `static.mjs` — static file serving
-- `modules.json` — API module registry (370+)
+- `modules.json` — API module registry (655)
 - `routes-api.json` — API routes (legacy)
 - `pages.json` — page registry
 - `routes-pages.json` — page routes
 
 ---
 
-## 🧭 Polarity System & Narrative Verification
+## 🧭 Polarity system and narrative reconciliation
+
 
 **Version:** 1.0 · **Added:** 22–23.09.2026
 
-### What It Is
+### What it is
 
-A system that **computes geopolitical polarity from data** and **verifies Russian and Western narratives on a given topic**. Not propaganda — comparative framing analysis on observed data.
+A system that **computes geopolitical polarity from data** and **reconciles Russian and Western narratives on a given topic**. Not propaganda — comparative framing analysis on observable data.
 
-**Key principle:** the pole is **computed**, not defined by a list. If data changes — the pole changes automatically.
+**Key principle:** the pole is **computed**, not set by a list. If the data changes — the pole changes automatically.
 
 ### Components
 
 | File | Type | Purpose |
 |------|------|---------|
 | `apis/sources/pole-tracker-api.mjs` | API | Computes country polarity from 8 basket indicators |
-| `apis/sources/narrative-splitter-api.mjs` | API | Verifies Russian and Western narratives on a topic |
-| `apis/sources/source-camps.json` | Config | Source mapping and country baseline by poles |
+| `apis/sources/narrative-splitter-api.mjs` | API | Reconciles Russian and Western narratives by topic |
+| `apis/sources/source-camps.json` | Config | Mapping of sources and baseline countries to poles |
 | `dashboard/public/pole-map.html` | Page | Pole map: countries, confidence, vectors |
-| `dashboard/public/narrative-arena.html` | Page | Narrative verification: Russia / West / Divergences |
+| `dashboard/public/narrative-arena.html` | Page | Narrative reconciliation: Russia / West / Divergences |
 | `scripts/snapshot-rsshub.mjs` | Script | News history accumulation (systemd timer) |
 
 ### Pages
 
 - **🌐 Pole Map** — [http://localhost:3117/pole-map](http://localhost:3117/pole-map)
-  Shows three poles (russian / western / non_aligned) with countries, polarity index, vectors (sanctions, info-war, military presence), basket status.
+  Shows three poles (russian / western / non_aligned) with countries, the polarity index, vectors (sanctions, info warfare, military presence), basket status.
 
-- **⚡ Narrative Arena** — [http://localhost:3117/narrative-arena](http://localhost:3117/narrative-arena)
-  Three columns: Russian narrative / Western narrative / Divergences. Presets: sanctions, Ukraine, energy transition, conflict, gas.
+- **⚡ Reconcile narratives** — [http://localhost:3117/narrative-arena](http://localhost:3117/narrative-arena)
+  Three columns: Russian narrative / Western narrative / divergences. Presets: sanctions, Ukraine, energy transition, conflict, gas.
 
-### API Endpoints
+### API endpoints
 
 ```bash
 # All poles
 curl http://localhost:3117/api/layers/pole-tracker
 
-# Single country detail
+# One country in detail
 curl "http://localhost:3117/api/layers/pole-tracker?country=russia"
 
-# Narrative verification by topic
+# Narrative reconciliation by topic
 curl -G http://localhost:3117/api/layers/narrative-splitter \
     --data-urlencode "topic=Ukraine" \
     --data-urlencode "limit=10"
@@ -1449,28 +1026,28 @@ curl -G http://localhost:3117/api/layers/narrative-splitter \
 curl "http://localhost:3117/api/layers/narrative-splitter?topic=sanctions&detail=true"
 ```
 
-### What the Terms Mean
+### What the terms mean
 
 | Term | Meaning |
 |------|---------|
-| **silence** | One side writes (N>0), the other is silent (0). Strongest signal of omission |
+| **silence** | One side writes (N>0), the other is silent (0). The strongest suppression signal |
 | **framing_gap** | Both sides write, but with different framing |
 | **double_standard** | Coverage imbalance >3x in one direction |
 | **polarity_index** | 0..1: 0 = unipolar world, 1 = maximum polarity |
-| **confidence** | 0..0.98: confidence in country classification |
+| **confidence** | 0..0.98: confidence in the country classification |
 | **basis** | Classification source: `baseline_plus_data` / `data_driven` / `weak_signals` / `no_data` |
 
-### History Accumulation
+### History accumulation
 
-Script `scripts/snapshot-rsshub.mjs` runs via **systemd timer every hour at :02**:
+The script `scripts/snapshot-rsshub.mjs` runs on a **systemd timer every hour at minute 02**:
 
 - Updates `data/basket/rsshub.json` via `collect-rsshub.mjs`
-- Copies a snapshot to `data/analytics/rss-history/rsshub-<timestamp>.json`
-- Maintains an index `index.json`
+- Copies the snapshot to `data/analytics/rss-history/rsshub-<timestamp>.json`
+- Maintains the `index.json` index
 - Trims the archive to 168 snapshots (7 days)
 
 ```bash
-# Timer management
+# Timer control
 systemctl --user status crucix-rsshub-snapshot.timer
 systemctl --user list-timers crucix-rsshub-snapshot.timer
 tail -20 logs/rss-history/systemd.log
@@ -1481,84 +1058,28 @@ node scripts/snapshot-rsshub.mjs
 
 **Why:** after a week, 84,000 items accumulate — enough for real co-occurrence analysis of topics (threat inflation, selective framing).
 
-### References
+### Reference docs
 
-Full references for each page and module:
+Full reference for each page and module:
 - `data/help/ru/pole-tracker-api.txt` — polarity module API
-- `data/help/ru/narrative-splitter-api.txt` — verification module API
+- `data/help/ru/narrative-splitter-api.txt` — reconciliation module API
 - `data/help/ru/pole-map.txt` — pole map page
-- `data/help/ru/narrative-arena.txt` — narrative arena page
+- `data/help/ru/narrative-arena.txt` — narrative reconciliation page
 - `data/help/ru/CRUCIX_POLARITY_OVERVIEW.txt` — system overview
-
-### How to Extend
-
-**Add a source to a pole:**
-Edit `apis/sources/source-camps.json` → `media_sources.{pole}.sources`. Mapping is by substring in lowercase.
-
-**Add an indicator:**
-Edit `apis/sources/source-camps.json` → `indicators.basket_files`. Then add reading in `computeCountryVector()` in `pole-tracker-api.mjs`.
-
-**Add a country to baseline:**
-Edit `apis/sources/source-camps.json` → `pole_cores.{pole}.core` (or `baseline_satellites`, `affiliated`).
-
-### Principles
-
-1. **The pole is computed, not defined.** Data changes — the pole changes.
-2. **Comparison is symmetric.** The system shows divergences on both the Russian and Western sides.
-3. **The method is transparent.** Anyone can open the basket file and see which records the classification is based on.
-4. **This is a tool, not a verdict.** The system doesn't say "who's right" — it shows where sides diverge.
 
 ---
 
-## 📡 Data Sources
-
-226 files in `data/basket/`. Key sources:
-
-### Geopolitics and Conflicts
-- `acled.json` — armed conflicts
-- `gdelt.json` — news and events
-- `ucdp-latest.json` — UCDP data
-- `conflict-zone.json` — conflict zones
-
-### Military
-- `military-bases.json` — military bases
-- `military-exercises.json` — exercises
-- `military-spending.json` — spending
-- `nuclear-monitor.json` — nuclear monitoring
-
-### Economics and Markets
-- `worldbank-latest.json` — 194 countries World Bank
-- `coingecko-latest.json` — crypto
-- `fred.json` — macro (ECB + Treasury + WB)
-- `fx-rates.json` — exchange rates (Frankfurter)
-- `vix.json`, `gold.json`, `oil.json`, `dxy.json` — market indicators
-- `treasury-debt.json` — US debt
-
-### Natural Phenomena
-- `earthquakes.json` — earthquakes (USGS)
-- `firms.json` — fires (NASA FIRMS)
-- `noaa.json` — space weather
-- `open-meteo.json` — weather (10 cities)
-- `wildfires.json` — wildfires
-
-### Space
-- `satellites.json` — satellites
-- `iss-live.json` — ISS live
-- `launches-upcoming.json` — upcoming launches
-- `space-debris.json` — space debris
-
-### Infrastructure
-- `data/infrastructure/objects.json` — **114 objects**
+## Data sources
 
 ### References
 - `data/reference/country-characteristics.json` — **197 countries**
 - `data/reference/gini-index.json` — **147 countries with Gini**
 - `data/reference/country-aliases.json` — 152 aliases
-- `data/reference/rest-countries.json` — 250 countries (mledoze)
+- `data/reference/rest-countries.json` — 257 countries (mledoze) (*before: 250; expanded to the full ISO 3166-1 set*)
 
-### Technology and Cybersecurity
+### Technology and cybersecurity
 - `cisa-kev.json` — known vulnerabilities
-- `cve.json` — CVE
+- `cve.json` — CVEs
 - `botnets.json` — botnets
 - `ransomware.json` — ransomware
 
@@ -1570,36 +1091,55 @@ Edit `apis/sources/source-camps.json` → `pole_cores.{pole}.core` (or `baseline
 
 ---
 
-## 📜 npm Scripts
+## 📜 npm scripts
 
 ```bash
-npm run dev              # start server (port 3117)
+npm run dev              # start the server (port 3117)
 npm run collect          # run all collectors
 npm run analyze          # run all analyzers
-npm run daily-briefing   # generate daily brief
-npm run registry         # generate registry
+npm run daily-briefing   # generate the daily brief
+npm run registry         # generate the registry
+```
+
+Test suites (from package.json):
+
+```bash
+npm run test             # page check (scripts/check-pages.mjs)
+npm run test:unit        # unit tests of the predict core
+npm run test:property    # property-based tests
+npm run test:fuzz        # fuzz tests
+npm run test:integration # integration tests
+npm run test:mutation    # mutation tests
+npm run test:all         # all modules + mutation tests
+npm run test:all-modules # all predict modules
+npm run test:mutation:meta        # mutation: meta_learner
+npm run test:mutation:hypergraph  # mutation: hypergraph
+npm run test:mutation:attention   # mutation: attention
+npm run test:mutation:coevolution # mutation: coevolution
 ```
 
 ---
 
 ## ⚙️ Configuration
 
-### Environment Variables
+### Environment variables
 
 Copy `.env.example` to `.env`. Key variables:
 
 - `PORT` — server port (default 3117)
 - `OLLAMA_HOST` — Ollama URL (default `http://localhost:11434`)
+- `MISTRAL_API_KEY` — Mistral cloud key (optional; default backend)
+- `OPENAI_BASE_URL` — endpoint of a local OpenAI-compatible LLM (Ollama, LM Studio)
 - `TELEGRAM_BOT_TOKEN` — bot token (optional)
 - `DISCORD_WEBHOOK_URL` — Discord webhook (optional)
 
 ### Important
 
-**Crucix works without API keys.** All sources are open. If a key is needed — it's not in the project, use alternatives.
+**Crucix works without API keys.** All sources are open. Where a key would be required, the project uses alternatives. Cloud LLM access (Mistral) is optional and configured via `.env`; without it, local backends are used.
 
 ---
 
-## 🔌 API Endpoints
+## 🔌 API endpoints
 
 ### Core
 
@@ -1608,7 +1148,7 @@ Copy `.env.example` to `.env`. Key variables:
 - `GET /api/geo/status` — status
 - `GET /api/layers` — layer list
 
-### Analytical (new)
+### Analytics
 
 **Indices:**
 - `GET /api/layers/country-instability/stats`
@@ -1666,96 +1206,106 @@ Copy `.env.example` to `.env`. Key variables:
 - `GET /api/layers/module-registration-controller/stats`
 - `GET /api/layers/watchdog/stats`
 
+**RSS (new):**
+- `GET /api/layers/articles` — news feed (with /raw, /stats, /groups)
+- `GET /api/layers/sources` — sources (with /feed-status, /top)
+- `GET /api/layers/rss-stats` — RSS statistics (/by-hour, /by-day, /by-group, /top-sources)
+
 ---
 
 ## 🔧 Troubleshooting
 
-### Server Won't Start
+### The server does not start
 
-- Check `node --version` — Node 22+ required
+- Check `node --version` — Node ≥ 18 is required (*before: 22+; the current requirement comes from package.json engines*)
 - Check `npm install`
-- Check log `/tmp/crucix-server.log`
+- Check the log `/tmp/crucix-server.log`
+- If the log says the basket contract is broken — the server refuses to start on purpose: run `node scripts/lint-contract.mjs` and fix the violation
 
-### Analyzer Not Working
+### An analyzer does not work
 
-- `node scripts/analyzers/{name}.mjs` — check output
-- `curl http://localhost:3117/api/layers/{name}/stats` — check endpoint
-- Check `data/analytics/{category}/{name}.json` — file created?
+- `node scripts/analyzers/{name}.mjs` — check the output
+- `curl http://localhost:3117/api/layers/{name}/stats` — check the endpoint
+- Check `data/analytics/{category}/{name}.json` — was the file created
 
-### Collector Returns 0 Data
+### A collector returns 0 data
 
-- Check source availability: `curl {url}`
-- Check log `logs/collectors/collect-{name}.log`
-- Ensure no API key needed (rule 12.2)
+- Check the source: `curl <api-url>` — does it respond?
+- Check the log `logs/collectors/collect-{name}.log`
+- Some sources require a browser User-Agent (GDELT)
 
-### GDELT Returns 429
+### A map does not load
 
-- Browser User-Agent required
-- Pause ≥5 seconds between requests
-- Timeout ≥30 seconds
+- Check `data/world.geojson` in the map folder — does the file exist
+- Check the browser console — any 404s on scripts
+- Check the script order in `index.html` — a DAG violation = a crash
+- Check autonomy: `grep -rn '\.\./' index.html js/*.js` — 0 lines
 
-### Map Not Loading
+### RSS: "Invalid Date" in the feed
 
-- Check browser console (F12) for errors
-- Verify the map folder exists in `dashboard/public/{map}/`
-- Check autonomy: `grep -rn '\.\./' index.html js/*.js | grep -v 'AUTONOMY\|manifest'` — should return 0
-- Verify `data/world.geojson` exists (except Network Map)
-- Check script load order in `index.html`
+**Cause:** dates in DD.MM.YYYY format are parsed by V8 as MM.DD — day and month are silently swapped. The `date-parser.mjs` parser checks the Russian format **before** `Date.parse`, otherwise the swap is invisible. Unrecognized dates get the flag `date_missing: true`, dates recognized in a non-ISO format get `date_format_fallback: true` (see quality metrics in `/rss-dashboard`).
+
+**Solution:** do not bypass `date-parser.mjs` in favor of raw `Date.parse`; check `date_missing` when filtering by dates.
+
+### RSS: an empty collection result
+
+- Check `feed_status` — per-feed counters `last_ok_at` / `last_error`
+- A broken feed does not bring down the whole collection: the final result honestly reports `{items, errors, feeds_checked}`
+- With no real User-Agent, CDNs answer 403 — the collector sets one by default
 
 ---
 
-## 🧩 Extensions
+## 📦 Extensions
 
-### How to Create a New Analyzer
+### How to add a new layer to a map
 
-1. **Calculator class** — `apis/sources/{name}.mjs`
-   - `export default class {Name}`
-   - Method `compute(input)` returns `{ score, components, ... }`
-
-2. **Analyzer** — `scripts/analyzers/{name}.mjs`
-   - Imports the class
-   - Reads `data/basket/` and `data/reference/`
-   - Writes `data/analytics/{category}/{name}.json`
-   - In `_meta`: id, category, version, sources, calculator, updated_at, checksum
-
-3. **API module** — `apis/sources/{name}-api.mjs`
-   - `export const route = '/api/layers/{name}'`
-   - `export default async function handler(req, res)`
-   - Reads `data/analytics/{category}/{name}.json`
-
-4. **Registration** — `server/modules.json`:
-   ```json
-   { "id": "{name}-api", "path": "./apis/sources/{name}-api" }
-   ```
-
-5. **Map layer** — `layers.js` (array `DEMO_LAYERS`):
+1. **Analyzer** — `scripts/analyzers/{id}.mjs` (reads the basket, writes to `data/analytics/`)
+2. **API module** — `apis/sources/{id}-api.mjs` with `export const route = '/api/layers/{id}'`
+3. **Registration** — `server/modules.json`: `{ "id": "{id}-api", "path": "./apis/sources/{id}-api" }`
+4. **Layer** — `dashboard/public/<map-name>/js/layers.js` (the `allLayers` array):
    ```javascript
-   { id: '{name}', name: 'Layer Name', color: '#color', icon: '🎯', category: 'category', vizType: 'marker' }
+   { id: '{id}', name: 'Name', color: '#color', icon: '🎯', category: 'category', vizType: 'marker' }
    ```
+5. **Server restart**
 
-6. **Restart server.**
-
-### How to Create a New Collector
+### How to create a new collector
 
 1. File `scripts/collectors/collect-{name}.mjs`
-2. Import from open API (no key)
-3. Save to `data/basket/{name}.json`
+2. Import from an open API (no key)
+3. Save into `data/basket/{name}.json`
 4. Log to `logs/collectors/collect-{name}.log`
 5. Register in cron
 
+### How to add a new map
+
+If a sixth map is needed for a new data class:
+
+1. Create the folder `dashboard/public/<new-map-name>/`
+2. Create `index.html` with the load DAG (modeled on the existing maps)
+3. Create `js/` with 15+ files (core, countries, layers, maps-config, adapter, map-controls, markers, map.js, copy-data, heat-timeline, ssi, refresh, cii, logger, init)
+4. Create `css/<new-map-name>.css` — the only CSS
+5. Create `data/world.geojson` — a local copy of boundaries (if the map is geographic)
+6. Create `presets/presets.json` — presets
+7. Create `manifest.json` with `mapType`, `layers`, `local_cross_map: 0`, `failure_domain: 1`
+8. Create `<NEW-MAP>-MANIFEST.md` — the full state manifest
+9. Create `ARCHITECTURE.md` and `AUTONOMY-CHARTER.md`
+10. Check autonomy: `grep -rn '\.\./'` returns 0 lines
+
 ---
 
-## 💬 AI Chat
+## 💬 AI chat
 
-AI chat works via local Ollama.
+AI chat works through the LLM backend.
 
-### Installing Ollama
+**Before:** local Ollama only. **Now:** Mistral cloud by default; any OpenAI-compatible local endpoint (Ollama, LM Studio) works out of the box via `OPENAI_BASE_URL`.
+
+### Setting up a local backend (Ollama)
 
 ```bash
 # 1. Install Ollama
 curl -fsSL https://ollama.com/install.sh | sh
 
-# 2. Pull a model
+# 2. Download a model
 ollama pull llama3.1:8b
 
 # 3. Start Ollama
@@ -1765,10 +1315,12 @@ ollama serve &
 open http://localhost:3117/ai-chat
 ```
 
+For LM Studio: point `OPENAI_BASE_URL` to its local server address (typically `http://localhost:1234/v1`).
+
 ### Prompts
 
 AI chat uses analyzer data as context. The model answers questions about:
-- Current geopolitical situation
+- The current geopolitical situation
 - Country risks
 - Market indicators
 - Infrastructure threats
@@ -1778,47 +1330,48 @@ AI chat uses analyzer data as context. The model answers questions about:
 
 ## 🤝 Contributing
 
-Welcome contributions:
+Contributions are welcome:
 
 1. **New analyzers** — following the reference pattern (class → analyzer → API → layer)
 2. **New collectors** — open APIs only (no keys)
 3. **New references** in `data/reference/`
 4. **Improvements to existing modules**
-5. **Bilingual docs** (ru + en)
+5. **New map layers** — into the corresponding map folder (`<map-name>/js/layers.js`)
+6. **Reference docs in both languages** (ru + en)
 
 ### Rules
 
 - Follow the "Basket → AI → Map" architecture
-- No API keys (rule 12.2)
-- Write docs in ru + en
-- Don't delete existing modules (rule 7.6)
-- Respect map autonomy (R1–R6) — each map is fully isolated
-- Don't add cross-map dependencies — a layer in one map must not reference files from another map
+- Do not use API keys (rule 12.2)
+- Write reference docs in ru + en
+- Do not delete existing modules (rule 7.6)
+- Observe map autonomy (R1–R6): no map resource reaches outside its own folder
+- Do not mix layers of different maps in one `layers.js`
+- Run `npm run test:all` before a PR
+- Writing to the basket is only allowed in `crucix.basket.v1` formats (see the Basket section); `scripts/lint-contract.mjs` must pass
 
 ---
 
-## 🧠 Crucix Predictive Core
+## 🧠 Predictive core
 
-Since 18.09.2026, the project includes a **predictive core** — a 16-phase pipeline (A–R, S, T, U, Z) of 22 modules working across 30 scientific disciplines.
+Since 18.09.2026, the project integrates a **predictive core** — a 16-phase pipeline (A–R, S, T, U, Z) of 22 modules built on 30 scientific disciplines.
 
-### Key Points
+### Key facts
 
-- **Engine** `apis/predict/engine.mjs` v8.0.0 — 16-phase pipeline.
-- **22 modules** of the predictive core: Bayesian kernel, naive Bayes, Markov chains, Monte Carlo, time series, Brier calibration, cascade chains, ensemble, LLM agents, Hawkes process, HMM, Kalman filter, Ising model, entropy transfer, SIR/SEIR, EVT, Ornstein-Uhlenbeck, copulas, BOCPD, Particle Filter, MLP, GCN+DQN.
+- **Engine** `apis/predict/engine.mjs` v8.0.0 — a 16-phase pipeline.
+- **22 core modules**: Bayesian kernel, naive Bayes, Markov chains, Monte Carlo, time series, Brier calibration, cascade chains, ensemble, LLM agents, Hawkes process, HMM, Kalman filter, Ising, entropy transfer, SIR/SEIR, EVT, Ornstein-Uhlenbeck, copulas, BOCPD, Particle Filter, MLP, GCN+DQN.
+- **Before → Now:** originally described as "22 modules" — today the `apis/predict/` subsystem totals **113 files** across subsystems: 22 core modules, plus `core/`, `models/`, `agent/`, `exotic/`, `federated/`, `v6/`, `v7/`, `workers/`, `webgl/`.
 - **Sources**: `apis/predict/sources/` — prediction_markets (Polymarket/Metaculus/Kalshi/Manifold), multilang (100+ languages), satellite (Sentinel-2/Landsat/SAR).
 - **Knowledge graph**: `apis/knowledge/graph.mjs`.
 - **New pages**: /cockpit, /agent, /hypergraph, /plugins, /realtime, /advanced, /attention, /coevolution, /crucix, /predictions_composite.
 - **Plugins**: `plugins/` — loader, sandbox, hooks, registry, manifest_schema.
 - **Integrations**: `integrations/` — Slack, Notion, Obsidian, RSS, Email, Webhook.
 - **Observability**: `observability/` — OpenTelemetry, Prometheus, Grafana.
-- **Tests**: `tests/` — 42 files (unit, property, fuzz, mutation, integration, chaos, load). Smoke test: 22/22 OK.
-- **Deployment**: `docker/` — Dockerfile.engine + docker-compose.engine.yml. `k8s/` — 11 manifests.
-- **Documentation**: `docs/handbook/` — 800+ page book, `docs/help/ru` and `docs/help/en` — reference docs.
 
-### Running Tests
+### Running tests
 
 ```bash
-npm run test:all-modules       # smoke test 22 modules
+npm run test:all-modules       # smoke test of 22 modules
 npm run test:unit              # unit tests
 npm run test:integration       # integration tests
 npm run test:property          # property-based
@@ -1828,69 +1381,69 @@ npm run test:mutation          # mutation tests
 
 ---
 
-## 📰 SmartScroll — RSS & Telegram Integration
+## 📰 SmartScroll — RSS and Telegram integration
 
-Since 24.09.2026, the project includes **SmartScroll 1.0.0** — a toolkit for collecting, deduplicating, clustering, and summarizing news feeds from RSS and Telegram. The result — stories, timelines, and summaries embedded in the Crucix knowledge graph.
+Since 24.09.2026, the project integrates **SmartScroll 1.0.0** — a kit for collecting, deduplicating, clustering and summarizing news streams from RSS and Telegram. The output — stories, timelines and digests — is embedded into the Crucix knowledge graph.
 
-### Key Points
+### Key facts
 
-- **Toolkit**: `apis/sources/smartscroll*` — 16 modules, 3 modes (external / local / auto).
+- **Kit**: `apis/sources/smartscroll*` — 16 modules, 3 operating modes (external / local / auto).
 - **Collectors**: RSS 2.0 + Atom and public Telegram channels via `t.me/s/` — no API keys or tokens.
 - **Deduplication**: 4 levels — content hash, entity signature, Jaccard shingles, TF-IDF cosine.
-- **Clustering**: inverted index by entities — candidate search in O(1) instead of O(N).
-- **Summarization**: extractive (TF-IDF + MMR) + abstractive via local Ollama with automatic fallback.
+- **Clustering**: inverted index over entities — candidate lookup in O(1) instead of O(N).
+- **Summarization**: extractive (TF-IDF + MMR) + abstractive via a local LLM with automatic fallback.
 - **HTTP server**: 8 endpoints on port `3157` (variable `SMARTSCROLL_HTTP_PORT`).
-- **Metrics**: time per cycle stage (collect, normalize, dedup, cluster, summarize, store).
-- **Resilience**: rate limiter (token bucket) and circuit breaker in external adapter.
-- **Date validation**: filter events older than 10 years and future events beyond 24 hours.
+- **Metrics**: timing for each cycle stage (collect, normalize, dedup, cluster, summarize, store).
+- **Fault tolerance**: rate limiter (token bucket) and circuit breaker in the external adapter.
+- **Date validation**: rejecting events older than 10 years and more than 24 hours in the future.
 
-### Toolkit Composition
+### Kit contents
 
 ```
-apis/sources/smartscroll-interface.mjs         — shared interface (contract v3)
+apis/sources/smartscroll-interface.mjs         — common interface (contract v3)
 apis/sources/smartscroll.mjs                    — external adapter with rate limiter and circuit breaker
 apis/sources/smartscroll-local/index.mjs        — source factory (external / local / auto)
 apis/sources/smartscroll-local/engine.mjs       — cycle core with per-stage metrics
-apis/sources/smartscroll-local/processing/     — normalization, dedup, clustering, summary, timeline
+apis/sources/smartscroll-local/processing/     — normalization, deduplication, clustering, summary, timeline
 apis/sources/smartscroll-local/storage/        — file-based JSON story storage
-apis/entity-model/story-layer.mjs              — entity model: story-to-knowledge-graph mapping
+apis/entity-model/story-layer.mjs               — entity model: mapping stories into the knowledge graph
 apis/ingest/event-ingestion-api.mjs             — SmartScroll HTTP server
-scripts/collectors/lib/rss-collector.mjs       — RSS 2.0 + Atom with date validation
-scripts/collectors/lib/telegram-collector.mjs   — public Telegram channel reader
-scripts/collectors/collect-smartscroll.mjs      — toolkit collector (writes to basket)
-config/smartscroll.json                         — toolkit configuration
+scripts/collectors/lib/rss-collector.mjs        — RSS 2.0 + Atom with date validation
+scripts/collectors/lib/telegram-collector.mjs   — reading public Telegram channels
+scripts/collectors/collect-smartscroll.mjs      — kit collector (writes to the basket)
+config/smartscroll.json                         — kit configuration
 test/smartscroll/                               — 6 test files (unit + integration)
 ```
 
-### HTTP Endpoints
+### HTTP endpoints
 
 ```
-GET  /health                     — source and graph status
-GET  /metrics                    — performance metrics by stage
-GET  /stats                      — story and event summary
+GET  /health                     — source and graph state
+GET  /metrics                    — per-stage performance metrics
+GET  /stats                      — stories and events summary
 GET  /stories?limit=N&since=ISO  — story list
 GET  /stories/:id                — story details
 GET  /stories/:id/timeline       — story timeline
-POST /run                        — ingest stories into graph
+POST /run                        — story ingestion into the graph
 POST /collect                    — full collection cycle from sources
 ```
 
-### Launch
+### Running
 
 ```bash
-# Run collector
-cd Crucix && node scripts/collectors/collect-smartscroll.mjs
+# Run the collector
+node scripts/collectors/collect-smartscroll.mjs
 
-# Run SmartScroll HTTP server
-cd Crucix && SMARTSCROLL_HTTP_PORT=3157 node apis/ingest/event-ingestion-api.mjs
+# Start the SmartScroll HTTP server
+SMARTSCROLL_HTTP_PORT=3157 node apis/ingest/event-ingestion-api.mjs
 
-# Run tests
-cd Crucix && node test/smartscroll/run-all.mjs
+# Run the tests
+node test/smartscroll/run-all.mjs
 ```
 
 ### Metrics
 
-- Working modes: 3 (external / local / auto)
+- Operating modes: 3 (external / local / auto)
 - Collectors: 2 (RSS, Telegram)
 - Deduplication levels: 4
 - Clustering weights: 3 (entities 0.5, title 0.3, body 0.2)
@@ -1904,18 +1457,560 @@ cd Crucix && node test/smartscroll/run-all.mjs
 
 Detailed documentation for each module:
 
-- **Russian**: [`docs/help/ru/modules/smartscroll/`](docs/help/ru/modules/smartscroll/INDEX.md) — 17 files, table of contents + 16 module reference files.
-- **English**: [`docs/help/en/modules/smartscroll/`](docs/help/en/modules/smartscroll/INDEX.md) — 17 files, table of contents + 16 module reference files.
-- **Toolkit manifest**: [`MANIFEST-smartscroll.md`](MANIFEST-smartscroll.md).
+- **Russian**: `docs/help/ru/modules/smartscroll/INDEX.md` — 17 files, table of contents + 16 module references.
+- **English**: `docs/help/en/modules/smartscroll/INDEX.md` — 17 files, table of contents + 16 module references.
+- **Kit manifest**: `MANIFEST-smartscroll.md`.
 
-Each reference file contains: purpose, location, methods, algorithms, relationships with other modules, examples.
+Each reference file contains: purpose, location, methods, algorithms, links to other modules, examples.
+
+---
+
+## 📰 RSS system — the full pipeline
+
+RSS is Crucix's primary news stream. The data path: RSS feeds → `scripts/collectors/collect-rss.mjs` → normalization and deduplication → `data/basket/*.json` (schema `crucix.basket.v1`) → analyzers → API → maps.
+
+**Collector collect-rss.mjs:**
+- XML via rss-parser (not `response.json()` — RSS is XML, not JSON);
+- timeout, retry with exponential backoff, a realistic User-Agent (without it, CDNs return 403);
+- URL normalization (utm_*, fragments, trailing slash, http→https) — without it deduplication does not work;
+- three-level deduplication: guid → normalized_link → content-hash; cross-feed duplicates collapse by title (Jaccard + shingles of length 3 + ru/en stopwords, ё→е);
+- a per-feed item limit — protection against overflow on the first run.
+
+**Date parser date-parser.mjs** — 7 formats (ISO 8601, RFC 822, RFC 3339, DD.MM.YYYY, American, SQL-style, unix timestamp). The key decision: the Russian format is checked **before** the native `Date.parse` — otherwise V8 reads DD.MM.YYYY as MM.DD and silently swaps day and month. Invalid dates → `date_missing: true`, recognized non-ISO dates → `date_format_fallback: true` (a source-quality metric in /stats).
+
+**Feed health (feed_status):** last_ok_at, last_error, item/error counters. A broken feed does not crash the collection — errors are handled per feed, and the final result is honest: `{items, errors, feeds_checked}`.
+
+**Feed lists (data/feeds/):** RIA, TASS, Interfax, Guardian, NPR, France24 and others. Lists live in `data/feeds/`: `urls-classified.json`, `urls-direct.txt`, `urls-tor.txt`, `urls-dead.txt`, `topics.json` (*before: the README claimed `config/feeds.json` — the actual location is `data/feeds/`; `config/` holds project config — taxonomy, smartscroll, reference*). Each feed carries a stable feed_id — if the URL changes, the key survives. The `sources` table is a reference about the sources themselves (bias, reliability, latency), not a feed list: the URL lives in `data/feeds/`. SOCKS proxy is supported for inaccessible sources.
+
+**News-stream analyzers:**
+- silence-detector — "info silence": a sharp drop in topic coverage across groups of sources;
+- taxonomy-gaps — topics covered by one group and absent from the other (config/taxonomy.json: 25 entities, 97 aliases);
+- source-coordination — synchronized drops: 3+ sources within 360 minutes. A 60-minute threshold is for Telegram (minutes); RSS publishes with hourly delays;
+- narrative-framing — polarity of russian/western coverage (polarity delta);
+- alert-engine — consolidates the signals of the four analyzers above into alerts. Dry-run by default; sending to Telegram/webhook via keys from `.env`.
+
+**API:** /api/layers/articles (/raw, /stats, /groups), /api/layers/sources (/feed-status, /top), /api/layers/rss-stats (/by-hour, /by-day, /by-group, /top-sources). Pages: /rss-feed, /rss-dashboard, dashboard-signals, dashboard-narrative, dashboard-coordination.
+
+**Provenance:** the system grew out of a separate sandbox (Fastify + PostgreSQL) where the RSS pipeline was built from scratch: migrations 003–012 (articles, events, feed_status, sources, gaps and alerts tables), the cluster-events v3 clusterer (threshold 0.45: name-entities 0.55 + tokens 0.35 + shingles 0.10). It was then moved into the main project with adaptation from Fastify+PG → Express + the basket contract.
+
+---
+
+## 🧺 The Basket — the crucix.basket.v1 contract
+
+The single exchange point between collectors, analyzers and APIs.
+
+**The crucix.basket.v1 contract** — five shapes in one file:
+- v1.points — point events with coordinates
+- v1.series — time series
+- v1.regions — regional aggregation
+- v1.graph — graphs of entities and relations
+- v1.documents — documents (news, reports)
+
+The format detector `formats-dispatch.js` determines the shape automatically; one file may carry several shapes at once. Every record carries meta: id, source, collected_at, collector, count — data provenance is always visible.
+
+**Reading with fallback:** the API module does not know in advance which file is filled. It reads by a priority chain (for news: rsshub.json → rss-latest.json → rss-universal.json → rss.json) — the first non-empty one. If everything is empty, the response contains a hint "run collector N" instead of a silent stub.
+
+**Data flow:** collectors → data/basket/*.json → analyzers → data/analytics/*.json → API modules (registry: /registry) → maps and dashboards.
+
+---
+
+## 📁 config/
+
+Project configuration lives in `config/`:
+
+- `config/taxonomy.json` — the living taxonomy of the gap analyzers: 25 entities, 97 aliases (updated 01.11.2026).
+- `config/smartscroll.json` — SmartScroll kit configuration.
+- `config/reference/` — reference data for collectors.
+- `config/reference-backup/` — backups of the reference folder.
+
+Historically, part of the configuration lived in different places (the feed list was moved to `data/feeds/`); new configuration should be added to `config/` consistently.
+
+---
+
+# Crucix — The 5-Map System: architecture, current state and work plan
+
+File: AI_MEMORY/НАДО/5карт/help/README-5-MAPS_ru.md
+English: AI_MEMORY/НАДО/5карт/help/README-5-MAPS_en.md
+Version: 2.0
+Date: September 27, 2026
+Status: internal architectural document
+*Note (03.11.2026): this document is preserved as a dated snapshot of the map system's state. Layer counts inside it are historical (as of 27.09.2026) and may differ from the current ones — the authoritative source of live layer counts is each map's `/registry`.*
+
+---
+
+## Table of contents
+
+1. Brief summary
+2. The monolith problem
+3. The solution: 5 maps
+4. Map names and scientific rationale
+5. Current state (what has actually been done)
+6. Distribution of 48 new modules across the maps
+7. The real file architecture
+8. Layer filtering: maps-config.js
+9. Presets (presets.json)
+10. Specialist modules without a map (17)
+11. Work plan for upcoming sessions
+12. Verification
+13. Map READMEs
+14. Bibliography
+
+---
+
+## 1. Brief summary
+
+Crucix uses 5 independent maps instead of a monolithic dashboard. Each map processes only its own data type and uses only pairwise-separable visual channels. The architecture is grounded in six independent scientific theories.
+
+As of September 27, 2026: the framework of 5 maps is in place, 195 base layers are distributed, 48 previously excluded modules have been added to the layers.js of their respective maps. Event Map is the primary working map (84 layers). The remaining maps need infrastructure and UI setup.
+
+---
+
+## 2. The monolith problem
+
+- Channel overload — the brain handles 120 bits/sec, a monolith delivers 400+ bits/sec (Shannon 1948; Miller 1956; Cowan 2001)
+- Split-attention effect — mental integration reduces performance by 30–50% (Ayres & Sweller 2005)
+- Channel interference — at least one pair of channels is integral (Munzner 2014)
+- Empirical evidence — 70% abandon a decision due to overload (Oracle 2023)
+
+---
+
+## 3. The solution: 5 maps
+
+| # | Map | Dimension | Visualization type | Channels | mapType |
+|---|-----|-----------|--------------------|----------|---------|
+| 1 | Event Map | Space+Time+Quantity | Point events | Position + Color hue | events |
+| 2 | Metrics Map | Quantity+Time | Choropleth | Position + Color intensity | metrics |
+| 3 | Semantic Map | Semantics+Time | Clusters, sentiment | Position + Color categorical | meanings |
+| 4 | Network Map | Relational+Time | Force-directed graph | Position (force) + Shape | relations |
+| 5 | Forecast Map | Predictive+Time | Probabilistic fill | Position + Color divergent | forecasts |
+
+Time is not a separate map but a cross-cutting axis (time slider, filter, animation).
+
+---
+
+## 4. Map names and scientific rationale
+
+- Event Map — Peuquet 1994, event-based spatio-temporal model
+- Metrics Map — Slocum et al. 2009, cartometric mapping
+- Semantic Map — Kucher & Skans 2015, text mining visualization
+- Network Map — Barabasi 2016, network science
+- Forecast Map — Cressie 1993, probabilistic spatial forecasting
+
+Six theories:
+Cognitive Load Theory (Sweller 1988),
+Channel Separability (Munzner 2014),
+Separation of Concerns (Dijkstra 1974),
+Information Foraging (Pirolli & Card 1999),
+Channel Capacity (Shannon 1948),
+Empirical Dashboard Studies (Koch et al. 2013).
+
+---
+
+## 5. Current state (what has actually been done)
+
+### 5.1. All 5 maps created
+
+| Map | Directory | mapType | Layers | Status |
+|-----|-----------|---------|--------|--------|
+| Event Map | dashboard/public/event-map/ | events | 84 | Working, primary |
+| Metrics Map | dashboard/public/metrics-map/ | metrics | 75 | Framework ready, needs setup |
+| Semantic Map | dashboard/public/semantic-map/ | meanings | 22 | Framework ready, needs setup |
+| Forecast Map | dashboard/public/forecast-map/ | forecasts | 16 | Framework ready, needs setup |
+| Network Map | dashboard/public/network-map/ | relations | 3 | Framework ready, no Leaflet |
+
+*Note (03.11.2026): the Semantic and Network Map layer counts have grown since this snapshot — see the "Five Maps" section above for the current figures (35 and 12).*
+
+### 5.2. Base Map (template)
+
+Directory dashboard/public/base-map/ — 25 files, 540 KB.
+
+Key files:
+- js/layers.js — 195 base layers + getLayersForMap()
+- js/layers-dynamic.js — dynamic adapter from /api/registry/layers
+- js/init.js — map startup, loadData()
+- js/markers.js — generateAllMarkers with generateOnly
+- js/map-controls.js — loadCountryBoundaries, applyChoropleth
+- js/ssi.js — Strategic Stress Index
+- js/cii.js — Country Instability Index
+- js/heat-timeline.js — heat map and chronology
+
+### 5.3. New files in event-map/js/
+
+Modules created that do not exist in base-map:
+
+- config.js (2.3 KB) — Event Map configuration
+- maps-config.js (7.2 KB) — layer filter by mapType
+- layer-health.js (4.8 KB) — layer health checks
+- markers-count.js (2.8 KB) — marker counter
+- copy-button.js (23.6 KB) — extended copying
+- copy-data.js (11.7 KB) — copying (own)
+- preset.js (5.5 KB) — preset system
+- renderer.js (7.8 KB) — rendering
+- refresh.js (4.5 KB) — auto-refresh (own)
+- cii.js (4.0 KB) — CII (own)
+- formats-registry.js (7.7 KB) — format registry
+- formats-categorical.js (2.1 KB) — categorical
+- formats-dispatch.js (2.4 KB) — dispatcher
+- formats-relational.js (1.7 KB) — relational
+- formats-spatial.js (2.7 KB) — spatial
+- formats-textual.js (1.7 KB) — textual
+- formats-timeseries.js (2.5 KB) — time series
+- country-boundaries.js (9.3 KB) — boundaries (own)
+- geo-map-core.js (685 B) — core
+- logger.js (3.6 KB) — logging (own)
+- markers.js (6.4 KB) — markers (own)
+- layers-panel.js (4.6 KB) — layers panel
+- core.js (2.6 KB) — core (own)
+- countries.js (60.8 KB) — countries (own)
+- init.js (5.4 KB) — initialization (own)
+- heat-timeline.js (6.3 KB) — heat/chronology (own)
+- relations.js (16.1 KB) — relations (own)
+- graph-view.js (13.4 KB) — graph (own)
+- graph-panel.js (8.6 KB) — graph panel (own)
+- ssi.js (4.0 KB) — SSI (own)
+
+### 5.4. Outdated files (marked for cleanup)
+
+In event-map/js/:
+- layers60.js (18.0 KB) — outdated
+- layers60 LAYERS, 12 CATEGORIES.js (14.0 KB) — outdated
+- LAYERSCrucix.JS (57.2 KB) — outdated
+- layers-dynamic.js.bak-20260927-040742 — backup
+- maps-config.js.bak-20260927-090105 — backup
+- copy-button (copy).js (23.1 KB) — copy
+- _legacy/, modules/, popup/ — folders
+
+In metrics-map/js/ and other maps — similar duplicates (layers60.js, LAYERSCrucix.JS, etc.)
+
+### 5.5. A peculiarity of event-map
+
+Event Map uses its own copies of scripts instead of base-map: core.js, countries.js, init.js, markers.js, refresh.js, cii.js, ssi.js, heat-timeline.js — all its own. The other maps connect them from ../base-map/js/.
+
+---
+
+## 6. Distribution of 48 new modules across the maps
+
+### 6.1. Metrics Map (+14)
+
+| ID | Category | Description |
+|----|----------|-------------|
+| business-optimism-api | economics | Business optimism index |
+| consumer-expectations-api | economics | Consumer expectations index |
+| pmi-api | economics | PMI — purchasing managers index |
+| recession-api | economics | Recession probability |
+| copper-gold-ratio-api | finance | Copper/gold |
+| hy-spread-api | HY OAS spread |
+| ovx-api | finance | OVX — oil volatility |
+| rublev-dubai-api | finance | Rouble in Dubai |
+| sp500-vix-api | finance | S&P 500 / VIX |
+| vxx-api | finance | VXX — volatility |
+| yield-curve-api | finance | Yield curve |
+| crypto-fear-api | finance | Crypto fear |
+| cyber-threat-index-api | cyber | Cyber threat index |
+| wti-brent-spread-api | energy | WTI/Brent spread |
+
+### 6.2. Semantic Map (+13)
+
+| ID | Category | Description |
+|----|----------|-------------|
+| adaptive-news-clustering-api | semantic | News clustering |
+| ai-news-synthesis-api | semantic | AI news synthesis |
+| entity-extraction-api | semantic | Entity extraction |
+| multi-source-corroboration-api | semantic | Cross-corroboration |
+| social-sentiment-analyzer-api | semantic | Social media sentiment |
+| source-credibility-api | semantic | Source credibility |
+| narrative-splitter-api | semantic | Narrative reconciliation |
+| narrative-drift-api | specialist | Word/action divergence |
+| deception-index-api | specialist | Credibility index |
+| indirect-indicators-api | intelligence | Indirect indicators |
+| analysis-events-api | other | analysis-events |
+| historical-analysis-api | other | historical-analysis |
+| reports-api | other | reports |
+
+### 6.3. Forecast Map (+4)
+
+| ID | Category | Description |
+|----|----------|-------------|
+| ai-forecasts-api | forecast | AI forecasts (Ollama) |
+| central-bank-predictor-api | forecast | Central bank decision forecast |
+| social-briefing-api | forecast | Social briefing |
+| social-briefing-engine-api | forecast | Briefing engine |
+
+### 6.4. Network Map
+
+Unchanged — 3 layers. No flow layers among the excluded.
+
+---
+
+## 7. The real file architecture
+
+```
+dashboard/public/
+  geo-map/           ORIGINAL (do not touch)
+  world.geojson      252 KB, shared
+  base-map/          TEMPLATE, 25 files, 540 KB
+    css/             6 files
+    js/              16 files
+    data/            world.geojson
+  event-map/         84 layers, WORKING
+    js/              30+ files (own + base-map)
+    css/             event-map.css
+  metrics-map/       75 layers
+    js/              layers.js + base
+    css/             metrics-map.css
+  semantic-map/      22 layers
+    js/              layers.js + base
+    css/             semantic-map.css
+  forecast-map/      16 layers
+    js/              layers.js + base
+    css/             forecast-map.css
+  network-map/       3 layers, no Leaflet
+    js/              network-map.js, graph-view, graph-panel, relations
+    css/             network-map.css
+```
+
+### Script load order
+
+1. window.CrucixMap = { mapType: '...' }
+2. ../base-map/js/core.js
+3. ../base-map/js/countries.js
+4. ../base-map/js/layers.js (or its own)
+5. js/layers-[mapType].js (or its own layers.js)
+6. ../base-map/js/layers-dynamic.js
+7. ../base-map/js/markers.js
+8. ../base-map/js/map-controls.js
+9. ../base-map/js/copy-data.js
+10. ../base-map/js/heat-timeline.js (except network-map)
+11. ../base-map/js/ssi.js
+12. ../base-map/js/refresh.js
+13. ../base-map/js/logger.mjs
+14. ../base-map/js/cii.js (except network-map)
+15. js/[mapType]-map.js
+16. ../base-map/js/init.js (START, last)
+
+The order must not be changed — CrucixMap must be set before layers.js.
+
+---
+
+## 8. Layer filtering: maps-config.js
+
+### 8.1. Current state
+
+In event-map/js/maps-config.js (7.2 KB) — the filter by mapType. It loads AFTER layers.js, BEFORE init.js.
+
+```js
+const MAP_TYPES = {
+  events: ['military', 'geopolitical', 'cyber', 'space', 'health',
+           'energy', 'transport', 'ecological', 'news', 'threats'],
+  metrics: ['economics', 'finance', 'esg'],
+  meanings: ['semantic', 'ai', 'intelligence'],
+  relations: ['flow', 'social'],
+  forecasts: ['forecast', 'detector', 'threats']
+};
+```
+
+### 8.2. What needs to be done
+
+maps-config.js exists ONLY in event-map. Needed:
+- Create maps-config.js in metrics-map, semantic-map, forecast-map
+- Or extract the common one into base-map
+- Connect it in index.html after layers.js, before init.js
+
+### 8.3. Filtering duplication
+
+Filtering currently lives in two places:
+1. getLayersForMap() in base-map/js/layers.js
+2. MAP_TYPES in event-map/js/maps-config.js
+
+A decision is needed: keep both or use one.
+
+---
+
+## 9. Presets (presets.json)
+
+File: dashboard/public/event-map/пресеты/presets.json
+
+3 presets with the key "crucix" (duplication — a bug, JSON keeps the last one):
+
+1. Crucix (default) — 16 categories, enabledLayers: [], [55.75, 37.61], zoom 5
+2. Crucix — geopolitics/conflicts, 24 layers, [20, 0], zoom 3
+3. Crucix — intelligence/threats, 32 layers, [50, 10]
+
+Bugs:
+- All three presets share the same key "crucix" — only the last one survives
+- enabledLayers contain categories, not layer IDs
+- Needed: crucix-default, crucix-conflicts, crucix-intel
+
+---
+
+## 10. Specialist modules without a map (17)
+
+17 modules with category='specialist' did not make it into any map — this is system infrastructure:
+
+| ID | Purpose |
+|----|---------|
+| alert-dispatcher-api | Alert dispatcher |
+| cache-manager-api | Cache |
+| cli-analytics-api | CLI analytics |
+| config-validator-api | Validation |
+| convergence-engine-api | Signal convergence |
+| crucix-doctor-api | Diagnostics |
+| dashboard-indicators-api | Dashboard indicators |
+| data-discrepancy-api | Discrepancies |
+| event-deduplicator-api | Deduplication |
+| langgraph-orchestrator-api | LangGraph |
+| mcp-server-api | MCP server |
+| module-registration-controller-api | Registration |
+| scenario-simulation-engine-api | Simulation |
+| silence-patterns-api | Silence patterns |
+| source-coordination-api | Coordination |
+| strategic-risk-composite-api | Strategic risk |
+| watchdog-api | Watchdog |
+
+Available via the API but not in the layers panel.
+
+---
+
+## 11. Work plan for upcoming sessions
+
+### Stage 1. Infrastructure alignment (high)
+
+1.1. Cleanup of outdated files — layers60.js, LAYERSCrucix.JS, *.bak-*, copies — across all maps
+
+1.2. Creating maps-config.js for metrics, semantic, forecast — or extracting the common one into base-map
+
+1.3. Fixing presets.json — unique keys, real IDs in enabledLayers, presets for other maps
+
+1.4. Resolving filtering duplication — layers.js vs maps-config.js
+
+### Stage 2. UI setup (high)
+
+2.1. Metrics Map — verify 75 layers, configure choropleth for new ones (vizType='series' vs 'choropleth'), create maps-config.js
+
+2.2. Semantic Map — verify 22 layers, configure coloring, add signal types (cluster, synthesis, extraction, corroboration, credibility, drift, deception)
+
+2.3. Forecast Map — verify 16 layers, configure hooks for ai-forecasts, central-bank-predictor, social-briefing
+
+2.4. Network Map — add flow modules, verify the entity-graph API
+
+### Stage 3. Data customization (medium)
+
+3.1. Verify API endpoints — /api/layers/<route> for new modules, GeoJSON format
+
+3.2. Move formats-*.js (7 files) into base-map or copy into each map
+
+3.3. Handle series → choropleth/marker for financial modules
+
+### Stage 4. Cross-map (low)
+
+4.1. Linked views — a node click in Network highlights in Event; a country click in Metrics highlights in Event
+
+4.2. A shared time slider — synchronization across maps
+
+### Stage 5. Regeneration (low)
+
+5.1. Update registry.generated.json — remove excluded_from_layers
+
+5.2. Update the English README versions, keep RU/EN in sync
+
+---
+
+## 12. Verification
+
+- NASA-TLX — cognitive load, 20% lower
+- Time-to-decision + accuracy — 20% faster, 15% more accurate
+- Eye-tracking — more fixations on relevant items
+- Error rate — lower across 5 maps
+
+---
+
+## 13. Map READMEs
+
+| Map | RU | EN |
+|-----|----|----|
+| Base Map | README-BASE-MAP_ru.md | README-BASE-MAP_en.md |
+| Event Map | README-EVENT-MAP_ru.md | README-EVENT-MAP_en.md |
+| Metrics Map | README-METRICS-MAP_ru.md | README-METRICS-MAP_en.md |
+| Semantic Map | README-SEMANTIC-MAP_ru.md | README-SEMANTIC-MAP_en.md |
+| Network Map | README-NETWORK-MAP_ru.md | README-NETWORK-MAP_en.md |
+| Forecast Map | README-FORECAST-MAP_ru.md | README-FORECAST-MAP_en.md |
+| Architecture | Crucix_5_Maps_Architecture_Justification.md | — |
+
+---
+
+## 14. Bibliography
+
+1. Sweller (1988) Cognitive load. Cognitive Science 12(2):257-285.
+2. Ayres & Sweller (2005) Split-attention. Cambridge Handbook:135-146.
+3. Cowan (2001) Magical number 4. BBS 24(1):87-114.
+4. Miller (1956) Magical number seven. Psych Review 63(2):81-97.
+5. Munzner (2014) Visualization Analysis and Design. CRC Press.
+6. Cleveland & McGill (1984) Graphical perception. JASA 79:531-554.
+7. Dijkstra (1974) Role of scientific thought. Selected Writings:60-66.
+8. Pirolli & Card (1999) Information foraging. Psych Review 106(4):643-675.
+9. Shannon (1948) Mathematical theory. Bell System Tech J 27(3):379-423.
+10. Koch et al. (2013) Clinical dashboard. AMIA:834-841.
+11. Slocum et al. (2009) Thematic Cartography. Pearson.
+12. Barabasi (2016) Network Science. Cambridge.
+13. Cressie (1993) Statistics for Spatial Data. Wiley.
+14. Gamma et al. (1994) Design Patterns. Addison-Wesley.
+
+---
+
+The fundamental distinction of the 5 maps
+
+The split into 5 maps was made because the data they are fed is mutually incompatible. Five maps are five different data models, five different units of measurement, five different ways of anchoring to geography. They cannot be merged into one map without losing meaning.
+
+From the semantic-map index.html, the map switcher is visible:
+/dashboard/event-map/ — Events
+/dashboard/metrics-map/ — Metrics
+/dashboard/semantic-map/ — Semantic
+/dashboard/forecast-map/ — Forecast
+/dashboard/network-map/ — Network
+
+From the semantic-map manifest.json: mapType: "meanings", external_dependencies.local_cross_map: 0. That is, semantic-map declares itself self-sufficient — 0 references to other maps. This is the R3 architectural principle from the comment in the semantics layers.js: "only its own layers, 0 references to other maps".
+
+Specifically, how semantic-map differs from metrics-map
+Metrics-map is a map of measurable numeric indicators. Data unit: a number (index, percentage, absolute value). Anchor: a country (polygon) via world.geojson. Visualization type: choropleth (country fills colored by value). Data: window.layerCache[id] = [{name, value, status}]. Legend: value classes via .legend-item/.legend-row with COLOR_SCHEMES palettes. Current-layer config: window.currentChoroplethConfig with fields method, palette, breaks, gvf, stats. This is exactly the model the current copy-data.js (v3.0, unified metrics version) expects.
+
+Semantic-map is a map of semantic entities. Data unit: an object (marker, cluster, tone, credibility). Anchor: a point (lat/lng coordinates) for markers, or an abstract anchor to a topic/narrative for sentiment/cluster/credibility. Visualization types: marker, sentiment, cluster, credibility — not choropleth. Data: window.layerCache[id] is usually empty, because layer-panel.js::loadLayer does not fetch and does not write to the cache. The main array is window.markerData, generated in markers.js via Math.random(). This is a stub, not real data. The #choropleth-legend exists in the DOM but nobody fills it. window.currentChoroplethConfig is absent. window.COLOR_SCHEMES is absent. Palettes live in window.LAYER_OVERRIDES (see the semantics layers.js).
+
+Five maps — five models
+Events — point events in time and space. Unit: an event with a date. Anchor: coordinates. Visualization: markers, timeline.
+
+Metrics — numeric indicators per country. Unit: a number. Anchor: a country (polygon). Visualization: choropleth.
+
+Semantic — semantic entities (sentiment, narrative, clusters, credibility). Unit: an object of analysis. Anchor: a point or a topic. Visualization: marker/sentiment/cluster/credibility.
+
+Forecast — forecast values. Unit: a forecast with a horizon. Anchor: a country or a region. Visualization: choropleth or dynamic markers.
+
+Network — links between entities. Unit: a graph edge. Anchor: nodes. Visualization: a graph.
+
+The reason for the split: each model has its own data unit, its own geographic anchor, its own visualization method. Merging them into one map means losing meaning. Metrics-map cannot be overlaid on semantic-map: country numbers and points of semantic entities do not intersect by type.
+
+---
+
+## 📜 README changelog
+
+**November 3, 2026 — full summary update:**
+- API modules: 370+ → 655 (snapshot of Crucix_GIT); analyzers: 59 → 68; countries reference: 250 → 257; help docs: 582 ru + 566 en
+- Node.js requirement: 22+ → ≥ 18 (per package.json engines)
+- Docker: files were removed (commit 37af83c) — the section was rewritten as "Before → Now"; the docker-ready badge replaced with "Node.js only"
+- New section: "RSS system — the full pipeline" (collector, three-level dedup, the DD.MM trap, feed_status, five analyzers, provenance from the sandbox)
+- New section: "The Basket — the crucix.basket.v1 contract" (five shapes, format dispatcher, fallback reading, lint-contract)
+- New section: "config/" (taxonomy, smartscroll, reference)
+- Router v3.1: a "Before → Now" subsection — the hard-coded LEGACY_ALIASES → the build-legacy-aliases.mjs generator, legacy-stubs.json (34 stubs), the req.url fix for 58 modules with 404, build-registry and lint-contract
+- AI lab: Ollama → Mistral by default + OpenAI-compatible local LLMs; the AI module list expanded
+- Feed lists: config/feeds.json → data/feeds/ (the actual location)
+- The analytical platform: a note on the category table (distribution as of the composition date; live counts in /registry)
+- npm scripts: the test suite (unit, property, fuzz, integration, mutation) added
+- Troubleshooting: an RSS block ("Invalid Date", an empty collection) and a lint-contract hint added
+- Predictive core: 113 files across subsystems added (22 core modules + core, models, agent, exotic, federated, v6, v7, workers, webgl)
+- The 5-maps document preserved as a dated snapshot with a note about historical layer counts
+- Maintenance rules added to the header: nothing is deleted, "Before → Now" rewriting, dating of every update
 
 ---
 
 ## 📜 License
 
-AGPLv3. See `LICENSE`.
-
----
-
-**Crucix** — your personal analytics center. 226 sources. 59 analyzers. 5 maps. One command. No cloud.
+AGPLv3

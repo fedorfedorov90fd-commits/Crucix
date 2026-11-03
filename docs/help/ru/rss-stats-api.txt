@@ -1,0 +1,42 @@
+=== RSS-STATS-API — СПРАВКА ===
+
+МОДУЛЬ:      apis/sources/rss-stats-api.mjs
+ТИП:         Layer (single-method, контракт v2)
+ПОРТ:        3117
+СТАТУС:      ✅ работает (200)
+
+НАЗНАЧЕНИЕ:
+  Агрегаты RSS (адаптация stats.mjs песочницы с Fastify+PostgreSQL
+  на Express+basket).
+
+ИСТОЧНИК:
+  Fallback-цепочка (rsshub → rss-latest → rss-universal → rss).
+
+ЭНДПОИНТЫ:
+  GET /api/layers/rss-stats                 — полные агрегаты
+  GET /api/layers/rss-stats/stats           — то же
+  GET /api/layers/rss-stats/status          — health-check
+  GET /api/layers/rss-stats/by-hour         — распределение по часам
+  GET /api/layers/rss-stats/by-day          — распределение по дням
+  GET /api/layers/rss-stats/by-group        — распределение по группам
+  GET /api/layers/rss-stats/top-sources?n=N — топ-N источников
+
+ДАННЫЕ (на 02.11.2026):
+  total: 500 items
+  with_date: 500
+  by_group: { russian: 385, western: 115 }
+  top_sources: Lenta.ru (199), ТАСС (99), The Guardian (36)
+
+ПРИМЕРЫ:
+  curl http://localhost:3117/api/layers/rss-stats
+  curl http://localhost:3117/api/layers/rss-stats/by-group
+  curl "http://localhost:3117/api/layers/rss-stats/top-sources?n=5"
+  curl http://localhost:3117/api/layers/rss-stats/by-hour
+
+СВЯЗИ:
+  ← data/basket/rss-latest.json
+  → dashboard-5in1.html (карточка 38)
+  → (для будущих виджетов: timeline, chart)
+
+ФАЙЛЫ:
+  apis/sources/rss-stats-api.mjs

@@ -1,0 +1,15 @@
+{
+  "_doc": "Whitelist API, у которых нет ни v2, ни basket. Попадают в LEGACY_ALIASES как direct-basket/not_found.",
+  "_note": "Когда появится basket — build-legacy-aliases автоматически переведёт их в basket-группу.",
+  "stubs": [
+    "ai-chat", "ai-gateway", "ai-news-analyzer", "anomaly-detector",
+    "aviation-monitor", "conflict", "conflict-predictor", "correlation",
+    "cyber-intel", "deepfake", "early-warning", "energy-monitor",
+    "environment-monitor", "geo", "geo-map", "health-monitor",
+    "hidden-links", "historical-analysis", "indirect", "lenses",
+    "llm-analyzer", "maritime", "market-predictor", "rag",
+    "satellite-internet", "scenario-generator", "security",
+    "semantic-analysis", "sentiment", "space-monitor",
+    "strategic-intel", "strategic-layer", "voice", "weather-monitor"
+  ]
+}

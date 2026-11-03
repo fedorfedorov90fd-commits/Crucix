@@ -1,13 +1,15 @@
 # 🧠 CRUCIX — Open Source Intelligence Terminal
 
+> **Полная сводка проекта. Обновлено: 03.11.2026.** Ведение README: ничего не удаляется — устаревшее переписывается по схеме «Ранее → Сейчас», числа обновляются по снапшоту чистовой папки (`Crucix_GIT`), все изменения фиксируются в Журнале обновлений в конце документа.
+
 ![image](https://img.shields.io/badge/live-crucix.live-00d4ff?style=for-the-badge)
 ![image](https://img.shields.io/badge/open-live%20dashboard-0b1220?style=for-the-badge&logo=googlechrome&logoColor=white)
-![image](https://img.shields.io/badge/node-22%2B-brightgreen)
+![image](https://img.shields.io/badge/node-18%2B-brightgreen)
 ![image](https://img.shields.io/badge/license-AGPLv3-blue.svg)
 ![image](https://img.shields.io/badge/OSINT%20sources-226-cyan)
-![image](https://img.shields.io/badge/analyzers-59-purple)
-![image](https://img.shields.io/badge/API%20modules-370%2B-orange)
-![image](https://img.shields.io/badge/docker-ready-blue?logo=docker)
+![image](https://img.shields.io/badge/analyzers-68-purple)
+![image](https://img.shields.io/badge/API%20modules-655-orange)
+![image](https://img.shields.io/badge/Node.js%20only-no%20docker-blue)
 ![image](https://img.shields.io/badge/Signal%20Wire-%40crucixmonitor-111111?style=for-the-badge&logo=x&logoColor=white)
 ![image](https://img.shields.io/badge/Ops%20Room-Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)
 
@@ -37,7 +39,11 @@
 21. [Вклад в проект](#-вклад-в-проект)
 22. [🧠 Прогностическое ядро Crucix](#-прогностическое-ядро-crucix)
 23. [📰 SmartScroll — интеграция RSS и Telegram](#-smartscroll--интеграция-rss-и-telegram)
-24. [Лицензия](#-лицензия)
+24. [📰 RSS-система Crucix — полный конвейер](#-rss-система-crucix--полный-конвейер)
+25. [🧺 Корзина — контракт crucix.basket.v1](#-корзина-databasket--контракт-crucixbasketv1)
+26. [🧩 config/ — конфигурация проекта](#-config--конфигурация-проекта)
+27. [🗓️ Журнал обновлений README](#-журнал-обновлений-readme)
+28. [Лицензия](#-лицензия)
 
 ## 🚀 Описание
 
@@ -46,15 +52,16 @@
 Архитектура построена по принципу **«Корзина → AI → Карта»**:
 
 - **Сбор** — данные приходят из 226 источников в корзину (`data/basket/`)
-- **Анализ** — 59 анализаторов считают индексы, композиты, прогнозы (`data/analytics/`)
+- **Анализ** — 68 анализаторов (Ранее: 59 → Сейчас: 68) считают индексы, композиты, прогнозы (`data/analytics/`)
 - **AI** — локальный LLM (Ollama) генерирует брифы и прогнозы
 - **Карта** — результат визуализируется в **5 автономных карт**, каждая из которых отображает свой класс данных
 
 ### Ключевые возможности
 
 - ✅ **226 OSINT-источников** — спутники, авиация, конфликты, экономика, экология
-- ✅ **59 анализаторов** — индексы, детекторы, прогнозы, композиты
-- ✅ **370+ API-модулей** — все эндпоинты данные из корзины
+- ✅ **68 анализаторов** — индексы, детекторы, прогнозы, композиты (Ранее: 59 → Сейчас: 68)
+- ✅ **655 API-модулей** — все эндпоинты данные из корзины (Ранее: 370+ → Сейчас: 655, снапшот 03.11.2026)
+- ✅ **126 сборщиков данных** — RSS, API, спутники, конфликты (`scripts/collectors/`, снапшот 03.11.2026)
 - ✅ **8 категорий аналитики** — index, detector, forecast, semantic, flow, market, specialist, space
 - ✅ **5 автономных карт** — Event, Metrics, Semantic, Forecast, Network — каждая со своими слоями, палитрами и моделями визуализации
 - ✅ **222 слоя суммарно** — 84 + 75 + 35 + 16 + 12, разнесены по 5 картам по принципу сепарабельности каналов
@@ -88,8 +95,8 @@
 ### Локальный запуск
 
 ```bash
-# 1. Клонировать репозиторий
-git clone https://github.com/calesthio/Crucix.git
+# 1. Клонировать репозиторий (форк; оригинал — calesthio/Crucix)
+git clone https://github.com/fedorfedorov90fd-commits/Crucix.git
 cd Crucix
 
 # 2. Установить зависимости (только Express)
@@ -112,12 +119,8 @@ node --trace-warnings server.mjs
 
 ### Docker
 
-```bash
-git clone https://github.com/calesthio/Crucix.git
-cd Crucix
-cp .env.example .env
-docker compose up -d
-```
+> **Ранее:** этот раздел содержал установку через Docker (`docker compose up -d`, Dockerfile, docker-compose.yml, non-root пользователь — коммит 53fc434).
+> **Сейчас:** Docker-файлы удалены из репозитория (коммит 37af83c) — проект работает на Node.js **без контейнеризации**. Установка — только через «Локальный запуск» выше.
 
 ---
 
@@ -134,7 +137,7 @@ docker compose up -d
 
 ### Аналитика
 
-- **59 анализаторов** — от базовых индексов до композитных рисков
+- **68 анализаторов** — от базовых индексов до композитных рисков (Ранее: 59)
 - **197 стран** в справочнике характеристик
 - **147 стран** с реальным коэффициентом Джини
 - **194 страны** с макроэкономикой World Bank
@@ -560,7 +563,7 @@ network-map/
 
 ## 📊 Аналитическая платформа
 
-В Crucix встроена **полноценная аналитическая платформа** — 59 анализаторов, разделённые на **8 категорий**.
+В Crucix встроена **полноценная аналитическая платформа** — 68 анализаторов (Ранее: 59 → Сейчас: 68), разделённые на **8 категорий**.
 
 ### Категории анализаторов
 
@@ -574,7 +577,9 @@ network-map/
 | **market** | Рыночные индикаторы | 7 |
 | **specialist** | Специализированные (инфра, ядер, санкции) | 21 |
 | **space** | Космос | 1 |
-| **ИТОГО** | | **59** |
+| **ИТОГО** | | **59** → актуально **68** |
+
+> Распределение по категориям приведено на дату первоначального составления таблицы; актуальное количество анализаторов — 68 (снапшот 03.11.2026). Детальное распределение см. на `/registry`.
 
 ### Ключевые анализаторы
 
@@ -801,6 +806,12 @@ export default async function handler(req, res) {
 
 **Больше не нужно** добавлять запись в `routes-api.json` вручную. Модуль сам регистрируется.
 
+### Обновление: генерация LEGACY-алиасов (ноябрь 2026)
+
+> **Ранее:** список legacy-редиректов `LEGACY_ALIASES` был захардкожен прямо в `router.mjs`; при legacy-редиректе модули видели исходный путь, а не переписанный — из-за этого ~58 модулей (включая `usgs-api`) получали 404.
+
+> **Сейчас:** захардкоженный объект удалён из роутера; список генерируется автоматически — `server/build-legacy-aliases.mjs` создаёт `server/legacy-aliases.generated.json`, и `router.mjs` импортирует его. В роутер добавлен фикс обновления `req.url` при legacy-редиректе: переписанный путь теперь доходит до модуля. Список из 34 API-заглушек вынесен в `server/legacy-stubs.json`. Известная особенность: имена файлов с точкой (например, `rsshub.classified.json`) требуют отдельной обработки в генераторе — фикс запланирован.
+
 ---
 
 ## 🧪 AI-лаборатория
@@ -810,6 +821,8 @@ export default async function handler(req, res) {
 ### Компоненты
 
 - **Ollama** — `http://localhost:11434`, модели: llama3.1:8b, mistral:7b, phi3:3.8b
+- **Mistral (по умолчанию)** — `mistral-small-latest` (коммит 83b5882)
+- **OpenAI-совместимые локальные LLM** — Ollama, LM Studio (коммит 956bd2d)
 - **AI Gateway** — `apis/sources/ai-gateway.mjs`
 - **RAG-модуль** — `apis/sources/rag-module/`, порт 3120
 - **AI Chat** — `http://localhost:8080`
@@ -829,6 +842,14 @@ export default async function handler(req, res) {
 - **ai-forecasts** — вероятностный прогноз
 - **social-briefing** — 3 формата брифов (daily, alert, summary)
 - **daily-briefing.mjs** — ежедневный дайджест
+- **ai-chat-api** — чат с моделью
+- **ai-gateway** — единая точка доступа к LLM-бэкендам
+- **ai-news-analyzer** — анализ новостного потока
+- **ai-news-rating** — оценка релевантности новостей
+- **ai-processor**, **ai-filter** — предобработка и фильтрация текстов
+- **llm_agents**, **agentic_engine** — агентные подсистемы (входят и в прогностическое ядро)
+
+> **Ранее:** по умолчанию использовался локальный Ollama → **Сейчас:** по умолчанию Mistral (`mistral-small-latest`); локальные бэкенды (Ollama, LM Studio) поддерживаются через OpenAI-совместимый протокол.
 
 ---
 
@@ -846,7 +867,7 @@ Crucix **работает без API-ключей** — используются
 - **Launch Library 2** — космические запуски
 - **Frankfurter** — курсы валют ЕЦБ
 - **Hacker News** — топ-новости
-- **mledoze/countries** — справочник 250 стран
+- **mledoze/countries** — справочник 257 стран (Ранее: 250)
 - **CISA KEV** — уязвимости
 - **CoinGecko** — крипта
 - **US Treasury** — долг США
@@ -888,7 +909,7 @@ API-модуль (apis/sources/*-api.mjs)
 
 ```
 Crucix/
-├── apis/sources/            # 370+ API-модулей
+├── apis/sources/            # 655 API-модулей (Ранее: 370+)
 ├── scripts/
 │   ├── collectors/          # сборщики в корзину
 │   └── analyzers/           # анализаторы
@@ -901,7 +922,7 @@ Crucix/
 ├── server/                  # серверные модули
 │   ├── router.mjs           # роутер v3.1
 │   ├── loader.mjs           # загрузчик модулей
-│   ├── modules.json         # 370+ модулей
+│   ├── modules.json         # 655 модулей (Ранее: 370+)
 │   ├── routes-api.json      # legacy-маршруты
 │   └── server.mjs           # точка входа
 ├── dashboard/public/        # страницы и 5 карт
@@ -910,7 +931,9 @@ Crucix/
 │   ├── semantic-map/        # 35 слоёв, sentiment
 │   ├── forecast-map/        # 16 слоёв, probability
 │   └── network-map/         # 12 слоёв, SVG-граф
-├── docs/help/               # справки ru/en
+├── docs/help/               # справки ru/en: 582 ru + 566 en
+├── config/                    # taxonomy.json, smartscroll.json, reference/
+├── data/feeds/                # списки RSS-фидов (urls-classified, urls-direct, urls-tor, urls-dead, topics)
 ├── ai-memory-sync/          # файлы памяти AI
 └── logs/collectors/         # логи сборщиков
 ```
@@ -929,10 +952,77 @@ Crucix/
 - `utils.mjs` — утилиты (`sendJSON`, `sendError`)
 - `config.mjs` — порт, MIME-типы
 - `static.mjs` — раздача статики
-- `modules.json` — реестр API-модулей (370+)
+- `modules.json` — реестр API-модулей (655, Ранее: 370+)
+- `build-registry.mjs` — генератор реестра модулей (запускается перед стартом сервера)
+- `build-legacy-aliases.mjs` — генератор legacy-алиасов → `legacy-aliases.generated.json`
+- `legacy-stubs.json` — реестр из 34 API-заглушек
+- `verify.mjs` — верификатор всех маршрутов и страниц
 - `routes-api.json` — API-маршруты (legacy)
 - `pages.json` — реестр страниц
 - `routes-pages.json` — маршруты страниц
+
+
+### Жизненный цикл запуска — по факту `server.mjs` v14.0
+
+`server.mjs` — тонкая точка входа: prestart-проверки, модульный роутер и маршруты страниц.
+
+**1. Prestart (до старта HTTP, при ошибке сервер не поднимается — exit 1):**
+
+- `node server/build-registry.mjs` — пересборка реестра API-модулей;
+- `node scripts/lint-contract.mjs --quiet` — валидация контракта CRUCIX v2:
+  - `LINT_STRICT=1` — строгий режим: любое нарушение контракта прерывает старт с подсказкой «Запусти автомиграцию: `node scripts/migrate-to-contract.mjs --all`»;
+  - по умолчанию — ratchet-режим (warn-only): новые модули проверяются, нарушение контракта старыми — предупреждение, сервер продолжает работу.
+
+**2. Подключение роутеров:**
+
+- `server/router.mjs` — `initRouter()` (загрузка реестра, подписка на изменения; ошибка → exit 1) и `handleAPI()`; несуществующий API-путь → `404 api_not_found`;
+- `server/pages.mjs` — `getPageFile()` / `getAllRoutes()`, лог «Загружено маршрутов страниц».
+
+**3. `server.listen(PORT)`** — порт из переменной окружения `PORT` (по умолчанию 3117). После старта доступны `/api/registry/` и страница `/registry`.
+
+**Заметки:**
+
+- Генератор описаний (`scripts/generate-descriptions.mjs`) при старте **отключён 22.10.2026** — падал сервер (вызов закомментирован).
+- **Редирект 301**: путь без слеша вида `/network-map` редиректится на `/network-map/`, если в подпапке есть `index.html` — иначе относительные пути в `index.html` резолвятся от корня.
+- Статика раздаётся из `dashboard/public` по списку расширений: `.js`, `.css`, `.mjs`, `.json`, `.png`, `.jpg`, `.jpeg`, `.svg`, `.ico`, `.woff2`, `.map`.
+
+### Ранее: оркестратор со встроенными сборщиками и планировщиком
+
+> **Ранее:** `server.mjs` был монолитным оркестратором — при старте запускал сборщики данных (26 шт.) и планировщик: каждые 30 минут — критические сборщики (NOTAM, GPS-глушение, VIX, Золото/Нефть, BDI, уран), каждые 6 часов — полный цикл. Эту схему описывал документ `server-orchestration-mechanism.ru.md` (версия 1.0, 24.08.2026, статус «АКТУАЛЬНО»).
+> **Сейчас:** сбор данных запускается отдельно (`npm run collect`), внутри HTTP-сервера планировщика больше нет. Полный перечень критических сборщиков той эпохи сохранён для истории: `collect-notam`, `collect-gps-jamming`, `collect-vix`, `collect-gold-oil-ratio`, `collect-bdi`, `collect-uranium`; остальные двадцать — `collect-google-trends`, `collect-yield-curve`, `collect-copper-gold`, `collect-viirs`, `collect-inflation`, `collect-unemployment`, `collect-pmi`, `collect-recession`, `collect-happiness`, `collect-gold-silver`, `collect-oil-gas`, `collect-big-mac`, `collect-dxy`, `collect-tips`, `collect-ovx`, `collect-hy-spread`, `collect-war-preparation`, `collect-consumer-confidence`, `collect-nuclear-monitor`, `collect-social-unrest`.
+
+### Команды управления
+
+```bash
+# Запуск
+node server.mjs                      # или npm run dev
+
+# Остановка
+Ctrl+C                               # graceful shutdown
+pkill -f "node server.mjs"           # принудительно
+
+# Проверка работы
+ps aux | grep "node server.mjs" | grep -v grep
+curl http://localhost:3117/api/vix/  # должен вернуть JSON
+ls -la data/basket/*.json            # свежие данные в корзине
+
+# Логи в файл
+node server.mjs > logs/server.log 2>&1
+
+# Автозапуск при загрузке системы (cron)
+crontab -e
+# @reboot cd /путь/к/Crucix && node server.mjs > logs/server.log 2>&1 &
+```
+
+Формат логов — единый, с типами: `[START]`, `[DONE]`, `[OK]`, `[INFO]`, `[WARN]`, `[ERROR]`, `[REQ]`.
+
+Ошибка `EADDRINUSE` (порт занят) → `pkill -f "node server.mjs"`, затем перезапуск.
+
+### Полный реестр модулей (историческая справка)
+
+Файл `FULL_MODULES_REGISTRY.md` (версия 2.3.0, 17.08.2026) — снимок состава проекта до контрактной архитектуры: **66 подключённых** модулей, **70 ожидающих интеграции** (из них 45 — из форков, совпадают со списком ожидающих), **91 HTML-страница** (включая legacy-страницы семейства jarvis). Статистическая таблица в документе — шаблон с заполнителями N/M/K/P, числа подставляются после сканирования.
+
+**Сейчас:** актуальный реестр — `server/modules.json` (655 API-модулей, снапшот 03.11.2026), загрузка модулей динамическая через `server/loader.mjs`.
 
 ---
 
@@ -1032,7 +1122,9 @@ node scripts/snapshot-rsshub.mjs
 - `data/reference/country-characteristics.json` — **197 стран**
 - `data/reference/gini-index.json` — **147 стран с Джини**
 - `data/reference/country-aliases.json` — 152 алиаса
-- `data/reference/rest-countries.json` — 250 стран (mledoze)
+- `data/reference/rest-countries.json` — 257 стран (mledoze; Ранее: 250 → Сейчас: 257 — справочник ISO 3166-1 обновлён: alpha2/alpha3/numeric, en/ru, регионы ООН, алиасы)
+- `config/taxonomy.json` — таксономия сущностей RSS-анализа: 25 сущностей, 97 алиасов (обновлён 01.11.2026)
+- Справочник стран внутри карт: `справочник_iso-3166-1/iso-3166-1.json` (257 стран, схема crucix.countries.v1) — локальная копия в каждой карте для автономии R1
 
 ### Технологии и кибербезопасность
 - `cisa-kev.json` — известные уязвимости
@@ -1056,6 +1148,12 @@ npm run collect          # запуск всех сборщиков
 npm run analyze          # запуск всех анализаторов
 npm run daily-briefing   # генерация ежедневного брифа
 npm run registry         # генерация реестра
+npm run test:all         # все тесты: модули + мутационные
+npm run test:unit        # unit-тесты (tests/predict/)
+npm run test:property    # property-based тесты
+npm run test:fuzz        # fuzz-тесты
+npm run test:integration # интеграционные тесты
+npm run test:mutation    # мутационные тесты
 ```
 
 ---
@@ -1150,7 +1248,7 @@ npm run registry         # генерация реестра
 
 ### Сервер не запускается
 
-- Проверить `node --version` — нужен Node 22+
+- Проверить `node --version` — нужен Node ≥ 18 (Ранее: Node 22+; актуально по package.json)
 - Проверить `npm install`
 - Проверить лог `/tmp/crucix-server.log`
 
@@ -1165,6 +1263,13 @@ npm run registry         # генерация реестра
 - Проверить источник: `curl <api-url>` — отвечает ли?
 - Проверить лог `logs/collectors/collect-{name}.log`
 - Некоторые источники требуют User-Agent браузера (GDELT)
+
+### RSS-сборщик отдаёт пусто / «Invalid Date»
+
+- RSS — это XML: разбор только через rss-parser (`collect-rss.mjs`), не через `response.json()`
+- Даты: русский формат DD.MM.YYYY проверяется **до** нативного `Date.parse` — иначе V8 путает день и месяц
+- Дедупликация трёхуровневая: guid → normalized_link → content-hash; нормализация URL обязательна (utm_*, фрагменты, trailing slash)
+- Состояние фидов: `feed_status` (last_ok_at, last_error) — сломанный фид не роняет сборку
 
 ### Карта не загружается
 
@@ -1264,7 +1369,58 @@ AI-чат использует данные анализаторов как ко
 - Соблюдать автономность карт (R1–R6): ни один ресурс карты не выходит за пределы своей папки
 - Не смешивать слои разных карт в одном `layers.js`
 
+### Процесс внесения изменений — из CONTRIBUTING.md (upstream calesthio/Crucix)
+
+Приветствуются: багфиксы с понятной схемой воспроизведения и проверки, улучшения документации, снижающие барьер установки, улучшения дашборда с малой зоной ревью, новые OSINT-источники, которые добавляют понятный сигнал, деградируют без сбоев и вписываются в архитектуру.
+
+**Issue сначала** (до написания кода), если изменение:
+
+- добавляет внешнего провайдера или платный API;
+- добавляет новое семейство функций или поверхность дашборда;
+- меняет скоуп проекта или роадмап;
+- меняет лицензию, дистрибуцию или модель развёртывания;
+- вводит новые зависимости.
+
+**Базовые требования разработки:**
+
+- чистый ESM; Node 22+ (Ранее: требование upstream → Сейчас: по `package.json` форка Node ≥ 18);
+- подход «ноль лишних зависимостей», если нет веской причины от него отказаться;
+- не коммитить секреты, `.env` и сгенерированные рантайм-данные.
+
+**Добавление нового источника** — отдельный модуль в `apis/sources/`, интеграция с `apis/briefing.mjs`. Минимальные требования:
+
+- экспортировать функцию `briefing()`, возвращающую структурированные данные;
+- обрабатывать ошибки и rate limits вышестоящего API;
+- деградировать без сбоев при отсутствии API-ключей;
+- не ломать полный проход сбора при падении источника;
+- документировать требуемые переменные окружения в `.env.example` и README;
+- объяснить, почему источник повышает качество сигнала, а не только счётчик источников.
+
+Если источник затрагивает дашборд: подключение через `dashboard/inject.mjs`, описание пользовательского эффекта в PR, скриншот при заметных изменениях UI.
+
+**Фронтенд и безопасность** — дашборд рендерит данные из смешанных источников, поэтому:
+
+- не рендерить недоверенный контент через `innerHTML` без предварительной санитизации;
+- разрешать только безопасные внешние схемы URL — `http:` и `https:`;
+- экранировать JSON, вставляемый в inline `<script>`;
+- предпочитать текстовый рендеринг HTML-рендерингу, где возможно.
+
+**Скоуп PR** — один багфикс или одно семейство функций на PR.
+
+- Хорошо: исправление одного бага парсера; добавление одного источника с минимальной обвязкой; улучшение одного взаимодействия в дашборде.
+- Плохо: добавить источник, перерисовать дашборд и изменить поведение конфига одним PR; смешивать багфиксы с несвязанным расширением продукта; тащить изменения лицензии или провайдера в несвязанную работу.
+
+Крупные изменения могут попросить разделить до ревью.
+
+**Чеклист перед PR:** объяснена проблема и зачем изменение; diff узкий; перечислены изменения окружения и переменных; изменённый путь проверен локально; скриншоты для видимых изменений дашборда; документация обновлена при изменении поведения или конфигурации.
+
+**Приоритеты ревью:** корректность, риск регрессий, безопасность рендеринга смешанного контента, поддерживаемость, соответствие направлению проекта. Не всякое технически верное изменение будет принято — важны скоуп и долгосрочная стоимость поддержки.
+
+**Отчёты о безопасности:** не открывать публичный issue; см. `SECURITY.md`.
+
 ---
+
+## 🧠 Прогностическое ядро Crucix
 
 ## 🧠 Прогностическое ядро Crucix
 
@@ -1275,6 +1431,7 @@ AI-чат использует данные анализаторов как ко
 - **Движок** `apis/predict/engine.mjs` v8.0.0 — 16-фазный конвейер.
 - **22 модуля** прогностического ядра: байесовское ядро, наивный байес, цепи Маркова, Монте-Карло, временные ряды, Brier-калибровка, каскадные цепочки, ансамбль, LLM-агенты, процесс Хоукса, HMM, фильтр Калмана, Изинг, перенос энтропии, SIR/SEIR, EVT, Орнштейн-Уленбек, копулы, BOCPD, Particle Filter, MLP, GCN+DQN.
 - **Источники**: `apis/predict/sources/` — prediction_markets (Polymarket/Metaculus/Kalshi/Manifold), multilang (100+ языков), satellite (Sentinel-2/Landsat/SAR).
+- **Сейчас:** 113 файлов подсистемы `apis/predict/` (Ранее: 22 модуля → Сейчас: 113 файлов, снапшот 03.11.2026): 22 модуля ядра + `core/` (linear_algebra, optim, stats), `models/` (hawkes, hmm, kalman, ising, copula, evt, bocpd, particle, mcmc, transformer, vae, graph_neural, graph_sage, actor_critic и др.), `agent/` (agent_core, planner, executor, narrator, tool_registry, server), `exotic/` (chaos, game_theory, infogeo, networks, quantum_sa, signal_advanced, wasserstein), `federated/` (fl_node, fl_protocol) + federated_hypergraph, `v6/` (causal_rl, continual_learning, neural_causal_discovery, quantum_hypergraph, zk_federated), `v7/` (dreamer, neural_ode, simulation_engine, world_model, continuous_causal), `workers/`, `webgl/`, wasm-загрузчик, а также hypergraph_contagion, hypergraph_discovery, meta_ensemble, ensemble, bayesian_causal, calibration, attention_dynamics, adversarial_coevolution, active_learning, automl, composite_risk, cascade, scenario_generator, regime_shift, narrative_*.
 - **Граф знаний**: `apis/knowledge/graph.mjs`.
 - **Новые страницы**: /cockpit, /agent, /hypergraph, /plugins, /realtime, /advanced, /attention, /coevolution, /crucix, /predictions_composite.
 - **Плагины**: `plugins/` — loader, sandbox, hooks, registry, manifest_schema.
@@ -1353,6 +1510,20 @@ SMARTSCROLL_HTTP_PORT=3157 node apis/ingest/event-ingestion-api.mjs
 # Запустить тесты
 node test/smartscroll/run-all.mjs
 ```
+
+### Проверенное поведение (из манифеста)
+
+Результаты верификации версии 1.0.0 (24.09.2026):
+
+- Дедупликация: 7 сырых элементов → 4 уникальных (3 дубликата удалены).
+- Кластеризация: 4 уникальных события → 4 сюжета.
+- Граф: 8 узлов, 18 рёбер из 4 сюжетов.
+- Валидация дат: отбрасываются даты 2005 и 2050, сохраняется 2026.
+- Circuit breaker: 6-й подряд неудачный запрос отклоняется без сетевого вызова.
+- Story builder: 500 событий → 9 сюжетов за 79 мс (inverted index, поиск кандидатов O(1)).
+- Тесты: юнит 30/30, интеграционные 21/21.
+
+**Порядок развёртывания:** скопировать файлы из пакета с сохранением структуры → настроить источники в `config/smartscroll.json` → запустить сборщик → подключить модуль к графу знаний через `setGraphAdapter`.
 
 ### Метрики
 
@@ -1467,7 +1638,7 @@ Empirical Dashboard Studies (Koch et al. 2013).
 | Metrics Map | dashboard/public/metrics-map/ | metrics | 75 | Каркас готов, нужна настройка |
 | Semantic Map | dashboard/public/semantic-map/ | meanings | 22 | Каркас готов, нужна настройка |
 | Forecast Map | dashboard/public/forecast-map/ | forecasts | 16 | Каркас готов, нужна настройка |
-| Network Map | dashboard/public/network-map/ | relations | 3 | Каркас готов, без Leaflet |
+| Network Map | dashboard/public/network-map/ | relations | 12 | Каркас готов, без Leaflet (Ранее: 3) |
 
 ### 5.2. Base Map (шаблон)
 
@@ -1587,7 +1758,7 @@ Event Map использует собственные копии скрипто�
 
 ### 6.4. Network Map
 
-Без изменений — 3 слоя. Среди исключённых нет flow-слоёв.
+12 слоёв (снапшот 03.11.2026; Ранее в черновике: 3). Сумма: 84 + 75 + 35 + 16 + 12 = 222. Среди исключённых нет flow-слоёв.
 
 ---
 
@@ -1607,13 +1778,13 @@ dashboard/public/
   metrics-map/       75 слоёв
     js/              layers.js + базовые
     css/             metrics-map.css
-  semantic-map/      22 слоя
+  semantic-map/      35 слоёв (Ранее: 22)
     js/              layers.js + базовые
     css/             semantic-map.css
   forecast-map/      16 слоёв
     js/              layers.js + базовые
     css/             forecast-map.css
-  network-map/       3 слоя, без Leaflet
+  network-map/       12 слоёв (Ранее: 3), без Leaflet
     js/              network-map.js, graph-view, graph-panel, relations
     css/             network-map.css
 ```
@@ -1736,7 +1907,7 @@ maps-config.js существует ТОЛЬКО в event-map. Нужно:
 
 2.1. Metrics Map — проверить 75 слоёв, настроить choropleth для новых (vizType='series' vs 'choropleth'), создать maps-config.js
 
-2.2. Semantic Map — проверить 22 слоя, настроить раскраску, добавить типы сигналов (cluster, synthesis, extraction, corroboration, credibility, drift, deception)
+2.2. Semantic Map — проверить 35 слоёв (Ранее: 22), настроить раскраску, добавить типы сигналов (cluster, synthesis, extraction, corroboration, credibility, drift, deception)
 
 2.3. Forecast Map — проверить 16 слоёв, настроить хуки для ai-forecasts, central-bank-predictor, social-briefing
 
@@ -1840,6 +2011,107 @@ Network — связи между сущностями. Единица: ребр
 
 
 
+
+## 📰 RSS-система Crucix — полный конвейер
+
+RSS — основной новостной поток Crucix. Путь данных: RSS-фиды → `scripts/collectors/collect-rss.mjs` → нормализация и дедупликация → корзина (`data/basket/*.json`) → анализаторы → API → карты.
+
+### Сборщик collect-rss.mjs
+
+- XML через rss-parser (не `response.json()` — RSS это XML, не JSON)
+- timeout, retry с экспоненциальной задержкой, реалистичный User-Agent (без него CDN отдают 403)
+- нормализация URL (utm_*, фрагменты, trailing slash, http→https) — без неё дедупликация не работает
+- дедупликация в три уровня: guid → normalized_link → content-hash; межфидовые дубли схлопываются по заголовку (Jaccard + шинглы длины 3 + стоп-слова ru/en, ё→е)
+- лимит items на фид — защита от переполнения при первом запуске
+
+### Парсер дат date-parser.mjs
+
+7 форматов (ISO 8601, RFC 822, RFC 3339, DD.MM.YYYY, американский, SQL-style, unix timestamp). Ключевое решение: русский формат проверяется **до** нативного Date.parse — иначе V8 разбирает DD.MM.YYYY как MM.DD и молча путает даты. Невалидные даты → `date_missing: true`, распознанные не в ISO → `date_format_fallback: true` (метрика качества источников в `/stats`).
+
+### Здоровье фидов (feed_status)
+
+last_ok_at, last_error, счётчики items/errors. Сломанный фид не роняет сборку — ошибки обрабатываются per-feed, итог честный: `{items, errors, feeds_checked}`.
+
+### Списки фидов (data/feeds/)
+
+> **Ранее:** списки фидов искали в `config/feeds.json` — такого файла в проекте нет.
+> **Сейчас:** фиды живут в `data/feeds/`: `urls-classified.json`, `urls-direct.txt`, `urls-tor.txt`, `urls-dead.txt`, `topics.json`. Каждый фид несёт стабильный feed_id — сменится URL, ключ останется. Источники — справочник о самих источниках (bias, reliability, latency), а не список фидов. Для недоступных источников поддерживается SOCKS-прокси.
+
+### Анализаторы новостного потока (ноябрь 2026)
+
+- `silence-detector` — «инфотишина»: резкое падение освещения темы по группам источников
+- `taxonomy-gaps` — темы, освещаемые одной группой и отсутствующие у другой (`config/taxonomy.json`: 25 сущностей, 97 алиасов)
+- `source-coordination` — синхронные вбросы: 3+ источников в пределах 360 минут (порог 60 минут — для Telegram, RSS публикует с задержкой в часы)
+- `narrative-framing` — полярность освещения russian/western (polarity delta)
+- `alert-engine` — сводит сигналы четырёх предыдущих в алерты; dry-run по умолчанию, отправка в Telegram/webhook по ключам из .env
+
+### API и страницы
+
+- API: `/api/layers/articles` (/raw, /stats, /groups), `/api/layers/sources` (/feed-status, /top), `/api/layers/rss-stats` (/by-hour, /by-day, /by-group, /top-sources)
+- Страницы: `/rss-feed`, `/rss-dashboard`, `dashboard-signals`, `dashboard-narrative`, `dashboard-coordination`
+
+### Происхождение системы
+
+Система выросла из отдельной песочницы (`Crucix-песочница`, Fastify + PostgreSQL), где RSS-конвейер построен с нуля: миграции 003–012 (articles, events, feed_status, sources, таблицы gaps и alerts), кластеризатор cluster-events v3 (порог 0.45: name-entities 0.55 + tokens 0.35 + shingles 0.10). В основной проект перенесено с адаптацией Fastify + PostgreSQL → Express + корзина (контракт crucix.basket.v1). Финальный рефакторинг (ноябрь 2026): генератор legacy-алиасов на 357 записей, 34 стаба в отдельный файл, фикс кириллицы через NFC-нормализацию.
+
+## 🧺 Корзина (data/basket/) — контракт crucix.basket.v1
+
+Единая точка обмена между сборщиками, анализаторами и API.
+
+### Контракт crucix.basket.v1 — пять форм в одном файле
+
+- `v1.points` — точечные события с координатами
+- `v1.series` — временные ряды
+- `v1.regions` — региональная агрегация
+- `v1.graph` — графы сущностей и связей
+- `v1.documents` — документы (новости, отчёты)
+
+Формат-детектор `formats-dispatch.js` определяет форму автоматически; один файл может нести несколько форм сразу. Каждая запись несёт meta: id, source, collected_at, collector, count — происхождение данных видно всегда.
+
+### Чтение с fallback
+
+API-модуль не знает заранее, какой файл наполнен. Читает по цепочке приоритетов (для новостей: `rsshub.json` → `rss-latest.json` → `rss-universal.json` → `rss.json`) — первый непустой. Если всё пусто, ответ содержит подсказку «запустите сборщик N», а не молчаливую заглушку.
+
+### Поток данных
+
+сборщики → `data/basket/*.json` → анализаторы → `data/analytics/*.json` → API-модули (реестр: `/registry`) → карты и дашборды.
+
+> Проверка контракта: `scripts/lint-contract.mjs` блокирует старт сервера при нарушении контракта — это фича, а не баг.
+
+## 🧩 config/ — конфигурация проекта
+
+- `config/taxonomy.json` — таксономия сущностей: 25 сущностей, 97 алиасов (обновлён 01.11.2026)
+- `config/smartscroll.json` — конфигурация SmartScroll
+- `config/reference/` — локальный справочный каталог (резервная копия — `config/reference-backup/`)
+
+## 🗓️ Журнал обновлений README
+
+### 03.11.2026 — интеграция исторических и служебных документов
+
+- Числа слоёв синхронизированы: Semantic Map 22 → **35**, Network Map 3 → **12** (сумма 222: 84 + 75 + 35 + 16 + 12); затронуты сводная таблица карт, раздел 6.4, файловая архитектура и план работ
+- Раздел «Модульная архитектура сервера»: добавлен жизненный цикл запуска по факту `server.mjs` v14.0 — prestart (`build-registry` + `lint-contract` в режимах LINT_STRICT/ratchet), `initRouter`, редирект 301 для директорий без слеша, отключённый генератор описаний (22.10.2026)
+- Оркестрация со встроенными сборщиками и планировщиком (26 сборщиков, интервалы 30 минут / 6 часов) помечена «Ранее» — по документу `server-orchestration-mechanism.ru.md` v1.0 от 24.08.2026; актуальная схема — модульный роутер (`server/router.mjs`, `server/pages.mjs`)
+- Добавлены команды управления (запуск, остановка, проверка, логи, cron-автозапуск) и формат логов `[START]…[REQ]`
+- Добавлена историческая справка о `FULL_MODULES_REGISTRY.md` v2.3.0 (17.08.2026): 66 подключённых / 70 ожидающих модулей, 91 HTML-страница → сейчас актуален `server/modules.json` (655)
+- Раздел «Вклад в проект» дополнен содержимым upstream `CONTRIBUTING.md`: политика issue-first, базовые требования разработки, контракт `briefing()` для новых источников, требования к фронтенду и безопасности, скоуп и чеклист PR, приоритеты ревью, отчёты о безопасности через `SECURITY.md`
+- Node: в требованиях upstream указан Node 22+ (Ранее) → по `package.json` форка Node ≥ 18 (Сейчас)
+- Раздел SmartScroll: добавлен блок «Проверенное поведение» из `MANIFEST-smartscroll.md` (результаты дедупликации, кластеризации, графа, circuit breaker, скорость story builder, порядок развёртывания)
+- Ничего из прежнего содержимого не удалено; изменённые конструкции переписаны по схеме «Ранее → Сейчас»
+
+### 03.11.2026 — синхронизация со снапшотом Crucix_GIT
+### 03.11.2026 — синхронизация со снапшотом Crucix_GIT
+
+- Числа обновлены по снапшоту: API-модули 370+ → **655**; анализаторы 59 → **68**; справочник стран 250 → **257** (ISO 3166-1); сборщики — **126**; подсистема predict — **113 файлов** (Ранее: 22 модуля); справки — **582 ru + 566 en**
+- Node: требование обновлено к package.json — Node ≥ 18 (Ранее: Node 22+)
+- Docker: раздел переписан — Docker-файлы удалены из репозитория (коммит 37af83c), проект на Node.js без контейнеризации (Ранее → Сейчас)
+- URL клонирования: заменены на форк `fedorfedorov90fd-commits/Crucix` (оригинал — `calesthio/Crucix`)
+- Router v3.1: добавлен подраздел о переходе от захардкоженных LEGACY_ALIASES к генератору (`build-legacy-aliases.mjs`, `legacy-stubs.json`, фикс `req.url`)
+- AI-лаборатория: добавлены Mistral по умолчанию, OpenAI-совместимые локальные LLM, полный список AI-модулей
+- Прогностическое ядро: добавлена актуальная структура подсистемы (113 файлов)
+- Добавлены разделы: «RSS-система — полный конвейер», «Корзина — контракт crucix.basket.v1», «config/»
+- Исправлен путь списков фидов: `config/feeds.json` не существует — фиды в `data/feeds/` (Ранее → Сейчас)
+- npm-скрипты: добавлены тестовые команды из package.json
+- Ничего из прежнего содержимого не удалено; изменённые конструкции переписаны по схеме «Ранее → Сейчас»
 
 ## 📜 Лицензия
 

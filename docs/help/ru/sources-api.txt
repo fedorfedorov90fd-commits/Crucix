@@ -1,0 +1,45 @@
+=== SOURCES-API — СПРАВКА ===
+
+МОДУЛЬ:      apis/sources/sources-api.mjs
+ТИП:         Layer (single-method, контракт v2)
+ПОРТ:        3117
+СТАТУС:      ✅ работает (200)
+
+НАЗНАЧЕНИЕ:
+  Отдаёт список источников RSS с агрегатами (адаптация feeds.mjs
+  песочницы с Fastify+PostgreSQL на Express+basket).
+
+ИСТОЧНИК:
+  Fallback-цепочка (rsshub → rss-latest → rss-universal → rss).
+  Сборщик: scripts/collectors/collect-rsshub.mjs.
+
+ЭНДПОИНТЫ:
+  GET /api/layers/sources             — список источников
+  GET /api/layers/sources/stats       — агрегаты (count, total_articles, by_group)
+  GET /api/layers/sources/status      — health-check
+  GET /api/layers/sources/feed-status — статусы (ok/error/last_seen)
+  GET /api/layers/sources/top?n=N     — топ-N по количеству
+  GET /api/layers/sources/by-group    — группировка по группам (russian/western/neutral)
+
+ДАННЫЕ (на 02.11.2026):
+  count: 11 источников
+  total_articles: 500
+  by_group: { russian: 6, western: 5 }
+
+ПРИМЕРЫ:
+  curl http://localhost:3117/api/layers/sources
+  curl http://localhost:3117/api/layers/sources/by-group
+  curl "http://localhost:3117/api/layers/sources/top?n=5"
+
+СВЯЗИ:
+  ← data/basket/rss-latest.json
+  → widgets/sources-table.js
+  → widgets/coordination-heatmap.js
+  → dashboard-news.html (виджет 9)
+  → dashboard-signals.html (виджет 9)
+  → dashboard-coordination.html
+  → dashboard-5in1.html (карточка 37)
+
+ФАЙЛЫ:
+  apis/sources/sources-api.mjs
+  dashboard/public/widgets/sources-table.js

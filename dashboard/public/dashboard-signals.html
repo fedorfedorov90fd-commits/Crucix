@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Сигналы — Crucix</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0a0a1a; color: #e0e0e0; font-family: -apple-system, 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+    .topbar { position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(10,10,20,0.95); backdrop-filter: blur(12px); border-bottom: 2px solid rgba(91,192,248,0.25); z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-brand { font-size: 14px; font-weight: 700; color: #5bc0f8; text-transform: uppercase; letter-spacing: 2px; }
+    .topbar-right { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .topbar-btn { height: 28px; padding: 0 12px; border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; background: rgba(255,255,255,0.03); color: #888; font-size: 11px; font-weight: 500; text-transform: uppercase; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 4px; }
+    .topbar-btn:hover { background: rgba(255,255,255,0.06); }
+    .btn-home { color: #5bc0f8; border-color: rgba(91,192,248,0.2); background: rgba(91,192,248,0.06); }
+    .btn-rss { color: #f26522; border-color: rgba(242,101,34,0.2); background: rgba(242,101,34,0.06); }
+    .btn-help { color: #a78bfa; border-color: rgba(167,139,250,0.2); background: rgba(167,139,250,0.06); }
+    .nav-dashboards { position: fixed; top: 60px; left: 0; right: 0; height: 38px; background: rgba(6,10,18,0.92); backdrop-filter: blur(8px); border-bottom: 1px solid rgba(255,255,255,0.04); z-index: 99; display: flex; align-items: center; padding: 0 20px; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+    .nav-dashboards::-webkit-scrollbar { display: none; }
+    .nav-btn { padding: 4px 10px; border: none; border-radius: 4px; background: transparent; color: #666; font-size: 10px; font-weight: 500; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-family: inherit; border: 1px solid transparent; text-decoration: none; display: inline-flex; align-items: center; gap: 3px; }
+    .nav-btn:hover { color: #c8d0d8; background: rgba(255,255,255,0.04); }
+    .nav-btn.active { color: #5bc0f8; background: rgba(91,192,248,0.08); border-color: rgba(91,192,248,0.15); }
+    .main-content { padding-top: 114px; max-width: 1440px; margin: 0 auto; padding-left: 20px; padding-right: 20px; padding-bottom: 40px; min-height: calc(100vh - 114px); }
+    .page-title { font-size: 28px; font-weight: 700; color: #e8f0f8; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+    .page-title .badge { font-size: 12px; font-weight: 400; background: rgba(239,68,68,0.15); color: #ef4444; padding: 2px 12px; border-radius: 20px; border: 1px solid rgba(239,68,68,0.2); }
+    .page-subtitle { color: #8899aa; font-size: 14px; margin-bottom: 24px; }
+    .section-title { font-size: 14px; font-weight: 600; color: #8899aa; margin: 24px 0 8px; text-transform: uppercase; letter-spacing: 1px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    @media (max-width: 992px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-left"><span class="topbar-brand">🎯 СИГНАЛЫ</span></div>
+  <div class="topbar-right">
+    <button class="topbar-btn btn-home" onclick="window.location.href='/jarvis'">← НА ГЛАВНУЮ</button>
+    <button class="topbar-btn btn-rss" onclick="window.location.href='/registry'">📡 Реестр</button>
+    <button class="topbar-btn btn-help" onclick="alert('Сигналы: silence + taxonomy-gaps + narrative-framing + alerts + articles + sources')">❓ HELP</button>
+  </div>
+</header>
+
+<nav class="nav-dashboards">
+  <button class="nav-btn" onclick="window.location.href='/dashboard-5in1'"><span class="icon">🎯</span>Центр аналитики</button>
+  <button class="nav-btn active" onclick="window.location.href='/dashboard-signals'"><span class="icon">🚨</span>Сигналы</button>
+  <button class="nav-btn" onclick="window.location.href='/dashboard-news'"><span class="icon">📰</span>Новости</button>
+  <button class="nav-btn" onclick="window.location.href='/dashboard-economic'"><span class="icon">📊</span>Экономика</button>
+  <button class="nav-btn" onclick="window.location.href='/dashboard-financial'"><span class="icon">💰</span>Финансы</button>
+  <button class="nav-btn" onclick="window.location.href='/dashboard-military'"><span class="icon">🛡️</span>Военный</button>
+  <button class="nav-btn" onclick="window.location.href='/dashboard-geopolitical'"><span class="icon">🌍</span>Геополитика</button>
+  <button class="nav-btn" onclick="window.location.href='/dashboard-cyber'"><span class="icon">🔒</span>Кибер</button>
+  <button class="nav-btn" onclick="window.location.href='/dashboard-ai'"><span class="icon">🧠</span>AI</button>
+</nav>
+
+<main class="main-content">
+  <div class="page-title">
+    🚨 Сигналы — все анализаторы на одной странице
+    <span class="badge">LIVE</span>
+  </div>
+  <div class="page-subtitle">
+    silence + taxonomy-gaps + narrative-framing + alerts + articles + sources
+    <span style="margin-left:12px;font-size:12px;color:#4a5a6a;">
+      <a href="/registry" target="_blank" style="color:#5bc0f8;">📋 Полный реестр</a>
+    </span>
+  </div>
+
+  <!-- 1. Ticker -->
+  <div class="section-title">1. Ticker — критические алерты</div>
+  <div id="ticker" style="margin-bottom:16px;"></div>
+
+  <!-- 2. Word Cloud + Pie -->
+  <div class="grid-2">
+    <div>
+      <div class="section-title">2. Word Cloud — частотные темы</div>
+      <div id="wordcloud"></div>
+    </div>
+    <div>
+      <div class="section-title">3. Pie — распределение по типам</div>
+      <div id="pie"></div>
+    </div>
+  </div>
+
+  <!-- 4. Source Matrix -->
+  <div class="section-title">4. Source Matrix — сравнение тем</div>
+  <div id="source-matrix"></div>
+
+  <!-- 5. Real Chart -->
+  <div class="section-title">5. Real Chart — распределение алертов</div>
+  <div id="real-chart"></div>
+
+  <!-- 6. RSS-Map -->
+  <div class="section-title">6. RSS-Map — география тем</div>
+  <div id="rss-map"></div>
+
+  <!-- 7. RSS-Graph -->
+  <div class="section-title">7. RSS-Graph — связи тем</div>
+  <div id="rss-graph"></div>
+
+  <!-- 8. Articles (новый) -->
+  <div class="section-title">8. Articles — последние 20 статей</div>
+  <div id="articles"></div>
+
+  <!-- 9. Sources Table (новый) -->
+  <div class="section-title">9. Sources Table — источники</div>
+  <div id="sources-table"></div>
+</main>
+
+<script type="module" src="/widgets/ticker.js"></script>
+<script type="module" src="/widgets/wordcloud.js"></script>
+<script type="module" src="/widgets/pie.js"></script>
+<script type="module" src="/widgets/source-matrix.js"></script>
+<script type="module" src="/widgets/real-chart.js"></script>
+<script type="module" src="/widgets/rss-map.js"></script>
+<script type="module" src="/widgets/rss-graph.js"></script>
+<script type="module" src="/widgets/articles.js"></script>
+<script type="module" src="/widgets/sources-table.js"></script>
+</body>
+</html>

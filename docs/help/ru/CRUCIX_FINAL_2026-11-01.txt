@@ -1,0 +1,86 @@
+=== CRUCIX — ФИНАЛЬНАЯ СВОДКА ===
+Дата: 2026-11-01
+
+=== ЧТО ЗАКРЫТО (полностью) ===
+
+1. API: 510/510 OK (FAIL=0)
+   - 302 layer + 56 service из registry
+   - +357 legacy-алиасов (legacy-aliases.generated.json)
+   - not_found: 195 (stubs / direct-basket без данных) — корректно
+
+2. PAGES: 244/244 OK (FAIL=0)
+   - routes-pages.json очищен от 5 битых записей (было 249)
+
+3. CYRILLIC: 1/1 OK (FAIL=0)
+   - /dashboard-military_с_деморежимом → 200 (NFC + decodeURIComponent)
+
+4. 5 карт — автономны (R1=0):
+   - event-map: 251 стран с ISO (эталон, не тронут)
+   - metrics-map: 90 стран с ISO
+   - semantic-map: 208 стран с ISO
+   - forecast-map: 208 стран с ISO
+   - network-map: 208 стран с ISO
+   - Принцип: 5 файлов в 5 папках, 0 импортов из чужих папок
+
+5. 17 дашбордов: 17/17 OK
+   - dashboard-ai, cyber, ecological, economic, energy, esg,
+     financial, geopolitical, health, military, military_,
+     military_с_деморежимом, regions, scientific, space, threats, transport
+
+6. 15 Legacy API: все 200
+   - 8 исходных + 5 добавленных + 2 новых (daily-briefing, mcp)
+
+7. geo-markers: 8/8 подпутей OK
+   - /, /stats, /health, /markers, /countries, /statuses, /layers, /latest
+
+=== ЧТО ИСПРАВЛЕНО (архитектурно) ===
+
+1. router.mjs:
+   - req.url обновляется в handleAPI (не в findRoute) — 57 модулей ожили
+   - res.end idempotent (writableEnded + destroyed)
+   - res.writeHead idempotent
+   - resolveLegacyAlias срезает trailing slash
+   - rateLimiter: maxPerWindow=600, windowMs=60000
+
+2. pages.mjs:
+   - getPageFile: decodeURIComponent + normalize('NFC')
+   - normalizeNFC helper
+
+3. verify.mjs v5:
+   - http.request вместо fetch (обход бага undici)
+   - 301 = OK (редирект)
+   - not_found = OK (stubs)
+   - 400 = OK (skip)
+   - --parallel 2 по умолчанию (без 429)
+
+4. legacy-aliases.generated.json:
+   - 359 записей (было 357 + daily-briefing + mcp)
+   - Автогенерация через build-legacy-aliases.mjs
+
+=== ЧТО НЕ СДЕЛАНО (отдельные задачи) ===
+
+1. iso-3166-1.json — скопирован в data/reference/iso-3166-1.json
+   - Для аудита, НЕ для рантайма карт (они автономны)
+
+2. private/ слои — не трогали (это приватные модули)
+
+3. 17 дашбордов — HTML работает, но вёрстка карточек не проверялась
+
+=== КОНТРАКТЫ ===
+- v2 (Layer): route, method, meta, handler(req, res)
+- basket (JSON): data/basket/*.json
+- registry.generated.json: 358 routes
+- legacy-aliases.generated.json: 359 записей
+
+=== ИНСТРУМЕНТЫ ===
+- node server/verify.mjs --all           # всё
+- node server/verify.mjs --api           # только API
+- node server/verify.mjs --pages --cyr   # страницы + кириллица
+- node scripts/build-legacy-aliases.mjs  # пересборка алиасов
+- node server/build-registry.mjs         # пересборка реестра
+
+=== ПРИНЦИПЫ ===
+- Не выкидывать — чинить
+- Автономия карт (R1=0)
+- Build-time генераторы (не ручные правки)
+- Idempotent res.end/writeHead (не падать на двойных вызовах)

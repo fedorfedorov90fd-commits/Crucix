@@ -1,0 +1,156 @@
+{
+  "schema": "crucix.basket.v1",
+  "meta": {
+    "id": "narrative-framing",
+    "source": "rsshub.json + taxonomy.json",
+    "collected_at": "2026-11-01T19:11:28.556Z",
+    "collector": "collect-narrative-framing.mjs",
+    "count": 7,
+    "total_items": 500,
+    "unique_entities": 23,
+    "description": "Поляризация фреймингов + скорость реакции по темам"
+  },
+  "topics": [
+    {
+      "topic": "москва",
+      "name": "москва",
+      "topic_type": "city",
+      "polarity_russian": -0.05,
+      "polarity_western": -1,
+      "polarity_delta": 0.95,
+      "russian_count": 20,
+      "western_count": 1,
+      "neutral_count": 3,
+      "latency_hours": null,
+      "gap_type": "framing_gap",
+      "severity": "high",
+      "sample_titles": [
+        "Что произошло за неделю с 26 октября по 1 ноября. Главное",
+        "Журналист Макдональд раскритиковал Каллас за обвинения в адрес Лаврова",
+        "Russia detains minor over alleged Moscow attack plot after US warning"
+      ]
+    },
+    {
+      "topic": "германия",
+      "name": "германия",
+      "topic_type": "country",
+      "polarity_russian": -0.16666666666666666,
+      "polarity_western": -1,
+      "polarity_delta": 0.8333333333333334,
+      "russian_count": 12,
+      "western_count": 1,
+      "neutral_count": 0,
+      "latency_hours": null,
+      "gap_type": "framing_gap",
+      "severity": "high",
+      "sample_titles": [
+        "Депутат раскритиковал правительство Мерца за отсутствие газа на случай холодов",
+        "Германия может отказаться от проведения ЧМ-2027 по хоккею из-за допуска России",
+        "Attempted murder probe after petrol bomb thrown at French riot police"
+      ]
+    },
+    {
+      "topic": "европа",
+      "name": "европа",
+      "topic_type": "region",
+      "polarity_russian": 0,
+      "polarity_western": -0.5,
+      "polarity_delta": 0.5,
+      "russian_count": 29,
+      "western_count": 2,
+      "neutral_count": 1,
+      "latency_hours": null,
+      "gap_type": "framing_gap",
+      "severity": "normal",
+      "sample_titles": [
+        "Журналист Макдональд объяснил Каллас суть G20 после выпада в адрес Лаврова",
+        "Что произошло за неделю с 26 октября по 1 ноября. Главное",
+        "UK willing to spend £450m a year on EU students if it can join Made in Europe scheme",
+        "Attempted murder probe after petrol bomb thrown at French riot police"
+      ]
+    },
+    {
+      "topic": "россия",
+      "name": "россия",
+      "topic_type": "country",
+      "polarity_russian": -0.016666666666666666,
+      "polarity_western": -0.5,
+      "polarity_delta": 0.48333333333333334,
+      "russian_count": 180,
+      "western_count": 4,
+      "neutral_count": 6,
+      "latency_hours": null,
+      "gap_type": "framing_gap",
+      "severity": "normal",
+      "sample_titles": [
+        "Боуз назвал абсурдом слова Туска о причастности России к кризису в Польше",
+        "Боуз назвал абсурдом слова Туска о причастности России к кризису в Польше",
+        "Latvia reports brief airspace intrusion near Russia, Belarus borders",
+        "Oleshky: Evacuations during first humanitarian truce of war end"
+      ]
+    },
+    {
+      "topic": "украина",
+      "name": "украина",
+      "topic_type": "country",
+      "polarity_russian": -0.045454545454545456,
+      "polarity_western": -0.5,
+      "polarity_delta": 0.45454545454545453,
+      "russian_count": 22,
+      "western_count": 2,
+      "neutral_count": 1,
+      "latency_hours": null,
+      "gap_type": "framing_gap",
+      "severity": "normal",
+      "sample_titles": [
+        "Риттер: Украина заплатит за преступления, совершённые против жителей Алешек",
+        "Журналист Макдональд раскритиковал Каллас за обвинения в адрес Лаврова",
+        "Oleshky: Evacuations during first humanitarian truce of war end",
+        "Ukraine defies Trump to resume attacks on Russian oil refineries"
+      ]
+    },
+    {
+      "topic": "франция",
+      "name": "франция",
+      "topic_type": "country",
+      "polarity_russian": -0.1111111111111111,
+      "polarity_western": -0.5,
+      "polarity_delta": 0.3888888888888889,
+      "russian_count": 9,
+      "western_count": 4,
+      "neutral_count": 0,
+      "latency_hours": null,
+      "gap_type": "framing_gap",
+      "severity": "normal",
+      "sample_titles": [
+        "Чучело Макрона ритуально сожгли во французском городе Гапе",
+        "\"Монако\" Головина уступил \"Парижу\" в матче чемпионата Франции",
+        "France: Route du Rhum yacht race sets off",
+        "Oleshky: Evacuations during first humanitarian truce of war end"
+      ]
+    },
+    {
+      "topic": "ес",
+      "name": "ес",
+      "topic_type": "organization",
+      "polarity_russian": -0.0639269406392694,
+      "polarity_western": -0.4,
+      "polarity_delta": 0.3360730593607306,
+      "russian_count": 219,
+      "western_count": 5,
+      "neutral_count": 2,
+      "latency_hours": null,
+      "gap_type": "framing_gap",
+      "severity": "normal",
+      "sample_titles": [
+        "Ульянов объяснил разговоры об изоляции России на мировой политической арене",
+        "Захарова: РФ сожалеет об упразднении мандата миссии ООН в Западной Сахаре",
+        "How Rachel Reeves has mapped out economic agenda for Andy Burnham’s government",
+        "France: Route du Rhum yacht race sets off"
+      ]
+    }
+  ],
+  "series": [],
+  "points": [],
+  "documents": []
+}

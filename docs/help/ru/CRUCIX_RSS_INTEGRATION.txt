@@ -1,0 +1,52 @@
+=== CRUCIX — ИНТЕГРАЦИЯ RSS ИЗ ОТКРЫТОЙ ПЕСОЧНИЦЫ ===
+
+Дата: 2026-11-01
+Источник: /home/ta8_/4/Crucix-песочница (Fastify + PostgreSQL)
+Адаптация: /home/ta8_/Рабочий стол/Crucix (Express + basket, контракт v2)
+
+=== ЧТО ПЕРЕНЕСЕНО ===
+
+API (контракт v2, читают basket):
+  - articles-api.mjs        → /api/layers/articles       (заменяет articles.mjs PG)
+  - sources-api.mjs         → /api/layers/sources        (заменяет feeds.mjs PG)
+  - rss-stats-api.mjs       → /api/layers/rss-stats      (заменяет stats.mjs PG)
+  - alerts-api.mjs          → /api/layers/alerts         (заменяет signals.mjs PG)
+  - silence-api.mjs         → /api/layers/silence        (уже было)
+  - taxonomy-gaps-api.mjs   → /api/layers/taxonomy-gaps  (уже было)
+  - narrative-framing-api.mjs → /api/layers/narrative-framing (уже было)
+
+Страницы (все 200):
+  - /dashboard-signals       — 9 виджетов (ticker, wordcloud, pie, matrix, chart, map, graph, articles, sources)
+  - /dashboard-narrative     — scatter + matrix
+  - /dashboard-coordination  — heatmap + sources
+  - /dashboard-network       — RSS-Graph (D3 force)
+  - /widgets-preview         — 11 виджетов (тест)
+
+Виджеты (11 штук):
+  ticker, wordcloud, pie, source-matrix, real-chart,
+  rss-map, rss-graph, articles, sources-table,
+  narrative-scatter, coordination-heatmap
+
+=== ЧТО НЕ ПЕРЕНОСИЛОСЬ ===
+
+- PostgreSQL (db/schema.sql) — у нас basket JSON
+- rss-to-db.mjs — у нас collect-rsshub.mjs → basket
+- collect-rss.mjs — у нас collect-rss-unified.mjs / collect-rsshub.mjs
+- Fastify (api/server.mjs) — у нас Express + router v3.1
+
+=== ПРАВИЛА ===
+
+1. Все API — контракт v2: route, method, meta, handler.
+2. Все API читают basket (data/basket/*.json), не PG.
+3. Все страницы — через routes-pages.json (не modules.json).
+4. Не смешивать Fastify и Express.
+5. Не копировать PG-код — переписывать на basket.
+
+=== СТАТУС ===
+
+Все 7 API: 200
+Все 10 страниц: 200
+Все 11 виджетов: 200
+Контракт: v2 (соблюдён)
+
+Готово к эксплуатации.

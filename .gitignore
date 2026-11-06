@@ -150,3 +150,7 @@ data/analytics/rss-history/
 data/warehouse/incoming/
 data/warehouse/*.tmp
 *.pre-patch*
+
+# Секреты — никогда не коммитить
+data/secrets/*
+!data/secrets/*.template
